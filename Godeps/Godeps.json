@@ -1,798 +1,626 @@
 {
-	"ImportPath": "icode.baidu.com/baidu/bce-iot/edge-core",
-	"RepoPath": "",
+	"ImportPath": "github.com/baidu/openedge",
 	"GoVersion": "go1.10",
-	"GodepVersion": "v0.6.0",
+	"GodepVersion": "v80",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/client",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/client/future",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/packet",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/session",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/topic",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/transport",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/transport/flow",
-			"RepoPath": "github.baidu-int.com/256dpi/gomqtt.git",
 			"Comment": "v0.9.0",
 			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
 		},
 		{
 			"ImportPath": "github.com/Microsoft/go-winio",
-			"RepoPath": "github.baidu-int.com/Microsoft/go-winio.git",
 			"Comment": "v0.4.11",
 			"Rev": "97e4973ce50b2ff5f09635a57e2b88a037aae829"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/gosigar",
-			"RepoPath": "github.baidu-int.com/cloudfoundry/gosigar.git",
 			"Comment": "v1.1.0-4-g0bb2fe4",
 			"Rev": "0bb2fe4a1c0cdce8cbe6bfe2c9d375cab4cc15c7"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/gosigar/sys/windows",
-			"RepoPath": "github.baidu-int.com/cloudfoundry/gosigar.git",
 			"Comment": "v1.1.0-4-g0bb2fe4",
 			"Rev": "0bb2fe4a1c0cdce8cbe6bfe2c9d375cab4cc15c7"
 		},
 		{
 			"ImportPath": "github.com/creasty/defaults",
-			"RepoPath": "github.baidu-int.com/creasty/defaults.git",
 			"Comment": "v1.2.1",
 			"Rev": "a7e48e2230891fc7456c8ab918c424c5b06c3192"
 		},
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
-			"RepoPath": "github.baidu-int.com/davecgh/go-spew.git",
 			"Comment": "v1.1.1",
 			"Rev": "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
 		},
 		{
 			"ImportPath": "github.com/deckarep/golang-set",
-			"RepoPath": "github.baidu-int.com/deckarep/golang-set.git",
 			"Comment": "v1.7-3-g504e848",
 			"Rev": "504e848d77ea4752b3057b8fb46da0e7f746ccf3"
 		},
 		{
 			"ImportPath": "github.com/docker/distribution/digestset",
-			"RepoPath": "github.baidu-int.com/docker/distribution.git",
 			"Comment": "v2.7.0-rc.0-4-g1cb4180b",
 			"Rev": "1cb4180b1a5b9c029b2f2beaeb38f0b5cf64e12e"
 		},
 		{
 			"ImportPath": "github.com/docker/distribution/reference",
-			"RepoPath": "github.baidu-int.com/docker/distribution.git",
 			"Comment": "v2.7.0-rc.0-4-g1cb4180b",
 			"Rev": "1cb4180b1a5b9c029b2f2beaeb38f0b5cf64e12e"
 		},
 		{
 			"ImportPath": "github.com/docker/distribution/uuid",
-			"RepoPath": "github.baidu-int.com/docker/distribution.git",
 			"Comment": "v2.7.0-rc.0-4-g1cb4180b",
 			"Rev": "1cb4180b1a5b9c029b2f2beaeb38f0b5cf64e12e"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/blkiodev",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/container",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/events",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/filters",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/image",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/mount",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/network",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/registry",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/strslice",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/swarm",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/swarm/runtime",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/time",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/versions",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api/types/volume",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/client",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/errdefs",
-			"RepoPath": "github.baidu-int.com/moby/moby.git",
-			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6",
+			"Comment": "docs-v1.12.0-rc4-2016-07-15-10093-g5d82d77a6d",
 			"Rev": "5d82d77a6df0c95bb5986ace1255de424c700b33"
 		},
 		{
 			"ImportPath": "github.com/docker/go-connections/nat",
-			"RepoPath": "github.baidu-int.com/docker/go-connections.git",
 			"Comment": "v0.4.0-1-g97c2040",
 			"Rev": "97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e"
 		},
 		{
 			"ImportPath": "github.com/docker/go-connections/sockets",
-			"RepoPath": "github.baidu-int.com/docker/go-connections.git",
 			"Comment": "v0.4.0-1-g97c2040",
 			"Rev": "97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e"
 		},
 		{
 			"ImportPath": "github.com/docker/go-connections/tlsconfig",
-			"RepoPath": "github.baidu-int.com/docker/go-connections.git",
 			"Comment": "v0.4.0-1-g97c2040",
 			"Rev": "97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e"
 		},
 		{
 			"ImportPath": "github.com/docker/go-units",
-			"RepoPath": "github.baidu-int.com/docker/go-units.git",
 			"Comment": "v0.3.3",
 			"Rev": "47565b4f722fb6ceae66b95f853feed578a4a51c"
 		},
 		{
 			"ImportPath": "github.com/dsnet/compress",
-			"RepoPath": "github.baidu-int.com/dsnet/compress.git",
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
 			"ImportPath": "github.com/dsnet/compress/bzip2",
-			"RepoPath": "github.baidu-int.com/dsnet/compress.git",
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
 			"ImportPath": "github.com/dsnet/compress/bzip2/internal/sais",
-			"RepoPath": "github.baidu-int.com/dsnet/compress.git",
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
 			"ImportPath": "github.com/dsnet/compress/internal",
-			"RepoPath": "github.baidu-int.com/dsnet/compress.git",
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
 			"ImportPath": "github.com/dsnet/compress/internal/errors",
-			"RepoPath": "github.baidu-int.com/dsnet/compress.git",
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
 			"ImportPath": "github.com/dsnet/compress/internal/prefix",
-			"RepoPath": "github.baidu-int.com/dsnet/compress.git",
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
 			"ImportPath": "github.com/eclipse/paho.mqtt.golang",
-			"RepoPath": "github.baidu-int.com/eclipse/paho.mqtt.golang.git",
 			"Comment": "v1.1.1-9-g88c4622",
 			"Rev": "88c4622b8e24c52f64a0caaa28e40b91629bb6e6"
 		},
 		{
 			"ImportPath": "github.com/eclipse/paho.mqtt.golang/packets",
-			"RepoPath": "github.baidu-int.com/eclipse/paho.mqtt.golang.git",
 			"Comment": "v1.1.1-9-g88c4622",
 			"Rev": "88c4622b8e24c52f64a0caaa28e40b91629bb6e6"
 		},
 		{
+			"ImportPath": "github.com/etcd-io/bbolt",
+			"Comment": "v1.3.1-etcd.8",
+			"Rev": "7ee3ded59d4835e10f3e7d0f7603c42aa5e83820"
+		},
+		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
-			"RepoPath": "github.baidu-int.com/gogo/protobuf.git",
 			"Comment": "v1.1.1-27-g61dbc136",
 			"Rev": "61dbc136cf5d2f08d68a011382652244990a53a9"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
-			"RepoPath": "github.com/golang/protobuf",
+			"Comment": "v1.2.0-16-g6e3d092",
+			"Rev": "6e3d092c77c3bae25acf4925942b568e742c1c20"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/protoc-gen-go/descriptor",
 			"Comment": "v1.2.0-16-g6e3d092",
 			"Rev": "6e3d092c77c3bae25acf4925942b568e742c1c20"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/ptypes",
-			"RepoPath": "github.com/golang/protobuf",
 			"Comment": "v1.2.0-16-g6e3d092",
 			"Rev": "6e3d092c77c3bae25acf4925942b568e742c1c20"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/ptypes/any",
-			"RepoPath": "github.com/golang/protobuf",
 			"Comment": "v1.2.0-16-g6e3d092",
 			"Rev": "6e3d092c77c3bae25acf4925942b568e742c1c20"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/ptypes/duration",
-			"RepoPath": "github.com/golang/protobuf",
 			"Comment": "v1.2.0-16-g6e3d092",
 			"Rev": "6e3d092c77c3bae25acf4925942b568e742c1c20"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/ptypes/timestamp",
-			"RepoPath": "github.com/golang/protobuf",
 			"Comment": "v1.2.0-16-g6e3d092",
 			"Rev": "6e3d092c77c3bae25acf4925942b568e742c1c20"
 		},
 		{
 			"ImportPath": "github.com/golang/snappy",
-			"RepoPath": "github.baidu-int.com/golang/snappy.git",
 			"Rev": "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"RepoPath": "github.baidu-int.com/gorilla/mux.git",
 			"Comment": "v1.6.2-10-gdeb579d",
 			"Rev": "deb579d6e030503f430978ee229008b9bc912d40"
 		},
 		{
 			"ImportPath": "github.com/gorilla/websocket",
-			"RepoPath": "github.baidu-int.com/gorilla/websocket.git",
 			"Comment": "v1.3.0",
 			"Rev": "3ff3320c2a1756a3691521efc290b4701575147c"
 		},
 		{
 			"ImportPath": "github.com/jolestar/go-commons-pool",
-			"RepoPath": "github.com/jolestar/go-commons-pool",
 			"Comment": "v2.0.0-3-g2fd4364",
 			"Rev": "2fd436430fcbceb6500a2bb8efab27e71aaf7a9f"
 		},
 		{
 			"ImportPath": "github.com/jolestar/go-commons-pool/collections",
-			"RepoPath": "github.com/jolestar/go-commons-pool",
 			"Comment": "v2.0.0-3-g2fd4364",
 			"Rev": "2fd436430fcbceb6500a2bb8efab27e71aaf7a9f"
 		},
 		{
 			"ImportPath": "github.com/jolestar/go-commons-pool/concurrent",
-			"RepoPath": "github.com/jolestar/go-commons-pool",
 			"Comment": "v2.0.0-3-g2fd4364",
 			"Rev": "2fd436430fcbceb6500a2bb8efab27e71aaf7a9f"
 		},
 		{
 			"ImportPath": "github.com/jpillora/backoff",
-			"RepoPath": "github.com/jpillora/backoff",
 			"Comment": "1.0.0",
 			"Rev": "8eab2debe79d12b7bd3d10653910df25fa9552ba"
 		},
 		{
 			"ImportPath": "github.com/juju/errors",
-			"RepoPath": "github.baidu-int.com/juju/errors.git",
 			"Rev": "22422dad46e14561a0854ad42497a75af9b61909"
 		},
 		{
 			"ImportPath": "github.com/mholt/archiver",
-			"RepoPath": "github.baidu-int.com/mholt/archiver.git",
 			"Comment": "v2.1.0",
 			"Rev": "de0d89e255e17c8d75a40122055763e743ab0593"
 		},
 		{
-			"ImportPath": "github.com/nareix/joy4/av",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/av/avutil",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/cgo/ffmpeg",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/codec",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/codec/aacparser",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/codec/fake",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/codec/h264parser",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/format/flv",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/format/flv/flvio",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/format/rtmp",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/utils/bits",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
-			"ImportPath": "github.com/nareix/joy4/utils/bits/pio",
-			"RepoPath": "github.baidu-int.com/nareix/joy4.git",
-			"Rev": "3ddbc8f9d4316ab2bbec2bc9ee98127862e3af02"
-		},
-		{
 			"ImportPath": "github.com/nwaples/rardecode",
-			"RepoPath": "github.baidu-int.com/nwaples/rardecode.git",
 			"Rev": "e06696f847aeda6f39a8f0b7cdff193b7690aef6"
 		},
 		{
 			"ImportPath": "github.com/opencontainers/go-digest",
-			"RepoPath": "github.baidu-int.com/opencontainers/go-digest.git",
 			"Comment": "v1.0.0-rc1-2-gc928146",
 			"Rev": "c9281466c8b2f606084ac71339773efd177436e7"
 		},
 		{
 			"ImportPath": "github.com/opencontainers/image-spec/specs-go",
-			"RepoPath": "github.baidu-int.com/opencontainers/image-spec.git",
 			"Comment": "v1.0.0-38-g7b1e489",
 			"Rev": "7b1e489870acb042978a3935d2fb76f8a79aff81"
 		},
 		{
 			"ImportPath": "github.com/opencontainers/image-spec/specs-go/v1",
-			"RepoPath": "github.baidu-int.com/opencontainers/image-spec.git",
 			"Comment": "v1.0.0-38-g7b1e489",
 			"Rev": "7b1e489870acb042978a3935d2fb76f8a79aff81"
 		},
 		{
 			"ImportPath": "github.com/orcaman/concurrent-map",
-			"RepoPath": "github.baidu-int.com/orcaman/concurrent-map.git",
 			"Rev": "b28018939af9022337862b94a463abb18abb3e0e"
 		},
 		{
 			"ImportPath": "github.com/pierrec/lz4",
-			"RepoPath": "github.baidu-int.com/pierrec/lz4.git",
 			"Comment": "v2.0.3-1-gdbe9298",
 			"Rev": "dbe9298ce0992bc74bd23afef466c795d0d8afa0"
 		},
 		{
 			"ImportPath": "github.com/pierrec/lz4/internal/xxh32",
-			"RepoPath": "github.baidu-int.com/pierrec/lz4.git",
 			"Comment": "v2.0.3-1-gdbe9298",
 			"Rev": "dbe9298ce0992bc74bd23afef466c795d0d8afa0"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",
-			"RepoPath": "github.baidu-int.com/pkg/errors.git",
 			"Comment": "v0.8.0-12-g816c908",
 			"Rev": "816c9085562cd7ee03e7f8188a1cfd942858cded"
 		},
 		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
-			"RepoPath": "github.baidu-int.com/pmezard/go-difflib.git",
 			"Comment": "v1.0.0",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
 			"ImportPath": "github.com/sirupsen/logrus",
-			"RepoPath": "github.baidu-int.com/sirupsen/logrus.git",
 			"Comment": "v1.0.6-20-gfc587f3",
 			"Rev": "fc587f31c804fe6853cd90f0d8d90af588eca5bd"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"RepoPath": "github.baidu-int.com/stretchr/testify.git",
 			"Comment": "v1.2.2",
 			"Rev": "f35b8ab0b5a2cef36673838d662e249dd9c94686"
 		},
 		{
 			"ImportPath": "github.com/ulikunitz/xz",
-			"RepoPath": "github.baidu-int.com/ulikunitz/xz.git",
 			"Comment": "v0.5.4-3-g636d36a",
 			"Rev": "636d36a76670e6c700f22fd5f4588679ff2896c4"
 		},
 		{
 			"ImportPath": "github.com/ulikunitz/xz/internal/hash",
-			"RepoPath": "github.baidu-int.com/ulikunitz/xz.git",
 			"Comment": "v0.5.4-3-g636d36a",
 			"Rev": "636d36a76670e6c700f22fd5f4588679ff2896c4"
 		},
 		{
 			"ImportPath": "github.com/ulikunitz/xz/internal/xlog",
-			"RepoPath": "github.baidu-int.com/ulikunitz/xz.git",
 			"Comment": "v0.5.4-3-g636d36a",
 			"Rev": "636d36a76670e6c700f22fd5f4588679ff2896c4"
 		},
 		{
 			"ImportPath": "github.com/ulikunitz/xz/lzma",
-			"RepoPath": "github.baidu-int.com/ulikunitz/xz.git",
 			"Comment": "v0.5.4-3-g636d36a",
 			"Rev": "636d36a76670e6c700f22fd5f4588679ff2896c4"
 		},
 		{
-			"ImportPath": "go.etcd.io/bbolt",
-			"RepoPath": "github.com/etcd-io/bbolt",
-			"Comment": "v1.3.1-etcd.8",
-			"Rev": "7ee3ded59d4835e10f3e7d0f7603c42aa5e83820"
-		},
-		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
-			"RepoPath": "github.baidu-int.com/golang/crypto.git",
 			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context/ctxhttp",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/http/httpguts",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/http2",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/http2/hpack",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/idna",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/internal/socks",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/internal/timeseries",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/proxy",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/trace",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/net/websocket",
-			"RepoPath": "github.baidu-int.com/golang/net.git",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/unix",
-			"RepoPath": "github.baidu-int.com/golang/sys.git",
 			"Rev": "4ea2f632f6e912459fe60b26b1749377f0d889d5"
 		},
 		{
 			"ImportPath": "golang.org/x/sys/windows",
-			"RepoPath": "github.baidu-int.com/golang/sys.git",
 			"Rev": "4ea2f632f6e912459fe60b26b1749377f0d889d5"
 		},
 		{
 			"ImportPath": "golang.org/x/text/secure/bidirule",
-			"RepoPath": "github.baidu-int.com/golang/text.git",
 			"Comment": "v0.3.0-62-g905a571",
 			"Rev": "905a57155faa8230500121607930ebb9dd8e139c"
 		},
 		{
 			"ImportPath": "golang.org/x/text/transform",
-			"RepoPath": "github.baidu-int.com/golang/text.git",
 			"Comment": "v0.3.0-62-g905a571",
 			"Rev": "905a57155faa8230500121607930ebb9dd8e139c"
 		},
 		{
 			"ImportPath": "golang.org/x/text/unicode/bidi",
-			"RepoPath": "github.baidu-int.com/golang/text.git",
 			"Comment": "v0.3.0-62-g905a571",
 			"Rev": "905a57155faa8230500121607930ebb9dd8e139c"
 		},
 		{
 			"ImportPath": "golang.org/x/text/unicode/norm",
-			"RepoPath": "github.baidu-int.com/golang/text.git",
 			"Comment": "v0.3.0-62-g905a571",
 			"Rev": "905a57155faa8230500121607930ebb9dd8e139c"
 		},
 		{
 			"ImportPath": "google.golang.org/genproto/googleapis/rpc/status",
-			"RepoPath": "git@github.com:google/go-genproto.git",
 			"Rev": "4b56f30a1fd96a133a036b62cdd2a249883dd89b"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/balancer",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/balancer/base",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/balancer/roundrobin",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/codes",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/connectivity",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/credentials",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/encoding",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/encoding/proto",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/grpclog",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal/backoff",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal/channelz",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal/envconfig",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal/grpcrand",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal/transport",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/keepalive",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/metadata",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/naming",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/peer",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
+			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc/reflection",
+			"Comment": "v1.2.0-659-gf2aaa9b",
+			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc/reflection/grpc_reflection_v1alpha",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/resolver",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/resolver/dns",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/resolver/passthrough",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/stats",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/status",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/tap",
-			"RepoPath": "github.baidu-int.com/grpc/grpc-go",
-			"Comment": "v1.2.0-659-gf2aaa9bf",
+			"Comment": "v1.2.0-659-gf2aaa9b",
 			"Rev": "f2aaa9bf74459e6f9332006e6ab0d5cd4ec3ce10"
 		},
 		{
 			"ImportPath": "gopkg.in/natefinch/lumberjack.v2",
-			"RepoPath": "github.baidu-int.com/natefinch/lumberjack.git",
 			"Comment": "v2.0.0",
 			"Rev": "7d6a1875575e09256dc552b4c0e450dcd02bd10e"
 		},
 		{
 			"ImportPath": "gopkg.in/tomb.v2",
-			"RepoPath": "github.baidu-int.com/go-tomb/tomb.git",
 			"Rev": "d5d1b5820637886def9eef33e03a27a9f166942c"
 		},
 		{
 			"ImportPath": "gopkg.in/validator.v2",
-			"RepoPath": "github.baidu-int.com/go-validator/validator.git",
 			"Rev": "135c24b11c19e52befcae2ec3fca5d9b78c4e98e"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
-			"RepoPath": "github.baidu-int.com/go-yaml/yaml.git",
 			"Comment": "v2.2.1",
 			"Rev": "5420a8b6744d3b0345ab293f6fcba19c978f1183"
 		}

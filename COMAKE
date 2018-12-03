@@ -1,3 +1,0 @@
-WORKROOT('../../../')
-CONFIGS('baidu/go-env/go1-10-3-linux-amd64@go1-10-3-linux-amd64_1-0-2-1_PD_BL@git_tag')
-CONFIGS('baidu/god-env/god-v0-6-0-linux-amd64@god-v0-6-0-linux-amd64_1-0-0-1_PD_BL@git_tag')

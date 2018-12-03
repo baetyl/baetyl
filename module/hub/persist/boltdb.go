@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/module/hub/utils"
+	bolt "github.com/etcd-io/bbolt"
 	"github.com/juju/errors"
-	bolt "go.etcd.io/bbolt"
 )
 
 // BoltDB use boltdb to persist data

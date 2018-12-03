@@ -1,1 +1,0 @@
-BUILD_SUBMITTER -x -u . -e CENTOS6U3 -m baidu/bce-iot/edge-core -c "mkdir -p gopath/src/icode.baidu.com && mv baidu gopath/src/icode.baidu.com/ && cd gopath/src/icode.baidu.com/baidu/bce-iot/edge-core && comake2 -UB && sh script/bcloud.sh"
