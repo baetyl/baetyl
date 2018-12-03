@@ -5,9 +5,6 @@ modules:
     entry: 'hub.baidubce.com/openedge-sandbox/openedge_hub'
     expose:
       - 1883:1883
-      - 1884:1884/tcp
-      - 8080:8080/tcp
-      - 8884:8884
   - name: 'openedge_function'
     mark: modu-e1iluuach
     entry: 'hub.baidubce.com/openedge-sandbox/openedge_function'
