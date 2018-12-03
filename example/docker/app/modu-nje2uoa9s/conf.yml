@@ -1,0 +1,35 @@
+name: openedge_hub
+mark: modu-nje2uoa9s
+listen:
+  - tcp://:1883
+  - ssl://:1884
+  - ws://:8080/mqtt
+  - wss://:8884/mqtt
+certificate:
+  ca: 'app/cert-4j5vze02r/ca.pem'
+  cert: 'app/cert-4j5vze02r/server.pem'
+  key: 'app/cert-4j5vze02r/server.key'
+principals:
+  - username: 'test'
+    password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
+    permissions:
+      - action: 'pub'
+        permit: ['#']
+      - action: 'sub'
+        permit: ['#']
+subscriptions:
+  - source:
+      topic: 't'
+    target:
+      topic: 't/topic'
+logger:
+  path: var/log/openedge_hub.log
+  console: true
+  # level: "debug"
+message:
+  egress:
+    qos0:
+      buffer:
+        size: 1000000
+  length:
+    max: '255m'

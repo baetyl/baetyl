@@ -1,0 +1,110 @@
+name: openedge_function
+mark: modu-e1iluuach
+hub:
+  address: tcp://openedge_hub:1883
+  username: test
+  password: hahaha
+rules:
+  - id: rule-e1iluuac1
+    subscribe:
+      topic: t
+      qos: 0
+    compute:
+      function: filter
+    publish:
+      topic: t/00
+      qos: 0
+  - id: rule-e1iluuac2
+    subscribe:
+      topic: t
+      qos: 0
+    compute:
+      function: filter
+    publish:
+      topic: t/01
+      qos: 1
+  - id: rule-e1iluuac3
+    subscribe:
+      topic: t
+      qos: 1
+    compute:
+      function: filter
+    publish:
+      topic: t/10
+      qos: 0
+  - id: rule-e1iluuac4
+    subscribe:
+      topic: t
+      qos: 1
+    compute:
+      function: filter
+    publish:
+      topic: t/11
+      qos: 1
+  - id: rule-e1iluuac5
+    subscribe:
+      topic: t
+      qos: 1
+    compute:
+      function: sayhi
+    publish:
+      topic: t/hi
+      qos: 1
+  - id: rule-e1iluuac6
+    subscribe:
+      topic: benchmark/py
+      qos: 1
+    compute:
+      function: sayhi
+    publish:
+      topic: benchmark/py/hi
+      qos: 1
+  - id: rule-e1iluuac7
+    subscribe:
+      topic: benchmark/sql
+      qos: 1
+    compute:
+      function: pass
+    publish:
+      topic: benchmark/sql/hi
+      qos: 1
+functions:
+  - name: 'sayhi'
+    runtime: 'python2.7'
+    handler: 'sayhi.handler'
+    codedir: 'app/func-nyeosbbch'
+    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_python2.7"
+    env:
+      USER_ID: acuiot
+    instance:
+      min: 0
+      max: 10
+      timeout: 30s
+      message:
+        length:
+          max: 100m
+      cpu:
+        cpus: 0.5
+      memory:
+        limit: 50m
+      pids:
+        limit: 10
+  - name: filter
+    runtime: 'sql'
+    handler: 'select topic() as topic, * where id < 10'
+    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_sql"
+  - name: pass
+    runtime: 'sql'
+    handler: 'select *'
+    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_sql"
+    instance:
+      min: 0
+      max: 10
+      timeout: 30s
+      message:
+        length:
+          max: 100m
+logger:
+  path: var/log/openedge_function.log
+  console: true
+  level: "debug"
