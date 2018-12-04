@@ -28,6 +28,8 @@
 
 进入openedge源码根目录，执行命令 ```sh build.sh``` 等待编译完成即可。
 
+***注*** ：Linux环境需要注意sh所链接命令是否为bash，使用命令```readlink -f $(which sh)``` 即可查看，build.sh需要使用bash来运行。
+
 ### native模式启动openedge
 
 进入openedge源码根目录，执行```./output/native/bin/openedge -w output/native```
