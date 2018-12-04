@@ -95,7 +95,7 @@ sudo add-apt-repository \
 sudo apt-get install docker-ce
 ```
 
-**注：**默认情况下，ubuntu需要sudo权限才可以执行docker相关操作。可以通过下述命令进行修改：
+**注** : 默认情况下，ubuntu需要sudo权限才可以执行docker相关操作。可以通过下述命令进行修改：
 
 ```shell
 sudo usermod -aG docker ${USER}
