@@ -1,0 +1,11 @@
+version: V0
+modules:
+  - name: 'openedge_hub'
+    mark: 'modu-nje2uoa9s'
+    entry: 'bin/openedge_hub'
+  - name: 'openedge_function'
+    mark: modu-e1iluuach
+    entry: 'bin/openedge_function'
+  - name: 'openedge_remote_mqtt'
+    mark: modu-4ki4szr9r
+    entry: 'bin/openedge_remote_mqtt'

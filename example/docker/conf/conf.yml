@@ -1,0 +1,5 @@
+mode: docker
+logger:
+  path: var/log/openedge.log
+  level: debug
+  console: true
