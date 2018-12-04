@@ -4,9 +4,7 @@ set -e
 
 race=$1
 
-# Uncomment the line below to checkout dependecies
-# Use ../../../baidu/god-env/god-v0-6-0-linux-amd64/bin/god instead in Baidu intranet
-#godep restore
+# Use `godep restore ./...` checkout dependencies
 
 echo "start to  build $race"
 if [ -d output ]; then
