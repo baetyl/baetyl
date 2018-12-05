@@ -33,7 +33,7 @@ build() {
     CGOCC=$4
     echo "\nBuild $TAG with GOOS=$GOOS GOARCH=$GOARCH CGOCC=$CGOCC"
 
-    if [ $GOOS == "windows" ];then
+    if [ $GOOS = "windows" ];then
         GOEXE=".exe"
     else
         GOEXE=""
@@ -66,8 +66,8 @@ build() {
 # build for multi CPU && os, if for windows, please install `mingw` first
 build   "linux-x86"       "linux"     "386"     "cc"   
 build   "linux-x86_64"    "linux"     "amd64"   "cc"     
-build   "linux-arm"       "linux"     "arm"     "cc"
+build   "linux-armv7"     "linux"     "arm"     "cc"
 build   "linux-aarch64"   "linux"     "arm64"   "cc"
-build   "darwin-x86_64"   "darwin"    "amd64"   "cc"
+# build   "darwin-x86_64"   "darwin"    "amd64"   "cc"
 build   "windows-x86"     "windows"   "386"     "i686-w64-mingw32-gcc"
 build   "windows-x86_64"  "windows"   "amd64"   "x86_64-w64-mingw32-gcc"

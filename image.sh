@@ -11,11 +11,11 @@ do
 	shift
 done
 
-if [ "$version" == "" ];then
+if [ "$version" = "" ];then
 echo 'please input version with -v'
 exit
 fi
-if [ "$registory" == "" ];then
+if [ "$registory" = "" ];then
 echo 'please input registory with -r'
 exit
 fi
