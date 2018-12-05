@@ -17,7 +17,7 @@
 
 ## 主程序配置
 
-主程序的配置和应用配置是分离的，默认在工作目录的conf下，[conf.yml](../example/docker/conf/conf.yml)配置解读如下：
+主程序的配置和应用配置是分离的，默认在工作目录的conf下，[conf.yml](../../../example/docker/conf/conf.yml)配置解读如下：
 
     mode: [必须]主程序运行模式。docker：docker容器模式；native：native进程模式
     grace: 默认值：30s，主程序平滑退出超时时间
@@ -49,7 +49,7 @@
 
 ## 应用配置
 
-应用配置在工作目录的app下，[app.yml](../example/docker/app/app.yml)配置解读如下：
+应用配置在工作目录的app下，[app.yml](../../../example/docker/app/app.yml)配置解读如下：
 
     version: 应用版本
     modules: 应用的模块列表
@@ -275,5 +275,5 @@
 
 ## 配置参考
 
-> - [Docker容器模式配置举例](../example/docker/conf/conf.yml)
-> - [Native容器模式配置举例](../example/native/conf/conf.yml)
+> - [Docker容器模式配置举例](../../../example/docker/conf/conf.yml)
+> - [Native容器模式配置举例](../../../example/native/conf/conf.yml)

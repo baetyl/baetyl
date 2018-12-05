@@ -1,11 +1,5 @@
 # 环境配置
 
-- [go开发环境安装](#go开发环境安装)
-  - [Linux环境下安装](#Linux环境下安装)
-- [godep环境配置](#godep环境配置)
-- [docker安装](#docker安装)
-  - [Linux环境下安装](#Linux环境下安装)
-
 > OpenEdge使用Go语言编写，使用Godep工具管理相关依赖，支持两种运行模式， 分别是**docker**容器模式和**native**进程模式。此文介绍相关环境的安装及配置。
 
 ## go开发环境安装
@@ -95,7 +89,7 @@ sudo add-apt-repository \
 sudo apt-get install docker-ce
 ```
 
-**注** : 默认情况下，ubuntu需要sudo权限才可以执行docker相关操作。可以通过下述命令进行修改：
+**注：**默认情况下，ubuntu需要sudo权限才可以执行docker相关操作。可以通过下述命令进行修改：
 
 ```shell
 sudo usermod -aG docker ${USER}
