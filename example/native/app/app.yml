@@ -9,6 +9,3 @@ modules:
   - name: 'openedge_remote_mqtt'
     mark: modu-4ki4szr9r
     entry: 'bin/openedge_remote_mqtt'
-#  - name: 'openedge_video'
-#    mark: modu-8poteaq1d
-#    entry: 'bin/openedge_video'
