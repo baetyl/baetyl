@@ -21,12 +21,12 @@ TRANS_PROTOCOL = 'http://'
 HTTP_METHOD = 'POST'
 
 # set base url and path
-base_url = 'leenodb.tsdb.iot.gz.baidubce.com'
+base_url = 'your_db.tsdb.iot.your_db_area.baidubce.com'
 path = '/v1/datapoint'
 
 # save the information of Access Key ID and Secret Access Key
-ak = '7e97772725004a2baa5076c932f7f883'
-sk = '90f3e1e530a944258774ca1ef51c33fa'
+ak = 'your_ak_for_your_db'
+sk = 'your_sk_for_your_db'
 credentials = sign.BceCredentials(ak, sk)
 
 # set a http header except field 'Authorization'
@@ -70,6 +70,9 @@ def access_db(http_method, url, data=None):
 def build_datapoints(event):
     """
     function to build datapoints by event
+
+    data case:
+        {“datetime”: “2018-11-28 13:15:05”, ”temperature”: 32, ”unit”: “℃”}
     """
 
     datapoints = dict()
