@@ -23,37 +23,11 @@ rules:
     publish:
       topic: benchmark/py/hi
       qos: 1
-  - id: rule-e1iluuac3
-    subscribe:
-      topic: test
-      qos: 1
-    compute:
-      function: write
-    publish:
-      topic: result
-      qos: 1
 functions:
   - name: 'sayhi'
     runtime: 'python2.7'
     handler: 'sayhi.handler'
     codedir: 'app/func-nyeosbbch'
-    entry: "hub.baidubce.com/openedge/openedge_function_runtime_python2.7"
-    env:
-      USER_ID: acuiot
-    instance:
-      min: 0
-      max: 10
-      timeout: 30s
-      cpu:
-        cpus: 0.5
-      memory:
-        limit: 50m
-      pids:
-        limit: 10
-  - name: 'write'
-    runtime: 'python2.7'
-    handler: 'write.handler'
-    codedir: 'app/func-n1mnhzrcr'
     entry: "hub.baidubce.com/openedge/openedge_function_runtime_python2.7"
     env:
       USER_ID: acuiot
