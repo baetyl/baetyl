@@ -13,7 +13,7 @@ OpenEdge主要由主程序模块、OpenEdge_Hub模块、OpenEdge_Function模块�
 	- OpenEdge主程序会暴露一组HTTP API，目前支持获取空闲端口，模块的启动、停止和重启。为了方便管理，我们对模块做了一个划分，从配置文件中加载的模块称为常驻模块，通过API启动的模块称为临时模块，临时模块遵循**“谁启动谁负责停止"**的原则。OpenEdge退出时，会先逆序停止所有常驻模块，常驻模块停止过程中也会调用API来停止其启动的模块，最后如果还有遗漏的临时模块，会随机全部停止。
 - OpenEdge_Hub模块主要基于[MQTT协议](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html)提供设备接入（支持TCP、SSL（TCP+SSL）、WS（Websocket）及WSS（Websocket+SSL）四种接入方式）、消息路由转发等能力； 
 - OpenEdge_Function提供基于MQTT消息机制，弹性、高可用、扩展性好、响应快的的计算能力，函数通过一个或多个具体的实例执行，每个实例都是一个独立的进程，现采用GRPC Server运行函数实例。所有函数实例由实例池（Pool）负责管理生命周期，支持自动扩容和缩容； 
-- OpenEdge_Remote_MQTT模块目前支持MQTT协议，其实质是两个MQTT Server的桥接（Bridge）模块，用于订阅一个Server的消息并转发给另一个Server，特别地，； 
+- OpenEdge_Remote_MQTT模块目前支持MQTT协议，其实质是两个MQTT Server的桥接（Bridge）模块，用于订阅一个Server的消息并转发给另一个Server； 
 - OpenEdge_Function_Runtime_Python2.7是基于OpenEdge_Function模块的具体实例化表现形式，开发者通过编写的自己的函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。
 
 ## OpenEdge功能
