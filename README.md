@@ -16,13 +16,13 @@ OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现
 
 **设计文档**：
 
-> + [OpenEdge设计](./doc/openedge.md)
-> + [所有配置解读](./doc/config.md)
-> + [开发自定义模块](./doc/dev_module.md)
+> + [OpenEdge设计](./doc/zh-cn/about/design/OpenEdge-overall-design.md)
+> + [所有配置解读](./doc/zh-cn/config/config.md)
+> + [开发自定义模块](./doc/zh-cn/develop/extension/dev_module.md)
 
 ## 快速开始
 
-> + [Linux环境](./doc/build_linux.md)
+> + [Linux环境](./doc/zh-cn/install/Build-OpenEdge-on-Linux.md)
 
 ## 测试
 
