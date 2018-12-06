@@ -2,14 +2,14 @@ version: V0
 modules:
   - name: 'openedge_hub'
     mark: 'modu-nje2uoa9s'
-    entry: 'hub.baidubce.com/openedge-sandbox/openedge_hub'
+    entry: 'hub.baidubce.com/openedge/openedge_hub'
     expose:
       - 1883:1883
   - name: 'openedge_function'
     mark: modu-e1iluuach
-    entry: 'hub.baidubce.com/openedge-sandbox/openedge_function'
+    entry: 'hub.baidubce.com/openedge/openedge_function'
   - name: 'openedge_remote_mqtt'
     mark: modu-4ki4szr9r
-    entry: 'hub.baidubce.com/openedge-sandbox/openedge_remote_mqtt'
+    entry: 'hub.baidubce.com/openedge/openedge_remote_mqtt'
     env:
       USER_ID: acuiot

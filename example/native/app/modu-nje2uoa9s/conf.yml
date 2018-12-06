@@ -19,10 +19,3 @@ logger:
   path: var/log/openedge_hub.log
   console: true
   # level: "debug"
-message:
-  egress:
-    qos0:
-      buffer:
-        size: 1000000
-  length:
-    max: '255m'

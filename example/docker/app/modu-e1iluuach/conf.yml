@@ -8,49 +8,13 @@ rules:
   - id: rule-e1iluuac1
     subscribe:
       topic: t
-      qos: 0
-    compute:
-      function: filter
-    publish:
-      topic: t/00
-      qos: 0
-  - id: rule-e1iluuac2
-    subscribe:
-      topic: t
-      qos: 0
-    compute:
-      function: filter
-    publish:
-      topic: t/01
-      qos: 1
-  - id: rule-e1iluuac3
-    subscribe:
-      topic: t
-      qos: 1
-    compute:
-      function: filter
-    publish:
-      topic: t/10
-      qos: 0
-  - id: rule-e1iluuac4
-    subscribe:
-      topic: t
-      qos: 1
-    compute:
-      function: filter
-    publish:
-      topic: t/11
-      qos: 1
-  - id: rule-e1iluuac5
-    subscribe:
-      topic: t
       qos: 1
     compute:
       function: sayhi
     publish:
       topic: t/hi
       qos: 1
-  - id: rule-e1iluuac6
+  - id: rule-e1iluuac2
     subscribe:
       topic: benchmark/py
       qos: 1
@@ -59,51 +23,50 @@ rules:
     publish:
       topic: benchmark/py/hi
       qos: 1
-  - id: rule-e1iluuac7
+  - id: rule-e1iluuac3
     subscribe:
-      topic: benchmark/sql
+      topic: test
       qos: 1
     compute:
-      function: pass
+      function: write
     publish:
-      topic: benchmark/sql/hi
+      topic: result
       qos: 1
 functions:
   - name: 'sayhi'
     runtime: 'python2.7'
     handler: 'sayhi.handler'
     codedir: 'app/func-nyeosbbch'
-    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_python2.7"
+    entry: "hub.baidubce.com/openedge/openedge_function_runtime_python2.7"
     env:
       USER_ID: acuiot
     instance:
       min: 0
       max: 10
       timeout: 30s
-      message:
-        length:
-          max: 100m
       cpu:
         cpus: 0.5
       memory:
         limit: 50m
       pids:
         limit: 10
-  - name: filter
-    runtime: 'sql'
-    handler: 'select topic() as topic, * where id < 10'
-    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_sql"
-  - name: pass
-    runtime: 'sql'
-    handler: 'select *'
-    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_sql"
+  - name: 'write'
+    runtime: 'python2.7'
+    handler: 'write.handler'
+    codedir: 'app/func-n1mnhzrcr'
+    entry: "hub.baidubce.com/openedge/openedge_function_runtime_python2.7"
+    env:
+      USER_ID: acuiot
     instance:
       min: 0
       max: 10
       timeout: 30s
-      message:
-        length:
-          max: 100m
+      cpu:
+        cpus: 0.5
+      memory:
+        limit: 50m
+      pids:
+        limit: 10
 logger:
   path: var/log/openedge_function.log
   console: true
