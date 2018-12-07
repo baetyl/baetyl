@@ -7,6 +7,7 @@ go:
   
 before_install:
   - go get github.com/tools/godep
+  - go get github.com/baidu/openedge
   - godep restore
   - chmod 777 build.sh
 
