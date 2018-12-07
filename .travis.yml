@@ -1,5 +1,5 @@
 sudo: false
-
+os: osx
 language: go
 
 go:
