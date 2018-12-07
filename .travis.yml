@@ -1,5 +1,5 @@
 sudo: false
-os: osx
+
 language: go
 
 go:
@@ -7,7 +7,11 @@ go:
   
 before_install:
   - go get github.com/tools/godep
-  - godep restore
+  - godep restore2
+  - if [ -d "./output" ]
+  - then
+  - rm -rf output
+  - fi
   - mkdir -p $GOPATH/src/github.com/baidu/openedge
   - cp -r ./ $GOPATH/src/github.com/baidu/openedge
   - chmod 777 build.sh
