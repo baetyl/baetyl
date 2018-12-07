@@ -1,0 +1,14 @@
+sudo: false
+
+language: go
+
+go:
+  - 1.10.1
+  
+before_install:
+  - go get github.com/stretchr/testify
+  - go get github.com/juju/errors
+
+install: true # 跳过 install 阶段，因为我已经定义了 before_install。其实 go 项目是需要安装依赖的，只是我放到了下面的 make mycli 命令中做
+script:
+  - ./build.sh
