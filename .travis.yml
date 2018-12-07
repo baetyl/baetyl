@@ -3,7 +3,7 @@ sudo: false
 language: go
 
 go:
-  - 1.11.1
+  - 1.10.1
   
 before_install:
   - go get github.com/tools/godep
