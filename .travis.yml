@@ -8,6 +8,7 @@ go:
 before_install:
   - go get github.com/tools/godep
   - godep restore2
+  - pwd
   - if [ -d "./output" ]
   - then
   - rm -rf output
