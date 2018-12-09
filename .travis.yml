@@ -10,7 +10,7 @@ before_install:
   - godep restore
   - mkdir -p $GOPATH/src/github.com/baidu/openedge
   - cp -r ./ $GOPATH/src/github.com/baidu/openedge
-  - go test
+  - for f in `find . -name *_test.go`; do echo "$f"; go test -cover "$f";  done;
   - chmod 777 build.sh
 
 install: true # 跳过 install 阶段，因为我已经定义了 before_install。其实 go 项目是需要安装依赖的，只是我放到了下面的 make mycli 命令中做
