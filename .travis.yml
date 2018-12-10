@@ -9,9 +9,11 @@ before_install:
   - go get github.com/tools/godep
   - godep restore
   - if [ ! -d $GOPATH/src/github.com/baidu/openedge ]; then mkdir -p $GOPATH/src/github.com/baidu/openedge; cp -r ./ $GOPATH/src/github.com/baidu/openedge; fi;
-  - rm -rf $GOPATH/src/github.com/docker/docker/vendor/github.com/docker/go-connections
+  - rm -rf $GOPATH/src/github.com/docker/docker/vendor
   - go test ./...
 
 install: true
 script:
   - echo "uint test end"
+  - make
+  - echo "build end"
