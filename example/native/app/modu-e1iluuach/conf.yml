@@ -28,7 +28,7 @@ functions:
     runtime: 'python2.7'
     handler: 'sayhi.handler'
     codedir: 'app/func-nyeosbbch'
-    entry: "bin/openedge-function-runtime-python27"
+    entry: "bin/openedge_function_runtime_python2.7.py"
     env:
       USER_ID: acuiot
     instance:
