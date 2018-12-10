@@ -1,18 +1,15 @@
-sudo: true
-
-services:
-  - dockerls
+sudo: false
 
 language: go
 
 go:
-  - 1.11.1
+  - 1.10.1
   
 before_install:
   - go get github.com/tools/godep
   - godep restore
   - if [ ! -d $GOPATH/src/github.com/baidu/openedge ]; then mkdir -p $GOPATH/src/github.com/baidu/openedge; cp -r ./ $GOPATH/src/github.com/baidu/openedge; fi;
-  - rm -rf $GOPATH/github.com/docker/docker/vendor
+  - rm -rf $GOPATH/github.com/docker/go-connections
   - go test ./master
   - chmod +x build.sh
 
