@@ -3,6 +3,8 @@ sudo: true
 services:
   - docker
 
+os: osx
+
 language: go
 
 go:
