@@ -84,7 +84,7 @@ func TestConfig(t *testing.T) {
 	assert.Equal(t, time.Hour*48, c.Message.Ingress.Qos1.Cleanup.Retention)
 	assert.Equal(t, time.Minute, c.Message.Ingress.Qos1.Cleanup.Interval)
 
-	assert.Equal(t, 1000000, c.Message.Egress.Qos0.Buffer.Size)
+	assert.Equal(t, 10000, c.Message.Egress.Qos0.Buffer.Size)
 	assert.Equal(t, 100, c.Message.Egress.Qos1.Buffer.Size)
 	assert.Equal(t, 50, c.Message.Egress.Qos1.Batch.Max)
 	assert.Equal(t, time.Second*20, c.Message.Egress.Qos1.Retry.Interval)
@@ -94,7 +94,7 @@ func TestConfig(t *testing.T) {
 	assert.Equal(t, false, c.Status.Logging.Enable)
 	assert.Equal(t, time.Minute, c.Status.Logging.Interval)
 
-	assert.Equal(t, int64(267386880), c.Message.Length.Max)
+	assert.Equal(t, int64(32768), c.Message.Length.Max)
 }
 
 func TestConfigSubscription(t *testing.T) {
