@@ -13,8 +13,7 @@ before_install:
   - godep restore
   - if [ ! -d $GOPATH/src/github.com/baidu/openedge ]; then mkdir -p $GOPATH/src/github.com/baidu/openedge; cp -r ./ $GOPATH/src/github.com/baidu/openedge; fi;
   - rm -rf $GOPATH/github.com/docker/docker/vendor
-  - cd $GOPATH/src/github.com/baidu/openedge
-  - go test ./...
+  - go test ./master
   - chmod +x build.sh
 
 install: true
