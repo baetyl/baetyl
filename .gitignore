@@ -4,6 +4,13 @@
 *.jar
 *.iml
 /.idea
+/openedge
+/openedge-hub
+/openedge-function
+/openedge-remote-mqtt
+/pubsub
+/benchmark
+/consistency
 /output*
 /**/.DS_Store
 /.vscode
