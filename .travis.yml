@@ -9,9 +9,7 @@ before_install:
   - go get github.com/tools/godep
   - godep restore
   - if [ ! -d $GOPATH/src/github.com/baidu/openedge ]; then mkdir -p $GOPATH/src/github.com/baidu/openedge; cp -r ./ $GOPATH/src/github.com/baidu/openedge; fi;
-  - test_files=`find . -name *_test.go`
-  - for f in $test_files; do test_dirs="$test_dirs `dirname $f` ";  done;
-  - go test -cover $test_dirs;
+  - go test -cover ./...;
   - chmod 777 build.sh
 
 install: true
