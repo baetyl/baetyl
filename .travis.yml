@@ -1,9 +1,7 @@
 sudo: true
 
 services:
-  - docker
-
-os: osx
+  - dockerls
 
 language: go
 
@@ -14,9 +12,9 @@ before_install:
   - go get github.com/tools/godep
   - godep restore
   - if [ ! -d $GOPATH/src/github.com/baidu/openedge ]; then mkdir -p $GOPATH/src/github.com/baidu/openedge; cp -r ./ $GOPATH/src/github.com/baidu/openedge; fi;
-  - ls $GOPATH
+  - rm -rf $GOPATH/github.com/docker/docker/vendor
   - cd $GOPATH/src/github.com/baidu/openedge
-  - go test -cover -v ./...
+  - go test ./...
   - chmod +x build.sh
 
 install: true
