@@ -8,14 +8,14 @@ os: osx
 language: go
 
 go:
-  - 1.10.1
+  - 1.11.1
   
 before_install:
   - go get github.com/tools/godep
   - godep restore
   - if [ ! -d $GOPATH/src/github.com/baidu/openedge ]; then mkdir -p $GOPATH/src/github.com/baidu/openedge; cp -r ./ $GOPATH/src/github.com/baidu/openedge; fi;
   - cd $GOPATH/src/github.com/baidu/openedge
-  - go test -cover -v ./master
+  - go test -cover -v ./...
   - chmod +x build.sh
 
 install: true
