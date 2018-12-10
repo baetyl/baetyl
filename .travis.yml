@@ -14,3 +14,5 @@ before_install:
 install: true
 script:
   - echo "uint test end"
+  - make
+  - echo "build end"
