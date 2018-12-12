@@ -46,10 +46,25 @@
 
 如您计划以 native 方式启动，首先需要按照[native 模式安装](#native-模式安装)步骤完成基本的安装操作，完成后执行命令 ```openedge``` 即可成功启动。
 
+### 测试
+
+按照[启动](#启动)下所描述的内容完成启动操作后，可以进行简单功能的测试。
+
+在Openedge根目录下执行命令```make test```, 会生成 ```benchmark```, ```consistency```, ```pubsub``` 三个可执行文件。
+
+我们这里通过pubsub命令来做一些简单的测试:
+
+1. 在终端下进入Openedge根目录，通过命令 ```./pubsub sub -a tcp://127.0.0.1:1883 -u test -p hahaha -t t``` 来启动pubsub程序进行订阅，其中用户名和密码可以在hub配置中进行修改，具体请参考[配置解读](../config/config.md)。
+2. 新建一个终端，同样进入Openedge根目录通过命令 ```./pubsub pub -a tcp://127.0.0.1:1883 -u test -p hahaha -t t``` 来启动pubsub程序并进行pub操作，程序启动后，我们可以继续输入想要推送的内容，如果订阅使用的终端收到消息，此次测试通过。
+
+> 其他测试可通过 ```-h```参数查看相关内容并进行相关测试。
+
 ### 卸载
 
-如您需要卸载openedge相关程序，仅需在openedge根目录下执行命令 ```make uninstall``` (docker 模式卸载) 或命令 ```make native-uninstall``` (native 模式卸载) 即可完成卸载。
+切换到openedge根目录:
 
++ 执行 ```make clean```命令可以清除根目录下因编译过程生成的可执行文件
++ 如需彻底卸载openedge相关程序，执行命令 ```make uninstall``` (docker 模式卸载) 或命令 ```make native-uninstall``` (native 模式卸载) 即可完成卸载。
 
 **提示**：
 
