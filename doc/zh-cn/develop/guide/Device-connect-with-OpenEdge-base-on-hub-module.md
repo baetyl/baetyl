@@ -7,7 +7,7 @@ OpenEdge Hub模块启动所依赖的配置项如下：
 ```yaml
 name: [必须]模块名
 listen: [必须]监听地址，例如：
-  - tcp://127.0.0.1:1883
+  - tcp://0.0.0.0:1883 # Native进程模式下，如果不想暴露给宿主机外的设备访问，可以改成tcp://127.0.0.1:1883
   - ssl://0.0.0.0:1884
   - ws://:8080/mqtt
   - wss://:8884/mqtt
@@ -23,7 +23,7 @@ principals: 接入权限配置项，如果不配置则mqtt client无法接入h
         permit: 操作权限允许的主题列表，支持+和#匹配符
 ```
 
-如上配置，OpenEdge Hub模块可支持TCP、SSL、WS（Websocket）及WSS（Websocket + SSL）四种连接方式。
+如上配置，本地Hub模块可支持TCP、SSL、WS（Websocket）及WSS（Websocket + SSL）四种连接方式。
 
 _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在MacOS系统上快速部署OpenEdge](../start/Deploy-OpenEdge-on-MacOS.md)。_
 

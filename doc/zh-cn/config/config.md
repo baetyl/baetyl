@@ -17,7 +17,7 @@
 
 ## 主程序配置
 
-主程序的配置和应用配置是分离的，默认在工作目录的conf下，[conf.yml](../../../example/docker/conf/conf.yml)配置解读如下：
+主程序的配置和应用配置是分离的，默认在工作目录的conf下，[conf.yml](https://github.com/baidu/openedge/blob/master/example/docker/conf/conf.yml)配置解读如下：
 
     mode: [必须]主程序运行模式。docker：docker容器模式；native：native进程模式
     grace: 默认值：30s，主程序平滑退出超时时间
@@ -49,7 +49,7 @@
 
 ## 应用配置
 
-应用配置在工作目录的app下，[app.yml](../../../example/docker/app/app.yml)配置解读如下：
+应用配置在工作目录的app下，[app.yml](https://github.com/baidu/openedge/blob/master/example/docker/app/app.yml)配置解读如下：
 
     version: 应用版本
     modules: 应用的模块列表
@@ -65,7 +65,7 @@
             max: 默认值：5m，重启最大间隔时间
             factor: 默认值：2，重启间隔增大倍数
         expose: Docker容器模式下暴露的端口，例如：
-          - 127.0.0.1:1883:1883
+          - 0.0.0.0:1883:1883 # 如果不想暴露给宿主机外的设备访问，可以改成127.0.0.1:1883:1883
           - 0.0.0.0:1884:1884/tcp
           - 8080:8080/tcp
           - 8884:8884
@@ -88,7 +88,7 @@
 
     name: [必须]模块名
     listen: [必须]监听地址，例如：
-      - tcp://127.0.0.1:1883
+      - tcp://0.0.0.0:1883 # Native进程模式下，如果不想暴露给宿主机外的设备访问，可以改成tcp://127.0.0.1:1883
       - ssl://0.0.0.0:1884
       - ws://:8080/mqtt
       - wss://:8884/mqtt
@@ -203,6 +203,7 @@
           min: 默认值：0，最小值：0，最大值：100，最小函数实例数
           max: 默认值：1，最小值：1，最大值：100，最大函数实例数
           timeout: 默认值：5m， 函数实例调用超时时间
+          idletime: 默认值：10m，函数实例最大空闲时间，超过后销毁，定期检查的时间间隔是idletime的一半。
           message:
             length:
               max: 默认值：4m， 函数实例允许接收和发送的最大消息长度
@@ -275,5 +276,5 @@
 
 ## 配置参考
 
-> - [Docker容器模式配置举例](../../../example/docker/conf/conf.yml)
-> - [Native容器模式配置举例](../../../example/native/conf/conf.yml)
+> - [Docker容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/docker/conf/conf.yml)
+> - [Native容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/native/conf/conf.yml)
