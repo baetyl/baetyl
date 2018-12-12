@@ -8,6 +8,8 @@
 
 执行命令 ```git clone https://github.com/baidu/openedge.git``` 拉取最新的Openedge 代码。
 
+***注:*** openedge代码目录需要存放在 ```$GOPATH/src/github.com/baidu/``` 目录下
+
 ## 依赖拉取
 
 在环境配置完成后，进入openedge源码根目录下，执行 ```make depends``` 命令拉取所需依赖。完成后进入下一步。
