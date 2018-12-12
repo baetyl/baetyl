@@ -2,9 +2,9 @@
 
 **声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
 
-与基于OpenEdge Hub模块实现设备间消息转发不同的是，本文在Hub模块的基础上，引入Function函数计算模块及具体执行所需的Python2.7 runtime模块，将接收到的消息交给Python2.7 runtime来处理（Python2.7 runtime会调用具体的函数脚本来执行具体计算、分析、处理等），然后将最终的处理、计算结果反馈给MQTT client（要求MQTT client事先订阅接收处理结果的主题）。
+与基于本地Hub模块实现设备间消息转发不同的是，本文在Hub模块的基础上，引入Function函数计算模块及具体执行所需的Python2.7 runtime模块，将接收到的消息交给Python2.7 runtime来处理（Python2.7 runtime会调用具体的函数脚本来执行具体计算、分析、处理等），然后将处理结果以主题方式反馈给Hub模块，最终订阅该主题的MQTT client（要求MQTT client事先订阅该主题）将会收到该处理结果。
 
-OpenEdge Hub模块的配置项信息不再赘述，详情查看[基于Hub模块实现设备间消息转发](./Message-transfer-among-devices-with-hub-module.md)，这里主要介绍新引入的Function函数计算模块相关配置，具体如下：
+本地Hub模块的配置项信息不再赘述，详情查看[基于Hub模块实现设备间消息转发](./Message-transfer-among-devices-with-hub-module.md)，这里主要介绍新引入的Function函数计算模块相关配置（Python函数的运行环境构建参考[OpenEdge Function模块设计](../../about/design/OpenEdge-function-module-design.md)），具体如下：
 
 ```yaml
 name: [必须]模块名
@@ -58,7 +58,7 @@ functions:
 
 _**提示**：凡是在rules消息路由配置项中出现、用到的函数，必须在functions配置项中进行函数执行具体配置，否则将不予启动。_
 
-本文将以TCP连接方式为例，展示OpenEdge Function模块的消息处理、计算功能。
+本文将以TCP连接方式为例，展示本地Function模块的消息处理、计算功能。
 
 # 操作流程
 
@@ -74,10 +74,10 @@ _**提示**：凡是在rules消息路由配置项中出现、用到的函数，�
 
 # 消息路由测试
 
-本文测试使用的OpenEdge Hub及Function模块的相关配置信息如下：
+本文测试使用的本地Hub及Function模块的相关配置信息如下：
 
 ```yaml
-OpenEdge Hub模块配置：
+# 本地Hub模块配置：
 name: openedge_hub
 mark: modu-nje2uoa9s
 listen:
@@ -91,7 +91,7 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-OpenEdge Function模块配置：
+# 本地Function模块配置：
 name: openedge_function
 mark: modu-e1iluuach
 hub:
@@ -122,7 +122,7 @@ functions:
       timeout: 30s
 ```
 
-如上配置，假若MQTTBOX基于上述配置信息已与OpenEdge Hub模块建立连接，向主题“t”发送的消息将会交给“sayhi”函数处理，然后接处理结果反馈给主题“t/py”，这时订阅主题“t/py”的MQTT client将会接收到这条处理后的消息。
+如上配置，假若MQTTBOX基于上述配置信息已与本地Hub模块建立连接，向主题“t”发送的消息将会交给“sayhi”函数处理，然后将处理结果以主题“t/py”发布回Hub模块，这时订阅主题“t/py”的MQTT client将会接收到这条处理后的消息。
 
 ## OpenEdge 启动
 
@@ -142,7 +142,7 @@ functions:
 
 ![MQTTBOX连接配置](../../images/develop/guide/process/mqttbox-tcp-process-config.png)
 
-由上图示，我们可以看到MQTTBOX已经成功订阅了主题“t/py”。
+上图显示，MQTTBOX已经成功订阅了主题“t/py”。
 
 ## 消息路由验证
 
@@ -164,53 +164,6 @@ def handler(event, context):
     """
     function handler
     """
-    if 'i' in event:
-        if event['i'] > 10:
-            return None
-
-    if 't' in event:
-        time.sleep(event['t'])
-        event['sleep'] = True
-        return event
-
-    if 'e' in event:
-        event['e'] = 1 / 0
-
-    if 's' in event:
-        size = event['s']  # MB
-        data = ' ' * (size * 1024 * 1024)
-        event['l'] = len(data)
-
-    if 'f' in event:
-        try:
-            f_o = open('sayhi.txt', 'w')
-            f_o.write('Hello World')
-            event['f_w_n'] = f_o.name
-            f_o.close()
-        except BaseException as ex:
-            event['f_w_e'] = str(ex)
-        try:
-            f_o = open('../../conf/openedge.yml', 'r')
-            event['f_r_n'] = f_o.name
-            event['f_r_d'] = f_o.read()[:10]
-            f_o.close()
-        except BaseException as ex:
-            event['f_r_e'] = str(ex)
-
-    if 'p' in event:
-        thr = threading.Thread(target=run)
-        thr.setDaemon(True)
-        thr.start()
-        time.sleep(5)
-
-    if 'c' in event:
-        while True:
-            pass
-
-    if 'invoke' in event:
-        res = context.invoke(event['invoke'], event['invokeArgs'])
-        res['invoked'] = True
-        return res
 
     event['USER_ID'] = os.environ['USER_ID']
     event['functionName'] = context['functionName']
@@ -221,18 +174,9 @@ def handler(event, context):
     event['py'] = '你好，世界！'
 
     return event
-
-
-def run(event):
-    """
-    function run thread
-    """
-    for i in range(1, 10):
-        event['run.thread.times'] = i
-        time.sleep(5)
 ```
 
-可以发现，在接收到某Json格式的消息后，函数“sayhi.py”会对其进行一系列处理，然后将处理结果返回。返回的结果中包括：环境变量“USER_ID”、函数名称“functionName”、函数ID“functionInvokeID”、主题“messageTopic”、主题消息QoS“messageQOS”等字段。
+可以发现，在接收到某Json格式的消息后，函数“sayhi.py”会对其进行一系列处理，然后将处理结果返回。返回的结果中包括：环境变量“USER_ID”、函数名称“functionName”、函数调用ID“functionInvokeID”、输入消息主题“messageTopic”、输入消息消息QoS“messageQOS”等字段。
 
 这里，我们通过MQTTBOX将消息“{"id":10}”发布给主题“t”，然后观察主题“t/py”的接收消息情况，具体如下图示。
 
