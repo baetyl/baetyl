@@ -9,7 +9,6 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/trans/http"
 	"github.com/baidu/openedge/trans/mqtt"
-	"github.com/juju/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,7 +30,7 @@ type Agent struct {
 func NewAgent(c config.Cloud) (*Agent, error) {
 	httpcli, err := http.NewClient(c.OpenAPI)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return &Agent{
 		conf: c,
@@ -43,34 +42,34 @@ func NewAgent(c config.Cloud) (*Agent, error) {
 
 // Start starts agent
 func (a *Agent) Start(reload func(string) map[string]interface{}) error {
-	return errors.Trace(a.mqtt.Start(func(pkt packet.Generic) {
+	return a.mqtt.Start(func(pkt packet.Generic) {
 		publish, ok := pkt.(*packet.Publish)
 		if !ok {
-			logger.Warnf("Packet unexpected")
+			logger.Warnf("packet unexpected")
 			return
 		}
 		e := NewEvent(publish.Message.Payload)
-		logger.Debugln("Backward event:", e)
+		logger.Debugln("backward event:", e)
 		switch e.Type {
 		case SyncConfig:
 			var report map[string]interface{}
 			err := a.sync(e.Detail.Version, e.Detail.DownloadURL)
 			if err != nil {
-				logger.WithError(err).Errorf("Failed to download new config package")
+				logger.WithError(err).Errorf("failed to download new config package")
 				report = map[string]interface{}{"reload_error": err.Error()}
 			} else {
 				report = reload(e.Detail.Version)
 			}
 			a.Report(report)
 		default:
-			logger.Warnf("Event type unexpected")
+			logger.Warnf("event type unexpected")
 		}
 		if publish.Message.QOS == 1 {
 			puback := packet.NewPuback()
 			puback.ID = publish.ID
 			a.mqtt.Send(puback)
 		}
-	}))
+	})
 }
 
 // Report reports info
@@ -81,23 +80,23 @@ func (a *Agent) Report(parts map[string]interface{}) {
 	p.Message.Payload = r.Bytes()
 	err := a.mqtt.Send(p)
 	if err != nil {
-		logger.WithError(err).Warnf("Failed to report by mqtt")
+		logger.WithError(err).Warnf("failed to report by mqtt")
 	}
 	err = a.report(a.conf.Key, p.Message.Payload)
 	if err != nil {
-		logger.WithError(err).Warnf("Failed to report by https")
+		logger.WithError(err).Warnf("failed to report by https")
 	}
 }
 
 // Close closes agent
 func (a *Agent) Close() error {
-	return errors.Trace(a.mqtt.Close())
+	return a.mqtt.Close()
 }
 
 func (a *Agent) sync(version, url string) error {
 	data, err := a.download(a.conf.Key, url)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
-	return errors.Trace(ioutil.WriteFile(version+".zip", data, 0644))
+	return ioutil.WriteFile(version+".zip", data, 0644)
 }

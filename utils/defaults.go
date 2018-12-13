@@ -1,17 +1,17 @@
 package utils
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/creasty/defaults"
-	"github.com/juju/errors"
 )
 
 // SetDefaults set default values
 func SetDefaults(ptr interface{}) error {
 	err := defaults.Set(ptr)
 	if err != nil {
-		return errors.Errorf("%v %s", ptr, err.Error())
+		return fmt.Errorf("%v: %s", ptr, err.Error())
 	}
 
 	v := reflect.ValueOf(ptr).Elem()
@@ -29,7 +29,7 @@ func SetDefaults(ptr interface{}) error {
 				sliceItemTemp.Elem().Set(sliceItem)
 				err = SetDefaults(sliceItemTemp.Interface())
 				if err != nil {
-					return errors.Trace(err)
+					return err
 				}
 				sliceItem.Set(sliceItemTemp.Elem())
 			}

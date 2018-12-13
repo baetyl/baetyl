@@ -2,12 +2,12 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/cloudfoundry/gosigar"
-	"github.com/juju/errors"
 )
 
 // Disk Disk
@@ -24,13 +24,13 @@ func GetDisk() (*Disk, error) {
 	fslist := sigar.FileSystemList{}
 	err := fslist.Get()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	for _, fs := range fslist.List {
 		usage := sigar.FileSystemUsage{}
 		err := usage.Get(fs.DirName)
 		if err != nil {
-			return nil, errors.Trace(err)
+			return nil, err
 		}
 		t = t + usage.Total
 		f = f + usage.Avail
@@ -52,7 +52,7 @@ func GetMem() (*Mem, error) {
 	m := sigar.Mem{}
 	err := m.Get()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	mem := &Mem{}
 	mem.Total = sigar.FormatSize(m.Total)
@@ -71,7 +71,7 @@ func GetSwap() (*Swap, error) {
 	s := sigar.Swap{}
 	err := s.Get()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	swap := &Swap{}
 	swap.Total = sigar.FormatSize(s.Total)
@@ -96,7 +96,7 @@ func GetGpu() ([]Gpu, error) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		return gpus, errors.Annotate(err, strings.Trim(stderr.String(), "\n"))
+		return gpus, fmt.Errorf("%s: %s", err.Error(), strings.Trim(stderr.String(), "\n"))
 
 	}
 	for _, raw := range strings.Split(stdout.String(), "\n") {

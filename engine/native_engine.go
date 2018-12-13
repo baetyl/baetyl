@@ -8,12 +8,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/juju/errors"
 	"github.com/baidu/openedge/config"
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/module"
+	"github.com/sirupsen/logrus"
 )
 
 // NativeEngine native engine
@@ -27,7 +25,7 @@ type NativeEngine struct {
 func NewNativeEngine(context *Context) (Inner, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return &NativeEngine{
 		context: context,
@@ -50,14 +48,14 @@ func (e *NativeEngine) Create(m config.Module) (Worker, error) {
 		} else if strings.HasSuffix(m.Entry, ".py") {
 			prog, err := exec.LookPath("python.exe")
 			if err != nil {
-				return nil, errors.Trace(err)
+				return nil, err
 			}
 			args = append(args, m.Entry)
 			m.Entry = prog
 		} else if strings.HasSuffix(m.Entry, ".js") {
 			prog, err := exec.LookPath("node.exe")
 			if err != nil {
-				return nil, errors.Trace(err)
+				return nil, err
 			}
 			args = append(args, m.Entry)
 			m.Entry = prog

@@ -16,7 +16,6 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/trans/mqtt"
-	"github.com/juju/errors"
 	"github.com/mholt/archiver"
 )
 
@@ -41,11 +40,11 @@ func New(confDate string) (*Master, error) {
 	c := config.Master{}
 	err := module.Load(&c, confDate)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	err = defaults(&c)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	logger.Init(c.Logger, "openedge", "master")
 	ctx := engine.Context{
@@ -54,11 +53,11 @@ func New(confDate string) (*Master, error) {
 	}
 	en, err := engine.New(&ctx)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	ap, err := api.NewServer(en, c.API)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 
 	var ag *agent.Agent
@@ -66,13 +65,13 @@ func New(confDate string) (*Master, error) {
 		ag, err = agent.NewAgent(c.Cloud)
 		if err != nil {
 			ap.Close()
-			return nil, errors.Trace(err)
+			return nil, err
 		}
 	}
 
 	pwd, err := os.Getwd()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	m := &Master{
 		conf:   c,
@@ -84,12 +83,12 @@ func New(confDate string) (*Master, error) {
 	err = m.api.Start()
 	if err != nil {
 		m.Close()
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	if m.agent != nil {
 		if err := m.agent.Start(m.Reload); err != nil {
 			m.Close()
-			return nil, errors.Trace(err)
+			return nil, err
 		}
 	}
 	return m, nil
@@ -99,10 +98,10 @@ func New(confDate string) (*Master, error) {
 func (m *Master) Start() error {
 	err := m.loadAppConfig()
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	if err := m.engine.StartAll(m.conf.Modules); err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	if m.agent != nil {
 		report := map[string]interface{}{
@@ -118,12 +117,12 @@ func (m *Master) Start() error {
 func (m *Master) Close() {
 	if m.agent != nil {
 		if err := m.agent.Close(); err != nil {
-			logger.WithError(err).Errorf("Failed to close cloud agent")
+			logger.WithError(err).Errorf("failed to close cloud agent")
 		}
 	}
 	m.engine.StopAll()
 	if err := m.api.Close(); err != nil {
-		logger.WithError(err).Errorf("Failed to close api server")
+		logger.WithError(err).Errorf("failed to close api server")
 	}
 }
 
@@ -136,49 +135,49 @@ func (m *Master) Reload(version string) map[string]interface{} {
 	}
 	if err != nil {
 		report["reload_error"] = err.Error()
-		logger.WithError(err).Error("Failed to reload app config")
+		logger.WithError(err).Error("failed to reload app config")
 	} else {
-		logger.Infof("Loaded app config (version:%s)", m.conf.Version)
+		logger.Infof("app config (version:%s) loaded", m.conf.Version)
 	}
 	return report
 }
 
 func (m *Master) reload(version string) error {
 	if !isVersion(version) {
-		return errors.Errorf("New config version invalid")
+		return fmt.Errorf("new config version invalid")
 	}
 	err := m.backupAppDir()
 	if err != nil {
-		return errors.Errorf("Failed to backup old config: %s", err.Error())
+		return fmt.Errorf("failed to backup old config: %s", err.Error())
 	}
 	defer m.cleanBackupFile()
 	err = m.unpackConfigFile(version)
 	if err != nil {
-		return errors.Errorf("Failed to unpack new config: %s", err.Error())
+		return fmt.Errorf("failed to unpack new config: %s", err.Error())
 	}
 	err = m.loadAppConfig()
 	if err != nil {
-		return errors.Errorf("Failed to load new config: %s", err.Error())
+		return fmt.Errorf("failed to load new config: %s", err.Error())
 	}
 	m.engine.StopAll()
 	err = m.engine.StartAll(m.conf.Modules)
 	if err != nil {
-		logger.WithError(err).Info("Failed to load new config, rollback")
+		logger.WithError(err).Info("failed to load new config, rollback")
 		err1 := m.unpackBackupFile()
 		if err1 != nil {
-			err = errors.Errorf(err.Error() + ";Failed to unpack old config backup file" + err1.Error())
-			return errors.Trace(err)
+			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file" + err1.Error())
+			return err
 		}
 		err1 = m.loadAppConfig()
 		if err1 != nil {
-			err = errors.Errorf(err.Error() + ";Failed to load old config" + err1.Error())
-			return errors.Trace(err)
+			err = fmt.Errorf(err.Error() + ";failed to load old config" + err1.Error())
+			return err
 		}
 		m.engine.StopAll()
 		err1 = m.engine.StartAll(m.conf.Modules)
 		if err1 != nil {
-			err = errors.Errorf(err.Error() + ";Failed to start modules with old config" + err.Error())
-			return errors.Trace(err)
+			err = fmt.Errorf(err.Error() + ";failed to start modules with old config" + err.Error())
+			return err
 		}
 	}
 	return nil
@@ -188,25 +187,25 @@ func (m *Master) backupAppDir() error {
 	if !dirExists(appDir) {
 		os.MkdirAll(appDir, 0700)
 	}
-	return errors.Trace(archiver.Zip.Make(appBackupFile, []string{appDir}))
+	return archiver.Zip.Make(appBackupFile, []string{appDir})
 }
 
 func (m *Master) cleanBackupFile() error {
-	return errors.Trace(os.Remove(appBackupFile))
+	return os.Remove(appBackupFile)
 }
 
 func (m *Master) unpackConfigFile(version string) error {
 	file := version + ".zip"
 	if !fileExists(file) {
-		return errors.Errorf("app config zip file (%s) not found", file)
+		return fmt.Errorf("app config zip file (%s) not found", file)
 	}
 	err := archiver.Zip.Open(file, m.pwd)
-	return errors.Trace(err)
+	return err
 }
 
 func (m *Master) unpackBackupFile() error {
 	err := archiver.Zip.Open(appBackupFile, m.pwd)
-	return errors.Trace(err)
+	return err
 }
 
 func (m *Master) loadAppConfig() error {
@@ -215,7 +214,7 @@ func (m *Master) loadAppConfig() error {
 		return nil
 	}
 
-	return errors.Trace(module.Load(&m.conf, appConfFile))
+	return module.Load(&m.conf, appConfFile)
 }
 
 // IsVersion checks version
@@ -251,7 +250,7 @@ func defaults(c *config.Master) error {
 			} else if strings.Contains(c.Cloud.Address, "gz.baidubce.com") {
 				c.Cloud.OpenAPI.Address = "https://iotedge.gz.baidubce.com"
 			} else {
-				return errors.Errorf("Cloud address invalid")
+				return fmt.Errorf("cloud address invalid")
 			}
 		}
 		if c.Cloud.OpenAPI.CA == "" {
@@ -268,7 +267,7 @@ func defaults(c *config.Master) error {
 		addr := c.API.Address
 		uri, err := url.Parse(addr)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 		if c.Mode == "docker" {
 			parts := strings.SplitN(uri.Host, ":", 2)

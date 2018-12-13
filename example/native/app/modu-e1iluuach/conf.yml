@@ -25,10 +25,10 @@ rules:
       qos: 1
 functions:
   - name: 'sayhi'
-    runtime: 'python2.7'
+    runtime: 'python27'
     handler: 'sayhi.handler'
     codedir: 'app/func-nyeosbbch'
-    entry: "bin/openedge_function_runtime_python2.7.py"
+    entry: "bin/openedge_function_runtime_python27.py"
     env:
       USER_ID: acuiot
     instance:

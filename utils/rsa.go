@@ -8,8 +8,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
-
-	"github.com/juju/errors"
 )
 
 // copy from crypt/rsa/pkcs1v5.go
@@ -28,27 +26,28 @@ var hashPrefixes = map[crypto.Hash][]byte{
 func RsaPublicEncrypt(data, publicKey []byte) ([]byte, error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
-		return nil, errors.New("public key error")
+		return nil, fmt.Errorf("public key error")
 	}
 	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
-	if p, ok := pub.(*rsa.PublicKey); ok {
-		return rsa.EncryptPKCS1v15(rand.Reader, p, data)
+	p, ok := pub.(*rsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("public key error")
 	}
-	return nil, errors.New("public key error")
+	return rsa.EncryptPKCS1v15(rand.Reader, p, data)
 }
 
 // RsaPrivateDecrypt decrypts data using private key
 func RsaPrivateDecrypt(data, privateKey []byte) ([]byte, error) {
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
-		return nil, errors.New("private key error")
+		return nil, fmt.Errorf("private key error")
 	}
 	pri, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return rsa.DecryptPKCS1v15(rand.Reader, pri, data)
 }
@@ -57,11 +56,11 @@ func RsaPrivateDecrypt(data, privateKey []byte) ([]byte, error) {
 func RsaPrivateEncrypt(data, privateKey []byte) ([]byte, error) {
 	block, _ := pem.Decode(privateKey)
 	if block == nil {
-		return nil, errors.New("private key error")
+		return nil, fmt.Errorf("private key error")
 	}
 	pri, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return rsa.SignPKCS1v15(nil, pri, crypto.Hash(0), data)
 }
@@ -70,24 +69,24 @@ func RsaPrivateEncrypt(data, privateKey []byte) ([]byte, error) {
 func RsaPublicDecrypt(data, publicKey []byte) ([]byte, error) {
 	block, _ := pem.Decode(publicKey)
 	if block == nil {
-		return nil, errors.New("public key error")
+		return nil, fmt.Errorf("public key error")
 	}
 	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
-	if p, ok := pub.(*rsa.PublicKey); ok {
-		return publicDecrypt(p, crypto.Hash(0), nil, data)
+	p, ok := pub.(*rsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("public key error")
 	}
-
-	return nil, errors.New("public key error")
+	return publicDecrypt(p, crypto.Hash(0), nil, data)
 }
 
 // copy&modified from crypt/rsa/pkcs1v5.go
 func publicDecrypt(pub *rsa.PublicKey, hash crypto.Hash, hashed []byte, sig []byte) (out []byte, err error) {
 	hashLen, prefix, err := pkcs1v15HashInfo(hash, len(hashed))
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 
 	tLen := len(prefix) + hashLen
@@ -122,11 +121,11 @@ func pkcs1v15HashInfo(hash crypto.Hash, inLen int) (hashLen int, prefix []byte, 
 
 	hashLen = hash.Size()
 	if inLen != hashLen {
-		return 0, nil, errors.New("crypto/rsa: input must be hashed message")
+		return 0, nil, fmt.Errorf("crypto/rsa: input must be hashed message")
 	}
 	prefix, ok := hashPrefixes[hash]
 	if !ok {
-		return 0, nil, errors.New("crypto/rsa: unsupported hash function")
+		return 0, nil, fmt.Errorf("crypto/rsa: unsupported hash function")
 	}
 	return
 }

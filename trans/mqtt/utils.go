@@ -2,10 +2,10 @@ package mqtt
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net"
 
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/juju/errors"
 )
 
 // GetTLSConn gets tls connection if tls enabled
@@ -25,11 +25,11 @@ func GetTLSConn(conn transport.Conn) (*tls.Conn, bool) {
 func GetClientCertSerialNumber(conn *tls.Conn) (string, error) {
 	state := conn.ConnectionState()
 	if !state.HandshakeComplete {
-		return "", errors.Errorf("TLS handshake not completed")
+		return "", fmt.Errorf("TLS handshake not completed")
 	}
 	length := len(state.PeerCertificates)
 	if length == 0 {
-		return "", errors.Errorf("Certidicate not found")
+		return "", fmt.Errorf("certidicate not found")
 	}
 	serialNumber := state.PeerCertificates[len(state.PeerCertificates)-1].SerialNumber
 	return serialNumber.String(), nil

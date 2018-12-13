@@ -4,8 +4,6 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
-
-	"github.com/juju/errors"
 )
 
 // Flags command-line flags
@@ -20,11 +18,11 @@ func ParseFlags() (*Flags, error) {
 	f := new(Flags)
 	cwd, err := os.Executable()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	cwd, err = filepath.EvalSymlinks(cwd)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	//  default
 	f.WorkDir = filepath.Dir(filepath.Dir(cwd))
@@ -33,28 +31,28 @@ func ParseFlags() (*Flags, error) {
 		&f.WorkDir,
 		"w",
 		f.WorkDir,
-		"Working directory",
+		"working directory",
 	)
 	flag.StringVar(
 		&f.Config,
 		"c",
 		f.Config,
-		"Config file path",
+		"config file path",
 	)
 	flag.BoolVar(
 		&f.Help,
 		"h",
 		false,
-		"Show this help",
+		"show this help",
 	)
 	flag.Parse()
 	f.WorkDir, err = filepath.Abs(f.WorkDir)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	err = os.Chdir(f.WorkDir)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return f, nil
 }

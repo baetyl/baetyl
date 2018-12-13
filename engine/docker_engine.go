@@ -18,7 +18,6 @@ import (
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"github.com/juju/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,21 +35,21 @@ type DockerEngine struct {
 func NewDockerEngine(ctx *Context) (Inner, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	e := &DockerEngine{
 		context: ctx,
 		client:  cli,
 		log:     logger.WithFields("mode", "docker"),
 	}
-	return e, errors.Trace(e.initNetwork())
+	return e, e.initNetwork()
 }
 
 // Prepare prepares images
 func (e *DockerEngine) Prepare(image string) error {
 	out, err := e.client.ImagePull(context.Background(), image, types.ImagePullOptions{})
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	defer out.Close()
 	io.Copy(os.Stdout, out)
@@ -61,11 +60,11 @@ func (e *DockerEngine) Prepare(image string) error {
 func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 	pwd, err := filepath.Abs(".")
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(m.Expose)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	volumeBindings := []string{
 		fmt.Sprintf("%s:/home/openedge/app", path.Join(pwd, "app")),
@@ -109,7 +108,7 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		Config:        config,
 		HostConfig:    hostConfig,
 		NetworkConfig: networkConfig,
-	}), errors.Trace(err)
+	}), err
 }
 
 func (e *DockerEngine) initNetwork() error {
@@ -121,21 +120,21 @@ func (e *DockerEngine) initNetwork() error {
 	args.Add("name", defaultNetworkName)
 	nws, err := e.client.NetworkList(context, types.NetworkListOptions{Filters: args})
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	if len(nws) > 0 {
 		e.network = nws[0].ID
-		e.log.Infof("Network (%s:openedge) exists", e.network[:12])
+		e.log.Infof("network (%s:openedge) exists", e.network[:12])
 		return nil
 	}
 	nw, err := e.client.NetworkCreate(context, defaultNetworkName, types.NetworkCreate{Driver: "bridge", Scope: "local"})
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	if nw.Warning != "" {
 		e.log.Warn(nw.Warning)
 	}
 	e.network = nw.ID
-	e.log.Infof("Network (%s:openedge) created", e.network[:12])
+	e.log.Infof("network (%s:openedge) created", e.network[:12])
 	return nil
 }

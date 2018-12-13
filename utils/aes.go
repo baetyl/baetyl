@@ -5,8 +5,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"math/rand"
-
-	"github.com/juju/errors"
 )
 
 // AES aes
@@ -20,7 +18,7 @@ const (
 func AesEncrypt(plaintext, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	plaintext = paddingPKCS7(plaintext, block.BlockSize())
 	ciphertext := make([]byte, len(plaintext))
@@ -35,7 +33,7 @@ func AesEncrypt(plaintext, key []byte) ([]byte, error) {
 func AesDecrypt(ciphertext, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 
 	iv := make([]byte, AesIvLen)

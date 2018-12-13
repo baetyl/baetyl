@@ -1,17 +1,16 @@
 package utils
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
-
-	"github.com/juju/errors"
 )
 
 // ParseURL parses a url string
 func ParseURL(addr string) (*url.URL, error) {
 	parts := strings.SplitN(addr, "://", 2)
 	if len(parts) == 1 {
-		return nil, errors.Errorf("Failed to parse address (%s)", addr)
+		return nil, fmt.Errorf("failed to parse address (%s)", addr)
 	}
 
 	var basePath string

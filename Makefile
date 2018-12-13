@@ -17,18 +17,18 @@ openedge:
 	go build ${RACE} .
 
 openedge-hub:
-	go build ${RACE} ./module/hub/openedge-hub
+	go build ${RACE} ./modules/openedge-hub
 
 openedge-function:
-	go build ${RACE} ./module/function/openedge-function
+	go build ${RACE} ./modules/openedge-function
 
 openedge-remote-mqtt:
-	go build ${RACE} ./module/remote/openedge-remote-mqtt
+	go build ${RACE} ./modules/openedge-remote-mqtt
 
 test:
 	go test --race ./...
 
-tools: pubsub consistency
+tools: pubsub
 
 pubsub:
 	go build ${RACE} ./tools/pubsub
@@ -44,9 +44,9 @@ native-install: install
 	install -m 0755 openedge-hub ${PREFIX}/bin/
 	install -m 0755 openedge-function ${PREFIX}/bin/
 	install -m 0755 openedge-remote-mqtt ${PREFIX}/bin/
-	install -m 0755 module/function/runtime/python2.7/openedge_function_runtime_python2.7.py ${PREFIX}/bin
-	install -m 0755 module/function/runtime/python2.7/runtime_pb2.py ${PREFIX}/bin
-	install -m 0755 module/function/runtime/python2.7/runtime_pb2_grpc.py ${PREFIX}/bin
+	install -m 0755 modules/openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
+	install -m 0755 modules/openedge-function-runtime-python27/runtime_pb2.py ${PREFIX}/bin
+	install -m 0755 modules/openedge-function-runtime-python27/runtime_pb2_grpc.py ${PREFIX}/bin
 	tar cf - -C example/native app conf | tar xvf - -C ${PREFIX}/
 
 uninstall:
@@ -60,8 +60,8 @@ native-uninstall: uninstall
 	rm -f ${PREFIX}/bin/runtime_pb2.pyc
 	rm -f ${PREFIX}/bin/runtime_pb2_grpc.py
 	rm -f ${PREFIX}/bin/runtime_pb2_grpc.pyc
-	rm -f ${PREFIX}/bin/openedge_function_runtime_python2.7.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_python2.7.pyc
+	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
+	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
 	rm -rf ${PREFIX}/conf
 	rm -rf ${PREFIX}/app
 	rmdir ${PREFIX}/bin

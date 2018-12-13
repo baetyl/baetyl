@@ -8,7 +8,6 @@ import (
 	"github.com/baidu/openedge/trans/http"
 	"github.com/baidu/openedge/trans/mqtt"
 	units "github.com/docker/go-units"
-	"github.com/juju/errors"
 )
 
 // Module define the meta data of a module
@@ -49,12 +48,12 @@ func (l *Length) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var ls length
 	err := unmarshal(&ls)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	if ls.Max != "" {
 		l.Max, err = units.RAMInBytes(ls.Max)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 	}
 	return nil

@@ -37,7 +37,7 @@ func (r *Report) populateReported() {
 	r.Reported["bin_version"] = version.Version
 	gpus, err := utils.GetGpu()
 	if err != nil {
-		logger.WithError(err).Warn("Get gpu information failed")
+		logger.WithError(err).Warn("failed to get gpu information")
 	}
 	for _, gpu := range gpus {
 		r.Reported[fmt.Sprintf("gpu%s", gpu.ID)] = gpu.Model
@@ -46,7 +46,7 @@ func (r *Report) populateReported() {
 	}
 	mem, err := utils.GetMem()
 	if err != nil {
-		logger.WithError(err).Warn("Get memory information failed")
+		logger.WithError(err).Warn("failed to get memory information")
 	}
 	if mem != nil {
 		r.Reported["mem_total"] = mem.Total
@@ -54,7 +54,7 @@ func (r *Report) populateReported() {
 	}
 	swap, err := utils.GetSwap()
 	if err != nil {
-		logger.WithError(err).Warn("Get swap information failed")
+		logger.WithError(err).Warn("failed to get swap information")
 	}
 	if swap != nil {
 		r.Reported["swap_total"] = swap.Total
@@ -63,7 +63,7 @@ func (r *Report) populateReported() {
 	/*
 		disk, err := utils.GetDisk()
 		if err != nil {
-			log.WithError(err).Info("Get disk information failed")
+			log.WithError(err).Info("failed to get disk information")
 		}
 		if disk != nil {
 			r.Reported["disk_total"] = disk.Total

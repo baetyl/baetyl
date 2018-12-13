@@ -3,9 +3,8 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/juju/errors"
-	"github.com/stretchr/testify/assert"
 	"github.com/baidu/openedge/utils"
+	"github.com/stretchr/testify/assert"
 )
 
 type confModule struct {
@@ -64,7 +63,7 @@ modules:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := utils.UnmarshalYAML(tt.args.in, tt.args.out)
-			assert.Equal(t, tt.wantErr, err, errors.Details(err))
+			assert.Equal(t, tt.wantErr, err)
 			assert.Equal(t, tt.want, tt.args.out)
 		})
 	}

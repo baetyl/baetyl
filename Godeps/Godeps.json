@@ -47,11 +47,6 @@
 			"Rev": "947525349996e4a314b26559e9c2c9a5c81402c0"
 		},
 		{
-			"ImportPath": "github.com/Microsoft/go-winio",
-			"Comment": "v0.4.11",
-			"Rev": "97e4973ce50b2ff5f09635a57e2b88a037aae829"
-		},
-		{
 			"ImportPath": "github.com/cloudfoundry/gosigar",
 			"Comment": "v1.1.0-4-g0bb2fe4",
 			"Rev": "0bb2fe4a1c0cdce8cbe6bfe2c9d375cab4cc15c7"
@@ -226,16 +221,6 @@
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
-			"ImportPath": "github.com/eclipse/paho.mqtt.golang",
-			"Comment": "v1.1.1-9-g88c4622",
-			"Rev": "88c4622b8e24c52f64a0caaa28e40b91629bb6e6"
-		},
-		{
-			"ImportPath": "github.com/eclipse/paho.mqtt.golang/packets",
-			"Comment": "v1.1.1-9-g88c4622",
-			"Rev": "88c4622b8e24c52f64a0caaa28e40b91629bb6e6"
-		},
-		{
 			"ImportPath": "github.com/etcd-io/bbolt",
 			"Comment": "v1.3.1-etcd.8",
 			"Rev": "7ee3ded59d4835e10f3e7d0f7603c42aa5e83820"
@@ -310,10 +295,6 @@
 			"Rev": "8eab2debe79d12b7bd3d10653910df25fa9552ba"
 		},
 		{
-			"ImportPath": "github.com/juju/errors",
-			"Rev": "22422dad46e14561a0854ad42497a75af9b61909"
-		},
-		{
 			"ImportPath": "github.com/mholt/archiver",
 			"Comment": "v2.1.0",
 			"Rev": "de0d89e255e17c8d75a40122055763e743ab0593"
@@ -355,11 +336,6 @@
 			"ImportPath": "github.com/pkg/errors",
 			"Comment": "v0.8.0-12-g816c908",
 			"Rev": "816c9085562cd7ee03e7f8188a1cfd942858cded"
-		},
-		{
-			"ImportPath": "github.com/pmezard/go-difflib/difflib",
-			"Comment": "v1.0.0",
-			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
 		{
 			"ImportPath": "github.com/sirupsen/logrus",

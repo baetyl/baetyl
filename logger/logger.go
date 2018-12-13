@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/juju/errors"
 	"github.com/sirupsen/logrus"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
@@ -36,7 +35,7 @@ func Init(c Config, fields ...string) error {
 	if len(c.Path) != 0 {
 		err := os.MkdirAll(filepath.Dir(c.Path), 0755)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 		fileHook, err = newFileHook(fileConfig{
 			Filename:   c.Path,
@@ -48,7 +47,7 @@ func Init(c Config, fields ...string) error {
 			Compress:   true,
 		})
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 	}
 
@@ -199,7 +198,7 @@ func (hook *fileHook) Fire(entry *logrus.Entry) (err error) {
 	}
 	b, err := hook.config.Formatter.Format(entry)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	hook.writer.Write(b)
 	return nil
