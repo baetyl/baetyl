@@ -46,7 +46,7 @@ func NewManager(c []config.Subscription, b broker) (*Manager, error) {
 	for _, sub := range c {
 		err := m.AddSinkSub(common.RuleTopic, sub.Target.Topic, uint32(sub.Source.QOS), sub.Source.Topic, uint32(sub.Target.QOS), sub.Target.Topic)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to add subscription (%v): %s", sub.Source, err.Error())
 		}
 	}
 	if b.Config().Status.Logging.Enable {

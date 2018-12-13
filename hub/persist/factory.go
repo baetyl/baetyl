@@ -44,7 +44,7 @@ type Factory struct {
 func NewFactory(dir string) (*Factory, error) {
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to make dir (%s): %s", dir, err.Error())
 	}
 	return &Factory{dir: dir, dbs: make(map[string]Database)}, nil
 }
