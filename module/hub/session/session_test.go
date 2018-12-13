@@ -92,26 +92,26 @@ func TestSessionSub(t *testing.T) {
 	// Round 2
 	c.assertOnSubscribeSuccess([]packet.Subscription{{Topic: "talks", QOS: 1}, {Topic: "talks1"}, {Topic: "talks2", QOS: 1}})
 	// Round 3
-	c.assertOnSubscribe([]packet.Subscription{{Topic: "test", QOS: 2}}, []uint8{128})
+	c.assertOnSubscribe([]packet.Subscription{{Topic: "test", QOS: 2}}, []packet.QOS{128})
 	// Round 4
 	c.assertOnSubscribe(
 		[]packet.Subscription{{Topic: "talks", QOS: 2}, {Topic: "talks1", QOS: 0}, {Topic: "talks2", QOS: 1}},
-		[]uint8{128, 0, 1},
+		[]packet.QOS{128, 0, 1},
 	)
 	// Round 5
 	c.assertOnSubscribe(
 		[]packet.Subscription{{Topic: "talks", QOS: 2}, {Topic: "talks1", QOS: 0}, {Topic: "temp", QOS: 1}},
-		[]uint8{128, 0, 128},
+		[]packet.QOS{128, 0, 128},
 	)
 	// Round 6
 	c.assertOnSubscribe(
 		[]packet.Subscription{{Topic: "talks", QOS: 2}, {Topic: "talks1#/", QOS: 0}, {Topic: "talks2", QOS: 1}},
-		[]uint8{128, 128, 1},
+		[]packet.QOS{128, 128, 1},
 	)
 	// Round 7
 	c.assertOnSubscribe(
 		[]packet.Subscription{{Topic: "talks", QOS: 2}, {Topic: "talks1#/", QOS: 0}, {Topic: "temp", QOS: 1}},
-		[]uint8{128, 128, 128},
+		[]packet.QOS{128, 128, 128},
 	)
 }
 
@@ -198,7 +198,7 @@ func TestSessionRetain(t *testing.T) {
 	defer subC2.close()
 	subC2.assertOnConnectSuccess("subC2", false, nil)
 	// sub
-	subC2.assertOnSubscribe([]packet.Subscription{{Topic: "talks", QOS: 1}}, []uint8{1})
+	subC2.assertOnSubscribe([]packet.Subscription{{Topic: "talks", QOS: 1}}, []packet.QOS{1})
 	subC2.assertReceive(65535, 1, "talks", []byte("hello"), true)
 	subC2.assertReceiveTimeout()
 
@@ -214,7 +214,7 @@ func TestSessionRetain(t *testing.T) {
 	defer subC3.close()
 	subC3.assertOnConnectSuccess("subC3", false, nil)
 	// sub
-	subC3.assertOnSubscribe([]packet.Subscription{{Topic: "talks", QOS: 1}}, []uint8{1})
+	subC3.assertOnSubscribe([]packet.Subscription{{Topic: "talks", QOS: 1}}, []packet.QOS{1})
 	subC3.assertReceiveTimeout()
 }
 
@@ -339,7 +339,7 @@ func TestCleanSession(t *testing.T) {
 	subC.assertOnSubscribeSuccess([]packet.Subscription{{Topic: "test", QOS: 1}})
 	assert.Len(t, subC.session.subs, 1)
 	assert.Contains(t, subC.session.subs, "test")
-	assert.Equal(t, byte(1), subC.session.subs["test"].QOS)
+	assert.Equal(t, packet.QOS(1), subC.session.subs["test"].QOS)
 
 	pubC.assertOnPublish("test", 0, []byte("hello"), false)
 	subC.assertReceive(0, 0, "test", []byte("hello"), false)
@@ -351,7 +351,7 @@ func TestCleanSession(t *testing.T) {
 	subC.assertOnConnectSuccess("subC", false, nil)
 	assert.Len(t, subC.session.subs, 1)
 	assert.Contains(t, subC.session.subs, "test")
-	assert.Equal(t, byte(1), subC.session.subs["test"].QOS)
+	assert.Equal(t, packet.QOS(1), subC.session.subs["test"].QOS)
 
 	pubC.assertOnPublish("test", 1, []byte("hello"), false)
 	subC.assertReceive(1, 1, "test", []byte("hello"), false)
@@ -430,7 +430,7 @@ func TestSub1Pub1(t *testing.T) {
 	testSubPub(t, 1, 1)
 }
 
-func testSubPub(t *testing.T, subQos uint8, pubQos uint8) {
+func testSubPub(t *testing.T, subQos packet.QOS, pubQos packet.QOS) {
 	r, err := prepare()
 	assert.NoError(t, err)
 	assert.NotNil(t, r)
@@ -565,7 +565,7 @@ func (c *mockClient) assertOnConnectFail(name string, will *packet.Message) {
 	assert.Equal(c.t, connack.String(), pkt.String())
 }
 
-func (c *mockClient) assertSubscribe(subs []packet.Subscription, codes []uint8) {
+func (c *mockClient) assertSubscribe(subs []packet.Subscription, codes []packet.QOS) {
 	sub := &packet.Subscribe{ID: 11, Subscriptions: subs}
 	c.send(sub, true)
 	pkt := c.receive()
@@ -573,7 +573,7 @@ func (c *mockClient) assertSubscribe(subs []packet.Subscription, codes []uint8) 
 	assert.Equal(c.t, suback.String(), pkt.String())
 }
 
-func (c *mockClient) assertOnSubscribe(subs []packet.Subscription, codes []uint8) {
+func (c *mockClient) assertOnSubscribe(subs []packet.Subscription, codes []packet.QOS) {
 	sub := &packet.Subscribe{ID: 12, Subscriptions: subs}
 	err := c.session.onSubscribe(sub)
 	assert.NoError(c.t, err)
@@ -587,7 +587,7 @@ func (c *mockClient) assertOnSubscribeSuccess(subs []packet.Subscription) {
 	err := c.session.onSubscribe(sub)
 	assert.NoError(c.t, err)
 	pkt := c.receive()
-	codes := make([]uint8, len(subs))
+	codes := make([]packet.QOS, len(subs))
 	for i, s := range subs {
 		codes[i] = s.QOS
 	}
@@ -604,7 +604,7 @@ func (c *mockClient) assertOnUnsubscribe(topics []string) {
 	assert.Equal(c.t, unsuback.String(), pkt.String())
 }
 
-func (c *mockClient) assertPublish(topic string, qos byte, payload []byte, retain bool) {
+func (c *mockClient) assertPublish(topic string, qos packet.QOS, payload []byte, retain bool) {
 	msg := packet.Message{Topic: topic, QOS: qos, Payload: payload, Retain: retain}
 	pub := &packet.Publish{Message: msg, Dup: false, ID: 123}
 	c.send(pub, true)
@@ -615,7 +615,7 @@ func (c *mockClient) assertPublish(topic string, qos byte, payload []byte, retai
 	}
 }
 
-func (c *mockClient) assertOnPublish(topic string, qos byte, payload []byte, retain bool) {
+func (c *mockClient) assertOnPublish(topic string, qos packet.QOS, payload []byte, retain bool) {
 	msg := packet.Message{Topic: topic, QOS: qos, Payload: payload, Retain: retain}
 	pub := &packet.Publish{Message: msg, Dup: false, ID: 124}
 	err := c.session.onPublish(pub)
@@ -627,7 +627,7 @@ func (c *mockClient) assertOnPublish(topic string, qos byte, payload []byte, ret
 	}
 }
 
-func (c *mockClient) assertOnPublishError(topic string, qos byte, payload []byte, e string) {
+func (c *mockClient) assertOnPublishError(topic string, qos packet.QOS, payload []byte, e string) {
 	msg := packet.Message{Topic: topic, QOS: qos, Payload: payload}
 	pub := &packet.Publish{Message: msg, Dup: false, ID: 123}
 	err := c.session.onPublish(pub)
@@ -660,7 +660,7 @@ func (c *mockClient) assertPersistedWillMessage(expected *packet.Message) {
 	assert.Equal(c.t, expected.Payload, will.Payload)
 }
 
-func (c *mockClient) assertRetainedMessage(cid string, qos byte, topic string, pld []byte) {
+func (c *mockClient) assertRetainedMessage(cid string, qos packet.QOS, topic string, pld []byte) {
 	retained, err := c.session.manager.recorder.getRetained()
 	assert.NoError(c.t, err)
 	if cid == "" {
@@ -674,7 +674,7 @@ func (c *mockClient) assertRetainedMessage(cid string, qos byte, topic string, p
 	}
 }
 
-func (c *mockClient) assertReceive(pid int, qos byte, topic string, pld []byte, retain bool) {
+func (c *mockClient) assertReceive(pid int, qos packet.QOS, topic string, pld []byte, retain bool) {
 	select {
 	case pkt := <-c.o:
 		assert.NotNil(c.t, pkt)

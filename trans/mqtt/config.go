@@ -9,8 +9,8 @@ import (
 
 // Subscription is a single subscription in a Subscribe packet.
 type Subscription struct {
-	Topic string `yaml:"topic" json:"topic"`
-	QOS   uint8  `yaml:"qos" json:"qos" default:"0"`
+	Topic string     `yaml:"topic" json:"topic"`
+	QOS   packet.QOS `yaml:"qos" json:"qos" default:"0"`
 }
 
 // ClientConfig mqtt client config

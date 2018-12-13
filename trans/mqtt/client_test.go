@@ -220,7 +220,7 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 	subscribe.ID = 1
 
 	suback := packet.NewSuback()
-	suback.ReturnCodes = []uint8{0}
+	suback.ReturnCodes = []packet.QOS{0}
 	suback.ID = 1
 
 	publish := packet.NewPublish()
@@ -247,7 +247,7 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "test", p.Message.Topic)
 		assert.Equal(t, []byte("test"), p.Message.Payload)
-		assert.Equal(t, uint8(0), p.Message.QOS)
+		assert.Equal(t, packet.QOS(0), p.Message.QOS)
 		assert.False(t, p.Message.Retain)
 		close(wait)
 	}
@@ -273,7 +273,7 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 	subscribe.ID = 1
 
 	suback := packet.NewSuback()
-	suback.ReturnCodes = []uint8{1}
+	suback.ReturnCodes = []packet.QOS{1}
 	suback.ID = 1
 
 	publish := packet.NewPublish()
@@ -307,7 +307,7 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 		case *packet.Publish:
 			assert.Equal(t, "test", p.Message.Topic)
 			assert.Equal(t, []byte("test"), p.Message.Payload)
-			assert.Equal(t, uint8(1), p.Message.QOS)
+			assert.Equal(t, packet.QOS(1), p.Message.QOS)
 			assert.False(t, p.Message.Retain)
 			close(wait)
 		case *packet.Puback:

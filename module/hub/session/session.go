@@ -125,8 +125,8 @@ func (s *session) sendRetainMessage(p *packet.Subscribe) error {
 	return nil
 }
 
-func (s *session) genSubAck(subs []packet.Subscription) []uint8 {
-	rv := make([]uint8, len(subs))
+func (s *session) genSubAck(subs []packet.Subscription) []packet.QOS {
+	rv := make([]packet.QOS, len(subs))
 	for i, sub := range subs {
 		if !common.SubTopicValidate(sub.Topic) {
 			s.log.WithField("topic", sub.Topic).Error("Subscribe topic invalid")

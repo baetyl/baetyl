@@ -7,7 +7,7 @@ import (
 
 func (s *session) publish(msg common.Message) {
 	pub := new(packet.Publish)
-	pub.Message.QOS = byte(msg.TargetQOS)
+	pub.Message.QOS = packet.QOS(msg.TargetQOS)
 	pub.Message.Topic = msg.TargetTopic
 	pub.Message.Payload = msg.Payload
 	pub.Message.Retain = msg.Retain
