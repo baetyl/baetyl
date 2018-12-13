@@ -9,7 +9,6 @@
 /openedge-function
 /openedge-remote-mqtt
 /pubsub
-/benchmark
 /consistency
 /output*
 /**/.DS_Store
@@ -21,6 +20,7 @@
 /**/*.pyc
 /**/*debug.test
 /**/debug
+/**/bin
 /**/*.log
 /cover*.out
 /vendor
