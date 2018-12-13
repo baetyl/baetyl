@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"fmt"
 	"io"
 	"sync"
 	"time"
@@ -10,7 +11,6 @@ import (
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/utils"
-	"github.com/juju/errors"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/tomb.v2"
 )
@@ -33,11 +33,11 @@ type Client struct {
 func NewClient(cc ClientConfig, cb func(packet.Generic, error)) (*Client, error) {
 	dialer, err := NewDialer(cc.Certificate)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	conn, err := dialer.Dial(cc.Address)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	c := &Client{
 		conn:            conn,
@@ -51,7 +51,7 @@ func NewClient(cc ClientConfig, cb func(packet.Generic, error)) (*Client, error)
 	err = c.connect()
 	if err != nil {
 		c.Close()
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return c, nil
 }
@@ -126,8 +126,8 @@ func (c *Client) Close() error {
 
 // processes incoming packets
 func (c *Client) processor() error {
-	c.log.Debugln("Start processor")
-	defer c.log.Debugln("Stop processor")
+	c.log.Debugln("processor starting ")
+	defer c.log.Debugln("processor stopped")
 
 	if c.config.KeepAlive > 0 {
 		c.tomb.Go(c.pinger)
@@ -159,7 +159,7 @@ func (c *Client) processor() error {
 			}
 
 			if connack.ReturnCode != packet.ConnectionAccepted {
-				err = errors.New(connack.ReturnCode.String())
+				err = fmt.Errorf(connack.ReturnCode.String())
 				return c.die(err)
 			}
 
@@ -193,8 +193,8 @@ func (c *Client) processor() error {
 
 // manages the sending of ping packets to keep the connection alive
 func (c *Client) pinger() (err error) {
-	c.log.Debugln("Start pinger")
-	defer c.log.Debugln("Stop pinger")
+	c.log.Debugln("pinger starting")
+	defer c.log.Debugln("pinger stopped")
 
 	for {
 		// get current window
@@ -238,11 +238,11 @@ func (c *Client) send(pkt packet.Generic, async bool) error {
 	// send packet
 	err := c.conn.Send(pkt, async)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 
 	// config.Logger sent packet
-	c.log.Debugln("Sent:", pkt)
+	c.log.Debugln("sent:", pkt)
 
 	return nil
 }
@@ -263,5 +263,5 @@ func (c *Client) die(err error) error {
 			c.conn.Close()
 		}
 	})
-	return errors.Trace(err)
+	return err
 }

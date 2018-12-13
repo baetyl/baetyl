@@ -11,7 +11,6 @@ import (
 	"github.com/baidu/openedge/trans"
 	"github.com/baidu/openedge/utils"
 	"github.com/gorilla/mux"
-	"github.com/juju/errors"
 )
 
 // Params http params
@@ -32,11 +31,11 @@ type Server struct {
 func NewServer(sc ServerConfig) (*Server, error) {
 	uri, err := utils.ParseURL(sc.Address)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	tls, err := trans.NewTLSServerConfig(sc.CA, sc.Key, sc.Cert)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	router := mux.NewRouter()
 	return &Server{
@@ -59,7 +58,7 @@ func (s *Server) Handle(handle func(Params, Headers, []byte) ([]byte, error), me
 		if req.Body != nil {
 			reqBody, err = ioutil.ReadAll(req.Body)
 			if err != nil {
-				http.Error(res, errors.Annotatef(err, "Failed to read body").Error(), 400)
+				http.Error(res, err.Error(), 400)
 				return
 			}
 		}
@@ -78,7 +77,7 @@ func (s *Server) Handle(handle func(Params, Headers, []byte) ([]byte, error), me
 func (s *Server) Start() error {
 	l, err := net.Listen(s.uri.Scheme, s.uri.Host)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	if s.uri.Scheme == "tcp" {
 		l = tcpKeepAliveListener{l.(*net.TCPListener)}

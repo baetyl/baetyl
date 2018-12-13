@@ -1,11 +1,11 @@
 package utils_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/baidu/openedge/utils"
-	"github.com/juju/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +23,7 @@ func TestTomb(t *testing.T) {
 	tb = new(utils.Tomb)
 	err = tb.Go(func() error {
 		<-tb.Dying()
-		return errors.Errorf("abc")
+		return fmt.Errorf("abc")
 	})
 	assert.NoError(t, err)
 	tb.Kill(nil)
@@ -34,7 +34,7 @@ func TestTomb(t *testing.T) {
 	assert.EqualError(t, err, "abc")
 
 	tb = new(utils.Tomb)
-	tb.Kill(errors.Errorf("abc"))
+	tb.Kill(fmt.Errorf("abc"))
 	err = tb.Go(func() error {
 		<-tb.Dying()
 		return nil
@@ -44,7 +44,7 @@ func TestTomb(t *testing.T) {
 	assert.EqualError(t, err, "abc")
 
 	tb = new(utils.Tomb)
-	tb.Kill(errors.Errorf("abc"))
+	tb.Kill(fmt.Errorf("abc"))
 	err = tb.Wait()
 	assert.NoError(t, err)
 	err = tb.Go(func() error {
@@ -65,7 +65,7 @@ func TestTomb(t *testing.T) {
 		return nil
 	})
 	assert.NoError(t, err)
-	tb.Kill(errors.Errorf("abc"))
+	tb.Kill(fmt.Errorf("abc"))
 	err = tb.Wait()
 	assert.EqualError(t, err, "abc")
 

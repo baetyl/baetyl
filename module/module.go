@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/baidu/openedge/utils"
-	"github.com/juju/errors"
 )
 
 // Module module interfaces
@@ -29,10 +28,10 @@ func Load(confObject interface{}, conf string) error {
 	} else {
 		confBytes, err = ioutil.ReadFile(conf)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 	}
-	return errors.Trace(unmarshal(confBytes, confObject))
+	return unmarshal(confBytes, confObject)
 }
 
 // Wait waits until module exit

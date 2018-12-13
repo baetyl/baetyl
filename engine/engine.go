@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/baidu/openedge/module"
 	"github.com/docker/distribution/uuid"
 	"github.com/jpillora/backoff"
-	"github.com/juju/errors"
 	"github.com/orcaman/concurrent-map"
 	"github.com/sirupsen/logrus"
 )
@@ -80,9 +80,9 @@ func New(ctx *Context) (*Engine, error) {
 	case ModeNative:
 		e.Inner, err = NewNativeEngine(ctx)
 	default:
-		err = errors.NotSupportedf(ctx.Mode)
+		err = fmt.Errorf("mode (%s) not supported", ctx.Mode)
 	}
-	return e, errors.Trace(err)
+	return e, err
 }
 
 // StartAll starts all resident modules
@@ -93,7 +93,7 @@ func (e *Engine) StartAll(ms []config.Module) error {
 	}
 	err := e.prepare(entries)
 	if err != nil {
-		e.log.WithError(err).Warnf("Failed to prepare entries")
+		e.log.WithError(err).Warnf("failed to prepare entries")
 	}
 	for _, m := range ms {
 		if _, ok := e.auth[m.Name]; !ok {
@@ -102,18 +102,18 @@ func (e *Engine) StartAll(ms []config.Module) error {
 		m.Env[module.EnvOpenEdgeModuleToken] = e.auth[m.Name]
 		worker, err := e.Create(m)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 		e.resident.Set(m.Name, worker)
 		e.order = append(e.order, m.Name)
 		err = worker.Start(e.supervising)
 		if err != nil {
-			e.log.WithError(err).Errorf("Failed to start resident module (%s)", m.Name)
-			return errors.Trace(err)
+			e.log.WithError(err).Errorf("failed to start resident module (%s)", m.Name)
+			return err
 		}
-		e.log.Infof("Resident module (%s) started", m.Name)
+		e.log.Infof("resident module (%s) started", m.Name)
 	}
-	e.log.Info("All resident modules started")
+	e.log.Info("all resident modules started")
 	return nil
 }
 
@@ -128,17 +128,17 @@ func (e *Engine) Authenticate(username, password string) bool {
 
 // Start starts a temporary module
 func (e *Engine) Start(m config.Module) error {
-	e.log.Debugln("Starting temporary module:", m)
+	e.log.Debugln("starting temporary module:", m)
 	if !e.entries.Has(m.Entry) {
 		err := e.prepare(map[string]struct{}{m.Entry: struct{}{}})
 		if err != nil {
-			e.log.WithError(err).Warnf("Failed to prepare entry of temporary module (%s)", m.Name)
+			e.log.WithError(err).Warnf("failed to prepare entry of temporary module (%s)", m.Name)
 		}
 	}
 	worker, err := e.Create(m)
 	if err != nil {
-		e.log.WithError(err).Errorf("Failed to create temporary module (%s)", m.Name)
-		return errors.Trace(err)
+		e.log.WithError(err).Errorf("failed to create temporary module (%s)", m.Name)
+		return err
 	}
 	old, ok := e.temporary.Get(m.Name)
 	if ok {
@@ -148,27 +148,27 @@ func (e *Engine) Start(m config.Module) error {
 	err = worker.Start(e.supervising)
 	if err != nil {
 		worker.Stop()
-		e.log.WithError(err).Errorf("Failed to start temporary module (%s)", m.Name)
+		e.log.WithError(err).Errorf("failed to start temporary module (%s)", m.Name)
 	} else {
 		e.temporary.Set(m.Name, worker)
-		e.log.Infof("Temporary module (%s) started", m.Name)
+		e.log.Infof("temporary module (%s) started", m.Name)
 	}
-	return errors.Trace(err)
+	return err
 }
 
 // Restart restart a temporary module
 func (e *Engine) Restart(name string) error {
 	old, ok := e.temporary.Get(name)
 	if !ok {
-		return errors.NotFoundf("Temporary module (%s)", name)
+		return fmt.Errorf("temporary module (%s) not found", name)
 	}
 	err := old.(Worker).Restart()
 	if err != nil {
-		e.log.WithError(err).Errorf("Failed to restart temporary module (%s)", name)
+		e.log.WithError(err).Errorf("failed to restart temporary module (%s)", name)
 	} else {
-		e.log.Infof("Temporary module (%s) restarted", name)
+		e.log.Infof("temporary module (%s) restarted", name)
 	}
-	return errors.Trace(err)
+	return err
 }
 
 // Stop stops a temporary module
@@ -177,7 +177,7 @@ func (e *Engine) Stop(name string) error {
 	if !ok {
 		return nil
 	}
-	defer e.log.Infof("Temporary module (%s) stopped", name)
+	defer e.log.Infof("temporary module (%s) stopped", name)
 	e.temporary.Remove(name)
 	go old.(Worker).Stop()
 	return nil
@@ -192,14 +192,14 @@ func (e *Engine) StopAll() {
 			e.resident.Remove(name)
 			err := w.(Worker).Stop()
 			if err != nil {
-				e.log.WithError(err).Errorf("Failed to stop resident module (%s)", name)
+				e.log.WithError(err).Errorf("failed to stop resident module (%s)", name)
 			} else {
-				e.log.Infof("Resident module (%s) stopped", name)
+				e.log.Infof("resident module (%s) stopped", name)
 			}
 		}
 	}
 	e.order = []string{}
-	e.log.Info("All resident modules stopped")
+	e.log.Info("all resident modules stopped")
 	var wg sync.WaitGroup
 	for item := range e.temporary.IterBuffered() {
 		e.temporary.Remove(item.Key)
@@ -207,15 +207,15 @@ func (e *Engine) StopAll() {
 		go func(w Worker) {
 			err := w.Stop()
 			if err != nil {
-				e.log.WithError(err).Errorf("Failed to stop temporary module")
+				e.log.WithError(err).Errorf("failed to stop temporary module")
 			} else {
-				e.log.Infof("Temporary module stopped")
+				e.log.Infof("temporary module stopped")
 			}
 			wg.Done()
 		}(item.Val.(Worker))
 	}
 	wg.Wait()
-	e.log.Info("All temporary modules stopped")
+	e.log.Info("all temporary modules stopped")
 }
 
 // Prepare prepares entries
@@ -240,9 +240,9 @@ func (e *Engine) prepare(entries map[string]struct{}) error {
 		}
 	}
 	if message != "" {
-		return errors.Errorf(message)
+		return fmt.Errorf(message)
 	}
-	e.log.Infof("Entry (%v) prepared", entries)
+	e.log.Infof("entry (%v) prepared", entries)
 	return nil
 }
 
@@ -279,15 +279,15 @@ func (e *Engine) supervising(w Worker) error {
 				return nil
 			default:
 				logger.Errorf("Restart policy (%s) invalid", r.Policy)
-				return errors.Errorf("Restart policy invalid")
+				return fmt.Errorf("Restart policy invalid")
 			}
 		}
 
 	RESTART:
 		count++
 		if r.Retry.Max > 0 && count > r.Retry.Max {
-			logger.Errorf("Retry too much (%d)", count)
-			return errors.Errorf("Retry too much")
+			logger.Errorf("retry too much (%d)", count)
+			return fmt.Errorf("retry too much")
 		}
 
 		select {
@@ -298,7 +298,7 @@ func (e *Engine) supervising(w Worker) error {
 
 		err := w.Restart()
 		if err != nil {
-			logger.Errorf("Failed to restart module, keep to restart")
+			logger.Errorf("failed to restart module, keep to restart")
 			goto RESTART
 		}
 	}

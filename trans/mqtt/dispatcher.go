@@ -1,18 +1,18 @@
 package mqtt
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/utils"
 	"github.com/jpillora/backoff"
-	"github.com/juju/errors"
 	"github.com/sirupsen/logrus"
 )
 
 // ErrDispatcherClosed is returned if the dispatcher is closed
-var ErrDispatcherClosed = errors.New("dispatcher closed")
+var ErrDispatcherClosed = fmt.Errorf("dispatcher already closed")
 
 // Dispatcher dispatcher of mqtt client
 type Dispatcher struct {
@@ -77,7 +77,7 @@ func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
 			// get backoff duration
 			next := d.backoff.Duration()
 
-			d.log.Debugln("Delay reconnect:", next)
+			d.log.Debugln("delay reconnect:", next)
 
 			// sleep but return on Stop
 			select {
@@ -87,7 +87,7 @@ func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
 			}
 		}
 
-		d.log.Debugln("Next reconnect")
+		d.log.Debugln("next reconnect")
 
 		// prepare the stop channel
 		fail := make(chan struct{})
@@ -104,18 +104,18 @@ func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
 		}
 		client, err := NewClient(d.config, callback)
 		if err != nil {
-			d.log.WithError(err).Errorln("Failed to create new client")
+			d.log.WithError(err).Errorln("failed to create new client")
 			continue
 		}
 
 		// run callback
-		d.log.Debugln("Client online")
+		d.log.Debugln("client online")
 
 		// run dispatcher on client
 		current, dying = d.dispatcher(client, current, fail)
 
 		// run callback
-		d.log.Debugln("Client offline")
+		d.log.Debugln("client offline")
 
 		// return goroutine if dying
 		if dying {

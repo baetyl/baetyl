@@ -48,9 +48,9 @@ func TestAPIUnixUnauthorized(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	_, err = c.GetPortAvailable("127.0.0.1")
-	assert.EqualError(t, err, "[400] Account (test) unauthorized")
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
 	err = c.StartModule(&config.Module{Config: module.Config{Name: "name"}})
-	assert.EqualError(t, err, "[400] Account (test) unauthorized")
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
 	err = c.StopModule("name")
-	assert.EqualError(t, err, "[400] Account (test) unauthorized")
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
 }
