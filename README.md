@@ -28,7 +28,7 @@ OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现
 
 ## 测试
 
-    go test --race ./...
+    make test
 
 ## 如何贡献
 

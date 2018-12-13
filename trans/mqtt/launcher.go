@@ -1,7 +1,6 @@
 package mqtt
 
 import (
-	"crypto/tls"
 	"net/url"
 
 	"github.com/256dpi/gomqtt/transport"
@@ -11,7 +10,7 @@ import (
 
 // The Launcher helps with launching a server and accepting connections.
 type Launcher struct {
-	TLSConfig *tls.Config
+	transport.Launcher
 }
 
 // NewLauncher returns a new Launcher.
@@ -20,7 +19,7 @@ func NewLauncher(c trans.Certificate) (*Launcher, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return &Launcher{TLSConfig: t}, nil
+	return &Launcher{Launcher: transport.Launcher{TLSConfig: t}}, nil
 }
 
 // Launch will launch a server based on information extracted from an URL.
@@ -29,17 +28,8 @@ func (l *Launcher) Launch(urlString string) (transport.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	switch urlParts.Scheme {
-	case "tcp", "mqtt":
-		return transport.NewNetServer(urlParts.Host)
-	case "tls", "ssl", "mqtts":
-		return transport.NewSecureNetServer(urlParts.Host, l.TLSConfig)
-	case "ws":
-		return transport.NewWebSocketServer(urlParts.Host)
-	case "wss":
-		return transport.NewSecureWebSocketServer(urlParts.Host, l.TLSConfig)
+	if urlParts.Scheme == "ssl" {
+		urlParts.Scheme = "tls"
 	}
-
-	return nil, transport.ErrUnsupportedProtocol
+	return l.Launcher.Launch(urlParts.String())
 }

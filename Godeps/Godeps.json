@@ -8,38 +8,43 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/client",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/client/future",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/packet",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/session",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/topic",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/transport",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/transport/flow",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
+		},
+		{
+			"ImportPath": "github.com/256dpi/mercury",
+			"Comment": "v0.1.0",
+			"Rev": "947525349996e4a314b26559e9c2c9a5c81402c0"
 		},
 		{
 			"ImportPath": "github.com/Microsoft/go-winio",

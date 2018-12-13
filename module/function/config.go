@@ -3,6 +3,7 @@ package function
 import (
 	"time"
 
+	"github.com/256dpi/gomqtt/packet"
 	"github.com/baidu/openedge/config"
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/trans/http"
@@ -22,15 +23,15 @@ type Config struct {
 type Rule struct {
 	ID        string `yaml:"id" json:"id"`
 	Subscribe struct {
-		Topic string `yaml:"topic" json:"topic" validate:"nonzero"`
-		QOS   byte   `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
+		Topic string     `yaml:"topic" json:"topic" validate:"nonzero"`
+		QOS   packet.QOS `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
 	} `yaml:"subscribe" json:"subscribe"`
 	Compute struct {
 		Function string `yaml:"function" json:"function" validate:"nonzero"`
 	} `yaml:"compute" json:"compute"`
 	Publish struct {
-		Topic string `yaml:"topic" json:"topic" validate:"nonzero"`
-		QOS   byte   `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
+		Topic string     `yaml:"topic" json:"topic" validate:"nonzero"`
+		QOS   packet.QOS `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
 	} `yaml:"publish" json:"publish"`
 }
 
