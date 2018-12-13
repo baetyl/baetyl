@@ -47,6 +47,11 @@
 			"Rev": "947525349996e4a314b26559e9c2c9a5c81402c0"
 		},
 		{
+			"ImportPath": "github.com/Microsoft/go-winio",
+			"Comment": "v0.4.11",
+			"Rev": "97e4973ce50b2ff5f09635a57e2b88a037aae829"
+		},
+		{
 			"ImportPath": "github.com/cloudfoundry/gosigar",
 			"Comment": "v1.1.0-4-g0bb2fe4",
 			"Rev": "0bb2fe4a1c0cdce8cbe6bfe2c9d375cab4cc15c7"
@@ -338,6 +343,11 @@
 			"Rev": "816c9085562cd7ee03e7f8188a1cfd942858cded"
 		},
 		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Comment": "v1.0.0",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
 			"ImportPath": "github.com/sirupsen/logrus",
 			"Comment": "v1.0.6-20-gfc587f3",
 			"Rev": "fc587f31c804fe6853cd90f0d8d90af588eca5bd"
@@ -409,10 +419,6 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/trace",
-			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
-		},
-		{
-			"ImportPath": "golang.org/x/net/websocket",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{
