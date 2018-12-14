@@ -5,9 +5,6 @@
 *.iml
 /.idea
 /openedge
-/openedge-hub
-/openedge-function
-/openedge-remote-mqtt
 /pubsub
 /consistency
 /output*

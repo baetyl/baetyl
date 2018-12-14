@@ -11,19 +11,20 @@ depends-save:
 	cd ${GOPATH}/src/github.com/docker/distribution && git checkout . && cd -
 	godep save ./...
 
-modules: openedge-hub openedge-function openedge-remote-mqtt
+modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
 
 openedge:
-	go build ${RACE} .
+	@echo "GO $@"
+	@go build ${RACE} .
 
-openedge-hub:
-	go build ${RACE} ./modules/openedge-hub
+openedge-hub/openedge-hub:
+	make -C openedge-hub
 
-openedge-function:
-	go build ${RACE} ./modules/openedge-function
+openedge-function/openedge-function:
+	make -C openedge-function
 
-openedge-remote-mqtt:
-	go build ${RACE} ./modules/openedge-remote-mqtt
+openedge-remote-mqtt/openedge-remote-mqtt:
+	make -C openedge-remote-mqtt
 
 test:
 	go test --race ./...
@@ -31,22 +32,24 @@ test:
 tools: pubsub
 
 pubsub:
-	go build ${RACE} ./tools/pubsub
+	@echo "GO $@"
+	@go build ${RACE} ./tools/pubsub
 
 consistency:
-	go build ${RACE} ./tools/consistency
+	@echo "GO $@"
+	@go build ${RACE} ./tools/consistency
 
 install: all
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
 
 native-install: install
-	install -m 0755 openedge-hub ${PREFIX}/bin/
-	install -m 0755 openedge-function ${PREFIX}/bin/
-	install -m 0755 openedge-remote-mqtt ${PREFIX}/bin/
-	install -m 0755 modules/openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
-	install -m 0755 modules/openedge-function-runtime-python27/runtime_pb2.py ${PREFIX}/bin
-	install -m 0755 modules/openedge-function-runtime-python27/runtime_pb2_grpc.py ${PREFIX}/bin
+	install -m 0755 openedge-hub/openedge-hub ${PREFIX}/bin/
+	install -m 0755 openedge-function/openedge-function ${PREFIX}/bin/
+	install -m 0755 openedge-remote-mqtt/openedge-remote-mqtt ${PREFIX}/bin/
+	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
+	install -m 0755 openedge-function-runtime-python27/runtime_pb2.py ${PREFIX}/bin
+	install -m 0755 openedge-function-runtime-python27/runtime_pb2_grpc.py ${PREFIX}/bin
 	tar cf - -C example/native app conf | tar xvf - -C ${PREFIX}/
 
 uninstall:
@@ -69,7 +72,10 @@ native-uninstall: uninstall
 
 .PHONY: clean
 clean:
-	rm -f openedge openedge-hub openedge-function openedge-remote-mqtt
+	rm -f openedge
+	make -C openedge-hub clean
+	make -C openedge-function clean
+	make -C openedge-remote-mqtt clean
 	rm -f pubsub consistency
 
 rebuild: clean all
