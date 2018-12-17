@@ -174,13 +174,15 @@ func (c *Client) processor() error {
 			err = client.ErrClientAlreadyConnecting
 			return c.die(err)
 		case *packet.Suback:
-			c.subscribeFuture.Complete()
-			for _, code := range p.ReturnCodes {
-				if code == packet.QOSFailure {
-					err = client.ErrFailedSubscription
-					return c.die(err)
+			if c.config.ValidateSubs {
+				for _, code := range p.ReturnCodes {
+					if code == packet.QOSFailure {
+						err = client.ErrFailedSubscription
+						return c.die(err)
+					}
 				}
 			}
+			c.subscribeFuture.Complete()
 		default:
 			if c.callback != nil {
 				c.callback(pkt, nil)

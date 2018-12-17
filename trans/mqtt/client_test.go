@@ -391,3 +391,92 @@ func TestClientConnackFutureTimeout(t *testing.T) {
 
 	safeReceive(done)
 }
+
+func TestClientSubscribeFutureTimeout(t *testing.T) {
+	subscribe := packet.NewSubscribe()
+	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
+	subscribe.ID = 1
+
+	broker := flow.New().Debug().
+		Receive(connectPacket()).
+		Send(connackPacket()).
+		Receive(subscribe).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.Timeout = time.Millisecond * 50
+	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: "test"}}
+	cb := func(p packet.Generic, err error) {
+		assert.EqualError(t, err, "future timeout")
+	}
+	c, err := mqtt.NewClient(cc, cb)
+	assert.Nil(t, c)
+	assert.EqualError(t, err, "future timeout")
+
+	safeReceive(done)
+}
+
+func TestClientSubscribeValidate(t *testing.T) {
+	subscribe := packet.NewSubscribe()
+	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
+	subscribe.ID = 1
+
+	suback := packet.NewSuback()
+	suback.ReturnCodes = []packet.QOS{packet.QOSFailure}
+	suback.ID = 1
+
+	broker := flow.New().Debug().
+		Receive(connectPacket()).
+		Send(connackPacket()).
+		Receive(subscribe).
+		Send(suback).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.ValidateSubs = true
+	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: "test"}}
+	cb := func(p packet.Generic, err error) {
+		assert.EqualError(t, err, "failed subscription")
+	}
+	c, err := mqtt.NewClient(cc, cb)
+	assert.Nil(t, c)
+	assert.EqualError(t, err, "failed subscription")
+
+	safeReceive(done)
+}
+
+func TestClientSubscribeWithoutValidate(t *testing.T) {
+	subscribe := packet.NewSubscribe()
+	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
+	subscribe.ID = 1
+
+	suback := packet.NewSuback()
+	suback.ReturnCodes = []packet.QOS{packet.QOSFailure}
+	suback.ID = 1
+
+	broker := flow.New().Debug().
+		Receive(connectPacket()).
+		Send(connackPacket()).
+		Receive(subscribe).
+		Send(suback).
+		Receive(disconnectPacket()).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: "test"}}
+	cb := func(p packet.Generic, err error) {}
+	c, err := mqtt.NewClient(cc, cb)
+	assert.NotNil(t, c)
+	assert.NoError(t, err)
+
+	err = c.Close()
+	assert.NoError(t, err)
+
+	safeReceive(done)
+}
