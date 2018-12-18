@@ -6,6 +6,7 @@ import (
 
 	"github.com/baidu/openedge/hub/common"
 	"github.com/baidu/openedge/hub/utils"
+	"github.com/jpillora/backoff"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,19 +27,24 @@ type msgchan struct {
 	quitTimeout      time.Duration
 	publish          common.Publish
 	republish        common.Publish
-	republishTimeout time.Duration
+	republishBackoff *backoff.Backoff
 	log              *logrus.Entry
 }
 
 // newMsgChan creates a new message channel
 func newMsgChan(l0, l1 int, publish, republish common.Publish, republishTimeout time.Duration, quitTimeout time.Duration, persist func(uint64), log *logrus.Entry) *msgchan {
+	backoff := &backoff.Backoff{
+		Min:    time.Millisecond * 100,
+		Max:    republishTimeout,
+		Factor: 2,
+	}
 	return &msgchan{
 		msgq0:            make(chan *common.Message, l0),
 		msgq1:            make(chan *common.Message, l1),
 		msgack:           make(chan *common.Message, l1),
 		publish:          publish,
 		republish:        republish,
-		republishTimeout: republishTimeout,
+		republishBackoff: backoff,
 		quitTimeout:      quitTimeout,
 		persist:          persist,
 		log:              log,
@@ -177,7 +183,7 @@ func (c *msgchan) goWaitingAck() error {
 		case <-c.acktomb.Dying():
 			return nil
 		case msg := <-c.msgack:
-			msg.WaitTimeout(c.republishTimeout, c.republish, c.acktomb.Dying())
+			msg.WaitTimeout(c.republishBackoff, c.republish, c.acktomb.Dying())
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/baidu/openedge/hub/utils"
 	"github.com/golang/protobuf/proto"
+	"github.com/jpillora/backoff"
 )
 
 // Q0: it means the message with qos=0 published by clients or functions
@@ -92,13 +93,14 @@ func (m *Message) Ack() {
 }
 
 // WaitTimeout waits until finish
-func (m *Message) WaitTimeout(timeout time.Duration, republish Publish, cancel <-chan struct{}) {
+func (m *Message) WaitTimeout(bf *backoff.Backoff, republish Publish, cancel <-chan struct{}) {
 	if m.acknowledge == nil {
 		if m.callbackSID != nil {
 			m.callbackSID(m.SequenceID)
 		}
 		return
 	}
+	bf.Reset()
 	for {
 		select {
 		case <-cancel:
@@ -108,7 +110,7 @@ func (m *Message) WaitTimeout(timeout time.Duration, republish Publish, cancel <
 				m.callbackSID(m.SequenceID)
 			}
 			return
-		case <-time.After(timeout):
+		case <-time.After(bf.Duration()):
 			if republish != nil {
 				republish(*m)
 			}

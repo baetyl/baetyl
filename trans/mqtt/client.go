@@ -15,14 +15,21 @@ import (
 	"gopkg.in/tomb.v2"
 )
 
+// Handler MQTT message handler
+type Handler struct {
+	ProcessPublish func(*packet.Publish) error
+	ProcessPuback  func(*packet.Puback) error
+	ProcessError   func(error)
+}
+
 // A Client connects to a broker and handles the transmission of packets
 type Client struct {
 	conn            transport.Conn
 	config          ClientConfig
+	handler         Handler
 	tracker         *client.Tracker
 	connectFuture   *Future
 	subscribeFuture *Future
-	callback        func(packet.Generic, error)
 
 	finish sync.Once
 	tomb   utils.Tomb
@@ -30,7 +37,7 @@ type Client struct {
 }
 
 // NewClient returns a new client
-func NewClient(cc ClientConfig, cb func(packet.Generic, error)) (*Client, error) {
+func NewClient(cc ClientConfig, handler Handler) (*Client, error) {
 	dialer, err := NewDialer(cc.Certificate)
 	if err != nil {
 		return nil, err
@@ -42,7 +49,7 @@ func NewClient(cc ClientConfig, cb func(packet.Generic, error)) (*Client, error)
 	c := &Client{
 		conn:            conn,
 		config:          cc,
-		callback:        cb,
+		handler:         handler,
 		connectFuture:   NewFuture(),
 		subscribeFuture: NewFuture(),
 		tracker:         client.NewTracker(cc.KeepAlive),
@@ -115,8 +122,12 @@ func (c *Client) Send(p packet.Generic) (err error) {
 	return
 }
 
-// Close closes the client immediately without sending a Disconnect packet and
-// waiting for outgoing transmissions to finish.
+// Dying returns the channel that can be used to wait until client closed
+func (c *Client) Dying() <-chan struct{} {
+	return c.tomb.Dying()
+}
+
+// Close closes the client after sending a disconnect packet
 func (c *Client) Close() error {
 	c.die(nil)
 	return c.tomb.Wait()
@@ -168,23 +179,38 @@ func (c *Client) processor() error {
 		}
 
 		switch p := pkt.(type) {
+		case *packet.Publish:
+			if c.handler.ProcessPublish != nil {
+				err = c.handler.ProcessPublish(p)
+				if err != nil {
+					return c.die(err)
+				}
+			}
+		case *packet.Puback:
+			if c.handler.ProcessPuback != nil {
+				err = c.handler.ProcessPuback(p)
+				if err != nil {
+					return c.die(err)
+				}
+			}
+		case *packet.Suback:
+			if c.config.ValidateSubs {
+				for _, code := range p.ReturnCodes {
+					if code == packet.QOSFailure {
+						err = client.ErrFailedSubscription
+						return c.die(err)
+					}
+				}
+			}
+			c.subscribeFuture.Complete()
 		case *packet.Pingresp:
 			c.tracker.Pong()
 		case *packet.Connack:
 			err = client.ErrClientAlreadyConnecting
 			return c.die(err)
-		case *packet.Suback:
-			c.subscribeFuture.Complete()
-			for _, code := range p.ReturnCodes {
-				if code == packet.QOSFailure {
-					err = client.ErrFailedSubscription
-					return c.die(err)
-				}
-			}
 		default:
-			if c.callback != nil {
-				c.callback(pkt, nil)
-			}
+			err = client.ErrFailedSubscription
+			return c.die(err)
 		}
 	}
 }
@@ -253,7 +279,9 @@ func (c *Client) die(err error) error {
 		if err == nil {
 			c.send(packet.NewDisconnect(), false)
 		} else {
-			c.callback(nil, err)
+			if c.handler.ProcessError != nil {
+				c.handler.ProcessError(err)
+			}
 			c.log.WithError(err).Errorln("MQTT client raises error")
 		}
 		c.tomb.Kill(err)

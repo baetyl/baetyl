@@ -11,7 +11,7 @@ import (
 )
 
 func TestClientConnectErrorMissingAddress(t *testing.T) {
-	c, err := mqtt.NewClient(mqtt.ClientConfig{}, nil)
+	c, err := mqtt.NewClient(mqtt.ClientConfig{}, mqtt.Handler{})
 	assert.EqualError(t, err, "parse : empty url")
 	assert.Nil(t, c)
 }
@@ -81,9 +81,9 @@ func TestClientConnectWithCredentials(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.Username = "test"
 	cc.Password = "test"
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "connection refused: bad user name or password")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.EqualError(t, err, "connection refused: bad user name or password")
 	assert.Nil(t, c)
@@ -103,9 +103,9 @@ func TestClientConnectionDenied(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "connection refused: not authorized")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "connection refused: not authorized")
@@ -122,9 +122,9 @@ func TestClientExpectedConnack(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client expected connack")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "client expected connack")
@@ -142,9 +142,9 @@ func TestClientNotExpectedConnack(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client already connecting")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.NoError(t, err)
 
@@ -202,9 +202,9 @@ func TestClientKeepAliveTimeout(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.KeepAlive = time.Millisecond * 5
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client missing pong")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.NoError(t, err)
 
@@ -241,15 +241,18 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 
 	wait := make(chan struct{})
 
-	callback := func(pkt packet.Generic, err error) {
-		assert.NoError(t, err)
-		p, ok := pkt.(*packet.Publish)
-		assert.True(t, ok)
-		assert.Equal(t, "test", p.Message.Topic)
-		assert.Equal(t, []byte("test"), p.Message.Payload)
-		assert.Equal(t, packet.QOS(0), p.Message.QOS)
-		assert.False(t, p.Message.Retain)
-		close(wait)
+	callback := mqtt.Handler{
+		ProcessPublish: func(p *packet.Publish) error {
+			assert.Equal(t, "test", p.Message.Topic)
+			assert.Equal(t, []byte("test"), p.Message.Payload)
+			assert.Equal(t, packet.QOS(0), p.Message.QOS)
+			assert.False(t, p.Message.Retain)
+			close(wait)
+			return nil
+		},
+		ProcessError: func(err error) {
+			assert.NoError(t, err)
+		},
 	}
 	cc := newConfig(t, port)
 	cc.Subscriptions = []mqtt.Subscription{{Topic: "test"}}
@@ -301,18 +304,22 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 
 	wait := make(chan struct{})
 
-	callback := func(pkt packet.Generic, err error) {
-		assert.NoError(t, err)
-		switch p := pkt.(type) {
-		case *packet.Publish:
+	callback := mqtt.Handler{
+		ProcessPublish: func(p *packet.Publish) error {
 			assert.Equal(t, "test", p.Message.Topic)
 			assert.Equal(t, []byte("test"), p.Message.Payload)
 			assert.Equal(t, packet.QOS(1), p.Message.QOS)
 			assert.False(t, p.Message.Retain)
 			close(wait)
-		case *packet.Puback:
+			return nil
+		},
+		ProcessPuback: func(p *packet.Puback) error {
 			assert.Equal(t, packet.ID(2), p.ID)
-		}
+			return nil
+		},
+		ProcessError: func(err error) {
+			assert.NoError(t, err)
+		},
 	}
 	cc := newConfig(t, port)
 	cc.Subscriptions = []mqtt.Subscription{{Topic: "test", QOS: 1}}
@@ -342,9 +349,9 @@ func TestClientUnexpectedClose(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client not connected")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.NoError(t, err)
 
@@ -363,9 +370,9 @@ func TestClientConnackFutureCancellation(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client not connected")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "client not connected")
@@ -382,12 +389,100 @@ func TestClientConnackFutureTimeout(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.Timeout = time.Millisecond * 50
-	cb := func(p packet.Generic, err error) {
+	cb := mqtt.Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "future timeout")
-	}
+	}}
 	c, err := mqtt.NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "future timeout")
+
+	safeReceive(done)
+}
+
+func TestClientSubscribeFutureTimeout(t *testing.T) {
+	subscribe := packet.NewSubscribe()
+	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
+	subscribe.ID = 1
+
+	broker := flow.New().Debug().
+		Receive(connectPacket()).
+		Send(connackPacket()).
+		Receive(subscribe).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.Timeout = time.Millisecond * 50
+	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: "test"}}
+	cb := mqtt.Handler{ProcessError: func(err error) {
+		assert.EqualError(t, err, "future timeout")
+	}}
+	c, err := mqtt.NewClient(cc, cb)
+	assert.Nil(t, c)
+	assert.EqualError(t, err, "future timeout")
+
+	safeReceive(done)
+}
+
+func TestClientSubscribeValidate(t *testing.T) {
+	subscribe := packet.NewSubscribe()
+	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
+	subscribe.ID = 1
+
+	suback := packet.NewSuback()
+	suback.ReturnCodes = []packet.QOS{packet.QOSFailure}
+	suback.ID = 1
+
+	broker := flow.New().Debug().
+		Receive(connectPacket()).
+		Send(connackPacket()).
+		Receive(subscribe).
+		Send(suback).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.ValidateSubs = true
+	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: "test"}}
+	cb := mqtt.Handler{ProcessError: func(err error) {
+		assert.EqualError(t, err, "failed subscription")
+	}}
+	c, err := mqtt.NewClient(cc, cb)
+	assert.Nil(t, c)
+	assert.EqualError(t, err, "failed subscription")
+
+	safeReceive(done)
+}
+
+func TestClientSubscribeWithoutValidate(t *testing.T) {
+	subscribe := packet.NewSubscribe()
+	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
+	subscribe.ID = 1
+
+	suback := packet.NewSuback()
+	suback.ReturnCodes = []packet.QOS{packet.QOSFailure}
+	suback.ID = 1
+
+	broker := flow.New().Debug().
+		Receive(connectPacket()).
+		Send(connackPacket()).
+		Receive(subscribe).
+		Send(suback).
+		Receive(disconnectPacket()).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: "test"}}
+	c, err := mqtt.NewClient(cc, mqtt.Handler{})
+	assert.NotNil(t, c)
+	assert.NoError(t, err)
+
+	err = c.Close()
+	assert.NoError(t, err)
 
 	safeReceive(done)
 }
