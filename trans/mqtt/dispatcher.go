@@ -51,9 +51,9 @@ func (d *Dispatcher) Send(pkt packet.Generic) error {
 }
 
 // Start starts dispatcher
-func (d *Dispatcher) Start(cb func(packet.Generic)) error {
+func (d *Dispatcher) Start(h Handler) error {
 	return d.tomb.Go(func() error {
-		return d.supervisor(cb)
+		return d.supervisor(h)
 	})
 }
 
@@ -64,7 +64,7 @@ func (d *Dispatcher) Close() error {
 }
 
 // Supervisor the supervised reconnect loop
-func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
+func (d *Dispatcher) supervisor(handler Handler) error {
 	first := true
 	var dying bool
 	var current packet.Generic
@@ -89,20 +89,7 @@ func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
 
 		d.log.Debugln("next reconnect")
 
-		// prepare the stop channel
-		fail := make(chan struct{})
-
-		// try once to get a client
-		callback := func(pkt packet.Generic, err error) {
-			if err != nil {
-				close(fail)
-				return
-			}
-			if cb != nil {
-				cb(pkt)
-			}
-		}
-		client, err := NewClient(d.config, callback)
+		client, err := NewClient(d.config, handler)
 		if err != nil {
 			d.log.WithError(err).Errorln("failed to create new client")
 			continue
@@ -112,7 +99,7 @@ func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
 		d.log.Debugln("client online")
 
 		// run dispatcher on client
-		current, dying = d.dispatcher(client, current, fail)
+		current, dying = d.dispatcher(client, current)
 
 		// run callback
 		d.log.Debugln("client offline")
@@ -125,7 +112,7 @@ func (d *Dispatcher) supervisor(cb func(packet.Generic)) error {
 }
 
 // reads from the queues and calls the current client
-func (d *Dispatcher) dispatcher(client *Client, current packet.Generic, fail chan struct{}) (packet.Generic, bool) {
+func (d *Dispatcher) dispatcher(client *Client, current packet.Generic) (packet.Generic, bool) {
 	defer client.Close()
 
 	if current != nil {
@@ -142,10 +129,10 @@ func (d *Dispatcher) dispatcher(client *Client, current packet.Generic, fail cha
 			if err != nil {
 				return pkt, false
 			}
+		case <-client.Dying():
+			return nil, false
 		case <-d.tomb.Dying():
 			return nil, true
-		case <-fail:
-			return nil, false
 		}
 	}
 }

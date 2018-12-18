@@ -8,6 +8,7 @@ import (
 
 	"github.com/baidu/openedge/hub/utils"
 	"github.com/golang/protobuf/proto"
+	"github.com/jpillora/backoff"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -80,9 +81,13 @@ func TestMessageAckWait(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		bf := &backoff.Backoff{
+			Min:    time.Millisecond * 100,
+			Max:    time.Millisecond * 100,
+			Factor: 2,
+		}
 		for _, ack := range acks {
-			ack.WaitTimeout(time.Millisecond*100, redo, c)
-			// assert.Equal(t, expected[i], quick)
+			ack.WaitTimeout(bf, redo, c)
 		}
 	}()
 	assert.Equal(t, uint64(0), atomic.LoadUint64(&last))
@@ -108,7 +113,12 @@ func TestMessageAckRedoClose(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		ack.WaitTimeout(time.Millisecond*100, func(_ Message) { atomic.AddUint64(&actual, 1) }, c)
+		bf := &backoff.Backoff{
+			Min:    time.Millisecond * 100,
+			Max:    time.Millisecond * 100,
+			Factor: 2,
+		}
+		ack.WaitTimeout(bf, func(_ Message) { atomic.AddUint64(&actual, 1) }, c)
 	}()
 	assert.Equal(t, uint64(0), atomic.LoadUint64(&actual))
 	time.Sleep(time.Millisecond * 150)

@@ -29,7 +29,7 @@ openedge-remote-mqtt/openedge-remote-mqtt:
 test:
 	go test --race ./...
 
-tools: pubsub
+tools: pubsub consistency
 
 pubsub:
 	@echo "GO $@"

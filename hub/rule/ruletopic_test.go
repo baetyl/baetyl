@@ -12,6 +12,7 @@ import (
 	"github.com/baidu/openedge/hub/common"
 	"github.com/baidu/openedge/hub/config"
 	"github.com/baidu/openedge/hub/persist"
+	"github.com/jpillora/backoff"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -217,7 +218,11 @@ func TestRuleTopicRedo(t *testing.T) {
 	rc := int32(0)
 	var wg sync.WaitGroup
 	wg.Add(1)
-	rt.msgchan.republishTimeout = time.Millisecond * 100
+	rt.msgchan.republishBackoff = &backoff.Backoff{
+		Min:    time.Millisecond * 100,
+		Max:    time.Millisecond * 100,
+		Factor: 2,
+	}
 	rt.msgchan.publish = func(msg common.Message) {}
 	rt.msgchan.republish = func(msg common.Message) {
 		atomic.AddInt32(&rc, 1)

@@ -28,11 +28,12 @@ func newConfig(t *testing.T, port string) (c mqtt.ClientConfig) {
 	return
 }
 
-func assertNoErrorCallback(t *testing.T) func(packet.Generic, error) {
-	return func(p packet.Generic, err error) {
+func assertNoErrorCallback(t *testing.T) (h mqtt.Handler) {
+	h.ProcessError = func(err error) {
 		assert.NoError(t, err)
-		assert.FailNow(t, "callback should not have been called")
+		assert.FailNow(t, "ProcessError should not have been called")
 	}
+	return
 }
 
 func fakeBroker(t *testing.T, testFlows ...*flow.Flow) (chan struct{}, string) {

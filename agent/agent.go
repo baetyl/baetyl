@@ -42,13 +42,9 @@ func NewAgent(c config.Cloud) (*Agent, error) {
 
 // Start starts agent
 func (a *Agent) Start(reload func(string) map[string]interface{}) error {
-	return a.mqtt.Start(func(pkt packet.Generic) {
-		publish, ok := pkt.(*packet.Publish)
-		if !ok {
-			logger.Warnf("packet unexpected")
-			return
-		}
-		e := NewEvent(publish.Message.Payload)
+	h := mqtt.Handler{}
+	h.ProcessPublish = func(p *packet.Publish) error {
+		e := NewEvent(p.Message.Payload)
 		logger.Debugln("backward event:", e)
 		switch e.Type {
 		case SyncConfig:
@@ -64,12 +60,14 @@ func (a *Agent) Start(reload func(string) map[string]interface{}) error {
 		default:
 			logger.Warnf("event type unexpected")
 		}
-		if publish.Message.QOS == 1 {
+		if p.Message.QOS == 1 {
 			puback := packet.NewPuback()
-			puback.ID = publish.ID
+			puback.ID = p.ID
 			a.mqtt.Send(puback)
 		}
-	})
+		return nil
+	}
+	return a.mqtt.Start(h)
 }
 
 // Report reports info

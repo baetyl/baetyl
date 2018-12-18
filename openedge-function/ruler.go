@@ -54,15 +54,14 @@ func (rr *ruler) start() error {
 			rr.md.Send(puback)
 		}
 	})
-	err := rr.md.Start(func(pkt packet.Generic) {
-		switch p := pkt.(type) {
-		case *packet.Publish:
-			rr.fd.Invoke(p)
-		case *packet.Puback:
-			rr.md.Send(p)
-		}
-	})
-	return err
+	h := mqtt.Handler{}
+	h.ProcessPublish = func(p *packet.Publish) error {
+		return rr.fd.Invoke(p)
+	}
+	h.ProcessPuback = func(p *packet.Puback) error {
+		return rr.md.Send(p)
+	}
+	return rr.md.Start(h)
 }
 
 func (rr *ruler) close() {
