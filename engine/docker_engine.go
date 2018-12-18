@@ -115,7 +115,6 @@ func (e *DockerEngine) initNetwork() error {
 	context := context.Background()
 	args := filters.NewArgs()
 	args.Add("driver", "bridge")
-	args.Add("scope", "local")
 	args.Add("type", "custom")
 	args.Add("name", defaultNetworkName)
 	nws, err := e.client.NetworkList(context, types.NetworkListOptions{Filters: args})
