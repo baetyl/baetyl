@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/trans/http"
-	"github.com/baidu/openedge/utils"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/http"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // Engine engine
@@ -22,11 +21,11 @@ type Engine interface {
 type Server struct {
 	*http.Server
 	engine Engine
-	log    *logrus.Entry
+	log    *logger.Entry
 }
 
 // NewServer creates a new server
-func NewServer(e Engine, c http.ServerConfig) (*Server, error) {
+func NewServer(e Engine, c config.HTTPServer) (*Server, error) {
 	svr, err := http.NewServer(c)
 	if err != nil {
 		return nil, err

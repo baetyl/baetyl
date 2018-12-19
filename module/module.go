@@ -7,7 +7,15 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/baidu/openedge/utils"
+	"github.com/baidu/openedge/module/utils"
+)
+
+// all env keys
+const (
+	EnvOpenEdgeHostOS      = "OPENEDGE_HOST_OS"
+	EnvOpenEdgeMasterAPI   = "OPENEDGE_MASTER_API"
+	EnvOpenEdgeModuleMode  = "OPENEDGE_MODULE_MODE"
+	EnvOpenEdgeModuleToken = "OPENEDGE_MODULE_TOKEN"
 )
 
 // Module module interfaces

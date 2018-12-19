@@ -6,7 +6,7 @@
 /.idea
 /openedge
 /pubsub
-/consistency
+/openedge-consistency
 /output*
 /**/.DS_Store
 /.vscode

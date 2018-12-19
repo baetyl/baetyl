@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/module"
 	// "net/http"
 	// _ "net/http/pprof"

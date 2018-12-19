@@ -5,13 +5,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
 	"github.com/docker/distribution/uuid"
 	"github.com/jpillora/backoff"
 	"github.com/orcaman/concurrent-map"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -30,8 +29,8 @@ type Context struct {
 // Spec common spec
 type Spec struct {
 	Name    string
-	Restart module.Policy
-	Logger  *logrus.Entry
+	Restart config.Policy
+	Logger  *logger.Entry
 	Grace   time.Duration
 }
 
@@ -44,7 +43,7 @@ type Inner interface {
 // Worker worker
 type Worker interface {
 	Name() string
-	Policy() module.Policy
+	Policy() config.Policy
 	Start(supervising func(Worker) error) error
 	Restart() error
 	Stop() error
@@ -60,7 +59,7 @@ type Engine struct {
 	resident  cmap.ConcurrentMap // resident modules from app.yml
 	temporary cmap.ConcurrentMap // temporary modules from function module
 	entries   cmap.ConcurrentMap
-	log       *logrus.Entry
+	log       *logger.Entry
 }
 
 // New creates a new engine
@@ -113,7 +112,7 @@ func (e *Engine) StartAll(ms []config.Module) error {
 		}
 		e.log.Infof("resident module (%s) started", m.Name)
 	}
-	e.log.Info("all resident modules started")
+	e.log.Infof("all resident modules started")
 	return nil
 }
 
@@ -199,7 +198,7 @@ func (e *Engine) StopAll() {
 		}
 	}
 	e.order = []string{}
-	e.log.Info("all resident modules stopped")
+	e.log.Infof("all resident modules stopped")
 	var wg sync.WaitGroup
 	for item := range e.temporary.IterBuffered() {
 		e.temporary.Remove(item.Key)
@@ -215,7 +214,7 @@ func (e *Engine) StopAll() {
 		}(item.Val.(Worker))
 	}
 	wg.Wait()
-	e.log.Info("all temporary modules stopped")
+	e.log.Infof("all temporary modules stopped")
 }
 
 // Prepare prepares entries
@@ -263,19 +262,19 @@ func (e *Engine) supervising(w Worker) error {
 			return nil
 		case err := <-c:
 			switch r.Policy {
-			case module.RestartUnlessStopped:
+			case config.RestartUnlessStopped:
 				if err != nil {
 					return nil
 				}
 				goto RESTART
-			case module.RestartOnFailure:
+			case config.RestartOnFailure:
 				if err == nil {
 					return nil
 				}
 				goto RESTART
-			case module.RestartAlways:
+			case config.RestartAlways:
 				goto RESTART
-			case module.RestartNo:
+			case config.RestartNo:
 				return nil
 			default:
 				logger.Errorf("Restart policy (%s) invalid", r.Policy)

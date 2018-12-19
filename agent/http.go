@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/baidu/openedge/trans/http"
-	"github.com/baidu/openedge/utils"
+	"github.com/baidu/openedge/module/http"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // Report Report

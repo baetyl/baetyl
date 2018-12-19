@@ -6,9 +6,9 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/utils"
-	"github.com/baidu/openedge/version"
+	"github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // Report shadow's report
@@ -34,10 +34,10 @@ func (r *Report) populateReported() {
 	r.Reported["bit"] = strconv.IntSize
 	r.Reported["arch"] = runtime.GOARCH
 	r.Reported["go_version"] = runtime.Version()
-	r.Reported["bin_version"] = version.Version
+	r.Reported["bin_version"] = module.Version
 	gpus, err := utils.GetGpu()
 	if err != nil {
-		logger.WithError(err).Warn("failed to get gpu information")
+		logger.WithError(err).Warnf("failed to get gpu information")
 	}
 	for _, gpu := range gpus {
 		r.Reported[fmt.Sprintf("gpu%s", gpu.ID)] = gpu.Model
@@ -46,7 +46,7 @@ func (r *Report) populateReported() {
 	}
 	mem, err := utils.GetMem()
 	if err != nil {
-		logger.WithError(err).Warn("failed to get memory information")
+		logger.WithError(err).Warnf("failed to get memory information")
 	}
 	if mem != nil {
 		r.Reported["mem_total"] = mem.Total
@@ -54,7 +54,7 @@ func (r *Report) populateReported() {
 	}
 	swap, err := utils.GetSwap()
 	if err != nil {
-		logger.WithError(err).Warn("failed to get swap information")
+		logger.WithError(err).Warnf("failed to get swap information")
 	}
 	if swap != nil {
 		r.Reported["swap_total"] = swap.Total

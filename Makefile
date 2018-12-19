@@ -14,8 +14,8 @@ depends-save:
 modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
 
 openedge:
-	@echo "GO $@"
-	@go build ${RACE} .
+	@echo "GO $@ ${GOFLAG}"
+	@go build ${GOFLAG} .
 
 openedge-hub/openedge-hub:
 	make -C openedge-hub
@@ -29,15 +29,15 @@ openedge-remote-mqtt/openedge-remote-mqtt:
 test:
 	go test --race ./...
 
-tools: pubsub consistency
+tools: pubsub openedge-consistency
 
 pubsub:
 	@echo "GO $@"
-	@go build ${RACE} ./tools/pubsub
+	@go build ${GOFLAG} ./tools/pubsub
 
-consistency:
+openedge-consistency:
 	@echo "GO $@"
-	@go build ${RACE} ./tools/consistency
+	@go build ${GOFLAG} ./tools/openedge-consistency
 
 install: all
 	install -d -m 0755 ${PREFIX}/bin
@@ -76,6 +76,6 @@ clean:
 	make -C openedge-hub clean
 	make -C openedge-function clean
 	make -C openedge-remote-mqtt clean
-	rm -f pubsub consistency
+	rm -f pubsub openedge-consistency
 
 rebuild: clean all

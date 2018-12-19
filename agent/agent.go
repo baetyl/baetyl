@@ -5,11 +5,9 @@ import (
 	"io/ioutil"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/trans/http"
-	"github.com/baidu/openedge/trans/mqtt"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/http"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/mqtt"
 )
 
 // topics from cloud
@@ -20,14 +18,14 @@ const (
 
 // Agent agent of edge cloud
 type Agent struct {
-	conf config.Cloud
+	conf Config
 	http *http.Client
 	mqtt *mqtt.Dispatcher
-	log  *logrus.Entry
+	log  *logger.Entry
 }
 
 // NewAgent creates a new agent
-func NewAgent(c config.Cloud) (*Agent, error) {
+func NewAgent(c Config) (*Agent, error) {
 	httpcli, err := http.NewClient(c.OpenAPI)
 	if err != nil {
 		return nil, err
@@ -35,7 +33,7 @@ func NewAgent(c config.Cloud) (*Agent, error) {
 	return &Agent{
 		conf: c,
 		http: httpcli,
-		mqtt: mqtt.NewDispatcher(c.ClientConfig),
+		mqtt: mqtt.NewDispatcher(c.MQTTClient),
 		log:  logger.WithFields("cloud", "agent"),
 	}, nil
 }

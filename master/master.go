@@ -11,11 +11,11 @@ import (
 
 	"github.com/baidu/openedge/agent"
 	"github.com/baidu/openedge/api"
-	"github.com/baidu/openedge/config"
 	"github.com/baidu/openedge/engine"
-	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/trans/mqtt"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 	"github.com/mholt/archiver"
 )
 
@@ -28,7 +28,7 @@ var appConfFile = path.Join(appDir, "app.yml")
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	conf   config.Master
+	conf   Config
 	engine *engine.Engine
 	agent  *agent.Agent
 	api    *api.Server
@@ -37,7 +37,7 @@ type Master struct {
 
 // New creates a new master
 func New(confDate string) (*Master, error) {
-	c := config.Master{}
+	c := Config{}
 	err := module.Load(&c, confDate)
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ func (m *Master) Reload(version string) map[string]interface{} {
 	}
 	if err != nil {
 		report["reload_error"] = err.Error()
-		logger.WithError(err).Error("failed to reload app config")
+		logger.WithError(err).Errorf("failed to reload app config")
 	} else {
 		logger.Infof("app config (version:%s) loaded", m.conf.Version)
 	}
@@ -162,7 +162,7 @@ func (m *Master) reload(version string) error {
 	m.engine.StopAll()
 	err = m.engine.StartAll(m.conf.Modules)
 	if err != nil {
-		logger.WithError(err).Info("failed to load new config, rollback")
+		logger.WithError(err).Infof("failed to load new config, rollback")
 		err1 := m.unpackBackupFile()
 		if err1 != nil {
 			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file" + err1.Error())
@@ -240,9 +240,9 @@ func fileExists(path string) bool {
 	return !fi.IsDir()
 }
 
-func defaults(c *config.Master) error {
+func defaults(c *Config) error {
 	if c.Cloud.Address != "" {
-		backward := mqtt.Subscription{QOS: 1, Topic: fmt.Sprintf(agent.CloudBackward, c.Cloud.ClientID)}
+		backward := config.Subscription{QOS: 1, Topic: fmt.Sprintf(agent.CloudBackward, c.Cloud.ClientID)}
 		c.Cloud.Subscriptions = append(c.Cloud.Subscriptions, backward)
 		if c.Cloud.OpenAPI.Address == "" {
 			if strings.Contains(c.Cloud.Address, "bj.baidubce.com") {
@@ -259,7 +259,7 @@ func defaults(c *config.Master) error {
 	}
 	if runtime.GOOS == "linux" {
 		c.API.Address = "unix://var/openedge.sock"
-		module.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
+		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
 	} else {
 		if c.API.Address == "" {
 			c.API.Address = "tcp://127.0.0.1:50050"
@@ -273,9 +273,9 @@ func defaults(c *config.Master) error {
 			parts := strings.SplitN(uri.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
 		}
-		module.SetEnv(module.EnvOpenEdgeMasterAPI, addr)
+		utils.SetEnv(module.EnvOpenEdgeMasterAPI, addr)
 	}
-	module.SetEnv(module.EnvOpenEdgeHostOS, runtime.GOOS)
-	module.SetEnv(module.EnvOpenEdgeModuleMode, c.Mode)
+	utils.SetEnv(module.EnvOpenEdgeHostOS, runtime.GOOS)
+	utils.SetEnv(module.EnvOpenEdgeModuleMode, c.Mode)
 	return nil
 }

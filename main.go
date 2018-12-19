@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
@@ -16,7 +15,7 @@ func main() {
 		return
 	}
 	if f.Help {
-		flag.Usage()
+		module.PrintUsage()
 		return
 	}
 

@@ -3,11 +3,12 @@ package engine
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/utils"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // NativeSpec spec for native process
@@ -38,7 +39,7 @@ func (w *NativeProcess) Name() string {
 }
 
 // Policy returns restart policy
-func (w *NativeProcess) Policy() module.Policy {
+func (w *NativeProcess) Policy() config.Policy {
 	return w.spec.Restart
 }
 
@@ -69,7 +70,7 @@ func (w *NativeProcess) Restart() error {
 // Stop stops process
 func (w *NativeProcess) Stop() error {
 	if !w.tomb.Alive() {
-		w.spec.Logger.Debug("process already stopped")
+		w.spec.Logger.Debugf("process already stopped")
 		return nil
 	}
 	w.tomb.Kill(nil)
@@ -82,10 +83,10 @@ func (w *NativeProcess) Stop() error {
 
 // Wait waits until process is stopped
 func (w *NativeProcess) Wait(c chan<- error) {
-	defer w.spec.Logger.Info("process stopped")
+	defer w.spec.Logger.Infof("process stopped")
 	ps, err := w.proc.Wait()
 	if err != nil {
-		w.spec.Logger.Debug("failed to wait process:", err)
+		w.spec.Logger.Debugln("failed to wait process:", err)
 		c <- err
 	}
 	c <- fmt.Errorf("process exited: %v", ps)
@@ -106,7 +107,7 @@ func (w *NativeProcess) startProcess() error {
 		return err
 	}
 	w.proc = proc
-	w.spec.Logger = w.spec.Logger.WithField("pid", proc.Pid)
+	w.spec.Logger = w.spec.Logger.WithFields("pid", strconv.Itoa(proc.Pid))
 	return nil
 }
 

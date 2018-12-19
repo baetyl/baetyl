@@ -8,17 +8,16 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/module"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // NativeEngine native engine
 type NativeEngine struct {
 	context *Context
 	pwd     string
-	log     *logrus.Entry
+	log     *logger.Entry
 }
 
 // NewNativeEngine create a new native engine
@@ -72,13 +71,13 @@ func (e *NativeEngine) Create(m config.Module) (Worker, error) {
 			Name:    m.Name,
 			Restart: m.Restart,
 			Grace:   e.context.Grace,
-			Logger:  e.log.WithField("module", m.Name),
+			Logger:  e.log.WithFields("module", m.Name),
 		},
 		Exec: m.Entry,
 		Argv: args,
 		Attr: os.ProcAttr{
 			Dir: e.pwd,
-			Env: module.AppendEnv(m.Env, true),
+			Env: utils.AppendEnv(m.Env, true),
 			Files: []*os.File{
 				os.Stdin,
 				os.Stdout,

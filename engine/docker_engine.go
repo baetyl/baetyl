@@ -8,9 +8,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -18,7 +18,6 @@ import (
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	"github.com/sirupsen/logrus"
 )
 
 const defaultNetworkName = "openedge"
@@ -28,7 +27,7 @@ type DockerEngine struct {
 	context *Context
 	client  *client.Client
 	network string
-	log     *logrus.Entry
+	log     *logger.Entry
 }
 
 // NewDockerEngine create a new docker engine
@@ -77,7 +76,7 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		Image:        m.Entry,
 		ExposedPorts: exposedPorts,
 		Cmd:          cmd,
-		Env:          module.AppendEnv(m.Env, false),
+		Env:          utils.AppendEnv(m.Env, false),
 	}
 	hostConfig := &container.HostConfig{
 		Binds:        volumeBindings,
@@ -131,7 +130,7 @@ func (e *DockerEngine) initNetwork() error {
 		return err
 	}
 	if nw.Warning != "" {
-		e.log.Warn(nw.Warning)
+		e.log.Warnf(nw.Warning)
 	}
 	e.network = nw.ID
 	e.log.Infof("network (%s:openedge) created", e.network[:12])
