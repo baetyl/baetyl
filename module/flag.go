@@ -2,6 +2,7 @@ package module
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -24,19 +25,16 @@ func ParseFlags() (*Flags, error) {
 	if err != nil {
 		return nil, err
 	}
-	//  default
-	f.WorkDir = filepath.Dir(filepath.Dir(cwd))
-	f.Config = filepath.Join("conf", "conf.yml")
 	flag.StringVar(
 		&f.WorkDir,
 		"w",
-		f.WorkDir,
+		filepath.Dir(filepath.Dir(cwd)),
 		"working directory",
 	)
 	flag.StringVar(
 		&f.Config,
 		"c",
-		f.Config,
+		filepath.Join("conf", "conf.yml"),
 		"config file path",
 	)
 	flag.BoolVar(
@@ -55,4 +53,10 @@ func ParseFlags() (*Flags, error) {
 		return nil, err
 	}
 	return f, nil
+}
+
+// PrintUsage prints usage
+func PrintUsage() {
+	fmt.Fprintf(flag.CommandLine.Output(), "Version of %s: %s\n", os.Args[0], Version)
+	flag.Usage()
 }

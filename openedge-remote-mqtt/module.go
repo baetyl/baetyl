@@ -3,16 +3,15 @@ package main
 import (
 	"fmt"
 
-	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/module"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/logger"
 )
 
 // mo bridge module of mqtt servers
 type mo struct {
 	cfg Config
 	rrs []*ruler
-	log *logrus.Entry
+	log *logger.Entry
 }
 
 // New create a new module
@@ -33,7 +32,7 @@ func New(confFile string) (module.Module, error) {
 		if !ok {
 			return nil, fmt.Errorf("remote (%s) not found", rule.Remote.Name)
 		}
-		rulers = append(rulers, create(rule, cfg.Hub, remote.ClientConfig))
+		rulers = append(rulers, create(rule, cfg.Hub, remote.MQTTClient))
 	}
 	return &mo{
 		cfg: cfg,

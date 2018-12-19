@@ -8,9 +8,7 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/api"
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/trans/http"
+	"github.com/baidu/openedge/module/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,18 +16,18 @@ func TestAPIUnix(t *testing.T) {
 	os.MkdirAll("./var/", 0755)
 	defer os.RemoveAll("./var/")
 	addr := "unix://./var/test.sock"
-	s, err := api.NewServer(&mockEngine{pass: true}, http.ServerConfig{Address: addr, Timeout: time.Minute})
+	s, err := api.NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: addr, Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
 	assert.NoError(t, err)
-	c, err := api.NewClient(http.ClientConfig{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute})
+	c, err := api.NewClient(config.HTTPClient{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	p, err := c.GetPortAvailable("127.0.0.1")
 	assert.NoError(t, err)
 	assert.NotZero(t, p)
-	err = c.StartModule(&config.Module{Config: module.Config{Name: "name"}})
+	err = c.StartModule(&config.Module{Name: "name"})
 	assert.NoError(t, err)
 	err = c.StopModule("name")
 	assert.NoError(t, err)
@@ -39,17 +37,17 @@ func TestAPIUnixUnauthorized(t *testing.T) {
 	os.MkdirAll("./var/", 0755)
 	defer os.RemoveAll("./var/")
 	addr := "unix://./var/test.sock"
-	s, err := api.NewServer(&mockEngine{pass: false}, http.ServerConfig{Address: addr, Timeout: time.Minute})
+	s, err := api.NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: addr, Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
 	assert.NoError(t, err)
-	c, err := api.NewClient(http.ClientConfig{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute, Username: "test"})
+	c, err := api.NewClient(config.HTTPClient{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute, Username: "test"})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	_, err = c.GetPortAvailable("127.0.0.1")
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
-	err = c.StartModule(&config.Module{Config: module.Config{Name: "name"}})
+	err = c.StartModule(&config.Module{Name: "name"})
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 	err = c.StopModule("name")
 	assert.EqualError(t, err, "[400] account (test) unauthorized")

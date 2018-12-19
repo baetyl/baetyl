@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/utils"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -42,7 +42,7 @@ func (w *DockerContainer) Name() string {
 }
 
 // Policy returns restart policy
-func (w *DockerContainer) Policy() module.Policy {
+func (w *DockerContainer) Policy() config.Policy {
 	return w.spec.Restart
 }
 
@@ -66,7 +66,7 @@ func (w *DockerContainer) Restart() error {
 // Stop stops container with a gracetime
 func (w *DockerContainer) Stop() error {
 	if !w.tomb.Alive() {
-		w.spec.Logger.Debug("container already stopped")
+		w.spec.Logger.Debugf("container already stopped")
 		return nil
 	}
 	w.tomb.Kill(nil)
@@ -79,7 +79,8 @@ func (w *DockerContainer) Stop() error {
 
 // Wait waits until container is stopped
 func (w *DockerContainer) Wait(c chan<- error) {
-	defer w.spec.Logger.Info("container stopped")
+	defer w.spec.Logger.Infof("container stopped")
+
 	ctx := context.Background()
 	statusChan, errChan := w.spec.Client.ContainerWait(ctx, w.cid, container.WaitConditionNotRunning)
 	select {
@@ -111,7 +112,7 @@ func (w *DockerContainer) startContainer() error {
 		}
 	}
 	w.cid = container.ID
-	w.spec.Logger = w.spec.Logger.WithField("cid", container.ID[:12])
+	w.spec.Logger = w.spec.Logger.WithFields("cid", container.ID[:12])
 	err = w.spec.Client.ContainerStart(ctx, w.cid, types.ContainerStartOptions{})
 	if err != nil {
 		w.spec.Logger.WithError(err).Warnln("failed to start container")
@@ -137,14 +138,14 @@ func (w *DockerContainer) stopContainer() error {
 	ctx := context.Background()
 	err := w.spec.Client.ContainerStop(ctx, w.cid, &w.spec.Grace)
 	if err != nil {
-		w.spec.Logger.Error("failed to stop container")
+		w.spec.Logger.Errorf("failed to stop container")
 		return err
 	}
 	err = w.spec.Client.ContainerRemove(ctx, w.cid, types.ContainerRemoveOptions{Force: true})
 	if err != nil {
 		w.spec.Logger.Warnf("failed to remove container")
 	} else {
-		w.spec.Logger.Info("container removed")
+		w.spec.Logger.Infof("container removed")
 	}
 	return nil
 }

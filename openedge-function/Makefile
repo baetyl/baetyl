@@ -1,12 +1,11 @@
 all: openedge-function
 
 openedge-function:
-	@echo "GO $@"
-	@go build ${RACE} .
+	@echo "GO $@ ${GOFLAG}"
+	@go build ${GOFLAG} .
 
 .PHONY: clean
 clean:
 	rm -f openedge-function
 
 rebuild: clean all
-

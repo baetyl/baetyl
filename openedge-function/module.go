@@ -1,30 +1,29 @@
 package main
 
 import (
-	"github.com/baidu/openedge/function"
-	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/module"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // mo function module
 type mo struct {
-	cfg function.Config
-	man *function.Manager
+	cfg Config
+	man *Manager
 	rrs []*ruler
-	log *logrus.Entry
+	log *logger.Entry
 }
 
 // New creates a new module
 func New(confDate string) (module.Module, error) {
-	var cfg function.Config
+	var cfg Config
 	err := module.Load(&cfg, confDate)
 	if err != nil {
 		return nil, err
 	}
 	defaults(&cfg)
 	logger.Init(cfg.Logger, "module", cfg.Name)
-	man, err := function.NewManager(cfg)
+	man, err := NewManager(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +51,8 @@ func New(confDate string) (module.Module, error) {
 
 // Start starts module
 func (m *mo) Start() error {
-	m.log.Debug("module starting")
+	m.log.Debugf("module starting")
+
 	for _, rr := range m.rrs {
 		err := rr.start()
 		if err != nil {
@@ -64,20 +64,21 @@ func (m *mo) Start() error {
 
 // Close closes module
 func (m *mo) Close() {
-	defer m.log.Debug("module closed")
+	defer m.log.Debugf("module closed")
+	
 	for _, rr := range m.rrs {
 		rr.close()
 	}
 	m.man.Close()
 }
 
-func defaults(cfg *function.Config) {
+func defaults(cfg *Config) {
 	if cfg.API.Address == "" {
-		cfg.API.Address = module.GetEnv(module.EnvOpenEdgeMasterAPI)
+		cfg.API.Address = utils.GetEnv(module.EnvOpenEdgeMasterAPI)
 	}
 	if cfg.Hub.ClientID == "" {
 		cfg.Hub.ClientID = cfg.Name
 	}
 	cfg.API.Username = cfg.Name
-	cfg.API.Password = module.GetEnv(module.EnvOpenEdgeModuleToken)
+	cfg.API.Password = utils.GetEnv(module.EnvOpenEdgeModuleToken)
 }

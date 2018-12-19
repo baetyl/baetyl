@@ -4,20 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/trans/http"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/http"
+	"github.com/baidu/openedge/module/logger"
 )
 
 // Client client of api server
 type Client struct {
 	*http.Client
-	log *logrus.Entry
+	log *logger.Entry
 }
 
 // NewClient creates a new client
-func NewClient(cc http.ClientConfig) (*Client, error) {
+func NewClient(cc config.HTTPClient) (*Client, error) {
 	cli, err := http.NewClient(cc)
 	if err != nil {
 		return nil, err

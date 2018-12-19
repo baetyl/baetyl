@@ -4,18 +4,18 @@ import (
 	"fmt"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/function"
-	"github.com/baidu/openedge/trans/mqtt"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/mqtt"
 	"github.com/docker/distribution/uuid"
 )
 
 type ruler struct {
-	r  *function.Rule
+	r  *Rule
 	md *mqtt.Dispatcher
-	fd *function.Dispatcher
+	fd *Dispatcher
 }
 
-func create(r function.Rule, cc mqtt.ClientConfig, f *function.Function) (*ruler, error) {
+func create(r Rule, cc config.MQTTClient, f *Function) (*ruler, error) {
 	if r.ID != "" {
 		cc.CleanSession = false
 		cc.ClientID = fmt.Sprintf("%s-%s", cc.ClientID, r.ID)
@@ -23,8 +23,8 @@ func create(r function.Rule, cc mqtt.ClientConfig, f *function.Function) (*ruler
 		cc.CleanSession = true
 		cc.ClientID = fmt.Sprintf("%s-%s", cc.ClientID, uuid.Generate().String())
 	}
-	cc.Subscriptions = []mqtt.Subscription{mqtt.Subscription{Topic: r.Subscribe.Topic, QOS: r.Subscribe.QOS}}
-	fd, err := function.NewDispatcher(f)
+	cc.Subscriptions = []config.Subscription{config.Subscription{Topic: r.Subscribe.Topic, QOS: r.Subscribe.QOS}}
+	fd, err := NewDispatcher(f)
 	if err != nil {
 		return nil, err
 	}
