@@ -53,7 +53,7 @@ func doPub(args []string) {
 	if pwd != nil {
 		conn.Password = *pwd
 	}
-	err = stream.Write(conn)
+	err = stream.Write(conn, false)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "send connect packet fail", err)
 		return
@@ -93,7 +93,7 @@ func doPub(args []string) {
 		pub.Message.Payload = line
 		pub.Message.QOS = packet.QOSAtLeastOnce
 		pub.Message.Retain = false
-		err = stream.Write(pub)
+		err = stream.Write(pub, false)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "send publish packet fail", err)
 			break

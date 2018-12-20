@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/function/runtime"
 	"github.com/stretchr/testify/assert"
 	context "golang.org/x/net/context"
@@ -16,7 +17,7 @@ func TestRuntime(t *testing.T) {
 	msg8m := &runtime.Message{Payload: []byte(strings.Repeat("a", 8*1024*1024))}
 
 	// server 4m by default
-	sc := &runtime.Config{}
+	sc := &config.Runtime{}
 	err := module.Load(sc, `{"name":"test","server":{"address":"127.0.0.1:0"},"function":{"name":"test","handler":"dummy"}}`)
 	assert.NoError(t, err)
 	svr, err := runtime.NewServer(sc.Server, func(_ context.Context, m *runtime.Message) (*runtime.Message, error) {
@@ -25,7 +26,7 @@ func TestRuntime(t *testing.T) {
 	assert.NoError(t, err)
 
 	// client 4m by default
-	cc := runtime.NewClientConfig(svr.Address)
+	cc := config.NewRuntimeClient(svr.Address)
 	cli, err := runtime.NewClient(cc)
 	assert.NoError(t, err)
 
@@ -49,7 +50,7 @@ func TestRuntime(t *testing.T) {
 	assert.NoError(t, err)
 
 	// client 6m
-	cc = runtime.NewClientConfig(svr.Address)
+	cc = config.NewRuntimeClient(svr.Address)
 	cc.Message.Length.Max = 6 * 1024 * 1024
 	cli, err = runtime.NewClient(cc)
 	assert.NoError(t, err)

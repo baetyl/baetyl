@@ -63,7 +63,7 @@
 
 ## 函数计算runtime
 
-函数计算的运行实例目前采用grpc server实现，借助grpc的多语言支持，开发者可通过[runtime.proto](../../../../module/function/runtime/runtime.proto)生成自己的grpc server框架并实现消息处理的逻辑。
+函数计算的运行实例目前采用grpc server实现，借助grpc的多语言支持，开发者可通过[runtime.proto](https://github.com/baidu/openedge/blob/master/module/function/runtime/runtime.proto)生成自己的grpc server框架并实现消息处理的逻辑。
 
 ## 模块退出
 
@@ -71,16 +71,16 @@
 
 ## 模块SDK
 
-如果模块使用golang开发，可使用openedge中提供的部分SDK。
+如果模块使用golang开发，可使用openedge中提供的部分SDK，位于github.com/baidu/openedge/module。
 
-[mqtt dispatcher](../../../../trans/mqtt/dispatcher.go)可用于向mqtt hub订阅消息，支持自动重连。该mqtt dispatcher不支持消息持久化，消息持久化应由mqtt hub负责，mqtt dispatcher订阅的消息如果QoS为1，则消息处理完后需要主动回复ack，否者hub会重发消息。[remote mqtt模块参考](../../../../module/remote/mqtt/main.go)
+[mqtt dispatcher](https://github.com/baidu/openedge/blob/master/module/mqtt/dispatcher.go)可用于向mqtt hub订阅消息，支持自动重连。该mqtt dispatcher不支持消息持久化，消息持久化应由mqtt hub负责，mqtt dispatcher订阅的消息如果QoS为1，则消息处理完后需要主动回复ack，否者hub会重发消息。[remote mqtt模块参考](https://github.com/baidu/openedge/blob/master/openedge-remote-mqtt/main.go)
 
-[function runtime server](../../../../module/function/runtime/server.go)封装了grpc server和函数计算调用逻辑，方便开发者实现消息处理的函数计算runtime。[python2.7 runtime参考](../../../../module/function/runtime/python2.7/openedge_function_runtime_python2.7.py)
+[function runtime server](https://github.com/baidu/openedge/blob/master/module/function/runtime/server.go)封装了grpc server和函数计算调用逻辑，方便开发者实现消息处理的函数计算runtime。[python2.7 runtime参考](https://github.com/baidu/openedge/blob/master/openedge-function-runtime-python27/openedge_function_runtime_python27.py)
 
-[api.client](../../../../api/client.go)可用于调用主程序的API来启动、重启或停止临时模块。账号为使用该api client的常驻模块名，密码使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取。
+[api.client](https://github.com/baidu/openedge/blob/master/api/client.go)可用于调用主程序的API来启动、重启或停止临时模块。账号为使用该api client的常驻模块名，密码使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取。
 
-[module.Load](../../../../module/module.go)可用于加载模块的配置，支持从指定文件中读取yml格式的配置，也支持从启动参数中读取json格式的配置。
+[module.Load](https://github.com/baidu/openedge/blob/master/module/module.go)可用于加载模块的配置，支持从指定文件中读取yml格式的配置，也支持从启动参数中读取json格式的配置。
 
-[module.Wait](../../../../module/module.go)可用于等待模块退出的信号。
+[module.Wait](https://github.com/baidu/openedge/blob/master/module/module.go)可用于等待模块退出的信号。
 
-[logger](../../../../logger/logger.go)可用于打印日志。
+[logger](https://github.com/baidu/openedge/blob/master/module/logger/logger.go)可用于打印日志。

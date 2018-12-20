@@ -8,38 +8,43 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/client",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/client/future",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/packet",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/session",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/topic",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/transport",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
 		},
 		{
 			"ImportPath": "github.com/256dpi/gomqtt/transport/flow",
-			"Comment": "v0.9.0",
-			"Rev": "4480065340c4638a9d57ce057a48a5f422192966"
+			"Comment": "v0.10.3",
+			"Rev": "adb21d1b0cbac79463b51d1a9b234ee1e743a4c2"
+		},
+		{
+			"ImportPath": "github.com/256dpi/mercury",
+			"Comment": "v0.1.0",
+			"Rev": "947525349996e4a314b26559e9c2c9a5c81402c0"
 		},
 		{
 			"ImportPath": "github.com/Microsoft/go-winio",
@@ -221,16 +226,6 @@
 			"Rev": "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 		},
 		{
-			"ImportPath": "github.com/eclipse/paho.mqtt.golang",
-			"Comment": "v1.1.1-9-g88c4622",
-			"Rev": "88c4622b8e24c52f64a0caaa28e40b91629bb6e6"
-		},
-		{
-			"ImportPath": "github.com/eclipse/paho.mqtt.golang/packets",
-			"Comment": "v1.1.1-9-g88c4622",
-			"Rev": "88c4622b8e24c52f64a0caaa28e40b91629bb6e6"
-		},
-		{
 			"ImportPath": "github.com/etcd-io/bbolt",
 			"Comment": "v1.3.1-etcd.8",
 			"Rev": "7ee3ded59d4835e10f3e7d0f7603c42aa5e83820"
@@ -303,10 +298,6 @@
 			"ImportPath": "github.com/jpillora/backoff",
 			"Comment": "1.0.0",
 			"Rev": "8eab2debe79d12b7bd3d10653910df25fa9552ba"
-		},
-		{
-			"ImportPath": "github.com/juju/errors",
-			"Rev": "22422dad46e14561a0854ad42497a75af9b61909"
 		},
 		{
 			"ImportPath": "github.com/mholt/archiver",
@@ -428,10 +419,6 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/trace",
-			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
-		},
-		{
-			"ImportPath": "golang.org/x/net/websocket",
 			"Rev": "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
 		},
 		{

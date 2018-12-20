@@ -51,7 +51,7 @@ func doSub(args []string) {
 	if pwd != nil {
 		conn.Password = *pwd
 	}
-	err = stream.Write(conn)
+	err = stream.Write(conn, false)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "send connect packet fail", err)
 		return
@@ -82,7 +82,7 @@ func doSub(args []string) {
 			QOS:   packet.QOSAtMostOnce,
 		},
 	}
-	err = stream.Write(sub)
+	err = stream.Write(sub, false)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "send subscribe packet fail", err)
 		return

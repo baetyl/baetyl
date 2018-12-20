@@ -7,8 +7,15 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/baidu/openedge/utils"
-	"github.com/juju/errors"
+	"github.com/baidu/openedge/module/utils"
+)
+
+// all env keys
+const (
+	EnvOpenEdgeHostOS      = "OPENEDGE_HOST_OS"
+	EnvOpenEdgeMasterAPI   = "OPENEDGE_MASTER_API"
+	EnvOpenEdgeModuleMode  = "OPENEDGE_MODULE_MODE"
+	EnvOpenEdgeModuleToken = "OPENEDGE_MODULE_TOKEN"
 )
 
 // Module module interfaces
@@ -29,10 +36,10 @@ func Load(confObject interface{}, conf string) error {
 	} else {
 		confBytes, err = ioutil.ReadFile(conf)
 		if err != nil {
-			return errors.Trace(err)
+			return err
 		}
 	}
-	return errors.Trace(unmarshal(confBytes, confObject))
+	return unmarshal(confBytes, confObject)
 }
 
 // Wait waits until module exit

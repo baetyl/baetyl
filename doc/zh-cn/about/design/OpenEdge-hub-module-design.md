@@ -21,4 +21,4 @@ _**注意**：_
 > - clientid支持大小写字母、数字、下划线、连字符（减号）和空字符(空字符表示client为临时连接，强制cleansession=true), 最大长度不超过128个字符
 > - 消息的QoS只能降不能升，比如原消息的QoS为0时，即使订阅QoS为1，消息仍然以QoS为0的等级发送。
 
-Hub模块支持简单的主题路由，比如订阅主题为t的消息并以新主题t/topic发布回broker。
+Hub模块支持简单的主题路由，比如订阅主题为t的消息并以新主题t/topic发布回broker。[参考配置](https://github.com/baidu/openedge/blob/master/example/docker/app/modu-nje2uoa9s/conf.yml)

@@ -4,24 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/baidu/openedge/config"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/trans/http"
-	"github.com/juju/errors"
-	"github.com/sirupsen/logrus"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/http"
+	"github.com/baidu/openedge/module/logger"
 )
 
 // Client client of api server
 type Client struct {
 	*http.Client
-	log *logrus.Entry
+	log *logger.Entry
 }
 
 // NewClient creates a new client
-func NewClient(cc http.ClientConfig) (*Client, error) {
+func NewClient(cc config.HTTPClient) (*Client, error) {
 	cli, err := http.NewClient(cc)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return &Client{
 		Client: cli,
@@ -33,12 +31,12 @@ func NewClient(cc http.ClientConfig) (*Client, error) {
 func (c *Client) GetPortAvailable(host string) (int, error) {
 	_, resBody, err := c.Send("GET", fmt.Sprintf("%s://%s/ports/available?host=%s", c.Addr.Scheme, c.Addr.Host, host), c.newHeaders(), nil)
 	if err != nil {
-		return 0, errors.Trace(err)
+		return 0, err
 	}
 	b := map[string]int{}
 	err = json.Unmarshal(resBody, &b)
 	if err != nil {
-		return 0, errors.Trace(err)
+		return 0, err
 	}
 	return b["port"], nil
 }
@@ -47,16 +45,16 @@ func (c *Client) GetPortAvailable(host string) (int, error) {
 func (c *Client) StartModule(m *config.Module) error {
 	body, err := json.Marshal(m)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	_, _, err = c.Send("PUT", c.newURL(m.Name, "start"), c.newHeaders(), body)
-	return errors.Trace(err)
+	return err
 }
 
 // StopModule stops a module
 func (c *Client) StopModule(name string) error {
 	_, _, err := c.Send("PUT", c.newURL(name, "stop"), c.newHeaders(), nil)
-	return errors.Trace(err)
+	return err
 }
 
 func (c *Client) newURL(name, action string) string {

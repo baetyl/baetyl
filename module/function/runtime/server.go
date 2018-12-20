@@ -1,10 +1,10 @@
 package runtime
 
 import (
+	fmt "fmt"
 	"net"
 
-	"github.com/juju/errors"
-
+	"github.com/baidu/openedge/module/config"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -16,16 +16,16 @@ type Handle func(context.Context, *Message) (*Message, error)
 // Server runtime server to handle message
 type Server struct {
 	Address string
-	config  ServerConfig
+	config  config.RuntimeServer
 	server  *grpc.Server
 	handle  Handle
 }
 
 // NewServer creates a new server
-func NewServer(c ServerConfig, handle Handle) (*Server, error) {
+func NewServer(c config.RuntimeServer, handle Handle) (*Server, error) {
 	lis, err := net.Listen("tcp", c.Address)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	server := grpc.NewServer(
 		grpc.ConnectionTimeout(c.Timeout),
@@ -42,7 +42,7 @@ func NewServer(c ServerConfig, handle Handle) (*Server, error) {
 // Handle handles messages
 func (s *Server) Handle(c context.Context, m *Message) (*Message, error) {
 	if s.handle == nil {
-		return nil, errors.NotImplementedf("Handle")
+		return nil, fmt.Errorf("handle not implemented")
 	}
 	return s.handle(c, m)
 }

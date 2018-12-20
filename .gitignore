@@ -5,12 +5,8 @@
 *.iml
 /.idea
 /openedge
-/openedge-hub
-/openedge-function
-/openedge-remote-mqtt
 /pubsub
-/benchmark
-/consistency
+/openedge-consistency
 /output*
 /**/.DS_Store
 /.vscode
@@ -21,5 +17,7 @@
 /**/*.pyc
 /**/*debug.test
 /**/debug
+/**/bin
 /**/*.log
 /cover*.out
+/vendor

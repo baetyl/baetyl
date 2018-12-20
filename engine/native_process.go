@@ -1,13 +1,14 @@
 package engine
 
 import (
+	"fmt"
 	"os"
+	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/utils"
-	"github.com/juju/errors"
+	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/utils"
 )
 
 // NativeSpec spec for native process
@@ -32,13 +33,13 @@ func NewNativeProcess(s *NativeSpec) *NativeProcess {
 	}
 }
 
-// Policy returns name
+// Name returns name
 func (w *NativeProcess) Name() string {
 	return w.spec.Name
 }
 
 // Policy returns restart policy
-func (w *NativeProcess) Policy() module.Policy {
+func (w *NativeProcess) Policy() config.Policy {
 	return w.spec.Restart
 }
 
@@ -46,22 +47,22 @@ func (w *NativeProcess) Policy() module.Policy {
 func (w *NativeProcess) Start(supervising func(Worker) error) error {
 	err := w.startProcess()
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	err = w.tomb.Go(func() error {
 		return supervising(w)
 	})
-	return errors.Trace(err)
+	return err
 }
 
 // Restart starts process
 func (w *NativeProcess) Restart() error {
 	if !w.tomb.Alive() {
-		return errors.Errorf("Process already stopped")
+		return fmt.Errorf("process already stopped")
 	}
 	err := w.startProcess()
 	if err != nil {
-		return errors.Annotatef(err, "Failed to restart process")
+		return fmt.Errorf("failed to restart process: %s", err.Error())
 	}
 	return nil
 }
@@ -69,26 +70,26 @@ func (w *NativeProcess) Restart() error {
 // Stop stops process
 func (w *NativeProcess) Stop() error {
 	if !w.tomb.Alive() {
-		w.spec.Logger.Debug("Process already stopped")
+		w.spec.Logger.Debugf("process already stopped")
 		return nil
 	}
 	w.tomb.Kill(nil)
 	err := w.stopProcess()
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
-	return errors.Trace(w.tomb.Wait())
+	return w.tomb.Wait()
 }
 
 // Wait waits until process is stopped
 func (w *NativeProcess) Wait(c chan<- error) {
-	defer w.spec.Logger.Info("Process stopped")
+	defer w.spec.Logger.Infof("process stopped")
 	ps, err := w.proc.Wait()
 	if err != nil {
-		w.spec.Logger.Debug("Failed to wait process:", err)
+		w.spec.Logger.Debugln("failed to wait process:", err)
 		c <- err
 	}
-	c <- errors.Errorf("Process exited: %v", ps)
+	c <- fmt.Errorf("process exited: %v", ps)
 }
 
 // Dying returns the channel that can be used to wait until process is stopped
@@ -103,10 +104,10 @@ func (w *NativeProcess) startProcess() error {
 		&w.spec.Attr,
 	)
 	if err != nil {
-		return errors.Trace(err)
+		return err
 	}
 	w.proc = proc
-	w.spec.Logger = w.spec.Logger.WithField("pid", proc.Pid)
+	w.spec.Logger = w.spec.Logger.WithFields("pid", strconv.Itoa(proc.Pid))
 	return nil
 }
 
@@ -118,14 +119,14 @@ func (w *NativeProcess) stopProcess() error {
 	done := make(chan struct{})
 	go func() {
 		s, err := w.proc.Wait()
-		w.spec.Logger.Debugln("Process exits by signal:", s, err)
+		w.spec.Logger.Debugln("process exits by signal:", s, err)
 		close(done)
 	}()
 	select {
 	case <-done:
 	case <-time.After(w.spec.Grace):
 		err := w.proc.Kill()
-		w.spec.Logger.WithError(err).Warnf("Process killed")
+		w.spec.Logger.WithError(err).Warnf("process killed")
 	}
 	return nil
 }

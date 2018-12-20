@@ -3,8 +3,6 @@
 本文主要概述如何在MacOS上快速部署、运行OpenEdge，假定在此之前OpenEdge运行所需[环境配置](../../install/OpenEdge-build-prepare.md)均已Ready。
 
  - OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务；
- - 要求Docker API Version不低于1.38（可通过命令`docker version`查看）；
-	 - 假若Docker API Version高于1.38，需要在环境变量中设置`export DOCKER_API_VERSION=1.38`。
 
 ![docker版本查询](../../images/develop/start/macos/docker-version.png)
 
@@ -14,7 +12,7 @@
 
 # 部署流程
 
-- **Step1**：从OpenEdge github开源项目中选择某beta或release版本[下载](https://github.com/baidu/openedge/releases)。
+- **Step1**：从OpenEdge github开源项目中选择某release版本[下载](https://github.com/baidu/openedge/releases)。
 - **Step2**：打开终端，进入OpenEdge软件包下载目录，进行解压缩操作；
 	- 如果下载的是zip压缩包，执行命令`unzip -d . openedge-xxx.zip`；
 	- 如题下载的是tar.gz压缩包，执行命令`tar -zxvf openedge-xxx.tar.gz`；

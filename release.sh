@@ -51,12 +51,12 @@ build() {
     # tar cf - -C example/native . | tar xf - -C output/$TAG
 
     # engine
-    env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge$GOEXE ./cmd
+    env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge$GOEXE .
 
     # modules
-    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge_hub$GOEXE ./module/hub/cmd
-    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge_function$GOEXE ./module/function/cmd
-    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge_remote_mqtt$GOEXE ./module/remote/mqtt
+    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-hub$GOEXE ./module/hub/openedge-hub
+    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-function$GOEXE ./module/function/openedge-function
+    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-remote-mqtt$GOEXE ./module/remote/openedge-remote-mqtt
 
     # function runtime python2.7
     # cp module/function/runtime/python2.7/*.py  output/$TAG/bin/

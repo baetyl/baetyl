@@ -58,7 +58,7 @@ func doPerf(args []string) {
 	pubcp.Username = *username
 	pubcp.Password = *password
 
-	err = suber.Write(subcp)
+	err = suber.Write(subcp, false)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "send connect packet fail", err)
 		return
@@ -89,7 +89,7 @@ func doPerf(args []string) {
 			QOS:   packet.QOSAtMostOnce,
 		},
 	}
-	err = suber.Write(sub)
+	err = suber.Write(sub, false)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "send subscribe packet fail", err)
 		return
@@ -115,7 +115,7 @@ func doPerf(args []string) {
 	}
 	fmt.Fprintln(os.Stderr, "subscribe successfully")
 
-	err = puber.Write(pubcp)
+	err = puber.Write(pubcp, false)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "send connect packet fail", err)
 		return
@@ -174,7 +174,7 @@ func doPerf(args []string) {
 			pub.ID = pid
 			pub.Message.Payload = []byte(fmt.Sprintf("{\"id\":%d}", pid))
 
-			err = puber.Write(pub)
+			err = puber.Write(pub, false) // TODO: test sync or async
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "send publish packet fail", err)
 				break

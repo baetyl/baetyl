@@ -1,22 +1,22 @@
 package runtime
 
 import (
-	"github.com/juju/errors"
+	"github.com/baidu/openedge/module/config"
 	context "golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
 var callopt = grpc.FailFast(false)
 
-// Client client of function grpc server
+// Client client of function server
 type Client struct {
 	cli  RuntimeClient
-	conf ClientConfig
+	conf config.RuntimeClient
 	conn *grpc.ClientConn
 }
 
 // NewClient creates a new client
-func NewClient(cc ClientConfig) (*Client, error) {
+func NewClient(cc config.RuntimeClient) (*Client, error) {
 	ctx, cel := context.WithTimeout(context.Background(), cc.Timeout)
 	defer cel()
 	conn, err := grpc.DialContext(
@@ -29,7 +29,7 @@ func NewClient(cc ClientConfig) (*Client, error) {
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(int(cc.Message.Length.Max))),
 	)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 	return &Client{
 		conf: cc,
