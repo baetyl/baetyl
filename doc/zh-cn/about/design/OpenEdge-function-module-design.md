@@ -74,3 +74,33 @@ def handler(event, context):
 >   bin/openedge # run openedge under native mode
 >   deactivate # deactivate virtualenv
 > ```
+
+## 函数计算node8.5 runtime模块（openedge_function_runtime_node85）
+
+Javascript函数与[百度云-函数计算CFC](https://cloud.baidu.com/product/cfc.html)类似，用户通过编写的自己的函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。
+
+Javascript函数的输入输出可以是JSON格式也可以是二进制形式。消息payload在作为参数传给函数前会尝试一次JSON解码，如果成功则传入Json类型，失败则传入原二进制数据。
+
+Javascript函数实现举例：
+
+```JavaScript
+#!/usr/bin/env node
+exports.handler = (event, context, callback) => {
+    event.name = 'openedge';
+    event.say = 'hi';
+    callback(null, event);
+};
+```
+
+> **提示**：Native进程模式下，若要运行本代码库提供的[sayhi.js](https://github.com/baidu/openedge/tree/master/example/native/app/func-qwertyuia/sayhi.js)，需要自行安装node8.5和相关依赖[package.json文件中列出]。
+
+> 首先安装node8.5，后安装依赖，相关步骤如下：
+>
+> ```shell
+>   # build workdir run environment
+>   cd /path/to/native/workdir/bin
+>   # install dependencies via package
+>   npm install
+>   # test native mode
+>   openedge # run openedge under native mode
+> ```

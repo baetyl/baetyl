@@ -16,6 +16,15 @@ rules:
       qos: 1
   - id: rule-e1iluuac2
     subscribe:
+      topic: t2
+      qos: 1
+    compute:
+      function: sayhi-js
+    publish:
+      topic: t2/hi
+      qos: 1
+  - id: rule-e1iluuac3
+    subscribe:
       topic: benchmark/py
       qos: 1
     compute:
@@ -29,6 +38,17 @@ functions:
     handler: 'sayhi.handler'
     codedir: 'app/func-nyeosbbch'
     entry: "bin/openedge_function_runtime_python27.py"
+    env:
+      USER_ID: acuiot
+    instance:
+      min: 0
+      max: 100
+      timeout: 30s
+  - name: 'sayhi-js'
+    runtime: 'node85'
+    handler: 'sayhi.handler'
+    codedir: 'app/func-qwertyuia'
+    entry: "bin/openedge_function_runtime_node8.js"
     env:
       USER_ID: acuiot
     instance:
