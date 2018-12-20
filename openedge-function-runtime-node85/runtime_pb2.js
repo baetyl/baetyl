@@ -168,16 +168,6 @@ proto.runtime.Message.prototype.setFunctionInvokeID = function (value) {
     jspb.Message.setField(this, 5, value);
 };
 
-proto.runtime.Message.prototype.getLongitude = function () {
-    return /** @type {number} */ (jspb.Message.getFieldProto3(this, 2, 0));
-};
-
-
-/** @param {number} value  */
-proto.runtime.Message.prototype.setLongitude = function (value) {
-    jspb.Message.setField(this, 2, value);
-};
-
 proto.runtime.Runtime = function (opt_data) {
     jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };

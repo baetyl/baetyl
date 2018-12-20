@@ -48,7 +48,7 @@ functions:
     runtime: 'node85'
     handler: 'sayhi.handler'
     codedir: 'app/func-qwertyuia'
-    entry: "bin/openedge_function_runtime_node8.js"
+    entry: "bin/openedge_function_runtime_node85.js"
     env:
       USER_ID: acuiot
     instance:
