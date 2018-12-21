@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/baidu/openedge/module/logger"
 	module "github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/logger"
 )
 
 func main() {
