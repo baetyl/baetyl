@@ -65,7 +65,7 @@ func (m *mo) Start() error {
 // Close closes module
 func (m *mo) Close() {
 	defer m.log.Debugf("module closed")
-	
+
 	for _, rr := range m.rrs {
 		rr.close()
 	}

@@ -65,7 +65,7 @@ func (d *Dispatcher) Invoke(pkt *packet.Publish) error {
 // Close closes dispatcher
 func (d *Dispatcher) Close() error {
 	defer d.log.Debugf("function dispatcher closed")
-	
+
 	d.tomb.Kill(nil)
 	return d.tomb.Wait()
 }

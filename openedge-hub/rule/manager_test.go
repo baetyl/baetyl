@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/baidu/openedge/module/logger"
 	bb "github.com/baidu/openedge/openedge-hub/broker"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/utils"
-	"github.com/baidu/openedge/module/logger"
 	"github.com/stretchr/testify/assert"
 )
 

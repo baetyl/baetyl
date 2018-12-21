@@ -3,8 +3,8 @@ package broker
 import (
 	"time"
 
-	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/common"
+	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/utils"
 	"github.com/golang/protobuf/proto"
 )
@@ -88,7 +88,7 @@ last_loop:
 
 func (b *Broker) persistingOffset() error {
 	defer b.log.Debugf("persisting offset task stopped")
-	
+
 	count := 0
 	offsets := make(map[string]uint64)
 	batchSize := b.config.Message.Offset.Batch.Max

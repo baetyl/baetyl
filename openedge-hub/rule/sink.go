@@ -4,11 +4,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/router"
 	"github.com/baidu/openedge/openedge-hub/utils"
-	"github.com/baidu/openedge/module/logger"
-
 )
 
 type sink struct {
@@ -104,7 +103,7 @@ func (s *sink) goRoutingQ0() error {
 func (s *sink) goRoutingQ1() error {
 	s.log.Debugf("task of routing message (Q1) begins with offset=%d", s.getOffset())
 	defer s.log.Debugf("task of routing message (Q1) stopped")
-	
+
 	var (
 		err    error
 		msg    *common.Message
