@@ -5,7 +5,6 @@ import (
 
 	"github.com/baidu/openedge/api"
 	"github.com/baidu/openedge/module/logger"
-
 )
 
 // Manager manages all functions
@@ -47,7 +46,7 @@ func (m *Manager) Get(name string) (*Function, error) {
 func (m *Manager) Close() {
 	m.log.Infof("function manager closing")
 	defer m.log.Infof("function manager closed")
-	
+
 	for _, f := range m.fcs {
 		f.close()
 	}

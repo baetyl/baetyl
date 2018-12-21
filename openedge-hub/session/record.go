@@ -6,10 +6,9 @@ import (
 	"sync"
 
 	"github.com/256dpi/gomqtt/packet"
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/persist"
-	"github.com/baidu/openedge/module/logger"
-
 )
 
 // recorder records session info

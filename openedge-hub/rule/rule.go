@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/router"
-	"github.com/baidu/openedge/module/logger"
-
 )
 
 type base interface {

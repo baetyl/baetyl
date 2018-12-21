@@ -63,7 +63,7 @@ func (fl *funclet) start() error {
 	}
 
 	cc := config.NewRuntimeClient(fmt.Sprintf("%s:%d", host, port))
-	cc.RuntimeServer= rc.Server
+	cc.RuntimeServer = rc.Server
 	cc.Backoff.Max = rc.Server.Timeout
 	fl.rtc, err = runtime.NewClient(cc)
 	if err != nil {

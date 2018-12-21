@@ -2,15 +2,6 @@ PREFIX?=/usr/local
 
 all: openedge modules
 
-depends:
-	godep restore
-	find ${GOPATH}/src/github.com/docker -path '*/vendor' -type d | xargs -IX rm -r X
-
-depends-save:
-	cd ${GOPATH}/src/github.com/docker/docker && git checkout . && cd -
-	cd ${GOPATH}/src/github.com/docker/distribution && git checkout . && cd -
-	godep save ./...
-
 modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
 
 openedge:

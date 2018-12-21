@@ -1,6 +1,5 @@
 package session
 
-
 import (
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/baidu/openedge/module/logger"
