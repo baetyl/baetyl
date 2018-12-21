@@ -36,7 +36,7 @@ func main() {
 	// }
 	// defer trace.Stop()
 
-	f, err := module.ParseFlags()
+	f, err := module.ParseFlags("")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to parse argument:", err.Error())
 		return

@@ -1,9 +1,9 @@
 package engine
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -61,7 +61,7 @@ func (e *NativeEngine) Create(m config.Module) (Worker, error) {
 		}
 	}
 	if len(m.Params) == 0 {
-		args = append(args, "-c", fmt.Sprintf("app/%s/conf.yml", m.Mark))
+		args = append(args, "-c", path.Join(e.context.PWD, "var", "run", "openedge", m.Name, "module.yml"))
 	} else {
 		args = append(args, m.Params...)
 	}

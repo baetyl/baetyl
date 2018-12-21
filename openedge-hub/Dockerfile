@@ -1,7 +1,7 @@
 FROM alpine
 
 WORKDIR /
-COPY openedge-hub /bin/
+COPY openedge-hub/openedge-hub /bin/
 
 ENTRYPOINT [ "openedge-hub" ]
 CMD []

@@ -20,7 +20,7 @@ import (
 )
 
 // dirs to backup
-const appDir = "app"
+const appDir = "var/run/openedge"
 const appBackupFile = "app.bk"
 
 // app config file
@@ -28,15 +28,15 @@ var appConfFile = path.Join(appDir, "app.yml")
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	conf   Config
-	engine *engine.Engine
-	agent  *agent.Agent
-	api    *api.Server
-	pwd    string
+	conf    Config
+	context engine.Context
+	engine  *engine.Engine
+	agent   *agent.Agent
+	api     *api.Server
 }
 
 // New creates a new master
-func New(confDate string) (*Master, error) {
+func New(workDir, confDate string) (*Master, error) {
 	c := Config{}
 	err := module.Load(&c, confDate)
 	if err != nil {
@@ -48,6 +48,7 @@ func New(confDate string) (*Master, error) {
 	}
 	logger.Init(c.Logger, "openedge", "master")
 	ctx := engine.Context{
+		PWD:   workDir,
 		Mode:  c.Mode,
 		Grace: c.Grace,
 	}
@@ -68,17 +69,12 @@ func New(confDate string) (*Master, error) {
 			return nil, err
 		}
 	}
-
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
 	m := &Master{
-		conf:   c,
-		engine: en,
-		agent:  ag,
-		api:    ap,
-		pwd:    pwd,
+		conf:    c,
+		context: ctx,
+		engine:  en,
+		agent:   ag,
+		api:     ap,
 	}
 	err = m.api.Start()
 	if err != nil {
@@ -199,12 +195,12 @@ func (m *Master) unpackConfigFile(version string) error {
 	if !fileExists(file) {
 		return fmt.Errorf("app config zip file (%s) not found", file)
 	}
-	err := archiver.Zip.Open(file, m.pwd)
+	err := archiver.Zip.Open(file, m.context.PWD)
 	return err
 }
 
 func (m *Master) unpackBackupFile() error {
-	err := archiver.Zip.Open(appBackupFile, m.pwd)
+	err := archiver.Zip.Open(appBackupFile, m.context.PWD)
 	return err
 }
 

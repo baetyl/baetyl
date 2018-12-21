@@ -3,7 +3,7 @@ package config
 // Module module config
 type Module struct {
 	Name   string `yaml:"name" json:"name" validate:"nonzero"`
-	Mark   string `yaml:"mark" json:"mark"`
+	// Mark   string `yaml:"mark" json:"mark"`
 	Logger Logger `yaml:"logger" json:"logger"`
 
 	Entry     string            `yaml:"entry" json:"entry"`

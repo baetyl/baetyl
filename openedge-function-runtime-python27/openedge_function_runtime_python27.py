@@ -14,15 +14,15 @@ import yaml
 import json
 import signal
 from concurrent import futures
-import runtime_pb2
-import runtime_pb2_grpc
+import openedge_function_runtime_pb2
+import openedge_function_runtime_pb2_grpc
 import logging
 import logging.handlers
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 
-class mo(runtime_pb2_grpc.RuntimeServicer):
+class mo(openedge_function_runtime_pb2_grpc.RuntimeServicer):
     """
     grpc server module for python2.7 function
     """
@@ -62,7 +62,7 @@ class mo(runtime_pb2_grpc.RuntimeServicer):
         self.server = grpc.server(thread_pool=futures.ThreadPoolExecutor(),
                                   options=[('grpc.max_send_message_length', max_message_size),
                                            ('grpc.max_receive_message_length', max_message_size)])
-        runtime_pb2_grpc.add_RuntimeServicer_to_server(self, self.server)
+        openedge_function_runtime_pb2_grpc.add_RuntimeServicer_to_server(self, self.server)
         if 'address' not in self.config['server']:
             raise Exception, 'module config invalid, missing server address'
         self.server.add_insecure_port(self.config['server']['address'])

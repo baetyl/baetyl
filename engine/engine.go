@@ -22,6 +22,7 @@ const (
 
 // Context represents the context of engine to execute
 type Context struct {
+	PWD   string
 	Mode  string
 	Grace time.Duration
 }
@@ -56,7 +57,7 @@ type Engine struct {
 	Inner
 	auth      map[string]string
 	order     []string           // resident module start order
-	resident  cmap.ConcurrentMap // resident modules from app.yml
+	resident  cmap.ConcurrentMap // resident modules from modules.yml
 	temporary cmap.ConcurrentMap // temporary modules from function module
 	entries   cmap.ConcurrentMap
 	log       *logger.Entry
@@ -64,24 +65,28 @@ type Engine struct {
 
 // New creates a new engine
 func New(ctx *Context) (*Engine, error) {
-	e := &Engine{
+	var err error
+	var inner Inner
+	switch ctx.Mode {
+	case ModeDocker:
+		inner, err = NewDockerEngine(ctx)
+	case ModeNative:
+		inner, err = NewNativeEngine(ctx)
+	default:
+		err = fmt.Errorf("mode (%s) not supported", ctx.Mode)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &Engine{
+		Inner:     inner,
 		auth:      map[string]string{},
 		order:     []string{},
 		resident:  cmap.New(),
 		temporary: cmap.New(),
 		entries:   cmap.New(),
 		log:       logger.WithFields("mode", ctx.Mode),
-	}
-	var err error
-	switch ctx.Mode {
-	case ModeDocker:
-		e.Inner, err = NewDockerEngine(ctx)
-	case ModeNative:
-		e.Inner, err = NewNativeEngine(ctx)
-	default:
-		err = fmt.Errorf("mode (%s) not supported", ctx.Mode)
-	}
-	return e, err
+	}, nil
 }
 
 // StartAll starts all resident modules

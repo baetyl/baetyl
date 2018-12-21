@@ -15,7 +15,7 @@ type Flags struct {
 }
 
 // ParseFlags parses the command-line flags
-func ParseFlags() (*Flags, error) {
+func ParseFlags(defaultConfigPath string) (*Flags, error) {
 	f := new(Flags)
 	cwd, err := os.Executable()
 	if err != nil {
@@ -25,16 +25,22 @@ func ParseFlags() (*Flags, error) {
 	if err != nil {
 		return nil, err
 	}
+	f.WorkDir = filepath.Dir(filepath.Dir(cwd))
+	if defaultConfigPath == "" {
+		f.Config = filepath.Join("etc", "openedge", "module.yml")
+	} else {
+		f.Config = defaultConfigPath
+	}
 	flag.StringVar(
 		&f.WorkDir,
 		"w",
-		filepath.Dir(filepath.Dir(cwd)),
+		f.WorkDir,
 		"working directory",
 	)
 	flag.StringVar(
 		&f.Config,
 		"c",
-		filepath.Join("conf", "conf.yml"),
+		f.Config,
 		"config file path",
 	)
 	flag.BoolVar(
