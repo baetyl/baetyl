@@ -7,9 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/baidu/openedge/module/logger"
-
 	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/module/utils"
 )
 

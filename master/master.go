@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/baidu/openedge/agent"
-	"github.com/baidu/openedge/api"
 	"github.com/baidu/openedge/engine"
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/module/config"
@@ -32,7 +31,7 @@ type Master struct {
 	context engine.Context
 	engine  *engine.Engine
 	agent   *agent.Agent
-	api     *api.Server
+	server  *Server
 }
 
 // New creates a new master
@@ -56,7 +55,7 @@ func New(workDir, confDate string) (*Master, error) {
 	if err != nil {
 		return nil, err
 	}
-	ap, err := api.NewServer(en, c.API)
+	as, err := NewServer(en, c.API)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +64,7 @@ func New(workDir, confDate string) (*Master, error) {
 	if c.Cloud.Address != "" {
 		ag, err = agent.NewAgent(c.Cloud)
 		if err != nil {
-			ap.Close()
+			as.Close()
 			return nil, err
 		}
 	}
@@ -74,9 +73,9 @@ func New(workDir, confDate string) (*Master, error) {
 		context: ctx,
 		engine:  en,
 		agent:   ag,
-		api:     ap,
+		server:  as,
 	}
-	err = m.api.Start()
+	err = m.server.Start()
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -117,7 +116,7 @@ func (m *Master) Close() {
 		}
 	}
 	m.engine.StopAll()
-	if err := m.api.Close(); err != nil {
+	if err := m.server.Close(); err != nil {
 		logger.WithError(err).Errorf("failed to close api server")
 	}
 }

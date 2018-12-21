@@ -40,8 +40,7 @@ func (e *NativeEngine) Prepare(_ string) error {
 
 // Create creates a new native process
 func (e *NativeEngine) Create(m config.Module) (Worker, error) {
-	fullName := m.UniqueName()
-	args := []string{fullName}
+	args := []string{m.UniqueName()}
 	if runtime.GOOS == "windows" {
 		if !strings.Contains(filepath.Base(m.Entry), ".") {
 			m.Entry = m.Entry + ".exe"

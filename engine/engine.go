@@ -49,7 +49,7 @@ type Engine struct {
 	Inner
 	auth      map[string]string
 	order     []string           // resident module start order
-	resident  cmap.ConcurrentMap // resident modules from modules.yml
+	resident  cmap.ConcurrentMap // resident modules from app.yml
 	temporary cmap.ConcurrentMap // temporary modules from function module
 	entries   cmap.ConcurrentMap
 	log       *logger.Entry
@@ -92,23 +92,23 @@ func (e *Engine) StartAll(ms []config.Module) error {
 		e.log.WithError(err).Warnf("failed to prepare entries")
 	}
 	for _, m := range ms {
-		fullName := m.UniqueName()
-		if _, ok := e.auth[fullName]; !ok {
-			e.auth[fullName] = uuid.Generate().String()
+		uniqueName := m.UniqueName()
+		if _, ok := e.auth[uniqueName]; !ok {
+			e.auth[uniqueName] = uuid.Generate().String()
 		}
-		m.Env[module.EnvOpenEdgeModuleToken] = e.auth[fullName]
+		m.Env[module.EnvOpenEdgeModuleToken] = e.auth[uniqueName]
 		worker, err := e.Create(m)
 		if err != nil {
 			return err
 		}
-		e.resident.Set(fullName, worker)
-		e.order = append(e.order, fullName)
+		e.resident.Set(uniqueName, worker)
+		e.order = append(e.order, uniqueName)
 		err = worker.Start(e.supervising)
 		if err != nil {
-			e.log.WithError(err).Errorf("failed to start resident module (%s)", fullName)
+			e.log.WithError(err).Errorf("failed to start resident module (%s)", uniqueName)
 			return err
 		}
-		e.log.Infof("resident module (%s) started", fullName)
+		e.log.Infof("resident module (%s) started", uniqueName)
 	}
 	e.log.Infof("all resident modules started")
 	return nil
@@ -125,31 +125,31 @@ func (e *Engine) Authenticate(username, password string) bool {
 
 // Start starts a temporary module
 func (e *Engine) Start(m config.Module) error {
-	fullName := m.UniqueName()
+	uniqueName := m.UniqueName()
 	e.log.Debugln("starting temporary module:", m)
 	if !e.entries.Has(m.Entry) {
 		err := e.prepare(map[string]struct{}{m.Entry: struct{}{}})
 		if err != nil {
-			e.log.WithError(err).Warnf("failed to prepare entry of temporary module (%s)", fullName)
+			e.log.WithError(err).Warnf("failed to prepare entry of temporary module (%s)", uniqueName)
 		}
 	}
 	worker, err := e.Create(m)
 	if err != nil {
-		e.log.WithError(err).Errorf("failed to create temporary module (%s)", fullName)
+		e.log.WithError(err).Errorf("failed to create temporary module (%s)", uniqueName)
 		return err
 	}
-	old, ok := e.temporary.Get(fullName)
+	old, ok := e.temporary.Get(uniqueName)
 	if ok {
-		e.temporary.Remove(fullName)
+		e.temporary.Remove(uniqueName)
 		old.(Worker).Stop()
 	}
 	err = worker.Start(e.supervising)
 	if err != nil {
 		worker.Stop()
-		e.log.WithError(err).Errorf("failed to start temporary module (%s)", fullName)
+		e.log.WithError(err).Errorf("failed to start temporary module (%s)", uniqueName)
 	} else {
-		e.temporary.Set(fullName, worker)
-		e.log.Infof("temporary module (%s) started", fullName)
+		e.temporary.Set(uniqueName, worker)
+		e.log.Infof("temporary module (%s) started", uniqueName)
 	}
 	return err
 }

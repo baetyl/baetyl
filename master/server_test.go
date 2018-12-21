@@ -1,11 +1,12 @@
-package api_test
+package master_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/api"
+	"github.com/baidu/openedge/master"
+	"github.com/baidu/openedge/module/api"
 	"github.com/baidu/openedge/module/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,7 +36,7 @@ func (e *mockEngine) Stop(_ string) error {
 }
 
 func TestAPIHttp(t *testing.T) {
-	s, err := api.NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
+	s, err := master.NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
@@ -48,12 +49,12 @@ func TestAPIHttp(t *testing.T) {
 	assert.NotZero(t, p)
 	err = c.StartModule(&config.Module{Name: "name"})
 	assert.NoError(t, err)
-	err = c.StopModule("name")
+	err = c.StopModule(&config.Module{Name: "name"})
 	assert.NoError(t, err)
 }
 
 func TestAPIHttpUnauthorized(t *testing.T) {
-	s, err := api.NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
+	s, err := master.NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
@@ -65,6 +66,6 @@ func TestAPIHttpUnauthorized(t *testing.T) {
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 	err = c.StartModule(&config.Module{Name: "name"})
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
-	err = c.StopModule("name")
+	err = c.StopModule(&config.Module{Name: "name"})
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	fmt "fmt"
 	"os"
+	"path"
 	"sync"
 
 	"github.com/baidu/openedge/module/config"
@@ -40,7 +41,7 @@ func (fl *funclet) start() error {
 	rc.Server.Message.Length.Max = fl.cfg.Instance.Message.Length.Max
 	rc.Logger = fl.man.cfg.Logger
 	if rc.Logger.Path != "" {
-		rc.Logger.Path = fmt.Sprintf("var/log/openedge/%s/%s.log", fl.cfg.ID, fl.cfg.Name)
+		rc.Logger.Path = path.Join("var", "log", "openedge", fl.cfg.ID, fl.cfg.Name+".log")
 	}
 	rcd, err := json.Marshal(rc)
 	if err != nil {

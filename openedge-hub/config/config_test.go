@@ -70,8 +70,8 @@ func TestConfig(t *testing.T) {
 
 	assert.Equal(t, "debug", c.Logger.Level)
 	assert.Equal(t, "text", c.Logger.Format)
-	assert.Equal(t, "var/db", c.Storage.Dir)
-	assert.Equal(t, "var/log/openedge/localhub.log", c.Logger.Path)
+	assert.Equal(t, "", c.Storage.Dir)
+	assert.Equal(t, "var/log/openedge/localhub/localhub.log", c.Logger.Path)
 	assert.True(t, c.Logger.Console)
 	assert.Equal(t, 15, c.Logger.Age.Max)
 	assert.Equal(t, 50, c.Logger.Size.Max)

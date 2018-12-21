@@ -25,7 +25,7 @@ functions:
     instance:
       min: 0
       max: 10
-      timeout: 30s
+      timeout: 1m
       cpu:
         cpus: 0.5
       memory:
