@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/module/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -15,11 +16,12 @@ import (
 
 // DockerSpec for docker
 type DockerSpec struct {
-	Spec
-	Client        *client.Client
-	Config        *container.Config
-	HostConfig    *container.HostConfig
-	NetworkConfig *network.NetworkingConfig
+	context       *Context
+	module        *config.Module
+	client        *client.Client
+	config        *container.Config
+	hostConfig    *container.HostConfig
+	networkConfig *network.NetworkingConfig
 }
 
 // DockerContainer docker container to run and retry
@@ -27,23 +29,25 @@ type DockerContainer struct {
 	spec *DockerSpec
 	cid  string // container id
 	tomb utils.Tomb
+	log  *logger.Entry
 }
 
 // NewDockerContainer create a new docker container
 func NewDockerContainer(s *DockerSpec) Worker {
 	return &DockerContainer{
 		spec: s,
+		log:  logger.WithFields("module", s.module.UniqueName()),
 	}
 }
 
-// Name returns name
-func (w *DockerContainer) Name() string {
-	return w.spec.Name
+// UniqueName unique name of worker
+func (w *DockerContainer) UniqueName() string {
+	return w.spec.module.UniqueName()
 }
 
 // Policy returns restart policy
 func (w *DockerContainer) Policy() config.Policy {
-	return w.spec.Restart
+	return w.spec.module.Restart
 }
 
 // Start starts container
@@ -66,7 +70,7 @@ func (w *DockerContainer) Restart() error {
 // Stop stops container with a gracetime
 func (w *DockerContainer) Stop() error {
 	if !w.tomb.Alive() {
-		w.spec.Logger.Debugf("container already stopped")
+		w.log.Debugf("container already stopped")
 		return nil
 	}
 	w.tomb.Kill(nil)
@@ -79,16 +83,16 @@ func (w *DockerContainer) Stop() error {
 
 // Wait waits until container is stopped
 func (w *DockerContainer) Wait(c chan<- error) {
-	defer w.spec.Logger.Infof("container stopped")
+	defer w.log.Infof("container stopped")
 
 	ctx := context.Background()
-	statusChan, errChan := w.spec.Client.ContainerWait(ctx, w.cid, container.WaitConditionNotRunning)
+	statusChan, errChan := w.spec.client.ContainerWait(ctx, w.cid, container.WaitConditionNotRunning)
 	select {
 	case err := <-errChan:
-		w.spec.Logger.WithError(err).Warnln("failed to wait container")
+		w.log.WithError(err).Warnln("failed to wait container")
 		c <- err
 	case status := <-statusChan:
-		w.spec.Logger.Infof("container exited: %v", status)
+		w.log.Infof("container exited: %v", status)
 		c <- fmt.Errorf("container exited: %v", status)
 	}
 }
@@ -100,33 +104,33 @@ func (w *DockerContainer) Dying() <-chan struct{} {
 
 func (w *DockerContainer) startContainer() error {
 	ctx := context.Background()
-	container, err := w.spec.Client.ContainerCreate(ctx, w.spec.Config, w.spec.HostConfig, w.spec.NetworkConfig, w.spec.Name)
+	container, err := w.spec.client.ContainerCreate(ctx, w.spec.config, w.spec.hostConfig, w.spec.networkConfig, w.spec.module.UniqueName())
 	if err != nil {
-		w.spec.Logger.WithError(err).Warnln("failed to create container")
+		w.log.WithError(err).Warnln("failed to create container")
 		// stop, remove and retry
 		w.removeContainerByName()
-		container, err = w.spec.Client.ContainerCreate(ctx, w.spec.Config, w.spec.HostConfig, w.spec.NetworkConfig, w.spec.Name)
+		container, err = w.spec.client.ContainerCreate(ctx, w.spec.config, w.spec.hostConfig, w.spec.networkConfig, w.spec.module.UniqueName())
 		if err != nil {
-			w.spec.Logger.WithError(err).Warnln("failed to create container again")
+			w.log.WithError(err).Warnln("failed to create container again")
 			return err
 		}
 	}
 	w.cid = container.ID
-	w.spec.Logger = w.spec.Logger.WithFields("cid", container.ID[:12])
-	err = w.spec.Client.ContainerStart(ctx, w.cid, types.ContainerStartOptions{})
+	w.log = w.log.WithFields("cid", container.ID[:12])
+	err = w.spec.client.ContainerStart(ctx, w.cid, types.ContainerStartOptions{})
 	if err != nil {
-		w.spec.Logger.WithError(err).Warnln("failed to start container")
+		w.log.WithError(err).Warnln("failed to start container")
 		return err
 	}
-	w.spec.Logger.Infof("container started")
+	w.log.Infof("container started")
 	return nil
 }
 
 func (w *DockerContainer) restartContainer() error {
 	ctx := context.Background()
-	err := w.spec.Client.ContainerRestart(ctx, w.cid, &w.spec.Grace)
+	err := w.spec.client.ContainerRestart(ctx, w.cid, &w.spec.context.Grace)
 	if err != nil {
-		w.spec.Logger.Warnf("failed to restart container")
+		w.log.Warnf("failed to restart container")
 	}
 	return err
 }
@@ -136,16 +140,16 @@ func (w *DockerContainer) stopContainer() error {
 		return nil
 	}
 	ctx := context.Background()
-	err := w.spec.Client.ContainerStop(ctx, w.cid, &w.spec.Grace)
+	err := w.spec.client.ContainerStop(ctx, w.cid, &w.spec.context.Grace)
 	if err != nil {
-		w.spec.Logger.Errorf("failed to stop container")
+		w.log.Errorf("failed to stop container")
 		return err
 	}
-	err = w.spec.Client.ContainerRemove(ctx, w.cid, types.ContainerRemoveOptions{Force: true})
+	err = w.spec.client.ContainerRemove(ctx, w.cid, types.ContainerRemoveOptions{Force: true})
 	if err != nil {
-		w.spec.Logger.Warnf("failed to remove container")
+		w.log.Warnf("failed to remove container")
 	} else {
-		w.spec.Logger.Infof("container removed")
+		w.log.Infof("container removed")
 	}
 	return nil
 }
@@ -153,17 +157,17 @@ func (w *DockerContainer) stopContainer() error {
 func (w *DockerContainer) removeContainerByName() {
 	ctx := context.Background()
 	args := filters.NewArgs()
-	args.Add("name", w.spec.Name)
-	containers, err := w.spec.Client.ContainerList(ctx, types.ContainerListOptions{Filters: args, All: true})
+	args.Add("name", w.spec.module.UniqueName())
+	containers, err := w.spec.client.ContainerList(ctx, types.ContainerListOptions{Filters: args, All: true})
 	if err != nil {
-		w.spec.Logger.WithError(err).Warnf("failed to list containers (%s)", w.spec.Name)
+		w.log.WithError(err).Warnf("failed to list containers (%s)", w.spec.module.UniqueName())
 	}
 	for _, c := range containers {
-		err := w.spec.Client.ContainerRemove(ctx, c.ID, types.ContainerRemoveOptions{Force: true})
+		err := w.spec.client.ContainerRemove(ctx, c.ID, types.ContainerRemoveOptions{Force: true})
 		if err != nil {
-			w.spec.Logger.WithError(err).Warnf("failed to remove old container (%s:%v)", c.ID[:12], c.Names)
+			w.log.WithError(err).Warnf("failed to remove old container (%s:%v)", c.ID[:12], c.Names)
 		} else {
-			w.spec.Logger.Infof("old container (%s:%v) removed", c.ID[:12], c.Names)
+			w.log.Infof("old container (%s:%v) removed", c.ID[:12], c.Names)
 		}
 	}
 }

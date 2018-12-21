@@ -1,0 +1,32 @@
+name: localfunc
+hub:
+  address: tcp://:1883
+  username: test
+  password: hahaha
+rules:
+  - id: rule-e1iluuac1
+    subscribe:
+      topic: t
+      qos: 1
+    compute:
+      function: sayhi
+    publish:
+      topic: t/hi
+      qos: 1
+functions:
+  - id: func-nyeosbbch
+    name: 'sayhi'
+    runtime: 'python27'
+    handler: 'sayhi.handler'
+    codedir: 'var/run/openedge/func-nyeosbbch'
+    entry: "bin/openedge_function_runtime_python27.py"
+    env:
+      USER_ID: acuiot
+    instance:
+      min: 0
+      max: 100
+      timeout: 30s
+logger:
+  path: var/log/openedge/localfunc/localfunc.log
+  console: true
+  level: "debug"

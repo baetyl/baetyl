@@ -8,15 +8,17 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/module/utils"
 )
 
 // NativeSpec spec for native process
 type NativeSpec struct {
-	Spec
-	Exec string
-	Argv []string
-	Attr os.ProcAttr
+	module  *config.Module
+	context *Context
+	exec    string
+	argv    []string
+	attr    os.ProcAttr
 }
 
 // NativeProcess native process to run and retry
@@ -24,23 +26,25 @@ type NativeProcess struct {
 	spec *NativeSpec
 	proc *os.Process
 	tomb utils.Tomb
+	log  *logger.Entry
 }
 
 // NewNativeProcess create a new native process
 func NewNativeProcess(s *NativeSpec) *NativeProcess {
 	return &NativeProcess{
 		spec: s,
+		log:  logger.WithFields("module", s.module.UniqueName()),
 	}
 }
 
-// Name returns name
-func (w *NativeProcess) Name() string {
-	return w.spec.Name
+// UniqueName unique name of worker
+func (w *NativeProcess) UniqueName() string {
+	return w.spec.module.UniqueName()
 }
 
 // Policy returns restart policy
 func (w *NativeProcess) Policy() config.Policy {
-	return w.spec.Restart
+	return w.spec.module.Restart
 }
 
 // Start starts process
@@ -70,7 +74,7 @@ func (w *NativeProcess) Restart() error {
 // Stop stops process
 func (w *NativeProcess) Stop() error {
 	if !w.tomb.Alive() {
-		w.spec.Logger.Debugf("process already stopped")
+		w.log.Debugf("process already stopped")
 		return nil
 	}
 	w.tomb.Kill(nil)
@@ -83,10 +87,10 @@ func (w *NativeProcess) Stop() error {
 
 // Wait waits until process is stopped
 func (w *NativeProcess) Wait(c chan<- error) {
-	defer w.spec.Logger.Infof("process stopped")
+	defer w.log.Infof("process stopped")
 	ps, err := w.proc.Wait()
 	if err != nil {
-		w.spec.Logger.Debugln("failed to wait process:", err)
+		w.log.Debugln("failed to wait process:", err)
 		c <- err
 	}
 	c <- fmt.Errorf("process exited: %v", ps)
@@ -99,15 +103,15 @@ func (w *NativeProcess) Dying() <-chan struct{} {
 
 func (w *NativeProcess) startProcess() error {
 	proc, err := os.StartProcess(
-		w.spec.Exec,
-		w.spec.Argv,
-		&w.spec.Attr,
+		w.spec.exec,
+		w.spec.argv,
+		&w.spec.attr,
 	)
 	if err != nil {
 		return err
 	}
 	w.proc = proc
-	w.spec.Logger = w.spec.Logger.WithFields("pid", strconv.Itoa(proc.Pid))
+	w.log = w.log.WithFields("pid", strconv.Itoa(proc.Pid))
 	return nil
 }
 
@@ -119,14 +123,14 @@ func (w *NativeProcess) stopProcess() error {
 	done := make(chan struct{})
 	go func() {
 		s, err := w.proc.Wait()
-		w.spec.Logger.Debugln("process exits by signal:", s, err)
+		w.log.Debugln("process exits by signal:", s, err)
 		close(done)
 	}()
 	select {
 	case <-done:
-	case <-time.After(w.spec.Grace):
+	case <-time.After(w.spec.context.Grace):
 		err := w.proc.Kill()
-		w.spec.Logger.WithError(err).Warnf("process killed")
+		w.log.WithError(err).Warnf("process killed")
 	}
 	return nil
 }

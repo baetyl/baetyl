@@ -10,7 +10,6 @@
 /output*
 /**/.DS_Store
 /.vscode
-/**/var
 /**/libexec
 /**/*.db
 /**/*.db.lock

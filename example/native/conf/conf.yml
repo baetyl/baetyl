@@ -1,4 +1,0 @@
-mode: native
-logger:
-  path: var/log/openedge.log
-  console: true

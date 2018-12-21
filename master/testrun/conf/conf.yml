@@ -1,6 +1,0 @@
-mode: native
-grace: "1s"
-logger:
-  path: var/log/openedge.log
-  console: true
-  level: debug

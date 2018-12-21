@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/baidu/openedge/api"
+	"github.com/baidu/openedge/module/api"
 	"github.com/baidu/openedge/module/logger"
 )
 

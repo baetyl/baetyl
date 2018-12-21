@@ -22,16 +22,9 @@ const (
 
 // Context represents the context of engine to execute
 type Context struct {
+	PWD   string
 	Mode  string
 	Grace time.Duration
-}
-
-// Spec common spec
-type Spec struct {
-	Name    string
-	Restart config.Policy
-	Logger  *logger.Entry
-	Grace   time.Duration
 }
 
 // Inner prepares and creates
@@ -42,7 +35,7 @@ type Inner interface {
 
 // Worker worker
 type Worker interface {
-	Name() string
+	UniqueName() string
 	Policy() config.Policy
 	Start(supervising func(Worker) error) error
 	Restart() error
@@ -64,24 +57,28 @@ type Engine struct {
 
 // New creates a new engine
 func New(ctx *Context) (*Engine, error) {
-	e := &Engine{
+	var err error
+	var inner Inner
+	switch ctx.Mode {
+	case ModeDocker:
+		inner, err = NewDockerEngine(ctx)
+	case ModeNative:
+		inner, err = NewNativeEngine(ctx)
+	default:
+		err = fmt.Errorf("mode (%s) not supported", ctx.Mode)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &Engine{
+		Inner:     inner,
 		auth:      map[string]string{},
 		order:     []string{},
 		resident:  cmap.New(),
 		temporary: cmap.New(),
 		entries:   cmap.New(),
 		log:       logger.WithFields("mode", ctx.Mode),
-	}
-	var err error
-	switch ctx.Mode {
-	case ModeDocker:
-		e.Inner, err = NewDockerEngine(ctx)
-	case ModeNative:
-		e.Inner, err = NewNativeEngine(ctx)
-	default:
-		err = fmt.Errorf("mode (%s) not supported", ctx.Mode)
-	}
-	return e, err
+	}, nil
 }
 
 // StartAll starts all resident modules
@@ -95,22 +92,23 @@ func (e *Engine) StartAll(ms []config.Module) error {
 		e.log.WithError(err).Warnf("failed to prepare entries")
 	}
 	for _, m := range ms {
-		if _, ok := e.auth[m.Name]; !ok {
-			e.auth[m.Name] = uuid.Generate().String()
+		uniqueName := m.UniqueName()
+		if _, ok := e.auth[uniqueName]; !ok {
+			e.auth[uniqueName] = uuid.Generate().String()
 		}
-		m.Env[module.EnvOpenEdgeModuleToken] = e.auth[m.Name]
+		m.Env[module.EnvOpenEdgeModuleToken] = e.auth[uniqueName]
 		worker, err := e.Create(m)
 		if err != nil {
 			return err
 		}
-		e.resident.Set(m.Name, worker)
-		e.order = append(e.order, m.Name)
+		e.resident.Set(uniqueName, worker)
+		e.order = append(e.order, uniqueName)
 		err = worker.Start(e.supervising)
 		if err != nil {
-			e.log.WithError(err).Errorf("failed to start resident module (%s)", m.Name)
+			e.log.WithError(err).Errorf("failed to start resident module (%s)", uniqueName)
 			return err
 		}
-		e.log.Infof("resident module (%s) started", m.Name)
+		e.log.Infof("resident module (%s) started", uniqueName)
 	}
 	e.log.Infof("all resident modules started")
 	return nil
@@ -127,30 +125,31 @@ func (e *Engine) Authenticate(username, password string) bool {
 
 // Start starts a temporary module
 func (e *Engine) Start(m config.Module) error {
+	uniqueName := m.UniqueName()
 	e.log.Debugln("starting temporary module:", m)
 	if !e.entries.Has(m.Entry) {
 		err := e.prepare(map[string]struct{}{m.Entry: struct{}{}})
 		if err != nil {
-			e.log.WithError(err).Warnf("failed to prepare entry of temporary module (%s)", m.Name)
+			e.log.WithError(err).Warnf("failed to prepare entry of temporary module (%s)", uniqueName)
 		}
 	}
 	worker, err := e.Create(m)
 	if err != nil {
-		e.log.WithError(err).Errorf("failed to create temporary module (%s)", m.Name)
+		e.log.WithError(err).Errorf("failed to create temporary module (%s)", uniqueName)
 		return err
 	}
-	old, ok := e.temporary.Get(m.Name)
+	old, ok := e.temporary.Get(uniqueName)
 	if ok {
-		e.temporary.Remove(m.Name)
+		e.temporary.Remove(uniqueName)
 		old.(Worker).Stop()
 	}
 	err = worker.Start(e.supervising)
 	if err != nil {
 		worker.Stop()
-		e.log.WithError(err).Errorf("failed to start temporary module (%s)", m.Name)
+		e.log.WithError(err).Errorf("failed to start temporary module (%s)", uniqueName)
 	} else {
-		e.temporary.Set(m.Name, worker)
-		e.log.Infof("temporary module (%s) started", m.Name)
+		e.temporary.Set(uniqueName, worker)
+		e.log.Infof("temporary module (%s) started", uniqueName)
 	}
 	return err
 }
@@ -246,7 +245,7 @@ func (e *Engine) prepare(entries map[string]struct{}) error {
 }
 
 func (e *Engine) supervising(w Worker) error {
-	defer e.Stop(w.Name())
+	defer e.Stop(w.UniqueName())
 	r := w.Policy()
 	c := make(chan error, 1)
 	backoff := &backoff.Backoff{
