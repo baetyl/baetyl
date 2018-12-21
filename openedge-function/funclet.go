@@ -34,15 +34,13 @@ func (fl *funclet) start() error {
 	}
 	rc := config.Runtime{}
 	rc.Name = fl.id
+	rc.Function = fl.cfg
 	rc.Server.Address = fmt.Sprintf("%s:%d", host, port)
 	rc.Server.Timeout = fl.cfg.Instance.Timeout
 	rc.Server.Message.Length.Max = fl.cfg.Instance.Message.Length.Max
-	rc.Function.Name = fl.cfg.Name
-	rc.Function.Handler = fl.cfg.Handler
-	rc.Function.CodeDir = fl.cfg.CodeDir
 	rc.Logger = fl.man.cfg.Logger
 	if rc.Logger.Path != "" {
-		rc.Logger.Path = rc.Logger.Path + "." + fl.cfg.Name
+		rc.Logger.Path = fmt.Sprintf("var/log/openedge/%s/%s.log", fl.cfg.ID, fl.cfg.Name)
 	}
 	rcd, err := json.Marshal(rc)
 	if err != nil {
@@ -50,7 +48,8 @@ func (fl *funclet) start() error {
 	}
 
 	mc := config.Module{}
-	mc.Name = fl.id
+	mc.Name = fl.cfg.ID
+	mc.Alias = fl.id
 	mc.Entry = fl.cfg.Entry
 	mc.Env = fl.cfg.Env
 	mc.Params = []string{"-c", string(rcd)}
@@ -77,7 +76,8 @@ func (fl *funclet) Close() {
 		if fl.rtc != nil {
 			fl.rtc.Close()
 		}
-		err := fl.man.api.StopModule(fl.id)
+		mc := &config.Module{Name: fl.cfg.ID, Alias: fl.id}
+		err := fl.man.api.StopModule(mc)
 		if err != nil {
 			fl.log.WithError(err).Warnf("failed to stop function instance")
 		}

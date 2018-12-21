@@ -60,11 +60,15 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbPath := path.Join(e.context.PWD, "var", "db", "openedge", m.Name)
+	logPath := path.Join(e.context.PWD, "var", "log", "openedge", m.Name)
+	runPath := path.Join(e.context.PWD, "var", "run", "openedge", m.Name)
+	configPath := path.Join(runPath, "module.yml")
 	volumeBindings := []string{
-		fmt.Sprintf("%s:/etc/openedge:ro", path.Join(e.context.PWD, "var", "run", "openedge", m.Name)),
-		fmt.Sprintf("%s:/var/run/openedge:ro", path.Join(e.context.PWD, "var", "run", "openedge", m.Name)),
-		fmt.Sprintf("%s:/var/db/openedge", path.Join(e.context.PWD, "var", "db", "openedge", m.Name)),
-		fmt.Sprintf("%s:/var/log/openedge", path.Join(e.context.PWD, "var", "log", "openedge", m.Name)),
+		fmt.Sprintf("%s:/etc/openedge/module.yml:ro", configPath),
+		fmt.Sprintf("%s:/var/run/openedge/%s:ro", runPath, m.Name),
+		fmt.Sprintf("%s:/var/log/openedge/%s", logPath, m.Name),
+		fmt.Sprintf("%s:/var/db/openedge/%s", dbPath, m.Name),
 	}
 	cmd := strslice.StrSlice{}
 	cmd = append(cmd, m.Params...)
@@ -93,16 +97,12 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		},
 	}
 	return NewDockerContainer(&DockerSpec{
-		Spec: Spec{
-			Name:    m.Name,
-			Restart: m.Restart,
-			Grace:   e.context.Grace,
-			Logger:  logger.WithFields("module", m.Name),
-		},
-		Client:        e.client,
-		Config:        config,
-		HostConfig:    hostConfig,
-		NetworkConfig: networkConfig,
+		module:        &m,
+		context:       e.context,
+		client:        e.client,
+		config:        config,
+		hostConfig:    hostConfig,
+		networkConfig: networkConfig,
 	}), err
 }
 

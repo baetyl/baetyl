@@ -5,7 +5,7 @@ all: openedge modules
 modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
 
 openedge:
-	@echo "GO $@ ${GOFLAG}"
+	@echo "build ${GOFLAG} $@"
 	@go build ${GOFLAG} .
 
 openedge-hub/openedge-hub:
@@ -23,11 +23,11 @@ test:
 tools: pubsub openedge-consistency
 
 pubsub:
-	@echo "GO $@"
+	@echo "build ${GOFLAG} $@"
 	@go build ${GOFLAG} ./tools/pubsub
 
 openedge-consistency:
-	@echo "GO $@"
+	@echo "build ${GOFLAG} $@"
 	@go build ${GOFLAG} ./tools/openedge-consistency
 
 install: all
@@ -78,3 +78,17 @@ protobuf:
 	# protoc -Imodule/function/runtime --cpp_out=openedge-function-runtime-cxx --grpc_out=openedge-function-runtime-cxx --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` openedge_function_runtime.proto
 	protoc -Imodule/function/runtime --go_out=plugins=grpc:module/function/runtime openedge_function_runtime.proto
 	python -m grpc_tools.protoc -Imodule/function/runtime --python_out=openedge-function-runtime-python27 --grpc_python_out=openedge-function-runtime-python27 openedge_function_runtime.proto
+
+images: openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image
+
+openedge-hub-image:
+	make -C openedge-hub openedge-hub-image
+
+openedge-function-image:
+	make -C openedge-function openedge-function-image
+
+openedge-remote-mqtt-image:
+	make -C openedge-remote-mqtt openedge-remote-mqtt-image
+
+openedge-function-runtime-python27-image:
+	make -C openedge-function-runtime-python27 openedge-function-runtime-python27-image

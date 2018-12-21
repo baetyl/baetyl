@@ -40,7 +40,8 @@ func (e *NativeEngine) Prepare(_ string) error {
 
 // Create creates a new native process
 func (e *NativeEngine) Create(m config.Module) (Worker, error) {
-	args := []string{m.Name}
+	fullName := m.UniqueName()
+	args := []string{fullName}
 	if runtime.GOOS == "windows" {
 		if !strings.Contains(filepath.Base(m.Entry), ".") {
 			m.Entry = m.Entry + ".exe"
@@ -67,15 +68,11 @@ func (e *NativeEngine) Create(m config.Module) (Worker, error) {
 	}
 	e.log.Debugln(m.Entry, args)
 	return NewNativeProcess(&NativeSpec{
-		Spec: Spec{
-			Name:    m.Name,
-			Restart: m.Restart,
-			Grace:   e.context.Grace,
-			Logger:  e.log.WithFields("module", m.Name),
-		},
-		Exec: m.Entry,
-		Argv: args,
-		Attr: os.ProcAttr{
+		module:  &m,
+		context: e.context,
+		exec:    m.Entry,
+		argv:    args,
+		attr: os.ProcAttr{
 			Dir: e.pwd,
 			Env: utils.AppendEnv(m.Env, true),
 			Files: []*os.File{

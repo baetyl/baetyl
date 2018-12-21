@@ -15,6 +15,6 @@ subscriptions:
     target:
       topic: 't/topic'
 logger:
-  path: var/log/openedge/localhub.log
+  path: var/log/openedge/localhub/localhub.log
   console: true
-  # level: "debug"
+  level: "debug"

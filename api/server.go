@@ -56,7 +56,7 @@ func (s *Server) startModule(params http.Params, headers http.Headers, reqBody [
 		return nil, err
 	}
 	if err = s.engine.Start(m); err != nil {
-		s.log.WithError(err).Errorf("failed to start module (%s)", m.Name)
+		s.log.WithError(err).Errorf("failed to start module (%s)", m.UniqueName())
 		return nil, err
 	}
 	return nil, nil

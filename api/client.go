@@ -47,13 +47,13 @@ func (c *Client) StartModule(m *config.Module) error {
 	if err != nil {
 		return err
 	}
-	_, _, err = c.Send("PUT", c.newURL(m.Name, "start"), c.newHeaders(), body)
+	_, _, err = c.Send("PUT", c.newURL(m.UniqueName(), "start"), c.newHeaders(), body)
 	return err
 }
 
 // StopModule stops a module
-func (c *Client) StopModule(name string) error {
-	_, _, err := c.Send("PUT", c.newURL(name, "stop"), c.newHeaders(), nil)
+func (c *Client) StopModule(m *config.Module) error {
+	_, _, err := c.Send("PUT", c.newURL(m.UniqueName(), "stop"), c.newHeaders(), nil)
 	return err
 }
 

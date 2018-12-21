@@ -16,7 +16,7 @@ FROM base
 RUN apk add --update --no-cache gcc
 COPY --from=builder /install /usr/local
 WORKDIR /
-COPY module/openedge-function-runtime-python27/*.py /bin/
+COPY openedge-function-runtime-python27/*.py /bin/
 RUN chmod +x /bin/openedge_function_runtime_python27.py
 ENTRYPOINT ["openedge_function_runtime_python27.py"]
 CMD []

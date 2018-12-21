@@ -1,6 +1,8 @@
 package main
 
 import (
+	"path"
+
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/openedge-hub/broker"
@@ -28,7 +30,10 @@ func New(confFile string) (module.Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(conf.Logger, "module", conf.Name)
+	logger.Init(conf.Logger, "module", conf.UniqueName())
+	if conf.Storage.Dir == "" {
+		conf.Storage.Dir = path.Join("var", "db", "openedge", conf.Name)
+	}
 	return &mo{
 		conf: conf,
 	}, nil

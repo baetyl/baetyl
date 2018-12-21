@@ -21,7 +21,7 @@ func New(confFile string) (module.Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(cfg.Logger, "module", cfg.Name)
+	logger.Init(cfg.Logger, "module", cfg.UniqueName())
 	remotes := make(map[string]Remote)
 	for _, remote := range cfg.Remotes {
 		remotes[remote.Name] = remote

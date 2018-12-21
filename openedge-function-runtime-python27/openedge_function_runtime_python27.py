@@ -62,7 +62,8 @@ class mo(openedge_function_runtime_pb2_grpc.RuntimeServicer):
         self.server = grpc.server(thread_pool=futures.ThreadPoolExecutor(),
                                   options=[('grpc.max_send_message_length', max_message_size),
                                            ('grpc.max_receive_message_length', max_message_size)])
-        openedge_function_runtime_pb2_grpc.add_RuntimeServicer_to_server(self, self.server)
+        openedge_function_runtime_pb2_grpc.add_RuntimeServicer_to_server(
+            self, self.server)
         if 'address' not in self.config['server']:
             raise Exception, 'module config invalid, missing server address'
         self.server.add_insecure_port(self.config['server']['address'])
@@ -113,7 +114,12 @@ def get_logger(c):
         return logger
 
     if 'path' not in c['logger']:
-        c['logger']['path'] = "var/log/" + c['name'] + ".log"
+        return logger
+
+    try:
+        os.mkdir(os.path.dirname(c['logger']['path']))
+    except OSError:
+        pass
 
     level = logging.INFO
     if 'level' in c['logger']:
@@ -153,8 +159,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='python function server')
     parser.add_argument('-c',
                         type=str,
-                        default=os.path.join("conf", "conf.yml"),
-                        help='config file path (default: conf/conf.yml)')
+                        default=os.path.join("etc", "openedge", "module.yml"),
+                        help='config file path (default: etc/openedge/module.yml)')
     args = parser.parse_args()
     m = mo()
     m.Load(args.c)

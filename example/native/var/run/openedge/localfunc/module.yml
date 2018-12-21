@@ -14,10 +14,11 @@ rules:
       topic: t/hi
       qos: 1
 functions:
-  - name: 'sayhi'
+  - id: func-nyeosbbch
+    name: 'sayhi'
     runtime: 'python27'
     handler: 'sayhi.handler'
-    codedir: 'var/run/openedge/localfunc/func-nyeosbbch'
+    codedir: 'var/run/openedge/func-nyeosbbch'
     entry: "bin/openedge_function_runtime_python27.py"
     env:
       USER_ID: acuiot
@@ -26,6 +27,6 @@ functions:
       max: 100
       timeout: 30s
 logger:
-  path: var/log/openedge/localfunc.log
+  path: var/log/openedge/localfunc/localfunc.log
   console: true
   level: "debug"
