@@ -9,7 +9,6 @@ const (
 	LogUsername             = "username"
 	LogMQTTVersion          = "mqttVersion"
 	LogCleanSession         = "cleanSession"
-	LogApp                  = "app"
 	LogComponent            = "component"
 	LogMessage              = "message"
 	LogPacketID             = "packetID"

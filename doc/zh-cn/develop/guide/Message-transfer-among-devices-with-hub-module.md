@@ -50,7 +50,6 @@ subscriptions: 主题路由配置项
 
 ```yaml
 name: openedge_hub
-mark: modu-nje2uoa9s
 listen:
   - tcp://:1883
 principals:

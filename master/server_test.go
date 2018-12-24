@@ -1,13 +1,12 @@
-package master_test
+package master
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/master"
-	"github.com/baidu/openedge/module/api"
 	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/master"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,12 +35,12 @@ func (e *mockEngine) Stop(_ string) error {
 }
 
 func TestAPIHttp(t *testing.T) {
-	s, err := master.NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
+	s, err := NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
 	assert.NoError(t, err)
-	c, err := api.NewClient(config.HTTPClient{Address: "tcp://" + s.Addr, Timeout: time.Minute, KeepAlive: time.Minute})
+	c, err := master.NewClient(config.HTTPClient{Address: "tcp://" + s.Addr, Timeout: time.Minute, KeepAlive: time.Minute})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	p, err := c.GetPortAvailable("127.0.0.1")
@@ -54,12 +53,12 @@ func TestAPIHttp(t *testing.T) {
 }
 
 func TestAPIHttpUnauthorized(t *testing.T) {
-	s, err := master.NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
+	s, err := NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
 	assert.NoError(t, err)
-	c, err := api.NewClient(config.HTTPClient{Address: "tcp://" + s.Addr, Timeout: time.Minute, KeepAlive: time.Minute, Username: "test"})
+	c, err := master.NewClient(config.HTTPClient{Address: "tcp://" + s.Addr, Timeout: time.Minute, KeepAlive: time.Minute, Username: "test"})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	_, err = c.GetPortAvailable("127.0.0.1")

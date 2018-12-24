@@ -16,18 +16,12 @@
 
 ***注:*** openedge代码目录需要存放在 ```$GOPATH/src/github.com/baidu/``` 目录下
 
-## 依赖拉取
-
-```shell
-cd $GOPATH/src/github.com/baidu/openedge
-make depends
-```
-
 ## 源码编译
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-make
+make # 编译主程序和模块的可执行程序
+make images # 在本地生成模块镜像
 ```
 
 编译完成后会在根目录下生成如下四个可执行文件。
@@ -41,20 +35,18 @@ openedge-remote-mqtt
 
 ## 程序安装
 
-管理员身份安装openedge，并安装到默认路径：/usr/local。
+安装到默认路径：/usr/local。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-sudo make install # docker容器模式
-sudo make native-install # native进程模式
+make install
 ```
 
-非管理员身份安装openedge，并指定安装路径，比如docker容器模式安装到output/docker目录中，native进程模式安装到output/native目录中。
+指定安装路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-make PREFIX=output/docker install # docker容器模式
-make PREFIX=output/native native-install # native进程模式
+make PREFIX=output install
 ```
 
 ## 程序运行
@@ -66,12 +58,12 @@ openedge -w example/docker # docker容器模式
 openedge # native进程模式
 ```
 
-如果程序已经安装到了指定路径，比如docker容器模式安装到output/docker目录中，native进程模式安装到output/native目录中。
+如果程序已经安装到了指定路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-output/docker/bin/openedge -w example/docker # docker容器模式
-output/native/bin/openedge -w output/native # native进程模式
+output/bin/openedge -w example/docker # docker容器模式
+output/bin/openedge # native进程模式
 ```
 
 **提示**：
@@ -87,15 +79,13 @@ output/native/bin/openedge -w output/native # native进程模式
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
-sudo make uninstall # docker容器模式
-sudo make native-uninstall # native进程模式
+make uninstall
 ```
 
-如果是指定了安装路径，比如docker容器模式安装到output/docker目录中，native进程模式安装到output/native目录中。
+如果是指定了安装路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
-make PREFIX=output/docker uninstall # docker容器模式
-make PREFIX=output/native native-uninstall # native进程模式
+make PREFIX=output uninstall
 ```

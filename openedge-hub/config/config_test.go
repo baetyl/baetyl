@@ -61,7 +61,7 @@ M:
 }
 
 func TestConfig(t *testing.T) {
-	cBytes, err := ioutil.ReadFile("../../example/native/var/run/openedge/localhub/module.yml")
+	cBytes, err := ioutil.ReadFile("../../example/native/var/db/openedge/module/localhub/module.yml")
 	assert.NoError(t, err)
 	c, err := NewConfig(cBytes)
 	assert.NoError(t, err)

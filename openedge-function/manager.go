@@ -3,27 +3,27 @@ package main
 import (
 	"fmt"
 
-	"github.com/baidu/openedge/module/api"
 	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/master"
 )
 
 // Manager manages all functions
 type Manager struct {
 	cfg Config
 	fcs map[string]*Function
-	api *api.Client
+	cli *master.Client
 	log *logger.Entry
 }
 
 // NewManager loads all functions and return
 func NewManager(c Config) (*Manager, error) {
-	a, err := api.NewClient(c.API)
+	cli, err := master.NewClient(c.API)
 	if err != nil {
 		return nil, err
 	}
 	m := &Manager{
 		cfg: c,
-		api: a,
+		cli: cli,
 		fcs: make(map[string]*Function),
 		log: logger.WithFields("manager", "function"),
 	}

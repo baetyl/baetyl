@@ -52,12 +52,13 @@ uninstall:
 	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.pyc
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
-	rm -rf ${PREFIX}/etc/openedge
-	rm -rf ${PREFIX}/var/run/openedge
 	rm -rf ${PREFIX}/var/log/openedge
 	rm -rf ${PREFIX}/var/db/openedge
-	rmdir ${PREFIX}/etc
+	rm -rf ${PREFIX}/etc/openedge
+	rmdir ${PREFIX}/var/log
+	rmdir ${PREFIX}/var/db
 	rmdir ${PREFIX}/var
+	rmdir ${PREFIX}/etc
 	rmdir ${PREFIX}/bin
 	rmdir ${PREFIX}
 

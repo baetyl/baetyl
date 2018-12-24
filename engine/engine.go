@@ -49,7 +49,7 @@ type Engine struct {
 	Inner
 	auth      map[string]string
 	order     []string           // resident module start order
-	resident  cmap.ConcurrentMap // resident modules from app.yml
+	resident  cmap.ConcurrentMap // resident modules from module.yml
 	temporary cmap.ConcurrentMap // temporary modules from function module
 	entries   cmap.ConcurrentMap
 	log       *logger.Entry

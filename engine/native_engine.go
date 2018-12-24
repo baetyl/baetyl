@@ -61,7 +61,7 @@ func (e *NativeEngine) Create(m config.Module) (Worker, error) {
 		}
 	}
 	if len(m.Params) == 0 {
-		args = append(args, "-c", path.Join(e.context.PWD, "var", "run", "openedge", m.Name, "module.yml"))
+		args = append(args, "-c", path.Join(e.context.PWD, "var", "db", "openedge", "module", m.Name, "module.yml"))
 	} else {
 		args = append(args, m.Params...)
 	}

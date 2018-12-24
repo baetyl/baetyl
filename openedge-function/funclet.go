@@ -28,7 +28,7 @@ func (fl *funclet) start() error {
 	if os.Getenv("OPENEDGE_MODULE_MODE") != "docker" {
 		var err error
 		host = "127.0.0.1"
-		port, err = fl.man.api.GetPortAvailable(host)
+		port, err = fl.man.cli.GetPortAvailable(host)
 		if err != nil {
 			return err
 		}
@@ -57,7 +57,7 @@ func (fl *funclet) start() error {
 	mc.Resources = fl.cfg.Instance.Resources
 
 	fl.log.Debugln("Runtime config:", mc)
-	err = fl.man.api.StartModule(&mc)
+	err = fl.man.cli.StartModule(&mc)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (fl *funclet) Close() {
 			fl.rtc.Close()
 		}
 		mc := &config.Module{Name: fl.cfg.ID, Alias: fl.id}
-		err := fl.man.api.StopModule(mc)
+		err := fl.man.cli.StopModule(mc)
 		if err != nil {
 			fl.log.WithError(err).Warnf("failed to stop function instance")
 		}

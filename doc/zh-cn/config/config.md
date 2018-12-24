@@ -17,7 +17,7 @@
 
 ## 主程序配置
 
-主程序的配置和应用配置是分离的，默认在工作目录的conf下，[conf.yml](https://github.com/baidu/openedge/blob/master/example/docker/conf/conf.yml)配置解读如下：
+主程序的配置和应用配置是分离的，默认配置文件是：工作目录下的[etc/openedge/openedge.yml](https://github.com/baidu/openedge/blob/master/example/docker/openedge/openedge.yml)配置解读如下：
 
     mode: [必须]主程序运行模式。docker：docker容器模式；native：native进程模式
     grace: 默认值：30s，主程序平滑退出超时时间
@@ -49,12 +49,11 @@
 
 ## 应用配置
 
-应用配置在工作目录的app下，[app.yml](https://github.com/baidu/openedge/blob/master/example/docker/app/app.yml)配置解读如下：
+应用配置的默认配置文件是：工作目录下的[var/db/openedge/module/module.yml](https://github.com/baidu/openedge/blob/master/example/docker/var/db/openedge/module/module.yml)配置解读如下：
 
     version: 应用版本
     modules: 应用的模块列表
       - name: [必须]模块名，在模块列表中必须唯一
-        mark: [必须]模块的mark值，类是git的修订版本，可指定模块配置所在位置
         entry: [必须]模块入口。docker容器模式下表示模块镜像；native进程模式下表示模块可执行程序所在路径
         restart: 模块的重启策略配置项
           retry:
@@ -276,5 +275,5 @@
 
 ## 配置参考
 
-> - [Docker容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/docker/conf/conf.yml)
-> - [Native容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/native/conf/conf.yml)
+> - [Docker容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/docker/etc/openedge/openedge.yml)
+> - [Native容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/native/etc/openedge/openedge.yml)

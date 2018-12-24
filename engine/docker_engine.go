@@ -60,15 +60,15 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbPath := path.Join(e.context.PWD, "var", "db", "openedge", m.Name)
 	logPath := path.Join(e.context.PWD, "var", "log", "openedge", m.Name)
-	runPath := path.Join(e.context.PWD, "var", "run", "openedge", m.Name)
-	configPath := path.Join(runPath, "module.yml")
+	volumePath := path.Join(e.context.PWD, "var", "db", "openedge", "volume", m.Name)
+	modulePath := path.Join(e.context.PWD, "var", "db", "openedge", "module", m.Name)
+	configPath := path.Join(modulePath, "module.yml")
 	volumeBindings := []string{
 		fmt.Sprintf("%s:/etc/openedge/module.yml:ro", configPath),
-		fmt.Sprintf("%s:/var/run/openedge/%s:ro", runPath, m.Name),
+		fmt.Sprintf("%s:/var/db/openedge/module/%s:ro", modulePath, m.Name),
+		fmt.Sprintf("%s:/var/db/openedge/volume/%s", volumePath, m.Name),
 		fmt.Sprintf("%s:/var/log/openedge/%s", logPath, m.Name),
-		fmt.Sprintf("%s:/var/db/openedge/%s", dbPath, m.Name),
 	}
 	cmd := strslice.StrSlice{}
 	cmd = append(cmd, m.Params...)

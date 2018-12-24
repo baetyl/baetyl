@@ -18,7 +18,7 @@ functions:
     name: 'sayhi'
     runtime: 'python27'
     handler: 'sayhi.handler'
-    codedir: 'var/run/openedge/func-nyeosbbch'
+    codedir: 'var/db/openedge/module/func-nyeosbbch'
     entry: "openedge-function-runtime-python27:build"
     env:
       USER_ID: acuiot
@@ -30,8 +30,6 @@ functions:
         cpus: 0.5
       memory:
         limit: 50m
-      pids:
-        limit: 10
 logger:
   path: var/log/openedge/localfunc/localfunc.log
   console: true

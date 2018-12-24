@@ -4,24 +4,26 @@
 
 ![函数计算模块结构图](../../images/about/function.png)
 
-**注意**: 如果函数执行错误，函数计算会返回如下格式的消息，供后续处理。其中packet是函数输入的消息（被处理的消息），不是函数返回的消息
+**注意**：
 
-```python
-{
-    "errorMessage": "rpc error: code = Unknown desc = Exception calling application",
-    "errorType": "*errors.Err",
-    "packet": {
-        "Message": {
-            "Topic": "t",
-            "Payload": "eyJpZCI6MSwiZGV2aWNlIjoiMTExIn0=",
-            "QOS": 0,
-            "Retain": false
-        },
-        "Dup": false,
-        "ID": 0
+- Docker容器模式下，函数实例的资源限制不要低于50M内存，20个线程。
+- 如果函数执行错误，函数计算会返回如下格式的消息，供后续处理。其中packet是函数输入的消息（被处理的消息），不是函数返回的消息
+    ```python
+    {
+        "errorMessage": "rpc error: code = Unknown desc = Exception calling application",
+        "errorType": "*errors.Err",
+        "packet": {
+            "Message": {
+                "Topic": "t",
+                "Payload": "eyJpZCI6MSwiZGV2aWNlIjoiMTExIn0=",
+                "QOS": 0,
+                "Retain": false
+            },
+            "Dup": false,
+            "ID": 0
+        }
     }
-}
-```
+    ```
 
 ## 函数计算python2.7 runtime模块（openedge_function_runtime_python2.7）
 
@@ -55,10 +57,10 @@ def handler(event, context):
     return event
 ```
 
-> **提示**：Native进程模式下，若要运行本代码库提供的[sayhi.py](https://github.com/baidu/openedge/blob/master/example/native/app/func-nyeosbbch/sayhi.py)，需要自行安装python2.7，且需要基于python2.7安装protobuf3、grpcio、pyyaml(采用pip安装即可，`pip install grpcio protobuf pyyaml`)。
+**提示**：Native进程模式下，若要运行本代码库提供的[sayhi.py](https://github.com/baidu/openedge/blob/master/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py)，需要自行安装python2.7，且需要基于python2.7安装protobuf3、grpcio、pyyaml(采用pip安装即可，`pip install grpcio protobuf pyyaml`)。
 
-> 此外，对于Native进程模式python脚本运行环境的构建，推荐通过virtualenv构建虚拟环境，并在此基础上安装相关依赖，相关步骤如下：
->
+此外，对于Native进程模式python脚本运行环境的构建，推荐通过virtualenv构建虚拟环境，并在此基础上安装相关依赖，相关步骤如下：
+
 > ```python
 >   # install virtualenv via pip
 >   [sudo] pip install virtualenv

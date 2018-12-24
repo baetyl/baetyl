@@ -1,15 +1,14 @@
 // +build !windows
 
-package master_test
+package master
 
 import (
 	"os"
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/master"
-	"github.com/baidu/openedge/module/api"
 	"github.com/baidu/openedge/module/config"
+	"github.com/baidu/openedge/module/master"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,12 +16,12 @@ func TestAPIUnix(t *testing.T) {
 	os.MkdirAll("./var/", 0755)
 	defer os.RemoveAll("./var/")
 	addr := "unix://./var/test.sock"
-	s, err := master.NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: addr, Timeout: time.Minute})
+	s, err := NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: addr, Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
 	assert.NoError(t, err)
-	c, err := api.NewClient(config.HTTPClient{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute})
+	c, err := master.NewClient(config.HTTPClient{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	p, err := c.GetPortAvailable("127.0.0.1")
@@ -38,12 +37,12 @@ func TestAPIUnixUnauthorized(t *testing.T) {
 	os.MkdirAll("./var/", 0755)
 	defer os.RemoveAll("./var/")
 	addr := "unix://./var/test.sock"
-	s, err := master.NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: addr, Timeout: time.Minute})
+	s, err := NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: addr, Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
 	assert.NoError(t, err)
-	c, err := api.NewClient(config.HTTPClient{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute, Username: "test"})
+	c, err := master.NewClient(config.HTTPClient{Address: addr, Timeout: time.Minute, KeepAlive: time.Minute, Username: "test"})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	_, err = c.GetPortAvailable("127.0.0.1")
