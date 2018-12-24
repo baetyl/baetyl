@@ -255,6 +255,7 @@ func defaults(c *Config) error {
 		}
 	}
 	if runtime.GOOS == "linux" {
+		os.MkdirAll("var/run/", os.ModeDir)
 		c.API.Address = "unix://var/run/openedge.sock"
 		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
 	} else {
