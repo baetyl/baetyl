@@ -32,7 +32,7 @@ func New(confFile string) (module.Module, error) {
 	}
 	logger.Init(conf.Logger, "module", conf.UniqueName())
 	if conf.Storage.Dir == "" {
-		conf.Storage.Dir = path.Join("var", "db", "openedge", conf.Name)
+		conf.Storage.Dir = path.Join("var", "db", "openedge", "volume", conf.Name)
 	}
 	return &mo{
 		conf: conf,

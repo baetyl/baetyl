@@ -18,7 +18,7 @@ functions:
     name: 'sayhi'
     runtime: 'python27'
     handler: 'sayhi.handler'
-    codedir: 'var/run/openedge/func-nyeosbbch'
+    codedir: 'var/db/openedge/module/func-nyeosbbch'
     entry: "bin/openedge_function_runtime_python27.py"
     env:
       USER_ID: acuiot
