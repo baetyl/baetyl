@@ -37,9 +37,13 @@ type Master struct {
 }
 
 // New creates a new master
-func New(workDir, confDate string) (*Master, error) {
+func New(confDate string) (*Master, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 	c := Config{}
-	err := module.Load(&c, confDate)
+	err = module.Load(&c, confDate)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +52,9 @@ func New(workDir, confDate string) (*Master, error) {
 		return nil, err
 	}
 	logger.Init(c.Logger, "openedge", "master")
+	logger.Debugln("work dir:", pwd)
 	ctx := engine.Context{
-		PWD:   workDir,
+		PWD:   pwd,
 		Mode:  c.Mode,
 		Grace: c.Grace,
 	}
@@ -117,7 +122,9 @@ func (m *Master) Close() {
 			logger.WithError(err).Errorf("failed to close cloud agent")
 		}
 	}
-	m.engine.StopAll()
+	if m.engine != nil {
+		m.engine.StopAll()
+	}
 	if err := m.server.Close(); err != nil {
 		logger.WithError(err).Errorf("failed to close api server")
 	}
@@ -251,11 +258,11 @@ func defaults(c *Config) error {
 			}
 		}
 		if c.Cloud.OpenAPI.CA == "" {
-			c.Cloud.OpenAPI.CA = "conf/openapi.pem"
+			c.Cloud.OpenAPI.CA = "etc/openedge/openapi.pem"
 		}
 	}
 	if runtime.GOOS == "linux" {
-		os.MkdirAll("var/run/", os.ModeDir)
+		os.MkdirAll("var/run", os.ModePerm)
 		c.API.Address = "unix://var/run/openedge.sock"
 		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
 	} else {

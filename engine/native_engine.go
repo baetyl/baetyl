@@ -16,21 +16,15 @@ import (
 // NativeEngine native engine
 type NativeEngine struct {
 	context *Context
-	pwd     string
 	log     *logger.Entry
 }
 
 // NewNativeEngine create a new native engine
-func NewNativeEngine(context *Context) (Inner, error) {
-	pwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
+func NewNativeEngine(context *Context) Inner {
 	return &NativeEngine{
 		context: context,
-		pwd:     pwd,
 		log:     logger.WithFields("mode", "native"),
-	}, nil
+	}
 }
 
 // Prepare dummy
@@ -72,7 +66,7 @@ func (e *NativeEngine) Create(m config.Module) (Worker, error) {
 		exec:    m.Entry,
 		argv:    args,
 		attr: os.ProcAttr{
-			Dir: e.pwd,
+			Dir: e.context.PWD,
 			Env: utils.AppendEnv(m.Env, true),
 			Files: []*os.File{
 				os.Stdin,
