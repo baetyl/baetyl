@@ -35,7 +35,7 @@ openedge-remote-mqtt
 
 ## 程序安装
 
-安装到默认路径：/usr/local。
+安装到默认路径：/usr/local。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
