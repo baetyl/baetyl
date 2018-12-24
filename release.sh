@@ -11,15 +11,11 @@ do
 	shift
 done
 
-version_info="package version\n\n// Version the version of this binary\nconst Version = \"$version\""
-echo $version_info > version/version.go
+version_info="package module\n\n// Version the version of this binary\nconst Version = \"$version\""
+echo $version_info > module/version.go
 
 go_version=`go version | awk '{print substr($3, 3)}'`
 echo "Current golang version is $go_version, the minimum version of go required is 1.10.0"
-
-# Use `godep restore ./...` checkout dependencies
-
-find $GOPATH/src/github.com/docker -path '*/vendor' -type d | xargs -IX rm -r X
 
 if [ -d output ]; then
     rm -rf output/*
@@ -54,13 +50,13 @@ build() {
     env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge$GOEXE .
 
     # modules
-    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-hub$GOEXE ./module/hub/openedge-hub
-    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-function$GOEXE ./module/function/openedge-function
-    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-remote-mqtt$GOEXE ./module/remote/openedge-remote-mqtt
+    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-hub$GOEXE ./openedge-hub
+    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-function$GOEXE ./openedge-function
+    # env GOOS=$GOOS GOARCH=$GOARCH go build -o output/$TAG/bin/openedge-remote-mqtt$GOEXE ./openedge-remote-mqtt
 
     # function runtime python2.7
-    # cp module/function/runtime/python2.7/*.py  output/$TAG/bin/
-    # chmod +x output/$TAG/bin/openedge_function_runtime_python2.7.py
+    # cp openedge-function-runtime-python27/*.py  output/$TAG/bin/
+    # chmod +x output/$TAG/bin/openedge_function_runtime_python27.py
 
     cd output/$TAG/
     tar czvf ../openedge-$TAG-$version.tar.gz *
