@@ -2,11 +2,11 @@
 
 **声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
 
-与[连接测试](./Device-connect-with-OpenEdge-base-on-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，详细配置如下所示：
+与[连接测试](./Device-connect-with-OpenEdge-base-on-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，详细配置如下所示：
 
 ```yaml
 name: [必须]模块名
-listen: [必须]监听地址，例如：
+listen: [必须]监听地址，例如：
   - tcp://0.0.0.0:1883 # Native进程模式下，如果不想暴露给宿主机外的设备访问，可以改成tcp://127.0.0.1:1883
   - ssl://0.0.0.0:1884
   - ws://:8080/mqtt
@@ -15,13 +15,13 @@ certificate: SSL/TLS证书认证配置项，如果启用ssl或wss必须配置
   ca: mqtt server CA证书所在路径
   key: mqtt server 服务端私钥所在路径
   cert: mqtt server 服务端公钥所在路径
-principals: 接入权限配置项，如果不配置则mqtt client无法接入hub，支持账号密码和证书认证
+principals: 接入权限配置项，如果不配置则mqtt client无法接入hub，支持账号密码和证书认证
   - username: mqtt client接入hub的用户名
-    password: mqtt client接入hub的密码
+    password: mqtt client接入hub的密码
     permissions:
       - action: 操作权限。pub：发布权限；sub：订阅权限
         permit: 操作权限允许的主题列表，支持+和#匹配符
-  - serialnumber: mqtt client使用证书双向认证接入hub时使用的client证书的serial number
+  - serialnumber: mqtt client使用证书双向认证接入hub时使用的client证书的serial number
     permissions:
       - action: 操作权限。pub：发布权限；sub：订阅权限
         permit: 操作权限允许的主题列表，支持+和#匹配符
@@ -39,10 +39,10 @@ subscriptions: 主题路由配置项
 # 操作流程
 
 - **Step1**：依据使用需求编写配置文件信息，然后以Docker容器模式启动OpenEdge可执行程序；
-- **Step2**：通过MQTTBOX以TCP方式与本地Hub[建立连接](./Device-connect-with-OpenEdge-base-on-hub-module.md)；
+- **Step2**：通过MQTTBOX以TCP方式与本地Hub[建立连接](./Device-connect-with-OpenEdge-base-on-hub-module.md)；
     - 若成功与本地Hub模块建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
     - 若与本地Hub建立连接失败，则重复**Step2**操作，直至MQTTBOX与本地Hub成功建立连接为止。
-- **Step3**：通过MQTTBOX查看消息的收发状态。
+- **Step3**：通过MQTTBOX查看消息的收发状态。
 
 # 消息路由测试
 
@@ -87,15 +87,15 @@ _**提示**：在principals配置项中需要配置大量发布和订阅主题�
 
 ![设备间消息转发路由流程图](../../images/develop/guide/trans/openedge-trans-flow.png)
 
-具体地，如上图所示，client1、client2及client3分别与本地Hub模块建立连接关系，client1具备向主题“t”发布消息的权限，client2及client3分别拥有向主题“t”及“t/topic”订阅消息的权限。
+具体地，如上图所示，client1、client2及client3分别与本地Hub模块建立连接关系，client1具备向主题“t”发布消息的权限，client2及client3分别拥有向主题“t”及“t/topic”订阅消息的权限。
 
-一旦上述三个client与本地Hub模块的连接关系建立后，依照上文subscriptions配置项信息，client2及client3将会分别得到从client1向OpenEdge Hub发布到主题“t”的消息。
+一旦上述三个client与本地Hub模块的连接关系建立后，依照上文subscriptions配置项信息，client2及client3将会分别得到从client1向OpenEdge Hub发布到主题“t”的消息。
 
 特别地，client1、client2及client3可以合并为一个client，则新的client即会拥有向主题“t”的发布消息权限，拥有向主题“t”及“t/topic”订阅消息的权限。这里，采用MQTTBOX作为该新client，点击“Add subscriber”按钮添加d主题“t”及“t/topic”进行订阅，具体如下图示。
 
 ![设备间消息转发路由MQTTBOX配置](../../images/develop/guide/trans/mqttbox-tcp-trans-sub-config.png)
 
-如上图示，可以发现在以TCP连接方式与本地Hub模块建立连接后，MQTTBOX成功订阅主题“t”及“t/topic”，然后点击“Publish”按钮向主题“t”发布消息“This message is from openedge.”，即会发现在订阅的主题“t”及“t/topic”中均收到了该消息，详细如下图示。
+如上图示，可以发现在以TCP连接方式与本地Hub模块建立连接后，MQTTBOX成功订阅主题“t”及“t/topic”，然后点击“Publish”按钮向主题“t”发布消息“This message is from openedge.”，即会发现在订阅的主题“t”及“t/topic”中均收到了该消息，详细如下图示。
 
 ![设备间消息转发路由成功收到消息](../../images/develop/guide/trans/mqttbox-tcp-trans-message-success.png)
 
