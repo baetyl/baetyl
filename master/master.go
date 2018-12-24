@@ -122,7 +122,9 @@ func (m *Master) Close() {
 			logger.WithError(err).Errorf("failed to close cloud agent")
 		}
 	}
-	m.engine.StopAll()
+	if m.engine != nil {
+		m.engine.StopAll()
+	}
 	if err := m.server.Close(); err != nil {
 		logger.WithError(err).Errorf("failed to close api server")
 	}
