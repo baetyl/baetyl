@@ -1,13 +1,10 @@
 modules:
   - id: 8cb872a8-2
     name: 'wait_exit_2'
-    mark: modu-22
     entry: "/bin/sh"
   - id: 8cb872a8-3
     name: 'hi'
-    mark: modu-3
     entry: "/bin/sh"
   - id: 8cb872a8-4
     name: 'wait_exit_4'
-    mark: modu-4
     entry: "/bin/sh"

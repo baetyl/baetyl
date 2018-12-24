@@ -67,7 +67,6 @@ remote:
 
 ```yaml
 name: openedge_remote_mqtt
-mark: modu-4ki4szr9r
 hub:
   address: tcp://openedge_hub:1883
   clientid: e1b98400591240fe9131ccd3998ae7df

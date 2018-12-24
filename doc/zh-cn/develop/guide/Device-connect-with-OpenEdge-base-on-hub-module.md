@@ -58,7 +58,6 @@ OpenEdge Hub模块启动的连接相关配置信息如下：
 
 ```yaml
 name: openedge_hub
-mark: modu-nje2uoa9s
 listen:
   - tcp://:1883
   - ssl://:1884

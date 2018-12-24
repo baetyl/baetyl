@@ -54,7 +54,6 @@
     version: 应用版本
     modules: 应用的模块列表
       - name: [必须]模块名，在模块列表中必须唯一
-        mark: [必须]模块的mark值，类是git的修订版本，可指定模块配置所在位置
         entry: [必须]模块入口。docker容器模式下表示模块镜像；native进程模式下表示模块可执行程序所在路径
         restart: 模块的重启策略配置项
           retry:

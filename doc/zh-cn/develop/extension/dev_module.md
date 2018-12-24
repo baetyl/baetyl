@@ -55,7 +55,6 @@
 
     modules:
       - name: 'my_module'
-        mark: 'my_module_conf_dir'
         entry: 'my_module_docker_image'
         params:
           - '-c'
@@ -65,7 +64,6 @@
 
     modules:
       - name: 'my_module'
-        mark: 'my_module_conf_dir'
         entry: 'my_module_docker_image'
         env:
           name: my_module

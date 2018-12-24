@@ -79,7 +79,6 @@ _**提示**：凡是在rules消息路由配置项中出现、用到的函数，�
 ```yaml
 # 本地Hub模块配置：
 name: openedge_hub
-mark: modu-nje2uoa9s
 listen:
   - tcp://:1883
 principals:
@@ -93,7 +92,6 @@ principals:
 
 # 本地Function模块配置：
 name: openedge_function
-mark: modu-e1iluuach
 hub:
   address: tcp://openedge_hub:1883
   username: test
