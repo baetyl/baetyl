@@ -6,7 +6,7 @@ OpenEdge Hub模块启动所依赖的配置项如下：
 
 ```yaml
 name: [必须]模块名
-listen: [必须]监听地址，例如：
+listen: [必须]监听地址，例如：
   - tcp://0.0.0.0:1883 # Native进程模式下，如果不想暴露给宿主机外的设备访问，可以改成tcp://127.0.0.1:1883
   - ssl://0.0.0.0:1884
   - ws://:8080/mqtt
@@ -15,9 +15,9 @@ certificate: SSL/TLS证书认证配置项，如果启用ssl或wss必须配置
   ca: mqtt server CA证书所在路径
   key: mqtt server 服务端私钥所在路径
   cert: mqtt server 服务端公钥所在路径
-principals: 接入权限配置项，如果不配置则mqtt client无法接入hub，支持账号密码和证书认证
+principals: 接入权限配置项，如果不配置则mqtt client无法接入hub，支持账号密码和证书认证
   - username: mqtt client接入hub的用户名
-    password: mqtt client接入hub的密码
+    password: mqtt client接入hub的密码
     permissions:
       - action: 操作权限。pub：发布权限；sub：订阅权限
         permit: 操作权限允许的主题列表，支持+和#匹配符
@@ -33,8 +33,8 @@ _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，�
 - **Step1**：依据使用需求编写配置文件信息，然后以Docker容器模式启动OpenEdge可执行程序；
 - **Step2**：依据选定的连接测试方式，对MQTTBOX作相应配置；
     - 若采用TCP连接，则仅需配置用户名、密码（参见配置文件principals配置项username、password），并选定对应连接端口即可；
-    - 若采用SSL证书认证，除选定所需的用户名、密码外，还需选定ca证书或是由ca签发的服务端公钥证书，依据对应的连接端口连接即可；
-    - 若采用WS连接，与TCP连接配置一样，仅需更改连接端口即可；
+    - 若采用SSL证书认证，除选定所需的用户名、密码外，还需选定ca证书或是由ca签发的服务端公钥证书，依据对应的连接端口连接即可；
+    - 若采用WS连接，与TCP连接配置一样，仅需更改连接端口即可；
     - 若采用WSS连接，与SSL连接配置一样，仅需更改连接端口即可。
 - **Step3**：若上述步骤一切正常，操作无误，即可通过OpenEdge日志或MQTTBOX查看连接状态。
 
@@ -81,7 +81,7 @@ principals:
 
 ### TCP 连接测试
 
-启动MQTTBOX客户端，直接进入client创建页面，开始创建MQTT client，选择连接使用的协议为“mqtt/tcp”，依据OpenEdge Hub模块启动的地址及端口，再结合principals配置项中可连接OpenEdge Hub模块的MQTT client的连接配置信息进行配置，然后点击“Save”按钮，即可完成TCP连接模式下MQTTBOX的连接配置，具体如下图示。
+启动MQTTBOX客户端，直接进入client创建页面，开始创建MQTT client，选择连接使用的协议为“mqtt/tcp”，依据OpenEdge Hub模块启动的地址及端口，再结合principals配置项中可连接OpenEdge Hub模块的MQTT client的连接配置信息进行配置，然后点击“Save”按钮，即可完成TCP连接模式下MQTTBOX的连接配置，具体如下图示。
 
 ![TCP连接测试配置](../../images/develop/guide/connect/mqttbox-tcp-connect-config.png)
 

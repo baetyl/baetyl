@@ -42,7 +42,7 @@ cd $GOPATH/src/github.com/baidu/openedge
 make install
 ```
 
-指定安装路径，比如安装到output目录中。
+指定安装路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge

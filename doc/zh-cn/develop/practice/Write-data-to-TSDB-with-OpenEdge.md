@@ -179,7 +179,7 @@ functions:
 
 通过上述配置不难发现，借助MQTTBOX向主题“data”发布消息，并通过“write”函数将该数据写入云端TSDB。
 
-**需要说明的是**：为实际生产考虑，避免写入消息量过大时导致OpenEdge处理的消息过多，此处仅对写入失败进行错误信息提示，写入成功则不提示任何信息。
+**需要说明的是**：为实际生产考虑，避免写入消息量过大时导致OpenEdge处理的消息过多，此处仅对写入失败进行错误信息提示，写入成功则不提示任何信息。
 
 ![通过MQTTBOX查看数据写入TSDB是否成功](../../images/develop/practice/tsdb/mqttbox-write-tsdb-success.png)
 
