@@ -52,6 +52,7 @@ func New(confDate string) (*Master, error) {
 		return nil, err
 	}
 	logger.Init(c.Logger, "openedge", "master")
+	logger.Debugln("work dir:", pwd)
 	ctx := engine.Context{
 		PWD:   pwd,
 		Mode:  c.Mode,
