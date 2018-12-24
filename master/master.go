@@ -37,9 +37,13 @@ type Master struct {
 }
 
 // New creates a new master
-func New(workDir, confDate string) (*Master, error) {
+func New(confDate string) (*Master, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 	c := Config{}
-	err := module.Load(&c, confDate)
+	err = module.Load(&c, confDate)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +53,7 @@ func New(workDir, confDate string) (*Master, error) {
 	}
 	logger.Init(c.Logger, "openedge", "master")
 	ctx := engine.Context{
-		PWD:   workDir,
+		PWD:   pwd,
 		Mode:  c.Mode,
 		Grace: c.Grace,
 	}
@@ -251,11 +255,11 @@ func defaults(c *Config) error {
 			}
 		}
 		if c.Cloud.OpenAPI.CA == "" {
-			c.Cloud.OpenAPI.CA = "conf/openapi.pem"
+			c.Cloud.OpenAPI.CA = "etc/openedge/openapi.pem"
 		}
 	}
 	if runtime.GOOS == "linux" {
-		os.MkdirAll("var/run/", os.ModeDir)
+		os.MkdirAll("var/run", os.ModeDir)
 		c.API.Address = "unix://var/run/openedge.sock"
 		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
 	} else {

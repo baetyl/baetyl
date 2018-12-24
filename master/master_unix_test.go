@@ -30,9 +30,7 @@ func TestMasterStart(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll("var")
 
-	pwd, err := os.Getwd()
-	assert.NoError(t, err)
-	a, err := New(pwd, "etc/openedge/openedge.yml")
+	a, err := New("etc/openedge/openedge.yml")
 	assert.NoError(t, err)
 	defer a.Close()
 	err = a.Start()

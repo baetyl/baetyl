@@ -20,7 +20,7 @@ func main() {
 		return
 	}
 
-	m, err := master.New(f.WorkDir, f.Config)
+	m, err := master.New(f.Config)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to create master:", err.Error())
 		return

@@ -30,22 +30,6 @@ def handler(event, context):
         data = ' ' * (size * 1024 * 1024)
         event['l'] = len(data)
 
-    if 'f' in event:
-        try:
-            f_o = open('sayhi.txt', 'w')
-            f_o.write('Hello World')
-            event['f_w_n'] = f_o.name
-            f_o.close()
-        except BaseException as ex:
-            event['f_w_e'] = str(ex)
-        try:
-            f_o = open('../../conf/openedge.yml', 'r')
-            event['f_r_n'] = f_o.name
-            event['f_r_d'] = f_o.read()[:10]
-            f_o.close()
-        except BaseException as ex:
-            event['f_r_e'] = str(ex)
-
     if 'p' in event:
         thr = threading.Thread(target=run)
         thr.setDaemon(True)

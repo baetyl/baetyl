@@ -63,7 +63,7 @@ func New(ctx *Context) (*Engine, error) {
 	case ModeDocker:
 		inner, err = NewDockerEngine(ctx)
 	case ModeNative:
-		inner, err = NewNativeEngine(ctx)
+		inner = NewNativeEngine(ctx)
 	default:
 		err = fmt.Errorf("mode (%s) not supported", ctx.Mode)
 	}

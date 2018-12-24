@@ -9,9 +9,8 @@ import (
 
 // Flags command-line flags
 type Flags struct {
-	WorkDir string
-	Config  string
-	Help    bool
+	Config string
+	Help   bool
 }
 
 // ParseFlags parses the command-line flags
@@ -25,16 +24,16 @@ func ParseFlags(defaultConfigPath string) (*Flags, error) {
 	if err != nil {
 		return nil, err
 	}
-	f.WorkDir = filepath.Dir(filepath.Dir(cwd))
+	workDir := filepath.Dir(filepath.Dir(cwd))
 	if defaultConfigPath == "" {
 		f.Config = filepath.Join("etc", "openedge", "module.yml")
 	} else {
 		f.Config = defaultConfigPath
 	}
 	flag.StringVar(
-		&f.WorkDir,
+		&workDir,
 		"w",
-		f.WorkDir,
+		workDir,
 		"working directory",
 	)
 	flag.StringVar(
@@ -50,11 +49,11 @@ func ParseFlags(defaultConfigPath string) (*Flags, error) {
 		"show this help",
 	)
 	flag.Parse()
-	f.WorkDir, err = filepath.Abs(f.WorkDir)
+	workDir, err = filepath.Abs(workDir)
 	if err != nil {
 		return nil, err
 	}
-	err = os.Chdir(f.WorkDir)
+	err = os.Chdir(workDir)
 	if err != nil {
 		return nil, err
 	}
