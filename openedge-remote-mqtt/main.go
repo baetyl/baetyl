@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/baidu/openedge/module/logger"
 	module "github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/logger"
 )
 
 func main() {
-	f, err := module.ParseFlags()
+	f, err := module.ParseFlags("")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to parse argument:", err.Error())
 		return

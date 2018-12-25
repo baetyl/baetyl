@@ -37,37 +37,37 @@ def build_datapoints(event):
 ```python
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-	
+
 import calendar
 import datetime
 import json
 import requests
 import time
-	
+
 from sign import sign
-	
+
 # set the transport protocol
 TRANS_PROTOCOL = 'http://'
-	
+
 # set http method
 HTTP_METHOD = 'POST'
-	
+
 # set base url and path
 base_url = 'your_db.tsdb.iot.xx.baidubce.com'
 path = '/v1/datapoint' # write your_data to datapoint of your_db on TSDB
-	
+
 # save the information of Access Key ID and Secret Access Key
 ak = 'your_ak_info'
 sk = 'your_sk_info'
 credentials = sign.BceCredentials(ak, sk)
-	
+
 # set a http header except field 'Authorization'
 headers = {'Host': base_url, 'Content-Type': 'application/json;charset=utf-8'}
-	           
+
 # we don't have params in our url,so set it to None
-	
+
 # set header fields should be signed headers_to_sign = {"host"}
-	
+
 # invoke sign method to get a signed string
 sign_str = sign.sign(credentials, HTTP_METHOD, path, headers, params, headers_to_sign=headers_to_sign)
 ```
@@ -129,19 +129,12 @@ def handler(event, context):
 
 ## 测试与验证
 
-```yaml
 OpenEdge Hub模块配置
-name: openedge_hub
-mark: modu-nje2uoa9s
+
+```yaml
+name: openedge-hub
 listen:
   - tcp://:1883
-  - ssl://:1884
-  - ws://:8080/mqtt
-  - wss://:8884/mqtt
-certificate:
-  ca: 'app/cert-4j5vze02r/ca.pem'
-  cert: 'app/cert-4j5vze02r/server.pem'
-  key: 'app/cert-4j5vze02r/server.key'
 principals:
   - username: 'test'
     password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
@@ -150,12 +143,14 @@ principals:
         permit: ['#']
       - action: 'sub'
         permit: ['#']
+```
 
 OpenEdge Function模块配置：
-name: openedge_function
-mark: modu-e1iluuach
+
+```yaml
+name: openedge-function
 hub:
-  address: tcp://openedge_hub:1883
+  address: tcp://openedge-hub:1883
   username: test
   password: hahaha
 rules:
@@ -172,8 +167,8 @@ functions:
   - name: 'write'
     runtime: 'python2.7'
     handler: 'write.handler'
-    codedir: 'app/func-nyeosbbch'
-    entry: "hub.baidubce.com/openedge-sandbox/openedge_function_runtime_python2.7:0.3.6"
+    codedir: 'var/db/openedge/module/func-nyeosbbch'
+    entry: "openedge-function-runtime-python27:build"
     env:
       USER_ID: acuiot
     instance:
@@ -184,7 +179,7 @@ functions:
 
 通过上述配置不难发现，借助MQTTBOX向主题“data”发布消息，并通过“write”函数将该数据写入云端TSDB。
 
-**需要说明的是**：为实际生产考虑，避免写入消息量过大时导致OpenEdge处理的消息过多，此处仅对写入失败进行错误信息提示，写入成功则不提示任何信息。
+**需要说明的是**：为实际生产考虑，避免写入消息量过大时导致OpenEdge处理的消息过多，此处仅对写入失败进行错误信息提示，写入成功则不提示任何信息。
 
 ![通过MQTTBOX查看数据写入TSDB是否成功](../../images/develop/practice/tsdb/mqttbox-write-tsdb-success.png)
 

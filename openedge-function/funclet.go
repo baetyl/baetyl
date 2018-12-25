@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	fmt "fmt"
 	"os"
+	"path"
 	"sync"
 
 	"github.com/baidu/openedge/module/config"
@@ -27,22 +28,20 @@ func (fl *funclet) start() error {
 	if os.Getenv("OPENEDGE_MODULE_MODE") != "docker" {
 		var err error
 		host = "127.0.0.1"
-		port, err = fl.man.api.GetPortAvailable(host)
+		port, err = fl.man.cli.GetPortAvailable(host)
 		if err != nil {
 			return err
 		}
 	}
 	rc := config.Runtime{}
 	rc.Name = fl.id
+	rc.Function = fl.cfg
 	rc.Server.Address = fmt.Sprintf("%s:%d", host, port)
 	rc.Server.Timeout = fl.cfg.Instance.Timeout
 	rc.Server.Message.Length.Max = fl.cfg.Instance.Message.Length.Max
-	rc.Function.Name = fl.cfg.Name
-	rc.Function.Handler = fl.cfg.Handler
-	rc.Function.CodeDir = fl.cfg.CodeDir
 	rc.Logger = fl.man.cfg.Logger
 	if rc.Logger.Path != "" {
-		rc.Logger.Path = rc.Logger.Path + "." + fl.cfg.Name
+		rc.Logger.Path = path.Join("var", "log", "openedge", fl.cfg.ID, fl.cfg.Name+".log")
 	}
 	rcd, err := json.Marshal(rc)
 	if err != nil {
@@ -50,20 +49,21 @@ func (fl *funclet) start() error {
 	}
 
 	mc := config.Module{}
-	mc.Name = fl.id
+	mc.Name = fl.cfg.ID
+	mc.Alias = fl.id
 	mc.Entry = fl.cfg.Entry
 	mc.Env = fl.cfg.Env
 	mc.Params = []string{"-c", string(rcd)}
 	mc.Resources = fl.cfg.Instance.Resources
 
 	fl.log.Debugln("Runtime config:", mc)
-	err = fl.man.api.StartModule(&mc)
+	err = fl.man.cli.StartModule(&mc)
 	if err != nil {
 		return err
 	}
 
 	cc := config.NewRuntimeClient(fmt.Sprintf("%s:%d", host, port))
-	cc.RuntimeServer= rc.Server
+	cc.RuntimeServer = rc.Server
 	cc.Backoff.Max = rc.Server.Timeout
 	fl.rtc, err = runtime.NewClient(cc)
 	if err != nil {
@@ -77,7 +77,8 @@ func (fl *funclet) Close() {
 		if fl.rtc != nil {
 			fl.rtc.Close()
 		}
-		err := fl.man.api.StopModule(fl.id)
+		mc := &config.Module{Name: fl.cfg.ID, Alias: fl.id}
+		err := fl.man.cli.StopModule(mc)
 		if err != nil {
 			fl.log.WithError(err).Warnf("failed to stop function instance")
 		}

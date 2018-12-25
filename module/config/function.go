@@ -6,6 +6,7 @@ import (
 
 // Function function config
 type Function struct {
+	ID      string `yaml:"id" json:"id" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
 	Name    string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
 	Handler string `yaml:"handler" json:"handler" validate:"nonzero"`
 	CodeDir string `yaml:"codedir" json:"codedir"`

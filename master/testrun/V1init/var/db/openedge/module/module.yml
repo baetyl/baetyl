@@ -1,0 +1,10 @@
+modules:
+  - id: 8cb872a8-1
+    name: 'wait_exit_1'
+    entry: '/bin/sh'
+  - id: 8cb872a8-2
+    name: 'wait_exit_2'
+    entry: '/bin/sh'
+  - id: 8cb872a8-3
+    name: 'hi'
+    entry: '/bin/sh'

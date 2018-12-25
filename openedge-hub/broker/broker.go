@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/utils"
-	"github.com/baidu/openedge/module/logger"
-
 )
 
 var errBrokerClosed = fmt.Errorf("broker alreay closed")

@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
@@ -57,18 +56,19 @@ func (e *DockerEngine) Prepare(image string) error {
 
 // Create creates a new docker container
 func (e *DockerEngine) Create(m config.Module) (Worker, error) {
-	pwd, err := filepath.Abs(".")
-	if err != nil {
-		return nil, err
-	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(m.Expose)
 	if err != nil {
 		return nil, err
 	}
+	logPath := path.Join(e.context.PWD, "var", "log", "openedge", m.Name)
+	volumePath := path.Join(e.context.PWD, "var", "db", "openedge", "volume", m.Name)
+	modulePath := path.Join(e.context.PWD, "var", "db", "openedge", "module", m.Name)
+	configPath := path.Join(modulePath, "module.yml")
 	volumeBindings := []string{
-		fmt.Sprintf("%s:/home/openedge/app", path.Join(pwd, "app")),
-		fmt.Sprintf("%s:/home/openedge/conf", path.Join(pwd, "app", m.Mark)),
-		fmt.Sprintf("%s:/home/openedge/var", path.Join(pwd, "var")),
+		fmt.Sprintf("%s:/etc/openedge/module.yml:ro", configPath),
+		fmt.Sprintf("%s:/var/db/openedge/module/%s:ro", modulePath, m.Name),
+		fmt.Sprintf("%s:/var/db/openedge/volume/%s", volumePath, m.Name),
+		fmt.Sprintf("%s:/var/log/openedge/%s", logPath, m.Name),
 	}
 	cmd := strslice.StrSlice{}
 	cmd = append(cmd, m.Params...)
@@ -97,16 +97,12 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		},
 	}
 	return NewDockerContainer(&DockerSpec{
-		Spec: Spec{
-			Name:    m.Name,
-			Restart: m.Restart,
-			Grace:   e.context.Grace,
-			Logger:  logger.WithFields("module", m.Name),
-		},
-		Client:        e.client,
-		Config:        config,
-		HostConfig:    hostConfig,
-		NetworkConfig: networkConfig,
+		module:        &m,
+		context:       e.context,
+		client:        e.client,
+		config:        config,
+		hostConfig:    hostConfig,
+		networkConfig: networkConfig,
 	}), err
 }
 

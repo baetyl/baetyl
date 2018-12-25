@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/module"
+	"github.com/baidu/openedge/module/logger"
 	// "net/http"
 	// _ "net/http/pprof"
 	// "path/filepath"
@@ -36,7 +36,7 @@ func main() {
 	// }
 	// defer trace.Stop()
 
-	f, err := module.ParseFlags()
+	f, err := module.ParseFlags("")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to parse argument:", err.Error())
 		return

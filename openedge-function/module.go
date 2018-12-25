@@ -22,7 +22,7 @@ func New(confDate string) (module.Module, error) {
 		return nil, err
 	}
 	defaults(&cfg)
-	logger.Init(cfg.Logger, "module", cfg.Name)
+	logger.Init(cfg.Logger, "module", cfg.UniqueName())
 	man, err := NewManager(cfg)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (m *mo) Start() error {
 // Close closes module
 func (m *mo) Close() {
 	defer m.log.Debugf("module closed")
-	
+
 	for _, rr := range m.rrs {
 		rr.close()
 	}
@@ -76,9 +76,6 @@ func defaults(cfg *Config) {
 	if cfg.API.Address == "" {
 		cfg.API.Address = utils.GetEnv(module.EnvOpenEdgeMasterAPI)
 	}
-	if cfg.Hub.ClientID == "" {
-		cfg.Hub.ClientID = cfg.Name
-	}
-	cfg.API.Username = cfg.Name
+	cfg.API.Username = cfg.UniqueName()
 	cfg.API.Password = utils.GetEnv(module.EnvOpenEdgeModuleToken)
 }

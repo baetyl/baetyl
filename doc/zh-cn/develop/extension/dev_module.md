@@ -16,35 +16,45 @@
 
 ### Docker容器模式
 
-容器中的工作目录推荐：/home/openedge/
+容器中的工作目录是：/
 
-容器中的配置路径是：/home/openedge/conf/conf.yml
+容器中的配置路径是：/etc/openedge/module.yml
 
-持久化数据输出目录是：/home/openedge/var
+容器中的配置资源读取目录是：/var/db/openedge/module/<模块名>
+
+容器中的持久化数据输出目录是：/var/db/openedge/volume/<模块名>
+
+容器中的持久化日志输出目录是：/var/log/openedge/<模块名>
 
 具体的文件映射如下：
 
-> - \<openedge_host_work_dir\>/app:/home/openedge/app
-> - \<openedge_host_work_dir\>/app/\<module_mark\>:/home/openedge/conf
-> - \<openedge_host_work_dir\>/var:/home/openedge/var
+> - <openedge_host_work_dir>/var/db/openedge/module/<module_name>/module.yml:/etc/openedge/module.yml
+> - <openedge_host_work_dir>/var/db/openedge/module/<module_name>:/var/db/openedge/module/<module_name>
+> - <openedge_host_work_dir>/var/db/openedge/volume/<module_name>:/var/db/openedge/volume/<module_name>
+> - <openedge_host_work_dir>/var/log/openedge/<module_name>:/var/log/openedge/<module_name>
 
-如果数据需要持久化在设备（宿主机）上，比如数据库和日志，必须保存在容器中的/home/openedge/var目录下，否者容器销毁数据会丢失。
+**注意**：如果数据需要持久化在设备（宿主机）上，比如数据库和日志，必须保存在上述指定的持久化目录中，否者容器销毁数据会丢失。
 
 ### Native进程模式
 
 模块的工作目录和OpenEdge主程序的工作目录相同。
 
-配置路径是：\<openedge_host_work_dir\>/app/\<module_mark\>/conf.yml
+模块的配置路径是：<openedge_host_work_dir>/var/db/openedge/module/<模块名>/module.yml
+
+模块的配置资源读取目录是：<openedge_host_work_dir>/var/db/openedge/module/<模块名>
+
+模块的数据输出目录是：<openedge_host_work_dir>/var/db/openedge/volume/<模块名>
+
+模块的日志输出目录是：<openedge_host_work_dir>/var/log/openedge/<模块名>
 
 ## 模块配置
 
-模块支持从文件中加载yaml格式的配置，Docker容器模式下读取conf/conf.yml，Native进程模式下读取conf/<module_mark>/conf.yml。
+模块支持从文件中加载yaml格式的配置，Docker容器模式下读取/etc/openedge/module.yml，Native进程模式下读取<openedge_host_work_dir>/var/db/openedge/module/<模块名>/module.yml。
 
 也支持从输入参数中获取配置，可以是json格式的字符串。比如：
 
     modules:
       - name: 'my_module'
-        mark: 'my_module_conf_dir'
         entry: 'my_module_docker_image'
         params:
           - '-c'
@@ -54,7 +64,6 @@
 
     modules:
       - name: 'my_module'
-        mark: 'my_module_conf_dir'
         entry: 'my_module_docker_image'
         env:
           name: my_module
@@ -65,9 +74,11 @@
 
 函数计算的运行实例目前采用grpc server实现，借助grpc的多语言支持，开发者可通过[runtime.proto](https://github.com/baidu/openedge/blob/master/module/function/runtime/runtime.proto)生成自己的grpc server框架并实现消息处理的逻辑。
 
+**注意**：Docker容器模式下，函数实例的资源限制不要低于50M内存，20个线程。
+
 ## 模块退出
 
-模块退出时，OpenEdge会向模块发送SIGTERM信号，如果超过则强制退出。超时时间由app/app.yml中的grace配置项指定，默认30秒。
+模块退出时，OpenEdge会向模块发送SIGTERM信号，如果超过则强制退出。超时时间由etc/openedge/openedge.yml中的grace配置项指定，默认30秒。
 
 ## 模块SDK
 
@@ -77,7 +88,7 @@
 
 [function runtime server](https://github.com/baidu/openedge/blob/master/module/function/runtime/server.go)封装了grpc server和函数计算调用逻辑，方便开发者实现消息处理的函数计算runtime。[python2.7 runtime参考](https://github.com/baidu/openedge/blob/master/openedge-function-runtime-python27/openedge_function_runtime_python27.py)
 
-[api.client](https://github.com/baidu/openedge/blob/master/api/client.go)可用于调用主程序的API来启动、重启或停止临时模块。账号为使用该api client的常驻模块名，密码使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取。
+[master.client](https://github.com/baidu/openedge/blob/master/module/master/client.go)可用于调用主程序的API来启动、重启或停止临时模块。账号为使用该master client的常驻模块名，密码使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取。
 
 [module.Load](https://github.com/baidu/openedge/blob/master/module/module.go)可用于加载模块的配置，支持从指定文件中读取yml格式的配置，也支持从启动参数中读取json格式的配置。
 

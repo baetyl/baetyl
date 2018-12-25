@@ -18,7 +18,7 @@ func TestRuntime(t *testing.T) {
 
 	// server 4m by default
 	sc := &config.Runtime{}
-	err := module.Load(sc, `{"name":"test","server":{"address":"127.0.0.1:0"},"function":{"name":"test","handler":"dummy"}}`)
+	err := module.Load(sc, `{"name":"test","server":{"address":"127.0.0.1:0"},"function":{"id":"test","name":"test","handler":"dummy"}}`)
 	assert.NoError(t, err)
 	svr, err := runtime.NewServer(sc.Server, func(_ context.Context, m *runtime.Message) (*runtime.Message, error) {
 		return m, nil

@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/baidu/openedge/master"
 	"github.com/baidu/openedge/module"
 )
 
 func main() {
-	f, err := module.ParseFlags()
+	f, err := module.ParseFlags(filepath.Join("etc", "openedge", "openedge.yml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to parse argument:", err.Error())
 		return

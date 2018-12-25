@@ -6,13 +6,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/router"
 	"github.com/baidu/openedge/openedge-hub/utils"
-	"github.com/baidu/openedge/module/logger"
 	"github.com/orcaman/concurrent-map"
-
 )
 
 const (
@@ -165,7 +164,7 @@ func (m *Manager) RemoveSinkSub(id, topic string) error {
 
 func (m *Manager) logging() error {
 	defer m.log.Debugf("status logging task stopped")
-	
+
 	t := time.NewTicker(m.broker.Config().Status.Logging.Interval)
 	defer t.Stop()
 	for {
