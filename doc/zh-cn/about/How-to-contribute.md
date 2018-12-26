@@ -4,11 +4,11 @@
 
 ## 贡献流程
 
-Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successful-git-branching-model/)。下面将为您提供通用的Github代码贡献方式。
+Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successful-git-branching-model/)。下面将为您提供通用的Github代码贡献方式。
 
 1. Fork代码库
 
-   我们的开发社区非常活跃，感兴趣的开发者日益增多，每一个人都向OpenEdge官方仓库提交代码没有意义。因此，我们鼓励开发者采用“**fork**”方式向我们提交代码。关于如何fork一个代码库，请参考Github提供的官方帮助页面并点击["Fork" 按钮](https://help.github.com/articles/fork-a-repo/).
+   我们的开发社区非常活跃，感兴趣的开发者日益增多，每一个人都向OpenEdge官方仓库提交代码没有意义。因此，我们鼓励开发者采用“**fork**”方式向我们提交代码。关于如何fork一个代码库，请参考Github提供的官方帮助页面并点击["Fork" 按钮](https://help.github.com/articles/fork-a-repo/).
 
 2. 克隆代码库
 
@@ -47,9 +47,9 @@ Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 
    ```bash
    git status # 检查代码更改状态
-   git add .  # 提交所有更改代码，当然，您也可以选择某些需要提交的代码进行提交
+   git add .  # 提交所有更改代码，当然，您也可以选择某些需要提交的代码进行提交
    git commit -m "description about commiting code"  # 提交代码到本地，并撰写代码提交描述信息
-   git push --set-upstream origin remote-cool-branch # 推送已提交到本地的代码到远程仓库
+   git push --set-upstream origin remote-cool-branch # 推送已提交到本地的代码到远程仓库
    ```
    
    至此，即可完成本地编写代码到远程仓库的提交。
@@ -58,9 +58,9 @@ Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 
 6. 创建代码合入请求
 
-   通过浏览器打开GitHub主页，登录您的账号，进入openedge代码仓库，点击“New pull request”按钮，并选择新提交代码的分支与master主分支进行比较，然后继续点击“Create pull request”按钮，同时完善相应的代码提交描述信息，接着点击“Commit”按钮，至此完成分支代码提交合入master主分支的提交请求。
+   通过浏览器打开[GitHub主页](https://github.com)，登录您的账号，进入openedge代码仓库，点击“New pull request”按钮，并选择新提交代码的分支与master主分支进行比较，然后继续点击“Create pull request”按钮，同时完善相应的代码提交描述信息，接着点击“Commit”按钮，至此完成分支代码提交合入master主分支的提交请求。
 
-   如果代码审核或校验无误，即可合入master主分支。这里，由于您处于自己的代码仓库，拥有评审、合入代码的权限，可以直接将分支代码合入master主分支。但是，如果您想要将新提交的代码合入OpenEdge官方代码仓库的master主分支，则还需重复执行步骤6，直至完成向OpenEdge官方仓库提交代码合入请求。一旦，OpenEdge代码仓库评审人员通过了您的代码提交、合入请求，您即可在OpenEdge官方代码仓库中看到您贡献的代码。
+   如果代码审核或校验无误，即可合入master主分支。这里，由于您处于自己的代码仓库，拥有评审、合入代码的权限，可以直接将分支代码合入master主分支。但是，如果您想要将新提交的代码合入OpenEdge官方代码仓库的master主分支，则还需重复执行步骤6，直至完成向OpenEdge官方仓库提交代码合入请求。一旦，OpenEdge代码仓库评审人员通过了您的代码提交、合入请求，您即可在OpenEdge官方代码仓库中看到您贡献的代码。
 
 ## 代码评审规范
 
@@ -72,6 +72,6 @@ Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 
 > + 代码提交前**必须**进行单元测试（提交代码应包含）和竞争检测
 > + 仅有提交代码通过单元测试和竞争检测，才允许向OpenEdge官方仓库提交
-> + 所有向OpenEdge官方仓库提交的代码，**必须至少**有**1**个代码评审员评审通过后，才可以将提交代码合入OpenEdge官方代码仓库
+> + 所有向OpenEdge官方仓库提交的代码，**必须至少**有**1**个代码评审员评审通过后，才可以将提交代码合入OpenEdge官方代码仓库
 
 **注意**：以上所有代码提交步骤要求及规范，同样适用文档贡献。
