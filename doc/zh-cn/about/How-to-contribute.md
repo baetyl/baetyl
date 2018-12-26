@@ -43,7 +43,7 @@ Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 无规矩不成方圆。这里规定，凡是提交OpenEdge代码合入请求的代码，一律要求遵循以下规范：
 
 > + 建议您提交代码前再次执行命令`govendor fmt +local`，具体请参考[govendor](https://github.com/kardianos/govendor)
-> + 代码提交前**必须**进行单元测试（提交代码应包含）和竞争检测
+> + 代码提交前**必须**进行单元测试（提交代码应包含）和竞争检测，参考执行命令`make test`
 > + 仅有提交代码通过单元测试和竞争检测，才允许向OpenEdge官方仓库提交
 > + 所有向OpenEdge官方仓库提交的代码，**必须至少**有**1**个代码评审员评审通过后，才可以将提交代码合入OpenEdge官方代码仓库
 
