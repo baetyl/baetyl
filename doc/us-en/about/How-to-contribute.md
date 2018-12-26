@@ -1,11 +1,11 @@
 # Contributing
 
-To be added.(@kuailehaibin)
+TODO (@kuailehaibin)
 
 ## Code Review
 
-To be added.(@ludanfeng)
+About Golang formt, pelase refer to [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments).
 
 ## Merge Rule
 
-To be added.(@kuailehaibin)
+TODO (@kuailehaibin)
