@@ -16,7 +16,7 @@ Native进程模式结构图:
 
 ### 模块引擎(engine)
 
-[模块引擎](https://github.com/baidu/openedge/blob/master/agent/agent.go)负责模块的启动、停止、重启、监听和守护，目前支持docker容器模式和native进程模式。
+[模块引擎](https://github.com/baidu/openedge/blob/master/engine/engine.go)负责模块的启动、停止、重启、监听和守护，目前支持docker容器模式和native进程模式。
 
 模块引擎从工作目录的[var/db/openedge/module/module.yml](https://github.com/baidu/openedge/blob/master/example/docker/var/db/openedge/module/module.yml)配置中加载模块列表，并以列表的顺序逐个启动模块。模块引擎会为每个模块启动一个守护协程对模块状态进行监听，如果模块异常退出，会根据模块的[Restart Policy](https://github.com/baidu/openedge/blob/master/module/config/policy.go)配置项执行重启或退出。主程序关闭后模块引擎会按照列表的逆序逐个关闭模块。
 
