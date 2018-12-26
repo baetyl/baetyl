@@ -1,10 +1,10 @@
 # 从源码编译 OpenEdge
 
-## Linux环境下编译
+## Linux/Mac环境下编译
 
 ### 环境配置
 
-具体环境配置请参考文档[环境配置](./Configurations.md#运行环境配置)。
+具体环境配置请参考文档[MacOs环境配置](./MacOs.md#运行环境配置)或[Linux环境配置](./Linux.md#运行环境配置)。
 
 ### 源码下载
 
@@ -37,14 +37,14 @@ openedge-remote-mqtt
 
 ### 程序安装
 
-安装到默认路径：/usr/local。
+装到默认路径：/usr/local。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make install
 ```
 
-指定安装路径，比如安装到output目录中。
+指定安装路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
@@ -91,7 +91,4 @@ cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
 make PREFIX=output uninstall
 ```
-
-
-
 

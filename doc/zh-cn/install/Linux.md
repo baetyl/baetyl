@@ -1,6 +1,6 @@
-# 环境配置
+# Linux下OpenEdge安装及环境配置
 
-> OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 线程模式。本文主要介绍 OpenEdge 程序的安装以及运行所需环境的安装与配置。
+> OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。本文主要介绍 OpenEdge 程序的安装以及运行所需环境的安装与配置。
 
 ## OpenEdge 程序安装
 
@@ -14,45 +14,47 @@
 
 前往[下载页面](https://golang.org/dl/)完成相关包下载。或使用命令，如：
 
-```sh
-$ wget https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
+```shell
+wget https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
 ```
 获取最新安装包，其中OpenEdge程序要求***Go语言版本***不低于 **1.10.0**。
 
 解压下载的安装包到本地用户文件夹。
 
-```sh
-$ tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
+```shell
+tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
 ```
 
 其中，VERSION、OS、ARCH参数为下载包对应版本。
 
 导入环境变量：
 
-```sh
-$ export PATH=$PATH:/usr/local/go/bin
+```shell
+export PATH=$PATH:/usr/local/go/bin
 ```
 
 完成后通过以下命令查看版本:
 
-```sh
-$ go version
+```shell
+go version
 ```
 
 或通过以下命令查看go相关环境配置：
 
-```sh
-$ go env
+```shell
+go env
 ```
 
 更多请参考[官方文档](https://golang.org/doc/install)。
 
 ### Docker 安装
 
+> 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，建议 Docker 版本在 17.05 之上。
+
 可通过以下命令进行安装：
 
-```sh
-$ curl -sSL https://get.docker.com | sh
+```shell
+curl -sSL https://get.docker.com | sh
 ```
 
 支持平台：
@@ -100,14 +102,14 @@ armv7l-ubuntu-cosmic
 
 使用命令
 
-```sh
-$ sudo snap install docker
+```shell
+sudo snap install docker // Ubuntu16.04 往后
 ```
 
 或
 
-```sh
-$ sudo apt install docker.io
+```shell
+sudo apt install docker.io
 ```
 
 即可完成 Docker 安装。
@@ -116,30 +118,24 @@ $ sudo apt install docker.io
 
 使用命令
 
-```sh
-$ yum install docker
+```shell
+yum install docker
 ```
 
 即可完成 docker 安装。
 
 ***注*** : Docker 安装完成后可通过一下命令查看所安装Docker版本。
 
-```sh
-$ docker version
+```shell
+docker version
 ```
-
-#### MacOs
-
-前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
-
-![Install On Mac](../images/install/docker_install_on_mac.png)
 
 #### Debian 9/Raspberry Pi 3
 
 使用以下命令完成安装：
 
-```sh
-$ curl -sSL https://get.docker.com | sh
+```shell
+curl -sSL https://get.docker.com | sh
 ```
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
@@ -152,50 +148,55 @@ $ curl -sSL https://get.docker.com | sh
 
 使用如下命令安装 Python 2.7:
 
-```sh
-$ sudo apt update$ sudo apt upgrade$ sudo apt install python2.7$ sudo apt install python-pip
+```shell
+sudo apt update
+sudo apt upgrade
+sudo apt install python2.7
+sudo apt install python-pip
 ```
 
-#### CentOs 7
+#### CentOs 
 
-通过以下命令完成CentOs 7系统下 Python 2.7及对应版本 Pip 的安装：
+执行以下命令检查已安装Python版本：
 
-```sh
-$ yum install gcc openssl-devel bzip2-devel
-$ wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
-$ tar xzf Python-2.7.15.tgz
-$ make altinstall
-$ curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-$ python2.7 get-pip.py
+```shell
+python -V
 ```
 
-#### MacOs
+如果显示未安装，可使用以下命令进行安装：
 
-推荐使用 HomeBrew 安装。
-
-```sh
-$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-$ brew install python@2
+```shell
+yum install python
+yum install python-pip
 ```
 
-***注*** : 安装完成后可通过以下命令查看所安装版本：
+或者通过源码编译安装：
 
-```sh
-$ python -V
+```shell
+yum install gcc openssl-devel bzip2-devel
+wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
+tar xzf Python-2.7.15.tgz
+make altinstall
+curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+python2.7 get-pip.py
 ```
 
-通过以下命令设置默认 Python 命令指定上述安装的版本。例如：
+输入命令查看 Python 版本为 2.7.* 后为安装正确。
 
-```sh
-$ alias python=/yourpath/python2.7
+### 指定默认 Python 版本
+
+某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
+
+```shell
+alias python=/yourpath/python2.7
 ```
 
-### Python Runtime 依赖 Module 安装
+### Python Runtime 依赖模块安装
 
 按照上述步骤完成 Python 2.7版本的安装后，需要安装 Python Runtime 运行所需模块：
 
-```sh
-$ pip install --install-option="--prefix=/install" pyyaml six protobuf futures enum34 grpcio==1.15.0
+```shell
+pip install pyyaml protobuf grpcio
 ```
 
 ## 常见问题
@@ -205,15 +206,15 @@ A. ***Got permission denied while trying to connect to the Docker daemon socket 
 1. 提供管理员权限
 2. 通过以下命令添加当前用户到docker用户组：
 
-```sh
-$ sudo usermod -aG docker ${USER}
-$ su - ${USER}
+```shell
+sudo usermod -aG docker ${USER}
+su - ${USER}
 ``` 
 
 如提示没有 docker group，使用如下命令创建新docker用户组后再执行上述命令：
 
-```sh
-$ sudo groupadd docker
+```shell
+sudo groupadd docker
 ```
 
 B. ***Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?***
@@ -222,9 +223,7 @@ B. ***Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the
 
 例，CentOs 下启动命令：
 
-```sh
-$ systemctl start docker
+```shell
+systemctl start docker
 ```
-
-
 
