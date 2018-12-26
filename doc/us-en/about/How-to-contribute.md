@@ -14,8 +14,6 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 2. Prepare for the development environment
 
-   If you want to contribute code to OpenEdge, please run:
-
    ```bash
    go get github.com/baidu/openedge # clone openedge official repo
    cd $GOPATH/github.com/baidu/openedge # step into openedge
@@ -25,17 +23,16 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 3. Push changes to your forked repo
 
-   Here, submit the changed requirements or fixed bugs to the remote repo of **fork** in step 2. For details, please run:
    ```bash
    git status   # view current code change status
-   git add .
-   git commit -c "modify description"  # submit the code to the local repo with the code change description
-   git push fork # push changed code to remote repo
+   git add .    # add all local changes
+   git commit -c "modify description"  # commit changes with comment
+   git push fork # push code changes to remote repo which specifies your forked repository
    ```
 
 4. Create pull request
 
-   You can push and file a pull request to OpenEdge official repo [https://github.com/baidu/openedge](https://github.com/baidu/openedge). To create a pull request, please follow [these steps](https://help.github.com/articles/creating-a-pull-request/). Once the OpenEdge code repo reviewer has passed your code submission and merge your request, you will see the code which you contributed in the OpenEdge official repo.
+   You can push and file a pull request to OpenEdge official repository [https://github.com/baidu/openedge](https://github.com/baidu/openedge). To create a pull request, please follow [these steps](https://help.github.com/articles/creating-a-pull-request/). Once the OpenEdge repository reviewer approves and merges your pull request, you will see the code which contributed by you in the OpenEdge official repository.
 
 
 ## Code Review
