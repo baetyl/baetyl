@@ -2,6 +2,8 @@
 
 [![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)
 
+![OpenEdge-logo](./doc/zh-cn/images/logo/logo-with-name.png)
+
 OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现场，提供临时离线、低延时的计算服务，包括消息路由、函数计算、AI推断等。OpenEdge和[云端管理套件](https://cloud.baidu.com/product/bie.html)配合使用，可达到云端管理和应用下发，边缘设备上运行应用的效果，满足各种边缘计算场景。
 
 **功能列表**：
@@ -18,13 +20,13 @@ OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现
 
 **设计文档**：
 
-> + [OpenEdge设计](./doc/zh-cn/about/design/OpenEdge-overall-design.md)
-> + [所有配置解读](./doc/zh-cn/config/config.md)
-> + [开发自定义模块](./doc/zh-cn/develop/extension/dev_module.md)
+> + [OpenEdge设计](./doc/zh-cn/overview/OpenEdge-design.md)
+> + [所有配置解读](./doc/zh-cn/tutorials/local/Config-interpretation.md)
+> + [开发自定义模块](./doc/zh-cn/customize/dev_module.md)
 
 ## 快速开始
 
-> + [Linux环境](./doc/zh-cn/install/Build-OpenEdge-on-Linux.md)
+> + [Linux环境](./doc/zh-cn/setup/Build-OpenEdge-on-Linux.md)
 
 ## 测试
 
