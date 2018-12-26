@@ -4,7 +4,7 @@
 
 ## 贡献流程
 
-Openedge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successful-git-branching-model/)。下面将为您提供通用的Github代码贡献方式。
+OpenEdge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successful-git-branching-model/)。下面将为您提供通用的Github代码贡献方式。
 
 1. Fork代码库
 
