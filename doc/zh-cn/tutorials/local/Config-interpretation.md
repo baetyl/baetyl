@@ -17,7 +17,7 @@
 
 ## 主程序配置
 
-主程序的配置和应用配置是分离的，默认配置文件是：工作目录下的[etc/openedge/openedge.yml](https://github.com/baidu/openedge/blob/master/example/docker/openedge/openedge.yml)配置解读如下：
+主程序的配置和应用配置是分离的，默认配置文件是：工作目录下的[etc/openedge/openedge.yml](https://github.com/baidu/openedge/blob/master/example/docker/etc/openedge/openedge.yml)配置解读如下：
 
     mode: [必须]主程序运行模式。docker：docker容器模式；native：native进程模式
     grace: 默认值：30s，主程序平滑退出超时时间

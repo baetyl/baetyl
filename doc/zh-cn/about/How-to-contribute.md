@@ -13,6 +13,7 @@ OpenEdge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 2. 准备开发环境
 
    如果您想要向OpenEdge贡献代码，请参考如下命令准备相关本地开发环境：
+
    ```bash
    go get github.com/baidu/openedge # 获取openedge代码库
    cd $GOPATH/github.com/baidu/openedge # 进入openedge代码库目录
@@ -23,6 +24,7 @@ OpenEdge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 3. 提交代码到fork仓库
 
    这里，将改动的需求或修复的bug提交到步骤2中fork的远程仓库，具体请参考如下命令：
+
    ```bash
    git status   # 查看当前代码改变状态
    git add .
@@ -32,11 +34,11 @@ OpenEdge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 
 4. 创建代码合入请求
 
-   基于fork的仓库地址直接向OpenEdge官方仓库（https://github.com/baidu/openedge）提交**pull request**，即可完成向OpenEdge官方仓库的代码合入请求。一旦OpenEdge代码仓库评审人员通过了您的代码提交、合入请求，您即可在OpenEdge官方代码仓库中看到您贡献的代码。
+   基于fork的仓库地址直接向OpenEdge官方仓库[https://github.com/baidu/openedge](https://github.com/baidu/openedge)提交**pull request**，即可完成向OpenEdge官方仓库的代码合入请求。一旦OpenEdge代码仓库评审人员通过了您的代码提交、合入请求，您即可在OpenEdge官方代码仓库中看到您贡献的代码。
 
 ## 代码评审规范
 
-待补充。（@ludanfeng）
+Golang的代码风格请参照[Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)。
 
 ## 代码合入规范
 
