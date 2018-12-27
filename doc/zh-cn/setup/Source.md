@@ -1,17 +1,10 @@
 # 从源码编译 OpenEdge
 
-## Linux/Mac环境下编译
+## Linux下编译环境配置
 
-### 编译环境配置
+### Go 开发环境安装
 
-#### Go 开发环境安装(除源码编译外无需安装)
-
-前往[下载页面](https://golang.org/dl/)完成相关包下载。或使用命令，如：
-
-```shell
-wget https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
-```
-获取最新安装包，其中OpenEdge程序要求***Go语言版本***不低于 **1.10.0**。
+前往[相关下载页面](../Resources-download.md)完成相关二进制包下载。或使用命令，如：
 
 解压下载的安装包到本地用户文件夹。
 
@@ -25,12 +18,7 @@ tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
 
 ```shell
 export PATH=$PATH:/usr/local/go/bin
-```
-
-完成后通过以下命令查看版本:
-
-```shell
-go version
+export GOPATH=yourpath
 ```
 
 或通过以下命令查看go相关环境配置：
@@ -39,9 +27,13 @@ go version
 go env
 ```
 
-更多请参考[官方文档](https://golang.org/doc/install)。
+**注**: 如已安装 Go 开发环境注意通过以下命令检查所安装 Go 语言版本，OpenEdge 要求编译使用的 Go 语言版本在 1.10.0 以上。
 
-#### Docker 安装
+```shell
+go version
+```
+
+### Docker 安装
 
 > 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。
 
@@ -92,7 +84,7 @@ armv7l-ubuntu-bionic
 armv7l-ubuntu-cosmic
 ```
 
-##### Ubuntu
+#### Ubuntu
 
 使用命令
 
@@ -108,7 +100,7 @@ sudo apt install docker.io
 
 即可完成 Docker 安装。
 
-##### CentOS
+#### CentOS
 
 使用命令
 
@@ -124,7 +116,7 @@ yum install docker
 docker version
 ```
 
-##### Debian 9/Raspberry Pi 3
+#### Debian 9/Raspberry Pi 3
 
 使用以下命令完成安装：
 
@@ -134,7 +126,69 @@ curl -sSL https://get.docker.com | sh
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-##### MacOS
+## Mac下编译环境配置
+
+### Go 开发环境配置
+
++ 通过 HomeBrew 安装
+
+```shell
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // 安装HomeBrew
+brew install go
+```
+
+安装完成后编辑环境配置文件(例: ~/.bash_profile)：
+
+```shell
+export GOPATH="${HOME}/go"
+export GOROOT="$(brew --prefix golang)/libexec"
+export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin"
+```
+
+完成后退出编辑，执行以下命令使环境变量生效：
+
+```shell
+source yourfile
+```
+
+完成后执行以下命令创建GOPATH指定目录:
+
+```shell
+test -d "${GOPATH}" || mkdir "${GOPATH}"
+```
+
++ 通过二进制文件安装
+
+前往[相关下载页面](../Resources-download.md)完成二进制包下载。或使用命令，如：
+
+解压下载的安装包到本地用户文件夹。
+
+```shell
+tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
+```
+
+其中，VERSION、OS、ARCH参数为下载包对应版本。
+
+导入环境变量：
+
+```shell
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=yourpath
+```
+
+或通过以下命令查看go相关环境配置：
+
+```shell
+go env
+```
+
+**注**: 如已安装 Go 开发环境注意通过以下命令检查所安装 Go 语言版本，OpenEdge 要求编译使用的 Go 语言版本在 1.10.0 以上。
+
+```shell
+go version
+```
+
+### Docker 安装
 
 前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
 
@@ -146,9 +200,9 @@ curl -sSL https://get.docker.com | sh
 docker version
 ```
 
-### 源码下载
+## 源码下载
 
-下载openedge源码
+按照对应环境完成编译环境配置后，千万[OpenEdge开源主页](https://github.com/baidu/openedge)下载openedge源码
 
  ```shell
  mkdir -p $GOPATH/src/github.com/baidu/
@@ -158,7 +212,7 @@ docker version
 
 ***注:*** openedge代码目录需要存放在 ```$GOPATH/src/github.com/baidu/``` 目录下
 
-### 源码编译
+## 源码编译
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
@@ -187,13 +241,13 @@ openedge-remote-mqtt:build
 openedge-function-runtime-python27:build
 ```
 
-可通过以下命令查看：
+通过以下命令查看生成的镜像：
 
 ```shell
 docker images
 ```
 
-### 程序安装
+## 程序安装
 
 装到默认路径：/usr/local。
 
@@ -209,7 +263,7 @@ cd $GOPATH/src/github.com/baidu/openedge
 make PREFIX=output install
 ```
 
-### 程序运行
+## 程序运行
 
 如果程序已经安装到默认路径：/usr/local。
 
@@ -232,7 +286,7 @@ output/bin/openedge # native进程模式
 2. 如需使用自己的镜像，需要修改应用配置中的模块和函数的 entry，指定自己的镜像。
 3. 如需自定义配置，请按照 [配置解读](../config/config.md) 中的内容进行相关设置。
 
-### 程序卸载
+## 程序卸载
 
 如果是默认安装。
 
@@ -249,4 +303,3 @@ cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
 make PREFIX=output uninstall
 ```
-
