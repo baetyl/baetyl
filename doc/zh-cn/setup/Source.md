@@ -2,9 +2,149 @@
 
 ## Linux/Mac环境下编译
 
-### 环境配置
+### 编译环境配置
 
-具体环境配置请参考文档[MacOs环境配置](./MacOS.md#运行环境配置)或[Linux环境配置](./Linux.md#运行环境配置)。
+#### Go 开发环境安装(除源码编译外无需安装)
+
+前往[下载页面](https://golang.org/dl/)完成相关包下载。或使用命令，如：
+
+```shell
+wget https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
+```
+获取最新安装包，其中OpenEdge程序要求***Go语言版本***不低于 **1.10.0**。
+
+解压下载的安装包到本地用户文件夹。
+
+```shell
+tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
+```
+
+其中，VERSION、OS、ARCH参数为下载包对应版本。
+
+导入环境变量：
+
+```shell
+export PATH=$PATH:/usr/local/go/bin
+```
+
+完成后通过以下命令查看版本:
+
+```shell
+go version
+```
+
+或通过以下命令查看go相关环境配置：
+
+```shell
+go env
+```
+
+更多请参考[官方文档](https://golang.org/doc/install)。
+
+#### Docker 安装
+
+> 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。
+
+可通过以下命令进行安装：
+
+```shell
+curl -sSL https://get.docker.com | sh
+```
+
+支持平台：
+
+```
+x86_64-centos-7
+x86_64-fedora-28
+x86_64-fedora-29
+x86_64-debian-jessie
+x86_64-debian-stretch
+x86_64-debian-buster
+x86_64-ubuntu-trusty
+x86_64-ubuntu-xenial
+x86_64-ubuntu-bionic
+x86_64-ubuntu-cosmic
+s390x-ubuntu-xenial
+s390x-ubuntu-bionic
+s390x-ubuntu-cosmic
+ppc64le-ubuntu-xenial
+ppc64le-ubuntu-bionic
+ppc64le-ubuntu-cosmic
+aarch64-ubuntu-xenial
+aarch64-ubuntu-bionic
+aarch64-ubuntu-cosmic
+aarch64-debian-jessie
+aarch64-debian-stretch
+aarch64-debian-buster
+aarch64-fedora-28
+aarch64-fedora-29
+aarch64-centos-7
+armv6l-raspbian-jessie
+armv7l-raspbian-jessie
+armv6l-raspbian-stretch
+armv7l-raspbian-stretch
+armv7l-debian-jessie
+armv7l-debian-stretch
+armv7l-debian-buster
+armv7l-ubuntu-trusty
+armv7l-ubuntu-xenial
+armv7l-ubuntu-bionic
+armv7l-ubuntu-cosmic
+```
+
+##### Ubuntu
+
+使用命令
+
+```shell
+sudo snap install docker // Ubuntu16.04 往后
+```
+
+或
+
+```shell
+sudo apt install docker.io
+```
+
+即可完成 Docker 安装。
+
+##### CentOS
+
+使用命令
+
+```shell
+yum install docker
+```
+
+即可完成 docker 安装。
+
+***注*** : Docker 安装完成后可通过一下命令查看所安装Docker版本。
+
+```shell
+docker version
+```
+
+##### Debian 9/Raspberry Pi 3
+
+使用以下命令完成安装：
+
+```shell
+curl -sSL https://get.docker.com | sh
+```
+
+**更多内容请参考[官方文档](https://docs.docker.com/install/)。**
+
+##### MacOS
+
+前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
+
+![Install On Mac](../images/setup/docker_install_on_mac.png)
+
+安装完成后使用以下命令查看所安装版本：
+
+```shell
+docker version
+```
 
 ### 源码下载
 
@@ -23,16 +163,28 @@
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make # 编译主程序和模块的可执行程序
-make images # 在本地生成模块镜像
 ```
 
-编译完成后会在根目录下生成如下四个可执行文件。
+编译完成后会在根目录下生成如下四个可执行文件:
 
 ```shell
 openedge
 openedge-hub
 openedge-function
 openedge-remote-mqtt
+```
+
+```shell
+make images # 在本地生成模块镜像
+```
+
+通过上述命令编译生成如下四个镜像:
+
+```shell
+openedge-hub:build
+openedge-function:build
+openedge-remote-mqtt:build
+openedge-function-runtime-python27:build
 ```
 
 ### 程序安装

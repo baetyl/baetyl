@@ -10,43 +10,6 @@
 
 ## 运行环境配置
 
-### Go 开发环境安装
-
-前往[下载页面](https://golang.org/dl/)完成相关包下载。或使用命令，如：
-
-```shell
-wget https://dl.google.com/go/go1.11.2.linux-amd64.tar.gz
-```
-获取最新安装包，其中OpenEdge程序要求***Go语言版本***不低于 **1.10.0**。
-
-解压下载的安装包到本地用户文件夹。
-
-```shell
-tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
-```
-
-其中，VERSION、OS、ARCH参数为下载包对应版本。
-
-导入环境变量：
-
-```shell
-export PATH=$PATH:/usr/local/go/bin
-```
-
-完成后通过以下命令查看版本:
-
-```shell
-go version
-```
-
-或通过以下命令查看go相关环境配置：
-
-```shell
-go env
-```
-
-更多请参考[官方文档](https://golang.org/doc/install)。
-
 ### Docker 安装
 
 > 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
