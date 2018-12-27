@@ -194,10 +194,8 @@ _**提示**：Native进程模式下，若要运行本代码库提供的[sayhi.py
 
 ### 远程通讯模块（openedge-remote-mqtt）
 
-远程通讯模块目前支持MQTT协议，其实质是两个MQTT server的桥接（birdge）模块，用于订阅一个server的消息并转发给另一个server。结构图如下：
+远程通讯模块目前支持MQTT协议，可桥接两个MQTT server，用于订阅一个server的消息并转发给另一个server。目前支持配置多路消息转发，可配置多个remote和hub同时进行消息同步，结构图如下：
 
 ![远程通讯模块结构图](../images/overview/design/remote.png)
 
-如上图示，这里，OpenEdge本地Hub模块与远程云端Hub平台之间通过OpenEdge远程通讯模块（openedge-remote-mqtt）实现消息间的转发、同步，进一步地，通过在两端接入MQTT Client即可实现“**端云协同式**”的消息转发与传递。
-
-_**提示**：目前，OpenEdge远程通讯模块（openedge-remote-mqtt）仅支持与百度云天工IoT Hub平台间的消息同步。_
+如上图示，这里，OpenEdge本地Hub模块与远程云端Hub平台之间通过OpenEdge远程通讯模块（openedge-remote-mqtt）实现消息的转发、同步，进一步地，通过在两端接入MQTT Client即可实现“**端云协同式**”的消息转发与传递。
