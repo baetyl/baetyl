@@ -27,7 +27,13 @@ OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现
 
 ## 快速开始
 
-> + [Linux环境](./doc/zh-cn/setup/Build-OpenEdge-on-Linux.md)
+> + [在Mac下部署使用OpenEdge](./doc/zh-cn/quickstart/Deploy-OpenEdge-on-MacOS.md)
+
+## 安装
+
+> + [Linux下OpenEdge安装及运行环境配置](./doc/zh-cn/setup/Linux.md)
+> + [MacOS下OpenEdge安装及运行环境配置](./doc/zh-cn/setup/MacOS.md)
+> + [从源码编译OpenEdge及相关编译环境配置](./doc/zh-cn/setup/Source.md)
 
 ## 测试
 
