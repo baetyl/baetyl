@@ -187,6 +187,12 @@ openedge-remote-mqtt:build
 openedge-function-runtime-python27:build
 ```
 
+可通过以下命令查看：
+
+```shell
+docker images
+```
+
 ### 程序安装
 
 装到默认路径：/usr/local。

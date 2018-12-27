@@ -12,8 +12,6 @@
 
 ### Docker 安装
 
-> 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
-
 可通过以下命令进行安装：
 
 ```shell
@@ -87,11 +85,15 @@ yum install docker
 
 即可完成 docker 安装。
 
-***注*** : Docker 安装完成后可通过一下命令查看所安装Docker版本。
+***注意*** : 
+
++ Docker 安装完成后可通过一下命令查看所安装Docker版本。
 
 ```shell
 docker version
 ```
+
++ 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
 
 #### Debian 9/Raspberry Pi 3
 
