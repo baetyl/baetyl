@@ -202,7 +202,7 @@ docker version
 
 ## 源码下载
 
-按照对应环境完成编译环境配置后，千万[OpenEdge开源主页](https://github.com/baidu/openedge)下载openedge源码
+按照对应环境完成编译环境配置后，前往[OpenEdge开源主页](https://github.com/baidu/openedge)下载openedge源码
 
  ```shell
  mkdir -p $GOPATH/src/github.com/baidu/
