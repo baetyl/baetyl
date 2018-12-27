@@ -1,6 +1,9 @@
 # 测试前准备
 
-**声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
+**声明**：
+
+> + 本文测试所用设备系统为MacOS
+> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
 
 ## 基本步骤流程
 

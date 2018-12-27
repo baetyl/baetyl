@@ -10,3 +10,7 @@
 > + [OpenEdge 构成](./OpenEdge-concepts.md)
 > + [OpenEdge 功能](./OpenEdge-features.md)
 > + [OpenEdge 优势](./OpenEdge-advantages.md)
+> + [OpenEdge 开放式设计框架](./OpenEdge-open-framework.md)
+> + [OpenEdge 自定义扩展](./OpenEdge-extension.md)
+> + [OpenEdge 安全](./OpenEdge-security.md)
+> + [OpenEdge 可控式设计](./OpenEdge-control.md)
