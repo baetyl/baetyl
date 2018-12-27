@@ -2,7 +2,7 @@ all: openedge-remote-mqtt
 
 openedge-remote-mqtt:
 	@echo "build ${GOFLAG} $@"
-	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o openedge-remote-mqtt$(TAG) .
+	@go build ${GOFLAG} .
 
 openedge-remote-mqtt-image:
 	@echo "build ${GOFLAG} $@"

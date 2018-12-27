@@ -2,7 +2,7 @@ all: openedge-function
 
 openedge-function:
 	@echo "build ${GOFLAG} $@"
-	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o openedge-function$(TAG) .
+	@go build ${GOFLAG} .
 
 openedge-function-image:
 	@echo "build ${GOFLAG} $@"

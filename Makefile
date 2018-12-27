@@ -6,30 +6,16 @@ modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-
 
 openedge:
 	@echo "build ${GOFLAG} $@"
-	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o $(SAVEPATH)openedge$(TAG) .
+	@go build ${GOFLAG} .
 
 openedge-hub/openedge-hub:
-	make -C openedge-hub GOOS=$(GOOS) GOARCH=$(GOARCH) TAG=$(TAG)
+	make -C openedge-hub
 
 openedge-function/openedge-function:
-	make -C openedge-function GOOS=$(GOOS) GOARCH=$(GOARCH) TAG=$(TAG)
+	make -C openedge-function
 
 openedge-remote-mqtt/openedge-remote-mqtt:
-	make -C openedge-remote-mqtt GOOS=$(GOOS) GOARCH=$(GOARCH) TAG=$(TAG)
-
-releases:
-	@echo "build ${GOFLAG} $@"
-	for ARCH in '386' 'amd64' 'arm' 'arm64'; do \
-		make genericbuild GOOS=linux GOARCH=$$ARCH VERSION=$(VERSION); \
-	done
-	make genericbuild GOOS=darwin GOARCH=amd64 VERSION=$(VERSION)
-
-genericbuild:
-	@echo "build ${GOFLAG} $@"
-	mkdir -p output/$(GOOS)-$(GOARCH)
-	make openedge GOOS=$(GOOS) GOARCH=$(GOARCH) SAVEPATH=output/$(GOOS)-$(GOARCH)/ TAG='-'$(GOOS)'-'$(GOARCH)
-	tar cf - -C example/docker . | tar xf - -C output/$(GOOS)-$(GOARCH)
-	tar czf output/openedge-$(GOOS)-$(GOARCH)-$(VERSION).tar.gz output/$(GOOS)-$(GOARCH)/*
+	make -C openedge-remote-mqtt
 
 test:
 	go test --race ./...

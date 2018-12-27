@@ -59,7 +59,7 @@ go env
 docker version
 ```
 
-***注：*** 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要所安装 Docker 版本在 17.05 之上(仅运行没有版本限制)。
+***注：*** 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
