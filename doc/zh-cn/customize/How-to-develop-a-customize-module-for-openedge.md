@@ -72,7 +72,7 @@
 
 ## 启动约定
 
-模块以进程方式启动，是独立的可执行程序。首先配置的约定方式加载配置，然后运行模块的业务逻辑，最后监听SIGTERM信号来优雅退出。一个简单的golang模块实现可参考[mqtt remotem模块](https://github.com/baidu/openedge/tree/master/openedge-remote-mqtt)。
+模块以进程方式启动，是独立的可执行程序。首先配置的约定方式加载配置，然后运行模块的业务逻辑，最后监听SIGTERM信号来优雅退出。一个简单的golang模块实现可参考[mqtt remote模块](https://github.com/baidu/openedge/tree/master/openedge-remote-mqtt)。
 
 ## 模块SDK
 

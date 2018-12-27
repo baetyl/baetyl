@@ -4,57 +4,7 @@
 
 与基于本地Hub模块实现设备间消息转发不同的是，本文在Hub模块的基础上，引入Function函数计算模块及具体执行所需的Python27 runtime模块，将接收到的消息交给Python27 runtime来处理（Python27 runtime会调用具体的函数脚本来执行具体计算、分析、处理等），然后将处理结果以主题方式反馈给Hub模块，最终订阅该主题的MQTT client（要求MQTT client事先订阅该主题）将会收到该处理结果。
 
-本地Hub模块的配置项信息不再赘述，详情查看[基于Hub模块实现设备间消息转发](./Message-transfer-among-devices-with-hub-module.md)，这里主要介绍新引入的Function函数计算模块相关配置（Python函数的运行环境构建参考[OpenEdge设计](../../overview/OpenEdge-design.md)），具体如下：
-
-```yaml
-name: [必须]模块名
-hub:
-  clientid: mqtt client连接hub的client id，如果为空则随机生成，且clean session强制变成true
-  address: [必须]mqtt client连接hub的地址，docker容器模式下地址为hub模块名，native进程模式下为127.0.0.1
-  username: 如果采用账号密码，必须填mqtt client连接hub的用户名
-  password: 如果采用账号密码，必须填mqtt client连接hub的密码
-  ca: 如果采用证书双向认证，必须填mqtt client连接hub的CA证书所在路径
-  key: 如果采用证书双向认证，必须填mqtt client连接hub的客户端私钥所在路径
-  cert: 如果采用证书双向认证，必须填mqtt client连接hub的客户端公钥所在路径
-  timeout: 默认值：30s，mqtt client连接hub的超时时间
-  interval: 默认值：1m，mqtt client连接hub的重连最大间隔时间，从500微秒翻倍增加到最大值。
-  keepalive: 默认值：30s，mqtt client连接hub的保持连接时间
-  cleansession: 默认值：false，mqtt client连接hub的clean session
-  buffersize: 默认值：10，mqtt client发送消息给hub的内存队列大小，异常退出会导致消息丢失，恢复后QoS为1的消息依赖hub重发
-rules: 路由规则配置项
-  - id: [必须]路由规则ID
-    subscribe:
-      topic: [必须]向hub订阅的消息主题
-      qos: 默认值：0，向hub订阅的消息QoS
-    compute:
-      function: [必须]处理消息的函数名
-    publish:
-      topic: [必须]函数处理输出结果消息发布到hub的主题
-      qos: 默认值：0，函数处理输出结果消息发布到hub的QoS
-functions:
-  - name: [必须]函数名
-    runtime: 配置函数依赖的runtime模块名称，python为'python2.7'
-    entry: 同模块的entry，运行函数实例的runtime模块的镜像或可执行程序
-    handler: [必须]函数处理函数。python为函数包和处理函数名，比如：'sayhi.handler'
-    codedir: 如果是python，必须填python代码所在路径
-    env: 环境变量配置项，例如：
-      USER_ID: acuiot
-    instance: 函数实例配置项
-      min: 默认值：0，最小值：0，最大值：100，最小函数实例数
-      max: 默认值：1，最小值：1，最大值：100，最大函数实例数
-      timeout: 默认值：5m， 函数实例调用超时时间
-      message:
-        length:
-          max: 默认值：4m， 函数实例允许接收和发送的最大消息长度
-      cpu:
-        cpus: 函数实例模块可用的CPU比例，例如：1.5，表示可以用1.5个CPU内核
-        setcpus: 函数实例模块可用的CPU内核，例如：0-2，表示可以使用第0到2个CPU内核；0，表示可以使用第0个CPU内核；1，表示可以使用第1个CPU内核
-      memory:
-        limit: 函数实例模块可用的内存，例如：500m，表示可以用500兆内存
-        swap: 函数实例模块可用的交换空间，例如：1g，表示可以用1G内存
-      pids:
-        limit: 函数实例模块可创建的进程数
-```
+本地Hub模块的配置项信息不再赘述，详情查看[基于Hub模块实现设备间消息转发](./Message-transfer-among-devices-with-hub-module.md)，这里主要介绍新引入的Function函数计算模块相关配置（Python函数的运行环境构建参考[OpenEdge设计](../../overview/OpenEdge-design.md)），完整的配置参考[函数计算模块配置](https://github.com/baidu/openedge/blob/master/doc/zh-cn/tutorials/local/Config-interpretation.md#函数计算模块配置)。
 
 _**提示**：凡是在rules消息路由配置项中出现、用到的函数，必须在functions配置项中进行函数执行具体配置，否则将不予启动。_
 
