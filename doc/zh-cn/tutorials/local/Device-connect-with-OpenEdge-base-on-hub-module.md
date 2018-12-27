@@ -121,4 +121,4 @@ principals:
 
 ![WSS（Websocket + SSL）连接成功](../../images/tutorials/local/connect/mqttbox-wss-connect-success.png)
 
-综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关下载](../../MQTT-download.md)。
+综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关下载](../../Resources-download.md)。
