@@ -33,6 +33,8 @@ message Message {
 }
 ```
 
+**注意**：Docker容器模式下，函数实例的资源限制不要低于50M内存，20个线程。
+
 ## 配置约定
 
 [函数配置的所有定义](https://github.com/baidu/openedge/blob/master/module/config/function.go)如下。对于自定义函数runtime，只需关注Function.Handler和Function.CodeDir的定义和使用，其他配置都是函数计算框架使用的配置。

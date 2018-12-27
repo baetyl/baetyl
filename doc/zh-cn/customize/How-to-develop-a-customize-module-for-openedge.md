@@ -1,10 +1,18 @@
 # 自定义模块
 
+- [自定义模块](#自定义模块)
+  - [目录约定](#目录约定)
+    - [Docker容器模式](#docker容器模式)
+    - [Native进程模式](#native进程模式)
+  - [配置约定](#配置约定)
+  - [启动约定](#启动约定)
+  - [模块SDK](#模块sdk)
+
 在开发和集成自定义模块前请阅读开发编译指南，了解OpenEdge的编译环境要求。
 
 自定义模块不限定开发语言，可运行即可。了解下面的这些约定，有利于更好更快的集成自定义模块。
 
-## 文件目录
+## 目录约定
 
 ### Docker容器模式
 
@@ -39,7 +47,7 @@
 
 模块的日志输出目录是：<openedge_host_work_dir>/var/log/openedge/<模块名>
 
-## 模块配置
+## 配置约定
 
 模块支持从文件中加载yaml格式的配置，Docker容器模式下读取/etc/openedge/module.yml，Native进程模式下读取<openedge_host_work_dir>/var/db/openedge/module/<模块名>/module.yml。
 
@@ -62,15 +70,9 @@
           address: '127.0.0.1:1234'
           ...
 
-## 函数计算runtime
+## 启动约定
 
-函数计算的运行实例目前采用grpc server实现，借助grpc的多语言支持，开发者可通过[runtime.proto](https://github.com/baidu/openedge/blob/master/module/function/runtime/openedge_function_runtime.proto)生成自己的grpc server框架并实现消息处理的逻辑。
-
-**注意**：Docker容器模式下，函数实例的资源限制不要低于50M内存，20个线程。
-
-## 模块退出
-
-模块退出时，OpenEdge会向模块发送SIGTERM信号，如果超过则强制退出。超时时间由etc/openedge/openedge.yml中的grace配置项指定，默认30秒。
+模块以进程方式启动，是独立的可执行程序。首先配置的约定方式加载配置，然后运行模块的业务逻辑，最后监听SIGTERM信号来优雅退出。一个简单的golang模块实现可参考[mqtt remotem模块](https://github.com/baidu/openedge/tree/master/openedge-remote-mqtt)。
 
 ## 模块SDK
 
