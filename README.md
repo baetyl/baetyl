@@ -22,7 +22,7 @@ OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现
 
 > + [OpenEdge设计](./doc/zh-cn/overview/OpenEdge-design.md)
 > + [所有配置解读](./doc/zh-cn/tutorials/local/Config-interpretation.md)
-> + [开发自定义模块](./doc/zh-cn/customize/dev_module.md)
+> + [开发自定义模块](./doc/zh-cn/customize/OpenEdge-customize-module-develop-notice.md)
 
 ## 快速开始
 

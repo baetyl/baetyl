@@ -23,7 +23,7 @@ principals: 接入权限配置项，如果不配置则mqtt client无法接入hub
         permit: 操作权限允许的主题列表，支持+和#匹配符
 ```
 
-如上配置，本地Hub模块可支持TCP、SSL、WS（Websocket）及WSS（Websocket + SSL）四种连接方式。
+如上配置，本地Hub模块可支持TCP、SSL、WS（Websocket）及WSS（Websocket + SSL）四种接入方式。
 
 _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在MacOS系统上快速部署OpenEdge](../../quickstart/Deploy-OpenEdge-on-MacOS.md)。_
 
@@ -37,6 +37,8 @@ _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，�
     - 若采用WS连接，与TCP连接配置一样，仅需更改连接端口即可；
     - 若采用WSS连接，与SSL连接配置一样，仅需更改连接端口即可。
 - **Step3**：若上述步骤一切正常，操作无误，即可通过OpenEdge日志或MQTTBOX查看连接状态。
+
+_**提示**：配置文件principals配置项中password要求采用原password明文SHA256值存储，但MQTTBOX作连接配置时，要求使用原password明文。_
 
 # 连接测试
 

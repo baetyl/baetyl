@@ -15,19 +15,19 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 2. Prepare for the development environment
 
    ```bash
-   go get github.com/baidu/openedge # clone openedge official repo
+   go get github.com/baidu/openedge # clone openedge official repository
    cd $GOPATH/github.com/baidu/openedge # step into openedge
    git checkout master  # verify master branch
-   git remote add fork https://github.com/<your_github_account>/openedge  # specify remote repo
+   git remote add fork https://github.com/<your_github_account>/openedge  # specify remote repository
    ```
 
-3. Push changes to your forked repo
+3. Push changes to your forked repository
 
    ```bash
    git status   # view current code change status
    git add .    # add all local changes
    git commit -c "modify description"  # commit changes with comment
-   git push fork # push code changes to remote repo which specifies your forked repository
+   git push fork # push code changes to remote repository which specifies your forked repository
    ```
 
 4. Create pull request
@@ -47,5 +47,5 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 > + Please run command `govendor fmt +local` before push changes, more details refer to [govendor](https://github.com/kardianos/govendor)
 > + Must run command `make test` before push changes(unit test should be contained), and make sure all unit test and data race test passed
-> + Only the passed(unit test and data race test) code can be allowed to submit to OpenEdge official repo
-> + At least one reviewer approved code can be merged into OpenEdge official repo
+> + Only the passed(unit test and data race test) code can be allowed to submit to OpenEdge official repository
+> + At least one reviewer approved code can be merged into OpenEdge official repository
