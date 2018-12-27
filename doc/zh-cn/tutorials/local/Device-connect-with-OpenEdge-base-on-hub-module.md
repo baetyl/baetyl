@@ -2,28 +2,7 @@
 
 **声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
 
-OpenEdge Hub模块启动所依赖的配置项如下：
-
-```yaml
-name: [必须]模块名
-listen: [必须]监听地址，例如：
-  - tcp://0.0.0.0:1883 # Native进程模式下，如果不想暴露给宿主机外的设备访问，可以改成tcp://127.0.0.1:1883
-  - ssl://0.0.0.0:1884
-  - ws://:8080/mqtt
-  - wss://:8884/mqtt
-certificate: SSL/TLS证书认证配置项，如果启用ssl或wss必须配置
-  ca: mqtt server CA证书所在路径
-  key: mqtt server 服务端私钥所在路径
-  cert: mqtt server 服务端公钥所在路径
-principals: 接入权限配置项，如果不配置则mqtt client无法接入hub，支持账号密码和证书认证
-  - username: mqtt client接入hub的用户名
-    password: mqtt client接入hub的密码
-    permissions:
-      - action: 操作权限。pub：发布权限；sub：订阅权限
-        permit: 操作权限允许的主题列表，支持+和#匹配符
-```
-
-如上配置，本地Hub模块可支持TCP、SSL、WS（Websocket）及WSS（Websocket + SSL）四种接入方式。
+OpenEdge Hub模块的完整的配置参考[Hub模块配置](https://github.com/baidu/openedge/blob/master/doc/zh-cn/tutorials/local/Config-interpretation.md#hub模块配置)。
 
 _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在MacOS系统上快速部署OpenEdge](../../quickstart/Deploy-OpenEdge-on-MacOS.md)。_
 

@@ -2,45 +2,7 @@
 
 **声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)和[MQTT.fx](http://www.jensd.de/apps/mqttfx/1.7.1/)，远程Hub接入平台选用[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)。
 
-Remote远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地Hub与远程MQTT服务（如[Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)、[AWS IoT Core](https://amazonaws-china.com/iot-core/)、[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过Remote远程服务模块我们既可以从远程Hub订阅消息到本地Hub，也可以将本地Hub的消息发送给远程Hub，其涉及的相关配置如下所示。
-
-```yaml
-name: [必须]模块名
-hub:
-  clientid: mqtt client连接hub的client id，如果为空则随机生成，且clean session强制变成true
-  address: [必须]mqtt client连接hub的地址，docker容器模式下地址为hub模块名，native进程模式下为127.0.0.1
-  username: 如果采用账号密码，必须填mqtt client连接hub的用户名
-  password: 如果采用账号密码，必须填mqtt client连接hub的密码
-  ca: 如果采用证书双向认证，必须填mqtt client连接hub的CA证书所在路径
-  key: 如果采用证书双向认证，必须填mqtt client连接hub的客户端私钥所在路径
-  cert: 如果采用证书双向认证，必须填mqtt client连接hub的客户端公钥所在路径
-  timeout: 默认值：30s，mqtt client连接hub的超时时间
-  interval: 默认值：1m，mqtt client连接hub的重连最大间隔时间，从500微秒翻倍增加到最大值。
-  keepalive: 默认值：30s，mqtt client连接hub的保持连接时间
-  cleansession: 默认值：false，mqtt client连接hub的clean session
-  buffersize: 默认值：10，mqtt client发送消息给hub的内存队列大小，异常退出会导致消息丢失，恢复后QoS为1的消息依赖remote重发
-  subscriptions: 订阅配置项
-    - topic: 向hub订阅消息的主题
-      qos: 向hub订阅消息的QoS
-remote:
-  clientid: mqtt client连接remote的client id，如果为空则随机生成，且clean session强制变成true
-  address: [必须]mqtt client连接remote的地址
-  username: 如果采用账号密码，必须填mqtt client连接remote的用户名
-  password: 如果采用账号密码，必须填mqtt client连接remote的密码
-  ca: 如果采用证书双向认证，必须填mqtt client连接remote的CA证书所在路径
-  key: 如果采用证书双向认证，必须填mqtt client连接remote的客户端私钥所在路径
-  cert: 如果采用证书双向认证，必须填mqtt client连接remote的客户端公钥所在路径
-  timeout: 默认值：30s，mqtt client连接remote的超时时间
-  interval: 默认值：1m，mqtt client连接remote的重连最大间隔时间，从500微秒翻倍增加到最大值。
-  keepalive: 默认值：30s，mqtt client连接remote的保持连接时间
-  cleansession: 默认值：false，mqtt client连接remote的clean session
-  buffersize: 默认值：10，mqtt client发送消息给remote的内存队列大小，异常退出会导致消息丢失，恢复后QoS为1的消息依赖hub重发
-  subscriptions: 订阅配置项
-    - topic: 向remote订阅消息的主题
-      qos: 向remote订阅消息的QoS
-```
-
-如上配置，hub配置项代表OpenEdge Hub模块的相关配置，remote配置项代表OpenEdge Remote模块的相关配置。
+Remote远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地Hub与远程MQTT服务（如[Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)、[AWS IoT Core](https://amazonaws-china.com/iot-core/)、[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过Remote远程服务模块我们既可以从远程Hub订阅消息到本地Hub，也可以将本地Hub的消息发送给远程Hub，完整的配置可参考[远程服务模块配置](https://github.com/baidu/openedge/blob/master/doc/zh-cn/tutorials/local/Config-interpretation.md#远程服务模块配置)。
 
 # 操作流程
 
@@ -66,27 +28,29 @@ remote:
 首先，需要说明的是，本次通过OpenEdge Remote远程服务模块实现消息远程同步所依赖的主题信息如下所示。
 
 ```yaml
-name: openedge_remote_mqtt
+name: remote-iothub
 hub:
   address: tcp://openedge_hub:1883
   clientid: e1b98400591240fe9131ccd3998ae7df
   username: test
   password: hahaha
-  subscriptions:
-    - topic: t1
-      qos: 1
-remote:
-  address: tcp://u4u6zk2.mqtt.iot.bj.baidubce.com:1883
-  clientid: 349360d3c91a4c55a57139e9085e526f
-  username: u4u6zk2/demo
-  password: XqySIYMBsjK0JkEh
-  subscriptions:
-    - topic: t2
-      qos: 1
-logger:
-  path: var/log/openedge_remote_mqtt.log
-  console: true
-  level: "debug"
+remotes:
+  - name: remote
+    address: tcp://u4u6zk2.mqtt.iot.bj.baidubce.com:1883
+    clientid: 349360d3c91a4c55a57139e9085e526f
+    username: u4u6zk2/demo
+    password: XqySIYMBsjK0JkEh
+rules:
+  - id: rule-rcg3k6ytq
+    hub:
+      subscriptions:
+        - topic: t1
+          qos: 1
+    remote:
+      name: remote
+      subscriptions:
+        - topic: t2
+          qos: 1
 ```
 
 依据上述Remote模块的配置信息，意即Remote模块向本地Hub模块订阅主题“t1”的消息，向Baidu IoT Hub订阅主题“t2”的消息；当MQTTBOX向主题“t1”发布消息时，当Hub模块接收到主题“t1”的消息后，将其转发给Remote模块，再由Remote模块降之转发给Baidu IoT Hub，这样如果MQTT.fx订阅了主题“t1”，即会收到该条从MQTTBOX发布的消息；同理，当MQTT.fx向主题“t2”发布消息时，Baidu IoT Hub会将消息转发给Remote模块，由Remote模块将之转发给本地Hub模块，这样如果MQTTBOX订阅了主题“t2”，即会收到该消息。
