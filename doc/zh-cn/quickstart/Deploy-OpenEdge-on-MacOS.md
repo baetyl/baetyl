@@ -21,7 +21,7 @@
 
 # 开始部署
 
-如上所述，首先从OpenEdge github开源项目中下载某版本的OpenEdge（源码编译亦可，参见[Linux环境下编译OpenEdge](../setup/Build-OpenEdge-on-Linux.md)），然后打开终端进入OpenEdge程序包下载目录，进行解压缩操作，成功解压缩后，可以发现openedge目录中主要包括bin、etc、var等目录，具体如下图示。
+如上所述，首先从OpenEdge github开源项目中下载某版本的OpenEdge（源码编译亦可，参见[Linux环境下编译OpenEdge](../setup/Source.md)），然后打开终端进入OpenEdge程序包下载目录，进行解压缩操作，成功解压缩后，可以发现openedge目录中主要包括bin、etc、var等目录，具体如下图示。
 
 ![OpenEdge可执行程序包目录](../images/quickstart/macos/openedge-dir.png)
 
