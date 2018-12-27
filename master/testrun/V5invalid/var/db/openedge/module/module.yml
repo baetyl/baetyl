@@ -1,3 +1,4 @@
+version: V5
 modules:
   - noname: 'wait_exit_1'
     entry: '/bin/sh'
