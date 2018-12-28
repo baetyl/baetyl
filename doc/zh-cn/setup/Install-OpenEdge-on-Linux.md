@@ -1,6 +1,6 @@
 # Linux下OpenEdge安装及环境配置
 
-> + OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
+> OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
 
 本文主要介绍 OpenEdge 程序的安装以及运行所需环境的安装与配置。
 

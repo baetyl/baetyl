@@ -35,7 +35,7 @@ go version
 
 ### Docker 安装
 
-> + 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。
+> 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。
 
 可通过以下命令进行安装：
 
@@ -202,7 +202,7 @@ docker version
 
 ## 源码下载
 
-按照对应环境完成编译环境配置后，前往[OpenEdge Github开源主页](https://github.com/baidu/openedge)下载openedge源码
+按照对应环境完成编译环境配置后，前往[OpenEdge Github](https://github.com/baidu/openedge)下载openedge源码
 
  ```shell
  mkdir -p $GOPATH/src/github.com/baidu/

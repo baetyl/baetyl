@@ -4,7 +4,7 @@
 
 > + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
-本文主要概述如何在MacOS上快速部署、运行OpenEdge，假定在此之前OpenEdge运行所需[环境配置](../setup/Install-OpenEdge-on-MacOS.md)均已Ready。
+本文主要概述如何在MacOS上快速部署、运行OpenEdge，假定在此之前OpenEdge运行所需[环境配置](../setup/Install-OpenEdge-on-MacOS.md)均已配置完毕。
 
  - OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务；
 
