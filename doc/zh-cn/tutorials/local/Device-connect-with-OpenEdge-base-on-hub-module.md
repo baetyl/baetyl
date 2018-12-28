@@ -1,8 +1,12 @@
 # 连接测试前准备
 
-**声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
+**声明**：
 
-OpenEdge Hub模块的完整的配置参考[Hub模块配置](https://github.com/baidu/openedge/blob/master/doc/zh-cn/tutorials/local/Config-interpretation.md#hub模块配置)。
+> + 本文测试所用设备系统为MacOS
+> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+> + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../../setup/Build-OpenEdge-from-Source.md)
+
+OpenEdge Hub模块的完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
 
 _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在MacOS系统上快速部署OpenEdge](../../quickstart/Deploy-OpenEdge-on-MacOS.md)。_
 
@@ -38,16 +42,16 @@ _**提示**：配置文件principals配置项中password要求采用原password�
 OpenEdge Hub模块启动的连接相关配置信息如下：
 
 ```yaml
-name: openedge_hub
+name: localhub
 listen:
   - tcp://:1883
   - ssl://:1884
   - ws://:8080/mqtt
   - wss://:8884/mqtt
 certificate:
-  ca: 'app/cert-4j5vze02r/ca.pem'
-  cert: 'app/cert-4j5vze02r/server.pem'
-  key: 'app/cert-4j5vze02r/server.key'
+  ca: 'var/db/openedge/module/localhub/cert-4j5vze02r/ca.pem'
+  cert: 'var/db/openedge/module/localhub/cert-4j5vze02r/server.pem'
+  key: 'var/db/openedge/module/localhub/cert-4j5vze02r/server.key'
 principals:
   - username: 'test'
     password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'

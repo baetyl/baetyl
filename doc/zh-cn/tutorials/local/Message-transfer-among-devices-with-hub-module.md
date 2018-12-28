@@ -1,8 +1,11 @@
 # 测试前准备
 
-**声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
+**声明**：
 
-与[连接测试](./Device-connect-with-OpenEdge-base-on-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，完整的配置参考[Hub模块配置](https://github.com/baidu/openedge/blob/master/doc/zh-cn/tutorials/local/Config-interpretation.md#hub模块配置)。
+> + 本文测试所用设备系统为MacOS
+> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+
+与[连接测试](./Device-connect-with-OpenEdge-base-on-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
 
 本文以TCP连接方式为例，测试本地Hub模块的消息路由、转发功能。
 
@@ -19,7 +22,7 @@
 本文测试使用的本地Hub模块的相关配置信息如下：
 
 ```yaml
-name: openedge_hub
+name: openedge-hub
 listen:
   - tcp://:1883
 principals:

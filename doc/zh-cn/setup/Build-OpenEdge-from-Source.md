@@ -202,7 +202,7 @@ docker version
 
 ## 源码下载
 
-按照对应环境完成编译环境配置后，前往[OpenEdge开源主页](https://github.com/baidu/openedge)下载openedge源码
+按照对应环境完成编译环境配置后，前往[OpenEdge Github](https://github.com/baidu/openedge)下载openedge源码
 
  ```shell
  mkdir -p $GOPATH/src/github.com/baidu/
@@ -284,7 +284,7 @@ output/bin/openedge # native进程模式
 
 1. docker容器模式运行，可通过 ```docker stats``` 命令查看容器运行状态。
 2. 如需使用自己的镜像，需要修改应用配置中的模块和函数的 entry，指定自己的镜像。
-3. 如需自定义配置，请按照 [配置解读](../config/config.md) 中的内容进行相关设置。
+3. 如需自定义配置，请按照 [配置解读](../tutorials/local/Config-interpretation.md) 中的内容进行相关设置。
 
 ## 程序卸载
 
