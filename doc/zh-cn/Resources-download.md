@@ -20,7 +20,7 @@
 | Darwin(src)  | amd64  | 48ea987fb610894b3108ecf42e7a4fd1c1e3eabcaeb570e388c75af1f1375f80 | [点击下载](https://openedge.bj.bcebos.com/Golang/go1.11.4.darwin-amd64.tar.gz) |
 | Source       | -      | 4cfd42720a6b1e79a8024895fa6607b69972e8e32446df76d6ce79801bbadb15 | [点击下载](https://openedge.bj.bcebos.com/Golang/go1.11.4.src.tar.gz)          |
 
-## MQTT相关下载
+## MQTT相关资源下载
 
 ### 下载MQTT客户端代码示例
 
@@ -42,7 +42,7 @@ python代码示例：下载[mqtt-py压缩包](https://openedge.bj.bcebos.com/MQT
 | Linux(deb)   | x86\_64 | 6fb14c739cbf8b54a373a0c5c173ef3657c01c675374ded8f0a292c610e549c2 | [点击下载](https://openedge.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-64bit.deb)       |
 | Windows(exe) | x86     | aa3902a2b76e427c4ba90b2b49dd337e95e614ba59f8cd64b5a95b5080766965 | [点击下载](https://openedge.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-windows.exe)     |
 | Windows(exe) | x86\_64 | 4adfbb0eee65273bead6ce9885cf064de72d00d437bbaf3b9ff5236634fb6057 | [点击下载](https://openedge.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-windows-x64.exe) |
-| MacOS(dmg)   | x86\_64 | 544b6ac0afefb80b5a56c2a6f2411f999862fb8f0f20502c912f28a9d1aa3b4a | [点击下载](https://openedge.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-macos.dmg)       |
+| Darwin(dmg)  | x86\_64 | 544b6ac0afefb80b5a56c2a6f2411f999862fb8f0f20502c912f28a9d1aa3b4a | [点击下载](https://openedge.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-macos.dmg)       |
 
 ### 下载MQTTBOX客户端
  

@@ -2,8 +2,8 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为MacOS
-> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)和[MQTT.fx](http://www.jensd.de/apps/mqttfx/1.7.1/)
+> + 本文测试所用设备系统为Darwin
+> + 模拟MQTT client行为的客户端为[MQTTBOX](../../Resources-download.md#下载MQTTBOX客户端)和[MQTT.fx](../../Resources-download.md#下载MQTT.fx客户端)
 > + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../../setup/Build-OpenEdge-from-Source.md)
 > + 远程Hub接入平台选用[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 

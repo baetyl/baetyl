@@ -2,14 +2,13 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为MacOS
-> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+> + 本文测试所用设备系统为Darwin
+> + 模拟MQTT client行为的客户端为[MQTTBOX](../../Resources-download.md#下载MQTTBOX客户端)
 > + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../../setup/Build-OpenEdge-from-Source.md)
 
-OpenEdge Hub模块的完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
+OpenEdge Hub模块的完整的配置参考[Hub模块配置](./Config-interpretation.md#Hub模块配置)。
 
-_**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在MacOS系统上快速部署OpenEdge](../../quickstart/Deploy-OpenEdge-on-MacOS.md)。_
-
+_**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在Darwin系统上快速部署OpenEdge](../../quickstart/Deploy-OpenEdge-on-Darwin.md)。_
 
 # 操作流程
 
@@ -104,4 +103,4 @@ principals:
 
 ![WSS（Websocket + SSL）连接成功](../../images/tutorials/local/connect/mqttbox-wss-connect-success.png)
 
-综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关下载](../../Resources-download.md)。
+综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关资源下载](../../Resources-download.md)。

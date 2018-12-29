@@ -71,5 +71,5 @@ build   "linux-aarch64"     "linux"     "arm64"   "cc"
 build   "windows10-x86"     "windows"   "386"     "i686-w64-mingw32-gcc"
 build   "windows10-x86_64"  "windows"   "amd64"   "x86_64-w64-mingw32-gcc"
 
-# must be built on MacOS
+# must be built on Darwin
 # build   "darwin-x86_64"     "darwin"    "amd64"   "cc"

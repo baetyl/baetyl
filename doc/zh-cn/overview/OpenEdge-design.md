@@ -22,7 +22,7 @@ Native进程模式结构图:
 
 _**提示**：工作目录可在OpenEdge启动时通过-w指定，默认为OpenEdge的可执行文件所在目录的上一级目录。_
 
-Docker容器模式下，模块通过docker client启动entry指定的模块镜像，并自动加入自定义网络（openedge）中，由于docker自带了DNS server，模块间可通过模块名进行互相通讯。另外模块可通过expose配置项来向外暴露端口；通过resources配置项限制模块可使用的资源，目前支持CPU、内存和进程数的限制。[配置参考](./tutorials/local/Config-interpretation.md#应用配置)
+Docker容器模式下，模块通过docker client启动entry指定的模块镜像，并自动加入自定义网络（openedge）中，由于docker自带了DNS server，模块间可通过模块名进行互相通讯。另外模块可通过expose配置项来向外暴露端口；通过resources配置项限制模块可使用的资源，目前支持CPU、内存和进程数的限制。[配置参考](../tutorials/local/Config-interpretation.md#应用配置)
 
 Docker容器模式下，模块在容器中的工作目录是根目录：/，配置路径是：/etc/openedge/module.yml，资源读取目录是：/var/db/openedge/module/<模块名>，持久化数据输出目录是：/var/db/openedge/volume/<模块名>，日志输出目录是：/var/log/openedge/<模块名>。具体的映射如下：
 
