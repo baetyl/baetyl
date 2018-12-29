@@ -1,29 +1,12 @@
 # 连接测试前准备
 
-**声明**：本文测试所用设备系统为MacOS，模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)。
+**声明**：
 
-OpenEdge Hub模块启动所依赖的配置项如下：
+> + 本文测试所用设备系统为MacOS
+> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+> + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../../setup/Build-OpenEdge-from-Source.md)
 
-```yaml
-name: [必须]模块名
-listen: [必须]监听地址，例如：
-  - tcp://0.0.0.0:1883 # Native进程模式下，如果不想暴露给宿主机外的设备访问，可以改成tcp://127.0.0.1:1883
-  - ssl://0.0.0.0:1884
-  - ws://:8080/mqtt
-  - wss://:8884/mqtt
-certificate: SSL/TLS证书认证配置项，如果启用ssl或wss必须配置
-  ca: mqtt server CA证书所在路径
-  key: mqtt server 服务端私钥所在路径
-  cert: mqtt server 服务端公钥所在路径
-principals: 接入权限配置项，如果不配置则mqtt client无法接入hub，支持账号密码和证书认证
-  - username: mqtt client接入hub的用户名
-    password: mqtt client接入hub的密码
-    permissions:
-      - action: 操作权限。pub：发布权限；sub：订阅权限
-        permit: 操作权限允许的主题列表，支持+和#匹配符
-```
-
-如上配置，本地Hub模块可支持TCP、SSL、WS（Websocket）及WSS（Websocket + SSL）四种连接方式。
+OpenEdge Hub模块的完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
 
 _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，详见[在MacOS系统上快速部署OpenEdge](../../quickstart/Deploy-OpenEdge-on-MacOS.md)。_
 
@@ -37,6 +20,8 @@ _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，�
     - 若采用WS连接，与TCP连接配置一样，仅需更改连接端口即可；
     - 若采用WSS连接，与SSL连接配置一样，仅需更改连接端口即可。
 - **Step3**：若上述步骤一切正常，操作无误，即可通过OpenEdge日志或MQTTBOX查看连接状态。
+
+_**提示**：配置文件principals配置项中password要求采用原password明文SHA256值存储，但MQTTBOX作连接配置时，要求使用原password明文。_
 
 # 连接测试
 
@@ -57,16 +42,16 @@ _**提示**：要求部署、启动OpenEdge的设备系统已安装好Docker，�
 OpenEdge Hub模块启动的连接相关配置信息如下：
 
 ```yaml
-name: openedge_hub
+name: localhub
 listen:
   - tcp://:1883
   - ssl://:1884
   - ws://:8080/mqtt
   - wss://:8884/mqtt
 certificate:
-  ca: 'app/cert-4j5vze02r/ca.pem'
-  cert: 'app/cert-4j5vze02r/server.pem'
-  key: 'app/cert-4j5vze02r/server.key'
+  ca: 'var/db/openedge/module/localhub/cert-4j5vze02r/ca.pem'
+  cert: 'var/db/openedge/module/localhub/cert-4j5vze02r/server.pem'
+  key: 'var/db/openedge/module/localhub/cert-4j5vze02r/server.key'
 principals:
   - username: 'test'
     password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
@@ -119,4 +104,4 @@ principals:
 
 ![WSS（Websocket + SSL）连接成功](../../images/tutorials/local/connect/mqttbox-wss-connect-success.png)
 
-综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关下载](../../MQTT-download.md)。
+综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关下载](../../Resources-download.md)。

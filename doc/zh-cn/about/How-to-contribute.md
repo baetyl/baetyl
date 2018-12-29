@@ -34,11 +34,15 @@ OpenEdge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 
 4. 创建代码合入请求
 
-   基于fork的仓库地址直接向OpenEdge官方仓库[https://github.com/baidu/openedge](https://github.com/baidu/openedge)提交**pull request**，即可完成向OpenEdge官方仓库的代码合入请求。一旦OpenEdge代码仓库评审人员通过了您的代码提交、合入请求，您即可在OpenEdge官方代码仓库中看到您贡献的代码。
+   基于fork的仓库地址直接向OpenEdge官方仓库[https://github.com/baidu/openedge](https://github.com/baidu/openedge)提交**pull request**（具体请参考[如何创建一个提交请求](https://help.github.com/articles/creating-a-pull-request/)），即可完成向OpenEdge官方仓库的代码合入请求。一旦OpenEdge代码仓库评审人员通过了您的代码提交、合入请求，您即可在OpenEdge官方代码仓库中看到您贡献的代码。
 
 ## 代码评审规范
 
-Golang的代码风格请参照[Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)。
+> + Golang的代码风格请参照[Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+> + 请在代码CI测试通过后及时通过Email向你的代码评审人发送代码提交请求URL
+> + 请及时回答评审人的每一个comment，如果您采纳评审人给出的建议，请直接回复“好的”或是“Done”；如果您不同意，请给出您的理由
+> + 如果您不想您的代码评审人被邮件通知频繁打扰，您可以通过“交互框”回复评审人提出的每一个建议，具体请参考[如何使用交互框回复评审人信息](https://help.github.com/articles/reviewing-proposed-changes-in-a-pull-request/)
+> + 尽可能减少不必要的代码提交。一些开发者总是频繁提交代码。如果您想要向提交的代码中增加一个微小的改动，请使用命令`git commit --amend`代替`git commit`
 
 ## 代码合入规范
 

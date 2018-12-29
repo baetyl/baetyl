@@ -21,12 +21,19 @@ OpenEdge是开放的边缘计算平台，可将云计算能力拓展至用户现
 **设计文档**：
 
 > + [OpenEdge设计](./doc/zh-cn/overview/OpenEdge-design.md)
-> + [所有配置解读](./doc/zh-cn/tutorials/local/Config-interpretation.md)
-> + [开发自定义模块](./doc/zh-cn/customize/dev_module.md)
+> + [OpenEdge配置解读](./doc/zh-cn/tutorials/local/Config-interpretation.md)
+> + [开发自定义模块](./doc/zh-cn/customize/How-to-develop-a-customize-module-for-openedge.md)
+> + [开发自定义函数运行时](./doc/zh-cn/customize/How-to-develop-a-customize-runtime-for-function.md)
 
 ## 快速开始
 
-> + [Linux环境](./doc/zh-cn/setup/Build-OpenEdge-on-Linux.md)
+> + [在MacOS下部署使用OpenEdge](./doc/zh-cn/quickstart/Deploy-OpenEdge-on-MacOS.md)
+
+## 安装
+
+> + [Linux下OpenEdge安装及运行环境配置](./doc/zh-cn/setup/Install-OpenEdge-on-Linux.md)
+> + [MacOS下OpenEdge安装及运行环境配置](./doc/zh-cn/setup/Install-OpenEdge-on-MacOS.md)
+> + [从源码编译OpenEdge及相关编译环境配置](./doc/zh-cn/setup/Build-OpenEdge-from-Source.md)
 
 ## 测试
 
