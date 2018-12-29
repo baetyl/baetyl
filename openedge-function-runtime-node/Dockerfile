@@ -1,6 +1,7 @@
-FROM node:8.5.0-alpine
+# you can select which node version to build
+# FROM node:8.5.0-alpine
 # FROM node:6.11.0-alpine 
-# FROM node:10.15.0-alpine
+FROM node:10.15.0-alpine
 WORKDIR /
 COPY openedge-function-runtime-node/package.json .
 COPY openedge-function-runtime-node/*.js /bin/
