@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+// you can input command to generate runtime_pb.js
+// protoc --js_out=import_style=commonjs,binary:. runtime.proto
+
+message Message {
+    
+  int32 QOS = 1;
+
+  string Topic = 2;
+
+  bytes Payload = 3;
+
+  string FunctionName = 11;
+
+  string FunctionInvokeID = 12;
+
+}

@@ -13,6 +13,15 @@ rules:
     publish:
       topic: t/hi
       qos: 1
+  - id: rule-e1iluuac2
+    subscribe:
+      topic: t
+      qos: 1
+    compute:
+      function: sayhi-js
+    publish:
+      topic: t/js
+      qos: 1
 functions:
   - id: func-nyeosbbch
     name: 'sayhi'
@@ -20,6 +29,18 @@ functions:
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/module/func-nyeosbbch'
     entry: "bin/openedge_function_runtime_python27.py"
+    env:
+      USER_ID: acuiot
+    instance:
+      min: 0
+      max: 100
+      timeout: 30s
+  - id: func-coaixgnaw
+    name: 'sayhi-js'
+    runtime: 'node85'
+    handler: 'sayhi.handler'
+    codedir: 'var/db/openedge/module/func-coaixgnaw'
+    entry: "bin/openedge_function_runtime_node85.js"
     env:
       USER_ID: acuiot
     instance:

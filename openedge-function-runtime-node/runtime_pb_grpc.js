@@ -1,6 +1,6 @@
 'use strict';
 var grpc = require('grpc');
-var runtime_pb = require('./runtime_pb2.js');
+var runtime_pb = require('./runtime_pb.js');
 
 function serialize_Message(arg) {
     if (!(arg instanceof runtime_pb.Message)) {
