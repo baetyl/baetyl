@@ -19,7 +19,7 @@ import (
 )
 
 // backupFile backup file name
-const backupFile = "module.bk"
+const backupFile = "module.zip"
 
 // backupDir dir to backup
 var backupDir = path.Join("var", "db", "openedge", "module")
@@ -161,6 +161,17 @@ func (m *Master) reload(version string) error {
 	}
 	err = m.loadConfig()
 	if err != nil {
+		logger.WithError(err).Infof("failed to load new config, rollback")
+		err1 := m.unpackBackupFile()
+		if err1 != nil {
+			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file: " + err1.Error())
+			return err
+		}
+		err1 = m.loadConfig()
+		if err1 != nil {
+			err = fmt.Errorf(err.Error() + ";failed to load old config: " + err1.Error())
+			return err
+		}
 		return fmt.Errorf("failed to load new config: %s", err.Error())
 	}
 	m.engine.StopAll()
@@ -189,13 +200,16 @@ func (m *Master) reload(version string) error {
 
 func (m *Master) backupDir() error {
 	if !dirExists(backupDir) {
-		os.MkdirAll(backupDir, 0700)
+		return nil
 	}
 	return archiver.Zip.Make(backupFile, []string{backupDir})
 }
 
-func (m *Master) cleanBackupFile() error {
-	return os.Remove(backupFile)
+func (m *Master) cleanBackupFile() {
+	err := os.RemoveAll(backupFile)
+	if err != nil {
+		logger.WithError(err).Errorf("failed to remove backup file")
+	}
 }
 
 func (m *Master) unpackConfigFile(version string) error {
@@ -208,12 +222,16 @@ func (m *Master) unpackConfigFile(version string) error {
 }
 
 func (m *Master) unpackBackupFile() error {
-	err := archiver.Zip.Open(backupFile, m.context.PWD)
+	if !fileExists(backupFile) {
+		return os.RemoveAll(backupDir)
+	}
+	err := archiver.Zip.Open(backupFile, path.Dir(backupDir))
 	return err
 }
 
 func (m *Master) loadConfig() error {
 	if !fileExists(confFile) {
+		m.conf.Version = ""
 		m.conf.Modules = []config.Module{}
 		return nil
 	}
@@ -262,7 +280,10 @@ func defaults(c *Config) error {
 		}
 	}
 	if runtime.GOOS == "linux" {
-		os.MkdirAll("var/run", os.ModePerm)
+		err := os.MkdirAll("var/run", os.ModePerm)
+		if err != nil {
+			logger.WithError(err).Errorf("failed to make dir: var/run")
+		}
 		c.API.Address = "unix://var/run/openedge.sock"
 		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
 	} else {

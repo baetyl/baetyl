@@ -1,3 +1,4 @@
+version: V1
 modules:
   - id: 8cb872a8-1
     name: 'wait_exit_1'
