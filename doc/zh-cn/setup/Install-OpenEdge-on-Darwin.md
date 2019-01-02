@@ -1,4 +1,4 @@
-# Mac下OpenEdge安装及环境配置
+# Darwin下OpenEdge安装及环境配置
 
 > OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
 
@@ -16,7 +16,7 @@
 
 前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
 
-![Install On Mac](../images/setup/docker_install_on_mac.png)
+![Install On Darwin](../images/setup/docker_install_on_mac.png)
 
 安装完成后使用以下命令查看所安装版本：
 

@@ -2,8 +2,8 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为MacOS
-> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+> + 本文测试所用设备系统为Darwin
+> + 模拟MQTT client行为的客户端为[MQTTBOX](../../Resources-download.md#下载MQTTBOX客户端)
 > + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../../setup/Build-OpenEdge-from-Source.md)
 
 与基于本地Hub模块实现设备间消息转发不同的是，本文在Hub模块的基础上，引入Function函数计算模块及具体执行所需的Python27 runtime模块，将接收到的消息交给Python27 runtime来处理（Python27 runtime会调用具体的函数脚本来执行具体计算、分析、处理等），然后将处理结果以主题方式反馈给Hub模块，最终订阅该主题的MQTT client（要求MQTT client事先订阅该主题）将会收到该处理结果。

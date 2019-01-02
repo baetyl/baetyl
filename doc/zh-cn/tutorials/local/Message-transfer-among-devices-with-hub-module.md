@@ -2,8 +2,8 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为MacOS
-> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+> + 本文测试所用设备系统为Darwin
+> + 模拟MQTT client行为的客户端为[MQTTBOX](../../Resources-download.md#下载MQTTBOX客户端)
 
 与[连接测试](./Device-connect-with-OpenEdge-base-on-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
 

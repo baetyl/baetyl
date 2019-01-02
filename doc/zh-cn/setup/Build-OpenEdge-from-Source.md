@@ -4,34 +4,17 @@
 
 ### Go 开发环境安装
 
-前往[相关下载页面](../Resources-download.md)完成相关二进制包下载。
-
-解压下载的安装包到本地用户文件夹。
+前往[相关资源下载页面](../Resources-download.md)完成相关二进制包下载。具体请执行：
 
 ```shell
-tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
+tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz  # 解压Go压缩包至/usr/local目录，其中，VERSION、OS、ARCH参数为下载包对应版本
+export PATH=$PATH:/usr/local/go/bin # 设置Go执行环境变量
+export GOPATH=yourpath  # 设置GOPATH
+go env  # 查看Go相关环境变量配置
+go version # 查看Go版本
 ```
 
-其中，VERSION、OS、ARCH参数为下载包对应版本。
-
-导入环境变量：
-
-```shell
-export PATH=$PATH:/usr/local/go/bin
-export GOPATH=yourpath
-```
-
-或通过以下命令查看go相关环境配置：
-
-```shell
-go env
-```
-
-**注**: 如已安装 Go 开发环境注意通过以下命令检查所安装 Go 语言版本，OpenEdge 要求编译使用的 Go 语言版本在 1.10.0 以上。
-
-```shell
-go version
-```
+_**提示**: OpenEdge要求编译使用的Go版本在 1.10.0 以上。_
 
 ### Docker 安装
 
@@ -89,13 +72,13 @@ armv7l-ubuntu-cosmic
 使用命令
 
 ```shell
-sudo snap install docker // Ubuntu16.04 往后
+sudo snap install docker # Ubuntu16.04 往后
 ```
 
 或
 
 ```shell
-sudo apt install docker.io
+sudo apt-get install docker.io
 ```
 
 即可完成 Docker 安装。
@@ -126,7 +109,7 @@ curl -sSL https://get.docker.com | sh
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-## Mac下编译环境配置
+## Darwin下编译环境配置
 
 ### Go 开发环境配置
 
@@ -159,40 +142,23 @@ test -d "${GOPATH}" || mkdir "${GOPATH}"
 
 + 通过二进制文件安装
 
-前往[相关下载页面](../Resources-download.md)完成二进制包下载。
-
-解压下载的安装包到本地用户文件夹。
+前往[相关资源下载页面](../Resources-download.md)完成二进制包下载。具体请执行：
 
 ```shell
-tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz
+tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz  # 解压Go压缩包至/usr/local目录，其中，VERSION、OS、ARCH参数为下载包对应版本
+export PATH=$PATH:/usr/local/go/bin # 设置Go执行环境变量
+export GOPATH=yourpath  # 设置GOPATH
+go env  # 查看Go相关环境变量配置
+go version # 查看Go版本
 ```
 
-其中，VERSION、OS、ARCH参数为下载包对应版本。
-
-导入环境变量：
-
-```shell
-export PATH=$PATH:/usr/local/go/bin
-export GOPATH=yourpath
-```
-
-或通过以下命令查看go相关环境配置：
-
-```shell
-go env
-```
-
-**注**: 如已安装 Go 开发环境注意通过以下命令检查所安装 Go 语言版本，OpenEdge 要求编译使用的 Go 语言版本在 1.10.0 以上。
-
-```shell
-go version
-```
+_**提示**: OpenEdge要求编译使用的Go版本在 1.10.0 以上。_
 
 ### Docker 安装
 
 前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
 
-![Install On Mac](../images/setup/docker_install_on_mac.png)
+![Install On Darwin](../images/setup/docker_install_on_mac.png)
 
 安装完成后使用以下命令查看所安装版本：
 
@@ -204,13 +170,9 @@ docker version
 
 按照对应环境完成编译环境配置后，前往[OpenEdge Github](https://github.com/baidu/openedge)下载openedge源码
 
- ```shell
- mkdir -p $GOPATH/src/github.com/baidu/
- cd $GOPATH/src/github.com/baidu/
- git clone https://github.com/baidu/openedge.git
- ```
-
-***注:*** openedge代码目录需要存放在 ```$GOPATH/src/github.com/baidu/``` 目录下
+```shell
+go get github.com/baidu/openedge
+```
 
 ## 源码编译
 
