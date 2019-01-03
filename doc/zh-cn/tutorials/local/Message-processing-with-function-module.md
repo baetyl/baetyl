@@ -24,7 +24,7 @@ _**提示**：凡是在rules消息路由配置项中出现、用到的函数，�
     - 若与OpenEdge Hub建立连接失败，则重复**Step2**操作，直至MQTTBOX与OpenEdge Hub成功建立连接为止。
 - **Step3**：通过MQTTBOX查看对应主题消息的收发状态。
 
-![基于Function模块实现设备消息处理流程](../../images/tutorials/local/process/openedge-python-flow.png)
+![基于Function模块实现设备消息处理流程](../../../images/tutorials/local/process/openedge-python-flow.png)
 
 # 消息路由测试
 
@@ -80,11 +80,11 @@ functions:
 
 如**Step1**所述，以Docker容器模式启动OpenEdge，通过观察OpenEdge启动日志可以发现Hub、Function模块均已被成功加载，具体如下图示。
 
-![OpenEdge加载、启动日志](../../images/tutorials/local/process/openedge-function-start.png)
+![OpenEdge加载、启动日志](../../../images/tutorials/local/process/openedge-function-start.png)
 
 同样，我们也可以通过执行命令`docker ps`查看系统当前正在运行的docker容器列表，具体如下图示。
 
-![通过`docker ps`命令查看系统当前运行docker容器列表](../../images/tutorials/local/process/openedge-docker-ps-after.png)
+![通过`docker ps`命令查看系统当前运行docker容器列表](../../../images/tutorials/local/process/openedge-docker-ps-after.png)
 
 经过对比，不难发现，本次OpenEdge启动时已经成功加载了Hub、Function两个容器模块。
 
@@ -92,7 +92,7 @@ functions:
 
 本次测试中，我们采用TCP连接方式对MQTTBOX进行连接信息配置，然后点击“Add subscriber”按钮订阅主题“t/hi”，该主题用于接收经python函数“sayhi”处理之后的结果数据，具体如下图示。
 
-![MQTTBOX连接配置](../../images/tutorials/local/process/mqttbox-tcp-process-config.png)
+![MQTTBOX连接配置](../../../images/tutorials/local/process/mqttbox-tcp-process-config.png)
 
 上图显示，MQTTBOX已经成功订阅了主题“t/hi”。
 
@@ -132,12 +132,12 @@ def handler(event, context):
 
 这里，我们通过MQTTBOX将消息“{"id":10}”发布给主题“t”，然后观察主题“t/hi”的接收消息情况，具体如下图示。
 
-![MQTTBOX成功接收到经python函数处理之后的消息](../../images/tutorials/local/process/mqttbox-tcp-process-success.png)，且结果与上面的分析结果吻合。由此，我们完成了消息路由的处理测试。
+![MQTTBOX成功接收到经python函数处理之后的消息](../../../images/tutorials/local/process/mqttbox-tcp-process-success.png)，且结果与上面的分析结果吻合。由此，我们完成了消息路由的处理测试。
 
 此外，我们这时可以观察OpenEdge的日志及再次执行命令`docker ps`查看系统当前正在运行的容器列表，其结果如下图示。
 
-![运用python函数处理消息时OpenEdge日志](../../images/tutorials/local/process/openedge-python-start.png)
+![运用python函数处理消息时OpenEdge日志](../../../images/tutorials/local/process/openedge-python-start.png)
 
-![通过docker ps命令查看系统当前正在运行的容器列表](../../images/tutorials/local/process/openedge-docker-ps-python-start.png)
+![通过docker ps命令查看系统当前正在运行的容器列表](../../../images/tutorials/local/process/openedge-docker-ps-python-start.png)
 
 从上述两张图片中可以看出，除了OpenEdge启动时已加载的Hub、Function模块容器，在利用python函数“sayhi.py”对主题“t”消息进行处理时，系统还启动、并运行了Python Runtime模块，其主要用于对消息作运行时处理（各类模块加载、启动细节可参见[OpenEdge设计](../../overview/OpenEdge-design.md)）。

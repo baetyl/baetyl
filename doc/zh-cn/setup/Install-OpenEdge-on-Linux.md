@@ -14,51 +14,10 @@
 
 ### Docker 安装
 
-可通过以下命令进行安装：
+可通过以下命令进行安装（适用于类Linux系统，[支持多种平台](./Support-platforms.md)）：
 
 ```shell
 curl -sSL https://get.docker.com | sh
-```
-
-支持平台：
-
-```
-x86_64-centos-7
-x86_64-fedora-28
-x86_64-fedora-29
-x86_64-debian-jessie
-x86_64-debian-stretch
-x86_64-debian-buster
-x86_64-ubuntu-trusty
-x86_64-ubuntu-xenial
-x86_64-ubuntu-bionic
-x86_64-ubuntu-cosmic
-s390x-ubuntu-xenial
-s390x-ubuntu-bionic
-s390x-ubuntu-cosmic
-ppc64le-ubuntu-xenial
-ppc64le-ubuntu-bionic
-ppc64le-ubuntu-cosmic
-aarch64-ubuntu-xenial
-aarch64-ubuntu-bionic
-aarch64-ubuntu-cosmic
-aarch64-debian-jessie
-aarch64-debian-stretch
-aarch64-debian-buster
-aarch64-fedora-28
-aarch64-fedora-29
-aarch64-centos-7
-armv6l-raspbian-jessie
-armv7l-raspbian-jessie
-armv6l-raspbian-stretch
-armv7l-raspbian-stretch
-armv7l-debian-jessie
-armv7l-debian-stretch
-armv7l-debian-buster
-armv7l-ubuntu-trusty
-armv7l-ubuntu-xenial
-armv7l-ubuntu-bionic
-armv7l-ubuntu-cosmic
 ```
 
 #### Ubuntu
@@ -66,13 +25,8 @@ armv7l-ubuntu-cosmic
 使用命令
 
 ```shell
-sudo snap install docker // Ubuntu16.04 往后
-```
-
-或
-
-```shell
-sudo apt install docker.io
+sudo snap install docker # Ubuntu16.04 after
+sudo apt install docker.io # Ubuntu 16.04 before
 ```
 
 即可完成 Docker 安装。

@@ -30,11 +30,11 @@ _**提示**：配置文件principals配置项中password要求采用原password�
 
 依据**Step1**，以Docker容器模式启动OpenEdge，正常启动的情况如下图所示。
 
-![OpenEdge启动](../../images/tutorials/local/connect/openedge-hub-start.png)
+![OpenEdge启动](../../../images/tutorials/local/connect/openedge-hub-start.png)
 
 可以看到，OpenEdge正常启动后，OpenEdge_Hub模块镜像已被加载。另外，亦可以通过命令`docker ps`查看系统当前正在运行的容器。
 
-![查看系统当前正在运行的容器](../../images/tutorials/local/connect/container-openedge-hub-run.png)
+![查看系统当前正在运行的容器](../../../images/tutorials/local/connect/container-openedge-hub-run.png)
 
 ## MQTTBOX 连接测试
 
@@ -67,40 +67,40 @@ principals:
 
 启动MQTTBOX客户端，直接进入client创建页面，开始创建MQTT client，选择连接使用的协议为“mqtt/tcp”，依据OpenEdge Hub模块启动的地址及端口，再结合principals配置项中可连接OpenEdge Hub模块的MQTT client的连接配置信息进行配置，然后点击“Save”按钮，即可完成TCP连接模式下MQTTBOX的连接配置，具体如下图示。
 
-![TCP连接测试配置](../../images/tutorials/local/connect/mqttbox-tcp-connect-config.png)
+![TCP连接测试配置](../../../images/tutorials/local/connect/mqttbox-tcp-connect-config.png)
 
 在点击“Save”按钮后，MQTTBOX会自动跳转到连接状态页面，若连接配置信息与OpenEdge Hub模块principals配置项中可允许连接的MQTT client信息吻合，即可看到连接成功的标志，具体如下图示。
 
-![TCP连接成功](../../images/tutorials/local/connect/mqttbox-tcp-connect-success.png)
+![TCP连接成功](../../../images/tutorials/local/connect/mqttbox-tcp-connect-success.png)
 
 ### SSL 连接测试
 
 与TCP连接配置类似，对于SSL连接的测试，MQTTBOX连接配置协议选择“mqtts/tls”，相应地，端口选择1884，SSL/TLS协议版本选择“TLSv1.2”，证书选择“CA signed server certificates”，并输入对应的连接用户名和密码，然后点击“Save”按钮，具体配置如下图示。
 
-![SSL连接测试配置](../../images/tutorials/local/connect/mqttbox-ssl-connect-config.png)
+![SSL连接测试配置](../../../images/tutorials/local/connect/mqttbox-ssl-connect-config.png)
 
 若上述操作无误，配置信息与OpenEdge Hub模块principals配置项中可允许连接的MQTT client信息吻合，即可在MQTTBOX页面看到“连接成功”的标志，具体如下图示。
 
-![SSL连接成功](../../images/tutorials/local/connect/mqttbox-ssl-connect-success.png)
+![SSL连接成功](../../../images/tutorials/local/connect/mqttbox-ssl-connect-success.png)
 
 ### WS（Websocket）连接测试
 
 同TCP连接配置，这里仅须更改连接协议为“ws”，端口选择8080，其他与TCP连接配置相同，然后点击“Save”按钮，具体如下图示。
 
-![WS（Websocket）连接测试配置](../../images/tutorials/local/connect/mqttbox-ws-connect-config.png)
+![WS（Websocket）连接测试配置](../../../images/tutorials/local/connect/mqttbox-ws-connect-config.png)
 
 只要上述操作正确、无误，即可在MQTTBOX看到与OpenEdge Hub成功建立连接的标志，具体如下图示。
 
-![WS（Websocket）连接成功](../../images/tutorials/local/connect/mqttbox-ws-connect-success.png)
+![WS（Websocket）连接成功](../../../images/tutorials/local/connect/mqttbox-ws-connect-success.png)
 
 ### WSS（Websocket + SSL）连接测试
 
 与SSL连接配置类似，这里只需要更改连接协议为“wss”，同时连接端口采用8884，点击“Save”按钮，具体如下图示。
 
-![WSS（Websocket + SSL）连接测试配置](../../images/tutorials/local/connect/mqttbox-wss-connect-config.png)
+![WSS（Websocket + SSL）连接测试配置](../../../images/tutorials/local/connect/mqttbox-wss-connect-config.png)
 
 正常情况下，即可通过MQTTBOX看到其已通过“wss://127.0.0.1:8884”地址与OpenEdge Hub模块成功建立了连接，具体如下图示。
 
-![WSS（Websocket + SSL）连接成功](../../images/tutorials/local/connect/mqttbox-wss-connect-success.png)
+![WSS（Websocket + SSL）连接成功](../../../images/tutorials/local/connect/mqttbox-wss-connect-success.png)
 
 综上，我们通过MQTTBOX顺利完成了与OpenEdge Hub模块的连接测试，除MQTTBOX之外，我们还可以通过MQTT.fx或Paho MQTT自己编写测试脚本测试与OpenEdge Hub 的连接，具体参见[相关资源下载](../../Resources-download.md)。
