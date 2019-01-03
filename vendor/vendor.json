@@ -214,6 +214,12 @@
 			"revisionTime": "2018-10-10T19:23:24Z"
 		},
 		{
+			"checksumSHA1": "Aph4rAD0RB+wIz4ipkm3H7e/Ylw=",
+			"path": "github.com/docker/docker/pkg/parsers",
+			"revision": "626022d0f64d3fab10c80523c03613a8b3869cfb",
+			"revisionTime": "2019-01-03T00:48:25Z"
+		},
+		{
 			"checksumSHA1": "buMp78JO3CRe52xoF4z6TUrv1cs=",
 			"path": "github.com/docker/docker/pkg/sysinfo",
 			"revision": "626022d0f64d3fab10c80523c03613a8b3869cfb",
