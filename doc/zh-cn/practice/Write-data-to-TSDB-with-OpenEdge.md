@@ -2,8 +2,8 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为MacOS
-> + 模拟MQTT client行为的客户端为[MQTTBOX](http://workswithweb.com/html/mqttbox/downloads.html)
+> + 本文测试所用设备系统为Darwin
+> + 模拟MQTT client行为的客户端为[MQTTBOX](../Resources-download.md)
 
 ## 基本步骤流程
 

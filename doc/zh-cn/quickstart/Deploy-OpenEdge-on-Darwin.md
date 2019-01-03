@@ -4,13 +4,13 @@
 
 > + 本文所用镜像为依赖OpenEdge源码自行编译所得，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
-本文主要概述如何在MacOS上快速部署、运行OpenEdge，假定在此之前OpenEdge运行所需[环境配置](../setup/Install-OpenEdge-on-MacOS.md)均已配置完毕。
+本文主要概述如何在Darwin上快速部署、运行OpenEdge，假定在此之前OpenEdge运行所需[环境配置](../setup/Install-OpenEdge-on-Darwin.md)均已配置完毕。
 
  - OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务；
 
 ![docker版本查询](../images/quickstart/macos/docker-version.png)
 
-**需要说明的是**：本文所提及的在MacOS系统是基于MacOS High Sierra Version 10.13.6版本，相关kernel内核版本信息如下图示。
+**需要说明的是**：本文所提及的在Darwin系统是基于Darwin High Sierra Version 10.13.6版本，相关kernel内核版本信息如下图示。
 
 ![系统架构及内核版本查询](../images/quickstart/macos/os.png)
 
@@ -47,4 +47,4 @@
 
 ![当前运行docker容器查询](../images/quickstart/macos/docker-ps-after.png)
 
-如上所述，若各步骤执行无误，即可完成OpenEdge在MacOS系统上的快速部署、启动。
+如上所述，若各步骤执行无误，即可完成OpenEdge在Darwin系统上的快速部署、启动。
