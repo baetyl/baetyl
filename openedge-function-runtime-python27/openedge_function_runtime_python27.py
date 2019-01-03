@@ -10,7 +10,6 @@ import os
 import sys
 import time
 import grpc
-import yaml
 import json
 import signal
 from concurrent import futures
@@ -31,23 +30,23 @@ class mo(openedge_function_runtime_pb2_grpc.RuntimeServicer):
         """
         load config and init module
         """
-        conf = conf.strip()
-        if conf[0] == "{" and conf[-1] == "}":
-            self.config = json.loads(conf)
-        else:
-            self.config = yaml.load(open(conf, 'r').read())
-
+        self.config = json.loads(conf)
         if 'name' not in self.config:
             raise Exception, 'module config invalid, missing name'
         if 'server' not in self.config:
             raise Exception, 'module config invalid, missing server'
         if 'function' not in self.config:
             raise Exception, 'module config invalid, missing function'
+        if 'name' not in self.config['function']:
+            raise Exception, 'module config invalid, missing function name'
+        if 'handler' not in self.config['function']:
+            raise Exception, 'module config invalid, missing function handler'
+        if 'codedir' not in self.config['function']:
+            raise Exception, 'module config invalid, missing function codedir'
+        if 'address' not in self.config['server']:
+            raise Exception, 'module config invalid, missing server address'
 
         self.log = get_logger(self.config)
-        if 'name' not in self.config['function'] or 'handler' not in self.config['function'] or 'codedir' not in self.config['function']:
-            raise Exception, 'module config invalid, missing function name, handler or codedir'
-
         sys.path.append(self.config['function']['codedir'])
         module_handler = self.config['function']['handler'].split('.')
         handler_name = module_handler.pop()
@@ -62,10 +61,7 @@ class mo(openedge_function_runtime_pb2_grpc.RuntimeServicer):
         self.server = grpc.server(thread_pool=futures.ThreadPoolExecutor(),
                                   options=[('grpc.max_send_message_length', max_message_size),
                                            ('grpc.max_receive_message_length', max_message_size)])
-        openedge_function_runtime_pb2_grpc.add_RuntimeServicer_to_server(
-            self, self.server)
-        if 'address' not in self.config['server']:
-            raise Exception, 'module config invalid, missing server address'
+        openedge_function_runtime_pb2_grpc.add_RuntimeServicer_to_server(self, self.server)
         self.server.add_insecure_port(self.config['server']['address'])
 
     def Start(self):
@@ -157,10 +153,7 @@ def get_logger(c):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='python function server')
-    parser.add_argument('-c',
-                        type=str,
-                        default=os.path.join("etc", "openedge", "module.yml"),
-                        help='config file path (default: etc/openedge/module.yml)')
+    parser.add_argument('-c', type=str, default='{}', help='config in json format')
     args = parser.parse_args()
     m = mo()
     m.Load(args.c)
