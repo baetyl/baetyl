@@ -81,18 +81,19 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		Cmd:          cmd,
 		Env:          utils.AppendEnv(m.Env, false),
 	}
-	sysInfo := sysinfo.New(true)
-	cpus := m.Resources.CPU.Cpus
-	if cpus > 0 && (!sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota) {
-		e.log.Warnf("CPUs can not be set, as your kernel does not support CPU cfs period/quota or the cgroup is not mounted. Limitation discarded")
-		m.Resources.CPU.Cpus = 0
+	if m.Resources.CPU.Cpus > 0 {
+		sysInfo := sysinfo.New(true)
+		if !sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota {
+			e.log.Warnf("configuration 'resources.cpu.cpus' is ignored because host kernel does not support CPU cfs period/quota or the cgroup is not mounted.")
+			m.Resources.CPU.Cpus = 0
+		}
 	}
 	hostConfig := &container.HostConfig{
 		Binds:        volumeBindings,
 		PortBindings: portBindings,
 		Resources: container.Resources{
 			CpusetCpus: m.Resources.CPU.SetCPUs,
-			NanoCPUs:   int64(cpus * 1e9),
+			NanoCPUs:   int64(m.Resources.CPU.Cpus * 1e9),
 			Memory:     m.Resources.Memory.Limit,
 			MemorySwap: m.Resources.Memory.Swap,
 			PidsLimit:  m.Resources.Pids.Limit,
