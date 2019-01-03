@@ -16,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/sysinfo"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -79,6 +80,13 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		ExposedPorts: exposedPorts,
 		Cmd:          cmd,
 		Env:          utils.AppendEnv(m.Env, false),
+	}
+	if m.Resources.CPU.Cpus > 0 {
+		sysInfo := sysinfo.New(true)
+		if !sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota {
+			e.log.Warnf("configuration 'resources.cpu.cpus' is ignored because host kernel does not support CPU cfs period/quota or the cgroup is not mounted.")
+			m.Resources.CPU.Cpus = 0
+		}
 	}
 	hostConfig := &container.HostConfig{
 		Binds:        volumeBindings,

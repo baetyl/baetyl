@@ -214,6 +214,18 @@
 			"revisionTime": "2018-10-10T19:23:24Z"
 		},
 		{
+			"checksumSHA1": "Aph4rAD0RB+wIz4ipkm3H7e/Ylw=",
+			"path": "github.com/docker/docker/pkg/parsers",
+			"revision": "626022d0f64d3fab10c80523c03613a8b3869cfb",
+			"revisionTime": "2019-01-03T00:48:25Z"
+		},
+		{
+			"checksumSHA1": "buMp78JO3CRe52xoF4z6TUrv1cs=",
+			"path": "github.com/docker/docker/pkg/sysinfo",
+			"revision": "626022d0f64d3fab10c80523c03613a8b3869cfb",
+			"revisionTime": "2019-01-03T00:48:25Z"
+		},
+		{
 			"checksumSHA1": "1IPGX6/BnX7QN4DjbBk0UafTB2U=",
 			"path": "github.com/docker/go-connections/nat",
 			"revision": "97c2040d34dfae1d1b1275fa3a78dbdd2f41cf7e",
@@ -392,6 +404,24 @@
 			"path": "github.com/opencontainers/image-spec/specs-go/v1",
 			"revision": "7b1e489870acb042978a3935d2fb76f8a79aff81",
 			"revisionTime": "2018-09-18T08:04:42Z"
+		},
+		{
+			"checksumSHA1": "rFNko43dXq+1NthYjqrxLr9h0bU=",
+			"path": "github.com/opencontainers/runc/libcontainer/cgroups",
+			"revision": "bbb17efcb4c0ab986407812a31ba333a7450064c",
+			"revisionTime": "2018-12-20T14:18:50Z"
+		},
+		{
+			"checksumSHA1": "v9sgw4eYRNSsJUSG33OoFIwLqRI=",
+			"path": "github.com/opencontainers/runc/libcontainer/configs",
+			"revision": "bbb17efcb4c0ab986407812a31ba333a7450064c",
+			"revisionTime": "2018-12-20T14:18:50Z"
+		},
+		{
+			"checksumSHA1": "A4EfddzgiR0NtuCQ/N105wzjFQk=",
+			"path": "github.com/opencontainers/runtime-spec/specs-go",
+			"revision": "1722abf79c2f8f2675f47367f827c6491472cf27",
+			"revisionTime": "2018-11-11T12:50:26Z"
 		},
 		{
 			"checksumSHA1": "K8QsnZLV9n7jHaNr9jySy1P96LY=",
