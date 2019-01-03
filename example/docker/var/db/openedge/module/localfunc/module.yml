@@ -44,7 +44,7 @@ functions:
     runtime: 'node85'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/module/func-coaixgnaw'
-    entry: "openedge-function-runtime-node-image:build"
+    entry: "openedge-function-runtime-node85:build"
     env:
       USER_ID: acuiot
     instance:

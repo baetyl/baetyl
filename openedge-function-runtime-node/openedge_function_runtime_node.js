@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 const path = require('path');
 const fs = require('fs');
-const yaml = require('js-yaml');
 const log4js = require('log4js');
 const moment = require('moment');
-const services = require('./runtime_pb_grpc.js');
+const services = require('./openedge_function_runtime_grpc_pb.js');
 const grpc = require('grpc');
 const argv = require('yargs')
     .option('c', {
@@ -29,15 +28,7 @@ const getLogger = config => {
     }
     let level = 'info';
     if (hasAttr(config.logger, 'level')) {
-        if (config.logger.level === 'debug') {
-            level = 'debug';
-        }
-        else if (config.logger.level === 'warn') {
-            level = 'warn';
-        }
-        else if (config.logger.level === 'error') {
-            level = 'error';
-        }
+        level = config.logger.level;
     }
     let backupCount = 15;
     if (hasAttr(config.logger, 'backupCount') && hasAttr(config.logger.backupCount, 'max')) {
@@ -96,14 +87,7 @@ class NodeRuntimeModule {
             this.config = JSON.parse(conf);
         }
         else {
-            const yamlData = fs.readFileSync(conf, 'utf8');
-            const nativeObject = yaml.safeLoad(yamlData);
-            if (nativeObject) {
-                this.config = nativeObject;
-            }
-            else {
-                this.config = {};
-            }
+            throw new ConfigError('Module config invalid, missing config');
         }
         if (!hasAttr(this.config, 'name')) {
             throw new ConfigError('Module config invalid, missing name');
@@ -169,15 +153,15 @@ class NodeRuntimeModule {
         ctx.functionName = call.request.getFunctionname();
         ctx.functionInvokeID = call.request.getFunctioninvokeid();
         ctx.invokeid = call.request.getFunctioninvokeid();
-        let msg = {};
+        let msg = Buffer.from([]);
         const Payload = call.request.getPayload();
         if (Payload) {
             try {
-                const payloadStr = Buffer.from(Payload).toString();
-                msg = JSON.parse(payloadStr);
+                const payloadString = Buffer.from(Payload).toString();
+                msg = JSON.parse(payloadString);
             }
             catch (error) {
-                msg = Payload; // raw data, not json format
+                msg = Buffer.from(Payload); // raw data, not json format
             }
         }
         functionHandle(
@@ -187,14 +171,17 @@ class NodeRuntimeModule {
                 if (err != null) {
                     throw new Error(err);
                 }
-                if (!respMsg) {
-                    call.request.setPayload([]);
-                }
-                else if (respMsg instanceof Object && !(respMsg instanceof Array)) {
-                    call.request.setPayload(Buffer.from(JSON.stringify(respMsg)));
+                if (Buffer.isBuffer(respMsg)) {
+                    call.request.setPayload(respMsg);
                 }
                 else {
-                    call.request.setPayload(Buffer.from(respMsg));
+                    try { 
+                        const jsonString = JSON.stringify(respMsg);
+                        call.request.setPayload(Buffer.from(jsonString));
+                    }
+                    catch (error) {
+                        call.request.setPayload(Buffer.from(respMsg)); // raw data, not json format
+                    }
                 }
                 callback(null, call.request);
             }
