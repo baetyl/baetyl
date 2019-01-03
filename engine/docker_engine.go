@@ -16,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/sysinfo"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -80,12 +81,18 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		Cmd:          cmd,
 		Env:          utils.AppendEnv(m.Env, false),
 	}
+	sysInfo := sysinfo.New(true)
+	cpus := m.Resources.CPU.Cpus
+	if cpus > 0 && (!sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota) {
+		e.log.Warnf("CPUs can not be set, as your kernel does not support CPU cfs period/quota or the cgroup is not mounted. Limitation discarded")
+		m.Resources.CPU.Cpus = 0
+	}
 	hostConfig := &container.HostConfig{
 		Binds:        volumeBindings,
 		PortBindings: portBindings,
 		Resources: container.Resources{
 			CpusetCpus: m.Resources.CPU.SetCPUs,
-			NanoCPUs:   int64(m.Resources.CPU.Cpus * 1e9),
+			NanoCPUs:   int64(cpus * 1e9),
 			Memory:     m.Resources.Memory.Limit,
 			MemorySwap: m.Resources.Memory.Swap,
 			PidsLimit:  m.Resources.Pids.Limit,
