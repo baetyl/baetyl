@@ -412,6 +412,18 @@
 			"revisionTime": "2018-12-20T14:18:50Z"
 		},
 		{
+			"checksumSHA1": "v9sgw4eYRNSsJUSG33OoFIwLqRI=",
+			"path": "github.com/opencontainers/runc/libcontainer/configs",
+			"revision": "bbb17efcb4c0ab986407812a31ba333a7450064c",
+			"revisionTime": "2018-12-20T14:18:50Z"
+		},
+		{
+			"checksumSHA1": "A4EfddzgiR0NtuCQ/N105wzjFQk=",
+			"path": "github.com/opencontainers/runtime-spec/specs-go",
+			"revision": "1722abf79c2f8f2675f47367f827c6491472cf27",
+			"revisionTime": "2018-11-11T12:50:26Z"
+		},
+		{
 			"checksumSHA1": "K8QsnZLV9n7jHaNr9jySy1P96LY=",
 			"path": "github.com/orcaman/concurrent-map",
 			"revision": "b28018939af9022337862b94a463abb18abb3e0e",
