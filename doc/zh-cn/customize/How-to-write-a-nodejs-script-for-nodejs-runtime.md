@@ -44,7 +44,7 @@ OpenEdge官方提供了NodeJs Runtime支持3个输入参数: event、context、c
 
 
 - **event**：根据Mqtt报文中的Payload传入不同参数
-    - 若原始Payload为一个Json数据，则传入经过JSON.parse()h后的数据;
+    - 若原始Payload为一个Json数据，则传入经过JSON.parse()处理后的数据;
     - 若原始Payload为字节流、字符串(非Json)，则传入[Buffer](https://nodejs.org/api/buffer.html#buffer_class_buffer)类型数据。
 - **context**：Mqtt消息上下文
     - context.messageQOS //mqtt qos；
