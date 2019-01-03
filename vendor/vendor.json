@@ -406,6 +406,12 @@
 			"revisionTime": "2018-09-18T08:04:42Z"
 		},
 		{
+			"checksumSHA1": "rFNko43dXq+1NthYjqrxLr9h0bU=",
+			"path": "github.com/opencontainers/runc/libcontainer/cgroups",
+			"revision": "bbb17efcb4c0ab986407812a31ba333a7450064c",
+			"revisionTime": "2018-12-20T14:18:50Z"
+		},
+		{
 			"checksumSHA1": "K8QsnZLV9n7jHaNr9jySy1P96LY=",
 			"path": "github.com/orcaman/concurrent-map",
 			"revision": "b28018939af9022337862b94a463abb18abb3e0e",
