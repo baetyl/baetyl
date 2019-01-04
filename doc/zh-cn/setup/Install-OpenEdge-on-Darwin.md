@@ -53,3 +53,20 @@ python -V
 ```shell
 alias python=/yourpath/python2.7
 ```
+### Node 及 Node Runtime 依赖包安装
+
+> + OpenEdge 提供了 Node Runtime，支持 Node 6.11 版本以上运行，如计划使用 ***native*** 进程模式启动，需要安装 Node 环境。如计划以 ***docker*** 容器模式启动，则无需进行以下步骤。
+
+Node环境安装请参照官网[安装流程](https://nodejs.org/en/download/package-manager/)
+
+***注*** : 安装完成后可通过以下命令查看所安装版本：
+
+```shell
+node -v
+```
+
+如果需要生成javascript的grpc代码，请安装grpc-tools
+
+```shell
+npm install -g grpc-tools
+```

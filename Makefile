@@ -39,6 +39,7 @@ install: all
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2.py ${PREFIX}/bin
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2_grpc.py ${PREFIX}/bin
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
+	make -C openedge-function-runtime-node install PREFIX=../${PREFIX}
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
 uninstall:
@@ -52,6 +53,7 @@ uninstall:
 	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.pyc
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
+	make -C openedge-function-runtime-node uninstall PREFIX=../${PREFIX}
 	rm -rf ${PREFIX}/var/log/openedge
 	rm -rf ${PREFIX}/var/db/openedge
 	rm -rf ${PREFIX}/etc/openedge
@@ -68,6 +70,7 @@ clean:
 	make -C openedge-hub clean
 	make -C openedge-function clean
 	make -C openedge-remote-mqtt clean
+	make -C openedge-function-runtime-node clean
 	rm -f pubsub openedge-consistency
 
 rebuild: clean all
@@ -84,7 +87,7 @@ protobuf:
 	--grpc_out=openedge-function-runtime-node \
 	--plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I module/function/runtime openedge_function_runtime.proto
 
-images: openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image
+images: openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image openedge-function-runtime-node-image
 
 openedge-hub-image:
 	make -C openedge-hub openedge-hub-image
@@ -97,3 +100,6 @@ openedge-remote-mqtt-image:
 
 openedge-function-runtime-python27-image:
 	make -C openedge-function-runtime-python27 openedge-function-runtime-python27-image
+
+openedge-function-runtime-node-image:
+	make -C openedge-function-runtime-node openedge-function-runtime-node-image

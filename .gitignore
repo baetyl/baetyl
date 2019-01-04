@@ -19,3 +19,6 @@
 /**/bin
 /**/*.log
 /cover*.out
+/**/node_modules
+/**/.npmrc
+/**/package-lock.json

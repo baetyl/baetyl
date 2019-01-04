@@ -9,8 +9,8 @@ const argv = require('yargs')
     .option('c', {
         alias: 'conf',
         demand: false,
-        default: path.join('conf', 'conf.yml'),
-        describe: 'config file path (default: conf/conf.yml)',
+        default: '{}',
+        describe: 'config in json format',
         type: 'string'
     })
     .usage('Usage: hello [options]')
