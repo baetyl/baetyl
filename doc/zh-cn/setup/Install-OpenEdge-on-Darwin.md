@@ -16,7 +16,7 @@
 
 前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
 
-![Install On Darwin](../images/setup/docker_install_on_mac.png)
+![Install On Darwin](../../images/setup/docker_install_on_mac.png)
 
 安装完成后使用以下命令查看所安装版本：
 

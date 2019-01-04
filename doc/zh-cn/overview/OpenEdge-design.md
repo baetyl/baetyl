@@ -4,11 +4,11 @@ OpenEdge由主程序和应用模块构成，通过加载应用配置来运行模
 
 Docker容器模式结构图:
 
-![Docker容器模式结构图](../images/overview/design/mode_docker.png)
+![Docker容器模式结构图](../../images/overview/design/mode_docker.png)
 
 Native进程模式结构图:
 
-![Native进程模式结构图](../images/overview/design/mode_native.png)
+![Native进程模式结构图](../../../images/overview/design/mode_native.png)
 
 ## 主程序(master)
 
@@ -58,7 +58,7 @@ OpenEdge启动和热加载（reload）完成后会通过云代理上报一次设
 
 云代理接收到云端管理套件的应用下发指令后，OpenEdge开始执行[热加载](https://github.com/baidu/openedge/blob/master/master/master.go)，流程如下图：
 
-![热加载流程](../images/overview/design/reload.png)
+![热加载流程](../../images/overview/design/reload.png)
 
 _**注意**：目前热加载采用全量更新的方式，既先停止所有老应用模块再启动所有新应用模块，因此模块提供的服务会中断。另外解压新应用包会直接覆盖老应用的文件，多余的老应用文件不会被清理，后续会考虑加入清理逻辑。_
 
@@ -94,7 +94,7 @@ _**注意**：应用中配置的环境变量如果和上述系统环境变量相
 
 Hub模块是一个单机版的消息订阅和发布中心，采用MQTT 3.1.1协议，结构图如下：
 
-![Hub模块结构图](../images/overview/design/hub.png)
+![Hub模块结构图](../../images/overview/design/hub.png)
 
 目前支持4种接入方式：tcp、ssl(tcp+ssl)、ws(websocket)及wss(websocket+ssl)，MQTT协议支持度如下：
 
@@ -119,7 +119,7 @@ Hub模块支持简单的主题路由，比如订阅主题为t的消息并以新�
 
 函数计算提供基于MQTT消息机制，弹性、高可用、扩展性好、响应快的的计算能力，并且兼容[百度云-函数计算CFC](https://cloud.baidu.com/product/cfc.html)。函数通过一个或多个具体的实例执行，每个实例都是一个独立的进程，现采用grpc server运行函数实例。所有函数实例由实例池（pool）负责管理生命周期，支持自动扩容和缩容。结构图如下：
 
-![函数计算模块结构图](../images/overview/design/function.png)
+![函数计算模块结构图](../../images/overview/design/function.png)
 
 _**注意**: 如果函数执行错误，函数计算会返回如下格式的消息，供后续处理。其中packet是函数输入的消息（被处理的消息），不是函数返回的消息。_
 
@@ -196,6 +196,6 @@ _**提示**：Native进程模式下，若要运行本代码库提供的[sayhi.py
 
 远程通讯模块目前支持MQTT协议，可桥接两个MQTT server，用于订阅一个server的消息并转发给另一个server。目前支持配置多路消息转发，可配置多个remote和hub同时进行消息同步，结构图如下：
 
-![远程通讯模块结构图](../images/overview/design/remote.png)
+![远程通讯模块结构图](../../images/overview/design/remote.png)
 
 如上图示，这里，OpenEdge本地Hub模块与远程云端Hub平台之间通过OpenEdge远程通讯模块（openedge-remote-mqtt）实现消息的转发、同步，进一步地，通过在两端接入MQTT Client即可实现“**端云协同式**”的消息转发与传递。
