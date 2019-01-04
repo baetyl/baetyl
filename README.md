@@ -58,7 +58,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 ### Running environment requirements
 
-If you want to run OpenEdge, you should install docker and python application.
+If you want to run OpenEdge, you should install docker and if you want to run OpenEdge with **Native Process** Mode you should install python 2.7 on your machine with the modules it depends on.
 
 1. Install Docker
 
@@ -147,7 +147,7 @@ If you want to run OpenEdge, you should install docker and python application.
    ```
 
 2. Install python and python runtime requirements
-   
+
    **For Ubuntu or Debian**
    ```shell
    # Check python is installed or not
@@ -156,6 +156,7 @@ If you want to run OpenEdge, you should install docker and python application.
    # If not installed, install it
    sudo apt-get update
    sudo apt-get install python python-pip
+   pip install protobuf grpcio
    ```
    
    **For CentOS**
@@ -165,6 +166,7 @@ If you want to run OpenEdge, you should install docker and python application.
 
    # If python is not installed, install it
    sudo yum install python python-pip
+   pip install protobuf grpcio
    ```
    
    **For Darwin**
@@ -174,11 +176,7 @@ If you want to run OpenEdge, you should install docker and python application.
 
    # If not installed, install it
    brew install python@2
-   ```
-
-   Install python runtime requirements:
-   ```shell
-   pip install pyyaml protobuf grpcio
+   pip install protobuf grpcio
    ```
 
 ### Developing environment requirements

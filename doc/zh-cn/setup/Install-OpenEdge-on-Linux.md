@@ -117,7 +117,7 @@ alias python=/yourpath/python2.7
 按照上述步骤完成 Python 2.7版本的安装后，需要安装 Python Runtime 运行所需模块：
 
 ```shell
-pip install pyyaml protobuf grpcio
+pip install protobuf grpcio
 ```
 
 ## 常见问题
