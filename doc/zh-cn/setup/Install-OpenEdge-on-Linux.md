@@ -1,6 +1,6 @@
 # Linux下OpenEdge安装及环境配置
 
-> OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
+> OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***Docker*** 容器模式和 ***Native*** 进程模式。
 
 本文主要介绍 OpenEdge 程序的安装以及运行所需环境的安装与配置。
 
@@ -13,6 +13,8 @@
 ## 运行环境配置
 
 ### Docker 安装
+
+> OpenEdge 提供两种运行方式。如需使用 ***Docker*** 容器模式启动(推荐)，需要先完成 Docker 安装。
 
 可通过以下命令进行安装（适用于类Linux系统，[支持多种平台](./Support-platforms.md)）：
 
@@ -61,9 +63,9 @@ curl -sSL https://get.docker.com | sh
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-### Python 开发环境安装
+### Python2.7安装及 Python Runtime 运行所依赖模块安装
 
-> + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的模块。
+> + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***Native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的模块。如计划以 ***Docker*** 容器模式启动，则无需进行以下步骤。
 
 #### Ubuntu 18.04 LTS/Debian 9/Raspberry Pi 3
 
@@ -74,6 +76,7 @@ sudo apt update
 sudo apt upgrade
 sudo apt install python2.7
 sudo apt install python-pip
+sudo pip install protobuf grpcio
 ```
 
 #### CentOs 
@@ -89,6 +92,7 @@ python -V
 ```shell
 yum install python
 yum install python-pip
+yum install protobuf grpcio
 ```
 
 或者通过源码编译安装：
@@ -100,6 +104,7 @@ tar xzf Python-2.7.15.tgz
 make altinstall
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
 python2.7 get-pip.py
+pip install protobuf grpcio
 ```
 
 输入命令查看 Python 版本为 2.7.* 后为安装正确。
@@ -110,14 +115,6 @@ python2.7 get-pip.py
 
 ```shell
 alias python=/yourpath/python2.7
-```
-
-### Python Runtime 依赖模块安装
-
-按照上述步骤完成 Python 2.7版本的安装后，需要安装 Python Runtime 运行所需模块：
-
-```shell
-pip install protobuf grpcio
 ```
 
 ## 常见问题
@@ -147,4 +144,3 @@ B. ***Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the
 ```shell
 systemctl start docker
 ```
-

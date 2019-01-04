@@ -58,7 +58,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 ### Running environment requirements
 
-Install Docker if running openedge in **Docker Container** mode (recommend)
+Install Docker if running openedge in **Docker Container** mode (recommended).
 
 1. Install Docker
 
