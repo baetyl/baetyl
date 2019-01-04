@@ -30,7 +30,7 @@ docker version
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-### Python2.7安装及 Python Runtime 运行所依赖模块安装
+### Python2.7 及 Python Runtime 依赖包安装
 
 > + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的模块。如计划以 ***docker*** 容器模式启动，则无需进行以下步骤。
 

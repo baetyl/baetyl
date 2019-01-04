@@ -58,7 +58,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 ### Running environment requirements
 
-+ Install Docker if running openedge with **Docker Container** mode (recommended)
++ Install Docker if running openedge in **docker container** mode (recommended)
 
    **For Linux([support multiple platforms](./doc/us-en/setup/Support-platforms.md), recommended)**
    ```shell
@@ -144,7 +144,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
    brew cask install docker
    ```
 
-+ Install Python2.7 and Python runtime requirements if running openedge with **native process** mode
++ Install Python2.7 and Python runtime requirements if running openedge in **native process** mode
 
    **For Ubuntu or Debian**
    ```shell
