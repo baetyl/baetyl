@@ -30,6 +30,8 @@ docker version
 
 ### Python 安装
 
+> + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的模块。
+
 推荐使用 HomeBrew 安装。
 
 ```shell

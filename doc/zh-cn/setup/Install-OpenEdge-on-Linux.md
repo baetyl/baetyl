@@ -63,7 +63,7 @@ curl -sSL https://get.docker.com | sh
 
 ### Python 开发环境安装
 
-> + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行。
+> + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的模块。
 
 #### Ubuntu 18.04 LTS/Debian 9/Raspberry Pi 3
 
