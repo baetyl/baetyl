@@ -14,6 +14,8 @@
 
 ### Docker 安装
 
+> OpenEdge 提供两种运行方式。如需使用 ***docker*** 容器模式启动(推荐)，需要先完成 Docker 安装。
+
 前往[官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac)下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 Application 文件夹即可。
 
 ![Install On Darwin](../../images/setup/docker_install_on_mac.png)
@@ -28,13 +30,16 @@ docker version
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-### Python 安装
+### Python2.7 及 Python Runtime 依赖包安装
+
+> + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的包。如计划以 ***docker*** 容器模式启动，则无需进行以下步骤。
 
 推荐使用 HomeBrew 安装。
 
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // 安装HomeBrew
 brew install python@2
+pip isntall protobuf grpcio
 ```
 
 ***注*** : 安装完成后可通过以下命令查看所安装版本：
@@ -48,12 +53,3 @@ python -V
 ```shell
 alias python=/yourpath/python2.7
 ```
-
-### Python Runtime 依赖模块安装
-
-按照上述步骤完成 Python 2.7版本的安装后，需要安装 Python Runtime 运行所需模块：
-
-```shell
-pip install pyyaml protobuf grpcio
-```
-
