@@ -10,13 +10,13 @@ RUN apk add --update --no-cache \
     g++
 ENV GRPC_PYTHON_VERSION 1.15.0
 RUN python -m pip install --upgrade pip
-RUN pip install --install-option="--prefix=/install" pyyaml protobuf grpcio==${GRPC_PYTHON_VERSION}
+RUN pip install --install-option="--prefix=/install" protobuf grpcio==${GRPC_PYTHON_VERSION}
 
 FROM base
 RUN apk add --update --no-cache gcc
 COPY --from=builder /install /usr/local
 WORKDIR /
-COPY openedge-function-runtime-python27/*.py /bin/
+COPY *.py /bin/
 RUN chmod +x /bin/openedge_function_runtime_python27.py
 ENTRYPOINT ["openedge_function_runtime_python27.py"]
 CMD []

@@ -184,10 +184,10 @@ functions:
 
 **需要说明的是**：为实际生产考虑，避免写入消息量过大时导致OpenEdge处理的消息过多，此处仅对写入失败进行错误信息提示，写入成功则不提示任何信息。
 
-![通过MQTTBOX查看数据写入TSDB是否成功](../images/practice/write-tsdb/mqttbox-write-tsdb-success.png)
+![通过MQTTBOX查看数据写入TSDB是否成功](../../images/practice/write-tsdb/mqttbox-write-tsdb-success.png)
 
 此外，也可以通过账户登录云端TSDB进行查看，具体如下:
 
-![通过云端TSDB查看数据是否写入成功](../images/practice/write-tsdb/tsdb-check.png)
+![通过云端TSDB查看数据是否写入成功](../../images/practice/write-tsdb/tsdb-check.png)
 
 从上图不难看出，数据已经成功写入TSDB。
