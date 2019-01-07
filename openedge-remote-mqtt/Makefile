@@ -6,7 +6,7 @@ openedge-remote-mqtt:
 
 openedge-remote-mqtt-release:
 	@echo "build ${GOFLAG} $@"
-	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o ../output/openedge-$(GOOS)-$(GOARCH)/openedge-remote-mqtt-release .
+	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o ../output/openedge-$(GOOS)-$(GOARCH)/openedge-remote-mqtt .
 
 openedge-remote-mqtt-image:
 	@echo "build ${GOFLAG} $@"

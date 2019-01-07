@@ -1,2 +1,6 @@
 FROM alpine
-copy --from=Openedge-release:build /go/src/github.com
+ARG GOARCH
+ARG GOOS
+copy --from=openedge-release:build /go/src/github.com/baidu/openedge/output/openedge-$GOOS-$GOARCH/openedge-hub /bin/
+ENTRYPOINT ["openedge-hub"]
+CMD []
