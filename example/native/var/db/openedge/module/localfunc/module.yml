@@ -37,7 +37,7 @@ functions:
       timeout: 30s
   - id: func-coaixgnaw
     name: 'sayhi-js'
-    runtime: 'node85'
+    runtime: 'node'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/module/func-coaixgnaw'
     entry: "bin/openedge_function_runtime_node.js"

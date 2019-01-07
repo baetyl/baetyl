@@ -1,8 +1,10 @@
 FROM node:10.15.0-alpine
 WORKDIR /
-COPY package.json .
-COPY *.js /bin/
+COPY openedge-function-runtime-node-lib/* /bin/openedge-function-runtime-node-lib/
+COPY openedge_function_runtime_node.js /bin/
+WORKDIR /bin/openedge-function-runtime-node-lib/
 RUN npm install
+WORKDIR /
 RUN chmod +x /bin/openedge_function_runtime_node.js
 ENTRYPOINT ["openedge_function_runtime_node.js"]
 CMD []

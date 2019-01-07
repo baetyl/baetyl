@@ -4,7 +4,7 @@ all: openedge-function-runtime-node
 
 openedge-function-runtime-node:
 	@echo "build $@"
-	npm install
+	cd openedge-function-runtime-node-lib && npm install
 
 openedge-function-runtime-node-image:
 	@echo "build ${GOFLAG} $@"
@@ -14,21 +14,17 @@ openedge-function-runtime-node-image:
 
 .PHONY: clean
 clean:
-	rm -rf node_modules
-	rm -rf package-lock.json
+	rm -rf openedge-function-runtime-node-lib/node_modules
+	rm -rf openedge-function-runtime-node-lib/package-lock.json
 
 .PHONY: rebuild
 rebuild: clean all
 
 install: all
 	install -d -m 0755 ${PREFIX}/bin
-	install -m 0755 openedge_function_runtime_grpc_pb.js ${PREFIX}/bin
 	install -m 0755 openedge_function_runtime_node.js ${PREFIX}/bin
-	install -m 0755 openedge_function_runtime_pb.js ${PREFIX}/bin
-	tar cf - node_modules | tar xvf - -C ${PREFIX}/bin
+	tar cf - openedge-function-runtime-node-lib | tar xvf - -C ${PREFIX}/bin
 
 uninstall:
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb.js
-	rm -f ${PREFIX}/bin/openedge_function_runtime_grpc_pb.js
 	rm -f ${PREFIX}/bin/openedge_function_runtime_node.js
-	rm -rf ${PREFIX}/bin/node_modules
+	rm -rf ${PREFIX}/bin/openedge-function-runtime-node-lib

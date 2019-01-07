@@ -41,7 +41,7 @@ functions:
         limit: 50m
   - id: func-coaixgnaw
     name: 'sayhi-js'
-    runtime: 'node85'
+    runtime: 'node'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/module/func-coaixgnaw'
     entry: "openedge-function-runtime-node85:build"

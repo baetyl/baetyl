@@ -83,8 +83,8 @@ protobuf:
 	protoc -Imodule/function/runtime --go_out=plugins=grpc:module/function/runtime openedge_function_runtime.proto
 	python -m grpc_tools.protoc -Imodule/function/runtime --python_out=openedge-function-runtime-python27 --grpc_python_out=openedge-function-runtime-python27 openedge_function_runtime.proto
 	grpc_tools_node_protoc \
-	--js_out=import_style=commonjs,binary:openedge-function-runtime-node \
-	--grpc_out=openedge-function-runtime-node \
+	--js_out=import_style=commonjs,binary:openedge-function-runtime-node/openedge-function-runtime-node-lib \
+	--grpc_out=openedge-function-runtime-node/openedge-function-runtime-node-lib \
 	--plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I module/function/runtime openedge_function_runtime.proto
 
 images: openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image openedge-function-runtime-node-image
