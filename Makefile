@@ -8,6 +8,10 @@ openedge:
 	@echo "build ${GOFLAG} $@"
 	@go build ${GOFLAG} .
 
+openedge-release:
+	@echo "build ${GOFLAG} $@"
+	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o output/openedge-$(GOOS)-$(GOARCH)/openedge .
+
 openedge-hub/openedge-hub:
 	make -C openedge-hub
 
@@ -93,3 +97,31 @@ openedge-remote-mqtt-image:
 
 openedge-function-runtime-python27-image:
 	make -C openedge-function-runtime-python27 openedge-function-runtime-python27-image
+
+version_info = "package module\n\n// Version the version of this binary\nconst Version = \"$(VERSION)\""
+release:
+	@echo $(version_info) > module/version.go
+	rm -rf output
+	for ARCH in '386' 'amd64' 'arm' 'arm64'; do \
+		make multi-builder GOOS=linux GOARCH=$$ARCH VERSION=$(VERSION); \
+	done
+	# only on mac os
+	# make multi-build GOOS=darwin GOARCH=amd64
+	rm -rf output
+
+release-test:
+	make multi-images-builder
+
+multi-openedge-builder:
+	make openedge-release GOOS=$(GOOS) GOARCH=$(GOARCH)
+	tar cf - -C example/docker . | tar xf - -C output/openedge-$(GOOS)-$(GOARCH)
+	tar czvf openedge-$(GOOS)-$(GOARCH)-$(VERSION).tar.gz -C output/openedge-$(GOOS)-$(GOARCH) .
+
+multi-modules-builder:
+	make -C openedge-hub openedge-hub-release GOOS=$(GOOS) GOARCH=$(GOARCH)
+	make -C openedge-function openedge-function-release GOOS=$(GOOS) GOARCH=$(GOARCH)
+	make -C openedge-remote-mqtt openedge-remote-mqtt-release GOOS=$(GOOS) GOARCH=$(GOARCH)
+
+multi-images-builder:
+	@echo "build ${GOFLAG} $@"
+	docker build -t openedge-release:build -f releases/Dockerfile-release .

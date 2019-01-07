@@ -1,0 +1,2 @@
+FROM alpine
+copy --from=Openedge-release:build /go/src/github.com
