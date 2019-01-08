@@ -105,5 +105,7 @@ else
 endif
 
 release-clean:
+	rm -rf ../output
 	rm openedge-linux-*
 	rm openedge-darwin-*
+	docker rmi openedge-modules:release
