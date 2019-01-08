@@ -1,8 +1,7 @@
 all: release-prepare release-openedge release-images
 
 release-prepare:
-	cat ../module/version.go | sed s/version/$(VERSION)/g > version.go
-	mv version.go ../module
+	@echo "package module\n\n// Version the version of this binary\nconst Version = \"$(VERSION)\"" > ../module/version.go
 	rm -rf ../output
 	mkdir -p ../output/config
 	tar cf - -C ../example/docker . | tar xf - -C ../output/config
@@ -15,8 +14,6 @@ release-openedge:
 	done
 	make multi-openedge-builder GOOS=darwin GOARCH=amd64 VERSION=$(VERSION)
 	rm -rf ../output
-	cat ../module/version.go | sed s/$(VERSION)/version/g > version.go
-	mv version.go ../module
 
 release-images:
 	docker build -t openedge-modules:release -f Dockerfile-release ../..
