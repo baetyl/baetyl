@@ -1,6 +1,0 @@
-FROM alpine
-ARG GOARCH
-ARG GOOS
-copy --from=openedge-release:build /go/src/github.com/baidu/openedge/output/openedge-$GOOS-$GOARCH/openedge-function /bin/
-ENTRYPOINT ["openedge-function"]
-CMD []

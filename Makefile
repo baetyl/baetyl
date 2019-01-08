@@ -99,7 +99,11 @@ ifneq ($(strip $(VERSION)),)
 ifeq ($(strip $(REPOSITORY)),)
 	@echo "WARNING: If you need to set the repository of images, set like this: make release VERSION=1.8 REPOSITORY=localhost:5000/"
 endif
-	make -C releases all
+	make -C scripts all
 else
 	@echo "Please specify version like: make release VERSION=1.8"
 endif
+
+release-clean:
+	rm openedge-linux-*
+	rm openedge-darwin-*
