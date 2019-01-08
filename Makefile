@@ -2,7 +2,7 @@ PREFIX?=/usr/local
 
 all: openedge modules
 
-modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
+modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt openedge-function-runtime-node/openedge-function-runtime-node
 
 openedge:
 	@echo "build ${GOFLAG} $@"
@@ -16,6 +16,9 @@ openedge-function/openedge-function:
 
 openedge-remote-mqtt/openedge-remote-mqtt:
 	make -C openedge-remote-mqtt
+
+openedge-function-runtime-node/openedge-function-runtime-node:
+	make -C openedge-function-runtime-node PREFIX=
 
 test:
 	go test --race ./...
@@ -39,9 +42,10 @@ install: all
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2.py ${PREFIX}/bin
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2_grpc.py ${PREFIX}/bin
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
-	make -C openedge-function-runtime-node install PREFIX=../${PREFIX}
+	install -m 0755 openedge-function-runtime-node/openedge_function_runtime_node.js ${PREFIX}/bin
+	tar cf - -C openedge-function-runtime-node openedge-function-runtime-node-lib | tar xvf - -C ${PREFIX}/bin
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
-
+	
 uninstall:
 	rm -f ${PREFIX}/bin/openedge
 	rm -f ${PREFIX}/bin/openedge-hub
@@ -53,7 +57,8 @@ uninstall:
 	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.pyc
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
-	make -C openedge-function-runtime-node uninstall PREFIX=../${PREFIX}
+	rm -f ${PREFIX}/bin/openedge_function_runtime_node.js
+	rm -rf ${PREFIX}/bin/openedge-function-runtime-node-lib
 	rm -rf ${PREFIX}/var/log/openedge
 	rm -rf ${PREFIX}/var/db/openedge
 	rm -rf ${PREFIX}/etc/openedge

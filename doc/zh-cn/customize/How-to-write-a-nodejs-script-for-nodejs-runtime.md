@@ -4,6 +4,7 @@
   - [函数名约定](#%E5%87%BD%E6%95%B0%E5%90%8D%E7%BA%A6%E5%AE%9A)
   - [参数约定](#%E5%8F%82%E6%95%B0%E7%BA%A6%E5%AE%9A)
   - [Hello World!](#hello-world)
+  - [如何引用第三方包](#%E5%A6%82%E4%BD%95%E5%BC%95%E7%94%A8%E7%AC%AC%E4%B8%89%E6%96%B9%E5%8C%85)
 
 OpenEdge官方提供了NodeJs Runtime可以加载用户所编写的Javascript函数。我们的NodeJs Runtime对用户所编写Javascript函数的函数名、输入、输出参数进行了约定，以便用户正确的使用官方提供的NodeJs Runtime。
 
@@ -83,3 +84,33 @@ exports.handler = (event, context, callback) => {
 ![发送Json数据](../images/customize/js-runtime-helloworld-json.png)
 **发送字节流**
 ![发送字节流](../images/customize/js-runtime-helloworld-bytes.png)
+
+## 如何引用第三方包
+
+实际上仅仅是node环境可能还不会满足我们的需要，往往开发需要引入第三方包，下面将给出一个示例。
+
+假如我们想要实现一个数学计算的函数，我们可以引入第三方包[mathjs](https://www.npmjs.com/package/mathjs).
+
+在我们的函数目录下输入
+```shell
+npm install mathjs
+```
+观察目录结构,mathjs包被存入了node_modules文件夹。
+```
+func-coaixgnaw
+│   sayhi.js 
+│   node_modules 
+│   package-lock.json
+```
+下面我们编写代码，计算 (input + 4) * 2
+```Javascript
+const math = require('mathjs')
+
+exports.handler = (event, context, callback) => {
+    event.output = math.chain(event.input).add(4).multiply(2).done();
+    callback(null, event);
+};
+```
+**发送Json数据**
+![发送Json数据](../images/customize/js-runtime-math-json.png)
+我们可以看到，得到了正确的结果。
