@@ -2,11 +2,14 @@ PREFIX?=/usr/local
 
 all: openedge modules
 
-modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
+modules: openedge-agent-bie/openedge-agent-bie openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
 
 openedge:
 	@echo "build ${GOFLAG} $@"
 	@go build ${GOFLAG} .
+
+openedge-agent-bie/openedge-agent-bie:
+	make -C openedge-agent-bie
 
 openedge-hub/openedge-hub:
 	make -C openedge-hub
@@ -33,6 +36,7 @@ openedge-consistency:
 install: all
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
+	install -m 0755 openedge-agent-bie/openedge-agent-bie ${PREFIX}/bin/
 	install -m 0755 openedge-hub/openedge-hub ${PREFIX}/bin/
 	install -m 0755 openedge-function/openedge-function ${PREFIX}/bin/
 	install -m 0755 openedge-remote-mqtt/openedge-remote-mqtt ${PREFIX}/bin/
@@ -43,6 +47,7 @@ install: all
 
 uninstall:
 	rm -f ${PREFIX}/bin/openedge
+	rm -f ${PREFIX}/bin/openedge-agent-bie
 	rm -f ${PREFIX}/bin/openedge-hub
 	rm -f ${PREFIX}/bin/openedge-function
 	rm -f ${PREFIX}/bin/openedge-remote-mqtt
@@ -65,6 +70,7 @@ uninstall:
 .PHONY: clean
 clean:
 	rm -f openedge
+	make -C openedge-agent-bie clean
 	make -C openedge-hub clean
 	make -C openedge-function clean
 	make -C openedge-remote-mqtt clean
@@ -80,7 +86,10 @@ protobuf:
 	protoc -Imodule/function/runtime --go_out=plugins=grpc:module/function/runtime openedge_function_runtime.proto
 	python -m grpc_tools.protoc -Imodule/function/runtime --python_out=openedge-function-runtime-python27 --grpc_python_out=openedge-function-runtime-python27 openedge_function_runtime.proto
 
-images: openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image
+images: openedge-agent-bie-image openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image
+
+openedge-agent-bie-image:
+	make -C openedge-agent-bie openedge-agent-bie-image
 
 openedge-hub-image:
 	make -C openedge-hub openedge-hub-image

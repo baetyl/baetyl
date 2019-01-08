@@ -8,6 +8,7 @@ import (
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/master"
 	"github.com/docker/distribution/uuid"
 	"github.com/jpillora/backoff"
 	"github.com/orcaman/concurrent-map"
@@ -42,6 +43,7 @@ type Worker interface {
 	Stop() error
 	Wait(w chan<- error)
 	Dying() <-chan struct{}
+	Stats() (*master.ModuleStats, error)
 }
 
 // Engine manages all modules
@@ -216,6 +218,42 @@ func (e *Engine) StopAll() {
 	e.log.Infof("all temporary modules stopped")
 }
 
+// Stats returns stats of all modules
+func (e *Engine) Stats() map[string]*master.ModuleStats {
+	modules := make(map[string]*master.ModuleStats, 0)
+	for item := range e.resident.IterBuffered() {
+		mo, ok := item.Val.(Worker)
+		if !ok {
+			e.log.Warnf("resident module invalid")
+			continue
+		}
+		e.log.Debugf("to get stats of resident module (%s)", mo.UniqueName())
+		ms, err := mo.Stats()
+		if err != nil {
+			e.log.Warnf("failed to get stats of resident module (%s)", mo.UniqueName())
+			ms = &master.ModuleStats{Error: err.Error()}
+		}
+		ms.Type = "resident"
+		modules[mo.UniqueName()] = ms
+	}
+	for item := range e.temporary.IterBuffered() {
+		mo, ok := item.Val.(Worker)
+		if !ok {
+			e.log.Warnf("temporary module invalid")
+			continue
+		}
+		e.log.Debugf("to get stats of temporary module (%s)", mo.UniqueName())
+		ms, err := mo.Stats()
+		if err != nil {
+			e.log.Warnf("failed to get stats of temporary module (%s)", mo.UniqueName())
+			ms = &master.ModuleStats{Error: err.Error()}
+		}
+		ms.Type = "temporary"
+		modules[mo.UniqueName()] = ms
+	}
+	return modules
+}
+
 // Prepare prepares entries
 func (e *Engine) prepare(entries map[string]struct{}) error {
 	type prepared struct {
@@ -276,7 +314,7 @@ func (e *Engine) supervising(w Worker) error {
 			case config.RestartNo:
 				return nil
 			default:
-				logger.Errorf("Restart policy (%s) invalid", r.Policy)
+				logger.Log.Errorf("Restart policy (%s) invalid", r.Policy)
 				return fmt.Errorf("Restart policy invalid")
 			}
 		}
@@ -284,7 +322,7 @@ func (e *Engine) supervising(w Worker) error {
 	RESTART:
 		count++
 		if r.Retry.Max > 0 && count > r.Retry.Max {
-			logger.Errorf("retry too much (%d)", count)
+			logger.Log.Errorf("retry too much (%d)", count)
 			return fmt.Errorf("retry too much")
 		}
 
@@ -296,7 +334,7 @@ func (e *Engine) supervising(w Worker) error {
 
 		err := w.Restart()
 		if err != nil {
-			logger.Errorf("failed to restart module, keep to restart")
+			logger.Log.Errorf("failed to restart module, keep to restart")
 			goto RESTART
 		}
 	}

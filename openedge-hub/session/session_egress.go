@@ -44,6 +44,6 @@ func (s *session) republish(msg common.Message) {
 // func (s *session) trace() func() {
 // 	start := time.Now()
 // 	return func() {
-// 		s.log.Debugf("Send message elapsed time: %v", time.Since(start))
+// 		s.log.Debugf("send message elapsed time: %v", time.Since(start))
 // 	}
 // }

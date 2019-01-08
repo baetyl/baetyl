@@ -15,7 +15,7 @@ import (
 
 // Entry logging entry
 type Entry struct {
-	entry *logrus.Entry
+	*logrus.Entry
 }
 
 // WithFields adds a map of fields to the Entry.
@@ -24,75 +24,22 @@ func (e *Entry) WithFields(vs ...string) *Entry {
 	for index := 0; index < len(vs)-1; index = index + 2 {
 		fs[vs[index]] = vs[index+1]
 	}
-	return &Entry{entry: e.entry.WithFields(fs)}
+	return &Entry{Entry: e.Entry.WithFields(fs)}
 }
 
 // WithError adds an error as single field (using the key defined in ErrorKey) to the Entry.
 func (e *Entry) WithError(err error) *Entry {
-	return &Entry{entry: e.entry.WithError(err)}
+	return &Entry{Entry: e.Entry.WithError(err)}
 }
 
-// // Debug log debug info
-// func (e *Entry) Debug(args ...interface{}) {
-// 	e.entry.Debug(args...)
-// }
+// Log the globel logger
+var Log *Entry
 
-// // Info log info
-// func (e *Entry) Info(args ...interface{}) {
-// 	e.entry.Info(args...)
-// }
-
-// // Warn log warning info
-// func (e *Entry) Warn(args ...interface{}) {
-// 	e.entry.Warn(args...)
-// }
-
-// // Error log error info
-// func (e *Entry) Error(args ...interface{}) {
-// 	e.entry.Error(args...)
-// }
-
-// Debugf log debug info
-func (e *Entry) Debugf(format string, args ...interface{}) {
-	e.entry.Debugf(format, args...)
+func init() {
+	log := logrus.New()
+	log.SetReportCaller(true)
+	Log = &Entry{Entry: logrus.NewEntry(log)}
 }
-
-// Infof log info
-func (e *Entry) Infof(format string, args ...interface{}) {
-	e.entry.Infof(format, args...)
-}
-
-// Warnf log warning info
-func (e *Entry) Warnf(format string, args ...interface{}) {
-	e.entry.Warnf(format, args...)
-}
-
-// Errorf log error info
-func (e *Entry) Errorf(format string, args ...interface{}) {
-	e.entry.Errorf(format, args...)
-}
-
-// Debugln log debug info
-func (e *Entry) Debugln(args ...interface{}) {
-	e.entry.Debugln(args...)
-}
-
-// Infoln log info
-func (e *Entry) Infoln(args ...interface{}) {
-	e.entry.Infoln(args...)
-}
-
-// Warnln log warning info
-func (e *Entry) Warnln(args ...interface{}) {
-	e.entry.Warnln(args...)
-}
-
-// Errorln log error info
-func (e *Entry) Errorln(args ...interface{}) {
-	e.entry.Errorln(args...)
-}
-
-var root = &Entry{entry: logrus.NewEntry(logrus.New())}
 
 // Init init logger
 func Init(c config.Logger, fields ...string) error {
@@ -127,12 +74,12 @@ func Init(c config.Logger, fields ...string) error {
 		}
 	}
 
-	root = WithFields(fields...)
-	root.entry.Logger.Level = logLevel
-	root.entry.Logger.Out = logOutWriter
-	root.entry.Logger.Formatter = newFormatter(c.Format, true)
+	Log = WithFields(fields...)
+	Log.Entry.Logger.Level = logLevel
+	Log.Entry.Logger.Out = logOutWriter
+	Log.Entry.Logger.Formatter = newFormatter(c.Format, true)
 	if fileHook != nil {
-		root.entry.Logger.Hooks.Add(fileHook)
+		Log.Entry.Logger.Hooks.Add(fileHook)
 	}
 	return nil
 }
@@ -143,72 +90,12 @@ func WithFields(vs ...string) *Entry {
 	for index := 0; index < len(vs)-1; index = index + 2 {
 		fs[vs[index]] = vs[index+1]
 	}
-	return &Entry{entry: root.entry.WithFields(fs)}
+	return &Entry{Entry: Log.Entry.WithFields(fs)}
 }
 
 // WithError adds an error as single field (using the key defined in ErrorKey) to the Entry.
 func WithError(err error) *Entry {
-	return &Entry{entry: root.entry.WithError(err)}
-}
-
-// // Debug log debug info
-// func Debug(args ...interface{}) {
-// 	root.entry.Debug(args...)
-// }
-
-// // Info log info
-// func Info(args ...interface{}) {
-// 	root.entry.Info(args...)
-// }
-
-// // Warn log warning info
-// func Warn(args ...interface{}) {
-// 	root.entry.Warn(args...)
-// }
-
-// // Error log error info
-// func Error(args ...interface{}) {
-// 	root.entry.Error(args...)
-// }
-
-// Debugf log debug info
-func Debugf(format string, args ...interface{}) {
-	root.entry.Debugf(format, args...)
-}
-
-// Infof log info
-func Infof(format string, args ...interface{}) {
-	root.entry.Infof(format, args...)
-}
-
-// Warnf log warning info
-func Warnf(format string, args ...interface{}) {
-	root.entry.Warnf(format, args...)
-}
-
-// Errorf log error info
-func Errorf(format string, args ...interface{}) {
-	root.entry.Errorf(format, args...)
-}
-
-// Debugln log debug info
-func Debugln(args ...interface{}) {
-	root.entry.Debugln(args...)
-}
-
-// Infoln log info
-func Infoln(args ...interface{}) {
-	root.entry.Infoln(args...)
-}
-
-// Warnln log warning info
-func Warnln(args ...interface{}) {
-	root.entry.Warnln(args...)
-}
-
-// Errorln log error info
-func Errorln(args ...interface{}) {
-	root.entry.Errorln(args...)
+	return &Entry{Entry: Log.Entry.WithError(err)}
 }
 
 type fileConfig struct {

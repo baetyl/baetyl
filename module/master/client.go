@@ -41,6 +41,23 @@ func (c *Client) GetPortAvailable(host string) (int, error) {
 	return b["port"], nil
 }
 
+// Stats gets all stats
+func (c *Client) Stats() (*Stats, error) {
+	_, body, err := c.Send("GET", fmt.Sprintf("%s://%s/stats", c.Addr.Scheme, c.Addr.Host), c.newHeaders(), nil)
+	if err != nil {
+		return nil, err
+	}
+	s := new(Stats)
+	err = json.Unmarshal(body, s)
+	return s, err
+}
+
+// Reload reloads config
+func (c *Client) Reload(file string) error {
+	_, _, err := c.Send("PUT", fmt.Sprintf("%s://%s/reload?file=%s", c.Addr.Scheme, c.Addr.Host, file), c.newHeaders(), nil)
+	return err
+}
+
 // StartModule starts a module
 func (c *Client) StartModule(m *config.Module) error {
 	body, err := json.Marshal(m)

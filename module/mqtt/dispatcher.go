@@ -25,9 +25,6 @@ type Dispatcher struct {
 
 // NewDispatcher creata a new dispatcher
 func NewDispatcher(cc config.MQTTClient) *Dispatcher {
-	if cc.Address == "" {
-		return nil
-	}
 	return &Dispatcher{
 		config:  cc,
 		channel: make(chan packet.Generic, cc.BufferSize),

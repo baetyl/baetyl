@@ -2,10 +2,13 @@ package engine
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/master"
 	"github.com/baidu/openedge/module/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -100,6 +103,35 @@ func (w *DockerContainer) Wait(c chan<- error) {
 // Dying returns the channel that can be used to wait until container is stopped
 func (w *DockerContainer) Dying() <-chan struct{} {
 	return w.tomb.Dying()
+}
+
+// Stats returns the stats of docker container
+func (w *DockerContainer) Stats() (*master.ModuleStats, error) {
+	ctx := context.Background()
+	iresp, err := w.spec.client.ContainerInspect(ctx, w.cid)
+	if err != nil {
+		return nil, err
+	}
+	sresp, err := w.spec.client.ContainerStats(ctx, w.cid, false)
+	if err != nil {
+		return nil, err
+	}
+	defer sresp.Body.Close()
+	data, err := ioutil.ReadAll(sresp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var tstats types.Stats
+	err = json.Unmarshal(data, &tstats)
+	if err != nil {
+		return nil, err
+	}
+	return &master.ModuleStats{
+		Stats:      tstats,
+		Status:     iresp.State.Status,
+		StartedAt:  iresp.State.StartedAt,
+		FinishedAt: iresp.State.FinishedAt,
+	}, nil
 }
 
 func (w *DockerContainer) startContainer() error {

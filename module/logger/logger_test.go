@@ -47,8 +47,8 @@ func TestNewEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithFields(tt.args.vs...); !reflect.DeepEqual(got.entry.Data, tt.want) {
-				t.Errorf("WithFields() = %v, want %v", got.entry.Data, tt.want)
+			if got := WithFields(tt.args.vs...); !reflect.DeepEqual(got.Entry.Data, tt.want) {
+				t.Errorf("WithFields() = %v, want %v", got.Entry.Data, tt.want)
 			}
 		})
 	}

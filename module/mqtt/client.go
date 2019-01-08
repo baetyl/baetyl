@@ -159,7 +159,7 @@ func (c *Client) processor() error {
 			return c.die(err)
 		}
 
-		c.log.Debugln("Received:", pkt)
+		c.log.Debugln("received:", pkt.Type())
 
 		if first {
 			first = false
@@ -268,7 +268,7 @@ func (c *Client) send(pkt packet.Generic, async bool) error {
 	}
 
 	// config.Logger sent packet
-	c.log.Debugln("sent:", pkt)
+	c.log.Debugln("sent:", pkt.Type())
 
 	return nil
 }

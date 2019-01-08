@@ -30,7 +30,7 @@ func (s *session) Handle() {
 			s.close(true)
 			return
 		}
-		s.log.Debugln("received:", p)
+		s.log.Debugln("received:", p.Type())
 		switch pack := p.(type) {
 		case *packet.Connect:
 			err = s.onConnect(pack)
@@ -194,7 +194,7 @@ func (s *session) onPublish(p *packet.Publish) error {
 }
 
 func (s *session) onPuback(p *packet.Puback) error {
-	// s.log.Debugf("Receive puback: pid=%d", p.ID)
+	// s.log.Debugf("receive puback: pid=%d", p.ID)
 	if !s.pids.Ack(p.ID) {
 		s.log.Warnf("puback(pid=%d) not found", p.ID)
 	}

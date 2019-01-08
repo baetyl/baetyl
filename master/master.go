@@ -4,35 +4,21 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
-	"regexp"
 	"runtime"
 	"strings"
 
-	"github.com/baidu/openedge/agent"
 	"github.com/baidu/openedge/engine"
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
 	"github.com/baidu/openedge/module/utils"
-	"github.com/mholt/archiver"
 )
-
-// backupFile backup file name
-const backupFile = "module.zip"
-
-// backupDir dir to backup
-var backupDir = path.Join("var", "db", "openedge", "module")
-
-// confFile config file path
-var confFile = path.Join(backupDir, "module.yml")
 
 // Master master manages all modules and connects with cloud
 type Master struct {
 	conf    Config
 	context engine.Context
 	engine  *engine.Engine
-	agent   *agent.Agent
 	server  *Server
 }
 
@@ -42,86 +28,48 @@ func New(confDate string) (*Master, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := Config{}
-	err = module.Load(&c, confDate)
+	m := &Master{}
+	err = module.Load(&m.conf, confDate)
 	if err != nil {
 		return nil, err
 	}
-	err = defaults(&c)
+	err = defaults(&m.conf)
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(c.Logger, "openedge", "master")
-	logger.Debugln("work dir:", pwd)
-	ctx := engine.Context{
+	logger.Init(m.conf.Logger, "openedge", "master")
+	logger.Log.Debugln("work dir:", pwd)
+	m.context = engine.Context{
 		PWD:   pwd,
-		Mode:  c.Mode,
-		Grace: c.Grace,
+		Mode:  m.conf.Mode,
+		Grace: m.conf.Grace,
 	}
-	en, err := engine.New(&ctx)
+	m.engine, err = engine.New(&m.context)
 	if err != nil {
 		return nil, err
 	}
-	as, err := NewServer(en, c.API)
+	m.server, err = NewServer(m, m.conf.API)
 	if err != nil {
 		return nil, err
-	}
-
-	var ag *agent.Agent
-	if c.Cloud.Address != "" {
-		ag, err = agent.NewAgent(c.Cloud)
-		if err != nil {
-			as.Close()
-			return nil, err
-		}
-	}
-	m := &Master{
-		conf:    c,
-		context: ctx,
-		engine:  en,
-		agent:   ag,
-		server:  as,
 	}
 	err = m.server.Start()
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
-	if m.agent != nil {
-		if err := m.agent.Start(m.Reload); err != nil {
-			m.Close()
-			return nil, err
-		}
-	}
 	return m, nil
 }
 
 // Start starts agent
 func (m *Master) Start() error {
-	err := m.loadConfig()
-	if err != nil {
+	if err := m.loadConfig(); err != nil {
 		return err
 	}
-	if err := m.engine.StartAll(m.conf.Modules); err != nil {
-		return err
-	}
-	if m.agent != nil {
-		report := map[string]interface{}{
-			"mode":         m.conf.Mode,
-			"conf_version": m.conf.Version,
-		}
-		m.agent.Report(report)
-	}
-	return nil
+	return m.engine.StartAll(m.conf.Modules)
 }
 
 // Close closes agent
 func (m *Master) Close() {
-	if m.agent != nil {
-		if err := m.agent.Close(); err != nil {
-			logger.WithError(err).Errorf("failed to close cloud agent")
-		}
-	}
 	if m.engine != nil {
 		m.engine.StopAll()
 	}
@@ -130,155 +78,19 @@ func (m *Master) Close() {
 	}
 }
 
-// Reload reload config
-func (m *Master) Reload(version string) map[string]interface{} {
-	err := m.reload(version)
-	report := map[string]interface{}{
-		"mode":         m.conf.Mode,
-		"conf_version": m.conf.Version,
-	}
-	if err != nil {
-		report["reload_error"] = err.Error()
-		logger.WithError(err).Errorf("failed to reload config")
-	} else {
-		logger.Infof("config (version:%s) loaded", m.conf.Version)
-	}
-	return report
+func (m *Master) authModule(username, password string) bool {
+	return m.engine.Authenticate(username, password)
 }
 
-func (m *Master) reload(version string) error {
-	if !isVersion(version) {
-		return fmt.Errorf("new config version invalid")
-	}
-	err := m.backupDir()
-	if err != nil {
-		return fmt.Errorf("failed to backup old config: %s", err.Error())
-	}
-	defer m.cleanBackupFile()
-	err = m.unpackConfigFile(version)
-	if err != nil {
-		return fmt.Errorf("failed to unpack new config: %s", err.Error())
-	}
-	err = m.loadConfig()
-	if err != nil {
-		logger.WithError(err).Infof("failed to load new config, rollback")
-		err1 := m.unpackBackupFile()
-		if err1 != nil {
-			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file: " + err1.Error())
-			return err
-		}
-		err1 = m.loadConfig()
-		if err1 != nil {
-			err = fmt.Errorf(err.Error() + ";failed to load old config: " + err1.Error())
-			return err
-		}
-		return fmt.Errorf("failed to load new config: %s", err.Error())
-	}
-	m.engine.StopAll()
-	err = m.engine.StartAll(m.conf.Modules)
-	if err != nil {
-		logger.WithError(err).Infof("failed to load new config, rollback")
-		err1 := m.unpackBackupFile()
-		if err1 != nil {
-			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file" + err1.Error())
-			return err
-		}
-		err1 = m.loadConfig()
-		if err1 != nil {
-			err = fmt.Errorf(err.Error() + ";failed to load old config" + err1.Error())
-			return err
-		}
-		m.engine.StopAll()
-		err1 = m.engine.StartAll(m.conf.Modules)
-		if err1 != nil {
-			err = fmt.Errorf(err.Error() + ";failed to start modules with old config" + err.Error())
-			return err
-		}
-	}
-	return nil
+func (m *Master) startModule(module config.Module) error {
+	return m.engine.Start(module)
 }
 
-func (m *Master) backupDir() error {
-	if !dirExists(backupDir) {
-		return nil
-	}
-	return archiver.Zip.Make(backupFile, []string{backupDir})
-}
-
-func (m *Master) cleanBackupFile() {
-	err := os.RemoveAll(backupFile)
-	if err != nil {
-		logger.WithError(err).Errorf("failed to remove backup file")
-	}
-}
-
-func (m *Master) unpackConfigFile(version string) error {
-	file := version + ".zip"
-	if !fileExists(file) {
-		return fmt.Errorf("config zip file (%s) not found", file)
-	}
-	err := archiver.Zip.Open(file, m.context.PWD)
-	return err
-}
-
-func (m *Master) unpackBackupFile() error {
-	if !fileExists(backupFile) {
-		return os.RemoveAll(backupDir)
-	}
-	err := archiver.Zip.Open(backupFile, path.Dir(backupDir))
-	return err
-}
-
-func (m *Master) loadConfig() error {
-	if !fileExists(confFile) {
-		m.conf.Version = ""
-		m.conf.Modules = []config.Module{}
-		return nil
-	}
-
-	return module.Load(&m.conf, confFile)
-}
-
-// IsVersion checks version
-func isVersion(v string) bool {
-	r := regexp.MustCompile("^[\\w\\.]+$")
-	return r.MatchString(v)
-}
-
-// DirExists checkes file exists
-func dirExists(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return os.IsExist(err)
-	}
-	return fi.IsDir()
-}
-
-func fileExists(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return os.IsExist(err)
-	}
-	return !fi.IsDir()
+func (m *Master) stopModule(module string) error {
+	return m.engine.Stop(module)
 }
 
 func defaults(c *Config) error {
-	if c.Cloud.Address != "" {
-		backward := config.Subscription{QOS: 1, Topic: fmt.Sprintf(agent.CloudBackward, c.Cloud.ClientID)}
-		c.Cloud.Subscriptions = append(c.Cloud.Subscriptions, backward)
-		if c.Cloud.OpenAPI.Address == "" {
-			if strings.Contains(c.Cloud.Address, "bj.baidubce.com") {
-				c.Cloud.OpenAPI.Address = "https://iotedge.bj.baidubce.com"
-			} else if strings.Contains(c.Cloud.Address, "gz.baidubce.com") {
-				c.Cloud.OpenAPI.Address = "https://iotedge.gz.baidubce.com"
-			} else {
-				return fmt.Errorf("cloud address invalid")
-			}
-		}
-		if c.Cloud.OpenAPI.CA == "" {
-			c.Cloud.OpenAPI.CA = "etc/openedge/openapi.pem"
-		}
-	}
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll("var/run", os.ModePerm)
 		if err != nil {

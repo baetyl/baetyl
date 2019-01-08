@@ -9,6 +9,7 @@ import (
 
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/master"
 	"github.com/baidu/openedge/module/utils"
 )
 
@@ -99,6 +100,12 @@ func (w *NativeProcess) Wait(c chan<- error) {
 // Dying returns the channel that can be used to wait until process is stopped
 func (w *NativeProcess) Dying() <-chan struct{} {
 	return w.tomb.Dying()
+}
+
+// Stats returns the stats of docker container
+func (w *NativeProcess) Stats() (*master.ModuleStats, error) {
+	// TODO: to implement
+	return &master.ModuleStats{}, nil
 }
 
 func (w *NativeProcess) startProcess() error {
