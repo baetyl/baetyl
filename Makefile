@@ -69,6 +69,10 @@ clean:
 	make -C openedge-function clean
 	make -C openedge-remote-mqtt clean
 	rm -f pubsub openedge-consistency
+	rm -rf output
+	rm -f openedge-linux-*
+	rm -f openedge-darwin-*
+	docker rmi openedge-modules:release
 
 rebuild: clean all
 
@@ -103,9 +107,3 @@ endif
 else
 	@echo "Please specify version like: make release VERSION=1.8"
 endif
-
-release-clean:
-	rm -rf ../output
-	rm openedge-linux-*
-	rm openedge-darwin-*
-	docker rmi openedge-modules:release

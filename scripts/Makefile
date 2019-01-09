@@ -2,10 +2,6 @@ all: release-prepare release-openedge release-images
 
 release-prepare:
 	@echo "package module\n\n// Version the version of this binary\nconst Version = \"$(VERSION)\"" > ../module/version.go
-	mkdir -p ../output/config
-	tar cf - -C ../example/docker . | tar xf - -C ../output/config
-	cat ../output/config/var/db/openedge/module/module.yml | sed 's|openedge-hub:build|$(REPOSITORY)openedge-hub:$(VERSION)|' | sed 's|openedge-function:build|$(REPOSITORY)openedge-function:$(VERSION)|' > module.yml
-	mv module.yml ../output/config/var/db/openedge/module/
 
 release-openedge:
 	for ARCH in '386' 'amd64' 'arm' 'arm64'; do \
@@ -21,7 +17,7 @@ release-images:
 
 multi-openedge-builder:
 	make openedge-release GOOS=$(GOOS) GOARCH=$(GOARCH)
-	tar cf - -C ../output/config . | tar xf - -C ../output/openedge-$(GOOS)-$(GOARCH)
+	tar cf - -C ../example/docker . | tar xf - -C ../output/openedge-$(GOOS)-$(GOARCH)
 	tar czvf ../openedge-$(GOOS)-$(GOARCH)-$(VERSION).tar.gz -C ../output/openedge-$(GOOS)-$(GOARCH) .
 
 multi-modules-builder:
