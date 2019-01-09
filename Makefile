@@ -70,8 +70,6 @@ clean:
 	make -C openedge-remote-mqtt clean
 	rm -f pubsub openedge-consistency
 	rm -rf output
-	rm -f openedge-linux-*
-	rm -f openedge-darwin-*
 	docker rmi openedge-modules:release
 
 rebuild: clean all

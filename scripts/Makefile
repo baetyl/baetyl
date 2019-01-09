@@ -1,12 +1,11 @@
-all: release-prepare release-openedge release-images
-
-release-prepare:
-	@echo "package module\n\n// Version the version of this binary\nconst Version = \"$(VERSION)\"" > ../module/version.go
+all: release-openedge release-images
 
 release-openedge:
+	@echo "package module\n\n// Version the version of this binary\nconst Version = \"$(VERSION)\"" > ../module/version.go
 	for ARCH in '386' 'amd64' 'arm' 'arm64'; do \
 		make multi-openedge-builder GOOS=linux GOARCH=$$ARCH VERSION=$(VERSION); \
 	done
+	# Only on Mac
 	make multi-openedge-builder GOOS=darwin GOARCH=amd64 VERSION=$(VERSION)
 
 release-images:
@@ -18,7 +17,7 @@ release-images:
 multi-openedge-builder:
 	make openedge-release GOOS=$(GOOS) GOARCH=$(GOARCH)
 	tar cf - -C ../example/docker . | tar xf - -C ../output/openedge-$(GOOS)-$(GOARCH)
-	tar czvf ../openedge-$(GOOS)-$(GOARCH)-$(VERSION).tar.gz -C ../output/openedge-$(GOOS)-$(GOARCH) .
+	tar czvf ../output/openedge-$(GOOS)-$(GOARCH)-$(VERSION).tar.gz -C ../output/openedge-$(GOOS)-$(GOARCH) .
 
 multi-modules-builder:
 	for ARCH in '386' 'amd64' 'arm' 'arm64'; do \
