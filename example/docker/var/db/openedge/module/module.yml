@@ -1,11 +1,11 @@
 version: V0
 modules:
   - name: 'localhub'
-    entry: 'openedge-hub:build'
+    entry: 'hub.baidubce.com/openedge/openedge-hub:0.1.1'
     expose:
       - 1883:1883
   - name: 'localfunc'
-    entry: 'openedge-function:build'
+    entry: 'hub.baiduce.com/openedge/openedge-function:0.1.1'
     resources:
       cpu:
         cpus: 1

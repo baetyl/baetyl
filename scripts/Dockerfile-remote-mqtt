@@ -1,0 +1,6 @@
+FROM alpine
+ARG GOARCH
+ARG GOOS
+copy --from=openedge-modules:release /go/src/github.com/baidu/openedge/output/openedge-$GOOS-$GOARCH/openedge-remote-mqtt /bin/
+ENTRYPOINT ["openedge-remote-mqtt"]
+CMD []
