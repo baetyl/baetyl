@@ -25,7 +25,7 @@ rules:
 functions:
   - id: func-ejvubz6bl
     name: 'filter'
-    handler: 'seletc topic() as t, * where id < 10'
+    handler: 'select topic() as t, * where id < 10'
     entry: "hub.baidubce.com/openedge/openedge-function-runtime-sql"
   - id: func-nyeosbbch
     name: 'sayhi'

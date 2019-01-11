@@ -1,11 +1,16 @@
 PREFIX?=/usr/local
+VERSION?=$(shell git rev-list HEAD|head -1|cut -c 1-6)
 
 all: openedge modules
 
-modules: openedge-agent-bie/openedge-agent-bie openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt
+modules: \
+	openedge-hub/openedge-hub \
+	openedge-function/openedge-function \
+	openedge-remote-mqtt/openedge-remote-mqtt \
+	openedge-agent-bie/openedge-agent-bie
 
 openedge:
-	@echo "build ${GOFLAG} $@"
+	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
 openedge-agent-bie/openedge-agent-bie:
@@ -26,14 +31,29 @@ test:
 tools: pubsub openedge-consistency
 
 pubsub:
-	@echo "build ${GOFLAG} $@"
+	@echo "BUILD $@"
 	@go build ${GOFLAG} ./tools/pubsub
 
 openedge-consistency:
-	@echo "build ${GOFLAG} $@"
+	@echo "BUILD $@"
 	@go build ${GOFLAG} ./tools/openedge-consistency
 
-install: all
+install: openedge
+	install -d -m 0755 ${PREFIX}/bin
+	install -m 0755 openedge ${PREFIX}/bin/
+	tar cf - -C example/docker etc var | tar xvf - -C ${PREFIX}/
+
+uninstall:
+	rm -f ${PREFIX}/bin/openedge
+	rm -rf ${PREFIX}/etc/openedge
+	rm -rf ${PREFIX}/var/db/openedge
+	rmdir ${PREFIX}/var/db
+	rmdir ${PREFIX}/var
+	rmdir ${PREFIX}/etc
+	rmdir ${PREFIX}/bin
+	rmdir ${PREFIX}
+
+install-native: openedge modules
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
 	install -m 0755 openedge-agent-bie/openedge-agent-bie ${PREFIX}/bin/
@@ -45,7 +65,7 @@ install: all
 	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
-uninstall:
+uninstall-native:
 	rm -f ${PREFIX}/bin/openedge
 	rm -f ${PREFIX}/bin/openedge-agent-bie
 	rm -f ${PREFIX}/bin/openedge-hub
@@ -57,10 +77,8 @@ uninstall:
 	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.pyc
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
 	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
-	rm -rf ${PREFIX}/var/log/openedge
-	rm -rf ${PREFIX}/var/db/openedge
 	rm -rf ${PREFIX}/etc/openedge
-	rmdir ${PREFIX}/var/log
+	rm -rf ${PREFIX}/var/db/openedge
 	rmdir ${PREFIX}/var/db
 	rmdir ${PREFIX}/var
 	rmdir ${PREFIX}/etc
@@ -86,33 +104,46 @@ protobuf:
 	protoc -Imodule/function/runtime --go_out=plugins=grpc:module/function/runtime openedge_function_runtime.proto
 	python -m grpc_tools.protoc -Imodule/function/runtime --python_out=openedge-function-runtime-python27 --grpc_python_out=openedge-function-runtime-python27 openedge_function_runtime.proto
 
-images: openedge-agent-bie-image openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image
-
-openedge-agent-bie-image:
-	make -C openedge-agent-bie openedge-agent-bie-image
-
-openedge-hub-image:
-	make -C openedge-hub openedge-hub-image
-
-openedge-function-image:
-	make -C openedge-function openedge-function-image
-
-openedge-remote-mqtt-image:
-	make -C openedge-remote-mqtt openedge-remote-mqtt-image
-
-openedge-function-runtime-python27-image:
-	make -C openedge-function-runtime-python27 openedge-function-runtime-python27-image
+image:
+	make -C openedge-hub image
+	make -C openedge-function image
+	make -C openedge-function-runtime-python27 image
+	make -C openedge-remote-mqtt image
+	make -C openedge-agent-bie image
 
 release:
-ifneq ($(strip $(VERSION)),)
-ifeq ($(strip $(REPOSITORY)),)
-	@echo "WARNING: If you need to set the repository of images, set like this: make release VERSION=1.8 REPOSITORY=localhost:5000/"
-endif
-	make -C scripts all
-else
-	@echo "Please specify version like: make release VERSION=1.8"
-endif
-
-release-clean:
-	rm -rf output
-	docker rmi openedge-modules:release
+	env GOOS=linux GOARCH=amd64 make image
+	make clean
+	# release linux 386
+	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
+	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
+	tar cjf openedge-linux-386-$(VERSION).tar.bz2 -C __release_build/openedge-linux-386-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-386-$(VERSION)
+	# release linux amd64
+	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
+	tar czf openedge-linux-amd64-$(VERSION).tar.gz -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
+	tar cjf openedge-linux-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
+	# release linux arm
+	env GOOS=linux GOARCH=arm make install PREFIX=__release_build/openedge-linux-arm-$(VERSION)
+	tar czf openedge-linux-arm-$(VERSION).tar.gz -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
+	tar cjf openedge-linux-arm-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-arm-$(VERSION)
+	# release linux arm64
+	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
+	tar czf openedge-linux-arm64-$(VERSION).tar.gz -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
+	tar cjf openedge-linux-arm64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
+	# release darwin amd64
+	env GOOS=darwin GOARCH=amd64 make all
+	make install PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
+	tar czf openedge-darwin-amd64-$(VERSION).tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
+	tar cjf openedge-darwin-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
+	make uninstall PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
+	make install-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
+	tar czf openedge-darwin-amd64-$(VERSION)-native.tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
+	tar cjf openedge-darwin-amd64-$(VERSION)-native.tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
+	make uninstall-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
+	make clean
+	# at last
+	rmdir __release_build

@@ -10,9 +10,9 @@
 
 ## Design
 
-About architecture design, OpenEdge takes **modularization** and **containerization** design mode. Based on the modular design pattern, OpenEdge splits the product to multiple modules, and make sure each one of them is a separate, independent module. In general, OpenEdge can fully meet the conscientious needs of users to deploy on demand. Besides, OpenEdge also takes containerization design mode to build images. Due to the cross-platform characteristics of docker to ensure the running environment of each operating system is consistent. In addition, **OpenEdge also isolates and limits the container resources of docker containerization**, and allocates the CPU, memory and other resources of each running instance accurately to improve the efficiency of resource utilization.
+About architecture design, OpenEdge takes **modularization** and **containerization** design mode. Based on the modular design pattern, OpenEdge splits the product to multiple modules, and make sure each one of them is a separate, independent module. In general, OpenEdge can fully meet the conscientious needs of users to deploy on demand. Besides, OpenEdge also takes containerization design mode to build images. Due to the cross-platform characteristics of docker to ensure the running environment of each operating system is consistent. In addition, **OpenEdge also isolates and limits the resources of containers**, and allocates the CPU, memory and other resources of each running instance accurately to improve the efficiency of resource utilization.
 
-### Docker containerization mode
+### Docker container mode
 
 ![](./doc/images/overview/design/mode_docker.png)
 
@@ -25,7 +25,7 @@ About architecture design, OpenEdge takes **modularization** and **containerizat
 OpenEdge is made up of **main program module, local hub module, local function module, MQTT remote module and Python2.7 runtime module.** The main capabilities of each module are as follows:
 
 > + **Main program module** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
->   + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker containerization mode** and **native process mode**.
+>   + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker container mode** and **native process mode**.
 >   + **Cloud agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **must** take two-way authentication of SSL/TLS; otherwise, you **must** take one-way authentication of SSL/TLS due to HTTPS protocol.
 >   + The main program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
 > + **local hub module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL).**
@@ -36,8 +36,8 @@ OpenEdge is made up of **main program module, local hub module, local function m
 ## Features
 
 > + support module management, include start, stop, restart, listen and upgrade
-> + support two mode: **docker containerization mode** and **native process mode**
-> + docker containerization mode support resources isolation and restriction
+> + support two mode: **docker container mode** and **native process mode**
+> + docker container mode support resources isolation and restriction
 > + support cloud management suite, which can be used to report device hardware information and deploy configuration
 > + provide **local hub module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
 > + provide **local function module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
@@ -48,7 +48,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 > + **Shielding computing framework**: OpenEdge provides two official computing modules(**local function module** and **Python2.7 runtime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
 > + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis?castk=LTE%3D), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
-> + **Quickly deployment**: OpenEdge pursues docker containerization mode, it make developers quickly deploy OpenEdge on different operating system.
+> + **Quickly deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
 > + **Deploy on demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
 > + **Rich configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
 

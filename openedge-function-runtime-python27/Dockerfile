@@ -19,4 +19,3 @@ WORKDIR /
 COPY *.py /bin/
 RUN chmod +x /bin/openedge_function_runtime_python27.py
 ENTRYPOINT ["openedge_function_runtime_python27.py"]
-CMD []
