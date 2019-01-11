@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"runtime"
 
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
@@ -81,7 +82,7 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		Cmd:          cmd,
 		Env:          utils.AppendEnv(m.Env, false),
 	}
-	if m.Resources.CPU.Cpus > 0 {
+	if runtime.GOOS == "linux" && m.Resources.CPU.Cpus > 0 {
 		sysInfo := sysinfo.New(true)
 		if !sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota {
 			e.log.Warnf("configuration 'resources.cpu.cpus' is ignored because host kernel does not support CPU cfs period/quota or the cgroup is not mounted.")

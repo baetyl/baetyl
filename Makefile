@@ -75,6 +75,8 @@ clean:
 	make -C openedge-function clean
 	make -C openedge-remote-mqtt clean
 	rm -f pubsub openedge-consistency
+	rm -rf output
+	docker rmi openedge-modules:release
 
 rebuild: clean all
 
@@ -102,3 +104,13 @@ openedge-remote-mqtt-image:
 
 openedge-function-runtime-python27-image:
 	make -C openedge-function-runtime-python27 openedge-function-runtime-python27-image
+
+release:
+ifneq ($(strip $(VERSION)),)
+ifeq ($(strip $(REPOSITORY)),)
+	@echo "WARNING: If you need to set the repository of images, set like this: make release VERSION=1.8 REPOSITORY=localhost:5000/"
+endif
+	make -C scripts all
+else
+	@echo "Please specify version like: make release VERSION=1.8"
+endif

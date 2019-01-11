@@ -31,7 +31,7 @@ functions:
     name: 'sayhi'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/module/func-nyeosbbch'
-    entry: "openedge-function-runtime-python27:build"
+    entry: "hub.baidubce.com/openedge/openedge-function-runtime-python27:0.1.1"
     env:
       USER_ID: acuiot
     instance:
