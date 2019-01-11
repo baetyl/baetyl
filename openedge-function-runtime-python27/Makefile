@@ -1,3 +1,5 @@
-openedge-function-runtime-python27-image:
-	@echo "build ${GOFLAG} $@"
-	docker build -t openedge-function-runtime-python27:build -f Dockerfile .
+TAG?=latest
+
+image:
+	@echo "IMAGE openedge-function-runtime-python27"
+	docker build -t $(IMAGE_PREFIX)openedge-function-runtime-python27:$(TAG) .

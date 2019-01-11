@@ -1,16 +1,14 @@
+TAG?=latest
+
 all: openedge-hub
 
 openedge-hub:
-	@echo "build ${GOFLAG} $@"
+	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-hub-release:
-	@echo "build ${GOFLAG} $@"
-	@env GOOS=$(GOOS) GOARCH=$(GOARCH) go build ${GOFLAG} -o ../output/openedge-$(GOOS)-$(GOARCH)/openedge-hub .
-
-openedge-hub-image:
-	@echo "build ${GOFLAG} $@"
-	docker build -t openedge-hub:build -f Dockerfile ../..
+image: openedge-hub
+	@echo "IMAGE $<"
+	docker build -t $(IMAGE_PREFIX)$<:$(TAG) .
 
 .PHONY: clean
 clean:
