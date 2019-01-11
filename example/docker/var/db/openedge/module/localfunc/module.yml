@@ -13,10 +13,22 @@ rules:
     publish:
       topic: t/hi
       qos: 1
+  - id: rule-e1iluuac2
+    subscribe:
+      topic: t
+      qos: 1
+    compute:
+      function: filter
+    publish:
+      topic: t/f
+      qos: 1
 functions:
+  - id: func-ejvubz6bl
+    name: 'filter'
+    handler: 'select topic() as t, * where id < 10'
+    entry: "hub.baidubce.com/openedge/openedge-function-runtime-sql"
   - id: func-nyeosbbch
     name: 'sayhi'
-    runtime: 'python27'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/module/func-nyeosbbch'
     entry: "hub.baidubce.com/openedge/openedge-function-runtime-python27:0.1.1"

@@ -18,7 +18,7 @@ type sink struct {
 	trieq0  *router.Trie
 	trieq1  *router.Trie
 	tomb    utils.Tomb
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 func newSink(id string, b broker, r *router.Trie, msgchan *msgchan) *sink {
@@ -28,7 +28,7 @@ func newSink(id string, b broker, r *router.Trie, msgchan *msgchan) *sink {
 		trieq0:  r,
 		trieq1:  router.NewTrie(),
 		msgchan: msgchan,
-		log:     logger.WithFields(common.LogComponent, "sink", common.LogSink, id),
+		log:     logger.Log.WithField("sink", id),
 	}
 	return s
 }

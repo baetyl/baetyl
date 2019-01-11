@@ -14,7 +14,7 @@ import (
 // recorder records session info
 type recorder struct {
 	db  persist.Database
-	log *logger.Entry
+	log logger.Entry
 	sync.Mutex
 }
 
@@ -22,7 +22,7 @@ type recorder struct {
 func newRecorder(db persist.Database) *recorder {
 	return &recorder{
 		db:  db,
-		log: logger.WithFields(common.LogComponent, "recorder"),
+		log: logger.Log.WithField("session", "recorder"),
 	}
 }
 

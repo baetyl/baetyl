@@ -2,42 +2,6 @@ package common
 
 // common
 const (
-	// log entry fields
-	LogID                   = "id"
-	LogHost                 = "host"
-	LogClient               = "client"
-	LogUsername             = "username"
-	LogMQTTVersion          = "mqttVersion"
-	LogCleanSession         = "cleanSession"
-	LogComponent            = "component"
-	LogMessage              = "message"
-	LogPacketID             = "packetID"
-	LogMessageTopic         = "messageTopic"
-	LogMessagePayloadLength = "messagePayloadLength"
-	LogMessageQOS           = "messageQOS"
-	LogWillTopic            = "willTopic"
-	// LogPubTopic             = "pubTopic"
-	// LogSubTopic             = "subTopic"
-	LogUnSubTopic = "unsubTopic"
-	LogSinkTopic  = "sinkTopic"
-	LogQueueName  = "queueName"
-	LogFunction   = "function"
-	LogContext    = "context"
-	LogName       = "name"
-	LogInvoke     = "invoke"
-	LogInstance   = "instance"
-	LogProcess    = "process"
-	LogSequence   = "sequence"
-	LogOffset     = "offset"
-	LogSink       = "sink"
-	LogTimestamp  = "timestamp"
-	LogVersion    = "version"
-	LogEvent      = "event"
-	LogSource     = "source"
-	LogTarget     = "target"
-	LogTopic      = "topic"
-	LogQOS        = "qos"
-
 	// topic validate fields
 	MaxSlashCount          = 8
 	MaxTopicNameLen        = 255

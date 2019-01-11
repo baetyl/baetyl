@@ -16,14 +16,14 @@ import (
 // NativeEngine native engine
 type NativeEngine struct {
 	context *Context
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 // NewNativeEngine create a new native engine
 func NewNativeEngine(context *Context) Inner {
 	return &NativeEngine{
 		context: context,
-		log:     logger.WithFields("mode", "native"),
+		log:     logger.Log.WithField("mode", "native"),
 	}
 }
 

@@ -19,7 +19,7 @@ type funclet struct {
 	cfg  config.Function
 	rtc  *runtime.Client
 	man  *Manager
-	log  *logger.Entry
+	log  logger.Entry
 	once sync.Once
 }
 

@@ -30,7 +30,10 @@ func New(confFile string) (module.Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(conf.Logger, "module", conf.UniqueName())
+	err = logger.Init(conf.Logger, "module", conf.UniqueName())
+	if err != nil {
+		return nil, err
+	}
 	if conf.Storage.Dir == "" {
 		conf.Storage.Dir = path.Join("var", "db", "openedge", "volume", conf.Name)
 	}

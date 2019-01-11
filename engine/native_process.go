@@ -9,6 +9,7 @@ import (
 
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/master"
 	"github.com/baidu/openedge/module/utils"
 )
 
@@ -26,14 +27,14 @@ type NativeProcess struct {
 	spec *NativeSpec
 	proc *os.Process
 	tomb utils.Tomb
-	log  *logger.Entry
+	log  logger.Entry
 }
 
 // NewNativeProcess create a new native process
 func NewNativeProcess(s *NativeSpec) *NativeProcess {
 	return &NativeProcess{
 		spec: s,
-		log:  logger.WithFields("module", s.module.UniqueName()),
+		log:  logger.Log.WithField("module", s.module.UniqueName()),
 	}
 }
 
@@ -101,6 +102,12 @@ func (w *NativeProcess) Dying() <-chan struct{} {
 	return w.tomb.Dying()
 }
 
+// Stats returns the stats of docker container
+func (w *NativeProcess) Stats() (*master.ModuleStats, error) {
+	// TODO: to implement
+	return &master.ModuleStats{}, nil
+}
+
 func (w *NativeProcess) startProcess() error {
 	proc, err := os.StartProcess(
 		w.spec.exec,
@@ -111,7 +118,7 @@ func (w *NativeProcess) startProcess() error {
 		return err
 	}
 	w.proc = proc
-	w.log = w.log.WithFields("pid", strconv.Itoa(proc.Pid))
+	w.log = w.log.WithField("pid", strconv.Itoa(proc.Pid))
 	return nil
 }
 

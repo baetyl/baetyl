@@ -15,7 +15,7 @@ type Manager struct {
 	servers []transport.Server
 	handle  Handle
 	tomb    utils.Tomb
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 // NewManager creates a server manager
@@ -27,7 +27,7 @@ func NewManager(addrs []string, cert utils.Certificate, handle Handle) (*Manager
 	m := &Manager{
 		servers: make([]transport.Server, 0),
 		handle:  handle,
-		log:     logger.WithFields("server", "manager"),
+		log:     logger.Log.WithField("manager", "server"),
 	}
 	for _, addr := range addrs {
 		svr, err := launcher.Launch(addr)

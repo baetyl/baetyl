@@ -18,7 +18,7 @@ type Dispatcher struct {
 	callback func(*packet.Publish)
 	buffer   chan struct{}
 	tomb     utils.Tomb
-	log      *logger.Entry
+	log      logger.Entry
 }
 
 // NewDispatcher creata a new dispatcher
@@ -26,7 +26,7 @@ func NewDispatcher(f *Function) (*Dispatcher, error) {
 	return &Dispatcher{
 		function: f,
 		buffer:   make(chan struct{}, f.cfg.Instance.Max),
-		log:      logger.WithFields("dispatcher", "func"),
+		log:      logger.Log.WithField("dispatcher", "func"),
 	}, nil
 }
 
