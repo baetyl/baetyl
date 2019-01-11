@@ -16,7 +16,7 @@ OpenEdge使用通用的[Git 分支构建模型](http://nvie.com/posts/a-successf
 
    ```bash
    go get github.com/baidu/openedge # 获取openedge代码库
-   cd $GOPATH/github.com/baidu/openedge # 进入openedge代码库目录
+   cd $GOPATH/src/github.com/baidu/openedge # 进入openedge代码库目录
    git checkout master  # 校验当前处于master主分支
    git remote add fork https://github.com/<your_github_account>/openedge  # 指定远程提交代码仓库
    ```
