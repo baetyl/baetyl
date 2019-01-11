@@ -26,11 +26,11 @@ type rulebase struct {
 	broker  broker
 	msgchan *msgchan
 	once    sync.Once
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 func newRuleBase(id string, persistent bool, b broker, r *router.Trie, publish, republish common.Publish) *rulebase {
-	log := logger.WithFields(common.LogComponent, "rule", common.LogTarget, id)
+	log := logger.Log.WithField("rule", id)
 	rb := &rulebase{
 		id:     id,
 		broker: b,

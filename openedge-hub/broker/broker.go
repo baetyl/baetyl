@@ -31,7 +31,7 @@ type Broker struct {
 	// others
 	config *config.Config
 	tomb   utils.Tomb
-	log    *logger.Entry
+	log    logger.Entry
 }
 
 // NewBroker NewBroker
@@ -51,7 +51,7 @@ func NewBroker(c *config.Config, pf *persist.Factory) (b *Broker, err error) {
 		msgQ1DB:    msgqos1DB,
 		offsetDB:   offsetDB,
 		offsetChan: make(chan *Offset, c.Message.Offset.Buffer.Size),
-		log:        logger.WithFields(common.LogComponent, "broker"),
+		log:        logger.Log.WithField("broker", "mqtt"),
 	}
 	if c.Status.Logging.Enable {
 		return b, b.tomb.Gos(b.persistingMsgQos1, b.persistingOffset, b.cleaningMsgQos1, b.logging)

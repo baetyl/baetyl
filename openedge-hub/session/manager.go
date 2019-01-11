@@ -19,7 +19,7 @@ type Manager struct {
 	flow     common.Flow
 	conf     *config.Message
 	rules    *rule.Manager
-	log      *logger.Entry
+	log      logger.Entry
 }
 
 // NewManager creates a session manager
@@ -35,7 +35,7 @@ func NewManager(conf *config.Config, flow common.Flow, rules *rule.Manager, pf *
 		conf:     &conf.Message,
 		recorder: newRecorder(sessionDB),
 		sessions: cmap.New(),
-		log:      logger.WithFields(common.LogComponent, "session_manager"),
+		log:      logger.Log.WithField("manager", "session"),
 	}, nil
 }
 

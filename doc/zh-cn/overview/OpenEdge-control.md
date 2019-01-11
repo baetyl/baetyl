@@ -1,7 +1,7 @@
 
 # OpenEdge可控式设计
 
-OPenEdge可控式设计主要包括3个方面的内容，其本质是OpenEdge联合[智能边缘BIE](https://cloud.baidu.com/product/bie.html)（Baidu-IntelliEdge）云端console管理套件一起实现对OpenEdge配置文件“一键配置、一键下发“，下发配置信息“一键更新、自动热加载”，及在Docker容器模式下“一键更新”容器镜像版本。
+OpenEdge可控式设计主要包括3个方面的内容，其本质是OpenEdge联合[智能边缘BIE](https://cloud.baidu.com/product/bie.html)（Baidu-IntelliEdge）云端console管理套件一起实现对OpenEdge配置文件“一键配置、一键下发“，下发配置信息“一键更新、自动热加载”，及在Docker容器模式下“一键更新”容器镜像版本。
 
 其中，“一键配置、一键下发“是指智能边缘BIE云端console支持用户通过在云端进行智能边缘核心设备的建立、身份制定、策略规则制定、函数编写，然后生成配置文件下发至OpenEdge本地运行包，可达到云端管理和应用下发，整体实现“一键配置、一键下发”的能力。另外，智能边缘BIE云端console还可以进行配置版本切换功能，其作用一是可以根据用户需求随时切换应用不同的配置；二是在发现某版本配置文件因使用者不熟练出现配置错误导致生产现场设备间消息收发紊乱的情况下，可以迅速切换稳定版本配置文件，及时止损。
 

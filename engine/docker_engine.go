@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"runtime"
 
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
@@ -27,7 +28,7 @@ type DockerEngine struct {
 	context *Context
 	client  *client.Client
 	network string
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 // NewDockerEngine create a new docker engine
@@ -39,7 +40,7 @@ func NewDockerEngine(ctx *Context) (Inner, error) {
 	e := &DockerEngine{
 		context: ctx,
 		client:  cli,
-		log:     logger.WithFields("mode", "docker"),
+		log:     logger.Log.WithField("mode", "docker"),
 	}
 	return e, e.initNetwork()
 }
@@ -81,7 +82,7 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		Cmd:          cmd,
 		Env:          utils.AppendEnv(m.Env, false),
 	}
-	if m.Resources.CPU.Cpus > 0 {
+	if runtime.GOOS == "linux" && m.Resources.CPU.Cpus > 0 {
 		sysInfo := sysinfo.New(true)
 		if !sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota {
 			e.log.Warnf("configuration 'resources.cpu.cpus' is ignored because host kernel does not support CPU cfs period/quota or the cgroup is not mounted.")

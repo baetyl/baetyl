@@ -29,7 +29,7 @@ type Manager struct {
 	trieq0 *router.Trie
 	rules  cmap.ConcurrentMap
 	tomb   utils.Tomb
-	log    *logger.Entry
+	log    logger.Entry
 }
 
 // NewManager creates a new rule manager
@@ -38,7 +38,7 @@ func NewManager(c []config.Subscription, b broker) (*Manager, error) {
 		broker: b,
 		rules:  cmap.New(),
 		trieq0: router.NewTrie(),
-		log:    logger.WithFields(common.LogComponent, "rule_manager"),
+		log:    logger.Log.WithField("manager", "rule"),
 	}
 	m.rules.Set(common.RuleMsgQ0, newRuleQos0(m.broker, m.trieq0))
 	m.rules.Set(common.RuleTopic, newRuleTopic(m.broker, m.trieq0))

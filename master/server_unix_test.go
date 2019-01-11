@@ -16,7 +16,7 @@ func TestAPIUnix(t *testing.T) {
 	os.MkdirAll("./var/", 0755)
 	defer os.RemoveAll("./var/")
 	addr := "unix://./var/test.sock"
-	s, err := NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: addr, Timeout: time.Minute})
+	s, err := NewServer(&mockAPI{pass: true}, config.HTTPServer{Address: addr, Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
@@ -31,13 +31,18 @@ func TestAPIUnix(t *testing.T) {
 	assert.NoError(t, err)
 	err = c.StopModule(&config.Module{Name: "name"})
 	assert.NoError(t, err)
+	stats, err := c.Stats()
+	assert.NoError(t, err)
+	assert.NotNil(t, stats)
+	err = c.Reload("var/db/v1.zip")
+	assert.NoError(t, err)
 }
 
 func TestAPIUnixUnauthorized(t *testing.T) {
 	os.MkdirAll("./var/", 0755)
 	defer os.RemoveAll("./var/")
 	addr := "unix://./var/test.sock"
-	s, err := NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: addr, Timeout: time.Minute})
+	s, err := NewServer(&mockAPI{pass: false}, config.HTTPServer{Address: addr, Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
@@ -50,5 +55,10 @@ func TestAPIUnixUnauthorized(t *testing.T) {
 	err = c.StartModule(&config.Module{Name: "name"})
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 	err = c.StopModule(&config.Module{Name: "name"})
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
+	stats, err := c.Stats()
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
+	assert.Nil(t, stats)
+	err = c.Reload("var/db/v1.zip")
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 }

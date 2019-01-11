@@ -16,7 +16,7 @@ type Function struct {
 	cfg   config.Function
 	pool  *pool.ObjectPool
 	man   *Manager
-	log   *logger.Entry
+	log   logger.Entry
 	count int64
 }
 
@@ -30,7 +30,7 @@ func newFunction(m *Manager, c config.Function) *Function {
 	f := &Function{
 		cfg: c,
 		man: m,
-		log: logger.WithFields("function", c.Name),
+		log: logger.Log.WithField("function", c.Name),
 	}
 	f.pool = pool.NewObjectPool(context.Background(), newFuncionFactory(f), pc)
 	return f
@@ -42,7 +42,7 @@ func (f *Function) newFunclet() (*funclet, error) {
 		id:  id,
 		cfg: f.cfg,
 		man: f.man,
-		log: f.log.WithFields("id", id),
+		log: f.log.WithField("id", id),
 	}
 	err := fl.start()
 	if err != nil {

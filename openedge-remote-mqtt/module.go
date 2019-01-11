@@ -11,7 +11,6 @@ import (
 type mo struct {
 	cfg Config
 	rrs []*ruler
-	log *logger.Entry
 }
 
 // New create a new module
@@ -21,7 +20,10 @@ func New(confFile string) (module.Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(cfg.Logger, "module", cfg.UniqueName())
+	err = logger.Init(cfg.Logger, "module", cfg.UniqueName())
+	if err != nil {
+		return nil, err
+	}
 	remotes := make(map[string]Remote)
 	for _, remote := range cfg.Remotes {
 		remotes[remote.Name] = remote
@@ -37,7 +39,6 @@ func New(confFile string) (module.Module, error) {
 	return &mo{
 		cfg: cfg,
 		rrs: rulers,
-		log: logger.WithFields(),
 	}, nil
 }
 
@@ -46,7 +47,7 @@ func (m *mo) Start() error {
 	for _, ruler := range m.rrs {
 		err := ruler.start()
 		if err != nil {
-			m.log.WithError(err).Errorf("failed to start rule")
+			logger.Log.WithError(err).Errorf("failed to start rule")
 			return err
 		}
 	}

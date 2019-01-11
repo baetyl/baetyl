@@ -10,32 +10,37 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockEngine struct {
+type mockAPI struct {
 	pass bool
 }
 
-func (e *mockEngine) Authenticate(username, password string) bool {
-	fmt.Println("Authenticate")
-	return e.pass
+func (a *mockAPI) stats() *master.Stats {
+	fmt.Println("stats")
+	return master.NewStats()
 }
 
-func (e *mockEngine) Start(_ config.Module) error {
-	fmt.Println("Start")
+func (a *mockAPI) reload(file string) error {
+	fmt.Println("reload", file)
 	return nil
 }
 
-func (e *mockEngine) Restart(_ string) error {
-	fmt.Println("restart")
+func (a *mockAPI) authModule(username, password string) bool {
+	fmt.Println("authModule")
+	return a.pass
+}
+
+func (a *mockAPI) startModule(_ config.Module) error {
+	fmt.Println("startModule")
 	return nil
 }
 
-func (e *mockEngine) Stop(_ string) error {
-	fmt.Println("Stop")
+func (a *mockAPI) stopModule(_ string) error {
+	fmt.Println("stopModule")
 	return nil
 }
 
 func TestAPIHttp(t *testing.T) {
-	s, err := NewServer(&mockEngine{pass: true}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
+	s, err := NewServer(&mockAPI{pass: true}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
@@ -50,10 +55,15 @@ func TestAPIHttp(t *testing.T) {
 	assert.NoError(t, err)
 	err = c.StopModule(&config.Module{Name: "name"})
 	assert.NoError(t, err)
+	stats, err := c.Stats()
+	assert.NoError(t, err)
+	assert.NotNil(t, stats)
+	err = c.Reload("var/db/v1.zip")
+	assert.NoError(t, err)
 }
 
 func TestAPIHttpUnauthorized(t *testing.T) {
-	s, err := NewServer(&mockEngine{pass: false}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
+	s, err := NewServer(&mockAPI{pass: false}, config.HTTPServer{Address: "tcp://127.0.0.1:0", Timeout: time.Minute})
 	assert.NoError(t, err)
 	defer s.Close()
 	err = s.Start()
@@ -66,5 +76,10 @@ func TestAPIHttpUnauthorized(t *testing.T) {
 	err = c.StartModule(&config.Module{Name: "name"})
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 	err = c.StopModule(&config.Module{Name: "name"})
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
+	stats, err := c.Stats()
+	assert.EqualError(t, err, "[400] account (test) unauthorized")
+	assert.Nil(t, stats)
+	err = c.Reload("var/db/v1.zip")
 	assert.EqualError(t, err, "[400] account (test) unauthorized")
 }

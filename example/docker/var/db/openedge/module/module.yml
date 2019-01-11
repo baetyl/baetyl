@@ -5,7 +5,7 @@ modules:
     expose:
       - 1883:1883
   - name: 'localfunc'
-    entry: 'hub.baiduce.com/openedge/openedge-function:0.1.1'
+    entry: 'hub.baidubce.com/openedge/openedge-function:0.1.1'
     resources:
       cpu:
         cpus: 1

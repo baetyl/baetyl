@@ -8,6 +8,8 @@
 /pubsub
 /openedge-consistency
 /output*
+/openedge-*.tar.gz
+/openedge-*.tar.bz2
 /**/.DS_Store
 /.vscode
 /**/libexec

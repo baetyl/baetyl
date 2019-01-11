@@ -18,7 +18,6 @@ import (
 )
 
 // TODO: use gomqtt's test tool: flow
-
 func TestSessionHandle(t *testing.T) {
 	r, err := prepare()
 	assert.NoError(t, err)
@@ -757,7 +756,7 @@ func prepare() (res *resources, err error) {
 
 	c, _ := config.NewConfig([]byte(""))
 	c.Logger.Console = true
-	c.Logger.Level = "debug"
+	// c.Logger.Level = "debug"
 	c.Message.Egress.Qos1.Retry.Interval = time.Second
 	c.Principals = []config.Principal{{
 		Username: "u1",
@@ -775,7 +774,10 @@ func prepare() (res *resources, err error) {
 			Action:  "pub",
 			Permits: []string{"test", "talks", "talks1", "talks2"},
 		}}}}
-	logger.Init(c.Logger)
+	err = logger.Init(c.Logger)
+	if err != nil {
+		return
+	}
 	res = new(resources)
 	res.factory, err = persist.NewFactory("./var/db/")
 	if err != nil {
