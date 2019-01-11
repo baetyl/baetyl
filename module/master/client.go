@@ -12,7 +12,7 @@ import (
 // Client client of api server
 type Client struct {
 	*http.Client
-	log *logger.Entry
+	log logger.Entry
 }
 
 // NewClient creates a new client
@@ -23,7 +23,7 @@ func NewClient(cc config.HTTPClient) (*Client, error) {
 	}
 	return &Client{
 		Client: cli,
-		log:    logger.WithFields("client", "api"),
+		log:    logger.Log.WithField("client", "api"),
 	}, nil
 }
 

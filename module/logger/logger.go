@@ -14,31 +14,44 @@ import (
 )
 
 // Entry logging entry
-type Entry struct {
+type Entry interface {
+	// Add an error as single field (using the key defined in ErrorKey) to the Entry.
+	WithError(err error) Entry
+	// Add a single field to the Entry.
+	WithField(key string, value interface{}) Entry
+	// Entry Printf family functions
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+	// Entry Println family functions
+	Debugln(args ...interface{})
+	Infoln(args ...interface{})
+	Warnln(args ...interface{})
+	Errorln(args ...interface{})
+}
+
+type logrusEntry struct {
 	*logrus.Entry
 }
 
-// WithFields adds a map of fields to the Entry.
-func (e *Entry) WithFields(vs ...string) *Entry {
-	fs := logrus.Fields{}
-	for index := 0; index < len(vs)-1; index = index + 2 {
-		fs[vs[index]] = vs[index+1]
-	}
-	return &Entry{Entry: e.Entry.WithFields(fs)}
+// Add an error as single field (using the key defined in ErrorKey) to the Entry.
+func (e *logrusEntry) WithError(err error) Entry {
+	return &logrusEntry{e.Entry.WithError(err)}
 }
 
-// WithError adds an error as single field (using the key defined in ErrorKey) to the Entry.
-func (e *Entry) WithError(err error) *Entry {
-	return &Entry{Entry: e.Entry.WithError(err)}
+// Add a single field to the Entry.
+func (e *logrusEntry) WithField(key string, value interface{}) Entry {
+	return &logrusEntry{e.Entry.WithField(key, value)}
 }
 
 // Log the globel logger
-var Log *Entry
+var Log Entry
 
 func init() {
 	log := logrus.New()
 	log.SetReportCaller(true)
-	Log = &Entry{Entry: logrus.NewEntry(log)}
+	Log = &logrusEntry{logrus.NewEntry(log)}
 }
 
 // Init init logger
@@ -74,28 +87,19 @@ func Init(c config.Logger, fields ...string) error {
 		}
 	}
 
-	Log = WithFields(fields...)
-	Log.Entry.Logger.Level = logLevel
-	Log.Entry.Logger.Out = logOutWriter
-	Log.Entry.Logger.Formatter = newFormatter(c.Format, true)
+	log := Log.(*logrusEntry)
+	log.Logger.Level = logLevel
+	log.Logger.Out = logOutWriter
+	log.Logger.Formatter = newFormatter(c.Format, true)
 	if fileHook != nil {
-		Log.Entry.Logger.Hooks.Add(fileHook)
+		log.Logger.Hooks.Add(fileHook)
 	}
+	logrusFields := logrus.Fields{}
+	for index := 0; index < len(fields)-1; index = index + 2 {
+		logrusFields[fields[index]] = fields[index+1]
+	}
+	Log = &logrusEntry{log.Entry.WithFields(logrusFields)}
 	return nil
-}
-
-// WithFields adds a map of fields to the Entry.
-func WithFields(vs ...string) *Entry {
-	fs := logrus.Fields{}
-	for index := 0; index < len(vs)-1; index = index + 2 {
-		fs[vs[index]] = vs[index+1]
-	}
-	return &Entry{Entry: Log.Entry.WithFields(fs)}
-}
-
-// WithError adds an error as single field (using the key defined in ErrorKey) to the Entry.
-func WithError(err error) *Entry {
-	return &Entry{Entry: Log.Entry.WithError(err)}
 }
 
 type fileConfig struct {

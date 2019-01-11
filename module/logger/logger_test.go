@@ -1,9 +1,11 @@
 package logger
 
 import (
-	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	"github.com/baidu/openedge/module/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -47,9 +49,9 @@ func TestNewEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithFields(tt.args.vs...); !reflect.DeepEqual(got.Entry.Data, tt.want) {
-				t.Errorf("WithFields() = %v, want %v", got.Entry.Data, tt.want)
-			}
+			err := Init(config.Logger{}, tt.args.vs...)
+			assert.NoError(t, err)
+			assert.EqualValues(t, Log.(*logrusEntry).Entry.Data, tt.want)
 		})
 	}
 }

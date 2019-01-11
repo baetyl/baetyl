@@ -27,7 +27,7 @@ type DockerEngine struct {
 	context *Context
 	client  *client.Client
 	network string
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 // NewDockerEngine create a new docker engine
@@ -39,7 +39,7 @@ func NewDockerEngine(ctx *Context) (Inner, error) {
 	e := &DockerEngine{
 		context: ctx,
 		client:  cli,
-		log:     logger.WithFields("mode", "docker"),
+		log:     logger.Log.WithField("mode", "docker"),
 	}
 	return e, e.initNetwork()
 }

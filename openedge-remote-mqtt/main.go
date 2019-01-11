@@ -23,14 +23,14 @@ func main() {
 	m, err := New(f.Config)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to create module:", err.Error())
-		logger.WithError(err).Errorf("failed to create module")
+		logger.Log.WithError(err).Errorf("failed to create module")
 		return
 	}
 	defer m.Close()
 	err = m.Start()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to start module:", err.Error())
-		logger.WithError(err).Errorf("failed to start module")
+		logger.Log.WithError(err).Errorf("failed to start module")
 		return
 	}
 	module.Wait()

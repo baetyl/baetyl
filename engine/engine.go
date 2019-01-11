@@ -54,7 +54,7 @@ type Engine struct {
 	resident  cmap.ConcurrentMap // resident modules from module.yml
 	temporary cmap.ConcurrentMap // temporary modules from function module
 	entries   cmap.ConcurrentMap
-	log       *logger.Entry
+	log       logger.Entry
 }
 
 // New creates a new engine
@@ -79,7 +79,7 @@ func New(ctx *Context) (*Engine, error) {
 		resident:  cmap.New(),
 		temporary: cmap.New(),
 		entries:   cmap.New(),
-		log:       logger.WithFields("mode", ctx.Mode),
+		log:       logger.Log.WithField("mode", ctx.Mode),
 	}, nil
 }
 
@@ -219,39 +219,42 @@ func (e *Engine) StopAll() {
 }
 
 // Stats returns stats of all modules
-func (e *Engine) Stats() map[string]*master.ModuleStats {
-	modules := make(map[string]*master.ModuleStats, 0)
-	for item := range e.resident.IterBuffered() {
-		mo, ok := item.Val.(Worker)
-		if !ok {
-			e.log.Warnf("resident module invalid")
-			continue
-		}
-		e.log.Debugf("to get stats of resident module (%s)", mo.UniqueName())
-		ms, err := mo.Stats()
-		if err != nil {
-			e.log.Warnf("failed to get stats of resident module (%s)", mo.UniqueName())
-			ms = &master.ModuleStats{Error: err.Error()}
-		}
-		ms.Type = "resident"
-		modules[mo.UniqueName()] = ms
+func (e *Engine) Stats() []*master.ModuleStats {
+	target := map[string]map[string]interface{}{
+		"resident":  e.resident.Items(),
+		"temporary": e.temporary.Items(),
 	}
-	for item := range e.temporary.IterBuffered() {
-		mo, ok := item.Val.(Worker)
-		if !ok {
-			e.log.Warnf("temporary module invalid")
-			continue
+	moduleCount := len(target["resident"]) + len(target["temporary"])
+	moduleStats := make(chan *master.ModuleStats, moduleCount)
+	var wg sync.WaitGroup
+	for tp, values := range target {
+		for name, module := range values {
+			mo, ok := module.(Worker)
+			if !ok {
+				e.log.Warnf("%s module invalid", tp)
+				continue
+			}
+			wg.Add(1)
+			go func(t, n string, w Worker) {
+				defer wg.Done()
+				ms, err := w.Stats()
+				if err != nil {
+					e.log.Warnf("failed to get stats of %s module (%s)", t, n)
+					ms = &master.ModuleStats{Error: err.Error()}
+				}
+				ms.Name = n
+				ms.Type = t
+				moduleStats <- ms
+			}(tp, name, mo)
 		}
-		e.log.Debugf("to get stats of temporary module (%s)", mo.UniqueName())
-		ms, err := mo.Stats()
-		if err != nil {
-			e.log.Warnf("failed to get stats of temporary module (%s)", mo.UniqueName())
-			ms = &master.ModuleStats{Error: err.Error()}
-		}
-		ms.Type = "temporary"
-		modules[mo.UniqueName()] = ms
 	}
-	return modules
+	wg.Wait()
+	close(moduleStats)
+	result := make([]*master.ModuleStats, 0)
+	for mo := range moduleStats {
+		result = append(result, mo)
+	}
+	return result
 }
 
 // Prepare prepares entries

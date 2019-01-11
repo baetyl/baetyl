@@ -32,14 +32,14 @@ type DockerContainer struct {
 	spec *DockerSpec
 	cid  string // container id
 	tomb utils.Tomb
-	log  *logger.Entry
+	log  logger.Entry
 }
 
 // NewDockerContainer create a new docker container
 func NewDockerContainer(s *DockerSpec) Worker {
 	return &DockerContainer{
 		spec: s,
-		log:  logger.WithFields("module", s.module.UniqueName()),
+		log:  logger.Log.WithField("module", s.module.UniqueName()),
 	}
 }
 
@@ -148,7 +148,7 @@ func (w *DockerContainer) startContainer() error {
 		}
 	}
 	w.cid = container.ID
-	w.log = w.log.WithFields("cid", container.ID[:12])
+	w.log = w.log.WithField("cid", container.ID[:12])
 	err = w.spec.client.ContainerStart(ctx, w.cid, types.ContainerStartOptions{})
 	if err != nil {
 		w.log.WithError(err).Warnln("failed to start container")

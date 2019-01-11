@@ -33,7 +33,7 @@ type Client struct {
 
 	finish sync.Once
 	tomb   utils.Tomb
-	log    *logger.Entry
+	log    logger.Entry
 }
 
 // NewClient returns a new client
@@ -53,7 +53,7 @@ func NewClient(cc config.MQTTClient, handler Handler) (*Client, error) {
 		connectFuture:   NewFuture(),
 		subscribeFuture: NewFuture(),
 		tracker:         client.NewTracker(cc.KeepAlive),
-		log:             logger.WithFields("clientid", cc.ClientID),
+		log:             logger.Log.WithField("clientid", cc.ClientID),
 	}
 	err = c.connect()
 	if err != nil {
@@ -159,8 +159,6 @@ func (c *Client) processor() error {
 			return c.die(err)
 		}
 
-		c.log.Debugln("received:", pkt.Type())
-
 		if first {
 			first = false
 			connack, ok := pkt.(*packet.Connack)
@@ -180,6 +178,7 @@ func (c *Client) processor() error {
 
 		switch p := pkt.(type) {
 		case *packet.Publish:
+			c.log.Debugln("received:", p.Type, p.ID, p.Message.QOS, p.Message.Topic)
 			if c.handler.ProcessPublish != nil {
 				err = c.handler.ProcessPublish(p)
 				if err != nil {
@@ -187,6 +186,7 @@ func (c *Client) processor() error {
 				}
 			}
 		case *packet.Puback:
+			c.log.Debugln("received:", p.Type, p.ID)
 			if c.handler.ProcessPuback != nil {
 				err = c.handler.ProcessPuback(p)
 				if err != nil {
@@ -194,6 +194,7 @@ func (c *Client) processor() error {
 				}
 			}
 		case *packet.Suback:
+			c.log.Debugln("received:", p.Type, p.ID)
 			if c.config.ValidateSubs {
 				for _, code := range p.ReturnCodes {
 					if code == packet.QOSFailure {
@@ -204,13 +205,14 @@ func (c *Client) processor() error {
 			}
 			c.subscribeFuture.Complete()
 		case *packet.Pingresp:
+			c.log.Debugln("received:", p.Type)
 			c.tracker.Pong()
 		case *packet.Connack:
+			c.log.Debugln("received:", p.Type)
 			err = client.ErrClientAlreadyConnecting
 			return c.die(err)
 		default:
-			err = client.ErrFailedSubscription
-			return c.die(err)
+			return c.die(fmt.Errorf("packet (%v) not supported", p))
 		}
 	}
 }

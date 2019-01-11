@@ -23,7 +23,7 @@ type api interface {
 type Server struct {
 	*http.Server
 	api api
-	log *logger.Entry
+	log logger.Entry
 }
 
 // NewServer creates a new server
@@ -35,7 +35,7 @@ func NewServer(a api, c config.HTTPServer) (*Server, error) {
 	s := &Server{
 		Server: svr,
 		api:    a,
-		log:    logger.WithFields("api", "http"),
+		log:    logger.Log.WithField("api", "http"),
 	}
 	s.Handle(s.stats, "GET", "/stats")
 	s.Handle(s.reload, "PUT", "/reload", "file", "{file}")

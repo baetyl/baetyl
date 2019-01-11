@@ -28,11 +28,11 @@ type msgchan struct {
 	publish          common.Publish
 	republish        common.Publish
 	republishBackoff *backoff.Backoff
-	log              *logger.Entry
+	log              logger.Entry
 }
 
 // newMsgChan creates a new message channel
-func newMsgChan(l0, l1 int, publish, republish common.Publish, republishTimeout time.Duration, quitTimeout time.Duration, persist func(uint64), log *logger.Entry) *msgchan {
+func newMsgChan(l0, l1 int, publish, republish common.Publish, republishTimeout time.Duration, quitTimeout time.Duration, persist func(uint64), log logger.Entry) *msgchan {
 	backoff := &backoff.Backoff{
 		Min:    time.Millisecond * 100,
 		Max:    republishTimeout,

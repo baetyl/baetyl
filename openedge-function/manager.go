@@ -12,7 +12,7 @@ type Manager struct {
 	cfg Config
 	fcs map[string]*Function
 	cli *master.Client
-	log *logger.Entry
+	log logger.Entry
 }
 
 // NewManager loads all functions and return
@@ -25,7 +25,7 @@ func NewManager(c Config) (*Manager, error) {
 		cfg: c,
 		cli: cli,
 		fcs: make(map[string]*Function),
-		log: logger.WithFields("manager", "function"),
+		log: logger.Log.WithField("manager", "function"),
 	}
 	for _, fc := range c.Functions {
 		m.fcs[fc.Name] = newFunction(m, fc)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -28,9 +29,7 @@ type mo struct {
 	http *http.Client
 	mqtt *mqtt.Dispatcher
 	cli  *master.Client
-
 	tomb utils.Tomb
-	log  *logger.Entry
 }
 
 // New create a new module
@@ -44,7 +43,10 @@ func New(confFile string) (module.Module, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(cfg.Logger, "module", cfg.UniqueName())
+	err = logger.Init(cfg.Logger, "module", cfg.UniqueName())
+	if err != nil {
+		return nil, err
+	}
 	key, err := ioutil.ReadFile(cfg.Remote.MQTT.Key)
 	if err != nil {
 		return nil, err
@@ -57,20 +59,27 @@ func New(confFile string) (module.Module, error) {
 	if err != nil {
 		return nil, err
 	}
+	p := path.Join("var", "db", "openedge", "volume", cfg.Name)
+	err = os.MkdirAll(p, os.ModePerm)
+	if err != nil {
+		logger.Log.WithError(err).Errorf("failed to make dir: %s", p)
+	}
 	return &mo{
 		cfg:  cfg,
 		key:  key,
 		cli:  mcli,
 		http: httpcli,
 		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT),
-		path: path.Join("var", "db", "openedge", "volume", cfg.Name),
-		log:  logger.WithFields("cloud", "agent"),
+		path: p,
 	}, nil
 }
 
 // Start starts module
 func (m *mo) Start() error {
 	h := mqtt.Handler{}
+	h.ProcessError = func(err error) {
+		logger.Log.Errorf(err.Error())
+	}
 	h.ProcessPublish = func(p *packet.Publish) error {
 		e := NewEvent(p.Message.Payload)
 		logger.Log.Debugln("backward event:", e)
@@ -81,14 +90,14 @@ func (m *mo) Start() error {
 			}
 			confFile, err := m.download(e.Detail.Version, e.Detail.DownloadURL)
 			if err != nil {
-				logger.WithError(err).Errorf("failed to download new config package")
-				m.report("reload_error", err.Error())
+				logger.Log.WithError(err).Errorf("failed to download new config package")
+				m.report("error", err.Error())
 				break
 			}
 			err = m.cli.Reload(confFile)
 			if err != nil {
-				logger.WithError(err).Errorf("failed to download new config package")
-				m.report("reload_error", err.Error())
+				logger.Log.WithError(err).Errorf("failed to download new config package")
+				m.report("error", err.Error())
 			} else {
 				m.report()
 			}
@@ -123,7 +132,7 @@ func (m *mo) reporting() error {
 	for {
 		select {
 		case <-t.C:
-			m.log.Debugln("to report stats")
+			logger.Log.Debugln("to report stats")
 			m.report()
 		case <-m.tomb.Dying():
 			return nil
@@ -137,9 +146,9 @@ func (m *mo) report(args ...string) {
 
 	s, err := m.cli.Stats()
 	if err != nil {
-		m.log.WithError(err).Errorf("failed to get master stats")
+		logger.Log.WithError(err).Errorf("failed to get master stats")
 		s = master.NewStats()
-		s.Info["report_error"] = err.Error()
+		s.Info["error"] = err.Error()
 	}
 	for index := 0; index < len(args)-1; index = index + 2 {
 		s.Info[args[index]] = args[index+1]
@@ -149,17 +158,16 @@ func (m *mo) report(args ...string) {
 		logger.Log.Debugln("stats", string(payload))
 		return
 	}
-	logger.WithError(err).Warnf("failed to report stats by mqtt")
 	p := packet.NewPublish()
 	p.Message.Topic = m.cfg.Remote.Report.Topic
 	p.Message.Payload = payload
 	err = m.mqtt.Send(p)
 	if err != nil {
-		logger.WithError(err).Warnf("failed to report stats by mqtt")
+		logger.Log.WithError(err).Warnf("failed to report stats by mqtt")
 	}
 	err = m.send(p.Message.Payload)
 	if err != nil {
-		logger.WithError(err).Warnf("failed to report stats by https")
+		logger.Log.WithError(err).Warnf("failed to report stats by https")
 	}
 }
 
@@ -179,18 +187,18 @@ func (m *mo) send(data []byte) error {
 
 func (m *mo) download(version, downloadURL string) (string, error) {
 	reqHeaders := http.Headers{}
-	reqHeaders.Set("x-iot-edge-clientid", m.cfg.Remote.MQTT.ClientID)
-	reqHeaders.Set("Content-Type", "application/octet-stream")
-	resHeaders, resBody, err := m.http.Send("GET", downloadURL, reqHeaders, nil)
+	// reqHeaders.Set("x-iot-edge-clientid", m.cfg.Remote.MQTT.ClientID)
+	// reqHeaders.Set("Content-Type", "application/octet-stream")
+	_, resBody, err := m.http.Send("GET", downloadURL, reqHeaders, nil)
 	if err != nil {
 		return "", err
 	}
-	data, err := m.decryptData(resHeaders.Get("x-iot-edge-key"), resBody)
-	if err != nil {
-		return "", err
-	}
+	// data, err := m.decryptData(resHeaders.Get("x-iot-edge-key"), resBody)
+	// if err != nil {
+	// 	return "", err
+	// }
 	file := path.Join(m.path, version+".zip")
-	return file, ioutil.WriteFile(file, data, 0644)
+	return file, ioutil.WriteFile(file, resBody, 0644)
 }
 
 func (m *mo) encryptData(data []byte) ([]byte, string, error) {
@@ -212,21 +220,21 @@ func (m *mo) encryptData(data []byte) ([]byte, string, error) {
 	return body, key, nil
 }
 
-func (m *mo) decryptData(key string, data []byte) ([]byte, error) {
-	// decode key using BASE64
-	k, err := base64.StdEncoding.DecodeString(key)
-	if err != nil {
-		return nil, err
-	}
-	// decrypt AES key using RSA
-	aesKey, err := utils.RsaPrivateDecrypt(k, m.key)
-	if err != nil {
-		return nil, err
-	}
-	// decrypt data using AES
-	decData, err := utils.AesDecrypt(data, aesKey)
-	return decData, err
-}
+// func (m *mo) decryptData(key string, data []byte) ([]byte, error) {
+// 	// decode key using BASE64
+// 	k, err := base64.StdEncoding.DecodeString(key)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// decrypt AES key using RSA
+// 	aesKey, err := utils.RsaPrivateDecrypt(k, m.key)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	// decrypt data using AES
+// 	decData, err := utils.AesDecrypt(data, aesKey)
+// 	return decData, err
+// }
 
 func defaults(c *Config) error {
 	if c.Remote.MQTT.Address == "" {
@@ -251,7 +259,7 @@ func defaults(c *Config) error {
 	c.API.Password = utils.GetEnv(module.EnvOpenEdgeModuleToken)
 	c.Remote.Desire.Topic = fmt.Sprintf(c.Remote.Desire.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
-	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, config.Subscription{QOS: 1, Topic: c.Remote.Report.Topic})
+	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, config.Subscription{QOS: 1, Topic: c.Remote.Desire.Topic})
 	return nil
 }
 

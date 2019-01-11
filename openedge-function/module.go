@@ -11,7 +11,6 @@ type mo struct {
 	cfg Config
 	man *Manager
 	rrs []*ruler
-	log *logger.Entry
 }
 
 // New creates a new module
@@ -22,7 +21,10 @@ func New(confDate string) (module.Module, error) {
 		return nil, err
 	}
 	defaults(&cfg)
-	logger.Init(cfg.Logger, "module", cfg.UniqueName())
+	err = logger.Init(cfg.Logger, "module", cfg.UniqueName())
+	if err != nil {
+		return nil, err
+	}
 	man, err := NewManager(cfg)
 	if err != nil {
 		return nil, err
@@ -31,7 +33,6 @@ func New(confDate string) (module.Module, error) {
 		cfg: cfg,
 		man: man,
 		rrs: []*ruler{},
-		log: logger.WithFields(),
 	}
 	for _, r := range cfg.Rules {
 		f, err := man.Get(r.Compute.Function)
@@ -51,7 +52,7 @@ func New(confDate string) (module.Module, error) {
 
 // Start starts module
 func (m *mo) Start() error {
-	m.log.Debugf("module starting")
+	logger.Log.Debugf("module starting")
 
 	for _, rr := range m.rrs {
 		err := rr.start()
@@ -64,7 +65,7 @@ func (m *mo) Start() error {
 
 // Close closes module
 func (m *mo) Close() {
-	defer m.log.Debugf("module closed")
+	defer logger.Log.Debugf("module closed")
 
 	for _, rr := range m.rrs {
 		rr.close()

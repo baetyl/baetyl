@@ -14,9 +14,9 @@ import (
 // Handle handles mqtt connection
 func (s *session) Handle() {
 	var err error
-	var p packet.Generic
+	var pkt packet.Generic
 	for {
-		p, err = s.conn.Receive()
+		pkt, err = s.conn.Receive()
 		if err != nil {
 			if !s.tomb.Alive() {
 				return
@@ -25,32 +25,39 @@ func (s *session) Handle() {
 			s.close(true)
 			return
 		}
-		if _, ok := p.(*packet.Connect); !ok && s.authorizer == nil {
+		if _, ok := pkt.(*packet.Connect); !ok && s.authorizer == nil {
 			s.log.Errorf("only connect packet allowed before auth")
 			s.close(true)
 			return
 		}
-		s.log.Debugln("received:", p.Type())
-		switch pack := p.(type) {
+		switch p := pkt.(type) {
 		case *packet.Connect:
-			err = s.onConnect(pack)
+			s.log.Debugln("received:", p.Type)
+			err = s.onConnect(p)
 		case *packet.Publish:
-			err = s.onPublish(pack)
+			s.log.Debugln("received:", p.Type, p.ID, p.Message.QOS, p.Message.Topic)
+			err = s.onPublish(p)
 		case *packet.Puback:
-			err = s.onPuback(pack)
+			s.log.Debugln("received:", p.Type, p.ID)
+			err = s.onPuback(p)
 		case *packet.Subscribe:
-			err = s.onSubscribe(pack)
+			s.log.Debugln("received:", p.Type, p.Subscriptions)
+			err = s.onSubscribe(p)
 		case *packet.Pingreq:
-			err = s.onPingreq(pack)
+			s.log.Debugln("received:", p.Type)
+			err = s.onPingreq(p)
 		case *packet.Pingresp:
+			s.log.Debugln("received:", p.Type)
 			err = nil // just ignore
 		case *packet.Disconnect:
+			s.log.Debugln("received:", p.Type)
 			s.close(false)
 			return
 		case *packet.Unsubscribe:
-			err = s.onUnsubscribe(pack)
+			s.log.Debugln("received:", p.Type, p.Topics)
+			err = s.onUnsubscribe(p)
 		default:
-			err = fmt.Errorf("packet (%v) not supported", pack)
+			err = fmt.Errorf("packet (%v) not supported", p)
 		}
 		if err != nil {
 			s.log.Errorf(err.Error())
@@ -61,7 +68,7 @@ func (s *session) Handle() {
 }
 
 func (s *session) onConnect(p *packet.Connect) error {
-	s.log = s.log.WithFields(common.LogClient, p.ClientID)
+	s.log = s.log.WithField("client", p.ClientID)
 	if p.Version != packet.Version31 && p.Version != packet.Version311 {
 		s.sendConnack(packet.InvalidProtocolVersion)
 		return fmt.Errorf("MQTT protocol version (%d) invalid", p.Version)

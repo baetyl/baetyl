@@ -20,7 +20,7 @@ type Dispatcher struct {
 	channel chan packet.Generic
 	backoff *backoff.Backoff
 	tomb    utils.Tomb
-	log     *logger.Entry
+	log     logger.Entry
 }
 
 // NewDispatcher creata a new dispatcher
@@ -33,7 +33,7 @@ func NewDispatcher(cc config.MQTTClient) *Dispatcher {
 			Max:    cc.Interval,
 			Factor: 2,
 		},
-		log: logger.WithFields("dispatcher", "mqtt"),
+		log: logger.Log.WithField("dispatcher", "mqtt"),
 	}
 }
 

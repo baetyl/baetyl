@@ -32,7 +32,7 @@ func (m *Master) reload(file string) error {
 	}
 	err = m.loadConfig()
 	if err != nil {
-		logger.WithError(err).Infof("failed to load new config, rollback")
+		logger.Log.WithError(err).Infof("failed to load new config, rollback")
 		err1 := m.unpackBackupFile()
 		if err1 != nil {
 			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file: " + err1.Error())
@@ -48,7 +48,7 @@ func (m *Master) reload(file string) error {
 	m.engine.StopAll()
 	err = m.engine.StartAll(m.conf.Modules)
 	if err != nil {
-		logger.WithError(err).Infof("failed to load new config, rollback")
+		logger.Log.WithError(err).Infof("failed to load new config, rollback")
 		err1 := m.unpackBackupFile()
 		if err1 != nil {
 			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file" + err1.Error())
@@ -79,7 +79,7 @@ func (m *Master) backupDir() error {
 func (m *Master) cleanBackupFile() {
 	err := os.RemoveAll(backupFile)
 	if err != nil {
-		logger.WithError(err).Errorf("failed to remove backup file")
+		logger.Log.WithError(err).Errorf("failed to remove backup file")
 	}
 }
 

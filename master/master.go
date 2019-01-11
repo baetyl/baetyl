@@ -37,7 +37,10 @@ func New(confDate string) (*Master, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Init(m.conf.Logger, "openedge", "master")
+	err = logger.Init(m.conf.Logger, "openedge", "master")
+	if err != nil {
+		return nil, err
+	}
 	logger.Log.Debugln("work dir:", pwd)
 	m.context = engine.Context{
 		PWD:   pwd,
@@ -74,7 +77,7 @@ func (m *Master) Close() {
 		m.engine.StopAll()
 	}
 	if err := m.server.Close(); err != nil {
-		logger.WithError(err).Errorf("failed to close api server")
+		logger.Log.WithError(err).Errorf("failed to close api server")
 	}
 }
 
@@ -94,7 +97,7 @@ func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll("var/run", os.ModePerm)
 		if err != nil {
-			logger.WithError(err).Errorf("failed to make dir: var/run")
+			logger.Log.WithError(err).Errorf("failed to make dir: var/run")
 		}
 		c.API.Address = "unix://var/run/openedge.sock"
 		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)

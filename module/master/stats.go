@@ -4,7 +4,8 @@ import "github.com/docker/docker/api/types"
 
 // ModuleStats stats of module
 type ModuleStats struct {
-	types.Stats `json:",inline"`
+	types.Stats `json:",inline,omitempt"`
+	Name        string `json:"name,omitempty"`
 	Type        string `json:"type,omitempty"`
 	Error       string `json:"error,omitempty"`
 	Status      string `json:"status,omitempty"`
