@@ -16,7 +16,7 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
    ```bash
    go get github.com/baidu/openedge # clone openedge official repository
-   cd $GOPATH/github.com/baidu/openedge # step into openedge
+   cd $GOPATH/src/github.com/baidu/openedge # step into openedge
    git checkout master  # verify master branch
    git remote add fork https://github.com/<your_github_account>/openedge  # specify remote repository
    ```
