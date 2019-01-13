@@ -50,7 +50,7 @@ var Log Entry
 
 func init() {
 	log := logrus.New()
-	log.SetReportCaller(true)
+	// log.SetReportCaller(true)
 	Log = &logrusEntry{logrus.NewEntry(log)}
 }
 
