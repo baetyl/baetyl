@@ -1,18 +1,18 @@
 TAG?=latest
 
-all: openedge-agent-bie
+all: openedge-agent
 
-openedge-agent-bie:
+openedge-agent:
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-image: openedge-agent-bie
+image: openedge-agent
 	@echo "IMAGE $<"
 	docker build -t $(IMAGE_PREFIX)$<:$(TAG) .
 
 .PHONY: clean
 clean:
-	rm -f openedge-agent-bie
+	rm -f openedge-agent
 
 .PHONY: rebuild
 rebuild: clean all
