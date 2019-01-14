@@ -16,7 +16,7 @@ const (
 	Start      EventType = "START"
 	Stop       EventType = "STOP"
 	SyncConfig EventType = "SYNC_CONFIG"
-	Unkown     EventType = "UNKNOWN"
+	Unknown    EventType = "UNKNOWN"
 )
 
 // Detail event details

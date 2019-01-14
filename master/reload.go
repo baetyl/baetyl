@@ -8,6 +8,7 @@ import (
 	"github.com/baidu/openedge/module"
 	"github.com/baidu/openedge/module/config"
 	"github.com/baidu/openedge/module/logger"
+	"github.com/baidu/openedge/module/utils"
 	"github.com/mholt/archiver"
 )
 
@@ -70,7 +71,7 @@ func (m *Master) reload(file string) error {
 }
 
 func (m *Master) backupDir() error {
-	if !dirExists(backupDir) {
+	if !utils.DirExists(backupDir) {
 		return nil
 	}
 	return archiver.Zip.Make(backupFile, []string{backupDir})
@@ -89,7 +90,7 @@ func (m *Master) unpackConfigFile(file string) error {
 }
 
 func (m *Master) unpackBackupFile() error {
-	if !fileExists(backupFile) {
+	if !utils.FileExists(backupFile) {
 		return os.RemoveAll(backupDir)
 	}
 	err := archiver.Zip.Open(backupFile, path.Dir(backupDir))
@@ -97,28 +98,11 @@ func (m *Master) unpackBackupFile() error {
 }
 
 func (m *Master) loadConfig() error {
-	if !fileExists(confFile) {
+	if !utils.FileExists(confFile) {
 		m.conf.Version = ""
 		m.conf.Modules = []config.Module{}
 		return nil
 	}
 
 	return module.Load(&m.conf, confFile)
-}
-
-// DirExists checkes file exists
-func dirExists(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return os.IsExist(err)
-	}
-	return fi.IsDir()
-}
-
-func fileExists(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return os.IsExist(err)
-	}
-	return !fi.IsDir()
 }

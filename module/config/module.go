@@ -9,6 +9,7 @@ type Module struct {
 	Entry     string            `yaml:"entry" json:"entry"`
 	Restart   Policy            `yaml:"restart" json:"restart"`
 	Expose    []string          `yaml:"expose" json:"expose" default:"[]"`
+	Volumes   []string          `yaml:"volumes" json:"volumes" default:"[]"`
 	Params    []string          `yaml:"params" json:"params" default:"[]"`
 	Env       map[string]string `yaml:"env" json:"env" default:"{}"`
 	Resources Resources         `yaml:"resources" json:"resources"`

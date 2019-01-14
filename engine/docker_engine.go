@@ -62,18 +62,28 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	volumes, err := utils.ParseVolumes(e.context.PWD, m.Volumes)
+	if err != nil {
+		return nil, err
+	}
 	sockPath := path.Join(e.context.PWD, "var", "run", "openedge.sock")
 	logPath := path.Join(e.context.PWD, "var", "log", "openedge", m.Name)
 	volumePath := path.Join(e.context.PWD, "var", "db", "openedge", "volume", m.Name)
 	modulePath := path.Join(e.context.PWD, "var", "db", "openedge", "module", m.Name)
 	configPath := path.Join(modulePath, "module.yml")
-	volumeBindings := []string{
-		fmt.Sprintf("%s:/var/run/openedge.sock", sockPath),
-		fmt.Sprintf("%s:/etc/openedge/module.yml:ro", configPath),
-		fmt.Sprintf("%s:/var/db/openedge/module/%s:ro", modulePath, m.Name),
-		fmt.Sprintf("%s:/var/db/openedge/volume/%s", volumePath, m.Name),
-		fmt.Sprintf("%s:/var/log/openedge/%s", logPath, m.Name),
+	if utils.FileExists(configPath) {
+		volumes = append(volumes, fmt.Sprintf("%s:/etc/openedge/module.yml:ro", configPath))
 	}
+	volumes = append(volumes, fmt.Sprintf("%s:/var/db/openedge/module/%s:ro", modulePath, m.Name))
+	volumes = append(volumes, fmt.Sprintf("%s:/var/db/openedge/volume/%s", volumePath, m.Name))
+	volumes = append(volumes, fmt.Sprintf("%s:/var/log/openedge/%s", logPath, m.Name))
+
+	volumes = append(volumes, fmt.Sprintf("%s:/etc/openedge-module:ro", modulePath))
+	volumes = append(volumes, fmt.Sprintf("%s:/var/db/openedge-module", volumePath))
+	volumes = append(volumes, fmt.Sprintf("%s:/var/log/openedge-module", logPath))
+	volumes = append(volumes, fmt.Sprintf("%s:/var/run/openedge.sock:ro", sockPath))
+
 	cmd := strslice.StrSlice{}
 	cmd = append(cmd, m.Params...)
 	config := &container.Config{
@@ -90,7 +100,7 @@ func (e *DockerEngine) Create(m config.Module) (Worker, error) {
 		}
 	}
 	hostConfig := &container.HostConfig{
-		Binds:        volumeBindings,
+		Binds:        volumes,
 		PortBindings: portBindings,
 		Resources: container.Resources{
 			CpusetCpus: m.Resources.CPU.SetCPUs,

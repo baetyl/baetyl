@@ -4,17 +4,17 @@ VERSION?=$(shell git rev-list HEAD|head -1|cut -c 1-6)
 all: openedge modules
 
 modules: \
+	openedge-agent/openedge-agent \
 	openedge-hub/openedge-hub \
 	openedge-function/openedge-function \
-	openedge-remote-mqtt/openedge-remote-mqtt \
-	openedge-agent-bie/openedge-agent-bie
+	openedge-remote-mqtt/openedge-remote-mqtt
 
 openedge:
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-agent-bie/openedge-agent-bie:
-	make -C openedge-agent-bie
+openedge-agent/openedge-agent:
+	make -C openedge-agent
 
 openedge-hub/openedge-hub:
 	make -C openedge-hub
@@ -56,7 +56,7 @@ uninstall:
 install-native: openedge modules
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
-	install -m 0755 openedge-agent-bie/openedge-agent-bie ${PREFIX}/bin/
+	install -m 0755 openedge-agent/openedge-agent ${PREFIX}/bin/
 	install -m 0755 openedge-hub/openedge-hub ${PREFIX}/bin/
 	install -m 0755 openedge-function/openedge-function ${PREFIX}/bin/
 	install -m 0755 openedge-remote-mqtt/openedge-remote-mqtt ${PREFIX}/bin/
@@ -67,7 +67,7 @@ install-native: openedge modules
 
 uninstall-native:
 	rm -f ${PREFIX}/bin/openedge
-	rm -f ${PREFIX}/bin/openedge-agent-bie
+	rm -f ${PREFIX}/bin/openedge-agent
 	rm -f ${PREFIX}/bin/openedge-hub
 	rm -f ${PREFIX}/bin/openedge-function
 	rm -f ${PREFIX}/bin/openedge-remote-mqtt
@@ -88,7 +88,7 @@ uninstall-native:
 .PHONY: clean
 clean:
 	rm -f openedge
-	make -C openedge-agent-bie clean
+	make -C openedge-agent clean
 	make -C openedge-hub clean
 	make -C openedge-function clean
 	make -C openedge-remote-mqtt clean
@@ -109,7 +109,7 @@ image:
 	make -C openedge-function image
 	make -C openedge-function-runtime-python27 image
 	make -C openedge-remote-mqtt image
-	make -C openedge-agent-bie image
+	make -C openedge-agent image
 
 release:
 	env GOOS=linux GOARCH=amd64 make image

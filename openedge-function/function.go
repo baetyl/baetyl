@@ -53,7 +53,7 @@ func (f *Function) newFunclet() (*funclet, error) {
 	return fl, nil
 }
 
-// Invoke call funtion to handle message and return result message
+// Invoke call function to handle message and return result message
 func (f *Function) Invoke(msg *runtime.Message) (*runtime.Message, error) {
 	item, err := f.pool.BorrowObject(context.Background())
 	if err != nil {
