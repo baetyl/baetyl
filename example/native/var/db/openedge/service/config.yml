@@ -1,0 +1,6 @@
+version: V0
+services:
+  localhub:
+    image: 'openedge-hub'
+  localfunc:
+    image: 'openedge-function'

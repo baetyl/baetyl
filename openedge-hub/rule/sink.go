@@ -4,7 +4,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/baidu/openedge/module/logger"
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/router"
 	"github.com/baidu/openedge/openedge-hub/utils"
@@ -18,7 +18,7 @@ type sink struct {
 	trieq0  *router.Trie
 	trieq1  *router.Trie
 	tomb    utils.Tomb
-	log     logger.Entry
+	log     openedge.Logger
 }
 
 func newSink(id string, b broker, r *router.Trie, msgchan *msgchan) *sink {
@@ -28,7 +28,7 @@ func newSink(id string, b broker, r *router.Trie, msgchan *msgchan) *sink {
 		trieq0:  r,
 		trieq1:  router.NewTrie(),
 		msgchan: msgchan,
-		log:     logger.Log.WithField("sink", id),
+		log:     openedge.WithField("sink", id),
 	}
 	return s
 }

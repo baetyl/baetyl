@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/utils"
+	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/utils"
 	validator "gopkg.in/validator.v2"
 )
 
@@ -13,7 +13,8 @@ func init() {
 
 // Config all config of edge
 type Config struct {
-	config.Module `yaml:",inline" json:",inline"`
+	Name   string           `yaml:"name" json:"name" validate:"nonzero"`
+	Logger openedge.LogInfo `yaml:"logger" json:"logger"`
 
 	Listen      []string          `yaml:"listen" json:"listen"`
 	Certificate utils.Certificate `yaml:"certificate" json:"certificate"`
@@ -27,8 +28,8 @@ type Config struct {
 	Shutdown Shutdown `yaml:"shutdown" json:"shutdown"`
 }
 
-// NewConfig creates a new config
-func NewConfig(in []byte) (*Config, error) {
+// New config
+func New(in []byte) (*Config, error) {
 	c := &Config{}
 	err := utils.UnmarshalYAML(in, c)
 	return c, err

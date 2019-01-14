@@ -1,0 +1,27 @@
+name: localfunc
+hub:
+  address: tcp://0.0.0.0:1883
+  username: test
+  password: hahaha
+prefix: 'openedge-function-'
+functions:
+  - name: 'sayhi'
+    runtime: 'python27'
+    handler: 'sayhi.handler'
+    codedir: 'func-nyeosbbch'
+    env:
+      USER_ID: acuiot
+    instance:
+      min: 0
+      max: 100
+      timeout: 30s
+    subscribe:
+      topic: t
+      qos: 1
+    publish:
+      topic: t/hi
+      qos: 1
+logger:
+  path: var/log/openedge-service.log
+  console: false
+  level: "debug"

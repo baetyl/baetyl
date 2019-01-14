@@ -1,129 +1,63 @@
 package master
 
 import (
-	"encoding/json"
-	"fmt"
+	"net"
+	"net/rpc"
+	"net/rpc/jsonrpc"
+	"net/url"
 
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/http"
-	"github.com/baidu/openedge/module/logger"
-	"github.com/baidu/openedge/module/master"
-	"github.com/baidu/openedge/module/utils"
+	openedge "github.com/baidu/openedge/api/go"
 )
 
-type api interface {
-	stats() *master.Stats
-	reload(file string) error
-	authModule(username, password string) bool
-	startModule(module config.Module) error
-	stopModule(module string) error
-}
-
-// Server api server to start/stop modules
+// Server for master API
 type Server struct {
-	*http.Server
-	api api
-	log logger.Entry
+	m *Master
+	l net.Listener
 }
 
-// NewServer creates a new server
-func NewServer(a api, c config.HTTPServer) (*Server, error) {
-	svr, err := http.NewServer(c)
+func (s *Server) start(m *Master) error {
+	srv := rpc.NewServer()
+	err := srv.RegisterName("openedge", s)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	s := &Server{
-		Server: svr,
-		api:    a,
-		log:    logger.Log.WithField("api", "http"),
-	}
-	s.Handle(s.stats, "GET", "/stats")
-	s.Handle(s.reload, "PUT", "/reload", "file", "{file}")
-	s.Handle(s.getPort, "GET", "/ports/available", "host", "{host}")
-	s.Handle(s.startModule, "PUT", "/modules/{name}/start")
-	s.Handle(s.stopModule, "PUT", "/modules/{name}/stop")
-	return s, nil
-}
-
-func (s *Server) stats(params http.Params, headers http.Headers, reqBody []byte) ([]byte, error) {
-	if !s.api.authModule(headers.Get("x-iot-edge-username"), headers.Get("x-iot-edge-password")) {
-		account := headers.Get("x-iot-edge-username")
-		s.log.Errorf("unauthorized to get port by account (%s)", account)
-		return nil, fmt.Errorf("account (%s) unauthorized", account)
-	}
-	resBody, err := json.Marshal(s.api.stats())
+	addr, err := url.Parse(m.cfg.Server)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return resBody, nil
-}
-
-func (s *Server) reload(params http.Params, headers http.Headers, reqBody []byte) ([]byte, error) {
-	if !s.api.authModule(headers.Get("x-iot-edge-username"), headers.Get("x-iot-edge-password")) {
-		account := headers.Get("x-iot-edge-username")
-		s.log.Errorf("unauthorized to get port by account (%s)", account)
-		return nil, fmt.Errorf("account (%s) unauthorized", account)
-	}
-	file, ok := params["file"]
-	if !ok {
-		return nil, fmt.Errorf("param 'file' missing")
-	}
-	go s.api.reload(file)
-	return nil, nil
-}
-
-func (s *Server) startModule(params http.Params, headers http.Headers, reqBody []byte) ([]byte, error) {
-	if !s.api.authModule(headers.Get("x-iot-edge-username"), headers.Get("x-iot-edge-password")) {
-		account := headers.Get("x-iot-edge-username")
-		s.log.Errorf("unauthorized to start module (%s) by account (%s)", params["name"], account)
-		return nil, fmt.Errorf("account (%s) unauthorized", account)
-	}
-	if reqBody == nil {
-		return nil, fmt.Errorf("request body missing")
-	}
-	var m config.Module
-	err := utils.UnmarshalJSON(reqBody, &m)
+	s.l, err = net.Listen(addr.Scheme, addr.Host)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if err = s.api.startModule(m); err != nil {
-		s.log.WithError(err).Errorf("failed to start module (%s)", m.UniqueName())
-		return nil, err
-	}
-	return nil, nil
+	s.m = m
+	go func() {
+		for {
+			conn, err := s.l.Accept()
+			if err != nil {
+				return
+			}
+			go srv.ServeCodec(jsonrpc.NewServerCodec(conn))
+		}
+	}()
+	return nil
 }
 
-func (s *Server) stopModule(params http.Params, headers http.Headers, reqBody []byte) ([]byte, error) {
-	if !s.api.authModule(headers.Get("x-iot-edge-username"), headers.Get("x-iot-edge-password")) {
-		account := headers.Get("x-iot-edge-username")
-		s.log.Errorf("unauthorized to stop module (%s) by account (%s)", params["name"], account)
-		return nil, fmt.Errorf("account (%s) unauthorized", account)
-	}
-	if err := s.api.stopModule(params["name"]); err != nil {
-		s.log.WithError(err).Errorf("failed to stop module (%s)", params["name"])
-		return nil, err
-	}
-	return nil, nil
+func (s *Server) stop() {
+	s.l.Close()
 }
 
-func (s *Server) getPort(params http.Params, headers http.Headers, reqBody []byte) ([]byte, error) {
-	if !s.api.authModule(headers.Get("x-iot-edge-username"), headers.Get("x-iot-edge-password")) {
-		account := headers.Get("x-iot-edge-username")
-		s.log.Errorf("unauthorized to get port by account (%s)", account)
-		return nil, fmt.Errorf("account (%s) unauthorized", account)
+// StartService method
+func (s *Server) StartService(args openedge.StartServiceRequest, reply *openedge.StartServiceResponse) error {
+	if s.m.svcs.Has(args.Name) {
+		*reply = "duplicated"
+		return nil
 	}
-	host, ok := params["host"]
-	if !ok {
-		host = "127.0.0.1"
-	}
-	port, err := utils.GetPortAvailable(host)
+	svc, err := s.m.engine.RunWithConfig(args.Name, &args.Info, args.Config)
 	if err != nil {
-		return nil, err
+		*reply = openedge.StartServiceResponse(err.Error())
+	} else {
+		*reply = ""
+		s.m.svcs.Set(args.Name, svc)
 	}
-	data := map[string]int{"port": port}
-	resBody, err := json.Marshal(&data)
-	if err != nil {
-		return nil, err
-	}
-	return resBody, nil
+	return nil
 }

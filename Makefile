@@ -1,28 +1,35 @@
 PREFIX?=/usr/local
 VERSION?=$(shell git rev-list HEAD|head -1|cut -c 1-6)
+PACKAGE_PREFIX?=
 
-all: openedge modules
+all: openedge packages
 
-modules: \
-	openedge-agent/openedge-agent \
-	openedge-hub/openedge-hub \
-	openedge-function/openedge-function \
-	openedge-remote-mqtt/openedge-remote-mqtt
+packages: \
+	openedge-agent/package.tar.gz \
+	openedge-hub/package.tar.gz \
+	openedge-function/package.tar.gz \
+	openedge-function-python27/package.tar.gz \
+	openedge-remote-mqtt/package.tar.gz
 
-openedge:
+SRC=$(wildcard *.go) $(shell find master api sdk protocol utils -type f -name '*.go')
+
+openedge: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-agent/openedge-agent:
+openedge-agent/package.tar.gz:
 	make -C openedge-agent
 
-openedge-hub/openedge-hub:
+openedge-hub/package.tar.gz:
 	make -C openedge-hub
 
-openedge-function/openedge-function:
+openedge-function/package.tar.gz:
 	make -C openedge-function
 
-openedge-remote-mqtt/openedge-remote-mqtt:
+openedge-function-python27/package.tar.gz:
+	make -C openedge-function-python27
+
+openedge-remote-mqtt/package.tar.gz:
 	make -C openedge-remote-mqtt
 
 test:
@@ -53,30 +60,24 @@ uninstall:
 	rmdir ${PREFIX}/bin
 	rmdir ${PREFIX}
 
-install-native: openedge modules
+install-native: openedge packages
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
-	install -m 0755 openedge-agent/openedge-agent ${PREFIX}/bin/
-	install -m 0755 openedge-hub/openedge-hub ${PREFIX}/bin/
-	install -m 0755 openedge-function/openedge-function ${PREFIX}/bin/
-	install -m 0755 openedge-remote-mqtt/openedge-remote-mqtt ${PREFIX}/bin/
-	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2.py ${PREFIX}/bin
-	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2_grpc.py ${PREFIX}/bin
-	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-agent
+	tar xzvf openedge-agent/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-agent
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-hub
+	tar xzvf openedge-hub/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-hub
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function
+	tar xzvf openedge-function/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function-python27
+	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function-python27
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-remote-mqtt
+	tar xzvf openedge-remote-mqtt/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-remote-mqtt
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
 uninstall-native:
 	rm -f ${PREFIX}/bin/openedge
-	rm -f ${PREFIX}/bin/openedge-agent
-	rm -f ${PREFIX}/bin/openedge-hub
-	rm -f ${PREFIX}/bin/openedge-function
-	rm -f ${PREFIX}/bin/openedge-remote-mqtt
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2.pyc
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.pyc
-	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
+	rm -rf ${PREFIX}/lib/openedge
 	rm -rf ${PREFIX}/etc/openedge
 	rm -rf ${PREFIX}/var/db/openedge
 	rmdir ${PREFIX}/var/db
@@ -91,6 +92,7 @@ clean:
 	make -C openedge-agent clean
 	make -C openedge-hub clean
 	make -C openedge-function clean
+	make -C openedge-function-python27 clean
 	make -C openedge-remote-mqtt clean
 	rm -f pubsub openedge-consistency
 

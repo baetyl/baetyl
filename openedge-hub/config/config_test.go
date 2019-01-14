@@ -9,7 +9,7 @@ import (
 	"github.com/creasty/defaults"
 	"github.com/stretchr/testify/assert"
 	validator "gopkg.in/validator.v2"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func TestDefaultsValidator(t *testing.T) {
@@ -63,7 +63,7 @@ M:
 func TestConfig(t *testing.T) {
 	cBytes, err := ioutil.ReadFile("../../example/native/var/db/openedge/module/localhub/module.yml")
 	assert.NoError(t, err)
-	c, err := NewConfig(cBytes)
+	c, err := New(cBytes)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "localhub", c.Name)
@@ -97,7 +97,7 @@ func TestConfig(t *testing.T) {
 }
 
 func TestConfigSubscription(t *testing.T) {
-	c, err := NewConfig([]byte(`
+	c, err := New([]byte(`
 id: id
 name: name
 subscriptions:

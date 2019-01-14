@@ -6,12 +6,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/baidu/openedge/module/logger"
+	openedge "github.com/baidu/openedge/api/go"
+
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/router"
 	"github.com/baidu/openedge/openedge-hub/utils"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 const (
@@ -29,7 +30,7 @@ type Manager struct {
 	trieq0 *router.Trie
 	rules  cmap.ConcurrentMap
 	tomb   utils.Tomb
-	log    logger.Entry
+	log    openedge.Logger
 }
 
 // NewManager creates a new rule manager
@@ -38,7 +39,7 @@ func NewManager(c []config.Subscription, b broker) (*Manager, error) {
 		broker: b,
 		rules:  cmap.New(),
 		trieq0: router.NewTrie(),
-		log:    logger.Log.WithField("manager", "rule"),
+		log:    openedge.WithField("manager", "rule"),
 	}
 	m.rules.Set(common.RuleMsgQ0, newRuleQos0(m.broker, m.trieq0))
 	m.rules.Set(common.RuleTopic, newRuleTopic(m.broker, m.trieq0))

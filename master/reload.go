@@ -1,17 +1,56 @@
 package master
 
 import (
-	"fmt"
-	"os"
+	"io/ioutil"
 	"path"
+	"sync"
 
-	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/logger"
-	"github.com/baidu/openedge/module/utils"
-	"github.com/mholt/archiver"
+	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/utils"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
+// Reload services
+func (m *Master) Reload(dir string) error {
+	data, err := ioutil.ReadFile(path.Join(dir, "config.yml"))
+	if err != nil {
+		return err
+	}
+	dyncfg := &DynamicConfig{}
+	err = utils.UnmarshalYAML(data, dyncfg)
+	if err != nil {
+		return err
+	}
+	// Very simple policy, stop all service and start new
+	if m.dyncfg != nil {
+		m.cleanServices()
+	}
+	m.dyncfg = dyncfg
+	for k, v := range dyncfg.Services {
+		s, err := m.engine.Run(k, v)
+		if err != nil {
+			return err
+		}
+		m.svcs.Set(k, s)
+	}
+	return nil
+}
+
+func (m *Master) cleanServices() {
+	svcs := m.svcs
+	m.svcs = cmap.New()
+	var wg sync.WaitGroup
+	for _, s := range svcs.Items() {
+		wg.Add(1)
+		go func(s engine.Service, wg *sync.WaitGroup) {
+			s.Stop(m.dyncfg.Grace)
+			wg.Done()
+		}(s.(engine.Service), &wg)
+	}
+	wg.Wait()
+}
+
+/*
 // backupFile backup file name
 const backupFile = "module.zip"
 
@@ -33,7 +72,7 @@ func (m *Master) reload(file string) error {
 	}
 	err = m.loadConfig()
 	if err != nil {
-		logger.Log.WithError(err).Infof("failed to load new config, rollback")
+		openedge.WithError(err).Infof("failed to load new config, rollback")
 		err1 := m.unpackBackupFile()
 		if err1 != nil {
 			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file: " + err1.Error())
@@ -47,9 +86,9 @@ func (m *Master) reload(file string) error {
 		return fmt.Errorf("failed to load new config: %s", err.Error())
 	}
 	m.engine.StopAll()
-	err = m.engine.StartAll(m.conf.Modules)
+	err = m.engine.StartAll(m.cfg.Modules)
 	if err != nil {
-		logger.Log.WithError(err).Infof("failed to load new config, rollback")
+		openedge.WithError(err).Infof("failed to load new config, rollback")
 		err1 := m.unpackBackupFile()
 		if err1 != nil {
 			err = fmt.Errorf(err.Error() + ";failed to unpack old config backup file" + err1.Error())
@@ -61,7 +100,7 @@ func (m *Master) reload(file string) error {
 			return err
 		}
 		m.engine.StopAll()
-		err1 = m.engine.StartAll(m.conf.Modules)
+		err1 = m.engine.StartAll(m.cfg.Modules)
 		if err1 != nil {
 			err = fmt.Errorf(err.Error() + ";failed to start modules with old config" + err.Error())
 			return err
@@ -80,7 +119,7 @@ func (m *Master) backupDir() error {
 func (m *Master) cleanBackupFile() {
 	err := os.RemoveAll(backupFile)
 	if err != nil {
-		logger.Log.WithError(err).Errorf("failed to remove backup file")
+		openedge.WithError(err).Errorf("failed to remove backup file")
 	}
 }
 
@@ -104,5 +143,10 @@ func (m *Master) loadConfig() error {
 		return nil
 	}
 
-	return module.Load(&m.conf, confFile)
+	data, err := ioutil.ReadFile(confFile)
+	if err != nil {
+		return err
+	}
+	return utils.UnmarshalYAML(data, &m.cfg)
 }
+*/

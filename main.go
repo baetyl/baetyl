@@ -1,36 +1,57 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"path"
 	"path/filepath"
+	"syscall"
 
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/master"
-	"github.com/baidu/openedge/module"
+	_ "github.com/baidu/openedge/master/engine/native"
 )
 
+const defaultConfig = "etc/openedge/openedge.yml"
+
 func main() {
-	f, err := module.ParseFlags(filepath.Join("etc", "openedge", "openedge.yml"))
+	exe, err := os.Executable()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to parse argument:", err.Error())
+		openedge.Fatalln("get executable path fail:", err.Error())
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		openedge.Fatalln("get realpath of executable fail:", err.Error())
+	}
+	workdir := path.Dir(path.Dir(exe))
+	var flagW = flag.String("w", workdir, "working directory")
+	var flagC = flag.String("c", defaultConfig, "config file path")
+	var flagH = flag.Bool("h", false, "show this help")
+	flag.Parse()
+	if *flagH {
+		fmt.Fprintf(flag.CommandLine.Output(), "Version of %s: %s\n", os.Args[0], master.Version)
+		flag.Usage()
 		return
 	}
-	if f.Help {
-		module.PrintUsage()
-		return
+	workdir, err = filepath.Abs(*flagW)
+	if err != nil {
+		openedge.Fatalln("get absolute path of workdir fail:", err.Error())
+	}
+	err = os.Chdir(workdir)
+	if err != nil {
+		openedge.Fatalln("change dir to workdir fail:", err.Error())
 	}
 
-	m, err := master.New(f.Config)
+	m, err := master.New(workdir, *flagC)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to create master:", err.Error())
-		return
-	}
-	defer m.Close()
-	err = m.Start()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to start master:", err.Error())
-		return
+		openedge.Fatalln("failed to create master:", err.Error())
 	}
 
-	module.Wait()
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
+	signal.Ignore(syscall.SIGPIPE)
+	<-sig
+	m.Close()
 }

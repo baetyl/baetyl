@@ -1,31 +1,46 @@
 package main
 
 import (
-	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/module/config"
+	openedge "github.com/baidu/openedge/api/go"
 )
 
 // Config function module config
 type Config struct {
-	config.Module `yaml:",inline" json:",inline"`
-	API           config.HTTPClient `yaml:"api" json:"api"`
-	Hub           config.MQTTClient `yaml:"hub" json:"hub"`
-	Rules         []Rule            `yaml:"rules" json:"rules" default:"[]"`
-	Functions     []config.Function `yaml:"functions" json:"functions" default:"[]"`
+	ImagePrefix string         `yaml:"prefix" json:"prefix"`
+	Functions   []FunctionInfo `yaml:"functions" json:"functions" default:"[]"`
 }
 
-// Rule function rule config
-type Rule struct {
-	ID        string `yaml:"id" json:"id"`
-	Subscribe struct {
-		Topic string     `yaml:"topic" json:"topic" validate:"nonzero"`
-		QOS   packet.QOS `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
-	} `yaml:"subscribe" json:"subscribe"`
-	Compute struct {
-		Function string `yaml:"function" json:"function" validate:"nonzero"`
-	} `yaml:"compute" json:"compute"`
-	Publish struct {
-		Topic string     `yaml:"topic" json:"topic" validate:"nonzero"`
-		QOS   packet.QOS `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
-	} `yaml:"publish" json:"publish"`
+// FunctionInfo config
+type FunctionInfo struct {
+	Name      string             `yaml:"name" json:"name" validate:"nonzero"`
+	Runtime   string             `yaml:"runtime" json:"runtime" validate:"nonzero"`
+	Handler   string             `yaml:"handler" json:"handler" validate:"nonzero"`
+	CodeDir   string             `yaml:"codedir" json:"codedir"`
+	Env       map[string]string  `yaml:"env" json:"env"`
+	Instance  Instance           `yaml:"instance" json:"instance"`
+	Subscribe openedge.TopicInfo `yaml:"subscribe" json:"subscribe"`
+	Publish   openedge.TopicInfo `yaml:"publish" json:"publish"`
+}
+
+// Instance instance config for function runtime module
+type Instance struct {
+	Min int `yaml:"min" json:"min" default:"0" validate:"min=0, max=100"`
+	Max int `yaml:"max" json:"max" default:"1" validate:"min=1, max=100"`
+	/* TODO
+	IdleTime  time.Duration `yaml:"idletime" json:"idletime" default:"10m"`
+	Timeout   time.Duration `yaml:"timeout" json:"timeout" default:"5m"`
+	Resources Resources     `yaml:",inline"  json:",inline"`
+	Message   struct {
+		Length Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
+	} `yaml:"message" json:"message"`
+	*/
+}
+
+// RuntimeInfo config
+type RuntimeInfo struct {
+	openedge.Config `yaml:",inline" json:",inline"`
+	Subscribe       openedge.TopicInfo `yaml:"subscribe" json:"subscribe"`
+	Publish         openedge.TopicInfo `yaml:"publish" json:"publish"`
+	Name            string             `yaml:"name" json:"name" validate:"nonzero"`
+	Handler         string             `yaml:"handler" json:"handler" validate:"nonzero"`
 }

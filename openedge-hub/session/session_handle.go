@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/module/mqtt"
 	"github.com/baidu/openedge/openedge-hub/auth"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/utils"
+	"github.com/baidu/openedge/protocol/mqtt"
 	"github.com/docker/distribution/uuid"
 )
 
