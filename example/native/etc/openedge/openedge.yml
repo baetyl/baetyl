@@ -1,5 +1,5 @@
 mode: native
 logger:
   path: var/log/openedge/openedge.log
-  console: false
+  console: true
   level: debug

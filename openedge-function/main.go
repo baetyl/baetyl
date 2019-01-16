@@ -52,7 +52,7 @@ func run(ctx openedge.Context) error {
 			Mounts: []openedge.MountInfo{
 				openedge.MountInfo{
 					Volume: f.CodeDir,
-					Target: "/code",
+					Target: "code",
 				},
 			},
 			// TODO Restart

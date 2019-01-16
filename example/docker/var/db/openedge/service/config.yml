@@ -1,0 +1,13 @@
+version: V0
+services:
+  localhub:
+    image: 'openedge-hub'
+    expose:
+      - 1883:1883
+  localfunc:
+    image: 'openedge-function'
+    resources:
+      cpu:
+        cpus: 1
+      memory:
+        limit: 500m

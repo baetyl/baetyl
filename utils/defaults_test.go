@@ -7,47 +7,47 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type confModule struct {
+type testDefaultsModule struct {
 	Name   string   `yaml:"name"`
 	Params []string `yaml:"params" default:"[\"-c\", \"conf.yml\"]"`
 }
 
-type confStruct struct {
-	Others  string        `yaml:"others"`
-	Timeout time.Duration `yaml:"timeout" default:"1m"`
-	Modules []confModule  `yaml:"modules" default:"[]"`
+type testDefaultsStruct struct {
+	Others  string               `yaml:"others"`
+	Timeout time.Duration        `yaml:"timeout" default:"1m"`
+	Modules []testDefaultsModule `yaml:"modules" default:"[]"`
 }
 
 func TestSetDefaults(t *testing.T) {
 	tests := []struct {
 		name    string
-		args    *confStruct
-		want    *confStruct
+		args    *testDefaultsStruct
+		want    *testDefaultsStruct
 		wantErr bool
 	}{
 		{
 			name: "defaults-struct-slice",
-			args: &confStruct{
+			args: &testDefaultsStruct{
 				Others: "others",
-				Modules: []confModule{
-					confModule{
+				Modules: []testDefaultsModule{
+					testDefaultsModule{
 						Name: "m1",
 					},
-					confModule{
+					testDefaultsModule{
 						Name:   "m2",
 						Params: []string{"arg1", "arg2"},
 					},
 				},
 			},
-			want: &confStruct{
+			want: &testDefaultsStruct{
 				Others:  "others",
 				Timeout: time.Minute,
-				Modules: []confModule{
-					confModule{
+				Modules: []testDefaultsModule{
+					testDefaultsModule{
 						Name:   "m1",
 						Params: []string{"-c", "conf.yml"},
 					},
-					confModule{
+					testDefaultsModule{
 						Name:   "m2",
 						Params: []string{"arg1", "arg2"},
 					},

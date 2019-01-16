@@ -11,7 +11,15 @@ import (
 
 	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/master"
+	_ "github.com/baidu/openedge/master/engine/docker"
 	_ "github.com/baidu/openedge/master/engine/native"
+)
+
+// compile variables
+var (
+	Version   string
+	BuildTime string
+	GoVersion string
 )
 
 const defaultConfig = "etc/openedge/openedge.yml"
@@ -31,7 +39,13 @@ func main() {
 	var flagH = flag.Bool("h", false, "show this help")
 	flag.Parse()
 	if *flagH {
-		fmt.Fprintf(flag.CommandLine.Output(), "Version of %s: %s\n", os.Args[0], master.Version)
+		fmt.Fprintf(
+			flag.CommandLine.Output(),
+			"OpenEdge version %s\nbuild time %s\n%s\n\n",
+			Version,
+			BuildTime,
+			GoVersion,
+		)
 		flag.Usage()
 		return
 	}

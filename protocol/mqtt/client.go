@@ -81,38 +81,40 @@ func (c *Client) connect() (err error) {
 	// start process routine
 	c.tomb.Go(c.processor)
 
-	/*
-			if len(c.config.Subscriptions) == 0 {
-				err = c.connectFuture.Wait(c.config.Timeout)
-				if err != nil {
-					return c.die(err)
-				}
-				return nil
-			}
-
-			// allocate subscribe packet
-			subscribe := packet.NewSubscribe()
-			subscribe.ID = 1
-			subscribe.Subscriptions = c.config.GetSubscriptions()
-
-		// send packet
-		err = c.send(subscribe, true)
+	if len(c.config.Subscriptions) == 0 {
+		err = c.connectFuture.Wait(c.config.Timeout)
 		if err != nil {
 			return c.die(err)
 		}
-	*/
+		return nil
+	}
+
+	// allocate subscribe packet
+	subscribe := packet.NewSubscribe()
+	subscribe.ID = 1
+	subscribe.Subscriptions = make([]packet.Subscription, 0)
+	for _, s := range c.config.Subscriptions {
+		subscribe.Subscriptions = append(subscribe.Subscriptions, packet.Subscription{
+			Topic: s.Topic,
+			QOS:   packet.QOS(s.QoS),
+		})
+	}
+
+	// send packet
+	err = c.send(subscribe, true)
+	if err != nil {
+		return c.die(err)
+	}
 
 	err = c.connectFuture.Wait(c.config.Timeout)
 	if err != nil {
 		return c.die(err)
 	}
 
-	/*
-		err = c.subscribeFuture.Wait(c.config.Timeout)
-		if err != nil {
-			return c.die(err)
-		}
-	*/
+	err = c.subscribeFuture.Wait(c.config.Timeout)
+	if err != nil {
+		return c.die(err)
+	}
 	return nil
 }
 

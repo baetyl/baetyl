@@ -1,16 +1,15 @@
-package utils_test
+package utils
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/module/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTomb(t *testing.T) {
-	tb := new(utils.Tomb)
+	tb := new(Tomb)
 	err := tb.Go(func() error {
 		<-tb.Dying()
 		return nil
@@ -20,7 +19,7 @@ func TestTomb(t *testing.T) {
 	err = tb.Wait()
 	assert.NoError(t, err)
 
-	tb = new(utils.Tomb)
+	tb = new(Tomb)
 	err = tb.Go(func() error {
 		<-tb.Dying()
 		return fmt.Errorf("abc")
@@ -33,7 +32,7 @@ func TestTomb(t *testing.T) {
 	err = tb.Wait()
 	assert.EqualError(t, err, "abc")
 
-	tb = new(utils.Tomb)
+	tb = new(Tomb)
 	tb.Kill(fmt.Errorf("abc"))
 	err = tb.Go(func() error {
 		<-tb.Dying()
@@ -43,7 +42,7 @@ func TestTomb(t *testing.T) {
 	err = tb.Wait()
 	assert.EqualError(t, err, "abc")
 
-	tb = new(utils.Tomb)
+	tb = new(Tomb)
 	tb.Kill(fmt.Errorf("abc"))
 	err = tb.Wait()
 	assert.NoError(t, err)
@@ -56,7 +55,7 @@ func TestTomb(t *testing.T) {
 	err = tb.Wait()
 	assert.EqualError(t, err, "abc")
 
-	tb = new(utils.Tomb)
+	tb = new(Tomb)
 	tb.Kill(nil)
 	err = tb.Wait()
 	assert.NoError(t, err)
@@ -69,7 +68,7 @@ func TestTomb(t *testing.T) {
 	err = tb.Wait()
 	assert.EqualError(t, err, "abc")
 
-	tb = new(utils.Tomb)
+	tb = new(Tomb)
 	err = tb.Go(func() error {
 		<-tb.Dying()
 		return nil
@@ -84,7 +83,7 @@ func TestTomb(t *testing.T) {
 	})
 	assert.EqualError(t, err, "tomb.Go called after all goroutines terminated")
 
-	tb = new(utils.Tomb)
+	tb = new(Tomb)
 	err = tb.Go(func() error {
 		return nil
 	})
@@ -102,7 +101,7 @@ func TestTomb(t *testing.T) {
 func BenchmarkA(b *testing.B) {
 	msg := "aaa"
 	msgchan := make(chan string, b.N)
-	var tomb utils.Tomb
+	var tomb Tomb
 	for i := 0; i < b.N; i++ {
 		select {
 		case <-tomb.Dying():
@@ -116,7 +115,7 @@ func BenchmarkA(b *testing.B) {
 func BenchmarkB(b *testing.B) {
 	msg := "aaa"
 	msgchan := make(chan string, b.N)
-	var tomb utils.Tomb
+	var tomb Tomb
 	for i := 0; i < b.N; i++ {
 		if !tomb.Alive() {
 			continue

@@ -36,37 +36,37 @@ const defaultFactoryPath = "var/db/openedge-hub"
 func (m *mo) init() error {
 	err := utils.LoadYAML(defaultConfigPath, &m.cfg)
 	if err != nil {
-		openedge.Errorln("load config fail:", err.Error())
+		openedge.Errorln("failed to load config:", err.Error())
 		return err
 	}
 	err = sdk.InitLogger(&m.cfg.Logger)
 	if err != nil {
-		openedge.Errorln("init logger fail:", err.Error())
+		openedge.Errorln("failed to init logger:", err.Error())
 		return err
 	}
 	m.factory, err = persist.NewFactory(defaultFactoryPath)
 	if err != nil {
-		openedge.Errorln("new factory fail:", err.Error())
+		openedge.Errorln("failed to new factory:", err.Error())
 		return err
 	}
 	m.broker, err = broker.NewBroker(&m.cfg, m.factory)
 	if err != nil {
-		openedge.Errorln("new broker fail:", err.Error())
+		openedge.Errorln("failed to new broker:", err.Error())
 		return err
 	}
 	m.Rules, err = rule.NewManager(m.cfg.Subscriptions, m.broker)
 	if err != nil {
-		openedge.Errorln("new rule manager fail:", err.Error())
+		openedge.Errorln("failed to new rule manager:", err.Error())
 		return err
 	}
 	m.Sessions, err = session.NewManager(&m.cfg, m.broker.Flow, m.Rules, m.factory)
 	if err != nil {
-		openedge.Errorln("new session manager fail:", err.Error())
+		openedge.Errorln("failed to new session manager:", err.Error())
 		return err
 	}
 	m.servers, err = server.NewManager(m.cfg.Listen, m.cfg.Certificate, m.Sessions.Handle)
 	if err != nil {
-		openedge.Errorln("new server manager fail:", err.Error())
+		openedge.Errorln("failed to new server manager:", err.Error())
 		return err
 	}
 	m.Rules.Start()
@@ -117,7 +117,7 @@ func main() {
 	var m mo
 	err := m.init()
 	if err != nil {
-		openedge.Fatalln("init openedge-hub fail:", err.Error())
+		openedge.Fatalln("failed to init openedge-hub:", err.Error())
 	}
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)

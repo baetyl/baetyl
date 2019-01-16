@@ -77,15 +77,7 @@ func (e *nativeEngine) Run(name string, si *openedge.ServiceInfo) (engine.Servic
 		os.RemoveAll(wdir)
 		return nil, err
 	}
-	err = os.MkdirAll(path.Join(wdir, "var", "log"), 0755)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = os.Symlink(
-		path.Join(e.wdir, "var/log/openedge", fmt.Sprintf("%s.log", name)),
-		path.Join(wdir, "var/log/openedge-service.log"),
-	)
+	err = e.mklog(name, wdir)
 	if err != nil {
 		os.RemoveAll(wdir)
 		return nil, err
@@ -97,7 +89,7 @@ func (e *nativeEngine) Run(name string, si *openedge.ServiceInfo) (engine.Servic
 	}
 	p, err := startProcess(e.wdir, wdir, name, si)
 	if err != nil {
-		e.log.Errorln("start process fail:", err.Error())
+		e.log.Errorln("failed to start process:", err.Error())
 		os.RemoveAll(wdir)
 		return nil, err
 	}
@@ -140,15 +132,11 @@ func (e *nativeEngine) RunWithConfig(name string, si *openedge.ServiceInfo, cfg 
 		os.RemoveAll(wdir)
 		return nil, err
 	}
-	err = os.MkdirAll(path.Join(wdir, "var", "log"), 0755)
+	err = e.mklog(name, wdir)
 	if err != nil {
 		os.RemoveAll(wdir)
 		return nil, err
 	}
-	err = os.Symlink(
-		path.Join(e.wdir, "var/log/openedge", fmt.Sprintf("%s.log", name)),
-		path.Join(wdir, "var/log/openedge-service.log"),
-	)
 	if err != nil {
 		os.RemoveAll(wdir)
 		return nil, err
@@ -160,7 +148,7 @@ func (e *nativeEngine) RunWithConfig(name string, si *openedge.ServiceInfo, cfg 
 	}
 	p, err := startProcess(e.wdir, wdir, name, si)
 	if err != nil {
-		e.log.Errorln("start process fail:", err.Error())
+		e.log.Errorln("failed to start process:", err.Error())
 		os.RemoveAll(wdir)
 		return nil, err
 	}
@@ -184,6 +172,20 @@ func (e *nativeEngine) RunWithConfig(name string, si *openedge.ServiceInfo, cfg 
 	}
 	go s.supervise()
 	return s, nil
+}
+
+func (e *nativeEngine) mklog(name, wdir string) error {
+	logdir := path.Join(e.wdir, "var", "log", name)
+	err := os.MkdirAll(logdir, 0755)
+	if err != nil {
+		return err
+	}
+	elogdir := path.Join(wdir, "var", "log")
+	err = os.MkdirAll(elogdir, 0755)
+	if err != nil {
+		return err
+	}
+	return os.Symlink(logdir, elogdir)
 }
 
 func (e *nativeEngine) mount(wdir string, ms []openedge.MountInfo) error {
@@ -243,7 +245,7 @@ func (s *nativeService) supervise() {
 				}
 				s.retry++
 				if err != nil {
-					s.e.log.Errorln("restart process fail:", err.Error())
+					s.e.log.Errorln("failed to restart process:", err.Error())
 					continue
 				}
 				s.p = p
@@ -285,7 +287,7 @@ func startProcess(cdir string, wdir string, name string, si *openedge.ServiceInf
 func (s *nativeService) waitProcess() {
 	ps, err := s.p.Wait()
 	if err != nil {
-		s.e.log.Errorln("wait process fail:", err.Error())
+		s.e.log.Errorln("failed to wait process:", err.Error())
 	}
 	s.done <- ps
 }

@@ -65,8 +65,8 @@ func (l *logger) Fatalln(args ...interface{}) {
 	l.entry.Fatalln(args...)
 }
 
-// InitLogger of global logger
-func InitLogger(c *openedge.LogInfo, fields ...string) error {
+// NewLogger from config
+func NewLogger(c *openedge.LogInfo, fields ...string) (openedge.Logger, error) {
 	var logOutWriter io.Writer
 	if c.Console == true {
 		logOutWriter = os.Stdout
@@ -82,7 +82,7 @@ func InitLogger(c *openedge.LogInfo, fields ...string) error {
 	if len(c.Path) != 0 {
 		err := os.MkdirAll(filepath.Dir(c.Path), 0755)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		fileHook, err = newFileHook(fileConfig{
 			Filename:   c.Path,
@@ -94,7 +94,7 @@ func InitLogger(c *openedge.LogInfo, fields ...string) error {
 			Compress:   true,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -110,9 +110,18 @@ func InitLogger(c *openedge.LogInfo, fields ...string) error {
 	for index := 0; index < len(fields)-1; index = index + 2 {
 		logrusFields[fields[index]] = fields[index+1]
 	}
-	openedge.SetGlobalLogger(&logger{
+	return &logger{
 		entry: entry.WithFields(logrusFields),
-	})
+	}, err
+}
+
+// InitLogger of global logger
+func InitLogger(c *openedge.LogInfo, fields ...string) error {
+	l, err := NewLogger(c, fields...)
+	if err != nil {
+		return err
+	}
+	openedge.SetGlobalLogger(l)
 	return nil
 }
 

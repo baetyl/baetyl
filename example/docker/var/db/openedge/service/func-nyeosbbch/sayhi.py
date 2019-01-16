@@ -45,12 +45,14 @@ def handler(event, context):
         res['invoked'] = True
         return res
 
-    event['USER_ID'] = os.environ['USER_ID']
-    event['functionName'] = context['functionName']
+    #event['USER_ID'] = os.environ['USER_ID']
+    event['functionName'] = context.function_name
+    '''
     event['functionInvokeID'] = context['functionInvokeID']
     event['invokeid'] = context['invokeid']
     event['messageQOS'] = context['messageQOS']
     event['messageTopic'] = context['messageTopic']
+    '''
     event['py'] = '你好，世界！'
 
     return event

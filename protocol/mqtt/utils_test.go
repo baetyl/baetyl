@@ -1,4 +1,4 @@
-package mqtt_test
+package mqtt
 
 import (
 	"net"
@@ -8,8 +8,7 @@ import (
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/256dpi/gomqtt/transport/flow"
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/mqtt"
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/creasty/defaults"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,14 +21,14 @@ func safeReceive(ch chan struct{}) {
 	}
 }
 
-func newConfig(t *testing.T, port string) (c config.MQTTClient) {
+func newConfig(t *testing.T, port string) (c openedge.MqttClientInfo) {
 	c.CleanSession = true
 	c.Address = "tcp://localhost:" + port
 	defaults.Set(&c)
 	return
 }
 
-func assertNoErrorCallback(t *testing.T) (h mqtt.Handler) {
+func assertNoErrorCallback(t *testing.T) (h Handler) {
 	h.ProcessError = func(err error) {
 		assert.NoError(t, err)
 		assert.FailNow(t, "ProcessError should not have been called")
