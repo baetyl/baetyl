@@ -281,5 +281,7 @@ OpenEdge is provided under the [Apache-2.0 license](./LICENSE).
 
 As the first open edge computing framework in China, OpenEdge aims to create a lightweight, secure, reliable and scalable edge computing community that will create a good ecological environment. Here, we offer the following options for you to choose from:
 
+> + If you want to participate in OpenEdge's daily development communication, you are welcome to join [Wechat-for-OpenEdge](https://openedge.bj.bcebos.com/Wechat/Wechat-OpenEdge.png)
 > + If you have more about feature requirements or bug feedback of OpenEdge, please [Submit an issue](https://github.com/baidu/openedge/issues)
+> + If you want to know more about OpenEdge and other services of Baidu Cloud, you are welcome to visit [Baidu-Cloud-forum](https://cloud.baidu.com/forum/bce)
 > + If you have better development advice about OpenEdge, please contact us: [contact@openedge.tech](contact@openedge.tech)
