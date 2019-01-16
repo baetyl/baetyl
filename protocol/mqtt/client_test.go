@@ -1,4 +1,4 @@
-package mqtt_test
+package mqtt
 
 import (
 	"testing"
@@ -6,20 +6,19 @@ import (
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport/flow"
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/mqtt"
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestClientConnectErrorMissingAddress(t *testing.T) {
-	c, err := mqtt.NewClient(config.MQTTClient{}, mqtt.Handler{})
+	c, err := NewClient(openedge.MqttClientInfo{}, Handler{})
 	assert.EqualError(t, err, "parse : empty url")
 	assert.Nil(t, c)
 }
 
 func TestClientConnectErrorWrongPort(t *testing.T) {
 	cc := newConfig(t, "1234567")
-	c, err := mqtt.NewClient(cc, assertNoErrorCallback(t))
+	c, err := NewClient(cc, assertNoErrorCallback(t))
 	assert.EqualError(t, err, "dial tcp: address 1234567: invalid port")
 	assert.Nil(t, c)
 }
@@ -34,7 +33,7 @@ func TestClientConnect(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	c, err := mqtt.NewClient(cc, assertNoErrorCallback(t))
+	c, err := NewClient(cc, assertNoErrorCallback(t))
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -54,7 +53,7 @@ func TestClientConnectCustomDialer(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	c, err := mqtt.NewClient(cc, assertNoErrorCallback(t))
+	c, err := NewClient(cc, assertNoErrorCallback(t))
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -82,10 +81,10 @@ func TestClientConnectWithCredentials(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.Username = "test"
 	cc.Password = "test"
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "connection refused: bad user name or password")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.EqualError(t, err, "connection refused: bad user name or password")
 	assert.Nil(t, c)
 
@@ -104,10 +103,10 @@ func TestClientConnectionDenied(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "connection refused: not authorized")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "connection refused: not authorized")
 
@@ -123,10 +122,10 @@ func TestClientExpectedConnack(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client expected connack")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "client expected connack")
 
@@ -143,10 +142,10 @@ func TestClientNotExpectedConnack(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client already connecting")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.NoError(t, err)
 
 	safeReceive(done)
@@ -176,7 +175,7 @@ func TestClientKeepAlive(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.KeepAlive = time.Millisecond * 100
-	c, err := mqtt.NewClient(cc, assertNoErrorCallback(t))
+	c, err := NewClient(cc, assertNoErrorCallback(t))
 	assert.NoError(t, err)
 
 	<-time.After(250 * time.Millisecond)
@@ -203,10 +202,10 @@ func TestClientKeepAliveTimeout(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.KeepAlive = time.Millisecond * 5
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client missing pong")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.NoError(t, err)
 
 	safeReceive(done)
@@ -242,7 +241,7 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 
 	wait := make(chan struct{})
 
-	callback := mqtt.Handler{
+	callback := Handler{
 		ProcessPublish: func(p *packet.Publish) error {
 			assert.Equal(t, "test", p.Message.Topic)
 			assert.Equal(t, []byte("test"), p.Message.Payload)
@@ -256,8 +255,8 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 		},
 	}
 	cc := newConfig(t, port)
-	cc.Subscriptions = []config.Subscription{{Topic: "test"}}
-	c, err := mqtt.NewClient(cc, callback)
+	cc.Subscriptions = []openedge.TopicInfo{{Topic: "test"}}
+	c, err := NewClient(cc, callback)
 	assert.NoError(t, err)
 
 	err = c.Send(publish)
@@ -305,7 +304,7 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 
 	wait := make(chan struct{})
 
-	callback := mqtt.Handler{
+	callback := Handler{
 		ProcessPublish: func(p *packet.Publish) error {
 			assert.Equal(t, "test", p.Message.Topic)
 			assert.Equal(t, []byte("test"), p.Message.Payload)
@@ -323,8 +322,8 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 		},
 	}
 	cc := newConfig(t, port)
-	cc.Subscriptions = []config.Subscription{{Topic: "test", QOS: 1}}
-	c, err := mqtt.NewClient(cc, callback)
+	cc.Subscriptions = []openedge.TopicInfo{{Topic: "test", QoS: 1}}
+	c, err := NewClient(cc, callback)
 	assert.NoError(t, err)
 
 	err = c.Send(publish)
@@ -350,10 +349,10 @@ func TestClientUnexpectedClose(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client not connected")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.NoError(t, err)
 
 	safeReceive(done)
@@ -371,10 +370,10 @@ func TestClientConnackFutureCancellation(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "client not connected")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "client not connected")
 
@@ -390,10 +389,10 @@ func TestClientConnackFutureTimeout(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.Timeout = time.Millisecond * 50
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "future timeout")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "future timeout")
 
@@ -415,11 +414,11 @@ func TestClientSubscribeFutureTimeout(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.Timeout = time.Millisecond * 50
-	cc.Subscriptions = []config.Subscription{config.Subscription{Topic: "test"}}
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cc.Subscriptions = []openedge.TopicInfo{openedge.TopicInfo{Topic: "test"}}
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "future timeout")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "future timeout")
 
@@ -446,11 +445,11 @@ func TestClientSubscribeValidate(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.ValidateSubs = true
-	cc.Subscriptions = []config.Subscription{config.Subscription{Topic: "test"}}
-	cb := mqtt.Handler{ProcessError: func(err error) {
+	cc.Subscriptions = []openedge.TopicInfo{openedge.TopicInfo{Topic: "test"}}
+	cb := Handler{ProcessError: func(err error) {
 		assert.EqualError(t, err, "failed subscription")
 	}}
-	c, err := mqtt.NewClient(cc, cb)
+	c, err := NewClient(cc, cb)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "failed subscription")
 
@@ -477,8 +476,8 @@ func TestClientSubscribeWithoutValidate(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cc.Subscriptions = []config.Subscription{config.Subscription{Topic: "test"}}
-	c, err := mqtt.NewClient(cc, mqtt.Handler{})
+	cc.Subscriptions = []openedge.TopicInfo{openedge.TopicInfo{Topic: "test"}}
+	c, err := NewClient(cc, Handler{})
 	assert.NotNil(t, c)
 	assert.NoError(t, err)
 

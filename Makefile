@@ -1,8 +1,9 @@
 PREFIX?=/usr/local
-VERSION?=$(shell git rev-list HEAD|head -1|cut -c 1-6)
+VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 PACKAGE_PREFIX?=
+GOFLAG?=-ldflags "-X main.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X 'main.GoVersion=`go version`' -X 'main.Version=$(VERSION)' -X 'master.Version=$(VERSION)'"
 
-all: openedge packages
+all: openedge
 
 packages: \
 	openedge-agent/package.tar.gz \
@@ -109,7 +110,7 @@ protobuf:
 image:
 	make -C openedge-hub image
 	make -C openedge-function image
-	make -C openedge-function-runtime-python27 image
+	make -C openedge-function-python27 image
 	make -C openedge-remote-mqtt image
 	make -C openedge-agent image
 

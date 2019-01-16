@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"testing"
 	"time"
 
+	"github.com/baidu/openedge/utils"
 	"github.com/creasty/defaults"
 	"github.com/stretchr/testify/assert"
 	validator "gopkg.in/validator.v2"
@@ -61,17 +61,15 @@ M:
 }
 
 func TestConfig(t *testing.T) {
-	cBytes, err := ioutil.ReadFile("../../example/native/var/db/openedge/module/localhub/module.yml")
-	assert.NoError(t, err)
-	c, err := New(cBytes)
+	var c Config
+	err := utils.LoadYAML("../../example/native/var/db/openedge/service/localhub/service.yml", &c)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "localhub", c.Name)
-
 	assert.Equal(t, "debug", c.Logger.Level)
 	assert.Equal(t, "text", c.Logger.Format)
 	assert.Equal(t, "", c.Storage.Dir)
-	assert.Equal(t, "var/log/openedge/localhub/localhub.log", c.Logger.Path)
+	assert.Equal(t, "var/log/openedge-service.log", c.Logger.Path)
 	assert.True(t, c.Logger.Console)
 	assert.Equal(t, 15, c.Logger.Age.Max)
 	assert.Equal(t, 50, c.Logger.Size.Max)

@@ -1,10 +1,11 @@
 package sdk
 
 import (
-	"reflect"
 	"testing"
 
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEntry(t *testing.T) {
@@ -47,9 +48,11 @@ func TestNewEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithFields(tt.args.vs...); !reflect.DeepEqual(got.entry.Data, tt.want) {
-				t.Errorf("WithFields() = %v, want %v", got.entry.Data, tt.want)
-			}
+			l, err := NewLogger(&openedge.LogInfo{
+				Level: "debug",
+			}, tt.args.vs...)
+			assert.NoError(t, err)
+			assert.EqualValues(t, l.(*logger).entry.Data, tt.want)
 		})
 	}
 }

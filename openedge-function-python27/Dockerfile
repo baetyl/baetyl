@@ -1,21 +1,5 @@
-FROM python:2.7-alpine as base
-
-FROM base as builder
-RUN apk add --update --no-cache \
-    gcc \
-    linux-headers \
-    make \
-    musl-dev \
-    python-dev \
-    g++
-ENV GRPC_PYTHON_VERSION 1.15.0
-RUN python -m pip install --upgrade pip
-RUN pip install --install-option="--prefix=/install" protobuf grpcio==${GRPC_PYTHON_VERSION}
-
-FROM base
-RUN apk add --update --no-cache gcc
-COPY --from=builder /install /usr/local
+FROM python:2.7-alpine
 WORKDIR /
-COPY *.py /bin/
-RUN chmod +x /bin/openedge_function_runtime_python27.py
-ENTRYPOINT ["openedge_function_runtime_python27.py"]
+COPY openedge-function-python27 runtime /bin/
+RUN chmod +x /bin/runtime
+ENTRYPOINT ["/bin/openedge-function-python27"]

@@ -62,12 +62,12 @@ func main() {
 			}, func(msg *openedge.Message) error {
 				err := send(iw, msg)
 				if err != nil {
-					openedge.Infoln("send to runtime fail:", err.Error())
+					openedge.Infoln("failed to send to runtime:", err.Error())
 					return nil
 				}
 				reply, err := recv(or)
 				if err != nil {
-					openedge.Infoln("recv from runtime fail:", err.Error())
+					openedge.Infoln("failed to recv from runtime:", err.Error())
 					return nil
 				}
 				if len(cfg.Publish.Topic) != 0 {
@@ -77,7 +77,7 @@ func main() {
 						Payload: reply,
 					})
 					if err != nil {
-						openedge.Warnln("send message fail:", err.Error())
+						openedge.Warnln("failed to send message:", err.Error())
 					}
 				}
 				return nil

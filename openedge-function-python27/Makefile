@@ -16,9 +16,9 @@ package.tar.gz: openedge-function-python27 runtime $(PYSRC)
 	tar czvf $@ -C __package bin package.yml
 	rm -rf __package
 
-image:
-	@echo "IMAGE openedge-function-runtime-python27"
-	docker build -t $(IMAGE_PREFIX)openedge-function-runtime-python27:$(TAG) .
+image: openedge-function-python27
+	@echo "IMAGE openedge-function-python27"
+	docker build -t $(IMAGE_PREFIX)openedge-function-python27:$(TAG) .
 
 .PHONY: clean
 clean:

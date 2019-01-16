@@ -17,8 +17,8 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-// Version of openedge
-const Version = "version"
+// Version of master
+var Version string
 
 // Master master manages all modules and connects with cloud
 type Master struct {

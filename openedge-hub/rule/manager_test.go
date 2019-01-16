@@ -7,22 +7,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/module/logger"
 	bb "github.com/baidu/openedge/openedge-hub/broker"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/utils"
+	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBroker(t *testing.T) {
 	os.RemoveAll("./var/db")
+	defer os.RemoveAll("./var/db")
 
-	c, _ := config.NewConfig([]byte(""))
+	c, _ := config.New([]byte(""))
 	// c.Logger.Console = true
 	// c.Logger.Level = "debug"
-	assert.NoError(t, logger.Init(c.Logger))
+	assert.NoError(t, sdk.InitLogger(&c.Logger))
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
@@ -166,10 +167,10 @@ func TestBroker(t *testing.T) {
 //func TestBrokerClose(t *testing.T) {
 //	os.RemoveAll("./var/db")
 //
-//	c, _ := config.NewConfig([]byte(""))
+//	c, _ := config.New([]byte(""))
 //	// c.Logger.Console = true
 //	// c.Logger.Level = "debug"
-//	assert.NoError(t, logger.Init(c.Logger))
+//	assert.NoError(t, sdk.InitLogger(&c.Logger))
 //	pf, err := persist.NewFactory("./var/db/")
 //	assert.NoError(t, err)
 //	defer pf.Close()
@@ -316,13 +317,14 @@ func TestBroker(t *testing.T) {
 
 func TestBrokerCleaning(t *testing.T) {
 	os.RemoveAll("./var/db")
+	defer os.RemoveAll("./var/db")
 
-	c, _ := config.NewConfig([]byte(""))
+	c, _ := config.New([]byte(""))
 	// c.Logger.Console = true
 	// c.Logger.Level = "debug"
 	c.Message.Ingress.Qos1.Cleanup.Interval = time.Second
 	c.Message.Ingress.Qos1.Cleanup.Retention = time.Second
-	assert.NoError(t, logger.Init(c.Logger))
+	assert.NoError(t, sdk.InitLogger(&c.Logger))
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
@@ -371,10 +373,11 @@ func TestBrokerCleaning(t *testing.T) {
 func TestBrokerPerf(t *testing.T) {
 	t.Skip("Skip perf test")
 	os.RemoveAll("./var/db")
-	c, _ := config.NewConfig([]byte(""))
+	defer os.RemoveAll("./var/db")
+	c, _ := config.New([]byte(""))
 	c.Logger.Console = true
 	// c.Logger.Level = "debug"
-	assert.NoError(t, logger.Init(c.Logger))
+	assert.NoError(t, sdk.InitLogger(&c.Logger))
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()

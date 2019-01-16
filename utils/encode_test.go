@@ -1,20 +1,19 @@
-package utils_test
+package utils
 
 import (
 	"testing"
 
-	"github.com/baidu/openedge/module/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-type confModule struct {
-	Name   string   `yaml:"name"`
-	Params []string `yaml:"params" default:"[\"-c\", \"conf.yml\"]"`
+type testEncodeStruct struct {
+	Others  string             `yaml:"others"`
+	Modules []testEncodeModule `yaml:"modules" default:"[]"`
 }
 
-type confStruct struct {
-	Others  string       `yaml:"others"`
-	Modules []confModule `yaml:"modules" default:"[]"`
+type testEncodeModule struct {
+	Name   string   `yaml:"name"`
+	Params []string `yaml:"params" default:"[\"-c\", \"conf.yml\"]"`
 }
 
 func TestUnmarshal(t *testing.T) {
@@ -29,42 +28,21 @@ modules:
       - arg1
       - arg2
 `
-	type args struct {
-		in  []byte
-		out *confStruct
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *confStruct
-		wantErr error
-	}{
-		{
-			name: "defaults-struct-slice",
-			args: args{
-				in:  []byte(confString),
-				out: new(confStruct),
+	cfg := testEncodeStruct{
+		Others: "others",
+		Modules: []testEncodeModule{
+			testEncodeModule{
+				Name:   "m1",
+				Params: []string{"-c", "conf.yml"},
 			},
-			want: &confStruct{
-				Others: "others",
-				Modules: []confModule{
-					confModule{
-						Name:   "m1",
-						Params: []string{"-c", "conf.yml"},
-					},
-					confModule{
-						Name:   "m2",
-						Params: []string{"arg1", "arg2"},
-					},
-				},
+			testEncodeModule{
+				Name:   "m2",
+				Params: []string{"arg1", "arg2"},
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := utils.UnmarshalYAML(tt.args.in, tt.args.out)
-			assert.Equal(t, tt.wantErr, err)
-			assert.Equal(t, tt.want, tt.args.out)
-		})
-	}
+	var cfg2 testEncodeStruct
+	err := UnmarshalYAML([]byte(confString), &cfg2)
+	assert.NoError(t, err)
+	assert.Equal(t, cfg, cfg2)
 }

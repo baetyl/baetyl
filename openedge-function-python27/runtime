@@ -22,6 +22,10 @@ def main():
             talk(handler, ctx)
         except KeyboardInterrupt:
             break
+        except Exception as ex:
+            with open('var/log/openedge-service.log', 'a') as log:
+                print >> log, 'function handler fail: %s' % ex
+            raise ex
 
 
 def talk(handler, ctx):
