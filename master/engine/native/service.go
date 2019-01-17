@@ -180,12 +180,12 @@ func (e *nativeEngine) mklog(name, wdir string) error {
 	if err != nil {
 		return err
 	}
-	elogdir := path.Join(wdir, "var", "log")
-	err = os.MkdirAll(elogdir, 0755)
+	vardir := path.Join(wdir, "var")
+	err = os.MkdirAll(vardir, 0755)
 	if err != nil {
 		return err
 	}
-	return os.Symlink(logdir, elogdir)
+	return os.Symlink(logdir, path.Join(vardir, "log"))
 }
 
 func (e *nativeEngine) mount(wdir string, ms []openedge.MountInfo) error {
