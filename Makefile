@@ -5,7 +5,7 @@ GOFLAG?=-ldflags "-X main.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X 'main.Go
 
 all: openedge
 
-packages: \
+package: \
 	openedge-agent/package.tar.gz \
 	openedge-hub/package.tar.gz \
 	openedge-function/package.tar.gz \
@@ -61,7 +61,7 @@ uninstall:
 	rmdir ${PREFIX}/bin
 	rmdir ${PREFIX}
 
-install-native: openedge packages
+install-native: openedge package
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
 	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-agent
