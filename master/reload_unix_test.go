@@ -1,0 +1,107 @@
+// +build !windows
+
+package master
+
+import (
+	"io/ioutil"
+	"os"
+	"testing"
+
+	_ "github.com/baidu/openedge/master/engine/native"
+	"github.com/baidu/openedge/utils"
+	"github.com/mholt/archiver"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestPrepare(t *testing.T) {
+	t.Skip("Prepare test data once")
+	err := os.Chdir("testdata")
+	assert.NoError(t, err)
+	defer os.RemoveAll("var")
+	err = archiver.Zip.Make("V1init.zip", []string{"V1init/var"})
+	assert.NoError(t, err)
+	err = archiver.Zip.Make("V2load.zip", []string{"V2load/var"})
+	assert.NoError(t, err)
+	err = archiver.Zip.Make("V3clean.zip", []string{"V3clean/var"})
+	assert.NoError(t, err)
+	err = ioutil.WriteFile("V4error.zip", []byte{'t'}, os.ModePerm)
+	assert.NoError(t, err)
+	err = archiver.Zip.Make("V5invalid.zip", []string{"V5invalid/var"})
+	assert.NoError(t, err)
+}
+
+func TestReload(t *testing.T) {
+	err := os.Chdir("testdata")
+	assert.NoError(t, err)
+	defer os.RemoveAll("var")
+	os.Chmod("lib/openedge/packages/cmd/cmd.py", os.ModePerm)
+
+	a, err := New("etc/openedge/openedge.yml")
+	assert.NoError(t, err)
+	defer a.Close()
+	err = a.reload("V5invalid.zip")
+	assert.EqualError(t, err, "failed to load new service config: Services[wait_exit_1](value).Image: zero value")
+	assert.Equal(t, "", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.False(t, utils.FileExists(configFile))
+	err = a.reload("V1init.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V1", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V2load.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V2", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V3clean.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V3", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V4error.zip")
+	assert.EqualError(t, err, "failed to unpack new service config: zip: not a valid zip file")
+	assert.Equal(t, "V3", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("Nonexist.zip")
+	assert.EqualError(t, err, "no file: Nonexist.zip")
+	assert.Equal(t, "V3", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V1init.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V1", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V4error.zip")
+	assert.EqualError(t, err, "failed to unpack new service config: zip: not a valid zip file")
+	assert.Equal(t, "V1", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V3clean.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V3", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V5invalid.zip")
+	assert.EqualError(t, err, "failed to load new service config: Services[wait_exit_1](value).Image: zero value")
+	assert.Equal(t, "V3", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V1init.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V1", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V5invalid.zip")
+	assert.EqualError(t, err, "failed to load new service config: Services[wait_exit_1](value).Image: zero value")
+	assert.Equal(t, "V1", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+	err = a.reload("V3clean.zip")
+	assert.NoError(t, err)
+	assert.Equal(t, "V3", a.dyncfg.Version)
+	assert.False(t, utils.DirExists(serviceOldDir))
+	assert.True(t, utils.FileExists(configFile))
+}

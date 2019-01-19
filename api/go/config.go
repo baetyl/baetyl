@@ -140,7 +140,7 @@ type TopicInfo struct {
 
 // LogInfo for logging
 type LogInfo struct {
-	Path    string `yaml:"path" json:"path"`
+	Path    string `yaml:"path" json:"path" default:"var/log/openedge/service.log"`
 	Level   string `yaml:"level" json:"level" default:"info" validate:"regexp=^(info|debug|warn|error)$"`
 	Format  string `yaml:"format" json:"format" default:"text" validate:"regexp=^(text|json)$"`
 	Console bool   `yaml:"console" json:"console" default:"false"`

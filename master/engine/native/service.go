@@ -64,14 +64,14 @@ func (e *nativeEngine) Run(name string, si *openedge.ServiceInfo) (engine.Servic
 	if err != nil {
 		return nil, err
 	}
-	err = os.MkdirAll(path.Join(wdir, "etc", "openedge"), 0755)
+	err = os.MkdirAll(path.Join(wdir, "etc"), 0755)
 	if err != nil {
 		os.RemoveAll(wdir)
 		return nil, err
 	}
 	err = os.Symlink(
-		path.Join(e.wdir, "var/db/openedge/service", name, "service.yml"),
-		path.Join(wdir, "etc/openedge/service.yml"),
+		path.Join(e.wdir, "var", "db", "openedge", "service", name),
+		path.Join(wdir, "etc", "openedge"),
 	)
 	if err != nil {
 		os.RemoveAll(wdir)
@@ -175,22 +175,22 @@ func (e *nativeEngine) RunWithConfig(name string, si *openedge.ServiceInfo, cfg 
 }
 
 func (e *nativeEngine) mklog(name, wdir string) error {
-	logdir := path.Join(e.wdir, "var", "log", name)
+	logdir := path.Join(e.wdir, "var", "log", "openedge", name)
 	err := os.MkdirAll(logdir, 0755)
 	if err != nil {
 		return err
 	}
-	vardir := path.Join(wdir, "var")
+	vardir := path.Join(wdir, "var", "log")
 	err = os.MkdirAll(vardir, 0755)
 	if err != nil {
 		return err
 	}
-	return os.Symlink(logdir, path.Join(vardir, "log"))
+	return os.Symlink(logdir, path.Join(vardir, "openedge"))
 }
 
 func (e *nativeEngine) mount(wdir string, ms []openedge.MountInfo) error {
 	for _, m := range ms {
-		src := path.Join(e.wdir, "var", "db", "openedge", "service", m.Volume)
+		src := path.Join(e.wdir, m.Volume)
 		err := os.MkdirAll(src, 0755)
 		if err != nil {
 			return err

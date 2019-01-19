@@ -99,7 +99,7 @@ func NewLogger(c *openedge.LogInfo, fields ...string) (openedge.Logger, error) {
 	}
 
 	entry := logrus.NewEntry(logrus.New())
-	entry.Logger.SetReportCaller(true)
+	// entry.Logger.SetReportCaller(true)
 	entry.Logger.Level = logLevel
 	entry.Logger.Out = logOutWriter
 	entry.Logger.Formatter = newFormatter(c.Format, true)

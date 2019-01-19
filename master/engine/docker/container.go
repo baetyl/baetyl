@@ -44,7 +44,7 @@ func (s *service) Scale(replica int, grace time.Duration) error {
 
 func (s *service) Stop(grace time.Duration) error {
 	if err := s.d.client.ContainerStop(context.Background(), s.id, &grace); err != nil {
-		openedge.Errorln("failed to container stop:", err.Error())
+		openedge.Errorln("failed to stop container:", err.Error())
 	}
 	err := s.d.client.ContainerRemove(context.Background(), s.id, types.ContainerRemoveOptions{Force: true})
 	if s.rmcfg {
@@ -91,12 +91,8 @@ func (d *docker) run(name string, si *openedge.ServiceInfo, cfgdir string, rmcfg
 		return nil, err
 	}
 	volumes := make([]string, 0)
-	volumes = append(volumes, fmt.Sprintf(
-		"%s:%s:ro",
-		path.Join(cfgdir, "service.yml"),
-		"/etc/openedge/service.yml"),
-	)
-	volumes = append(volumes, fmt.Sprintf("%s:%s", logdir, "/var/log"))
+	volumes = append(volumes, fmt.Sprintf("%s:%s:ro", cfgdir, "/etc/openedge"))
+	volumes = append(volumes, fmt.Sprintf("%s:%s", logdir, "/var/log/openedge"))
 	for _, m := range si.Mounts {
 		ro := ""
 		if m.ReadOnly {

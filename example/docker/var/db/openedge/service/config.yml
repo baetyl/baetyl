@@ -1,13 +1,17 @@
 version: V0
 services:
+  # agent:
+  #   image: 'openedge-agent'
+  #   mounts:
+  #     - volume: var/db/openedge/service/cert-igeblfrt8
+  #       target: /cert
+  #       readonly: true
   localhub:
     image: 'openedge-hub'
     expose:
-      - 1883:1883
-  localfunc:
-    image: 'openedge-function'
-    resources:
-      cpu:
-        cpus: 1
-      memory:
-        limit: 500m
+      - '1883:1883'
+    mounts:
+      - volume: var/db/openedge/volume/localhub
+        target: /var/db/openedge
+  # localfunc:
+  #   image: 'openedge-function'

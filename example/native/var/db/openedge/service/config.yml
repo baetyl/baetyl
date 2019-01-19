@@ -1,6 +1,15 @@
 version: V0
 services:
+  # agent:
+  #   image: 'openedge-agent'
+  #   mounts:
+  #     - volume: var/db/openedge/service/cert-igeblfrt8
+  #       target: /cert
+  #       readonly: true
   localhub:
     image: 'openedge-hub'
-  localfunc:
-    image: 'openedge-function'
+    mounts:
+      - volume: var/db/openedge/volume/localhub
+        target: /var/db/openedge
+  # localfunc:
+  #   image: 'openedge-function'

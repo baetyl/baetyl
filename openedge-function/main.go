@@ -23,16 +23,8 @@ func run(ctx openedge.Context) error {
 		hub.ClientID = fmt.Sprintf("openedge-function-%s", f.Name)
 		rt := RuntimeInfo{
 			Config: openedge.Config{
-				Hub: hub,
-				Logger: openedge.LogInfo{
-					Path:    fmt.Sprintf("var/log/openedge-service.log"),
-					Level:   ctx.Config().Logger.Level,
-					Format:  ctx.Config().Logger.Format,
-					Console: true,
-					Age:     ctx.Config().Logger.Age,
-					Size:    ctx.Config().Logger.Size,
-					Backup:  ctx.Config().Logger.Backup,
-				},
+				Hub:    hub,
+				Logger: ctx.Config().Logger,
 			},
 			Subscribe: f.Subscribe,
 			Publish:   f.Publish,
@@ -44,7 +36,7 @@ func run(ctx openedge.Context) error {
 			return err
 		}
 		si := openedge.ServiceInfo{
-			Image:   fmt.Sprintf("%s%s", cfg.ImagePrefix, f.Runtime),
+			Image:   f.Runtime,
 			Replica: 1,
 			Expose:  []string{},
 			Params:  []string{},
@@ -53,12 +45,13 @@ func run(ctx openedge.Context) error {
 				openedge.MountInfo{
 					Volume: f.CodeDir,
 					Target: "code",
+					// ReadOnly: true,
 				},
 			},
 			// TODO Restart
 			// TODO Resource
 		}
-		err = ctx.StartService(hub.ClientID, &si, rtcfg)
+		err = ctx.StartService(f.Name, &si, rtcfg)
 		if err != nil {
 			return err
 		}

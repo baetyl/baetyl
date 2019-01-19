@@ -24,6 +24,15 @@ const (
 	CallStartService = "openedge.StartService"
 )
 
+// UpdateSystemRequest data
+type UpdateSystemRequest struct {
+	Config string
+}
+
+// UpdateSystemResponse data
+type UpdateSystemResponse struct {
+}
+
 // StartServiceRequest data
 type StartServiceRequest struct {
 	Name   string
