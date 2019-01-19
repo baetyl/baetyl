@@ -3,12 +3,11 @@ hub:
   address: tcp://openedge-service-localhub:1883
   username: test
   password: hahaha
-prefix: 'openedge-function-'
 functions:
   - name: 'sayhi'
-    runtime: 'python27'
+    runtime: 'openedge-function-python27'
     handler: 'sayhi.handler'
-    codedir: 'func-nyeosbbch'
+    codedir: 'var/db/openedge/service/func-nyeosbbch'
     env:
       USER_ID: acuiot
     instance:
@@ -22,6 +21,5 @@ functions:
       topic: t/hi
       qos: 1
 logger:
-  path: var/log/openedge-service.log
   console: true
   level: "debug"

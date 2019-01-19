@@ -9,12 +9,11 @@ import (
 	"strings"
 	"time"
 
-	openedge "github.com/baidu/openedge/api/go"
-	sdk "github.com/baidu/openedge/sdk/go"
-
 	"github.com/256dpi/gomqtt/packet"
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/protocol/http"
 	"github.com/baidu/openedge/protocol/mqtt"
+	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -32,8 +31,7 @@ const defaultConfigPath = "etc/openedge/service.yml"
 
 func main() {
 	sdk.Run(func(ctx openedge.Context) error {
-		var m mo
-		err := m.init()
+		m, err := new()
 		if err != nil {
 			return err
 		}
@@ -47,26 +45,30 @@ func main() {
 	})
 }
 
-func (m *mo) init() error {
-	err := utils.LoadYAML(defaultConfigPath, &m.cfg)
+func new() (*mo, error) {
+	var cfg Config
+	err := utils.LoadYAML(defaultConfigPath, &cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	err = defaults(&m.cfg)
+	err = defaults(&cfg)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.key, err = ioutil.ReadFile(m.cfg.Remote.MQTT.Key)
+	key, err := ioutil.ReadFile(cfg.Remote.MQTT.Key)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.http, err = http.NewClient(m.cfg.Remote.HTTP)
+	cli, err := http.NewClient(cfg.Remote.HTTP)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.mqtt = mqtt.NewDispatcher(m.cfg.Remote.MQTT)
-	m.tomb = utils.Tomb{}
-	return nil
+	return &mo{
+		cfg:  cfg,
+		key:  key,
+		http: cli,
+		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT),
+	}, nil
 }
 
 func (m *mo) start(ctx openedge.Context) error {
@@ -80,7 +82,9 @@ func (m *mo) start(ctx openedge.Context) error {
 		switch e.Type {
 		case SyncConfig:
 			if !isVersion(e.Detail.Version) {
-				return fmt.Errorf("new config version invalid")
+				openedge.Errorf("config version invalid")
+				m.report("error", "config version invalid")
+				break
 			}
 			confFile, err := m.download(e.Detail.Version, e.Detail.DownloadURL)
 			if err != nil {

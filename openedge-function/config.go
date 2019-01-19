@@ -6,7 +6,6 @@ import (
 
 // Config function module config
 type Config struct {
-	ImagePrefix string         `yaml:"prefix" json:"prefix"`
 	Functions   []FunctionInfo `yaml:"functions" json:"functions" default:"[]"`
 }
 

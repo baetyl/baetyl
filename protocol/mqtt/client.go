@@ -183,7 +183,7 @@ func (c *Client) processor() error {
 
 		switch p := pkt.(type) {
 		case *packet.Publish:
-			c.log.Debugln("received:", p.Type, p.ID, p.Message.QOS, p.Message.Topic)
+			c.log.Debugf("received: %s, pid: %d, qos: %d, topic: %s", p.Type(), p.ID, p.Message.QOS, p.Message.Topic)
 			if c.handler.ProcessPublish != nil {
 				err = c.handler.ProcessPublish(p)
 				if err != nil {
@@ -191,7 +191,7 @@ func (c *Client) processor() error {
 				}
 			}
 		case *packet.Puback:
-			c.log.Debugln("received:", p.Type, p.ID)
+			c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
 			if c.handler.ProcessPuback != nil {
 				err = c.handler.ProcessPuback(p)
 				if err != nil {
@@ -199,7 +199,7 @@ func (c *Client) processor() error {
 				}
 			}
 		case *packet.Suback:
-			c.log.Debugln("received:", p.Type, p.ID)
+			c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
 			if c.config.ValidateSubs {
 				for _, code := range p.ReturnCodes {
 					if code == packet.QOSFailure {
@@ -210,10 +210,10 @@ func (c *Client) processor() error {
 			}
 			c.subscribeFuture.Complete()
 		case *packet.Pingresp:
-			c.log.Debugln("received:", p.Type)
+			c.log.Debugln("received:", p.Type())
 			c.tracker.Pong()
 		case *packet.Connack:
-			c.log.Debugln("received:", p.Type)
+			c.log.Debugln("received:", p.Type())
 			err = client.ErrClientAlreadyConnecting
 			return c.die(err)
 		default:

@@ -9,12 +9,11 @@ import (
 	"runtime"
 	"strings"
 
-	cmap "github.com/orcaman/concurrent-map"
-
 	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/master/engine"
 	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/baidu/openedge/utils"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 // Version of master
@@ -22,45 +21,57 @@ var Version string
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	cfg    Config
-	engine engine.Engine
-	dyncfg *DynamicConfig
-	svcs   cmap.ConcurrentMap
-	server Server
+	cfg      Config
+	dyncfg   DynamicConfig
+	engine   engine.Engine
+	server   *Server
+	services cmap.ConcurrentMap
+	wdir     string
+	log      openedge.Logger
 }
 
 // New creates a new master
-func New(workdir string, confpath string) (*Master, error) {
+func New(workdir, confpath string) (*Master, error) {
 	data, err := ioutil.ReadFile(path.Join(workdir, confpath))
 	if err != nil {
 		return nil, err
 	}
+	var cfg Config
+	err = utils.UnmarshalYAML(data, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	err = defaults(&cfg)
+	if err != nil {
+		return nil, err
+	}
+	err = sdk.InitLogger(&cfg.Logger, "openedge", "master")
+	if err != nil {
+		return nil, err
+	}
+
 	m := &Master{
-		svcs: cmap.New(),
+		cfg:      cfg,
+		wdir:     workdir,
+		services: cmap.New(),
+		log:      openedge.WithField("openedge", "master"),
 	}
-	err = utils.UnmarshalYAML(data, &m.cfg)
+	m.engine, err = engine.New(cfg.Mode, m.wdir)
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	err = defaults(&m.cfg)
+	m.server, err = newServer(m)
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	err = sdk.InitLogger(&m.cfg.Logger, "openedge", "master")
+	err = m.load()
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	openedge.Debugln("work dir:", workdir)
-	m.engine, err = engine.New(m.cfg.Mode, workdir)
-	if err != nil {
-		return nil, err
-	}
-	err = m.server.start(m)
-	if err != nil {
-		m.engine.Close()
-		return nil, err
-	}
-	err = m.Reload(path.Join(workdir, "var", "db", "openedge", "service"))
+	err = m.startServices()
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -70,9 +81,13 @@ func New(workdir string, confpath string) (*Master, error) {
 
 // Close closes agent
 func (m *Master) Close() error {
-	m.server.stop()
 	m.cleanServices()
-	m.engine.Close()
+	if m.server != nil {
+		m.server.close()
+	}
+	if m.engine != nil {
+		m.engine.Close()
+	}
 	return nil
 }
 

@@ -39,32 +39,32 @@ func TestPathJoin(t *testing.T) {
 	assert.Equal(t, "/var/db/a/b", path.Join("/var/db", "a/b/c/./.."))
 }
 
-func TestParseVolumes(t *testing.T) {
-	valumes := []string{
-		"var/db/openedge/module/m1:/m1/config:ro",
-		"var/db/openedge/volume/m1:/m1/data",
-		"var/log/openedge/m1:/m1/log",
-		"/m1/",
-	}
-	result, err := ParseVolumes("/work/dir", valumes)
-	assert.NoError(t, err)
-	assert.EqualValues(t, []string{
-		"/work/dir/var/db/openedge/module/m1:/m1/config:ro",
-		"/work/dir/var/db/openedge/volume/m1:/m1/data",
-		"/work/dir/var/log/openedge/m1:/m1/log",
-		"/work/dir/m1:/m1",
-	}, result)
+// func TestParseVolumes(t *testing.T) {
+// 	valumes := []string{
+// 		"var/db/openedge/module/m1:/m1/config:ro",
+// 		"var/db/openedge/volume/m1:/m1/data",
+// 		"var/log/openedge/m1:/m1/log",
+// 		"/m1/",
+// 	}
+// 	result, err := ParseVolumes("/work/dir", valumes)
+// 	assert.NoError(t, err)
+// 	assert.EqualValues(t, []string{
+// 		"/work/dir/var/db/openedge/module/m1:/m1/config:ro",
+// 		"/work/dir/var/db/openedge/volume/m1:/m1/data",
+// 		"/work/dir/var/log/openedge/m1:/m1/log",
+// 		"/work/dir/m1:/m1",
+// 	}, result)
 
-	valumes = []string{
-		"../../../:/m1",
-	}
-	result, err = ParseVolumes("/work/dir", valumes)
-	assert.EqualError(t, err, "volume (../../../:/m1) contains invalid string (..)")
-	assert.Nil(t, result)
-	valumes = []string{
-		"m1",
-	}
-	result, err = ParseVolumes("/work/dir", valumes)
-	assert.EqualError(t, err, "volume (m1) in container is not absolute")
-	assert.Nil(t, result)
-}
+// 	valumes = []string{
+// 		"../../../:/m1",
+// 	}
+// 	result, err = ParseVolumes("/work/dir", valumes)
+// 	assert.EqualError(t, err, "volume (../../../:/m1) contains invalid string (..)")
+// 	assert.Nil(t, result)
+// 	valumes = []string{
+// 		"m1",
+// 	}
+// 	result, err = ParseVolumes("/work/dir", valumes)
+// 	assert.EqualError(t, err, "volume (m1) in container is not absolute")
+// 	assert.Nil(t, result)
+// }

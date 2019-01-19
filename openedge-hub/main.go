@@ -31,7 +31,6 @@ type mo struct {
 }
 
 const defaultConfigPath = "etc/openedge/service.yml"
-const defaultFactoryPath = "var/db/openedge-hub"
 
 func (m *mo) init() error {
 	err := utils.LoadYAML(defaultConfigPath, &m.cfg)
@@ -44,7 +43,7 @@ func (m *mo) init() error {
 		openedge.Errorln("failed to init logger:", err.Error())
 		return err
 	}
-	m.factory, err = persist.NewFactory(defaultFactoryPath)
+	m.factory, err = persist.NewFactory(m.cfg.Storage.Dir)
 	if err != nil {
 		openedge.Errorln("failed to new factory:", err.Error())
 		return err
@@ -114,6 +113,7 @@ func main() {
 	// 	panic(err)
 	// }
 	// defer trace.Stop()
+
 	var m mo
 	err := m.init()
 	if err != nil {

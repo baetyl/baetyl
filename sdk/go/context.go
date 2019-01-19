@@ -140,11 +140,12 @@ func newContext() (*context, error) {
 	}
 	if len(c.cfg.Hub.Address) > 0 {
 		c.mqtt = mqtt.NewDispatcher(c.cfg.Hub)
+		c.ProcessPublish = c.onPublish
+		c.ProcessPuback = c.onPuback
+		c.ProcessError = c.onError
+		c.mqtt.Start(c.Handler)
 	}
-	c.ProcessPublish = c.onPublish
-	c.ProcessPuback = c.onPuback
-	c.ProcessError = c.onError
-	go c.mqtt.Start(c.Handler)
+
 	master := os.Getenv(openedge.MasterAPIKey)
 	if len(master) > 0 {
 		addr, err := url.Parse(master)

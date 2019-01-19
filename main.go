@@ -27,11 +27,11 @@ const defaultConfig = "etc/openedge/openedge.yml"
 func main() {
 	exe, err := os.Executable()
 	if err != nil {
-		openedge.Fatalln("get executable path fail:", err.Error())
+		openedge.Fatalln("failed to get executable path:", err.Error())
 	}
 	exe, err = filepath.EvalSymlinks(exe)
 	if err != nil {
-		openedge.Fatalln("get realpath of executable fail:", err.Error())
+		openedge.Fatalln("failed to get realpath of executable:", err.Error())
 	}
 	workdir := path.Dir(path.Dir(exe))
 	var flagW = flag.String("w", workdir, "working directory")
@@ -51,21 +51,21 @@ func main() {
 	}
 	workdir, err = filepath.Abs(*flagW)
 	if err != nil {
-		openedge.Fatalln("get absolute path of workdir fail:", err.Error())
+		openedge.Fatalln("failed to get absolute path of workdir:", err.Error())
 	}
 	err = os.Chdir(workdir)
 	if err != nil {
-		openedge.Fatalln("change dir to workdir fail:", err.Error())
+		openedge.Fatalln("failed to change directory to workdir:", err.Error())
 	}
-
+	openedge.Debugln("work dir:", workdir)
 	m, err := master.New(workdir, *flagC)
 	if err != nil {
 		openedge.Fatalln("failed to create master:", err.Error())
 	}
+	defer m.Close()
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	signal.Ignore(syscall.SIGPIPE)
 	<-sig
-	m.Close()
 }
