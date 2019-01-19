@@ -57,8 +57,8 @@ func main() {
 	if err != nil {
 		openedge.Fatalln("failed to change directory to workdir:", err.Error())
 	}
-
-	m, err := master.New(*flagC)
+	openedge.Debugln("work dir:", workdir)
+	m, err := master.New(workdir, *flagC)
 	if err != nil {
 		openedge.Fatalln("failed to create master:", err.Error())
 	}

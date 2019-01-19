@@ -26,17 +26,13 @@ type Master struct {
 	engine   engine.Engine
 	server   *Server
 	services cmap.ConcurrentMap
-	workdir  string
+	wdir     string
 	log      openedge.Logger
 }
 
 // New creates a new master
-func New(confpath string) (*Master, error) {
-	wdir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	data, err := ioutil.ReadFile(path.Join(wdir, confpath))
+func New(workdir, confpath string) (*Master, error) {
+	data, err := ioutil.ReadFile(path.Join(workdir, confpath))
 	if err != nil {
 		return nil, err
 	}
@@ -53,15 +49,14 @@ func New(confpath string) (*Master, error) {
 	if err != nil {
 		return nil, err
 	}
-	openedge.Debugln("work dir:", wdir)
 
 	m := &Master{
 		cfg:      cfg,
-		workdir:  wdir,
+		wdir:     workdir,
 		services: cmap.New(),
 		log:      openedge.WithField("openedge", "master"),
 	}
-	m.engine, err = engine.New(cfg.Mode, wdir)
+	m.engine, err = engine.New(cfg.Mode, m.wdir)
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -90,7 +85,7 @@ func (m *Master) Close() error {
 	if m.server != nil {
 		m.server.close()
 	}
-	if m.server != nil {
+	if m.engine != nil {
 		m.engine.Close()
 	}
 	return nil

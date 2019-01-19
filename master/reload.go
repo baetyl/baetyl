@@ -116,7 +116,7 @@ func (m *Master) clean(dir string) {
 }
 
 func (m *Master) unpack(file string) error {
-	return archiver.Zip.Open(file, m.workdir)
+	return archiver.Zip.Open(file, m.wdir)
 }
 
 func (m *Master) load() error {
