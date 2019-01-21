@@ -60,10 +60,11 @@ func (f *Factory) NewDB(name string) (Database, error) {
 		return db, nil
 	}
 	db, err := NewBoltDB(filepath.Join(f.dir, name))
-	if err == nil {
-		f.dbs[name] = db
+	if err != nil {
+		return nil, err
 	}
-	return db, err
+	f.dbs[name] = db
+	return db, nil
 }
 
 // Close close factory to release all databases

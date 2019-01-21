@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/baidu/openedge/module/logger"
-	"github.com/baidu/openedge/module/mqtt"
-	"github.com/baidu/openedge/module/utils"
+	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/protocol/mqtt"
+	"github.com/baidu/openedge/utils"
 )
 
 // Handle handles connection
@@ -15,7 +15,7 @@ type Manager struct {
 	servers []transport.Server
 	handle  Handle
 	tomb    utils.Tomb
-	log     *logger.Entry
+	log     openedge.Logger
 }
 
 // NewManager creates a server manager
@@ -27,7 +27,7 @@ func NewManager(addrs []string, cert utils.Certificate, handle Handle) (*Manager
 	m := &Manager{
 		servers: make([]transport.Server, 0),
 		handle:  handle,
-		log:     logger.WithFields("server", "manager"),
+		log:     openedge.WithField("manager", "server"),
 	}
 	for _, addr := range addrs {
 		svr, err := launcher.Launch(addr)

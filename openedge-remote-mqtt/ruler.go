@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/mqtt"
+	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/protocol/mqtt"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -15,7 +15,7 @@ type ruler struct {
 	remote *mqtt.Dispatcher
 }
 
-func create(r Rule, hub, remote config.MQTTClient) *ruler {
+func create(r Rule, hub, remote openedge.MqttClientInfo) *ruler {
 	if r.ID != "" {
 		hub.CleanSession = false
 		remote.CleanSession = false

@@ -1,6 +1,0 @@
-version: V0
-modules:
-  - name: 'localhub'
-    entry: 'bin/openedge-hub'
-  - name: 'localfunc'
-    entry: 'bin/openedge-function'

@@ -18,7 +18,8 @@ import (
 
 func TestRuleTopicFanout(t *testing.T) {
 	os.RemoveAll("./var/db")
-	c, _ := config.NewConfig([]byte(""))
+	defer os.RemoveAll("./var/db")
+	c, _ := config.New([]byte(""))
 	// c.Logger.Console = true
 	// c.Logger.Level = "debug"
 	// assert.NoError(t, logger.Init(c.Logger))
@@ -100,7 +101,8 @@ func TestRuleTopicFanout(t *testing.T) {
 
 func TestRuleTopicFanin(t *testing.T) {
 	os.RemoveAll("./var/db")
-	c, _ := config.NewConfig([]byte(""))
+	defer os.RemoveAll("./var/db")
+	c, _ := config.New([]byte(""))
 	// c.Logger.Console = true
 	// c.Logger.Level = "debug"
 	// assert.NoError(t, logger.Init(c.Logger))
@@ -193,7 +195,8 @@ func TestRuleTopicFanin(t *testing.T) {
 
 func TestRuleTopicRedo(t *testing.T) {
 	os.RemoveAll("./var/db")
-	c, _ := config.NewConfig([]byte(""))
+	defer os.RemoveAll("./var/db")
+	c, _ := config.New([]byte(""))
 	// c.Logger.Console = true
 	// c.Logger.Level = "debug"
 	// assert.NoError(t, logger.Init(c.Logger))

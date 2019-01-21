@@ -44,7 +44,7 @@ OpenEdge启动和热加载（reload）完成后会通过云代理上报一次设
 > - go_version：OpenEdge主程序的Golang版本
 > - bin_version：OpenEdge主程序的版本
 > - conf_version：OpenEdge主程序加载应用的版本
-> - reload_error：OpenEdge主程序加载应用的报错信息，如果有的话
+> - error：OpenEdge主程序异常信息，如果有的话
 > - os：设备的系统，比如：linux、windows、darwin
 > - bit：设备CPU位数，比如：32、64
 > - arch：设备CPU架构，比如：amd64

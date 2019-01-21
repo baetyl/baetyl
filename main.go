@@ -1,36 +1,71 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"path"
 	"path/filepath"
+	"syscall"
 
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/master"
-	"github.com/baidu/openedge/module"
+	_ "github.com/baidu/openedge/master/engine/docker"
+	_ "github.com/baidu/openedge/master/engine/native"
 )
 
-func main() {
-	f, err := module.ParseFlags(filepath.Join("etc", "openedge", "openedge.yml"))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to parse argument:", err.Error())
-		return
-	}
-	if f.Help {
-		module.PrintUsage()
-		return
-	}
+// compile variables
+var (
+	Version   string
+	BuildTime string
+	GoVersion string
+)
 
-	m, err := master.New(f.Config)
+const defaultConfig = "etc/openedge/openedge.yml"
+
+func main() {
+	exe, err := os.Executable()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to create master:", err.Error())
+		openedge.Fatalln("failed to get executable path:", err.Error())
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		openedge.Fatalln("failed to get realpath of executable:", err.Error())
+	}
+	workdir := path.Dir(path.Dir(exe))
+	var flagW = flag.String("w", workdir, "working directory")
+	var flagC = flag.String("c", defaultConfig, "config file path")
+	var flagH = flag.Bool("h", false, "show this help")
+	flag.Parse()
+	if *flagH {
+		fmt.Fprintf(
+			flag.CommandLine.Output(),
+			"OpenEdge version %s\nbuild time %s\n%s\n\n",
+			Version,
+			BuildTime,
+			GoVersion,
+		)
+		flag.Usage()
 		return
+	}
+	workdir, err = filepath.Abs(*flagW)
+	if err != nil {
+		openedge.Fatalln("failed to get absolute path of workdir:", err.Error())
+	}
+	err = os.Chdir(workdir)
+	if err != nil {
+		openedge.Fatalln("failed to change directory to workdir:", err.Error())
+	}
+	openedge.Debugln("work dir:", workdir)
+	m, err := master.New(workdir, *flagC)
+	if err != nil {
+		openedge.Fatalln("failed to create master:", err.Error())
 	}
 	defer m.Close()
-	err = m.Start()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to start master:", err.Error())
-		return
-	}
 
-	module.Wait()
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
+	signal.Ignore(syscall.SIGPIPE)
+	<-sig
 }

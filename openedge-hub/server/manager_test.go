@@ -9,8 +9,8 @@ import (
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/baidu/openedge/module/mqtt"
-	"github.com/baidu/openedge/module/utils"
+	"github.com/baidu/openedge/protocol/mqtt"
+	"github.com/baidu/openedge/utils"
 	"github.com/stretchr/testify/assert"
 )
 

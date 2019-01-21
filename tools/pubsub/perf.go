@@ -156,8 +156,8 @@ func doPerf(args []string) {
 				break
 			}
 		}
-		elasped := time.Since(start)
-		fmt.Println(start.Format("2006-01-02 15:04:05"), "Sub", elasped)
+		elapsed := time.Since(start)
+		fmt.Println(start.Format("2006-01-02 15:04:05"), "Sub", elapsed)
 	}()
 
 	wg.Add(1)
@@ -189,8 +189,8 @@ func doPerf(args []string) {
 				pid++
 			}
 		}
-		elasped := time.Since(start)
-		fmt.Println(start.Format("2006-01-02 15:04:05"), "Pub", elasped)
+		elapsed := time.Since(start)
+		fmt.Println(start.Format("2006-01-02 15:04:05"), "Pub", elapsed)
 	}()
 	wg.Wait()
 }

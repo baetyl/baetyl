@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/module/logger"
 	bb "github.com/baidu/openedge/openedge-hub/broker"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/rule"
+	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/stretchr/testify/assert"
 )
 
 // TODO: use gomqtt's test tool: flow
-
 func TestSessionHandle(t *testing.T) {
 	r, err := prepare()
 	assert.NoError(t, err)
@@ -755,9 +754,9 @@ func (c *mockCodec) RemoteAddr() net.Addr { return nil }
 func prepare() (res *resources, err error) {
 	os.RemoveAll("./var")
 
-	c, _ := config.NewConfig([]byte(""))
+	c, _ := config.New([]byte(""))
 	c.Logger.Console = true
-	c.Logger.Level = "debug"
+	// c.Logger.Level = "debug"
 	c.Message.Egress.Qos1.Retry.Interval = time.Second
 	c.Principals = []config.Principal{{
 		Username: "u1",
@@ -775,7 +774,10 @@ func prepare() (res *resources, err error) {
 			Action:  "pub",
 			Permits: []string{"test", "talks", "talks1", "talks2"},
 		}}}}
-	logger.Init(c.Logger)
+	err = sdk.InitLogger(&c.Logger)
+	if err != nil {
+		return
+	}
 	res = new(resources)
 	res.factory, err = persist.NewFactory("./var/db/")
 	if err != nil {

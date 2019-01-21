@@ -3,17 +3,22 @@ package master
 import (
 	"time"
 
-	"github.com/baidu/openedge/agent"
-	"github.com/baidu/openedge/module/config"
+	openedge "github.com/baidu/openedge/api/go"
 )
 
 // Config master config
 type Config struct {
-	Mode    string            `yaml:"mode" json:"mode" default:"docker" validate:"regexp=^(native|docker)$"`
-	Version string            `yaml:"version" json:"version"`
-	Grace   time.Duration     `yaml:"grace" json:"grace" default:"30s"`
-	API     config.HTTPServer `yaml:"api" json:"api"`
-	Cloud   agent.Config      `yaml:"cloud" json:"cloud"`
-	Modules []config.Module   `yaml:"modules" json:"modules" default:"[]"`
-	Logger  config.Logger     `yaml:"logger" json:"logger"`
+	Mode     string                           `yaml:"mode" json:"mode" default:"docker" validate:"regexp=^(native|docker)$"`
+	Server   string                           `yaml:"server" json:"server"`
+	Services map[string]*openedge.ServiceInfo `yaml:"services" json:"services" default:"{}"`
+	Grace    time.Duration                    `yaml:"grace" json:"grace" default:"30s"`
+	Logger   openedge.LogInfo                 `yaml:"logger" json:"logger"`
+}
+
+// DynamicConfig for reload
+type DynamicConfig struct {
+	Version  string                           `yaml:"version" json:"version"`
+	Services map[string]*openedge.ServiceInfo `yaml:"services" json:"services" default:"{}"`
+	Grace    time.Duration                    `yaml:"grace" json:"grace" default:"30s"`
+	Logger   openedge.LogInfo                 `yaml:"logger" json:"logger"`
 }

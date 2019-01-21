@@ -6,13 +6,13 @@
 
 [README in Chinese](./README-CN.md)
 
-**[OpenEdge](https://openedge.tech) is an open edge computing framework that extends cloud computing, data and service seamlessly to edge devices.** It can provide temporary offline, low-latency computing services, and include device connect, message routing, remote synchronization, function computing, video access pre-processing, AI inference, etc. The combianation of OpenEdge and the **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html)(Baidu IntelliEdge) will achieve cloud management and application distribution, enable applications running on edge devices and meet all kinds of edge computing scenario.
+**[OpenEdge](https://openedge.tech) is an open edge computing framework that extends cloud computing, data and service seamlessly to edge devices.** It can provide temporary offline, low-latency computing services, and include device connect, message routing, remote synchronization, function computing, video access pre-processing, AI inference, etc. The combination of OpenEdge and the **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html)(Baidu IntelliEdge) will achieve cloud management and application distribution, enable applications running on edge devices and meet all kinds of edge computing scenario.
 
 ## Design
 
-About architecture design, OpenEdge takes **modularization** and **containerization** design mode. Based on the modular design pattern, OpenEdge splits the product to multiple modules, and make sure each one of them is a separate, independent module. In general, OpenEdge can fully meet the conscientious needs of users to deploy on demand. Besides, OpenEdge also takes containerization design mode to build images. Due to the cross-platform characteristics of docker to ensure the running environment of each operating system is consistent. In addition, **OpenEdge also isolates and limits the container resources of docker containerization**, and allocates the CPU, memory and other resources of each running instance accurately to improve the efficiency of resource utilization.
+About architecture design, OpenEdge takes **modularization** and **containerization** design mode. Based on the modular design pattern, OpenEdge splits the product to multiple modules, and make sure each one of them is a separate, independent module. In general, OpenEdge can fully meet the conscientious needs of users to deploy on demand. Besides, OpenEdge also takes containerization design mode to build images. Due to the cross-platform characteristics of docker to ensure the running environment of each operating system is consistent. In addition, **OpenEdge also isolates and limits the resources of containers**, and allocates the CPU, memory and other resources of each running instance accurately to improve the efficiency of resource utilization.
 
-### Docker containerization mode
+### Docker container mode
 
 ![](./doc/images/overview/design/mode_docker.png)
 
@@ -25,19 +25,19 @@ About architecture design, OpenEdge takes **modularization** and **containerizat
 OpenEdge is made up of **main program module, local hub module, local function module, MQTT remote module and Python2.7 runtime module.** The main capabilities of each module are as follows:
 
 > + **Main program module** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
->   + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker containerization mode** and **native process mode**.
->   + **Cloud agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **must** take two-way authentication of SSL/TLS; otherwise, you **must** take one-way authentication of SSL/TLS due to HTTPS protocol. 
+>   + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker container mode** and **native process mode**.
+>   + **Cloud agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **must** take two-way authentication of SSL/TLS; otherwise, you **must** take one-way authentication of SSL/TLS due to HTTPS protocol.
 >   + The main program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
 > + **local hub module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL).**
 > + **local function module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
 > + **MQTT remote module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
-> + **Python2.7 runtime module** is an implementation of **local function module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc. 
+> + **Python2.7 runtime module** is an implementation of **local function module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
 
 ## Features
 
 > + support module management, include start, stop, restart, listen and upgrade
-> + support two mode: **docker containerization mode** and **native process mode**
-> + docker containerization mode support resources isolation and restriction
+> + support two mode: **docker container mode** and **native process mode**
+> + docker container mode support resources isolation and restriction
 > + support cloud management suite, which can be used to report device hardware information and deploy configuration
 > + provide **local hub module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
 > + provide **local function module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
@@ -46,11 +46,11 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 ## Advantages
 
-> + **Shielding computing framework**: OpenEdge provides two official computing modules(**local function module** and **Python2.7 rutime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
+> + **Shielding computing framework**: OpenEdge provides two official computing modules(**local function module** and **Python2.7 runtime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
 > + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis?castk=LTE%3D), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
-> + **Quickly deployment**: OpenEdge pursues docker containerization mode, it make developers quickly deploy OpenEdge on different operating system.
-> + **Deploy on demand**: OpenEdge takes modularizaiton mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.  
-> + **Rich configuration**: OpenEdge supports X86 and ARM CPU processers, as well as Linux, Darwin and Windows operating systems.
+> + **Quickly deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
+> + **Deploy on demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
+> + **Rich configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
 
 # Getting Started
 
@@ -100,7 +100,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
    # Install Docker from Debian's repositories
    sudo apt-get update
    sudo apt-get install -y dockerio
-   
+
    # or install Docker CE from Docker's Debian repositories
    # Debian 8 jessie or Debian 9 stretch
    sudo apt-get update && sudo apt-get install \
@@ -117,7 +117,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
         curl \
         lsb-release \
         python-software-properties
-   
+
    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 
    # add docker-ce-repository to sources.list
@@ -156,7 +156,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
    sudo apt-get install python python-pip
    sudo pip install protobuf grpcio
    ```
-   
+
    **For CentOS**
    ```shell
    # Check python is installed or not
@@ -166,7 +166,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
    sudo yum install python python-pip
    sudo pip install protobuf grpcio
    ```
-   
+
    **For Darwin**
    ```shell
    # Check python is installed or not
@@ -179,7 +179,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 ### Developing environment requirements
 
-Eexcept docker and python application as above mentioned, if you want to build OpenEdge from source or contribute code to OpenEdge, you also need install golang.
+Except docker and python application as above mentioned, if you want to build OpenEdge from source or contribute code to OpenEdge, you also need install golang.
 
 In addition, OpenEdge need the version of golang is higher than 1.10. So, you can install golang use below command.
 
@@ -187,7 +187,7 @@ In addition, OpenEdge need the version of golang is higher than 1.10. So, you ca
 
    You should download the golang from [download-page](https://golang.org/dl/) first.
    ```shell
-   # Extract golang to /usr/local(or a specfied directory)
+   # Extract golang to /usr/local(or a specified directory)
    tar -C /usr/local -zxf go$VERSION.linux-$ARCH.tar.gz
 
    # Set GOPATH(such as ~/.bashrc)
@@ -226,11 +226,11 @@ In addition, OpenEdge need the version of golang is higher than 1.10. So, you ca
    # Extract OpenEdge
    tar -zxvf /path/to/openege-$OS-$ARCH-$VERSION.tar.gz /path/to/openedge/extract
 
-   # Eexecute
+   # Execute
    cd /path/to/openedge/extract
    bin/openedge -w . # Run OpenEdge in Docker containerization mode(OpenEdge official only support)
    ```
-   
+
    If you want to run OpenEdge in **Native process mode**, please build OpenEdge and other module first.
    ```shell
    # Clone OpenEdge source code
@@ -243,9 +243,9 @@ In addition, OpenEdge need the version of golang is higher than 1.10. So, you ca
    make images
 
    # Install OpenEdge(default directory /usr/local)
-   make PFEFIX=yourpath install 
+   make PFEFIX=yourpath install
 
-   # Uninstall OpenEdge 
+   # Uninstall OpenEdge
    make PFEFIX=yourpath uninstall
 
    # Clean log
@@ -281,5 +281,7 @@ OpenEdge is provided under the [Apache-2.0 license](./LICENSE).
 
 As the first open edge computing framework in China, OpenEdge aims to create a lightweight, secure, reliable and scalable edge computing community that will create a good ecological environment. Here, we offer the following options for you to choose from:
 
-> + If you have more about feature requirements or bug feedback of OpenEdge, please [Submmit an issue](https://github.com/baidu/openedge/issues)
+> + If you want to participate in OpenEdge's daily development communication, you are welcome to join [Wechat-for-OpenEdge](https://openedge.bj.bcebos.com/Wechat/Wechat-OpenEdge.png)
+> + If you have more about feature requirements or bug feedback of OpenEdge, please [Submit an issue](https://github.com/baidu/openedge/issues)
+> + If you want to know more about OpenEdge and other services of Baidu Cloud, you are welcome to visit [Baidu-Cloud-forum](https://cloud.baidu.com/forum/bce)
 > + If you have better development advice about OpenEdge, please contact us: [contact@openedge.tech](contact@openedge.tech)

@@ -16,7 +16,7 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
    ```bash
    go get github.com/baidu/openedge # clone openedge official repository
-   cd $GOPATH/github.com/baidu/openedge # step into openedge
+   cd $GOPATH/src/github.com/baidu/openedge # step into openedge
    git checkout master  # verify master branch
    git remote add fork https://github.com/<your_github_account>/openedge  # specify remote repository
    ```
@@ -37,7 +37,7 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 ## Code Review
 
-> + About Golang formt, pelase refer to [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments).
+> + About Golang format, pelase refer to [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments).
 > + Please feel free to ping your reviewers by sending them the URL of your pull request via email. Please do this after your pull request passes the CI.
 > + Please answer reviewers' every comment. If you are to follow the comment, please write "Done"; please give a reason otherwise.
 > + If you don't want your reviewers to get overwhelmed by email notifications, you might reply their comments by [in a batch](https://help.github.com/articles/reviewing-proposed-changes-in-a-pull-request/).

@@ -1,0 +1,8 @@
+version: V1
+services:
+  wait_exit_1:
+    image: 'cmd'
+  wait_exit_2:
+    image: 'cmd'
+  hi:
+    image: 'cmd'
