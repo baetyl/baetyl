@@ -1,24 +1,37 @@
 PREFIX?=/usr/local
+VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
+PACKAGE_PREFIX?=
+GOFLAG?=-ldflags "-X main.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X 'main.GoVersion=`go version`' -X 'main.Version=$(VERSION)' -X 'master.Version=$(VERSION)'"
 
-all: openedge modules
+all: openedge
 
-modules: openedge-hub/openedge-hub openedge-function/openedge-function openedge-remote-mqtt/openedge-remote-mqtt openedge-function-runtime-node/openedge-function-runtime-node
+package: \
+	openedge-agent/package.tar.gz \
+	openedge-hub/package.tar.gz \
+	openedge-function/package.tar.gz \
+	openedge-function-python27/package.tar.gz \
+	openedge-remote-mqtt/package.tar.gz
 
-openedge:
-	@echo "build ${GOFLAG} $@"
+SRC=$(wildcard *.go) $(shell find master api sdk protocol utils -type f -name '*.go')
+
+openedge: $(SRC)
+	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-hub/openedge-hub:
+openedge-agent/package.tar.gz:
+	make -C openedge-agent
+
+openedge-hub/package.tar.gz:
 	make -C openedge-hub
 
-openedge-function/openedge-function:
+openedge-function/package.tar.gz:
 	make -C openedge-function
 
-openedge-remote-mqtt/openedge-remote-mqtt:
-	make -C openedge-remote-mqtt
+openedge-function-python27/package.tar.gz:
+	make -C openedge-function-python27
 
-openedge-function-runtime-node/openedge-function-runtime-node:
-	make -C openedge-function-runtime-node PREFIX=
+openedge-remote-mqtt/package.tar.gz:
+	make -C openedge-remote-mqtt
 
 test:
 	go test --race ./...
@@ -26,43 +39,48 @@ test:
 tools: pubsub openedge-consistency
 
 pubsub:
-	@echo "build ${GOFLAG} $@"
+	@echo "BUILD $@"
 	@go build ${GOFLAG} ./tools/pubsub
 
 openedge-consistency:
-	@echo "build ${GOFLAG} $@"
+	@echo "BUILD $@"
 	@go build ${GOFLAG} ./tools/openedge-consistency
 
-install: all
+install: openedge
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
-	install -m 0755 openedge-hub/openedge-hub ${PREFIX}/bin/
-	install -m 0755 openedge-function/openedge-function ${PREFIX}/bin/
-	install -m 0755 openedge-remote-mqtt/openedge-remote-mqtt ${PREFIX}/bin/
-	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2.py ${PREFIX}/bin
-	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_pb2_grpc.py ${PREFIX}/bin
-	install -m 0755 openedge-function-runtime-python27/openedge_function_runtime_python27.py ${PREFIX}/bin
-	install -m 0755 openedge-function-runtime-node/openedge_function_runtime_node.js ${PREFIX}/bin
-	tar cf - -C openedge-function-runtime-node openedge-function-runtime-node-lib | tar xvf - -C ${PREFIX}/bin
-	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
-	
+	tar cf - -C example/docker etc var | tar xvf - -C ${PREFIX}/
+
 uninstall:
 	rm -f ${PREFIX}/bin/openedge
-	rm -f ${PREFIX}/bin/openedge-hub
-	rm -f ${PREFIX}/bin/openedge-function
-	rm -f ${PREFIX}/bin/openedge-remote-mqtt
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2.pyc
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_pb2_grpc.pyc
-	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.py
-	rm -f ${PREFIX}/bin/openedge_function_runtime_python27.pyc
-	rm -f ${PREFIX}/bin/openedge_function_runtime_node.js
-	rm -rf ${PREFIX}/bin/openedge-function-runtime-node-lib
-	rm -rf ${PREFIX}/var/log/openedge
-	rm -rf ${PREFIX}/var/db/openedge
 	rm -rf ${PREFIX}/etc/openedge
-	rmdir ${PREFIX}/var/log
+	rm -rf ${PREFIX}/var/db/openedge
+	rmdir ${PREFIX}/var/db
+	rmdir ${PREFIX}/var
+	rmdir ${PREFIX}/etc
+	rmdir ${PREFIX}/bin
+	rmdir ${PREFIX}
+
+install-native: openedge package
+	install -d -m 0755 ${PREFIX}/bin
+	install -m 0755 openedge ${PREFIX}/bin/
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-agent
+	tar xzvf openedge-agent/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-agent
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-hub
+	tar xzvf openedge-hub/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-hub
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function
+	tar xzvf openedge-function/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function-python27
+	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-function-python27
+	install -d -m 0755 ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-remote-mqtt
+	tar xzvf openedge-remote-mqtt/package.tar.gz -C ${PREFIX}/lib/openedge/packages/$(PKG_PREFIX)openedge-remote-mqtt
+	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
+
+uninstall-native:
+	rm -f ${PREFIX}/bin/openedge
+	rm -rf ${PREFIX}/lib/openedge
+	rm -rf ${PREFIX}/etc/openedge
+	rm -rf ${PREFIX}/var/db/openedge
 	rmdir ${PREFIX}/var/db
 	rmdir ${PREFIX}/var
 	rmdir ${PREFIX}/etc
@@ -72,10 +90,11 @@ uninstall:
 .PHONY: clean
 clean:
 	rm -f openedge
+	make -C openedge-agent clean
 	make -C openedge-hub clean
 	make -C openedge-function clean
+	make -C openedge-function-python27 clean
 	make -C openedge-remote-mqtt clean
-	make -C openedge-function-runtime-node clean
 	rm -f pubsub openedge-consistency
 
 rebuild: clean all
@@ -87,24 +106,47 @@ protobuf:
 	# protoc -Imodule/function/runtime --cpp_out=openedge-function-runtime-cxx --grpc_out=openedge-function-runtime-cxx --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` openedge_function_runtime.proto
 	protoc -Imodule/function/runtime --go_out=plugins=grpc:module/function/runtime openedge_function_runtime.proto
 	python -m grpc_tools.protoc -Imodule/function/runtime --python_out=openedge-function-runtime-python27 --grpc_python_out=openedge-function-runtime-python27 openedge_function_runtime.proto
-	grpc_tools_node_protoc \
-	--js_out=import_style=commonjs,binary:openedge-function-runtime-node/openedge-function-runtime-node-lib \
-	--grpc_out=openedge-function-runtime-node/openedge-function-runtime-node-lib \
-	--plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` -I module/function/runtime openedge_function_runtime.proto
 
-images: openedge-hub-image openedge-function-image openedge-remote-mqtt-image openedge-function-runtime-python27-image openedge-function-runtime-node-image
+image:
+	make -C openedge-hub image
+	make -C openedge-function image
+	make -C openedge-function-python27 image
+	make -C openedge-remote-mqtt image
+	make -C openedge-agent image
 
-openedge-hub-image:
-	make -C openedge-hub openedge-hub-image
-
-openedge-function-image:
-	make -C openedge-function openedge-function-image
-
-openedge-remote-mqtt-image:
-	make -C openedge-remote-mqtt openedge-remote-mqtt-image
-
-openedge-function-runtime-python27-image:
-	make -C openedge-function-runtime-python27 openedge-function-runtime-python27-image
-
-openedge-function-runtime-node-image:
-	make -C openedge-function-runtime-node openedge-function-runtime-node-image
+release:
+	env GOOS=linux GOARCH=amd64 make image
+	make clean
+	# release linux 386
+	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
+	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
+	tar cjf openedge-linux-386-$(VERSION).tar.bz2 -C __release_build/openedge-linux-386-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-386-$(VERSION)
+	# release linux amd64
+	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
+	tar czf openedge-linux-amd64-$(VERSION).tar.gz -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
+	tar cjf openedge-linux-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
+	# release linux arm
+	env GOOS=linux GOARCH=arm make install PREFIX=__release_build/openedge-linux-arm-$(VERSION)
+	tar czf openedge-linux-arm-$(VERSION).tar.gz -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
+	tar cjf openedge-linux-arm-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-arm-$(VERSION)
+	# release linux arm64
+	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
+	tar czf openedge-linux-arm64-$(VERSION).tar.gz -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
+	tar cjf openedge-linux-arm64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
+	make uninstall clean PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
+	# release darwin amd64
+	env GOOS=darwin GOARCH=amd64 make all
+	make install PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
+	tar czf openedge-darwin-amd64-$(VERSION).tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
+	tar cjf openedge-darwin-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
+	make uninstall PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
+	make install-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
+	tar czf openedge-darwin-amd64-$(VERSION)-native.tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
+	tar cjf openedge-darwin-amd64-$(VERSION)-native.tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
+	make uninstall-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
+	make clean
+	# at last
+	rmdir __release_build
