@@ -2,11 +2,6 @@ package sdk
 
 import (
 	"errors"
-	"io/ioutil"
-	"net"
-	"net/rpc"
-	"net/rpc/jsonrpc"
-	"net/url"
 	"os"
 	"os/signal"
 	"strings"
@@ -14,6 +9,7 @@ import (
 
 	"github.com/256dpi/gomqtt/packet"
 	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/protocol/jrpc"
 	"github.com/baidu/openedge/protocol/mqtt"
 	"github.com/baidu/openedge/utils"
 )
@@ -22,12 +18,11 @@ import (
 const DefaultConfigPath = "etc/openedge/service.yml"
 
 type context struct {
-	mqtt.Handler
 	cfg     openedge.Config
-	mqtt    *mqtt.Dispatcher
 	topic   string
 	handler func(*openedge.Message) error
-	master  *rpc.Client
+	hub     *mqtt.Dispatcher
+	master  *jrpc.Client
 }
 
 func (c *context) Config() *openedge.Config {
@@ -42,7 +37,7 @@ func (c *context) WaitExit() {
 }
 
 func (c *context) Subscribe(topic openedge.TopicInfo, handler func(*openedge.Message) error) error {
-	if c.mqtt == nil {
+	if c.hub == nil {
 		return errors.New("no hub")
 	}
 	p := packet.NewSubscribe()
@@ -53,7 +48,7 @@ func (c *context) Subscribe(topic openedge.TopicInfo, handler func(*openedge.Mes
 		},
 	}
 	p.ID = 1
-	err := c.mqtt.Send(p)
+	err := c.hub.Send(p)
 	if err != nil {
 		return err
 	}
@@ -64,22 +59,21 @@ func (c *context) Subscribe(topic openedge.TopicInfo, handler func(*openedge.Mes
 }
 
 func (c *context) SendMessage(message *openedge.Message) error {
-	if c.mqtt == nil {
+	if c.hub == nil {
 		return errors.New("no hub")
 	}
 	p := packet.NewPublish()
 	p.Message.Topic = message.Topic
 	p.Message.QOS = packet.QOS(message.QoS)
 	p.Message.Payload = message.Payload
-	return c.mqtt.Send(p)
+	return c.hub.Send(p)
 }
 
-func (c *context) StartService(name string, info *openedge.ServiceInfo, config []byte) error {
+func (c *context) StartService(info *openedge.ServiceInfo, config []byte) error {
 	var reply openedge.StartServiceResponse
 	err := c.master.Call(
 		openedge.CallStartService,
 		openedge.StartServiceRequest{
-			Name:   name,
 			Info:   *info,
 			Config: config,
 		},
@@ -99,10 +93,28 @@ func (c *context) StopService(name string) error {
 }
 
 func (c *context) UpdateSystem(configPath string) error {
-	return errors.New("not implemented yet")
+	err := c.master.Call(
+		openedge.CallUpdateSystem,
+		&openedge.UpdateSystemRequest{Config: configPath},
+		&openedge.UpdateSystemResponse{},
+	)
+	return err
 }
 
-func (c *context) onPublish(p *packet.Publish) error {
+func (c *context) InspectSystem() (*openedge.Inspect, error) {
+	reply := &openedge.InspectSystemResponse{}
+	err := c.master.Call(
+		openedge.CallInspectSystem,
+		&openedge.InspectSystemRequest{},
+		reply,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return reply.Inspect, nil
+}
+
+func (c *context) ProcessPublish(p *packet.Publish) error {
 	if strings.Compare(p.Message.Topic, c.topic) == 0 {
 		return c.handler(&openedge.Message{
 			Topic:   p.Message.Topic,
@@ -113,57 +125,49 @@ func (c *context) onPublish(p *packet.Publish) error {
 	return nil
 }
 
-func (c *context) onPuback(p *packet.Puback) error {
+func (c *context) ProcessPuback(p *packet.Puback) error {
 	openedge.Debugln("on puback", p.String())
 	return nil
 }
 
-func (c *context) onError(err error) {
-
+func (c *context) ProcessError(err error) {
+	openedge.Errorln(err.Error())
 }
 
 func newContext() (*context, error) {
-	c := &context{
-		cfg: openedge.Config{},
-	}
-	data, err := ioutil.ReadFile(DefaultConfigPath)
+	var cfg openedge.Config
+	err := utils.LoadYAML(DefaultConfigPath, &cfg)
 	if err != nil {
 		return nil, err
 	}
-	err = utils.UnmarshalYAML(data, &c.cfg)
+	err = InitLogger(&cfg.Logger)
 	if err != nil {
 		return nil, err
-	}
-	err = InitLogger(&c.cfg.Logger)
-	if err != nil {
-		return nil, err
-	}
-	if len(c.cfg.Hub.Address) > 0 {
-		c.mqtt = mqtt.NewDispatcher(c.cfg.Hub)
-		c.ProcessPublish = c.onPublish
-		c.ProcessPuback = c.onPuback
-		c.ProcessError = c.onError
-		c.mqtt.Start(c.Handler)
 	}
 
-	master := os.Getenv(openedge.MasterAPIKey)
-	if len(master) > 0 {
-		addr, err := url.Parse(master)
+	var jrpccli *jrpc.Client
+	addr := os.Getenv(openedge.MasterAPIKey)
+	if len(addr) > 0 {
+		jrpccli, err = jrpc.NewClient(addr)
 		if err != nil {
 			return nil, err
 		}
-		conn, err := net.Dial(addr.Scheme, addr.Host)
-		if err != nil {
-			return nil, err
-		}
-		c.master = jsonrpc.NewClient(conn)
+	}
+
+	c := &context{
+		cfg:    cfg,
+		master: jrpccli,
+	}
+	if len(cfg.Hub.Address) > 0 {
+		c.hub = mqtt.NewDispatcher(c.cfg.Hub)
+		c.hub.Start(c)
 	}
 	return c, nil
 }
 
 func (c *context) Close() error {
-	if c.mqtt != nil {
-		c.mqtt.Close()
+	if c.hub != nil {
+		c.hub.Close()
 	}
 	if c.master != nil {
 		c.master.Close()

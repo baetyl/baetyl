@@ -18,22 +18,43 @@ func SetDefaults(ptr interface{}) error {
 	t := v.Type()
 
 	for i := 0; i < t.NumField(); i++ {
-		if f := t.Field(i); f.Type.Kind() == reflect.Slice {
-			slice := v.Field(i)
-			for j := 0; j < slice.Len(); j++ {
-				sliceItem := slice.Index(j)
-				if sliceItem.Kind() != reflect.Struct {
+		tf := t.Field(i)
+		vf := v.Field(i)
+		if tf.Type.Kind() == reflect.Slice {
+			for j := 0; j < vf.Len(); j++ {
+				item := vf.Index(j)
+				if item.Kind() != reflect.Struct {
 					continue
 				}
-				sliceItemTemp := reflect.New(sliceItem.Type())
-				sliceItemTemp.Elem().Set(sliceItem)
-				err = SetDefaults(sliceItemTemp.Interface())
+				err := setDefaults(item)
 				if err != nil {
 					return err
 				}
-				sliceItem.Set(sliceItemTemp.Elem())
 			}
 		}
+		// if tf.Type.Kind() == reflect.Map {
+		// 	for _, k := range vf.MapKeys() {
+		// 		item := vf.MapIndex(k)
+		// 		if item.Kind() != reflect.Struct {
+		// 			continue
+		// 		}
+		// 		err := setDefaults(item)
+		// 		if err != nil {
+		// 			return err
+		// 		}
+		// 	}
+		// }
 	}
+	return nil
+}
+
+func setDefaults(v reflect.Value) error {
+	tmp := reflect.New(v.Type())
+	tmp.Elem().Set(v)
+	err := SetDefaults(tmp.Interface())
+	if err != nil {
+		return err
+	}
+	v.Set(tmp.Elem())
 	return nil
 }

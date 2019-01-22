@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 	"path"
 	"regexp"
 	"strings"
@@ -22,8 +25,9 @@ type mo struct {
 	cfg  Config
 	key  []byte
 	path string
-	http *http.Client
+	ctx  openedge.Context
 	mqtt *mqtt.Dispatcher
+	http *http.Client
 	tomb utils.Tomb
 }
 
@@ -31,7 +35,7 @@ const defaultConfigPath = "etc/openedge/service.yml"
 
 func main() {
 	sdk.Run(func(ctx openedge.Context) error {
-		m, err := new()
+		m, err := new(ctx)
 		if err != nil {
 			return err
 		}
@@ -45,7 +49,7 @@ func main() {
 	})
 }
 
-func new() (*mo, error) {
+func new(ctx openedge.Context) (*mo, error) {
 	var cfg Config
 	err := utils.LoadYAML(defaultConfigPath, &cfg)
 	if err != nil {
@@ -66,50 +70,14 @@ func new() (*mo, error) {
 	return &mo{
 		cfg:  cfg,
 		key:  key,
+		ctx:  ctx,
 		http: cli,
 		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT),
 	}, nil
 }
 
 func (m *mo) start(ctx openedge.Context) error {
-	h := mqtt.Handler{}
-	h.ProcessError = func(err error) {
-		openedge.Errorf(err.Error())
-	}
-	h.ProcessPublish = func(p *packet.Publish) error {
-		e := NewEvent(p.Message.Payload)
-		openedge.Debugln("backward event:", e)
-		switch e.Type {
-		case SyncConfig:
-			if !isVersion(e.Detail.Version) {
-				openedge.Errorf("config version invalid")
-				m.report("error", "config version invalid")
-				break
-			}
-			confFile, err := m.download(e.Detail.Version, e.Detail.DownloadURL)
-			if err != nil {
-				openedge.WithError(err).Errorf("failed to download new config package")
-				m.report("error", err.Error())
-				break
-			}
-			err = ctx.UpdateSystem(confFile)
-			if err != nil {
-				openedge.WithError(err).Errorf("failed to download new config package")
-				m.report("error", err.Error())
-			} else {
-				m.report()
-			}
-		default:
-			openedge.Warnf("event type unexpected")
-		}
-		if p.Message.QOS == 1 {
-			puback := packet.NewPuback()
-			puback.ID = p.ID
-			m.mqtt.Send(puback)
-		}
-		return nil
-	}
-	err := m.mqtt.Start(h)
+	err := m.mqtt.Start(m)
 	if err != nil {
 		return err
 	}
@@ -120,6 +88,48 @@ func (m *mo) close() {
 	m.tomb.Kill(nil)
 	m.tomb.Wait()
 	m.mqtt.Close()
+}
+
+func (m *mo) ProcessPublish(p *packet.Publish) error {
+	e := NewEvent(p.Message.Payload)
+	openedge.Debugln("backward event:", e)
+	switch e.Type {
+	case SyncConfig:
+		if !isVersion(e.Detail.Version) {
+			openedge.Errorf("config version invalid")
+			m.report("error", "config version invalid")
+			break
+		}
+		confFile, err := m.download(e.Detail.Version, e.Detail.DownloadURL)
+		if err != nil {
+			openedge.WithError(err).Errorf("failed to download new config package")
+			m.report("error", err.Error())
+			break
+		}
+		err = m.ctx.UpdateSystem(confFile)
+		if err != nil {
+			openedge.WithError(err).Errorf("failed to download new config package")
+			m.report("error", err.Error())
+		} else {
+			m.report()
+		}
+	default:
+		openedge.Warnf("event type unexpected")
+	}
+	if p.Message.QOS == 1 {
+		puback := packet.NewPuback()
+		puback.ID = p.ID
+		m.mqtt.Send(puback)
+	}
+	return nil
+}
+
+func (m *mo) ProcessPuback(p *packet.Puback) error {
+	return nil
+}
+
+func (m *mo) ProcessError(err error) {
+	openedge.Errorf(err.Error())
 }
 
 func (m *mo) reporting() error {
@@ -180,24 +190,46 @@ func (m *mo) send(data []byte) error {
 	headers.Set("x-iot-edge-key", key)
 	headers.Set("Content-Type", "application/x-www-form-urlencoded")
 	url := fmt.Sprintf("%s://%s/%s", m.http.Addr.Scheme, m.http.Addr.Host, m.cfg.Remote.Report.URL)
-	_, _, err = m.http.Send("POST", url, headers, body)
+	_, _, err = m.http.Send("POST", url, headers, bytes.NewBuffer(body))
 	return err
 }
 
 func (m *mo) download(version, downloadURL string) (string, error) {
 	reqHeaders := http.Headers{}
-	// reqHeaders.Set("x-iot-edge-clientid", m.cfg.Remote.MQTT.ClientID)
-	// reqHeaders.Set("Content-Type", "application/octet-stream")
 	_, resBody, err := m.http.Send("GET", downloadURL, reqHeaders, nil)
 	if err != nil {
 		return "", err
 	}
-	// data, err := m.decryptData(resHeaders.Get("x-iot-edge-key"), resBody)
-	// if err != nil {
-	// 	return "", err
-	// }
-	file := path.Join(m.path, version+".zip")
-	return file, ioutil.WriteFile(file, resBody, 0644)
+	if resBody == nil {
+		return "", fmt.Errorf("no response body")
+	}
+	defer resBody.Close()
+	filename := path.Join(m.path, version+".zip")
+	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	count := 0
+	buffer := make([]byte, 1024)
+	for {
+		l, err := resBody.Read(buffer)
+		if err != nil && err != io.EOF {
+			return "", err
+		}
+		if l == 0 {
+			break
+		}
+		count = count + l
+		if count > 1024*1024*1024 {
+			return "", fmt.Errorf("file size greater than 1G")
+		}
+		n, err := f.Write(buffer[:l])
+		if err == nil && n < l {
+			return "", io.ErrShortWrite
+		}
+	}
+	return filename, nil
 }
 
 func (m *mo) encryptData(data []byte) ([]byte, string, error) {
@@ -218,22 +250,6 @@ func (m *mo) encryptData(data []byte) ([]byte, string, error) {
 	body = []byte(base64.StdEncoding.EncodeToString(body))
 	return body, key, nil
 }
-
-// func (m *mo) decryptData(key string, data []byte) ([]byte, error) {
-// 	// decode key using BASE64
-// 	k, err := base64.StdEncoding.DecodeString(key)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// decrypt AES key using RSA
-// 	aesKey, err := utils.RsaPrivateDecrypt(k, m.key)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	// decrypt data using AES
-// 	decData, err := utils.AesDecrypt(data, aesKey)
-// 	return decData, err
-// }
 
 func defaults(c *Config) error {
 	if c.Remote.MQTT.Address == "" {

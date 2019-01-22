@@ -14,15 +14,27 @@ type Context interface {
 	WaitExit()
 	Subscribe(topic TopicInfo, handler func(*Message) error) error
 	SendMessage(message *Message) error
-	StartService(name string, info *ServiceInfo, config []byte) error
+	StartService(info *ServiceInfo, config []byte) error
 	StopService(name string) error
 	UpdateSystem(configPath string) error
+	InspectSystem() (*Inspect, error)
 }
 
 // master rpc call names
 const (
-	CallStartService = "openedge.StartService"
+	CallStartService  = "openedge.StartService"
+	CallUpdateSystem  = "openedge.UpdateSystem"
+	CallInspectSystem = "openedge.InspectSystem"
 )
+
+// InspectSystemRequest data
+type InspectSystemRequest struct {
+}
+
+// InspectSystemResponse data
+type InspectSystemResponse struct {
+	Inspect *Inspect
+}
 
 // UpdateSystemRequest data
 type UpdateSystemRequest struct {
@@ -35,7 +47,6 @@ type UpdateSystemResponse struct {
 
 // StartServiceRequest data
 type StartServiceRequest struct {
-	Name   string
 	Info   ServiceInfo
 	Config []byte
 }

@@ -61,7 +61,7 @@ func New(workdir, confpath string) (*Master, error) {
 		m.Close()
 		return nil, err
 	}
-	m.server, err = newServer(m)
+	m.server, err = newServer(m.cfg.Server, m)
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -83,7 +83,7 @@ func New(workdir, confpath string) (*Master, error) {
 func (m *Master) Close() error {
 	m.cleanServices()
 	if m.server != nil {
-		m.server.close()
+		m.server.s.Close()
 	}
 	if m.engine != nil {
 		m.engine.Close()

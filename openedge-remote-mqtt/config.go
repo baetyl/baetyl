@@ -19,7 +19,6 @@ type Remote struct {
 
 // Rule rule config
 type Rule struct {
-	ID  string `yaml:"id" json:"id"`
 	Hub struct {
 		Subscriptions []openedge.TopicInfo `yaml:"subscriptions" json:"subscriptions" default:"[]"`
 	} `yaml:"hub" json:"hub"`
