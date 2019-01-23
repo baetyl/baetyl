@@ -145,7 +145,7 @@ openedge-remote-mqtt
 ```
 
 ```shell
-make images # 在本地生成模块镜像
+make image # 在本地生成模块镜像
 ```
 
 通过上述命令编译生成如下四个镜像:
