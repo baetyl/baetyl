@@ -24,8 +24,8 @@ func Factories() map[string]Factory {
 type Engine interface {
 	Close() error
 	Name() string
-	Run(name string, service *openedge.ServiceInfo) (Service, error)
-	RunWithConfig(name string, service *openedge.ServiceInfo, config []byte) (Service, error)
+	Run(service *openedge.ServiceInfo) (Service, error)
+	RunWithConfig(service *openedge.ServiceInfo, config []byte) (Service, error)
 }
 
 // New engine by given name

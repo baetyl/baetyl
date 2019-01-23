@@ -11,7 +11,7 @@ type Config struct {
 	openedge.Config `yaml:",inline" json:",inline"`
 	Remote          struct {
 		MQTT   openedge.MqttClientInfo `yaml:"mqtt" json:"mqtt"`
-		HTTP   openedge.HttpClientInfo `yaml:"http" json:"http"`
+		HTTP   openedge.HTTPClientInfo `yaml:"http" json:"http"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"v1/edge/info"`
 			Topic    string        `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/forward"`

@@ -36,6 +36,7 @@ func run(ctx openedge.Context) error {
 			return err
 		}
 		si := openedge.ServiceInfo{
+			Name:    f.Name,
 			Image:   f.Runtime,
 			Replica: 1,
 			Expose:  []string{},
@@ -51,7 +52,7 @@ func run(ctx openedge.Context) error {
 			// TODO Restart
 			// TODO Resource
 		}
-		err = ctx.StartService(f.Name, &si, rtcfg)
+		err = ctx.StartService(&si, rtcfg)
 		if err != nil {
 			return err
 		}

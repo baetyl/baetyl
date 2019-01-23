@@ -28,14 +28,6 @@ func newConfig(t *testing.T, port string) (c openedge.MqttClientInfo) {
 	return
 }
 
-func assertNoErrorCallback(t *testing.T) (h Handler) {
-	h.ProcessError = func(err error) {
-		assert.NoError(t, err)
-		assert.FailNow(t, "ProcessError should not have been called")
-	}
-	return
-}
-
 func fakeBroker(t *testing.T, testFlows ...*flow.Flow) (chan struct{}, string) {
 	done := make(chan struct{})
 

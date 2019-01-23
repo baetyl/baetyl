@@ -1,9 +1,8 @@
 package http
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -18,11 +17,11 @@ import (
 type Client struct {
 	*http.Client
 	Addr *url.URL
-	Conf *openedge.HttpClientInfo
+	Conf *openedge.HTTPClientInfo
 }
 
 // NewClient creates a new http client
-func NewClient(cc openedge.HttpClientInfo) (*Client, error) {
+func NewClient(cc openedge.HTTPClientInfo) (*Client, error) {
 	tls, err := utils.NewTLSClientConfig(cc.Certificate)
 	if err != nil {
 		return nil, err
@@ -50,8 +49,8 @@ func NewClient(cc openedge.HttpClientInfo) (*Client, error) {
 }
 
 // Send sends request
-func (c *Client) Send(method, url string, headers Headers, body []byte) (Headers, []byte, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+func (c *Client) Send(method, url string, headers Headers, body io.Reader) (Headers, io.ReadCloser, error) {
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -60,17 +59,18 @@ func (c *Client) Send(method, url string, headers Headers, body []byte) (Headers
 	if err != nil {
 		return nil, nil, err
 	}
-	var resBody []byte
-	if res.Body != nil {
-		defer res.Body.Close()
-		resBody, err = ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
 	if res.StatusCode >= 400 {
-		errMessage := string(resBody)
-		return nil, nil, fmt.Errorf("[%d] %s", res.StatusCode, strings.TrimRight(errMessage, "\n"))
+		count := 0
+		message := make([]byte, 1024)
+		if res.Body != nil {
+			defer res.Body.Close()
+			count, err = res.Body.Read(message)
+			if err != nil {
+				return nil, nil, err
+			}
+			message = message[:count]
+		}
+		return nil, nil, fmt.Errorf("[%d] %s", res.StatusCode, strings.TrimRight(string(message), "\n"))
 	}
-	return res.Header, resBody, nil
+	return res.Header, res.Body, nil
 }

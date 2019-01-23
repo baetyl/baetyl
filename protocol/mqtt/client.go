@@ -14,25 +14,17 @@ import (
 	tomb "gopkg.in/tomb.v2"
 )
 
-// Handler MQTT message handler
-type Handler struct {
-	ProcessPublish func(*packet.Publish) error
-	ProcessPuback  func(*packet.Puback) error
-	ProcessError   func(error)
-}
-
 // A Client connects to a broker and handles the transmission of packets
 type Client struct {
 	conn            transport.Conn
 	config          openedge.MqttClientInfo
-	handler         Handler
 	tracker         *client.Tracker
 	connectFuture   *Future
 	subscribeFuture *Future
-
-	finish sync.Once
-	tomb   utils.Tomb
-	log    openedge.Logger
+	handler         Handler
+	finish          sync.Once
+	tomb            utils.Tomb
+	log             openedge.Logger
 }
 
 // NewClient returns a new client
@@ -184,7 +176,7 @@ func (c *Client) processor() error {
 		switch p := pkt.(type) {
 		case *packet.Publish:
 			c.log.Debugf("received: %s, pid: %d, qos: %d, topic: %s", p.Type(), p.ID, p.Message.QOS, p.Message.Topic)
-			if c.handler.ProcessPublish != nil {
+			if c.handler != nil {
 				err = c.handler.ProcessPublish(p)
 				if err != nil {
 					return c.die(err)
@@ -192,7 +184,7 @@ func (c *Client) processor() error {
 			}
 		case *packet.Puback:
 			c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
-			if c.handler.ProcessPuback != nil {
+			if c.handler != nil {
 				err = c.handler.ProcessPuback(p)
 				if err != nil {
 					return c.die(err)
@@ -286,7 +278,7 @@ func (c *Client) die(err error) error {
 		if err == nil {
 			c.send(packet.NewDisconnect(), false)
 		} else {
-			if c.handler.ProcessError != nil {
+			if c.handler != nil {
 				c.handler.ProcessError(err)
 			}
 			c.log.WithError(err).Errorln("MQTT client raises error")
