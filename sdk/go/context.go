@@ -18,15 +18,20 @@ import (
 const DefaultConfigPath = "etc/openedge/service.yml"
 
 type context struct {
-	cfg     openedge.Config
-	topic   string
-	handler func(*openedge.Message) error
-	hub     *mqtt.Dispatcher
-	master  *jrpc.Client
+	cfg    openedge.Config
+	topic  string
+	handle func(*openedge.Message) error
+	hub    *mqtt.Dispatcher
+	master *jrpc.Client
+	log    openedge.Logger
 }
 
 func (c *context) Config() *openedge.Config {
 	return &c.cfg
+}
+
+func (c *context) Log() openedge.Logger {
+	return c.log
 }
 
 func (c *context) WaitExit() {
@@ -36,7 +41,7 @@ func (c *context) WaitExit() {
 	<-sig
 }
 
-func (c *context) Subscribe(topic openedge.TopicInfo, handler func(*openedge.Message) error) error {
+func (c *context) Subscribe(topic openedge.TopicInfo, handle func(*openedge.Message) error) error {
 	if c.hub == nil {
 		return errors.New("no hub")
 	}
@@ -54,7 +59,7 @@ func (c *context) Subscribe(topic openedge.TopicInfo, handler func(*openedge.Mes
 	}
 	// FIXME not support multiple subscription
 	c.topic = topic.Topic
-	c.handler = handler
+	c.handle = handle
 	return nil
 }
 
@@ -116,7 +121,7 @@ func (c *context) InspectSystem() (*openedge.Inspect, error) {
 
 func (c *context) ProcessPublish(p *packet.Publish) error {
 	if strings.Compare(p.Message.Topic, c.topic) == 0 {
-		return c.handler(&openedge.Message{
+		return c.handle(&openedge.Message{
 			Topic:   p.Message.Topic,
 			QoS:     byte(p.Message.QOS),
 			Payload: p.Message.Payload,
@@ -140,7 +145,7 @@ func newContext() (*context, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = InitLogger(&cfg.Logger)
+	err = InitLogger(&cfg.Logger, "service", cfg.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +162,7 @@ func newContext() (*context, error) {
 	c := &context{
 		cfg:    cfg,
 		master: jrpccli,
+		log:    openedge.GlobalLogger(),
 	}
 	if len(cfg.Hub.Address) > 0 {
 		c.hub = mqtt.NewDispatcher(c.cfg.Hub)

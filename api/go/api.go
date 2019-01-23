@@ -12,12 +12,13 @@ const (
 type Context interface {
 	Config() *Config
 	WaitExit()
-	Subscribe(topic TopicInfo, handler func(*Message) error) error
+	Subscribe(topic TopicInfo, handle func(*Message) error) error
 	SendMessage(message *Message) error
 	StartService(info *ServiceInfo, config []byte) error
 	StopService(name string) error
 	UpdateSystem(configPath string) error
 	InspectSystem() (*Inspect, error)
+	Log() Logger
 }
 
 // master rpc call names

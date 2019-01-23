@@ -26,7 +26,10 @@ type HostInfo map[string]interface{}
 type Services []ServiceStatus
 
 // ServiceStatus service status
-type ServiceStatus []InstanceStatus
+type ServiceStatus struct {
+	Name      string           `json:"name,omitempt"`
+	Instances []InstanceStatus `json:"instances,omitempt"`
+}
 
 // InstanceStatus service instance status
 type InstanceStatus map[string]interface{}
@@ -36,5 +39,13 @@ func NewInspect() *Inspect {
 	return &Inspect{
 		HostInfo: HostInfo{},
 		Services: Services{},
+	}
+}
+
+// NewServiceStatus create a new service status
+func NewServiceStatus(name string) ServiceStatus {
+	return ServiceStatus{
+		Name:      name,
+		Instances: []InstanceStatus{},
 	}
 }

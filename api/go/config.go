@@ -103,6 +103,7 @@ type MountInfo struct {
 
 // Config of service
 type Config struct {
+	Name   string         `yaml:"name" json:"name"`
 	Hub    MqttClientInfo `yaml:"hub" json:"hub"`
 	Logger LogInfo        `yaml:"logger" json:"logger"`
 }

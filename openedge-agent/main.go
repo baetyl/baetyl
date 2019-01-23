@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -92,29 +93,29 @@ func (m *mo) close() {
 
 func (m *mo) ProcessPublish(p *packet.Publish) error {
 	e := NewEvent(p.Message.Payload)
-	openedge.Debugln("backward event:", e)
+	m.ctx.Log().Debugln("backward event:", e)
 	switch e.Type {
 	case SyncConfig:
 		if !isVersion(e.Detail.Version) {
-			openedge.Errorf("config version invalid")
-			m.report("error", "config version invalid")
+			m.ctx.Log().Errorf("config version invalid")
+			m.report("config version invalid")
 			break
 		}
 		confFile, err := m.download(e.Detail.Version, e.Detail.DownloadURL)
 		if err != nil {
-			openedge.WithError(err).Errorf("failed to download new config package")
-			m.report("error", err.Error())
+			m.ctx.Log().WithError(err).Errorf("failed to download new config package")
+			m.report(err.Error())
 			break
 		}
 		err = m.ctx.UpdateSystem(confFile)
 		if err != nil {
-			openedge.WithError(err).Errorf("failed to download new config package")
-			m.report("error", err.Error())
+			m.ctx.Log().WithError(err).Errorf("failed to download new config package")
+			m.report(err.Error())
 		} else {
 			m.report()
 		}
 	default:
-		openedge.Warnf("event type unexpected")
+		m.ctx.Log().Warnf("event type unexpected")
 	}
 	if p.Message.QOS == 1 {
 		puback := packet.NewPuback()
@@ -129,7 +130,7 @@ func (m *mo) ProcessPuback(p *packet.Puback) error {
 }
 
 func (m *mo) ProcessError(err error) {
-	openedge.Errorf(err.Error())
+	m.ctx.Log().Errorf(err.Error())
 }
 
 func (m *mo) reporting() error {
@@ -139,7 +140,7 @@ func (m *mo) reporting() error {
 	for {
 		select {
 		case <-t.C:
-			openedge.Debugln("to report stats")
+			m.ctx.Log().Debugln("to report stats")
 			m.report()
 		case <-m.tomb.Dying():
 			return nil
@@ -148,36 +149,33 @@ func (m *mo) reporting() error {
 }
 
 // Report reports info
-func (m *mo) report(args ...string) {
-	/* FIXME
+func (m *mo) report(errors ...string) {
 	defer trace("report")()
 
-	s, err := m.cli.Stats()
+	i, err := m.ctx.InspectSystem()
 	if err != nil {
-		openedge.WithError(err).Errorf("failed to get master stats")
-		s = master.NewStats()
-		s.Info["error"] = err.Error()
+		m.ctx.Log().WithError(err).Warnf("failed to inspect stats")
+		i = openedge.NewInspect()
+		errors = append(errors, err.Error())
 	}
-	for index := 0; index < len(args)-1; index = index + 2 {
-		s.Info[args[index]] = args[index+1]
-	}
-	payload, err := json.Marshal(s)
+	i.Error = strings.Join(errors, ";")
+	payload, err := json.Marshal(i)
 	if err != nil {
-		openedge.Debugln("stats", string(payload))
+		m.ctx.Log().WithError(err).Warnf("failed to marshal stats")
 		return
 	}
+	m.ctx.Log().Debugln("stats", string(payload))
 	p := packet.NewPublish()
 	p.Message.Topic = m.cfg.Remote.Report.Topic
 	p.Message.Payload = payload
 	err = m.mqtt.Send(p)
 	if err != nil {
-		openedge.WithError(err).Warnf("failed to report stats by mqtt")
+		m.ctx.Log().WithError(err).Warnf("failed to report stats by mqtt")
 	}
 	err = m.send(p.Message.Payload)
 	if err != nil {
-		openedge.WithError(err).Warnf("failed to report stats by https")
+		m.ctx.Log().WithError(err).Warnf("failed to report stats by https")
 	}
-	*/
 }
 
 func (m *mo) send(data []byte) error {

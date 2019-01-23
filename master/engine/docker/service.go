@@ -35,7 +35,8 @@ func (s *dockerService) Scale(replica int, grace time.Duration) error {
 
 func (s *dockerService) Stats() openedge.ServiceStatus {
 	instance := openedge.InstanceStatus{"id": s.id}
-	result := openedge.ServiceStatus{instance}
+	result := openedge.NewServiceStatus(s.si.Name)
+	result.Instances = append(result.Instances, instance)
 
 	ctx := context.Background()
 	iresp, err := s.e.client.ContainerInspect(ctx, s.id)

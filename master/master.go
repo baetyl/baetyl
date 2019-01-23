@@ -2,7 +2,6 @@ package master
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -32,12 +31,8 @@ type Master struct {
 
 // New creates a new master
 func New(workdir, confpath string) (*Master, error) {
-	data, err := ioutil.ReadFile(path.Join(workdir, confpath))
-	if err != nil {
-		return nil, err
-	}
 	var cfg Config
-	err = utils.UnmarshalYAML(data, &cfg)
+	err := utils.LoadYAML(path.Join(workdir, confpath), &cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +49,7 @@ func New(workdir, confpath string) (*Master, error) {
 		cfg:      cfg,
 		wdir:     workdir,
 		services: cmap.New(),
-		log:      openedge.WithField("openedge", "master"),
+		log:      openedge.GlobalLogger(),
 	}
 	m.engine, err = engine.New(cfg.Mode, m.wdir)
 	if err != nil {
