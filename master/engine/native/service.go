@@ -2,21 +2,17 @@ package native
 
 import (
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"syscall"
 	"time"
 
 	openedge "github.com/baidu/openedge/api/go"
-
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/utils"
 )
 
 type nativeService struct {
-	name    string
 	wdir    string
 	stop    chan struct{}
 	done    chan *os.ProcessState
@@ -26,10 +22,6 @@ type nativeService struct {
 	si      *openedge.ServiceInfo
 	w       string
 	p       *os.Process
-}
-
-func (s *nativeService) Name() string {
-	return s.name
 }
 
 func (s *nativeService) Info() *openedge.ServiceInfo {
@@ -44,6 +36,10 @@ func (s *nativeService) Scale(replica int, grace time.Duration) error {
 	return errors.New("not implemented yet")
 }
 
+func (s *nativeService) Stats() openedge.ServiceStatus {
+	return openedge.ServiceStatus{}
+}
+
 func (s *nativeService) Stop(grace time.Duration) error {
 	defer os.RemoveAll(s.wdir)
 	s.stop <- struct{}{}
@@ -55,157 +51,6 @@ func (s *nativeService) Stop(grace time.Duration) error {
 			s.p.Kill()
 		}
 	}
-}
-
-// Run new service
-func (e *nativeEngine) Run(name string, si *openedge.ServiceInfo) (engine.Service, error) {
-	wdir := path.Join(e.wdir, "var", "run", "openedge", "service", name)
-	err := os.MkdirAll(wdir, 0755)
-	if err != nil {
-		return nil, err
-	}
-	err = os.MkdirAll(path.Join(wdir, "etc"), 0755)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = os.Symlink(
-		path.Join(e.wdir, "var", "db", "openedge", "service", name),
-		path.Join(wdir, "etc", "openedge"),
-	)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = e.mklog(name, wdir)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = e.mount(wdir, si.Mounts)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	p, err := startProcess(e.wdir, wdir, name, si)
-	if err != nil {
-		e.log.Errorln("failed to start process:", err.Error())
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	// FIX need correct default value
-	if si.Restart.Backoff.Factor < 1.0 {
-		si.Restart.Backoff.Factor = 1.0
-	}
-	if si.Restart.Backoff.Min < time.Second {
-		si.Restart.Backoff.Min = time.Second
-	}
-	s := &nativeService{
-		name:    name,
-		wdir:    wdir,
-		stop:    make(chan struct{}),
-		done:    make(chan *os.ProcessState),
-		backoff: si.Restart.Backoff.Min,
-		e:       e,
-		si:      si,
-		w:       wdir,
-		p:       p,
-	}
-	go s.supervise()
-	return s, nil
-}
-
-// RunWithConfig new service
-func (e *nativeEngine) RunWithConfig(name string, si *openedge.ServiceInfo, cfg []byte) (engine.Service, error) {
-	wdir := path.Join(e.wdir, "var", "run", "openedge", "service", name)
-	err := os.MkdirAll(wdir, 0755)
-	if err != nil {
-		return nil, err
-	}
-	err = os.MkdirAll(path.Join(wdir, "etc", "openedge"), 0755)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = ioutil.WriteFile(path.Join(wdir, "etc/openedge/service.yml"), cfg, 0644)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = e.mklog(name, wdir)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	err = e.mount(wdir, si.Mounts)
-	if err != nil {
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	p, err := startProcess(e.wdir, wdir, name, si)
-	if err != nil {
-		e.log.Errorln("failed to start process:", err.Error())
-		os.RemoveAll(wdir)
-		return nil, err
-	}
-	// FIX need correct default value
-	if si.Restart.Backoff.Factor < 1.0 {
-		si.Restart.Backoff.Factor = 1.0
-	}
-	if si.Restart.Backoff.Min < time.Second {
-		si.Restart.Backoff.Min = time.Second
-	}
-	s := &nativeService{
-		name:    name,
-		wdir:    wdir,
-		stop:    make(chan struct{}),
-		done:    make(chan *os.ProcessState),
-		backoff: si.Restart.Backoff.Min,
-		e:       e,
-		si:      si,
-		w:       wdir,
-		p:       p,
-	}
-	go s.supervise()
-	return s, nil
-}
-
-func (e *nativeEngine) mklog(name, wdir string) error {
-	logdir := path.Join(e.wdir, "var", "log", "openedge", name)
-	err := os.MkdirAll(logdir, 0755)
-	if err != nil {
-		return err
-	}
-	vardir := path.Join(wdir, "var", "log")
-	err = os.MkdirAll(vardir, 0755)
-	if err != nil {
-		return err
-	}
-	return os.Symlink(logdir, path.Join(vardir, "openedge"))
-}
-
-func (e *nativeEngine) mount(wdir string, ms []openedge.MountInfo) error {
-	for _, m := range ms {
-		src := path.Join(e.wdir, m.Volume)
-		err := os.MkdirAll(src, 0755)
-		if err != nil {
-			return err
-		}
-		dst := path.Join(wdir, m.Target)
-		err = os.MkdirAll(path.Dir(dst), 0755)
-		if err != nil {
-			return err
-		}
-		err = os.Symlink(src, dst)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (s *nativeService) supervise() {
@@ -238,7 +83,7 @@ func (s *nativeService) supervise() {
 					return
 				case <-time.After(s.backoff):
 				}
-				p, err := startProcess(s.e.wdir, s.w, s.name, s.si)
+				p, err := startProcess(s.e.wdir, s.w, s.si)
 				s.backoff = time.Duration(int64(float64(s.backoff) * s.si.Restart.Backoff.Factor))
 				if int64(s.si.Restart.Backoff.Max) > 0 && s.backoff > s.si.Restart.Backoff.Max {
 					s.backoff = s.si.Restart.Backoff.Max
@@ -256,7 +101,7 @@ func (s *nativeService) supervise() {
 	}
 }
 
-func startProcess(cdir string, wdir string, name string, si *openedge.ServiceInfo) (*os.Process, error) {
+func startProcess(cdir string, wdir string, si *openedge.ServiceInfo) (*os.Process, error) {
 	openedge.Debugln("start process", cdir, wdir)
 	pkgdir := path.Join(cdir, "lib", "openedge", "packages", si.Image)
 	var pkg Package
@@ -265,7 +110,7 @@ func startProcess(cdir string, wdir string, name string, si *openedge.ServiceInf
 		return nil, err
 	}
 	args := make([]string, 0)
-	args = append(args, fmt.Sprintf("openedge-service-%s", name))
+	args = append(args, si.Name) // add prefix "openedge-service-"?
 	for _, p := range si.Params {
 		args = append(args, p)
 	}

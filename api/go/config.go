@@ -9,6 +9,7 @@ import (
 
 // ServiceInfo of service
 type ServiceInfo struct {
+	Name      string            `yaml:"name" json:"name" validate:"nonzero"`
 	Image     string            `yaml:"image" json:"image" validate:"nonzero"`
 	Replica   int               `yaml:"replica" json:"replica" default:"1"`
 	Expose    []string          `yaml:"expose" json:"expose" default:"[]"`
@@ -37,9 +38,9 @@ type RestartPolicyInfo struct {
 
 // BackoffInfo holds backoff value
 type BackoffInfo struct {
-	Min    time.Duration `yaml:"min" json:"min" default:"1s"`
-	Max    time.Duration `yaml:"max" json:"max" default:"5m"`
-	Factor float64       `yaml:"factor" json:"factor" default:"2"`
+	Min    time.Duration `yaml:"min" json:"min" default:"1s" validate:"min=1000000000"`
+	Max    time.Duration `yaml:"max" json:"max" default:"5m" validate:"min=1000000000"`
+	Factor float64       `yaml:"factor" json:"factor" default:"2" validate:"min=1"`
 }
 
 // Resources resources config
@@ -102,6 +103,7 @@ type MountInfo struct {
 
 // Config of service
 type Config struct {
+	Name   string         `yaml:"name" json:"name"`
 	Hub    MqttClientInfo `yaml:"hub" json:"hub"`
 	Logger LogInfo        `yaml:"logger" json:"logger"`
 }
@@ -122,8 +124,8 @@ type MqttClientInfo struct {
 	Subscriptions     []TopicInfo   `yaml:"subscriptions" json:"subscriptions" default:"[]"`
 }
 
-// HttpClientInfo http client config
-type HttpClientInfo struct {
+// HTTPClientInfo http client config
+type HTTPClientInfo struct {
 	Address           string        `yaml:"address" json:"address"`
 	Timeout           time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
 	KeepAlive         time.Duration `yaml:"keepalive" json:"keepalive" default:"30s"`

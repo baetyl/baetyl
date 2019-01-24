@@ -38,7 +38,7 @@ func (m *mo) init() error {
 		openedge.Errorln("failed to load config:", err.Error())
 		return err
 	}
-	err = sdk.InitLogger(&m.cfg.Logger)
+	err = sdk.InitLogger(&m.cfg.Logger, "service", m.cfg.Name)
 	if err != nil {
 		openedge.Errorln("failed to init logger:", err.Error())
 		return err

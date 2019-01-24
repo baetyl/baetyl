@@ -13,6 +13,7 @@ type Service interface {
 	Instances() []Instance
 	Scale(replica int, grace time.Duration) error
 	Stop(grace time.Duration) error
+	Stats() openedge.ServiceStatus
 }
 
 // Instance data of service

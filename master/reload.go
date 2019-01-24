@@ -18,12 +18,12 @@ var configFile = path.Join(serviceDir, "config.yml")
 
 func (m *Master) startServices() error {
 	m.cleanServices()
-	for k, v := range m.dyncfg.Services {
-		s, err := m.engine.Run(k, v)
+	for _, v := range m.dyncfg.Services {
+		s, err := m.engine.Run(&v)
 		if err != nil {
 			return err
 		}
-		m.services.Set(k, s)
+		m.services.Set(v.Name, s)
 	}
 	return nil
 }

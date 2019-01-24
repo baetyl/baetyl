@@ -1,6 +1,6 @@
 name: localfunc
 hub:
-  address: tcp://openedge-service-localhub:1883
+  address: tcp://localhub:1883
   username: test
   password: hahaha
 functions:
