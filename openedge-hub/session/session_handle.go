@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/module/mqtt"
 	"github.com/baidu/openedge/openedge-hub/auth"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/utils"
+	"github.com/baidu/openedge/protocol/mqtt"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -32,29 +32,29 @@ func (s *session) Handle() {
 		}
 		switch p := pkt.(type) {
 		case *packet.Connect:
-			s.log.Debugln("received:", p.Type)
+			s.log.Debugln("received:", p.Type())
 			err = s.onConnect(p)
 		case *packet.Publish:
-			s.log.Debugln("received:", p.Type, p.ID, p.Message.QOS, p.Message.Topic)
+			s.log.Debugf("received: %s, pid: %d, qos: %d, topic: %s", p.Type(), p.ID, p.Message.QOS, p.Message.Topic)
 			err = s.onPublish(p)
 		case *packet.Puback:
-			s.log.Debugln("received:", p.Type, p.ID)
+			s.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
 			err = s.onPuback(p)
 		case *packet.Subscribe:
-			s.log.Debugln("received:", p.Type, p.Subscriptions)
+			s.log.Debugf("received: %s, subs: %v", p.Type(), p.Subscriptions)
 			err = s.onSubscribe(p)
 		case *packet.Pingreq:
-			s.log.Debugln("received:", p.Type)
+			s.log.Debugln("received:", p.Type())
 			err = s.onPingreq(p)
 		case *packet.Pingresp:
-			s.log.Debugln("received:", p.Type)
+			s.log.Debugln("received:", p.Type())
 			err = nil // just ignore
 		case *packet.Disconnect:
-			s.log.Debugln("received:", p.Type)
+			s.log.Debugln("received:", p.Type())
 			s.close(false)
 			return
 		case *packet.Unsubscribe:
-			s.log.Debugln("received:", p.Type, p.Topics)
+			s.log.Debugf("received: %s, topics: %v", p.Type(), p.Topics)
 			err = s.onUnsubscribe(p)
 		default:
 			err = fmt.Errorf("packet (%v) not supported", p)

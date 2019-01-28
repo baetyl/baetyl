@@ -2,13 +2,13 @@ package session
 
 import (
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/baidu/openedge/module/logger"
+	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/openedge-hub/auth"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/rule"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 // Manager session manager
@@ -19,7 +19,7 @@ type Manager struct {
 	flow     common.Flow
 	conf     *config.Message
 	rules    *rule.Manager
-	log      logger.Entry
+	log      openedge.Logger
 }
 
 // NewManager creates a session manager
@@ -35,7 +35,7 @@ func NewManager(conf *config.Config, flow common.Flow, rules *rule.Manager, pf *
 		conf:     &conf.Message,
 		recorder: newRecorder(sessionDB),
 		sessions: cmap.New(),
-		log:      logger.Log.WithField("manager", "session"),
+		log:      openedge.WithField("manager", "session"),
 	}, nil
 }
 

@@ -174,7 +174,8 @@ func getCaller() *runtime.Frame {
 		pkg := getPackageName(f.Function)
 
 		// If the caller isn't part of this package, we're done
-		if pkg != logrusPackage {
+		// FIXME OpenEdge log hack
+		if pkg != logrusPackage && pkg != "github.com/baidu/openedge/sdk/go" {
 			return &f
 		}
 	}

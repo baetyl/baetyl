@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/baidu/openedge/module/logger"
+	openedge "github.com/baidu/openedge/api/go"
+
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
@@ -31,7 +32,7 @@ type Broker struct {
 	// others
 	config *config.Config
 	tomb   utils.Tomb
-	log    logger.Entry
+	log    openedge.Logger
 }
 
 // NewBroker NewBroker
@@ -51,7 +52,7 @@ func NewBroker(c *config.Config, pf *persist.Factory) (b *Broker, err error) {
 		msgQ1DB:    msgqos1DB,
 		offsetDB:   offsetDB,
 		offsetChan: make(chan *Offset, c.Message.Offset.Buffer.Size),
-		log:        logger.Log.WithField("broker", "mqtt"),
+		log:        openedge.WithField("broker", "mqtt"),
 	}
 	if c.Status.Logging.Enable {
 		return b, b.tomb.Gos(b.persistingMsgQos1, b.persistingOffset, b.cleaningMsgQos1, b.logging)

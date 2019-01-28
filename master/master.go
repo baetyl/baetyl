@@ -4,58 +4,69 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 
-	"github.com/baidu/openedge/engine"
-	"github.com/baidu/openedge/module"
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/logger"
-	"github.com/baidu/openedge/module/utils"
+	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/master/engine"
+	sdk "github.com/baidu/openedge/sdk/go"
+	"github.com/baidu/openedge/utils"
+	cmap "github.com/orcaman/concurrent-map"
 )
+
+// Version of master
+var Version string
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	conf    Config
-	context engine.Context
-	engine  *engine.Engine
-	server  *Server
+	cfg      Config
+	dyncfg   DynamicConfig
+	engine   engine.Engine
+	server   *Server
+	services cmap.ConcurrentMap
+	wdir     string
+	log      openedge.Logger
 }
 
 // New creates a new master
-func New(confDate string) (*Master, error) {
-	pwd, err := os.Getwd()
+func New(workdir, confpath string) (*Master, error) {
+	var cfg Config
+	err := utils.LoadYAML(path.Join(workdir, confpath), &cfg)
 	if err != nil {
 		return nil, err
 	}
-	m := &Master{}
-	err = module.Load(&m.conf, confDate)
+	err = defaults(&cfg)
 	if err != nil {
 		return nil, err
 	}
-	err = defaults(&m.conf)
+	err = sdk.InitLogger(&cfg.Logger, "openedge", "master")
 	if err != nil {
 		return nil, err
 	}
-	err = logger.Init(m.conf.Logger, "openedge", "master")
+
+	m := &Master{
+		cfg:      cfg,
+		wdir:     workdir,
+		services: cmap.New(),
+		log:      openedge.GlobalLogger(),
+	}
+	m.engine, err = engine.New(cfg.Mode, m.wdir)
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	logger.Log.Debugln("work dir:", pwd)
-	m.context = engine.Context{
-		PWD:   pwd,
-		Mode:  m.conf.Mode,
-		Grace: m.conf.Grace,
-	}
-	m.engine, err = engine.New(&m.context)
+	m.server, err = newServer(m.cfg.Server, m)
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	m.server, err = NewServer(m, m.conf.API)
+	err = m.load()
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	err = m.server.Start()
+	err = m.startServices()
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -63,49 +74,45 @@ func New(confDate string) (*Master, error) {
 	return m, nil
 }
 
-// Start starts agent
-func (m *Master) Start() error {
-	if err := m.loadConfig(); err != nil {
-		return err
-	}
-	return m.engine.StartAll(m.conf.Modules)
-}
-
 // Close closes agent
-func (m *Master) Close() {
+func (m *Master) Close() error {
+	m.cleanServices()
+	if m.server != nil {
+		m.server.s.Close()
+	}
 	if m.engine != nil {
-		m.engine.StopAll()
+		m.engine.Close()
 	}
-	if err := m.server.Close(); err != nil {
-		logger.Log.WithError(err).Errorf("failed to close api server")
-	}
+	return nil
 }
 
+/*
 func (m *Master) authModule(username, password string) bool {
 	return m.engine.Authenticate(username, password)
 }
 
-func (m *Master) startModule(module config.Module) error {
+func (m *Master) startModule(module engine.ModuleInfo) error {
 	return m.engine.Start(module)
 }
 
 func (m *Master) stopModule(module string) error {
 	return m.engine.Stop(module)
 }
+*/
 
 func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll("var/run", os.ModePerm)
 		if err != nil {
-			logger.Log.WithError(err).Errorf("failed to make dir: var/run")
+			openedge.WithError(err).Errorf("failed to make dir: var/run")
 		}
-		c.API.Address = "unix://var/run/openedge.sock"
-		utils.SetEnv(module.EnvOpenEdgeMasterAPI, c.API.Address)
+		c.Server = "unix://var/run/openedge.sock"
+		utils.SetEnv(openedge.MasterAPIKey, c.Server)
 	} else {
-		if c.API.Address == "" {
-			c.API.Address = "tcp://127.0.0.1:50050"
+		if c.Server == "" {
+			c.Server = "tcp://127.0.0.1:50050"
 		}
-		addr := c.API.Address
+		addr := c.Server
 		uri, err := url.Parse(addr)
 		if err != nil {
 			return err
@@ -114,9 +121,9 @@ func defaults(c *Config) error {
 			parts := strings.SplitN(uri.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
 		}
-		utils.SetEnv(module.EnvOpenEdgeMasterAPI, addr)
+		utils.SetEnv(openedge.MasterAPIKey, addr)
 	}
-	utils.SetEnv(module.EnvOpenEdgeHostOS, runtime.GOOS)
-	utils.SetEnv(module.EnvOpenEdgeModuleMode, c.Mode)
+	utils.SetEnv(openedge.HostOSKey, runtime.GOOS)
+	utils.SetEnv(openedge.ModuleModeKey, c.Mode)
 	return nil
 }

@@ -1,62 +1,59 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/module/config"
-	"github.com/baidu/openedge/module/mqtt"
-	"github.com/docker/distribution/uuid"
+	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/protocol/mqtt"
 )
 
 type ruler struct {
 	r      *Rule
 	hub    *mqtt.Dispatcher
 	remote *mqtt.Dispatcher
+	log    openedge.Logger
 }
 
-func create(r Rule, hub, remote config.MQTTClient) *ruler {
-	if r.ID != "" {
-		hub.CleanSession = false
-		remote.CleanSession = false
-		hub.ClientID = fmt.Sprintf("%s-%s", hub.ClientID, r.ID)
-		remote.ClientID = fmt.Sprintf("%s-%s", remote.ClientID, r.ID)
-	} else {
-		tmpid := uuid.Generate().String()
-		hub.CleanSession = false
-		remote.CleanSession = false
-		hub.ClientID = fmt.Sprintf("%s-%s", hub.ClientID, tmpid)
-		remote.ClientID = fmt.Sprintf("%s-%s", remote.ClientID, tmpid)
+func create(r Rule, hub, remote openedge.MqttClientInfo) *ruler {
+	if remote.ClientID == "" {
+		remote.ClientID = r.Remote.Name
 	}
+	hub.ClientID = remote.ClientID
 	hub.Subscriptions = r.Hub.Subscriptions
 	remote.Subscriptions = r.Remote.Subscriptions
 	return &ruler{
 		r:      &r,
 		hub:    mqtt.NewDispatcher(hub),
 		remote: mqtt.NewDispatcher(remote),
+		log:    openedge.WithField("rule", remote.ClientID),
 	}
 }
 
 func (rr *ruler) start() error {
-	hubHandler := mqtt.Handler{
-		ProcessPublish: func(p *packet.Publish) error {
+	hubHandler := mqtt.NewHandlerWrapper(
+		func(p *packet.Publish) error {
 			return rr.remote.Send(p)
 		},
-		ProcessPuback: func(p *packet.Puback) error {
+		func(p *packet.Puback) error {
 			return rr.remote.Send(p)
 		},
-	}
+		func(e error) {
+			rr.log.Errorln("hub error:", e.Error())
+		},
+	)
 	if err := rr.hub.Start(hubHandler); err != nil {
 		return err
 	}
-	remoteHandler := mqtt.Handler{
-		ProcessPublish: func(p *packet.Publish) error {
+	remoteHandler := mqtt.NewHandlerWrapper(
+		func(p *packet.Publish) error {
 			return rr.hub.Send(p)
 		},
-		ProcessPuback: func(p *packet.Puback) error {
+		func(p *packet.Puback) error {
 			return rr.hub.Send(p)
 		},
-	}
+		func(e error) {
+			rr.log.Errorln("remote error:", e.Error())
+		},
+	)
 	if err := rr.remote.Start(remoteHandler); err != nil {
 		return err
 	}
