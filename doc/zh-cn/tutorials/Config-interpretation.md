@@ -17,7 +17,7 @@
 
 ## 主程序配置
 
-主程序的配置和应用配置是分离的，默认配置文件是：工作目录下的[etc/openedge/openedge.yml](https://github.com/baidu/openedge/blob/master/example/docker/etc/openedge/openedge.yml)配置解读如下：
+主程序的配置和应用配置是分离的，默认配置文件是：工作目录下的[etc/openedge/openedge.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/etc/openedge/openedge.yml)配置解读如下：
 
 ```yaml
 mode: [必须]主程序运行模式。docker：docker容器模式；native：native进程模式
@@ -53,7 +53,7 @@ logger: 日志配置项
 
 ## 应用配置
 
-应用配置的默认配置文件是：工作目录下的[var/db/openedge/module/module.yml](https://github.com/baidu/openedge/blob/master/example/docker/var/db/openedge/module/module.yml)配置解读如下：
+应用配置的默认配置文件是：工作目录下的[var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml)配置解读如下：
 
 ```yaml
 version: 应用版本
@@ -299,5 +299,5 @@ logger: 日志配置项
 
 ## 配置参考
 
-> - [Docker容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/docker/etc/openedge/openedge.yml)
-> - [Native容器模式配置举例](https://github.com/baidu/openedge/blob/master/example/native/etc/openedge/openedge.yml)
+> - [Docker容器模式配置举例](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/etc/openedge/openedge.yml)
+> - [Native容器模式配置举例](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/etc/openedge/openedge.yml)

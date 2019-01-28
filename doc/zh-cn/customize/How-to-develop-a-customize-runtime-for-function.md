@@ -9,7 +9,7 @@
 
 ## 协议约定
 
-[GRPC的消息和服务定义](https://github.com/baidu/openedge/blob/master/module/function/runtime/openedge_function_runtime.proto)如下，开发者可直接用于生成各自编程语言的消息和服务实现，GRPC使用方法可参考[```make pb```命令](https://github.com/baidu/openedge/blob/master/Makefile)，也可参考[GRPC官网的文档](https://grpc.io/docs/quickstart/go.html)。
+[GRPC的消息和服务定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/openedge_function_runtime.proto)如下，开发者可直接用于生成各自编程语言的消息和服务实现，GRPC使用方法可参考[```make pb```命令](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/Makefile)，也可参考[GRPC官网的文档](https://grpc.io/docs/quickstart/go.html)。
 
 ```proto
 syntax = "proto3";
@@ -37,7 +37,7 @@ message Message {
 
 ## 配置约定
 
-[函数配置的所有定义](https://github.com/baidu/openedge/blob/master/module/config/function.go)如下。对于自定义函数runtime，只需关注Function.Handler和Function.CodeDir的定义和使用，其他配置都是函数计算框架使用的配置。
+[函数配置的所有定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/config/function.go)如下。对于自定义函数runtime，只需关注Function.Handler和Function.CodeDir的定义和使用，其他配置都是函数计算框架使用的配置。
 
 ```golang
 
@@ -101,4 +101,4 @@ type Instance struct {
 
 函数runtime实际上也是一种模块，只是比较特殊，是被函数计算模块在运行过程中按需启动的模块，归为临时模块。其启动方式和普通模块启动的方式基本一致，只不过临时模块没有固定路径，不支持从配置文件中加载配置。因此约定通过传参的方式传入配置信息，使用JSON格式，比如-c "{\"name\":\"sayhi\", ...}"。
 
-函数runtime启动并加载配置后，首先根据Server配置初始化GRPC server，然后根据Function的配置加载函数代码入口，等待函数计算模块来调用，最后注意监听SIGTERM信号来优雅退出。完整的实现过程可参考[python27 runtime](https://github.com/baidu/openedge/blob/master/openedge-function-runtime-python27/openedge_function_runtime_python27.py)。
+函数runtime启动并加载配置后，首先根据Server配置初始化GRPC server，然后根据Function的配置加载函数代码入口，等待函数计算模块来调用，最后注意监听SIGTERM信号来优雅退出。完整的实现过程可参考[python27 runtime](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)。
