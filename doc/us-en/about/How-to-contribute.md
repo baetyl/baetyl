@@ -32,12 +32,12 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 4. Create pull request
 
-   You can push and file a pull request to OpenEdge official repository [https://github.com/baidu/openedge](https://github.com/baidu/openedge). To create a pull request, please follow [these steps](https://help.github.com/articles/creating-a-pull-request/). Once the OpenEdge repository reviewer approves and merges your pull request, you will see the code which contributed by you in the OpenEdge official repository.
+   You can send a pull request to OpenEdge official repository [https://github.com/baidu/openedge](https://github.com/baidu/openedge). To create a pull request, please follow [these steps](https://help.github.com/articles/creating-a-pull-request/). Once the OpenEdge repository reviewer approves and merges your pull request, you will see the code which contributed by you in the OpenEdge official repository.
 
 
 ## Code Review
 
-> + About Golang format, pelase refer to [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments).
+> + About Golang format, please refer to [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments).
 > + Please feel free to ping your reviewers by sending them the URL of your pull request via email. Please do this after your pull request passes the CI.
 > + Please answer reviewers' every comment. If you are to follow the comment, please write "Done"; please give a reason otherwise.
 > + If you don't want your reviewers to get overwhelmed by email notifications, you might reply their comments by [in a batch](https://help.github.com/articles/reviewing-proposed-changes-in-a-pull-request/).
