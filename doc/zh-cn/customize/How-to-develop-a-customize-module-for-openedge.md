@@ -72,20 +72,20 @@
 
 ## 启动约定
 
-模块以进程方式启动，是独立的可执行程序。首先配置的约定方式加载配置，然后运行模块的业务逻辑，最后监听SIGTERM信号来优雅退出。一个简单的golang模块实现可参考[mqtt remote模块](https://github.com/baidu/openedge/tree/master/openedge-remote-mqtt)。
+模块以进程方式启动，是独立的可执行程序。首先配置的约定方式加载配置，然后运行模块的业务逻辑，最后监听SIGTERM信号来优雅退出。一个简单的golang模块实现可参考[mqtt remote模块](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-remote-mqtt)。
 
 ## 模块SDK
 
 如果模块使用golang开发，可使用openedge中提供的部分SDK，位于github.com/baidu/openedge/module。
 
-[mqtt.Dispatcher](https://github.com/baidu/openedge/blob/master/module/mqtt/dispatcher.go)可用于向mqtt hub订阅消息，支持自动重连。该mqtt dispatcher不支持消息持久化，消息持久化应由mqtt hub负责，mqtt dispatcher订阅的消息如果QoS为1，则消息处理完后需要主动回复ack，否者hub会重发消息。[remote mqtt模块参考](https://github.com/baidu/openedge/blob/master/openedge-remote-mqtt/main.go)
+[mqtt.Dispatcher](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/mqtt/dispatcher.go)可用于向mqtt hub订阅消息，支持自动重连。该mqtt dispatcher不支持消息持久化，消息持久化应由mqtt hub负责，mqtt dispatcher订阅的消息如果QoS为1，则消息处理完后需要主动回复ack，否者hub会重发消息。[remote mqtt模块参考](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-remote-mqtt/main.go)
 
-[runtime.Server](https://github.com/baidu/openedge/blob/master/module/function/runtime/server.go)封装了grpc server和函数计算调用逻辑，方便开发者实现消息处理的函数计算runtime。[python2.7 runtime参考](https://github.com/baidu/openedge/blob/master/openedge-function-runtime-python27/openedge_function_runtime_python27.py)
+[runtime.Server](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/server.go)封装了grpc server和函数计算调用逻辑，方便开发者实现消息处理的函数计算runtime。[python2.7 runtime参考](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)
 
-[master.Client](https://github.com/baidu/openedge/blob/master/module/master/client.go)可用于调用主程序的API来启动、重启或停止临时模块。账号为使用该master client的常驻模块名，密码使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取。
+[master.Client](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/master/client.go)可用于调用主程序的API来启动、重启或停止临时模块。账号为使用该master client的常驻模块名，密码使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取。
 
-[module.Load](https://github.com/baidu/openedge/blob/master/module/module.go)可用于加载模块的配置，支持从指定文件中读取yml格式的配置，也支持从启动参数中读取json格式的配置。
+[module.Load](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/module.go)可用于加载模块的配置，支持从指定文件中读取yml格式的配置，也支持从启动参数中读取json格式的配置。
 
-[module.Wait](https://github.com/baidu/openedge/blob/master/module/module.go)可用于等待模块退出的信号。
+[module.Wait](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/module.go)可用于等待模块退出的信号。
 
-[logger](https://github.com/baidu/openedge/blob/master/module/logger/logger.go)可用于打印日志。
+[logger](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/logger/logger.go)可用于打印日志。

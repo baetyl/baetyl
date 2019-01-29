@@ -12,13 +12,13 @@ Native进程模式结构图:
 
 ## 主程序(master)
 
-[主程序](https://github.com/baidu/openedge/blob/master/master/master.go)负责所有模块的管理、云同步等，由模块引擎、云代理和API构成。
+[主程序](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/master/master.go)负责所有模块的管理、云同步等，由模块引擎、云代理和API构成。
 
 ### 模块引擎(engine)
 
-[模块引擎](https://github.com/baidu/openedge/blob/master/engine/engine.go)负责模块的启动、停止、重启、监听和守护，目前支持docker容器模式和native进程模式。
+[模块引擎](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/engine/engine.go)负责模块的启动、停止、重启、监听和守护，目前支持docker容器模式和native进程模式。
 
-模块引擎从工作目录的[var/db/openedge/module/module.yml](https://github.com/baidu/openedge/blob/master/example/docker/var/db/openedge/module/module.yml)配置中加载模块列表，并以列表的顺序逐个启动模块。模块引擎会为每个模块启动一个守护协程对模块状态进行监听，如果模块异常退出，会根据模块的[Restart Policy](../tutorials/local/Config-interpretation.md#应用配置)配置项执行重启或退出。主程序关闭后模块引擎会按照列表的逆序逐个关闭模块。
+模块引擎从工作目录的[var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml)配置中加载模块列表，并以列表的顺序逐个启动模块。模块引擎会为每个模块启动一个守护协程对模块状态进行监听，如果模块异常退出，会根据模块的[Restart Policy](../tutorials/local/Config-interpretation.md#应用配置)配置项执行重启或退出。主程序关闭后模块引擎会按照列表的逆序逐个关闭模块。
 
 _**提示**：工作目录可在OpenEdge启动时通过-w指定，默认为OpenEdge的可执行文件所在目录的上一级目录。_
 
@@ -39,7 +39,7 @@ Native进程模式下，通过syscall启动entry指定模块可执行文件，�
 
 云代理负责和云端管理套件通讯，走MQTT和HTTPS通道，MQTT强制SSL/TLS证书双向认证，HTTPS强制SSL/TLS证书单向认证。配置参考[cloud](../tutorials/local/Config-interpretation.md#主程序配置)。
 
-OpenEdge启动和热加载（reload）完成后会通过云代理上报一次设备信息，目前[上报的内容](https://github.com/baidu/openedge/blob/master/agent/report.go)如下：
+OpenEdge启动和热加载（reload）完成后会通过云代理上报一次设备信息，目前[上报的内容](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/agent/report.go)如下：
 
 > - go_version：OpenEdge主程序的Golang版本
 > - bin_version：OpenEdge主程序的版本
@@ -56,7 +56,7 @@ OpenEdge启动和热加载（reload）完成后会通过云代理上报一次设
 > - swap_total：设备的交换空间总容量
 > - swap_free：设备的交换空间剩余容量
 
-云代理接收到云端管理套件的应用下发指令后，OpenEdge开始执行[热加载](https://github.com/baidu/openedge/blob/master/master/master.go)，流程如下图：
+云代理接收到云端管理套件的应用下发指令后，OpenEdge开始执行[热加载](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/master/master.go)，流程如下图：
 
 ![热加载流程](../../images/overview/design/reload.png)
 
@@ -113,7 +113,7 @@ _**注意**：_
 > - clientid支持大小写字母、数字、下划线、连字符（减号）和空字符(空字符表示client为临时连接，强制cleansession=true), 最大长度不超过128个字符
 > - 消息的QoS只能降不能升，比如原消息的QoS为0时，即使订阅QoS为1，消息仍然以QoS为0的等级发送。
 
-Hub模块支持简单的主题路由，比如订阅主题为t的消息并以新主题t/topic发布回broker。[参考配置](https://github.com/baidu/openedge/blob/master/example/docker/var/db/openedge/module/localhub/module.yml)
+Hub模块支持简单的主题路由，比如订阅主题为t的消息并以新主题t/topic发布回broker。[参考配置](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/localhub/module.yml)
 
 #### 函数计算模块（openedge-function）
 
@@ -172,7 +172,7 @@ def handler(event, context):
     return event
 ```
 
-_**提示**：Native进程模式下，若要运行本代码库提供的[sayhi.py](https://github.com/baidu/openedge/blob/master/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py)，需要自行安装python2.7，且需要基于python2.7安装protobuf3、grpcio、pyyaml(采用pip安装即可，`pip install grpcio protobuf pyyaml`)。_
+_**提示**：Native进程模式下，若要运行本代码库提供的[sayhi.py](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py)，需要自行安装python2.7，且需要基于python2.7安装protobuf3、grpcio、pyyaml(采用pip安装即可，`pip install grpcio protobuf pyyaml`)。_
 
 此外，对于Native进程模式python脚本运行环境的构建，推荐通过virtualenv构建虚拟环境，并在此基础上安装相关依赖，相关步骤如下：
 
