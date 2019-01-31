@@ -1,12 +1,12 @@
 package main
 
 import (
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 )
 
 // Config function module config
 type Config struct {
-	Functions   []FunctionInfo `yaml:"functions" json:"functions" default:"[]"`
+	Functions []FunctionInfo `yaml:"functions" json:"functions" default:"[]"`
 }
 
 // FunctionInfo config

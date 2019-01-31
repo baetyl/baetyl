@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/utils"
 	validator "gopkg.in/validator.v2"
 )
@@ -15,8 +15,8 @@ func init() {
 
 // Config all config of edge
 type Config struct {
-	Name   string           `yaml:"name" json:"name" validate:"nonzero"`
-	Logger openedge.LogInfo `yaml:"logger" json:"logger"`
+	Name   string         `yaml:"name" json:"name" validate:"nonzero"`
+	Logger logger.LogInfo `yaml:"logger" json:"logger"`
 
 	Listen      []string          `yaml:"listen" json:"listen"`
 	Certificate utils.Certificate `yaml:"certificate" json:"certificate"`

@@ -3,15 +3,17 @@ package main
 import (
 	"time"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/protocol/http"
+	"github.com/baidu/openedge/protocol/mqtt"
+	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
 // Config agent config
 type Config struct {
 	openedge.Config `yaml:",inline" json:",inline"`
 	Remote          struct {
-		MQTT   openedge.MqttClientInfo `yaml:"mqtt" json:"mqtt"`
-		HTTP   openedge.HTTPClientInfo `yaml:"http" json:"http"`
+		MQTT   mqtt.ClientInfo `yaml:"mqtt" json:"mqtt"`
+		HTTP   http.ClientInfo `yaml:"http" json:"http"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"v1/edge/info"`
 			Topic    string        `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/forward"`

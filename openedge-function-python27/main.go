@@ -7,7 +7,6 @@ import (
 	"path"
 	"path/filepath"
 
-	openedge "github.com/baidu/openedge/api/go"
 	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/baidu/openedge/utils"
 )
@@ -86,7 +85,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		ctx.WaitExit()
+		ctx.Wait()
 		p.Kill()
 		p.Wait()
 		return nil

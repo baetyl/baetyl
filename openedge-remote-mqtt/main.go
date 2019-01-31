@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	openedge "github.com/baidu/openedge/api/go"
 	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/baidu/openedge/utils"
 )
@@ -47,7 +46,7 @@ func main() {
 				return err
 			}
 		}
-		ctx.WaitExit()
+		ctx.Wait()
 		return nil
 	})
 }

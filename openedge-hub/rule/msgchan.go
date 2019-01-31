@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/utils"
 	"github.com/jpillora/backoff"
@@ -28,11 +28,11 @@ type msgchan struct {
 	publish          common.Publish
 	republish        common.Publish
 	republishBackoff *backoff.Backoff
-	log              openedge.Logger
+	log              logger.Logger
 }
 
 // newMsgChan creates a new message channel
-func newMsgChan(l0, l1 int, publish, republish common.Publish, republishTimeout time.Duration, quitTimeout time.Duration, persist func(uint64), log openedge.Logger) *msgchan {
+func newMsgChan(l0, l1 int, publish, republish common.Publish, republishTimeout time.Duration, quitTimeout time.Duration, persist func(uint64), log logger.Logger) *msgchan {
 	backoff := &backoff.Backoff{
 		Min:    time.Millisecond * 100,
 		Max:    republishTimeout,

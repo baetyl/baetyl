@@ -2,12 +2,12 @@ package engine
 
 import (
 	"errors"
-
-	openedge "github.com/baidu/openedge/api/go"
+	"io"
+	"time"
 )
 
 // Factory create engine by given config
-type Factory func(wdir string) (Engine, error)
+type Factory func(grace time.Duration, wdir string) (Engine, error)
 
 var factories map[string]Factory
 
@@ -22,16 +22,15 @@ func Factories() map[string]Factory {
 
 // Engine interface
 type Engine interface {
-	Close() error
+	io.Closer
 	Name() string
-	Run(service *openedge.ServiceInfo) (Service, error)
-	RunWithConfig(service *openedge.ServiceInfo, config []byte) (Service, error)
+	Run(ServiceInfo) (Service, error)
 }
 
 // New engine by given name
-func New(name string, wdir string) (Engine, error) {
+func New(name string, grace time.Duration, wdir string) (Engine, error) {
 	if f, ok := factories[name]; ok {
-		return f(wdir)
+		return f(grace, wdir)
 	}
 	return nil, errors.New("no such engine")
 }

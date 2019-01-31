@@ -1,6 +1,6 @@
 package main
 
-import openedge "github.com/baidu/openedge/api/go"
+import "github.com/baidu/openedge/logger"
 
 // Config of runtime
 type Config struct {

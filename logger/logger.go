@@ -1,4 +1,4 @@
-package sdk
+package logger
 
 import (
 	"io"
@@ -8,20 +8,35 @@ import (
 	"runtime"
 	"strings"
 
-	openedge "github.com/baidu/openedge/api/go"
 	"github.com/sirupsen/logrus"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
+
+// Logger of module
+type Logger interface {
+	WithField(key string, value interface{}) Logger
+	WithError(err error) Logger
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Debugln(args ...interface{})
+	Infoln(args ...interface{})
+	Warnln(args ...interface{})
+	Errorln(args ...interface{})
+	Fatalln(args ...interface{})
+}
 
 type logger struct {
 	entry *logrus.Entry
 }
 
-func (l *logger) WithField(key string, value interface{}) openedge.Logger {
+func (l *logger) WithField(key string, value interface{}) Logger {
 	return &logger{l.entry.WithField(key, value)}
 }
 
-func (l *logger) WithError(err error) openedge.Logger {
+func (l *logger) WithError(err error) Logger {
 	return &logger{l.entry.WithError(err)}
 }
 
@@ -66,7 +81,7 @@ func (l *logger) Fatalln(args ...interface{}) {
 }
 
 // NewLogger from config
-func NewLogger(c *openedge.LogInfo, fields ...string) (openedge.Logger, error) {
+func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
 	var logOutWriter io.Writer
 	if c.Console == true {
 		logOutWriter = os.Stdout
@@ -116,13 +131,13 @@ func NewLogger(c *openedge.LogInfo, fields ...string) (openedge.Logger, error) {
 }
 
 // InitLogger of global logger
-func InitLogger(c *openedge.LogInfo, fields ...string) error {
+func InitLogger(c *LogInfo, fields ...string) (Logger, error) {
 	l, err := NewLogger(c, fields...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	openedge.SetGlobalLogger(l)
-	return nil
+	SetGlobalLogger(l)
+	return GlobalLogger(), nil
 }
 
 type fileConfig struct {

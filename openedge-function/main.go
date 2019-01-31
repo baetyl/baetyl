@@ -5,7 +5,6 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	openedge "github.com/baidu/openedge/api/go"
 	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/baidu/openedge/utils"
 )
@@ -57,7 +56,7 @@ func run(ctx openedge.Context) error {
 			return err
 		}
 	}
-	ctx.WaitExit()
+	ctx.Wait()
 	return nil
 }
 

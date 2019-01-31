@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/baidu/openedge/logger"
 	bb "github.com/baidu/openedge/openedge-hub/broker"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/utils"
-	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +23,7 @@ func TestBroker(t *testing.T) {
 	c, _ := config.New([]byte(""))
 	// c.Logger.Console = true
 	// c.Logger.Level = "debug"
-	assert.NoError(t, sdk.InitLogger(&c.Logger))
+	logger.InitLogger(&c.Logger)
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
@@ -324,7 +324,7 @@ func TestBrokerCleaning(t *testing.T) {
 	// c.Logger.Level = "debug"
 	c.Message.Ingress.Qos1.Cleanup.Interval = time.Second
 	c.Message.Ingress.Qos1.Cleanup.Retention = time.Second
-	assert.NoError(t, sdk.InitLogger(&c.Logger))
+	logger.InitLogger(&c.Logger)
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
@@ -377,7 +377,7 @@ func TestBrokerPerf(t *testing.T) {
 	c, _ := config.New([]byte(""))
 	c.Logger.Console = true
 	// c.Logger.Level = "debug"
-	assert.NoError(t, sdk.InitLogger(&c.Logger))
+	logger.InitLogger(&c.Logger)
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()

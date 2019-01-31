@@ -1,7 +1,7 @@
 package main
 
 import (
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 )
 
 // Config config of module

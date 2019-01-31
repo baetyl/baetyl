@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	_ "github.com/baidu/openedge/master/engine/native"
 	"github.com/baidu/openedge/utils"
@@ -38,16 +38,16 @@ func TestReload(t *testing.T) {
 	assert.NoError(t, err)
 	defer os.RemoveAll("var")
 
-	wdir, err := os.Getwd()
+	pwd, err := os.Getwd()
 	assert.NoError(t, err)
 	os.Chmod("lib/openedge/packages/cmd/cmd.py", os.ModePerm)
 
 	m := &Master{
-		wdir:     wdir,
+		pwd:     pwd,
 		services: cmap.New(),
-		log:      openedge.WithField("openedge", "master"),
+		log:      logger.WithField("openedge", "master"),
 	}
-	m.engine, err = engine.New("native", m.wdir)
+	m.engine, err = engine.New("native", m.pwd)
 	assert.NoError(t, err)
 	defer m.Close()
 	err = m.reload("V5invalid.zip")

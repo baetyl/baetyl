@@ -1,9 +1,8 @@
-package sdk
+package logger
 
 import (
 	"testing"
 
-	openedge "github.com/baidu/openedge/api/go"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -48,7 +47,7 @@ func TestNewEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l, err := NewLogger(&openedge.LogInfo{
+			l, err := NewLogger(&LogInfo{
 				Level: "debug",
 			}, tt.args.vs...)
 			assert.NoError(t, err)
