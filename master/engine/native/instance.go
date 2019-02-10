@@ -18,7 +18,8 @@ type nativeInstance struct {
 	tomb    utils.Tomb
 }
 
-func newNativeInstance(s *nativeService) (*nativeInstance, error) {
+func (s *nativeService) startInstance() error {
+	// TODO: support multiple instances
 	// can only start one instance now, use service name as instance name
 	p, err := s.engine.startProcess(s.info.Name, s.cfgs)
 	if err != nil {
@@ -27,7 +28,7 @@ func newNativeInstance(s *nativeService) (*nativeInstance, error) {
 		p, err = s.engine.startProcess(s.info.Name, s.cfgs)
 		if err != nil {
 			s.log.WithError(err).Warnln("failed to start instance again")
-			return nil, err
+			return err
 		}
 	}
 	i := &nativeInstance{
@@ -36,7 +37,8 @@ func newNativeInstance(s *nativeService) (*nativeInstance, error) {
 		service: s,
 		log:     s.log.WithField("instance", p.Pid),
 	}
-	return i, i.tomb.Go(func() error {
+	s.instances.Set(s.info.Name, i)
+	return i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
 }

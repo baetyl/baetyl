@@ -1,8 +1,6 @@
 package openedge
 
 import (
-	"os"
-
 	"github.com/baidu/openedge/logger"
 )
 
@@ -15,7 +13,6 @@ func Run(handle func(Context) error) {
 	defer ctx.Close()
 	err = handle(ctx)
 	if err != nil {
-		logger.Errorln("failed to run service:", err.Error())
-		os.Exit(1)
+		logger.Fatalln("failed to run service:", err.Error())
 	}
 }

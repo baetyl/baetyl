@@ -31,7 +31,7 @@ func (m *Master) reload(d *openedge.DatasetInfo) error {
 		return err
 	}
 	// diff config of next version with config of current version used by mater
-	res, same := nxt.diff(&m.curcfg)
+	res, same := nxt.diff(m.curcfg)
 	if same {
 		m.log.Infof("config not changed, return directly")
 		return nil

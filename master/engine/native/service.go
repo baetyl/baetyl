@@ -47,7 +47,7 @@ func (s *nativeService) Stop() {
 	wg.Wait()
 }
 
-func (s *nativeService) mount() error {
+func (s *nativeService) start() error {
 	mounts := make([]engine.MountInfo, 0)
 	datasetsDir := path.Join("var", "db", "openedge", "datasets")
 	for _, m := range s.info.Datasets {
@@ -74,5 +74,5 @@ func (s *nativeService) mount() error {
 			return err
 		}
 	}
-	return nil
+	return s.startInstance()
 }

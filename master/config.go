@@ -12,9 +12,12 @@ import (
 
 // Config master init config
 type Config struct {
-	Mode          string          `yaml:"mode" json:"mode" default:"docker" validate:"regexp=^(native|docker)$"`
-	Server        http.ServerInfo `yaml:"server" json:"server"`
-	DynamicConfig `yaml:",inline" json:",inline"`
+	Mode     string                 `yaml:"mode" json:"mode" default:"docker" validate:"regexp=^(native|docker)$"`
+	Server   http.ServerInfo        `yaml:"server" json:"server"`
+	Services []engine.ServiceInfo   `yaml:"services" json:"services" default:"[]"`
+	Datasets []openedge.DatasetInfo `yaml:"datasets" json:"datasets" default:"[]"`
+	Logger   logger.LogInfo         `yaml:"logger" json:"logger"`
+	Grace    time.Duration          `yaml:"grace" json:"grace" default:"30s"`
 }
 
 // DynamicConfig update config
@@ -22,17 +25,17 @@ type DynamicConfig struct {
 	Version  string                 `yaml:"version" json:"version"`
 	Services []engine.ServiceInfo   `yaml:"services" json:"services" default:"[]"`
 	Datasets []openedge.DatasetInfo `yaml:"datasets" json:"datasets" default:"[]"`
-	Grace    time.Duration          `yaml:"grace" json:"grace" default:"30s"`
 	Logger   logger.LogInfo         `yaml:"logger" json:"logger"`
+	Grace    time.Duration          `yaml:"grace" json:"grace" default:"30s"`
 }
 
 type dynamicConfigDiff struct {
-	startServices  []engine.ServiceInfo
 	stopServices   []engine.ServiceInfo
+	startServices  []engine.ServiceInfo
 	addDatasets    []openedge.DatasetInfo
 	removeDatasets []openedge.DatasetInfo
-	updateGrace    *time.Duration
 	updateLogger   *logger.LogInfo
+	updateGrace    *time.Duration
 }
 
 func (cur *DynamicConfig) diff(pre *DynamicConfig) (*dynamicConfigDiff, bool) {

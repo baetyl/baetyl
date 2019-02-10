@@ -15,7 +15,8 @@ type dockerInstance struct {
 	tomb    utils.Tomb
 }
 
-func newDockerInstance(s *dockerService) (*dockerInstance, error) {
+func (s *dockerService) startInstance() error {
+	// TODO: support multiple instances
 	// can only start one instance now, use service name as instance name
 	cid, err := s.engine.startContainer(s.info.Name, s.cfgs)
 	if err != nil {
@@ -25,7 +26,7 @@ func newDockerInstance(s *dockerService) (*dockerInstance, error) {
 		cid, err = s.engine.startContainer(s.info.Name, s.cfgs)
 		if err != nil {
 			s.log.WithError(err).Warnln("failed to start instance again")
-			return nil, err
+			return err
 		}
 	}
 	i := &dockerInstance{
@@ -34,7 +35,8 @@ func newDockerInstance(s *dockerService) (*dockerInstance, error) {
 		service: s,
 		log:     s.log.WithField("instance", cid),
 	}
-	return i, i.tomb.Go(func() error {
+	s.instances.Set(s.info.Name, i)
+	return i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
 }

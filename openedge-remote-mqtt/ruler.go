@@ -13,7 +13,7 @@ type ruler struct {
 	log    logger.Logger
 }
 
-func create(r Rule, hub, remote openedge.MqttClientInfo) *ruler {
+func create(r Rule, hub, remote mqtt.ClientInfo) *ruler {
 	if remote.ClientID == "" {
 		remote.ClientID = r.Remote.Name
 	}

@@ -21,10 +21,10 @@ var Version string
 // Master master manages all modules and connects with cloud
 type Master struct {
 	inicfg   Config
-	precfg   DynamicConfig
-	curcfg   DynamicConfig
-	engine   engine.Engine
+	precfg   *DynamicConfig
+	curcfg   *DynamicConfig
 	server   *Server
+	engine   engine.Engine
 	services cmap.ConcurrentMap
 	accounts cmap.ConcurrentMap
 	pwd      string
@@ -58,21 +58,26 @@ func New(pwd, confpath string) (*Master, error) {
 		m.Close()
 		return nil, err
 	}
+	log.Infoln("engine started")
 	err = m.initServer()
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
+	log.Infoln("server started")
 	err = m.initServices()
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
+	log.Infoln("services started")
 	return m, nil
 }
 
 // Close closes agent
 func (m *Master) Close() error {
+	defer m.log.Infoln("master stopped")
+
 	m.stopAllServices()
 	if m.server != nil {
 		m.server.Close()

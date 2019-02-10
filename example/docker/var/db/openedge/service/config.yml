@@ -1,11 +1,11 @@
 version: V0
 services:
-  # - name: agent
-  #   image: 'openedge-agent'
-  #   mounts:
-  #     - volume: var/db/openedge/service/cert-igeblfrt8
-  #       target: /cert
-  #       readonly: true
+  - name: agent
+    image: 'openedge-agent'
+    mounts:
+      - volume: var/db/openedge/service/cert-igeblfrt8
+        target: /cert
+        readonly: true
   - name: localhub
     image: 'openedge-hub'
     expose:

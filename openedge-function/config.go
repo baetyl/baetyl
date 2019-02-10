@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/protocol/mqtt"
+	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
 // Config function module config
@@ -11,14 +12,14 @@ type Config struct {
 
 // FunctionInfo config
 type FunctionInfo struct {
-	Name      string             `yaml:"name" json:"name" validate:"nonzero"`
-	Runtime   string             `yaml:"runtime" json:"runtime" validate:"nonzero"`
-	Handler   string             `yaml:"handler" json:"handler" validate:"nonzero"`
-	CodeDir   string             `yaml:"codedir" json:"codedir"`
-	Env       map[string]string  `yaml:"env" json:"env"`
-	Instance  Instance           `yaml:"instance" json:"instance"`
-	Subscribe openedge.TopicInfo `yaml:"subscribe" json:"subscribe"`
-	Publish   openedge.TopicInfo `yaml:"publish" json:"publish"`
+	Name      string            `yaml:"name" json:"name" validate:"nonzero"`
+	Runtime   string            `yaml:"runtime" json:"runtime" validate:"nonzero"`
+	Handler   string            `yaml:"handler" json:"handler" validate:"nonzero"`
+	CodeDir   string            `yaml:"codedir" json:"codedir"`
+	Env       map[string]string `yaml:"env" json:"env"`
+	Instance  Instance          `yaml:"instance" json:"instance"`
+	Subscribe mqtt.TopicInfo    `yaml:"subscribe" json:"subscribe"`
+	Publish   mqtt.TopicInfo    `yaml:"publish" json:"publish"`
 }
 
 // Instance instance config for function runtime module
@@ -38,8 +39,8 @@ type Instance struct {
 // RuntimeInfo config
 type RuntimeInfo struct {
 	openedge.Config `yaml:",inline" json:",inline"`
-	Subscribe       openedge.TopicInfo `yaml:"subscribe" json:"subscribe"`
-	Publish         openedge.TopicInfo `yaml:"publish" json:"publish"`
-	Name            string             `yaml:"name" json:"name" validate:"nonzero"`
-	Handler         string             `yaml:"handler" json:"handler" validate:"nonzero"`
+	Subscribe       mqtt.TopicInfo `yaml:"subscribe" json:"subscribe"`
+	Publish         mqtt.TopicInfo `yaml:"publish" json:"publish"`
+	Name            string         `yaml:"name" json:"name" validate:"nonzero"`
+	Handler         string         `yaml:"handler" json:"handler" validate:"nonzero"`
 }

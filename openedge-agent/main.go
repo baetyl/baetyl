@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -183,12 +182,12 @@ func (m *mo) send(data []byte) error {
 	if err != nil {
 		return err
 	}
-	headers := http.Headers{}
-	headers.Set("x-iot-edge-clientid", m.cfg.Remote.MQTT.ClientID)
-	headers.Set("x-iot-edge-key", key)
-	headers.Set("Content-Type", "application/x-www-form-urlencoded")
-	url := fmt.Sprintf("%s://%s/%s", m.http.Addr.Scheme, m.http.Addr.Host, m.cfg.Remote.Report.URL)
-	_, _, err = m.http.Send("POST", url, headers, bytes.NewBuffer(body))
+	header := map[string]string{
+		"x-iot-edge-clientid": m.cfg.Remote.MQTT.ClientID,
+		"x-iot-edge-key":      key,
+		"Content-Type":        "application/x-www-form-urlencoded",
+	}
+	_, err = m.http.Send("POST", m.cfg.Remote.Report.URL, body, header)
 	return err
 }
 
@@ -229,7 +228,7 @@ func defaults(c *Config) error {
 	}
 	c.Remote.Desire.Topic = fmt.Sprintf(c.Remote.Desire.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
-	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, openedge.TopicInfo{QoS: 1, Topic: c.Remote.Desire.Topic})
+	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QoS: 1, Topic: c.Remote.Desire.Topic})
 	return nil
 }
 

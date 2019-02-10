@@ -62,34 +62,32 @@ func NewClient(c ClientInfo) (*Client, error) {
 
 // Get sends get request
 func (c *Client) Get(path string, params ...interface{}) ([]byte, error) {
-	return c.send("GET", fmt.Sprintf(path, params...), nil)
+	return c.Send("GET", fmt.Sprintf(path, params...), nil, c.genHeader())
 }
 
 // Put sends put request
 func (c *Client) Put(body []byte, path string, params ...interface{}) ([]byte, error) {
-	return c.send("PUT", fmt.Sprintf(path, params...), body)
+	return c.Send("PUT", fmt.Sprintf(path, params...), body, c.genHeader())
 }
 
 // Post sends post request
 func (c *Client) Post(body []byte, path string, params ...interface{}) ([]byte, error) {
-	return c.send("POST", fmt.Sprintf(path, params...), body)
+	return c.Send("POST", fmt.Sprintf(path, params...), body, c.genHeader())
 }
 
-func (c *Client) send(method, path string, body []byte) ([]byte, error) {
+// Send sends request
+func (c *Client) Send(method, path string, body []byte, header map[string]string) ([]byte, error) {
 	url := fmt.Sprintf("%s://%s%s", c.url.Scheme, c.url.Host, path)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
-	headers := Headers{}
-	headers.Set("Content-Type", "application/json")
-	if c.cfg.Username != "" {
-		headers.Set(headerKeyUsername, c.cfg.Username)
+	req.Header = Headers{}
+	if header != nil {
+		for k, v := range header {
+			req.Header.Set(k, v)
+		}
 	}
-	if c.cfg.Password != "" {
-		headers.Set(headerKeyPassword, c.cfg.Password)
-	}
-	req.Header = headers
 	res, err := c.cli.Do(req)
 	if err != nil {
 		return nil, err
@@ -106,4 +104,15 @@ func (c *Client) send(method, path string, body []byte) ([]byte, error) {
 		return nil, fmt.Errorf("[%d] %s", res.StatusCode, strings.TrimRight(string(resBody), "\n"))
 	}
 	return resBody, nil
+}
+
+func (c *Client) genHeader() map[string]string {
+	header := map[string]string{"Content-Type": "application/json"}
+	if c.cfg.Username != "" {
+		header[headerKeyUsername] = c.cfg.Username
+	}
+	if c.cfg.Password != "" {
+		header[headerKeyPassword] = c.cfg.Password
+	}
+	return header
 }

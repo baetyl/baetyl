@@ -68,7 +68,7 @@ func (e *nativeEngine) Run(cfg engine.ServiceInfo) (engine.Service, error) {
 		instances: cmap.New(),
 		log:       e.log.WithField("service", cfg.Name),
 	}
-	err = s.mount()
+	err = s.start()
 	if err != nil {
 		s.Stop()
 		return nil, err

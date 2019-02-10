@@ -1,4 +1,16 @@
 mode: native
+services:
+  - name: localhub
+    image: 'openedge-hub'
+    datasets:
+      - name: localhub
+        target: /etc/openedge
+        readonly: true
+    volumes:
+      - volume: var/db/openedge/volumes/localhub
+        target: /var/db/openedge
+      - volume: var/log/openedge/localhub
+        target: /var/log/openedge
 logger:
   path: var/log/openedge/openedge.log
   console: true
