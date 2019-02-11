@@ -17,7 +17,7 @@ _**提示**：凡是在rules消息路由配置项中出现、用到的函数，�
 # 操作流程
 
 - **Step1**：依据使用需求编写配置文件信息，然后以Docker容器模式启动OpenEdge可执行程序；
-- **Step2**：通过MQTTBOX以TCP方式与OpenEdge Hub[建立连接](./Device-connect-with-OpenEdge-base-on-hub-module.md)；
+- **Step2**：通过MQTTBOX以TCP方式与OpenEdge Hub[建立连接](./Device-connect-with-OpenEdge-with-hub-module.md)；
     - 若成功与OpenEdge Hub模块建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察OpenEdge日志信息；
       - 若OpenEdge日志显示已经启动Python runtime模块，则表明发布的消息受到了预期的函数处理；
       - 若OpenEdge日志显示未成功启动Python runtime模块，则重复上述操作，直至看到OpenEdge主程序成功启动了Python runtime模块。

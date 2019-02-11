@@ -5,14 +5,14 @@
 > + 本文测试所用设备系统为Darwin
 > + 模拟MQTT client行为的客户端为[MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 
-与[连接测试](./Device-connect-with-OpenEdge-base-on-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
+与[连接测试](./Device-connect-with-OpenEdge-with-hub-module.md)不同的是，若需要通过本地Hub模块完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的client配置相应主题的权限，及简单的消息路由策略，完整的配置参考[Hub模块配置](./Config-interpretation.md#hub模块配置)。
 
 本文以TCP连接方式为例，测试本地Hub模块的消息路由、转发功能。
 
 # 操作流程
 
 - **Step1**：依据使用需求编写配置文件信息，然后以Docker容器模式启动OpenEdge可执行程序；
-- **Step2**：通过MQTTBOX以TCP方式与本地Hub[建立连接](./Device-connect-with-OpenEdge-base-on-hub-module.md)；
+- **Step2**：通过MQTTBOX以TCP方式与本地Hub[建立连接](./Device-connect-with-OpenEdge-with-hub-module.md)；
     - 若成功与本地Hub模块建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
     - 若与本地Hub建立连接失败，则重复**Step2**操作，直至MQTTBOX与本地Hub成功建立连接为止。
 - **Step3**：通过MQTTBOX查看消息的收发状态。

@@ -5,7 +5,7 @@ OpenEdge提供开放式的框架支持，允许通过各种网络类型接入任
 
 ## OpenEdge网络协议支持
 
-OpenEdge针对网络协议的支持，具体表现在三个方面：其一是针对物联网应用场景，OpenEdge基于Hub模块提供设备接入服务，同时可支持tcp、ssl(tcp+ssl)、ws(websocket)及wss(websocket+ssl)四种接入方式；其二是针对设备硬件信息上报服务，提供对HTTPS协议支持；另外就是针对与云端平台间的远程通讯服务，支持通过各种类型网络远程转发至云端平台，比如通过MQTT远程通讯模块将数据发送到云端Hub，通过Kafka远程通讯模块将数据发送到云端Kafka，通过TSDB远程通讯模块将数据发送到云端TSDB等。另外还可以通过实现写云端服务的函数来实现数据的传输。
+OpenEdge针对网络协议的支持，具体表现在三个方面：其一是针对物联网应用场景，OpenEdge基于Hub模块提供设备接入服务，同时可支持tcp、ssl(tcp+ssl)、ws(websocket)及wss(websocket+ssl)四种接入方式；其二是针对设备硬件信息上报服务，提供对HTTPS协议支持；另外就是针对与云端平台间的远程通讯服务，支持通过各种类型网络远程转发至云端平台，比如通过MQTT远程通讯模块将数据发送到云端Hub，通过Kafka远程通讯模块将数据发送到云端Kafka等。
 
 ## OpenEdge系统平台支持
 
