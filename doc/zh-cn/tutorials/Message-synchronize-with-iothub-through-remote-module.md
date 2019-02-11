@@ -18,7 +18,7 @@ Remote远程服务模块是为了满足物联网场景下另外一种用户需�
 - **Step3**：打开终端，进入OpenEdge程序包目录，然后以Docker容器模式启动OpenEdge可执行程序，并观察Hub模块、Remote模块启动状态；
   - 若Hub、Remote模块成功启动，则继续下一步操作；
   - 若Hub、Remote模块未成功启动，则重复**Step3**，直至看到Hub、Remote模块成功启动。
-- **Step4**：选择MQTTBOX作为测试用MQTT client客户端，与Hub[建立连接](./Device-connect-with-OpenEdge-base-on-hub-module.md)，并订阅既定主题；
+- **Step4**：选择MQTTBOX作为测试用MQTT client客户端，与Hub[建立连接](./Device-connect-with-OpenEdge-with-hub-module.md)，并订阅既定主题；
     - 若成功与Hub模块建立连接，则继续下一步操作；
     - 若与Hub建立连接失败，则重复**Step4**操作，直至MQTTBOX与本地Hub成功建立连接。
 - **Step5**：依据Remote模块的相关配置信息，从MQTTBOX向既定主题发布消息，观察MQTT.fx的消息接收情况；同理，从MQTT.fx向既定主题发布消息，观察MQTTBOX的消息接收情况。
@@ -97,7 +97,7 @@ rules:
 
 ![通过命令docker ps查看系统当前正在运行的docker容器列表](../../images/tutorials/remote/openedge-docker-ps-hub-remote-run.png)
 
-成功启动OpenEdge后，依据[使用Hub进行设备接入](./Device-connect-with-OpenEdge-base-on-hub-module.md)，通过MQTTBOX成功与Hub模块建立连接，并订阅主题“t2”，成功订阅的状态如下图示。
+成功启动OpenEdge后，依据[使用Hub进行设备接入](./Device-connect-with-OpenEdge-with-hub-module.md)，通过MQTTBOX成功与Hub模块建立连接，并订阅主题“t2”，成功订阅的状态如下图示。
 
 ![MQTTBOX成功订阅主题t2](../../images/tutorials/remote/mqttbox-sub-t2-success.png)
 

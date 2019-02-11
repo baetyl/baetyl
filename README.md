@@ -20,6 +20,13 @@ About architecture design, OpenEdge takes **modularization** and **containerizat
 
 ![](./doc/images/overview/design/mode_native.png)
 
+More detailed documents of design are as follows:
+
+> + [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
+> + [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
+> + [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
+> + [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
+
 ## Concepts
 
 OpenEdge is made up of **main program module, local hub module, local function module, MQTT remote module and Python2.7 runtime module.** The main capabilities of each module are as follows:
@@ -47,7 +54,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 ## Advantages
 
 > + **Shielding computing framework**: OpenEdge provides two official computing modules(**local function module** and **Python2.7 runtime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
-> + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis?castk=LTE%3D), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
+> + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
 > + **Quickly deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
 > + **Deploy on demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
 > + **Rich configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
@@ -283,5 +290,6 @@ As the first open edge computing framework in China, OpenEdge aims to create a l
 
 > + If you want to participate in OpenEdge's daily development communication, you are welcome to join [Wechat-for-OpenEdge](https://openedge.bj.bcebos.com/Wechat/Wechat-OpenEdge.png)
 > + If you have more about feature requirements or bug feedback of OpenEdge, please [Submit an issue](https://github.com/baidu/openedge/issues)
-> + If you want to know more about OpenEdge and other services of Baidu Cloud, you are welcome to visit [Baidu-Cloud-forum](https://cloud.baidu.com/forum/bce)
+> + If you want to know more about OpenEdge and other services of Baidu Cloud, please visit [Baidu-Cloud-forum](https://cloud.baidu.com/forum/bce)
+> + If you want to know more about Cloud Management Suite of BIE, please visit: [Baidu-IntelliEdge](https://cloud.baidu.com/product/bie.html)
 > + If you have better development advice about OpenEdge, please contact us: [contact@openedge.tech](contact@openedge.tech)

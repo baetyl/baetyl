@@ -140,7 +140,7 @@ message: 消息相关的配置项
         size:  默认值：10000，内存缓存中的待发送的QoS为0的消息数，若设备掉电会直接丢弃消息；缓存满后，新推送的消息直接丢弃
     qos1:
       buffer:
-        size:  默认值：100，QoS为1的消息发送后，未确认（ack）的消息缓存大小，缓存满后，不再读取新消息，一直等待缓存中的消息被确认。QoS为1的消息发送给客户端成功后等待客户端确认（puback），如果客户端在规定时间内没有回复确认，i消息会一直重发，直到客户端回复确认或者session关闭
+        size:  默认值：100，QoS为1的消息发送后，未确认（ack）的消息缓存大小，缓存满后，不再读取新消息，一直等待缓存中的消息被确认。QoS为1的消息发送给客户端成功后等待客户端确认（puback），如果客户端在规定时间内没有回复确认，消息会一直重发，直到客户端回复确认或者session关闭
       batch:
         max:  默认值：50，批量从数据库读取消息的最大条数
       retry:
@@ -203,7 +203,7 @@ functions:
   - name: [必须]函数名
     runtime: 配置函数依赖的runtime模块名称，sql即为'sql'，tensorflow为'tensorflow'，python则为'python2.7'
     entry: 同模块的entry，运行函数实例的runtime模块的镜像或可执行程序
-    handler: [必须]函数处理函数。sql为sql语句，比如：'select uuid() as id, topic() as topic, * where id < 10'；python为函数包和处理函数名，比如：'sayhi.handler'；tensorflow对应的配置信息为'tag:input_tensor:output_tensor'，其中tag为模型标签，input_tensor为模型网络结构的输入节点Tensor名称，output_tensor为模型网络结构的输出节点Tensor名称，强制模型"单一输入、单一输出"
+    handler: [必须]函数处理函数。sql为sql语句，比如：'select uuid() as id, topic() as topic, * where id < 10'；python为函数包和处理函数名，比如：'sayhi.handler'；tensorflow对应的配置信息为'tag:input_tensor:output_tensor'，其中tag为模型标签，input_tensor为模型网络结构的输入节点Tensor名称，output_tensor为模型网络结构的输出节点Tensor名称，此外，目前仅支持 saved_model 格式的模型推断，且强制模型"单一输入、单一输出"
     codedir: 如果是python，必须填python代码所在路径；如果是tensorflow，必须填写AI推断模型所在路径，且要求模型文件名必须为saved_model.pb
     env: 环境变量配置项，例如：
       USER_ID: acuiot
@@ -300,4 +300,4 @@ logger: 日志配置项
 ## 配置参考
 
 > - [Docker容器模式配置举例](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/etc/openedge/openedge.yml)
-> - [Native容器模式配置举例](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/etc/openedge/openedge.yml)
+> - [Native进程模式配置举例](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/etc/openedge/openedge.yml)

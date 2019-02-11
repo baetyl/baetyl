@@ -24,7 +24,7 @@ Native进程模式设计架构图：
 
 > + [OpenEdge设计](./doc/zh-cn/overview/OpenEdge-design.md)
 > + [OpenEdge配置解读](./doc/zh-cn/tutorials/local/Config-interpretation.md)
-> + [开发自定义模块](./doc/zh-cn/customize/How-to-develop-a-customize-module-for-openedge.md)
+> + [开发自定义模块](./doc/zh-cn/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 > + [开发自定义函数运行时](./doc/zh-cn/customize/How-to-develop-a-customize-runtime-for-function.md)
 
 **构成**：
