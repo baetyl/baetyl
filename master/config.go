@@ -25,8 +25,8 @@ type DynamicConfig struct {
 	Version  string                 `yaml:"version" json:"version"`
 	Services []engine.ServiceInfo   `yaml:"services" json:"services" default:"[]"`
 	Datasets []openedge.DatasetInfo `yaml:"datasets" json:"datasets" default:"[]"`
-	Logger   logger.LogInfo         `yaml:"logger" json:"logger"`
-	Grace    time.Duration          `yaml:"grace" json:"grace" default:"30s"`
+	// Logger   logger.LogInfo         `yaml:"logger" json:"logger"`
+	// Grace    time.Duration          `yaml:"grace" json:"grace" default:"30s"`
 }
 
 type dynamicConfigDiff struct {
@@ -34,8 +34,8 @@ type dynamicConfigDiff struct {
 	startServices  []engine.ServiceInfo
 	addDatasets    []openedge.DatasetInfo
 	removeDatasets []openedge.DatasetInfo
-	updateLogger   *logger.LogInfo
-	updateGrace    *time.Duration
+	// updateLogger   *logger.LogInfo
+	// updateGrace    *time.Duration
 }
 
 func (cur *DynamicConfig) diff(pre *DynamicConfig) (*dynamicConfigDiff, bool) {
@@ -98,14 +98,6 @@ func (cur *DynamicConfig) diff(pre *DynamicConfig) (*dynamicConfigDiff, bool) {
 				d.removeDatasets = append(d.removeDatasets, p)
 			}
 		}
-	}
-
-	if !reflect.DeepEqual(cur.Grace, pre.Grace) {
-		d.updateGrace = &cur.Grace
-	}
-
-	if !reflect.DeepEqual(cur.Logger, pre.Logger) {
-		d.updateLogger = &cur.Logger
 	}
 	return d, false
 }

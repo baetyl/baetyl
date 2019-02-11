@@ -20,7 +20,12 @@ func (m *Master) auth(username, password string) bool {
 
 func (m *Master) initServices() error {
 	if utils.FileExists(configFile) {
-		utils.LoadYAML(configFile, &m.curcfg)
+		curcfg := new(DynamicConfig)
+		err := utils.LoadYAML(configFile, curcfg)
+		if err != nil {
+			return err
+		}
+		m.curcfg = curcfg
 		return m.startServices(m.curcfg.Services)
 	}
 	return m.startServices(m.inicfg.Services)

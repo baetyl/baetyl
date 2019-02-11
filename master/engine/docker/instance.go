@@ -20,7 +20,7 @@ func (s *dockerService) startInstance() error {
 	// can only start one instance now, use service name as instance name
 	cid, err := s.engine.startContainer(s.info.Name, s.cfgs)
 	if err != nil {
-		s.log.WithError(err).Warnln("failed to start instance")
+		s.log.WithError(err).Warnln("failed to start instance, clean and retry")
 		// remove and retry
 		s.engine.removeContainerByName(s.info.Name)
 		cid, err = s.engine.startContainer(s.info.Name, s.cfgs)
@@ -33,7 +33,7 @@ func (s *dockerService) startInstance() error {
 		id:      cid,
 		name:    s.info.Name,
 		service: s,
-		log:     s.log.WithField("instance", cid),
+		log:     s.log.WithField("instance", cid[:12]),
 	}
 	s.instances.Set(s.info.Name, i)
 	return i.tomb.Go(func() error {
@@ -69,6 +69,14 @@ func (i *dockerInstance) Restart() error {
 		i.log.WithError(err).Errorf("failed to restart instance, to retry")
 	}
 	return err
+}
+
+func (i *dockerInstance) Stop() {
+	err := i.service.engine.stopContainer(i.id)
+	if err != nil {
+		i.log.WithError(err).Errorf("failed to stop instance")
+	}
+	i.service.engine.removeContainer(i.id)
 }
 
 func (i *dockerInstance) Dying() <-chan struct{} {

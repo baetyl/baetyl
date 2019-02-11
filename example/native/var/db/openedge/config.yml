@@ -1,0 +1,12 @@
+version: V0
+services:
+  - name: localhub
+    image: 'openedge-hub'
+    datasets:
+      - name: localhub
+        target: /etc/openedge
+    volumes:
+      - volume: var/db/openedge/volumes/localhub
+        target: /var/db/openedge
+      - volume: var/log/openedge/localhub
+        target: /var/log/openedge

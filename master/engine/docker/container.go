@@ -56,7 +56,7 @@ func (e *dockerEngine) initNetwork() error {
 func (e *dockerEngine) pullImage(name string) error {
 	out, err := e.cli.ImagePull(context.Background(), name, types.ImagePullOptions{})
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to pull image (%s)", name)
+		e.log.WithError(err).Warnf("failed to pull image (%s)", name)
 		return err
 	}
 	defer out.Close()
@@ -68,12 +68,12 @@ func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string
 	ctx := context.Background()
 	container, err := e.cli.ContainerCreate(ctx, cfg.config, cfg.hostConfig, cfg.networkConfig, name)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to create container (%s)", name)
+		e.log.WithError(err).Warnf("failed to create container (%s)", name)
 		return "", err
 	}
 	err = e.cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to start container (%s:%s)", container.ID[:12], name)
+		e.log.WithError(err).Warnf("failed to start container (%s:%s)", container.ID[:12], name)
 		return "", err
 	}
 	e.log.Infof("container (%s:%s) started", container.ID[:12], name)
@@ -84,9 +84,9 @@ func (e *dockerEngine) restartContainer(cid string) error {
 	ctx := context.Background()
 	err := e.cli.ContainerRestart(ctx, cid, &e.grace)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to restart container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to restart container (%s)", cid[:12])
 	} else {
-		e.log.Infof("container (%s) restarted", cid)
+		e.log.Infof("container (%s) restarted", cid[:12])
 	}
 	return err
 }
@@ -96,10 +96,10 @@ func (e *dockerEngine) waitContainer(cid string) error {
 	statusChan, errChan := e.cli.ContainerWait(ctx, cid, container.WaitConditionNotRunning)
 	select {
 	case err := <-errChan:
-		e.log.WithError(err).Warnln("failed to wait container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to wait container (%s)", cid[:12])
 		return err
 	case status := <-statusChan:
-		e.log.Infof("container (%s) exit status: %v", cid, status)
+		e.log.Infof("container (%s) exit status: %v", cid[:12], status)
 		if status.Error != nil {
 			return fmt.Errorf(status.Error.Message)
 		} else if status.StatusCode != 0 {
@@ -114,20 +114,20 @@ func (e *dockerEngine) stopContainer(cid string) error {
 	ctx := context.Background()
 	err := e.cli.ContainerStop(ctx, cid, &e.grace)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to stop container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to stop container (%s)", cid[:12])
 		return err
 	}
 	statusChan, errChan := e.cli.ContainerWait(ctx, cid, container.WaitConditionNotRunning)
 	select {
 	case <-time.After(e.grace):
 		// e.cli.ContainerKill(ctx, cid, "9")
-		e.log.Warnln("timed out to wait container (%s)", cid)
-		return fmt.Errorf("timed out to wait container (%s)", cid)
+		e.log.Warnf("timed out to wait container (%s)", cid[:12])
+		return fmt.Errorf("timed out to wait container (%s)", cid[:12])
 	case err := <-errChan:
-		e.log.WithError(err).Warnln("failed to wait container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to wait container (%s)", cid[:12])
 		return err
 	case status := <-statusChan:
-		e.log.Infof("container (%s) exit status: %v", cid, status)
+		e.log.Infof("container (%s) exit status: %v", cid[:12], status)
 		return nil
 	}
 }
@@ -136,9 +136,9 @@ func (e *dockerEngine) removeContainer(cid string) error {
 	ctx := context.Background()
 	err := e.cli.ContainerRemove(ctx, cid, types.ContainerRemoveOptions{Force: true})
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to remove container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to remove container (%s)", cid[:12])
 	} else {
-		e.log.Infof("container (%s) removed", cid)
+		e.log.Infof("container (%s) removed", cid[:12])
 	}
 	return err
 }
@@ -149,7 +149,7 @@ func (e *dockerEngine) removeContainerByName(name string) error {
 	args.Add("name", name)
 	containers, err := e.cli.ContainerList(ctx, types.ContainerListOptions{Filters: args, All: true})
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to list container (%s)", name)
+		e.log.WithError(err).Warnf("failed to list container (%s)", name)
 		return err
 	}
 	if len(containers) == 0 {
@@ -157,9 +157,9 @@ func (e *dockerEngine) removeContainerByName(name string) error {
 	}
 	err = e.cli.ContainerRemove(ctx, containers[0].ID, types.ContainerRemoveOptions{Force: true})
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to remove container (%s:%s)", containers[0].ID, name)
+		e.log.WithError(err).Warnf("failed to remove container (%s:%s)", containers[0].ID[:12], name)
 	} else {
-		e.log.Infof("container (%s:%s) removed", containers[0].ID, name)
+		e.log.Infof("container (%s:%s) removed", containers[0].ID[:12], name)
 	}
 	return err
 }
@@ -168,24 +168,24 @@ func (e *dockerEngine) statsContainer(cid string) (openedge.InstanceStatus, erro
 	ctx := context.Background()
 	iresp, err := e.cli.ContainerInspect(ctx, cid)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to inspect container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to inspect container (%s)", cid[:12])
 		return nil, err
 	}
 	sresp, err := e.cli.ContainerStats(ctx, cid, false)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to stats container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to stats container (%s)", cid[:12])
 		return nil, err
 	}
 	defer sresp.Body.Close()
 	data, err := ioutil.ReadAll(sresp.Body)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to read stats response of container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to read stats response of container (%s)", cid[:12])
 		return nil, err
 	}
 	var tstats types.Stats
 	err = json.Unmarshal(data, &tstats)
 	if err != nil {
-		e.log.WithError(err).Warnln("failed to unmarshal stats response of container (%s)", cid)
+		e.log.WithError(err).Warnf("failed to unmarshal stats response of container (%s)", cid[:12])
 		return nil, err
 	}
 	return openedge.InstanceStatus{

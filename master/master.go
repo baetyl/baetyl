@@ -77,11 +77,10 @@ func New(pwd, confpath string) (*Master, error) {
 // Close closes agent
 func (m *Master) Close() error {
 	defer m.log.Infoln("master stopped")
-
-	m.stopAllServices()
 	if m.server != nil {
 		m.server.Close()
 	}
+	m.stopAllServices()
 	if m.engine != nil {
 		m.engine.Close()
 	}

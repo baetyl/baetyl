@@ -12,6 +12,7 @@ import (
 	"github.com/baidu/openedge/utils"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 )
@@ -81,9 +82,12 @@ func (e *dockerEngine) Run(cfg engine.ServiceInfo) (engine.Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	cmd := strslice.StrSlice{}
+	cmd = append(cmd, cfg.Params...)
 	var cfgs containerConfigs
 	cfgs.config = &container.Config{
 		Image:        cfg.Image,
+		Cmd:          cmd,
 		Env:          utils.AppendEnv(cfg.Env, false),
 		ExposedPorts: exposedPorts,
 	}
@@ -109,11 +113,17 @@ func (e *dockerEngine) Run(cfg engine.ServiceInfo) (engine.Service, error) {
 			},
 		},
 	}
-	return &dockerService{
+	s := &dockerService{
 		info:      cfg,
 		engine:    e,
 		cfgs:      cfgs,
 		instances: cmap.New(),
 		log:       e.log.WithField("service", cfg.Name),
-	}, nil
+	}
+	err = s.start()
+	if err != nil {
+		s.Stop()
+		return nil, err
+	}
+	return s, nil
 }

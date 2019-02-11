@@ -15,10 +15,13 @@ type Supervisee interface {
 	Wait(w chan<- error)
 	Dying() <-chan struct{}
 	Restart() error
+	Stop()
 }
 
 // Supervising supervise a supervisee
 func Supervising(supervisee Supervisee) error {
+	defer supervisee.Stop()
+
 	c := 0
 	p := supervisee.Policy()
 	b := &backoff.Backoff{

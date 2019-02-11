@@ -64,3 +64,7 @@ func (s *dockerService) Stop() {
 	}
 	wg.Wait()
 }
+
+func (s *dockerService) start() error {
+	return s.startInstance()
+}
