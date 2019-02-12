@@ -1,24 +1,22 @@
 package engine
 
 import (
-	"net"
-	"time"
+	"io"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
-// Service is a running instance of module
+// Service interfaces of service
 type Service interface {
-	Info() *openedge.ServiceInfo
-	Instances() []Instance
-	Scale(replica int, grace time.Duration) error
-	Stop(grace time.Duration) error
+	Name() string
 	Stats() openedge.ServiceStatus
+	Stop()
 }
 
-// Instance data of service
-type Instance struct {
-	ID      string
-	Addr    net.Addr
-	Service Service
+// Instance interfaces of instance
+type Instance interface {
+	ID() string
+	Name() string
+	Supervisee
+	io.Closer
 }

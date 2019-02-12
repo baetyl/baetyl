@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/256dpi/gomqtt/packet"
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/persist"
 )
@@ -14,7 +14,7 @@ import (
 // recorder records session info
 type recorder struct {
 	db  persist.Database
-	log openedge.Logger
+	log logger.Logger
 	sync.Mutex
 }
 
@@ -22,7 +22,7 @@ type recorder struct {
 func newRecorder(db persist.Database) *recorder {
 	return &recorder{
 		db:  db,
-		log: openedge.WithField("session", "recorder"),
+		log: logger.WithField("session", "recorder"),
 	}
 }
 

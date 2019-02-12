@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/router"
 )
@@ -26,11 +26,11 @@ type rulebase struct {
 	broker  broker
 	msgchan *msgchan
 	once    sync.Once
-	log     openedge.Logger
+	log     logger.Logger
 }
 
 func newRuleBase(id string, persistent bool, b broker, r *router.Trie, publish, republish common.Publish) *rulebase {
-	log := openedge.WithField("rule", id)
+	log := logger.WithField("rule", id)
 	rb := &rulebase{
 		id:     id,
 		broker: b,

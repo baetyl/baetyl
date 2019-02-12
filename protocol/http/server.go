@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/utils"
+	"github.com/creasty/defaults"
 	"github.com/gorilla/mux"
 )
 
@@ -20,48 +21,62 @@ type Headers = http.Header
 
 // Server http server
 type Server struct {
-	Address string
-	*http.Server
+	cfg    ServerInfo
+	svr    *http.Server
 	uri    *url.URL
+	addr   string
+	auth   func(u, p string) bool
 	router *mux.Router
 }
 
 // NewServer creates a new http server
-func NewServer(sc ServerInfo) (*Server, error) {
-	uri, err := utils.ParseURL(sc.Address)
+func NewServer(c ServerInfo, a func(u, p string) bool) (*Server, error) {
+	defaults.Set(&c)
+
+	uri, err := utils.ParseURL(c.Address)
 	if err != nil {
 		return nil, err
 	}
-	tls, err := utils.NewTLSServerConfig(sc.Certificate)
+	tls, err := utils.NewTLSServerConfig(c.Certificate)
 	if err != nil {
 		return nil, err
 	}
 	router := mux.NewRouter()
 	return &Server{
-		Server: &http.Server{
-			WriteTimeout: sc.Timeout,
-			ReadTimeout:  sc.Timeout,
+		cfg:    c,
+		auth:   a,
+		uri:    uri,
+		router: router,
+		svr: &http.Server{
+			WriteTimeout: c.Timeout,
+			ReadTimeout:  c.Timeout,
+			IdleTimeout:  c.KeepAlive,
 			TLSConfig:    tls,
 			Handler:      router,
 		},
-		router: router,
-		uri:    uri,
 	}, nil
 }
 
 // Handle handle requests
-func (s *Server) Handle(handle func(Params, Headers, []byte) ([]byte, error), method, path string, params ...string) {
+func (s *Server) Handle(handle func(Params, []byte) ([]byte, error), method, path string, params ...string) {
 	s.router.HandleFunc(path, func(res http.ResponseWriter, req *http.Request) {
+		if s.auth != nil {
+			if !s.auth(req.Header.Get(headerKeyUsername), req.Header.Get(headerKeyPassword)) {
+				http.Error(res, errAccountUnauthorized.Error(), 401)
+				return
+			}
+		}
 		var err error
 		var reqBody []byte
 		if req.Body != nil {
+			defer req.Body.Close()
 			reqBody, err = ioutil.ReadAll(req.Body)
 			if err != nil {
 				http.Error(res, err.Error(), 400)
 				return
 			}
 		}
-		resBody, err := handle(mux.Vars(req), req.Header, reqBody)
+		resBody, err := handle(mux.Vars(req), reqBody)
 		if err != nil {
 			http.Error(res, err.Error(), 400)
 			return
@@ -81,16 +96,16 @@ func (s *Server) Start() error {
 	if s.uri.Scheme == "tcp" {
 		l = tcpKeepAliveListener{l.(*net.TCPListener)}
 	}
-	s.Addr = l.Addr().String()
-	go s.Serve(l)
+	s.addr = l.Addr().String()
+	go s.svr.Serve(l)
 	return nil
 }
 
 // Close closese server
 func (s *Server) Close() error {
-	ctx, cancel := context.WithTimeout(context.Background(), s.IdleTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), s.svr.IdleTimeout)
 	defer cancel()
-	return s.Shutdown(ctx)
+	return s.svr.Shutdown(ctx)
 }
 
 // tcpKeepAliveListener sets TCP keep-alive timeouts on accepted
