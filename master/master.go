@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/master/api"
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
@@ -23,10 +24,11 @@ type Master struct {
 	inicfg   Config
 	precfg   *DynamicConfig
 	curcfg   *DynamicConfig
-	server   *Server
+	server   *api.Server
 	engine   engine.Engine
 	services cmap.ConcurrentMap
 	accounts cmap.ConcurrentMap
+	context  cmap.ConcurrentMap
 	pwd      string
 	log      logger.Logger
 }
@@ -49,6 +51,7 @@ func New(pwd, confpath string) (*Master, error) {
 	m := &Master{
 		services: cmap.New(),
 		accounts: cmap.New(),
+		context:  cmap.New(),
 		inicfg:   cfg,
 		pwd:      pwd,
 		log:      log,
@@ -60,7 +63,7 @@ func New(pwd, confpath string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
-	err = m.initServer()
+	m.server, err = api.New(m.inicfg.Server, m)
 	if err != nil {
 		m.Close()
 		return nil, err

@@ -11,9 +11,10 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-func (m *Master) stats() *openedge.Inspect {
+// Inspect inspects system
+func (m *Master) Inspect() *openedge.Inspect {
 	ms := openedge.NewInspect()
-	ms.Timestamp = time.Now().UTC().Unix()
+	ms.Time = time.Now().UTC()
 	ms.Platform.Mode = m.inicfg.Mode
 	ms.Platform.GoVersion = runtime.Version()
 	ms.Platform.BinVersion = Version
@@ -55,6 +56,10 @@ func (m *Master) stats() *openedge.Inspect {
 			ms.HostInfo["disk_free"] = disk.Free
 		}
 	*/
+	v, ok := m.context.Get("error")
+	if ok {
+		ms.Error = v.(string)
+	}
 	ms.Services = m.statServices()
 	return ms
 }
