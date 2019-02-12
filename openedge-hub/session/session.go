@@ -6,7 +6,7 @@ import (
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport"
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/openedge-hub/auth"
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/router"
@@ -24,7 +24,7 @@ type session struct {
 	subs     map[string]packet.Subscription
 	manager  *Manager
 	pids     *common.PacketIDS
-	log      openedge.Logger
+	log      logger.Logger
 	once     sync.Once
 	tomb     utils.Tomb
 	sync.Mutex
@@ -40,7 +40,7 @@ func newSession(conn transport.Conn, manager *Manager) *session {
 		manager:                manager,
 		subs:                   make(map[string]packet.Subscription),
 		pids:                   common.NewPacketIDS(),
-		log:                    openedge.WithField("mqtt", "session"),
+		log:                    logger.WithField("mqtt", "session"),
 		permittedPublishTopics: make(map[string]struct{}),
 	}
 }

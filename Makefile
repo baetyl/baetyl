@@ -12,7 +12,7 @@ package: \
 	openedge-function-python27/package.tar.gz \
 	openedge-remote-mqtt/package.tar.gz
 
-SRC=$(wildcard *.go) $(shell find master api sdk protocol utils -type f -name '*.go')
+SRC=$(wildcard *.go) $(shell find master sdk-go protocol utils -type f -name '*.go')
 
 openedge: $(SRC)
 	@echo "BUILD $@"

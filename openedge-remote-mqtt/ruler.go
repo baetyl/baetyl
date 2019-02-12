@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/256dpi/gomqtt/packet"
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/mqtt"
 )
 
@@ -10,10 +10,10 @@ type ruler struct {
 	r      *Rule
 	hub    *mqtt.Dispatcher
 	remote *mqtt.Dispatcher
-	log    openedge.Logger
+	log    logger.Logger
 }
 
-func create(r Rule, hub, remote openedge.MqttClientInfo) *ruler {
+func create(r Rule, hub, remote mqtt.ClientInfo) *ruler {
 	if remote.ClientID == "" {
 		remote.ClientID = r.Remote.Name
 	}
@@ -24,7 +24,7 @@ func create(r Rule, hub, remote openedge.MqttClientInfo) *ruler {
 		r:      &r,
 		hub:    mqtt.NewDispatcher(hub),
 		remote: mqtt.NewDispatcher(remote),
-		log:    openedge.WithField("rule", remote.ClientID),
+		log:    logger.WithField("rule", remote.ClientID),
 	}
 }
 

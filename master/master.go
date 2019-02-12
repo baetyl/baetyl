@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"strings"
 
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
-	sdk "github.com/baidu/openedge/sdk/go"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
@@ -20,19 +20,21 @@ var Version string
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	cfg      Config
-	dyncfg   DynamicConfig
-	engine   engine.Engine
+	inicfg   Config
+	precfg   *DynamicConfig
+	curcfg   *DynamicConfig
 	server   *Server
+	engine   engine.Engine
 	services cmap.ConcurrentMap
-	wdir     string
-	log      openedge.Logger
+	accounts cmap.ConcurrentMap
+	pwd      string
+	log      logger.Logger
 }
 
 // New creates a new master
-func New(workdir, confpath string) (*Master, error) {
+func New(pwd, confpath string) (*Master, error) {
 	var cfg Config
-	err := utils.LoadYAML(path.Join(workdir, confpath), &cfg)
+	err := utils.LoadYAML(path.Join(pwd, confpath), &cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -40,79 +42,65 @@ func New(workdir, confpath string) (*Master, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = sdk.InitLogger(&cfg.Logger, "openedge", "master")
+	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
 	if err != nil {
 		return nil, err
 	}
-
 	m := &Master{
-		cfg:      cfg,
-		wdir:     workdir,
 		services: cmap.New(),
-		log:      openedge.GlobalLogger(),
+		accounts: cmap.New(),
+		inicfg:   cfg,
+		pwd:      pwd,
+		log:      log,
 	}
-	m.engine, err = engine.New(cfg.Mode, m.wdir)
+	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, m.pwd)
+	m.engine, err = engine.New(cfg.Mode, cfg.Grace, m.pwd)
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
-	m.server, err = newServer(m.cfg.Server, m)
+	log.Infoln("engine started")
+	err = m.initServer()
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
-	err = m.load()
+	log.Infoln("server started")
+	err = m.initServices()
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
-	err = m.startServices()
-	if err != nil {
-		m.Close()
-		return nil, err
-	}
+	log.Infoln("services started")
 	return m, nil
 }
 
 // Close closes agent
 func (m *Master) Close() error {
-	m.cleanServices()
+	defer m.log.Infoln("master stopped")
 	if m.server != nil {
-		m.server.s.Close()
+		m.server.Close()
 	}
+	m.stopAllServices()
 	if m.engine != nil {
 		m.engine.Close()
 	}
 	return nil
 }
 
-/*
-func (m *Master) authModule(username, password string) bool {
-	return m.engine.Authenticate(username, password)
-}
-
-func (m *Master) startModule(module engine.ModuleInfo) error {
-	return m.engine.Start(module)
-}
-
-func (m *Master) stopModule(module string) error {
-	return m.engine.Stop(module)
-}
-*/
-
 func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
-		err := os.MkdirAll("var/run", os.ModePerm)
+		err := os.MkdirAll("/var/run", os.ModePerm)
 		if err != nil {
-			openedge.WithError(err).Errorf("failed to make dir: var/run")
+			logger.WithError(err).Errorf("failed to make dir: /var/run")
 		}
-		c.Server = "unix://var/run/openedge.sock"
-		utils.SetEnv(openedge.MasterAPIKey, c.Server)
+		c.Server.Address = "unix:///var/run/openedge.sock"
+		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
 	} else {
-		if c.Server == "" {
-			c.Server = "tcp://127.0.0.1:50050"
+		if c.Server.Address == "" {
+			c.Server.Address = "tcp://127.0.0.1:50050"
 		}
-		addr := c.Server
+		addr := c.Server.Address
 		uri, err := url.Parse(addr)
 		if err != nil {
 			return err
@@ -121,9 +109,9 @@ func defaults(c *Config) error {
 			parts := strings.SplitN(uri.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
 		}
-		utils.SetEnv(openedge.MasterAPIKey, addr)
+		utils.SetEnv(openedge.EnvMasterAPIKey, addr)
 	}
-	utils.SetEnv(openedge.HostOSKey, runtime.GOOS)
-	utils.SetEnv(openedge.ModuleModeKey, c.Mode)
+	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
+	utils.SetEnv(openedge.EnvServiceModeKey, c.Mode)
 	return nil
 }

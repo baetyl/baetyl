@@ -1,54 +1,54 @@
 package master
 
 import (
-	openedge "github.com/baidu/openedge/api/go"
-	"github.com/baidu/openedge/protocol/jrpc"
+	"encoding/json"
+	"fmt"
+
+	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/protocol/http"
+	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
-type master interface {
-	reload(string) error
-	stats() *openedge.Inspect
-}
-
-// Server for master API
+// Server master server to start/stop modules
 type Server struct {
-	s *jrpc.Server
-	m master
+	*http.Server
+	master *Master
+	log    logger.Logger
 }
 
-func newServer(addr string, m master) (*Server, error) {
-	s, err := jrpc.NewServer(addr)
+func (m *Master) initServer() error {
+	svr, err := http.NewServer(m.inicfg.Server, m.auth)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	server := &Server{s, m}
-	go server.s.Start("openedge", server)
-	return server, nil
-}
-
-// InspectSystem inspect
-func (s *Server) InspectSystem(args *openedge.InspectSystemRequest, reply *openedge.InspectSystemResponse) error {
-	reply.Inspect = s.m.stats()
+	s := &Server{
+		Server: svr,
+		master: m,
+		log:    m.log.WithField("master", "server"),
+	}
+	s.Handle(s.inspect, "GET", "/inspect")
+	s.Handle(s.reload, "PUT", "/update")
+	m.server = s
 	return nil
 }
 
-// UpdateSystem reload
-func (s *Server) UpdateSystem(args *openedge.UpdateSystemRequest, reply *openedge.UpdateSystemResponse) error {
-	return s.m.reload(args.Config)
+func (s *Server) inspect(_ http.Params, reqBody []byte) ([]byte, error) {
+	resBody, err := json.Marshal(s.master.stats())
+	if err != nil {
+		return nil, err
+	}
+	return resBody, nil
 }
 
-// // StartService method
-// func (s *Server) StartService(args *openedge.StartServiceRequest, reply *openedge.StartServiceResponse) error {
-// 	if s.m.services.Has(args.Name) {
-// 		*reply = "duplicated"
-// 		return nil
-// 	}
-// 	svc, err := s.m.engine.RunWithConfig(args.Name, &args.Info, args.Config)
-// 	if err != nil {
-// 		*reply = openedge.StartServiceResponse(err.Error())
-// 	} else {
-// 		*reply = ""
-// 		s.m.services.Set(args.Name, svc)
-// 	}
-// 	return nil
-// }
+func (s *Server) reload(_ http.Params, reqBody []byte) ([]byte, error) {
+	if reqBody == nil {
+		return nil, fmt.Errorf("request body invalid")
+	}
+	d := new(openedge.DatasetInfo)
+	err := json.Unmarshal(reqBody, d)
+	if err != nil {
+		return nil, err
+	}
+	go s.master.reload(d)
+	return nil, nil
+}

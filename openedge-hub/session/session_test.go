@@ -13,7 +13,6 @@ import (
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
 	"github.com/baidu/openedge/openedge-hub/rule"
-	sdk "github.com/baidu/openedge/sdk/go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -755,8 +754,6 @@ func prepare() (res *resources, err error) {
 	os.RemoveAll("./var")
 
 	c, _ := config.New([]byte(""))
-	c.Logger.Console = true
-	// c.Logger.Level = "debug"
 	c.Message.Egress.Qos1.Retry.Interval = time.Second
 	c.Principals = []config.Principal{{
 		Username: "u1",
@@ -774,10 +771,6 @@ func prepare() (res *resources, err error) {
 			Action:  "pub",
 			Permits: []string{"test", "talks", "talks1", "talks2"},
 		}}}}
-	err = sdk.InitLogger(&c.Logger)
-	if err != nil {
-		return
-	}
 	res = new(resources)
 	res.factory, err = persist.NewFactory("./var/db/")
 	if err != nil {
