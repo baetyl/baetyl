@@ -28,8 +28,6 @@ type mo struct {
 	tomb utils.Tomb
 }
 
-const defaultConfigPath = "etc/openedge/service.yml"
-
 func main() {
 	openedge.Run(func(ctx openedge.Context) error {
 		m, err := new(ctx)
@@ -48,7 +46,7 @@ func main() {
 
 func new(ctx openedge.Context) (*mo, error) {
 	var cfg Config
-	err := utils.LoadYAML(defaultConfigPath, &cfg)
+	err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
 	if err != nil {
 		return nil, err
 	}

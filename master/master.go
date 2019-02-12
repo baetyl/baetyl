@@ -53,6 +53,7 @@ func New(pwd, confpath string) (*Master, error) {
 		pwd:      pwd,
 		log:      log,
 	}
+	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, m.pwd)
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, m.pwd)
 	if err != nil {
 		m.Close()

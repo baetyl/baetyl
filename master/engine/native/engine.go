@@ -21,8 +21,9 @@ func init() {
 // New native engine
 func New(grace time.Duration, pwd string) (engine.Engine, error) {
 	return &nativeEngine{
-		pwd: pwd,
-		log: logger.WithField("engine", NAME),
+		pwd:   pwd,
+		grace: grace,
+		log:   logger.WithField("engine", NAME),
 	}, nil
 }
 

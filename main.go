@@ -57,7 +57,6 @@ func main() {
 	if err != nil {
 		logger.Fatalln("failed to change directory to workdir:", err.Error())
 	}
-	logger.Debugln("work dir:", workdir)
 	m, err := master.New(workdir, *flagC)
 	if err != nil {
 		logger.Fatalln("failed to create master:", err.Error())
