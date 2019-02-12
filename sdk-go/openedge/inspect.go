@@ -1,12 +1,14 @@
 package openedge
 
+import "time"
+
 // Inspect openedge information inspected
 type Inspect struct {
-	Error     string   `json:"error,omitempt"`
-	Timestamp int64    `json:"timestamp,omitempt"`
-	Platform  Platform `json:"platform,omitempt"`
-	HostInfo  HostInfo `json:"host_info,omitempt"`
-	Services  Services `json:"services,omitempt"`
+	Error    string    `json:"error,omitempt"`
+	Time     time.Time `json:"time,omitempt"`
+	Platform Platform  `json:"platform,omitempt"`
+	HostInfo HostInfo  `json:"host_info,omitempt"`
+	Services Services  `json:"services,omitempt"`
 	// Datasets []DatasetStatus
 	// Volumes  []VolumeStatus
 }

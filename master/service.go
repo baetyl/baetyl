@@ -9,7 +9,8 @@ import (
 	"github.com/docker/distribution/uuid"
 )
 
-func (m *Master) auth(username, password string) bool {
+// Auth auth api request from services
+func (m *Master) Auth(username, password string) bool {
 	v, ok := m.accounts.Get(username)
 	if !ok {
 		return false

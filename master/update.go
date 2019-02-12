@@ -19,7 +19,19 @@ var datasetsDir = path.Join("var", "db", "openedge")
 var configFile = path.Join(datasetsDir, "config.yml")
 var downloadDir = path.Join("var", "run", "openedge", "download")
 
-func (m *Master) reload(d *openedge.DatasetInfo) error {
+// Update updates system
+func (m *Master) Update(d *openedge.DatasetInfo) error {
+	err := m.update(d)
+	if err != nil {
+		m.log.WithError(err).Errorf("failed to update system")
+		m.context.Set("error", err.Error())
+		return err
+	}
+	m.context.Remove("error")
+	return nil
+}
+
+func (m *Master) update(d *openedge.DatasetInfo) error {
 	//  download dataset as config for master
 	dir, err := m.download(d)
 	if err != nil {

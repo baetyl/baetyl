@@ -14,11 +14,11 @@
 
 Docker容器模式设计架构图：
 
-![](./doc/images/overview/design/mode_docker.png)
+![docker mode](./doc/images/overview/design/mode_docker.png)
 
 Native进程模式设计架构图：
 
-![](./doc/images/overview/design/mode_native.png)
+![native mode](./doc/images/overview/design/mode_native.png)
 
 更多OpenEdge设计文档请参考：
 
@@ -32,9 +32,9 @@ Native进程模式设计架构图：
 由上述介绍，不难看出OpenEdge主要由主程序模块和若干功能模块构成，目前官方提供本地Hub、本地函数计算（和多种函数计算Runtime）、MQTT远程通讯模块等。各模块的主要提供的能力如下：
 
 > + OpenEdge主程序模块负责所有模块的管理，如启动、退出等，由模块引擎、API、云代理构成；
->	- [模块引擎](./doc/zh-cn/overview/OpenEdge-design.md#模块引擎(engine))负责模块的启动、停止、重启、监听和守护，目前支持Docker容器模式和Native进程模式；
->	- [云代理](./doc/zh-cn/overview/OpenEdge-design.md#云代理(agent))负责和云端管理套件通讯，走MQTT和HTTPS通道，MQTT强制SSL/TLS证书双向认证，HTTPS强制SSL/TLS证书单向认证；
->	- OpenEdge主程序会暴露一组[HTTP API](./doc/zh-cn/overview/OpenEdge-design.md#API(api))，目前支持获取空闲端口，模块的启动和停止。
+> + [模块引擎](./doc/zh-cn/overview/OpenEdge-design.md#模块引擎(engine))负责模块的启动、停止、重启、监听和守护，目前支持Docker容器模式和Native进程模式；
+> + [云代理](./doc/zh-cn/overview/OpenEdge-design.md#云代理(agent))负责和云端管理套件通讯，走MQTT和HTTPS通道，MQTT强制SSL/TLS证书双向认证，HTTPS强制SSL/TLS证书单向认证；
+> + OpenEdge主程序会暴露一组[HTTP API](./doc/zh-cn/overview/OpenEdge-design.md#API(api))，目前支持获取空闲端口，模块的启动和停止。
 > + 本地Hub模块提供基于[MQTT协议](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html)的订阅和发布功能，支持TCP、SSL（TCP+SSL）、WS（Websocket）及WSS（Websocket+SSL）四种接入方式、消息路由转发等功能；
 > + 本地函数计算模块提供基于MQTT消息机制，弹性、高可用、扩展性好、响应快的的计算能力，函数通过一个或多个具体的实例执行，每个实例都是一个独立的进程，现采用GRPC Server运行函数实例；
 > + 远程通讯模块目前支持MQTT协议，其实质是两个MQTT Server的桥接（Bridge）模块，用于订阅一个Server的消息并转发给另一个Server；目前支持配置多路消息转发，可配置多个remote和hub同时进行消息同步；

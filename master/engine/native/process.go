@@ -56,8 +56,8 @@ func (e *nativeEngine) stopProcess(p *os.Process) error {
 
 	err := p.Signal(syscall.SIGTERM)
 	if err != nil {
-		e.log.WithError(err).Warnf("failed to stop process (%d)", p.Pid)
-		return err
+		e.log.Debugf("failed to stop process (%d): %s", p.Pid, err.Error())
+		return nil
 	}
 
 	done := make(chan error, 1)
