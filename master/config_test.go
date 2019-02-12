@@ -21,8 +21,8 @@ func TestDynamicConfig_diff(t *testing.T) {
 			want1: true,
 		},
 		{
-			name:  "add",
-			cur:   &DynamicConfig{
+			name: "add",
+			cur: &DynamicConfig{
 				Version: "v1",
 			},
 			pre:   new(DynamicConfig),
