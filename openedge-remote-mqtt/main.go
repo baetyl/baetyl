@@ -3,8 +3,7 @@ package main
 import (
 	"fmt"
 
-	openedge "github.com/baidu/openedge/api/go"
-	sdk "github.com/baidu/openedge/sdk/go"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -14,12 +13,10 @@ type mo struct {
 	rrs []*ruler
 }
 
-const defaultConfigPath = "/etc/openedge/service.yml"
-
 func main() {
-	sdk.Run(func(ctx openedge.Context) error {
+	openedge.Run(func(ctx openedge.Context) error {
 		var cfg Config
-		err := utils.LoadYAML(defaultConfigPath, &cfg)
+		err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
 		if err != nil {
 			return err
 		}
@@ -33,7 +30,7 @@ func main() {
 			if !ok {
 				return fmt.Errorf("remote (%s) not found", rule.Remote.Name)
 			}
-			rulers = append(rulers, create(rule, cfg.Hub, remote.MqttClientInfo))
+			rulers = append(rulers, create(rule, ctx.Config().Hub, remote.ClientInfo))
 		}
 		defer func() {
 			for _, ruler := range rulers {
@@ -43,11 +40,10 @@ func main() {
 		for _, ruler := range rulers {
 			err := ruler.start()
 			if err != nil {
-				openedge.WithError(err).Errorf("failed to start rule")
 				return err
 			}
 		}
-		ctx.WaitExit()
+		ctx.Wait()
 		return nil
 	})
 }

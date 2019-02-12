@@ -6,7 +6,6 @@ import (
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport/flow"
-	openedge "github.com/baidu/openedge/api/go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,7 +39,7 @@ func (h *mackHandler) ProcessError(err error) {
 }
 
 func TestClientConnectErrorMissingAddress(t *testing.T) {
-	c, err := NewClient(openedge.MqttClientInfo{}, &mackHandler{t: t})
+	c, err := NewClient(ClientInfo{}, &mackHandler{t: t})
 	assert.EqualError(t, err, "parse : empty url")
 	assert.Nil(t, c)
 }
@@ -269,7 +268,7 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 		return nil
 	}
 	cc := newConfig(t, port)
-	cc.Subscriptions = []openedge.TopicInfo{{Topic: "test"}}
+	cc.Subscriptions = []TopicInfo{{Topic: "test"}}
 	ch := &mackHandler{t: t, expectedProcessPublish: callback}
 	c, err := NewClient(cc, ch)
 	assert.NoError(t, err)
@@ -332,7 +331,7 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 		return nil
 	}
 	cc := newConfig(t, port)
-	cc.Subscriptions = []openedge.TopicInfo{{Topic: "test", QoS: 1}}
+	cc.Subscriptions = []TopicInfo{{Topic: "test", QoS: 1}}
 	ch := &mackHandler{t: t, expectedProcessPublish: callback1, expectedProcessPuback: callback2}
 	c, err := NewClient(cc, ch)
 	assert.NoError(t, err)
@@ -419,7 +418,7 @@ func TestClientSubscribeFutureTimeout(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.Timeout = time.Millisecond * 50
-	cc.Subscriptions = []openedge.TopicInfo{openedge.TopicInfo{Topic: "test"}}
+	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
 	ch := &mackHandler{t: t, expectedError: "future timeout"}
 	c, err := NewClient(cc, ch)
 	assert.Nil(t, c)
@@ -448,7 +447,7 @@ func TestClientSubscribeValidate(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.ValidateSubs = true
-	cc.Subscriptions = []openedge.TopicInfo{openedge.TopicInfo{Topic: "test"}}
+	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
 	ch := &mackHandler{t: t, expectedError: "failed subscription"}
 	c, err := NewClient(cc, ch)
 	assert.Nil(t, c)
@@ -477,7 +476,7 @@ func TestClientSubscribeWithoutValidate(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	cc.Subscriptions = []openedge.TopicInfo{openedge.TopicInfo{Topic: "test"}}
+	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
 	c, err := NewClient(cc, &mackHandler{t: t})
 	assert.NotNil(t, c)
 	assert.NoError(t, err)

@@ -62,18 +62,10 @@ M:
 
 func TestConfig(t *testing.T) {
 	var c Config
-	err := utils.LoadYAML("../../example/native/var/db/openedge/service/localhub/service.yml", &c)
+	err := utils.LoadYAML("../../example/native/var/db/openedge/datasets/conf-localhub/service.yml", &c)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "localhub", c.Name)
-	assert.Equal(t, "debug", c.Logger.Level)
-	assert.Equal(t, "text", c.Logger.Format)
 	assert.Equal(t, "var/db/openedge", c.Storage.Dir)
-	assert.Equal(t, "var/log/openedge/service.log", c.Logger.Path)
-	assert.True(t, c.Logger.Console)
-	assert.Equal(t, 15, c.Logger.Age.Max)
-	assert.Equal(t, 50, c.Logger.Size.Max)
-	assert.Equal(t, 15, c.Logger.Backup.Max)
 
 	assert.Equal(t, 10000, c.Message.Ingress.Qos0.Buffer.Size)
 	assert.Equal(t, 100, c.Message.Ingress.Qos1.Buffer.Size)

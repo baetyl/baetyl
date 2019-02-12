@@ -14,11 +14,11 @@ About architecture design, OpenEdge takes **modularization** and **containerizat
 
 ### Docker container mode
 
-![](./doc/images/overview/design/mode_docker.png)
+![docker mode](./doc/images/overview/design/mode_docker.png)
 
 ### Native process mode
 
-![](./doc/images/overview/design/mode_native.png)
+![native mode](./doc/images/overview/design/mode_native.png)
 
 More detailed documents of design are as follows:
 
@@ -30,16 +30,16 @@ More detailed documents of design are as follows:
 
 ## Concepts
 
-OpenEdge is made up of **main program module, Local Hub Module, Local Function Module, MQTT Remote Module and Python2.7 runtime module.** The main capabilities of each module are as follows:
+OpenEdge is made up of **main program module, Local Hub Module, Local Function Module, MQTT Remote Module and Python2.7 Runtime Module.** The main capabilities of each module are as follows:
 
 > + **Main program module** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
->   + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker container mode** and **native process mode**.
->   + **Cloud agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **must** take two-way authentication of SSL/TLS; otherwise, you **must** take one-way authentication of SSL/TLS due to HTTPS protocol.
->   + The main program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
-> + **Local Hub Module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL).**
-> + **Local Function Module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
-> + **MQTT Remote Module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
-> + **Python2.7 runtime module** is an implementation of **Local Function Module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
+> + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker container mode** and **native process mode**.
+> + **Cloud agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **must** take two-way authentication of SSL/TLS; otherwise, you **must** take one-way authentication of SSL/TLS due to HTTPS protocol.
+> + The main program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
+> + **local hub module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL).**
+> + **local function module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
+> + **MQTT remote module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
+> + **Python runtime module** is an implementation of **local function module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
 
 ## Features
 
@@ -54,7 +54,7 @@ OpenEdge is made up of **main program module, Local Hub Module, Local Function M
 
 ## Advantages
 
-> + **Shielding computing framework**: OpenEdge provides two official computing modules(**Local Function Module** and **Python2.7 runtime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
+> + **Shielding computing framework**: OpenEdge provides two official computing modules(**Local Function Module** and **Python Runtime Module**), also supports customize module(which can be written in any programming language or any machine learning framework).
 > + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
 > + **Quickly deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
 > + **Deploy on demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.

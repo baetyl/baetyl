@@ -7,15 +7,14 @@ import (
 	"path"
 	"path/filepath"
 
-	openedge "github.com/baidu/openedge/api/go"
-	sdk "github.com/baidu/openedge/sdk/go"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 )
 
 func main() {
-	sdk.Run(func(ctx openedge.Context) error {
+	openedge.Run(func(ctx openedge.Context) error {
 		var cfg Config
-		err := utils.LoadYAML("etc/openedge/service.yml", &cfg)
+		err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
 		if err != nil {
 			return err
 		}
@@ -55,38 +54,39 @@ func main() {
 		if err != nil {
 			return err
 		}
-		err = ctx.Subscribe(
-			openedge.TopicInfo{
-				Topic: cfg.Subscribe.Topic,
-				QoS:   cfg.Subscribe.QoS,
-			}, func(msg *openedge.Message) error {
-				err := send(iw, msg)
-				if err != nil {
-					openedge.Infoln("failed to send to runtime:", err.Error())
-					return nil
-				}
-				reply, err := recv(or)
-				if err != nil {
-					openedge.Infoln("failed to recv from runtime:", err.Error())
-					return nil
-				}
-				if len(cfg.Publish.Topic) != 0 {
-					err = ctx.SendMessage(&openedge.Message{
-						Topic:   cfg.Publish.Topic,
-						QoS:     0, // FIXME cfg.Publish.QoS,
-						Payload: reply,
-					})
-					if err != nil {
-						openedge.Warnln("failed to send message:", err.Error())
-					}
-				}
-				return nil
-			},
-		)
-		if err != nil {
-			return err
-		}
-		ctx.WaitExit()
+		// TODO: fix
+		// err = ctx.Subscribe(
+		// 	openedge.TopicInfo{
+		// 		Topic: cfg.Subscribe.Topic,
+		// 		QoS:   cfg.Subscribe.QoS,
+		// 	}, func(msg *openedge.Message) error {
+		// 		err := send(iw, msg)
+		// 		if err != nil {
+		// 			openedge.Infoln("failed to send to runtime:", err.Error())
+		// 			return nil
+		// 		}
+		// 		reply, err := recv(or)
+		// 		if err != nil {
+		// 			openedge.Infoln("failed to recv from runtime:", err.Error())
+		// 			return nil
+		// 		}
+		// 		if len(cfg.Publish.Topic) != 0 {
+		// 			err = ctx.SendMessage(&openedge.Message{
+		// 				Topic:   cfg.Publish.Topic,
+		// 				QoS:     0, // FIXME cfg.Publish.QoS,
+		// 				Payload: reply,
+		// 			})
+		// 			if err != nil {
+		// 				openedge.Warnln("failed to send message:", err.Error())
+		// 			}
+		// 		}
+		// 		return nil
+		// 	},
+		// )
+		// if err != nil {
+		// 	return err
+		// }
+		ctx.Wait()
 		p.Kill()
 		p.Wait()
 		return nil

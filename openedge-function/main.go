@@ -3,18 +3,14 @@ package main
 import (
 	"fmt"
 
-	yaml "gopkg.in/yaml.v2"
-
-	openedge "github.com/baidu/openedge/api/go"
-	sdk "github.com/baidu/openedge/sdk/go"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
+	yaml "gopkg.in/yaml.v2"
 )
-
-const defaultConfigPath = "etc/openedge/service.yml"
 
 func run(ctx openedge.Context) error {
 	var cfg Config
-	err := utils.LoadYAML(defaultConfigPath, &cfg)
+	err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
 	if err != nil {
 		return err
 	}
@@ -31,36 +27,37 @@ func run(ctx openedge.Context) error {
 			Name:      f.Name,
 			Handler:   f.Handler,
 		}
-		rtcfg, err := yaml.Marshal(&rt)
+		_, err := yaml.Marshal(&rt)
 		if err != nil {
 			return err
 		}
-		si := openedge.ServiceInfo{
-			Name:    f.Name,
-			Image:   f.Runtime,
-			Replica: 1,
-			Expose:  []string{},
-			Params:  []string{},
-			Env:     f.Env,
-			Mounts: []openedge.MountInfo{
-				openedge.MountInfo{
-					Volume: f.CodeDir,
-					Target: "code",
-					// ReadOnly: true,
-				},
-			},
-			// TODO Restart
-			// TODO Resource
-		}
-		err = ctx.StartService(&si, rtcfg)
-		if err != nil {
-			return err
-		}
+		// TODO: fix
+		// si := openedge.ServiceInfo{
+		// 	Name:    f.Name,
+		// 	Image:   f.Runtime,
+		// 	Replica: 1,
+		// 	Expose:  []string{},
+		// 	Params:  []string{},
+		// 	Env:     f.Env,
+		// 	Mounts: []openedge.MountInfo{
+		// 		openedge.MountInfo{
+		// 			Volume: f.CodeDir,
+		// 			Target: "code",
+		// 			// ReadOnly: true,
+		// 		},
+		// 	},
+		// 	// TODO Restart
+		// 	// TODO Resource
+		// }
+		// err = ctx.StartService(&si, rtcfg)
+		// if err != nil {
+		// 	return err
+		// }
 	}
-	ctx.WaitExit()
+	ctx.Wait()
 	return nil
 }
 
 func main() {
-	sdk.Run(run)
+	openedge.Run(run)
 }

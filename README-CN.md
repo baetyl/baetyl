@@ -14,11 +14,11 @@
 
 Docker 容器模式设计架构图：
 
-![](./doc/images/overview/design/mode_docker.png)
+![docker mode](./doc/images/overview/design/mode_docker.png)
 
 Native 进程模式设计架构图：
 
-![](./doc/images/overview/design/mode_native.png)
+![native mode](./doc/images/overview/design/mode_native.png)
 
 更多 OpenEdge 设计文档请参考：
 
@@ -33,10 +33,10 @@ Native 进程模式设计架构图：
 由上述介绍，不难看出 OpenEdge 主要由主程序模块和若干功能模块构成，目前官方提供本地 Hub、本地函数计算（和多种函数计算运行时）、MQTT 远程通讯模块等。各模块的主要提供的能力如下：
 
 > + OpenEdge 主程序模块负责所有模块的管理，如启动、退出等，由模块引擎、API、云代理构成；
->	- [模块引擎](./doc/zh-cn/overview/OpenEdge-design.md#模块引擎(engine))负责模块的启动、停止、重启、监听和守护，目前支持 Docker 容器模式和 Native 进程模式；
->	- [云代理](./doc/zh-cn/overview/OpenEdge-design.md#云代理(agent))负责和云端管理套件通讯，走 MQTT 和 HTTPS 通道，MQTT 强制SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证；
->	- OpenEdge 主程序会暴露一组 [HTTP API](./doc/zh-cn/overview/OpenEdge-design.md#API(api))，目前支持获取空闲端口，模块的启动和停止。
-> + 本地 Hub 模块提供基于 [MQTT 协议](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html)的订阅和发布功能，支持 TCP、SSL（TCP+SSL）、WS（Websocket）及 WSS（Websocket+SSL）四种接入方式、消息路由转发等功能；
+> + [模块引擎](./doc/zh-cn/overview/OpenEdge-design.md#模块引擎(engine))负责模块的启动、停止、重启、监听和守护，目前支持 Docker 容器模式和 Native 进程模式；
+> + [云代理](./doc/zh-cn/overview/OpenEdge-design.md#云代理(agent))负责和云端管理套件通讯，走 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证；
+> + OpenEdge 主程序会暴露一组[HTTP API](./doc/zh-cn/overview/OpenEdge-design.md#API(api))，目前支持获取空闲端口，模块的启动和停止。
+> + 本地Hub模块提供基于 [MQTT 协议](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html)的订阅和发布功能，支持 TCP、SSL（TCP+SSL）、WS（Websocket）及WSS（Websocket+SSL）四种接入方式、消息路由转发等功能；
 > + 本地函数计算模块提供基于 MQTT 消息机制，弹性、高可用、扩展性好、响应快的的计算能力，函数通过一个或多个具体的实例执行，每个实例都是一个独立的进程，现采用 GRPC Server 运行函数实例；
 > + 远程通讯模块目前支持 MQTT 协议，其实质是两个 MQTT Server 的桥接（Bridge）模块，用于订阅一个 Server 的消息并转发给另一个 Server；目前支持配置多路消息转发，可配置多个 Remote 和 Hub 同时进行消息同步；
 > + 函数计算 Python 运行时模块是本地函数计算模块的具体实例化表现形式，开发者通过编写的自己的 Python 函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。
@@ -63,17 +63,13 @@ Native 进程模式设计架构图：
 
 ## 安装
 
-> + [Linux 下 OpenEdge 安装及运行环境配置](./doc/zh-cn/setup/Install-OpenEdge-on-Linux.md)
-> + [Darwin 下 OpenEdge 安装及运行环境配置](./doc/zh-cn/setup/Install-OpenEdge-on-Darwin.md)
+> + [Linux 下 OpenEdge 安装及部署](./doc/zh-cn/setup/Install-OpenEdge-on-Linux.md)
+> + [Darwin 下 OpenEdge 安装及部署](./doc/zh-cn/setup/Install-OpenEdge-on-Darwin.md)
 > + [从源码编译 OpenEdge 及相关编译环境配置](./doc/zh-cn/setup/Build-OpenEdge-from-Source.md)
 
 ## 测试
 
     make test
-
-## 快速开始
-
-> + [在 Darwin 下部署使用 OpenEdge](./doc/zh-cn/quickstart/Deploy-OpenEdge-on-Darwin.md)
 
 ## 如何贡献
 

@@ -57,6 +57,18 @@
 			"revisionTime": "2018-08-23T22:24:21Z"
 		},
 		{
+			"checksumSHA1": "xVuhAsueOmMb6XRO5572vmNf7vs=",
+			"path": "github.com/baidubce/bce-sdk-go/http",
+			"revision": "8fa9e5a1f3045eaf84cc002b3ee22f904911cc5e",
+			"revisionTime": "2019-01-11T09:39:54Z"
+		},
+		{
+			"checksumSHA1": "U78G9VTYdRthxDWGXdMxhD5VAF4=",
+			"path": "github.com/baidubce/bce-sdk-go/util",
+			"revision": "8fa9e5a1f3045eaf84cc002b3ee22f904911cc5e",
+			"revisionTime": "2019-01-11T09:39:54Z"
+		},
+		{
 			"checksumSHA1": "BwBXwFar+Dsn8GJ0V1TjUqSrIsk=",
 			"path": "github.com/cloudfoundry/gosigar",
 			"revision": "50ddd08d81d770b1e0ce2c969a46e46c73580e2a",
@@ -374,6 +386,12 @@
 			"path": "github.com/jpillora/backoff",
 			"revision": "8eab2debe79d12b7bd3d10653910df25fa9552ba",
 			"revisionTime": "2017-09-18T00:21:02Z"
+		},
+		{
+			"checksumSHA1": "r6ZMyP/HsdeToXIxvgP3ntL6Bds=",
+			"path": "github.com/konsorten/go-windows-terminal-sequences",
+			"revision": "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242",
+			"revisionTime": "2018-10-04T22:41:46Z"
 		},
 		{
 			"checksumSHA1": "qRcr7rFsdkvUpadmitWp5+nPp2k=",

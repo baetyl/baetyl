@@ -1,23 +1,19 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"os"
-	"path"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
-	openedge "github.com/baidu/openedge/api/go"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/http"
 	"github.com/baidu/openedge/protocol/mqtt"
-	sdk "github.com/baidu/openedge/sdk/go"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -32,10 +28,8 @@ type mo struct {
 	tomb utils.Tomb
 }
 
-const defaultConfigPath = "etc/openedge/service.yml"
-
 func main() {
-	sdk.Run(func(ctx openedge.Context) error {
+	openedge.Run(func(ctx openedge.Context) error {
 		m, err := new(ctx)
 		if err != nil {
 			return err
@@ -45,14 +39,14 @@ func main() {
 		if err != nil {
 			return err
 		}
-		ctx.WaitExit()
+		ctx.Wait()
 		return nil
 	})
 }
 
 func new(ctx openedge.Context) (*mo, error) {
 	var cfg Config
-	err := utils.LoadYAML(defaultConfigPath, &cfg)
+	err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -95,21 +89,24 @@ func (m *mo) ProcessPublish(p *packet.Publish) error {
 	e := NewEvent(p.Message.Payload)
 	m.ctx.Log().Debugln("backward event:", e)
 	switch e.Type {
-	case SyncConfig:
-		if !isVersion(e.Detail.Version) {
-			m.ctx.Log().Errorf("config version invalid")
-			m.report("config version invalid")
-			break
-		}
-		confFile, err := m.download(e.Detail.Version, e.Detail.DownloadURL)
+	case Update:
+		dataset, err := openedge.NewDatasetInfoFromBytes(e.Content)
 		if err != nil {
-			m.ctx.Log().WithError(err).Errorf("failed to download new config package")
+			err := fmt.Errorf("update event invalid: %s", err.Error())
+			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		err = m.ctx.UpdateSystem(confFile)
+		if !isVersion(dataset.Version) {
+			err := fmt.Errorf("update event invalid: dataset version invalid")
+			m.ctx.Log().Errorf(err.Error())
+			m.report(err.Error())
+			break
+		}
+		err = m.ctx.UpdateSystem(dataset)
 		if err != nil {
-			m.ctx.Log().WithError(err).Errorf("failed to download new config package")
+			err := fmt.Errorf("failed to update system: %s", err.Error())
+			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 		} else {
 			m.report()
@@ -183,51 +180,13 @@ func (m *mo) send(data []byte) error {
 	if err != nil {
 		return err
 	}
-	headers := http.Headers{}
-	headers.Set("x-iot-edge-clientid", m.cfg.Remote.MQTT.ClientID)
-	headers.Set("x-iot-edge-key", key)
-	headers.Set("Content-Type", "application/x-www-form-urlencoded")
-	url := fmt.Sprintf("%s://%s/%s", m.http.Addr.Scheme, m.http.Addr.Host, m.cfg.Remote.Report.URL)
-	_, _, err = m.http.Send("POST", url, headers, bytes.NewBuffer(body))
+	header := map[string]string{
+		"x-iot-edge-clientid": m.cfg.Remote.MQTT.ClientID,
+		"x-iot-edge-key":      key,
+		"Content-Type":        "application/x-www-form-urlencoded",
+	}
+	_, err = m.http.Send("POST", m.cfg.Remote.Report.URL, body, header)
 	return err
-}
-
-func (m *mo) download(version, downloadURL string) (string, error) {
-	reqHeaders := http.Headers{}
-	_, resBody, err := m.http.Send("GET", downloadURL, reqHeaders, nil)
-	if err != nil {
-		return "", err
-	}
-	if resBody == nil {
-		return "", fmt.Errorf("no response body")
-	}
-	defer resBody.Close()
-	filename := path.Join(m.path, version+".zip")
-	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-	count := 0
-	buffer := make([]byte, 1024)
-	for {
-		l, err := resBody.Read(buffer)
-		if err != nil && err != io.EOF {
-			return "", err
-		}
-		if l == 0 {
-			break
-		}
-		count = count + l
-		if count > 1024*1024*1024 {
-			return "", fmt.Errorf("file size greater than 1G")
-		}
-		n, err := f.Write(buffer[:l])
-		if err == nil && n < l {
-			return "", io.ErrShortWrite
-		}
-	}
-	return filename, nil
 }
 
 func (m *mo) encryptData(data []byte) ([]byte, string, error) {
@@ -267,7 +226,7 @@ func defaults(c *Config) error {
 	}
 	c.Remote.Desire.Topic = fmt.Sprintf(c.Remote.Desire.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
-	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, openedge.TopicInfo{QoS: 1, Topic: c.Remote.Desire.Topic})
+	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QoS: 1, Topic: c.Remote.Desire.Topic})
 	return nil
 }
 
@@ -280,6 +239,6 @@ func isVersion(v string) bool {
 func trace(name string) func() {
 	start := time.Now()
 	return func() {
-		openedge.Debugf("%s elapsed time: %v", name, time.Since(start))
+		logger.Debugf("%s elapsed time: %v", name, time.Since(start))
 	}
 }
