@@ -1,3 +1,3 @@
-# Message synchronize with Baidu iothub through remote module
+# Message Synchronize with Baidu IoTHub through Remote Module
 
 TO DO(@kuailehaibin)

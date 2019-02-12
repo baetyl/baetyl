@@ -1,13 +1,13 @@
 # OpenEdge Config interpretation
 
 - [OpenEdge Config interpretation](#openedge-config-interpretation)
-    - [Statement](#statement)
-    - [Master configuration](#master-configuration)
-    - [Application configuration](#application-configuration)
-    - [Local Hub configuration](#local-hub-configuration)
-    - [Local Function configuration](#local-function-configuration)
-    - [MQTT Remote configuration](#mqtt-remote-configuration)
-    - [Configuration reference](#configuration-reference)
+  - [Statement](#statement)
+  - [Master Configuration](#master-configuration)
+  - [Application Configuration](#application-configuration)
+  - [Local Hub Configuration](#local-hub-configuration)
+  - [Local Function Configuration](#local-function-configuration)
+  - [MQTT Remote Configuration](#mqtt-remote-configuration)
+  - [Configuration Reference](#configuration-reference)
 
 ## Statement
 
@@ -16,7 +16,7 @@
   - Size unit: b(byte), k(kilobyte), m(megobyte), g(gigabyte)
   - Time unit: s(second), m(minute), h(hour)
 
-## Master configuration
+## Master Configuration
 
 The configuration of master and application is separate. The default configuration is: [etc/openedge/openedge.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/etc/openedge/openedge.yml) of working directory. More details of master configuration as flows:
 
@@ -52,7 +52,7 @@ logger: Logger configuration
     max: The default value is `15`, the maximum number of log files to keep.
 ```
 
-## Application configuration
+## Application Configuration
 
 The default configuration of application module is: [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) of working directory. More details of application configuration as flows:
 
@@ -90,7 +90,7 @@ modules: Module list configuration
         limit: Number of processes the module can create.
 ```
 
-## Local Hub configuration
+## Local Hub Configuration
 
 ```yaml
 name: [MUST]Module name
@@ -103,13 +103,13 @@ certificate: SSL/TLS certificate authentication configuration, if `ssl` or `wss`
   ca: mqtt server CA certificate path
   key: mqtt server private key path
   cert: mqtt server public key path
-principals: Access rights configuration item. If not configured, mqtt client cannot connect to the local hub, support username/password and certificate authentication.
-  - username: username of mqtt client connect to the local hub
-    password: password of mqtt client connect to the local hub
+principals: Access rights configuration item. If not configured, mqtt client cannot connect to the Local Hub, support username/password and certificate authentication.
+  - username: username of mqtt client connect to the Local Hub
+    password: password of mqtt client connect to the Local Hub
     permissions:
       - action: Operational authority. `pub` means publish permission, `sub` means subscription permission.
         permit: List of topics allowed by the operation permission, support `+` and `#` wildcards.
-  - serialnumber: The serial number of the client certificate used by the mqtt client to use the certificate for mutual authentication to connect to the local hub.
+  - serialnumber: The serial number of the client certificate used by the mqtt client to use the certificate for mutual authentication to connect to the Local Hub.
     permissions:
       - action: Operational authority. `pub` means publish permission, `sub` means subscription permission.
         permit: List of topics allowed by the operation permission, support `+` and `#` wildcards.
@@ -172,24 +172,24 @@ shutdown: Module exit configuration
   timeout: The default value is `10m`, means timeout of module exit.
 ```
 
-## Local Function configuration
+## Local Function Configuration
 
 ```yaml
 name: [MUST]Module name
 hub:
-  clientid: The client ID of the mqtt client is connected to the local hub. If it is empty, it is randomly generated, and the clean session is forced to be true.
-  address: [MUST]The address of the mqtt client is connected to the local hub, the address in the docker container mode is the local hub module name, and the native process mode is 127.0.0.1.
-  username: If you use the username/password authentication, you must fill in the username of the mqtt client that is used to connect to the local hub.
-  password: If you use the username/password authentication, you must fill in the password of the mqtt client that is used to connect to the local hub.
-  ca: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the local hub's CA certificate.
-  key: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the local hub's private key.
-  cert: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the local hub's public key.
-  timeout: The default value is `30s`, means timeout of the mqtt client connect to the local hub.
-  interval: The default value is `1m`, means interval(doubled from 500 microseconds to maximum) of the mqtt client re-connect to local hub.
-  keepalive: The default value is `1m`, means keep alive time between the mqtt client and the local hub after connection has been established.
-  cleansession: The default value is `false`, means clean session status that the mqtt client connect to the local hub.
+  clientid: The client ID of the mqtt client is connected to the Local Hub. If it is empty, it is randomly generated, and the clean session is forced to be true.
+  address: [MUST]The address of the mqtt client is connected to the Local Hub, the address in the docker container mode is the Local Hub Module name, and the native process mode is 127.0.0.1.
+  username: If you use the username/password authentication, you must fill in the username of the mqtt client that is used to connect to the Local Hub.
+  password: If you use the username/password authentication, you must fill in the password of the mqtt client that is used to connect to the Local Hub.
+  ca: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Local Hub's CA certificate.
+  key: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Local Hub's private key.
+  cert: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Local Hub's public key.
+  timeout: The default value is `30s`, means timeout of the mqtt client connect to the Local Hub.
+  interval: The default value is `1m`, means interval(doubled from 500 microseconds to maximum) of the mqtt client re-connect to Local Hub.
+  keepalive: The default value is `1m`, means keep alive time between the mqtt client and the Local Hub after connection has been established.
+  cleansession: The default value is `false`, means clean session status that the mqtt client connect to the Local Hub.
   validatesubs: The default value is `false`, means whether the mqtt client checks the subscription result. If it is `false`, exits and return errors.
-  buffersize: The default value is `10`, means the memory queue size of that the mqtt client sends a message to the local hub. If the abnormal exit occurs, the message will be lost. After the recovery, the message with QoS1 depends on the local hub re-publish policy.
+  buffersize: The default value is `10`, means the memory queue size of that the mqtt client sends a message to the Local Hub. If the abnormal exit occurs, the message will be lost. After the recovery, the message with QoS1 depends on the Local Hub re-publish policy.
 rules: Router rules configuration
   - id: [MUST]Router rule ID
     subscribe:
@@ -237,54 +237,54 @@ logger: Logger configuration
     max: The default value is `15`, the maximum number of log files to keep.
 ```
 
-## MQTT Remote configuration
+## MQTT Remote Configuration
 
 ```yaml
 name: [MUST]Module name
 hub:
-  clientid: The client ID of the mqtt client is connected to the local hub. If it is empty, it is randomly generated, and the clean session is forced to be true.
-  address: [MUST]The address of the mqtt client is connected to the local hub, the address in the docker container mode is the hub module name, and the native process mode is 127.0.0.1.
-  username: If you use the username/password authentication, you must fill in the username of the mqtt client that is used to connect to the local hub.
-  password: If you use the username/password authentication, you must fill in the password of the mqtt client that is used to connect to the local hub.
-  ca: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the local hub's CA certificate.
-  key: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the local hub's private key.
-  cert: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the local hub's public key.
-  timeout: The default value is `30s`, means timeout of the mqtt client connect to the local hub.
-  interval: The default value is `1m`, means interval(doubled from 500 microseconds to maximum) of the mqtt client re-connect to the local hub.
-  keepalive: The default value is `1m`, means keep alive time between the mqtt client and the local hub after connection has been established.
-  cleansession: The default value is `false`, means clean session status that the mqtt client connect to the local hub.
+  clientid: The client ID of the mqtt client is connected to the Local Hub. If it is empty, it is randomly generated, and the clean session is forced to be true.
+  address: [MUST]The address of the mqtt client is connected to the Local Hub, the address in the docker container mode is the hub module name, and the native process mode is 127.0.0.1.
+  username: If you use the username/password authentication, you must fill in the username of the mqtt client that is used to connect to the Local Hub.
+  password: If you use the username/password authentication, you must fill in the password of the mqtt client that is used to connect to the Local Hub.
+  ca: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Local Hub's CA certificate.
+  key: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Local Hub's private key.
+  cert: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Local Hub's public key.
+  timeout: The default value is `30s`, means timeout of the mqtt client connect to the Local Hub.
+  interval: The default value is `1m`, means interval(doubled from 500 microseconds to maximum) of the mqtt client re-connect to the Local Hub.
+  keepalive: The default value is `1m`, means keep alive time between the mqtt client and the Local Hub after connection has been established.
+  cleansession: The default value is `false`, means clean session status that the mqtt client connect to the Local Hub.
   validatesubs: The default value is `false`, means whether the mqtt client checks the subscription result. If it is `false`, exits and return errors.
-  buffersize: The default value is `10`, means the memory queue size of that the mqtt client sends a message to the local hub. If the abnormal exit occurs, the message will be lost. After the recovery, the message with QoS1 depends on the remote hub re-publish policy.
+  buffersize: The default value is `10`, means the memory queue size of that the mqtt client sends a message to the Local Hub. If the abnormal exit occurs, the message will be lost. After the recovery, the message with QoS1 depends on the Remote Hub re-publish policy.
 rules: The default is empty(none configuration), means message routing rules configuration
   - id: [MUST]Router rule ID
     hub:
-      subscriptions: The default is empty(none configuration), means subscribe topic(message) from local hub, and publish the received message to remote hub.
+      subscriptions: The default is empty(none configuration), means subscribe topic(message) from Local Hub, and publish the received message to Remote Hub.
         - topic: say
           qos: 1
         - topic: hi
           qos: 0
     remote:
       name: [MUST]Remote name
-      subscriptions: The default is empty(none configuration), means subscribe topic(message) from remote hub, and publish the received message to local hub.
+      subscriptions: The default is empty(none configuration), means subscribe topic(message) from Remote Hub, and publish the received message to Local Hub.
         - topic: remote/say
           qos: 0
         - topic: remote/hi
           qos: 0
 remotes: The default is empty(none configuration), means remote list
   - name: [MUST]Remote name
-    clientid: The client ID of the mqtt client is connected to the remote hub. If it is empty, it is randomly generated, and the clean session is forced to be true.
-    address: [MUST]The address of the mqtt client is connected to the remote hub.
-    username: If you use the username/password authentication, you must fill in the username of the mqtt client that is used to connect to the remote hub.
-    password: If you use the username/password authentication, you must fill in the password of the mqtt client that is used to connect to the remote hub.
-    ca: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the remote hub's CA certificate.
-    key: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the remote hub's private key.
-    cert: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the remote hub's public key.
-    timeout: The default value is `30s`, means timeout of the mqtt client connect to the remote hub.
-    interval: The default value is `1m`, means interval(doubled from 500 microseconds to maximum) of the mqtt client re-connect to the remote hub.
-    keepalive: The default value is `1m`, means keep alive time between the mqtt client and the remote hub after connection has been established.
-    cleansession: The default value is `false`, means clean session status that the mqtt client connect to the remote hub.
+    clientid: The client ID of the mqtt client is connected to the Remote Hub. If it is empty, it is randomly generated, and the clean session is forced to be true.
+    address: [MUST]The address of the mqtt client is connected to the Remote Hub.
+    username: If you use the username/password authentication, you must fill in the username of the mqtt client that is used to connect to the Remote Hub.
+    password: If you use the username/password authentication, you must fill in the password of the mqtt client that is used to connect to the Remote Hub.
+    ca: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Remote Hub's CA certificate.
+    key: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Remote Hub's private key.
+    cert: If you use certificate mutual authentication, you must fill in the path that the mqtt client connects to the Remote Hub's public key.
+    timeout: The default value is `30s`, means timeout of the mqtt client connect to the Remote Hub.
+    interval: The default value is `1m`, means interval(doubled from 500 microseconds to maximum) of the mqtt client re-connect to the Remote Hub.
+    keepalive: The default value is `1m`, means keep alive time between the mqtt client and the Remote Hub after connection has been established.
+    cleansession: The default value is `false`, means clean session status that the mqtt client connect to the Remote Hub.
     validatesubs: The default value is `false`, means whether the mqtt client checks the subscription result. If it is `false`, exits and return errors.
-    buffersize: The default value is `10`, means the memory queue size of that the mqtt client sends a message to the remote hub. If the abnormal exit occurs, the message will be lost. After the recovery, the message with QoS1 depends on the local hub re-publish policy.
+    buffersize: The default value is `10`, means the memory queue size of that the mqtt client sends a message to the Remote Hub. If the abnormal exit occurs, the message will be lost. After the recovery, the message with QoS1 depends on the Local Hub re-publish policy.
 logger: Logger configuration
   path: The default is `empty`(none configuration), that is, it does not print to the file. If the path is specified, it is output to the file(due to the path).
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
@@ -298,7 +298,7 @@ logger: Logger configuration
     max: The default value is `15`, the maximum number of log files to keep.
 ```
 
-## Configuration reference
+## Configuration Reference
 
 > - [Example of Docker container mode configuration](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/etc/openedge/openedge.yml)
 > - [Example of Native process mode configuration](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/etc/openedge/openedge.yml)

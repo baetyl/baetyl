@@ -1,6 +1,6 @@
 # OpenEdge
 
-OpenEdge contains a master program and some modules. The master program manages all modules through configuration. Currently, OpenEdge supports two modes of running, namely **docker** container mode and **native** process mode.
+OpenEdge contains a master program and some modules. The master program manages all modules through configuration. Currently, OpenEdge supports two modes of running, namely **Docker** container mode and **Native** process mode.
 
 Docker Containr Mode Design Diagram:
 
@@ -199,4 +199,4 @@ The remote communication module currently supports the MQTT protocol, which can 
 
 ![Remote Module Design Diagram](../../images/overview/design/remote.png)
 
-As shown in the figure above, here, the OpenEdge remote communication module (openedge-remote-mqtt) is used to forward and synchronize messages between the OpenEdge local Hub module and the remote cloud Hub platform.
+As shown in the figure above, here, the OpenEdge remote communication module (openedge-remote-mqtt) is used to forward and synchronize messages between the OpenEdge Local Hub Module and the remote cloud Hub platform.
