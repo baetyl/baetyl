@@ -4,7 +4,7 @@
 > + support two mode: **docker container mode** and **native process mode**
 > + docker container mode support resources isolation and restriction
 > + support cloud management suite, which can be used to report device hardware information and deploy configuration
-> + provide **local hub module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
-> + provide **local function module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
-> + provide **MQTT remote module**, which supports MQTT v3.1.1 protocol
+> + provide **Local Hub Module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
+> + provide **Local Function Module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
+> + provide **MQTT Remote Module**, which supports MQTT v3.1.1 protocol
 > + provide **module SDK(Golang)**, which can be used to develop customize module

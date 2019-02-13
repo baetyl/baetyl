@@ -55,7 +55,7 @@ It also supports getting the configuration from the input parameters, which can 
 
 ## Start/Stop Convention
 
-The module is started as a process independently by master with module's configuration, and the module should listen to the SIGTERM signal to gracefully exit when stopped by master. A simple golang module implementation can refer to [mqtt remote module](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-remote-mqtt)。
+The module is started as a process independently by master with module's configuration, and the module should listen to the SIGTERM signal to gracefully exit when stopped by master. A simple golang module implementation can refer to [mqtt Remote Module](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-remote-mqtt)。
 
 ## Module SDK
 

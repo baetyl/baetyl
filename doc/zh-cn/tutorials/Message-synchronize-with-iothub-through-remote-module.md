@@ -15,13 +15,13 @@ Remote远程服务模块是为了满足物联网场景下另外一种用户需�
 - **Step2**：依据步骤**Step1**中创建的连接信息，选择MQTT.fx作为测试用MQTT client客户端，配置相关连接信息，并将之与Baidu IoT Hub建立连接，并订阅既定主题；
   - 若成功建立连接，则继续下一步操作；
   - 若未成功建立连接，则重复上述步骤，直至看到MQTT.fx与Baidu IoT Hub成功[建立连接](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E6.95.B0.E6.8D.AE.E5.9E.8B.E9.A1.B9.E7.9B.AE)。
-- **Step3**：打开终端，进入OpenEdge程序包目录，然后以Docker容器模式启动OpenEdge可执行程序，并观察Hub模块、Remote模块启动状态；
-  - 若Hub、Remote模块成功启动，则继续下一步操作；
-  - 若Hub、Remote模块未成功启动，则重复**Step3**，直至看到Hub、Remote模块成功启动。
-- **Step4**：选择MQTTBOX作为测试用MQTT client客户端，与Hub[建立连接](./Device-connect-with-OpenEdge-with-hub-module.md)，并订阅既定主题；
+- **Step3**：打开终端，进入OpenEdge程序包目录，然后以Docker容器模式启动OpenEdge可执行程序，并观察Hub模块、Remote 模块启动状态；
+  - 若Hub、Remote 模块成功启动，则继续下一步操作；
+  - 若Hub、Remote 模块未成功启动，则重复**Step3**，直至看到Hub、Remote 模块成功启动。
+- **Step4**：选择MQTTBOX作为测试用MQTT client客户端，与Hub[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)，并订阅既定主题；
     - 若成功与Hub模块建立连接，则继续下一步操作；
     - 若与Hub建立连接失败，则重复**Step4**操作，直至MQTTBOX与本地Hub成功建立连接。
-- **Step5**：依据Remote模块的相关配置信息，从MQTTBOX向既定主题发布消息，观察MQTT.fx的消息接收情况；同理，从MQTT.fx向既定主题发布消息，观察MQTTBOX的消息接收情况。
+- **Step5**：依据 Remote 模块的相关配置信息，从MQTTBOX向既定主题发布消息，观察MQTT.fx的消息接收情况；同理，从MQTT.fx向既定主题发布消息，观察MQTTBOX的消息接收情况。
 - **Step6**：若**Step5**中双方均能接收到对方发布的消息内容，则表明功能测试顺利通过。
 
 上述操作流程相关的流程示意图具体如下图示。
@@ -57,7 +57,7 @@ rules:
           qos: 1
 ```
 
-依据上述Remote模块的配置信息，意即Remote模块向本地Hub模块订阅主题“t1”的消息，向Baidu IoT Hub订阅主题“t2”的消息；当MQTTBOX向主题“t1”发布消息时，当Hub模块接收到主题“t1”的消息后，将其转发给Remote模块，再由Remote模块降之转发给Baidu IoT Hub，这样如果MQTT.fx订阅了主题“t1”，即会收到该条从MQTTBOX发布的消息；同理，当MQTT.fx向主题“t2”发布消息时，Baidu IoT Hub会将消息转发给Remote模块，由Remote模块将之转发给本地Hub模块，这样如果MQTTBOX订阅了主题“t2”，即会收到该消息。
+依据上述 Remote 模块的配置信息，意即 Remote 模块向本地 Hub 模块订阅主题“t1”的消息，向Baidu IoT Hub订阅主题“t2”的消息；当MQTTBOX向主题“t1”发布消息时，当Hub模块接收到主题“t1”的消息后，将其转发给Remote 模块，再由Remote 模块降之转发给Baidu IoT Hub，这样如果MQTT.fx订阅了主题“t1”，即会收到该条从MQTTBOX发布的消息；同理，当MQTT.fx向主题“t2”发布消息时，Baidu IoT Hub会将消息转发给Remote 模块，由Remote 模块将之转发给本地 Hub 模块，这样如果MQTTBOX订阅了主题“t2”，即会收到该消息。
 
 简单来说，由MQTT.fx发布的消息，到MQTTBOX接收到该消息，流经的路径信息为：
 
@@ -87,9 +87,9 @@ rules:
 
 ![MQTT.fx成功订阅主题t1](../../images/tutorials/remote/mqttfx-sub-t1-success.png)
 
-## 通过MQTTBOX与本地Hub模块建立连接
+## 通过MQTTBOX与本地 Hub 模块建立连接
 
-依据步骤**Step3**所述，调整OpenEdge主程序启动加载配置项，这里，要求OpenEdge启动后加载Hub、Remote模块，成功加载的状态如下图示。
+依据步骤**Step3**所述，调整OpenEdge主程序启动加载配置项，这里，要求OpenEdge启动后加载Hub、Remote 模块，成功加载的状态如下图示。
 
 ![OpenEdge成功加载Hub、Remote](../../images/tutorials/remote/openedge-hub-remote-start.png)
 
@@ -97,7 +97,7 @@ rules:
 
 ![通过命令docker ps查看系统当前正在运行的docker容器列表](../../images/tutorials/remote/openedge-docker-ps-hub-remote-run.png)
 
-成功启动OpenEdge后，依据[使用Hub进行设备接入](./Device-connect-with-OpenEdge-with-hub-module.md)，通过MQTTBOX成功与Hub模块建立连接，并订阅主题“t2”，成功订阅的状态如下图示。
+成功启动OpenEdge后，依据[使用Hub进行设备接入](./Device-connect-to-OpenEdge-with-hub-module.md)，通过MQTTBOX成功与Hub模块建立连接，并订阅主题“t2”，成功订阅的状态如下图示。
 
 ![MQTTBOX成功订阅主题t2](../../images/tutorials/remote/mqttbox-sub-t2-success.png)
 
@@ -125,4 +125,4 @@ rules:
 
 ![MQTT.fx成功收到消息](../../images/tutorials/remote/mqttfx-receive-t1-message-success.png)
 
-综上，MQTT.fx与MQTTBOX均已正确接收到了对应的消息，且内容吻合。至此，关于基于Remote模块实现消息远程同步的介绍就结束了。
+综上，MQTT.fx与MQTTBOX均已正确接收到了对应的消息，且内容吻合。至此，关于基于Remote 模块实现消息远程同步的介绍就结束了。

@@ -24,12 +24,13 @@ More detailed documents of design are as follows:
 
 > + [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
 > + [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
-> + [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
+> + [How to write a python srcipt for python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
 > + [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
+> + [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 
 ## Concepts
 
-OpenEdge is made up of **main program module, local hub module, local function module, MQTT remote module and Python2.7 runtime module.** The main capabilities of each module are as follows:
+OpenEdge is made up of **main program module, Local Hub Module, Local Function Module, MQTT Remote Module and Python2.7 Runtime Module.** The main capabilities of each module are as follows:
 
 > + **Main program module** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
 > + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker container mode** and **native process mode**.
@@ -38,7 +39,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 > + **local hub module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL).**
 > + **local function module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
 > + **MQTT remote module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
-> + **Python2.7 runtime module** is an implementation of **local function module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
+> + **Python runtime module** is an implementation of **local function module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
 
 ## Features
 
@@ -46,14 +47,14 @@ OpenEdge is made up of **main program module, local hub module, local function m
 > + support two mode: **docker container mode** and **native process mode**
 > + docker container mode support resources isolation and restriction
 > + support cloud management suite, which can be used to report device hardware information and deploy configuration
-> + provide **local hub module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
-> + provide **local function module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
-> + provide **MQTT remote module**, which supports MQTT v3.1.1 protocol
+> + provide **Local Hub Module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
+> + provide **Local Function Module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
+> + provide **MQTT Remote Module**, which supports MQTT v3.1.1 protocol
 > + provide **module SDK(Golang)**, which can be used to develop customize module
 
 ## Advantages
 
-> + **Shielding computing framework**: OpenEdge provides two official computing modules(**local function module** and **Python2.7 runtime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
+> + **Shielding computing framework**: OpenEdge provides two official computing modules(**Local Function Module** and **Python Runtime Module**), also supports customize module(which can be written in any programming language or any machine learning framework).
 > + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
 > + **Quickly deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
 > + **Deploy on demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
