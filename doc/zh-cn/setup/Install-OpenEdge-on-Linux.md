@@ -2,7 +2,7 @@
 
 > OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
 
-本文主要介绍 OpenEdge 运行所需环境的安装与配置以及 OpenEdge 在 Darwin 系统下的快速部署。
+本文主要介绍 OpenEdge 运行所需环境的安装与配置以及 OpenEdge 在类 Linux 系统下的快速部署。
 
 ## 运行环境配置
 
@@ -113,19 +113,16 @@ alias python=/yourpath/python2.7
 
 ## OpenEdge 部署
 
-前往[下载页面](https://github.com/baidu/openedge/releases)找到机器对应版本并进行下载，完成后解压到任意目录。(推荐下载最新版程序运行包)
-
-***注：*** 官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考[源码编译](./Build-OpenEdge-from-Source.md)相关内容。
-
 ### 部署前准备
 
-**声明**：本文以Ubuntu系统下OpenEdge的部署、运行为例，假定在此之前OpenEdge运行所需环境均已配置完毕。
+**声明**：
 
- - OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务；
++ 本文以Ubuntu系统下OpenEdge的部署、运行为例进行介绍，其他linux发行版本下的部署操作与下述描述内容基本相同，假定在此之前OpenEdge运行所需环境均已配置完毕。
++ 本文所提及的Ubuntu系统基于Linux Ubuntu 4.15.0-29-generic版本内核，CPU架构为x86_64。
+
+OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务:
 
 ![docker版本查询](../../images/setup/docker-version.png)
-
-**需要说明的是**：本文所提及的Ubuntu系统基于Linux Ubuntu 4.15.0-29-generic版本内核，CPU架构为x86_64。
 
 ### 部署流程
 
@@ -133,8 +130,10 @@ alias python=/yourpath/python2.7
 - **Step2**：打开终端，进入OpenEdge软件包下载目录，进行解压缩操作；
 	- 如果下载的是zip压缩包，执行命令`unzip -d . openedge-xxx.zip`；
 	- 如题下载的是tar.gz压缩包，执行命令`tar -zxvf openedge-xxx.tar.gz`；
-- **Step3**：完成解压缩操作后，直接进入OPenEdge程序包目录，执行命令`bin/openedge -w .`，然后分别查看OpenEdge启动、加载日志信息，及查看当前正在运行的容器（通过命令`docker ps`），并对比二者是否一致（假定当前系统中未启动其他docker容器）；
+- **Step3**：完成解压缩操作后，直接进入OpenEdge程序包目录，执行命令`bin/openedge -w .`，然后分别查看OpenEdge启动、加载日志信息，及查看当前正在运行的容器（通过命令`docker ps`），并对比二者是否一致（假定当前系统中未启动其他docker容器）；
 - **Step4**：若查看结果一致，则表示OpenEdge已正常启动。
+
+***注：*** 官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考[源码编译](./Build-OpenEdge-from-Source.md)相关内容。
 
 ### 开始部署
 
