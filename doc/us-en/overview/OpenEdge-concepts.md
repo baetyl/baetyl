@@ -1,8 +1,8 @@
 # OpenEdge Concepts
 
-OpenEdge is made up of **Main Program, Local Hub Module, Local Function Module, MQTT Remote Module and Python Runtime Module.** The main capabilities of each module are as follows:
+OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module, MQTT Remote Module and Python Runtime Module.** The main capabilities of each module are as follows:
 
-> + **Main Program** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
+> + **Master Program** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
 >   + **Module Engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **Docker Container Mode** and **Native Process Mode**.
 >   + **Cloud Agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **MUST** take two-way authentication of SSL/TLS; otherwise, you **MUST** take one-way authentication of SSL/TLS due to HTTPS protocol.
 >   + The main program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
