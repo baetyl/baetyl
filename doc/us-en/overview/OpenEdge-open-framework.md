@@ -1,10 +1,10 @@
-# OpenEdge open framework
+# OpenEdge Open Framework
 
 OpenEdge provides an open framework, which allows access to any protocol through a variety of networks, and allows any application to run on multiple systems.
 
 ## OpenEdge Network Protocol Support
 
-OpenEdge supports network protocols in 3 aspects: one is for IoT applications, OpenEdge provides device connect services based on Local Hub Module through MQTT protocol. And it supports `tcp`, `ssl`(tcp+ssl), `ws`(websocket) and `wss`(websocket+ssl) 4 connection modes; the second is for the device hardware information reporting service, OpenEdge supports the HTTPS protocol; the other is for the remote service with the cloud, OpenEdge supports multiple network protocols. For example, OpenEdge publishes data message to the remote hub through Remote Module with MQTT protocol, publishes the data message to the remote Kafka through Kafka module, etc.
+OpenEdge supports network protocols in 3 aspects: one is for IoT applications, OpenEdge provides device connect services based on Local Hub Module through MQTT protocol. And it supports `TCP`, `SSL`(TCP + SSL), `WS`(Websocket) and `WSS`(Websocket + SSL) 4 connection modes; the second is for the device hardware information reporting service, OpenEdge supports the HTTPS protocol; the other is for the remote service with the cloud, OpenEdge supports multiple network protocols. For example, OpenEdge publishes data message to the remote hub through Remote Module with MQTT protocol, publishes the data message to the remote Kafka through Kafka module, etc.
 
 ## OpenEdge System Platform Support
 

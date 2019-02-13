@@ -1,6 +1,6 @@
 # OpenEdge
 
-OpenEdge contains a master program and some modules. The master program manages all modules through configuration. Currently, OpenEdge supports two modes of running, namely **Docker** container mode and **Native** process mode.
+OpenEdge contains a master program and some modules. The master program manages all modules through configuration. Currently, OpenEdge supports two modes of running, namely **Docker Container Mode** and **Native Process Mode**.
 
 Docker Containr Mode Design Diagram:
 
@@ -21,11 +21,11 @@ is responsible for the management of all modules includes operations of start, s
 
 Engine loads the list of modules from the [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) configuration in the working directory and starts the modules one by one in the order of the list. Engine will start a daemon coroutine for each module to monitor the module status. If the module exits abnormally, it will restart or exit according to the module's [Restart Policy](../tutorials/local/Config-interpretation.md#application-configuration). When master is closing, engine will close all modules one by one in the reverse order of the list.
 
-_**TIP**: The working directory can be specified by -w when OpenEdge is started. The default is the directory above the directory where OpenEdge executables are located._
+_**TIP**: The working directory can be specified by `-w` when OpenEdge is started. The default is the directory above the directory where OpenEdge executables are located._
 
-In docker container mode, the module is started as a docker container by the docker client using the docker image specified by the entry configuration, and automatically joins the custom docker network (openedge). Since the docker comes with a DNS server, the modules can communicate with each other through the module name. In addition, the module can expose the port through the expose configuration; the resources that can be used by the module are restricted by the resources configuration, and currently the CPU, memory, and process limit are supported. [Configuration Reference](../tutorials/local/Config-interpretation.md#application-configuration)
+In docker container mode, the module is started as a docker container by the docker client using the docker image specified by the `entry` configuration, and automatically joins the custom docker network (openedge). Since the docker comes with a DNS server, the modules can communicate with each other through the module name. In addition, the module can expose the port through the `expose` configuration; the resources that can be used by the module are restricted by the `resources` configuration, and currently the CPU, memory, and process limit are supported. [Configuration Reference](../tutorials/local/Config-interpretation.md#application-configuration)
 
-In docker container mode, the working directory of the module in the container is the root directory: /; the configuration path is: /etc/openedge/module.yml; the resource files directory is: /var/db/openedge/module/<module name>; the persistent data output directory is: /var/db/openedge/volume/<module name>; the log output directory is: /var/log/openedge/<module name>. The docker volumes mapping is as follows:
+In docker container mode, the working directory of the module in the container is the root directory: `/`; the configuration path is: `/etc/openedge/module.yml`; the resource files directory is: `/var/db/openedge/module/<module name>`; the persistent data output directory is: `/var/db/openedge/volume/<module name>`; the log output directory is: `/var/log/openedge/<module name>`. The docker volumes mapping is as follows:
 
 > - \<openedge_host_work_dir>/var/db/openedge/module/<module_name>/module.yml:/etc/openedge/module.yml
 > - \<openedge_host_work_dir>/var/db/openedge/module/<module_name>:/var/db/openedge/module/<module_name>
@@ -34,7 +34,7 @@ In docker container mode, the working directory of the module in the container i
 
 _**TIP**: The mark value will change after the module configuration is modified in the cloud, similar to the revision of git._
 
-In native process mode, the module is started by syscall using the executable file specified by the entry configuration. The modules can communicate with each other through localhost (127.0.0.1). **Does not support resource isolation and resource limitation in this mode**.
+In native process mode, the module is started by syscall using the executable file specified by the `entry` configuration. The modules can communicate with each other through `localhost(127.0.0.1)`. **Does not support resource isolation and resource limitation in this mode**.
 
 ### Agent
 
@@ -63,14 +63,14 @@ After the cloud agent receives the reload event from the cloud management suite,
 
 _**NOTE**: At present, the hot load adopts the method of full update, which stops all the old application modules and then starts all new application modules, so the service provided by the module will be interrupted. In addition, decompressing the new application package will directly overwrite the old application files, and the redundant old application files will not be cleaned up._
 
-_**TIP**: If the device can't connect to the external network or leave the cloud management, you can remove the cloud configuration item and run it offline._
+_**TIP**: If the device can't connect to the external network or leave the cloud management, you can remove the `cloud` configuration item and run it offline._
 
 ### API
 
-The OpenEdge master program exposes a set of HTTP APIs that currently support getting idle ports, starting and stopping modules. API server listens to unix domain socket by default on linux system, var/openedge.sock under working directory; listens to TCP address on other systems, and tcp://127.0.0.1:50050 is the default address. Developers can modify the listening address via the [api](../tutorials/local/Config-interpretation.md#master-configuration) configuration. In order to facilitate management, we have made a division of the module. The module loaded from var/db/openedge/module/module.yml is called the resident module. The module started by resident module through the API is called the temporary module which should be stopped by the same resident module. When OpenEdge exits, all resident modules will be stopped in reverse order. The resident module will also call the API to stop the module it starts. In the end, if there are missing temporary modules, they will be stopped in randomly order. To access the API, you need to provide an account username and password. Set the following two request headers:
+The OpenEdge master program exposes a set of HTTP APIs that currently support getting idle ports, starting and stopping modules. API server listens to unix domain socket by default on linux system, `var/openedge.sock` under working directory; listens to TCP address on other systems, and `tcp://127.0.0.1:50050` is the default configuration of `address`. Developers can modify the listening address via the [api](../tutorials/local/Config-interpretation.md#master-configuration) configuration. In order to facilitate management, we have made a division of the module. The module loaded from [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) is called the resident module. The module started by resident module through the API is called the temporary module which should be stopped by the same resident module. When OpenEdge exits, all resident modules will be stopped in reverse order. The resident module will also call the API to stop the module it starts. In the end, if there are missing temporary modules, they will be stopped in randomly order. To access the API, you need to provide an account username and password. Set the following two request headers:
 
 > - x-iot-edge-username: account username which is the resident module name
-> - x-iot-edge-password: account password which is the resident module token, obtained from the environment variable using ```module.GetEnv(module.EnvOpenEdgeModuleToken)```. A temporary token is generated for each resident module when the master program starts.
+> - x-iot-edge-password: account password which is the resident module token, obtained from the environment variable using `module.GetEnv(module.EnvOpenEdgeModuleToken)`. A temporary token is generated for each resident module when the master program starts.
 
 The official function module will call this API to start and stop the function instance (runtime) module. When the function module stops, it is responsible for stopping all the temporary modules that it starts.
 
@@ -78,12 +78,12 @@ The official function module will call this API to start and stop the function i
 
 OpenEdge sets the following system environment variables for all modules currently:
 
-> - OPENEDGE_HOST_OS: System type of the device (host) where OpenEdge is located
+> - OPENEDGE_HOST_OS: System type of the device(host) where OpenEdge is located
 > - OPENEDGE_MASTER_API: API address of the OpenEdge master program
 > - OPENEDGE_MODULE_MODE: Running mode of OpenEdge master program
 > - OPENEDGE_MODULE_TOKEN: The temporary token assigned to the resident module by the OpenEdge master program, which can be used as account password to access the API of the master program.
 
-The official function module is to connect to the OpenEdge master program by reading OPENEDGE_MASTER_API. For example, the OPENEDGE_MASTER_API on Linux system is unix://var/openedge.sock by default; on other systems in docker container mode is tcp://host.docker.internal:50050 by default; on other systems in native process mode is  tcp://127.0.0.1:50050 by default.
+The official function module is to connect to the OpenEdge master program by reading `OPENEDGE_MASTER_API`. For example, the `OPENEDGE_MASTER_API` on Linux system is `unix://var/openedge.sock` by default; on other systems in docker container mode is `tcp://host.docker.internal:50050` by default; on other systems in native process mode is  `tcp://127.0.0.1:50050` by default.
 
 _**NOTE**: Environment variables configured in the application will be overwritten if they are the same as the above system environment variables._
 
@@ -97,24 +97,24 @@ The Hub module is a stand-alone version of the message subscription and distribu
 
 ![Hub Module Design Diagram](../../images/overview/design/hub.png)
 
-Currently supports 4 access methods: tcp, ssl (tcp+ssl), ws (websocket) and wss (websocket+ssl). The MQTT protocol support is as follows:
+Currently supports 4 access methods: TCP, SSL(TCP + SSL), WS(Websocket) and WSS(Websocket + SSL). The MQTT protocol support is as follows:
 
-> - Supports connect, disconnect, subscribe, publish, unsubscribe, ping, etc.
+> - Supports Connect, Disconnect, Subscribe, Publish, Unsubscribe, Ping, etc.
 > - Support for message publishing and subscriptions with QoS levels 0 and 1
 > - Support retain, will message, clean session
-> - Support for subscribing to topics with wildcards such as "+" and "#"
+> - Support for subscribing to topics with wildcards such as `+` and `#`
 > - Supports validation of conforming client id and payload
-> - **Not support** to publish and subscribe to topics prefixed with "$"
+> - **Not support** to publish and subscribe to topics prefixed with `$`
 > - **Not support** client's keep alive feature and QoS level 2
 
 _**NOTE**:_
 
-> - The maximum number of separators "/" in the publish and subscribe topic is no more than 8, and the maximum length of the topic name is no more than 255 characters.
-> - The default maximum length of message packets is 32k. The maximum length that can be supported is 268,435,455 (byte), less than 256m, which can be modified by the message configuration.
-> - clientid supports uppercase and lowercase letters, numbers, underscores, hyphens (minus sign), and null characters (the null character indicates that the client is a temporary connection, forcing cleansession=true), and the maximum length is no more than 128 characters.
+> - The maximum number of separators `/` in the publish and subscribe topic is no more than 8, and the maximum length of the topic name is no more than 255 characters.
+> - The default maximum length of message packets is 32k. The maximum length that can be supported is 268,435,455(Byte), about 256 MB, which can be modified by the `message` configuration.
+> - clientid supports uppercase and lowercase letters, numbers, underscores, hyphens(minus sign), and null characters(the null character indicates that the client is a temporary connection, forcing CleanSession = True), and the maximum length is no more than 128 characters.
 > - The QoS of the message can only be dropped. For example, when the QoS of the original message is 0, even if the subscription QoS is 1, the message is sent at the level of QoS 0.
 
-The Hub module supports simple topic routing, such as subscribing to a message with the topic 't' and publish it back to the broker with a new topic 't/topic'. [Configuration Reference](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/localhub/module.yml)
+The Hub module supports simple topic routing, such as subscribing to a message with the topic `t` and publish it back to the broker with a new topic `t/topic`. [Configuration Reference](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/localhub/module.yml)
 
 #### openedge-function
 
@@ -145,11 +145,11 @@ _**NOTE**: If the function is executed incorrectly, the function module returns 
 
 The Python function is similar to [Baidu CFC](https://cloud.baidu.com/product/cfc.html). Users can process messages by writing their own functions, which can filter, convert, forward messages, etc., the use is very flexible.
 
-The input and output of a Python function can be either JSON or binary. The message payload will try JSON decoding (json.loads(payload)) before passing it as a parameter. If it succeeds, it will pass the dictionary (dict) type. If it fails, it will pass the original binary data.
+The input and output of a Python function can be either JSON or binary. The message payload will try JSON decoding(`json.loads(payload)`) before passing it as a parameter. If it succeeds, it will pass the dictionary(`dict`) type. If it fails, it will pass the original binary data.
 
-Python function supports reading environment variables such as os.environ['PATH'].
+Python function supports reading environment variables such as `os.environ['PATH']`.
 
-Python function supports reading contexts such as context['functionName'].
+Python function supports reading contexts such as `context['functionName']`.
 
 Python function implementation example:
 

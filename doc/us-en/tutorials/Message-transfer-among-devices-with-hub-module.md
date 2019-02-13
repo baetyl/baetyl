@@ -5,17 +5,17 @@
 > + The operating system as mentioned in this document is Darwin.
 > + The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 
-Different from [Connection Test](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub module, please refer to [Hub module configuration](./Config-interpretation.md#local-hub-configuration).
+Different from [Device-connect-to-OpenEdge-with-hub-module](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub module, please refer to [Hub module configuration](./Config-interpretation.md#local-hub-configuration).
 
 This document uses the TCP connection mode as an example to test the message routing and forwarding capabilities of the Local Hub Module.
 
 ## Workflow
 
-- Step 1：Startup OpenEdge in Docker container mode
-- Step 2：MQTTBOX connect to Local Hub Module by TCP connection mode, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Module](./Device-connect-to-OpenEdge-with-hub-module.md)
-    - If connect successfully, then subscribe the MQTT topic due to the configuration of Local Hub Module
-    - If connect unsuccessfully, then retry `Step 2` operation until connect successfully
-- Step 3：Check the publishing and receiving messages through MQTTBOX
+- Step 1：Startup OpenEdge in docker container mode.
+- Step 2：MQTTBOX connect to Local Hub Module by TCP connection mode, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Module](./Device-connect-to-OpenEdge-with-hub-module.md).
+    - If connect successfully, then subscribe the MQTT topic due to the configuration of Local Hub Module.
+    - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
+- Step 3：Check the publishing and receiving messages via MQTTBOX.
 
 ## Message Routering Test
 
@@ -42,7 +42,7 @@ subscriptions:
 
 As configured above, message routing rules depends on the `subscriptions` configuration item, which means that messages published to the topic `t` will be forwarded to all devices(users, or mqtt clients) that subscribe the topic `t/topic`.
 
-_**Note**: In the above configuration, the permitted topics which are configured in `permit` item support the `+` and `#` wildcards configuration. More detailed contents of `+` and `#` wildcards will be explained as follows._
+_**NOTE**: In the above configuration, the permitted topics which are configured in `permit` item support the `+` and `#` wildcards configuration. More detailed contents of `+` and `#` wildcards will be explained as follows._
 
 **`#` wildcard**
 
@@ -66,7 +66,7 @@ For example, topic `sport/tennis/+` matches `sport/tennis/player1` and `sport/te
 
 For OpenEdge, if the topic `+` is configured in the `permit` item list(whether `pub` action or `sub` action), the specfied account(depends on `username/password`) will have permission to all single-level legal topics of MQTT protocol.
 
-_**Note**: For MQTT protocol, wildcard **ONLY** can be used in Topic Filter(`sub` action), and **MUST NOT** be used in Topic Name(`pub` action). But in the design of OpenEdge, in order to enhance the flexibility of the topic permissions configuration, wildcard configured in `permit` item(whether in `pub` action or `sub` action) is valid, as long as the topic of the published or subscribed meets the requirements of MQTT protocol is ok. In particular, wildcards ( `#` and `+` ) policies are recommended for developers who need to configure a large number of publish and subscribe topics in the `principals` configuration._
+_**NOTE**: For MQTT protocol, wildcard **ONLY** can be used in Topic Filter(`sub` action), and **MUST NOT** be used in Topic Name(`pub` action). But in the design of OpenEdge, in order to enhance the flexibility of the topic permissions configuration, wildcard configured in `permit` item(whether in `pub` action or `sub` action) is valid, as long as the topic of the published or subscribed meets the requirements of MQTT protocol is ok. In particular, wildcards ( `#` and `+` ) policies are recommended for developers who need to configure a large number of publish and subscribe topics in the `principals` configuration._
 
 ### Message Transfer Test Among Devices
 
@@ -78,12 +78,10 @@ Specifically, as shown in the above figure, **client1**, **client2**, and **clie
 
 Once the connection to OpenEdge for the above three clients with Local Hub Module is established, as the configuration of the above three clients, **client2** and **client3** will respectively get the message from **client1** published to the topic `t` to Local Hub Module.
 
-In particular, **client1**, **client2**, and **client3** can be combined into one client, and the new client will have the permission to publish messages to the topic `t`, with permissions to subscribe messages to the topic `t` and `t/topic`. Here, using MQTTBOX as the new client, click the `Add subscriber` button to add the topic `t` and `t/topic` to subscribe. More detailed contents are as shown below.
+In particular, **client1**, **client2**, and **client3** can be combined into one client, and the new client will have the permission to publish messages to the topic `t`, with permissions to subscribe messages to the topic `t` and `t/topic`. Here, using MQTTBOX as the new client, click the `Add subscriber` button to subscribe the topic `t` and `t/topic`. More detailed contents are as shown below.
 
 ![The configuration of MQTTBOX about message transfer test among devices](../../images/tutorials/trans/mqttbox-tcp-trans-sub-config.png)
 
 As shown above, it can be found that after establishing a connection with OpenEdge depend on the Local Hub Module by TCP connection mode, the MQTTBOX successfully subscribes the topic `t` and `t/topic`, and then clicks the `Publish` button to publish message(`This message is From openedge.`) to the topic `t`, you will find this message is received by MQTTBOX with the subscribed topics `t` and `t/topic`. More detailed contents are as below.
 
 ![MQTTBOX received message successfully](../../images/tutorials/trans/mqttbox-tcp-trans-message-success.png)
-
-In summary, the message transfering test among devices is over.

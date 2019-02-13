@@ -5,11 +5,11 @@
   - [配置约定](#配置约定)
   - [启动约定](#启动约定)
 
-函数运行时是函数执行的载体，通过加载函数代码来调用函数，跟函数实现的语言强相关。比如python代码需要使用python runtime来调用。这里就涉及到多种语言的问题，为了统一调用接口和协议，我们最终选择了GRPC，借助其强大的跨语言IDL和高性能RPC通讯能力，打造可灵活扩展的函数计算框架。
+函数运行时是函数执行的载体，通过加载函数代码来调用函数，跟函数实现的语言强相关。比如 Python 代码需要使用 Python 运行时来调用。这里就涉及到多种语言的问题，为了统一调用接口和协议，我们最终选择了 GRPC，借助其强大的跨语言 IDL 和高性能 RPC 通讯能力，打造可灵活扩展的函数计算框架。
 
 ## 协议约定
 
-[GRPC的消息和服务定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/openedge_function_runtime.proto)如下，开发者可直接用于生成各自编程语言的消息和服务实现，GRPC使用方法可参考[```make pb```命令](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/Makefile)，也可参考[GRPC官网的文档](https://grpc.io/docs/quickstart/go.html)。
+[GRPC 的消息和服务定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/openedge_function_runtime.proto)如下，开发者可直接用于生成各自编程语言的消息和服务实现，GRPC使用方法可参考[`make pb` 命令](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/Makefile)，也可参考 [GRPC 官网的文档](https://grpc.io/docs/quickstart/go.html)。
 
 ```proto
 syntax = "proto3";
@@ -33,17 +33,17 @@ message Message {
 }
 ```
 
-**注意**：Docker容器模式下，函数实例的资源限制不要低于50M内存，20个线程。
+**注意**：Docker 容器模式下，函数实例的资源限制不要低于 `50M` 内存，20 个线程。
 
 ## 配置约定
 
-[函数配置的所有定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/config/function.go)如下。对于自定义函数runtime，只需关注Function.Handler和Function.CodeDir的定义和使用，其他配置都是函数计算框架使用的配置。
+[函数配置的所有定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/config/function.go)如下。对于自定义函数运行时，只需关注 `Function.Handler` 和 `Function.CodeDir` 的定义和使用，其他配置都是函数计算框架使用的配置。
 
 ```golang
 
 // Runtime runtime config
 type Runtime struct {
-    // 模块哦诶只
+    // 模块配置
     Module   `yaml:",inline" json:",inline"`
     // 服务配置
     Server   RuntimeServer `yaml:"server" json:"server"`
@@ -99,6 +99,6 @@ type Instance struct {
 
 ## 启动约定
 
-函数runtime实际上也是一种模块，只是比较特殊，是被函数计算模块在运行过程中按需启动的模块，归为临时模块。其启动方式和普通模块启动的方式基本一致，只不过临时模块没有固定路径，不支持从配置文件中加载配置。因此约定通过传参的方式传入配置信息，使用JSON格式，比如-c "{\"name\":\"sayhi\", ...}"。
+函数运行时实际上也是一种模块，只是比较特殊，是被函数计算模块在运行过程中按需启动的模块，归为临时模块。其启动方式和普通模块启动的方式基本一致，只不过临时模块没有固定路径，不支持从配置文件中加载配置。因此约定通过传参的方式传入配置信息，使用 JSON 格式，比如 `-c "{\"name\":\"sayhi\", ...}"`。
 
-函数runtime启动并加载配置后，首先根据Server配置初始化GRPC server，然后根据Function的配置加载函数代码入口，等待函数计算模块来调用，最后注意监听SIGTERM信号来优雅退出。完整的实现过程可参考[python27 runtime](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)。
+函数运行时启动并加载配置后，首先根据 Server 配置初始化 GRPC Server，然后根据 `Function` 的配置加载函数代码入口，等待函数计算模块来调用，最后注意监听 `SIGTERM` 信号来优雅退出。完整的实现过程可参考 [Python2.7 运行时](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)。
