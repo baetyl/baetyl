@@ -127,8 +127,7 @@ OpenEdge containerized mode startup requires the Docker to be installed and the 
 
 - **Step1**: Select a [release](https://github.com/baidu/openedge/releases) from the OpenEdge github open source project.
 - **Step2**: Open the terminal and enter the OpenEdge directory for decompression:
-	- .zip: using command `unzip -d . openedge-xxx.zip`;
-	- .tar.gz: using command `tar -zxvf openedge-xxx.tar.gz`;
+	- execute command `tar -zxvf openedge-xxx.tar.gz`;
 - **Step3**: After the decompression operation is complete, go directly to the OpenEdge package directory, execute the command `bin/openedge -w .`, then view the log, and view the currently running container (via the command `docker ps`). And compare the two are consistent (assuming that other docker containers are not started in the current system);
 - **Step4**：If the results are consistent, it means that OpenEdge has started normally.
 
