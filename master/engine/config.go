@@ -12,7 +12,7 @@ type ServiceInfo struct {
 	Image     string            `yaml:"image" json:"image" validate:"nonzero"`
 	Replica   int               `yaml:"replica" json:"replica" default:"1"`
 	Expose    []string          `yaml:"expose" json:"expose" default:"[]"`
-	Params    []string          `yaml:"params" json:"params" default:"[]"`
+	Args      []string          `yaml:"args" json:"args" default:"[]"`
 	Env       map[string]string `yaml:"env" json:"env" default:"{}"`
 	Restart   RestartPolicyInfo `yaml:"restart" json:"restart"`
 	Resources Resources         `yaml:"resources" json:"resources"`

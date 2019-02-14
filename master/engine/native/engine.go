@@ -53,9 +53,7 @@ func (e *nativeEngine) Run(cfg engine.ServiceInfo) (engine.Service, error) {
 	}
 	argv := make([]string, 0)
 	argv = append(argv, cfg.Name) // add prefix "openedge-service-"?
-	for _, p := range cfg.Params {
-		argv = append(argv, p)
-	}
+	argv = append(argv, cfg.Args...)
 	cfgs := processConfigs{
 		exec: path.Join(pkgDir, pkg.Entry),
 		argv: argv,

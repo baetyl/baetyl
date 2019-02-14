@@ -54,10 +54,7 @@ func (s *nativeService) start() error {
 		v := path.Join(datasetsDir, m.Name, m.Version)
 		mounts = append(mounts, engine.MountInfo{Volume: v, Target: m.Target, ReadOnly: m.ReadOnly})
 	}
-	for _, m := range s.info.Volumes {
-		mounts = append(mounts, m)
-	}
-
+	mounts = append(mounts, s.info.Volumes...)
 	for _, m := range mounts {
 		src := path.Join(s.engine.pwd, m.Volume)
 		err := os.MkdirAll(src, 0755)
