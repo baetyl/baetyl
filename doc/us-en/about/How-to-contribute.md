@@ -10,7 +10,7 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 1. Fork
    
-   Our development community has been growing fastly, so we encourage developers to submit code. And please file Pull Requests from your fork. To make a fork, please refer to Github page and click on the ["Fork" button](https://help.github.com/articles/fork-a-repo/). 
+   Our development community has been growing fast, so we encourage developers to submit code. And please file Pull Requests from your fork. To make a fork, please refer to Github page and click on the ["Fork" button](https://help.github.com/articles/fork-a-repo/). 
 
 2. Prepare for the development environment
 

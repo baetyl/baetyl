@@ -1,4 +1,4 @@
-# OpenEdge Cutomize Extension
+# OpenEdge Customize Extension
 
 OpenEdge supports and encourages developers to develop their own modules, more details about how to develop a custom module for OpenEdge, please refer to:
 

@@ -82,7 +82,7 @@ The Python 27 runtime provided by OpenEdge supports two parameters: `event` and 
 
 + **event**：Depend on the `Payload` in the MQTT message
     + If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
-    + If the original `Payload` is Byte, string(not Json), then pass in the orininal `Payload`。
+    + If the original `Payload` is Byte, string(not Json), then pass in the original `Payload`。
 + **context**：MQTT message context
     + context.messageQOS // MQTT QoS
     + context.messageTopic // MQTT Topic

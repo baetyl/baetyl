@@ -2,9 +2,9 @@
 
 OpenEdge contains a master program and some modules. The master program manages all modules through configuration. Currently, OpenEdge supports two modes of running, namely **Docker Container Mode** and **Native Process Mode**.
 
-Docker Containr Mode Design Diagram:
+Docker Container Mode Design Diagram:
 
-![Docker Containr Design Diagram](../../images/overview/design/mode_docker.png)
+![Docker Container Design Diagram](../../images/overview/design/mode_docker.png)
 
 Native Process Design Diagram:
 
@@ -21,7 +21,7 @@ is responsible for the management of all modules includes operations of start, s
 
 Engine loads the list of modules from the [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) configuration in the working directory and starts the modules one by one in the order of the list. Engine will start a daemon coroutine for each module to monitor the module status. If the module exits abnormally, it will restart or exit according to the module's [Restart Policy](../tutorials/local/Config-interpretation.md#application-configuration). When master is closing, engine will close all modules one by one in the reverse order of the list.
 
-_**TIP**: The working directory can be specified by `-w` when OpenEdge is started. The default is the directory above the directory where OpenEdge executables are located._
+_**TIP**: The working directory can be specified by `-w` when OpenEdge is started. The default is the directory above the directory where OpenEdge executable are located._
 
 In docker container mode, the module is started as a docker container by the docker client using the docker image specified by the `entry` configuration, and automatically joins the custom docker network (openedge). Since the docker comes with a DNS server, the modules can communicate with each other through the module name. In addition, the module can expose the port through the `expose` configuration; the resources that can be used by the module are restricted by the `resources` configuration, and currently the CPU, memory, and process limit are supported. [Configuration Reference](../tutorials/local/Config-interpretation.md#application-configuration)
 
@@ -57,7 +57,7 @@ After OpenEdge startup and hot loading are completed, the device information is 
 > - swap_total: total swap space of the device
 > - swap_free: the remaining capacity of the swap space of the device
 
-After the cloud agent receives the reload event from the cloud management suite, OpenEdge starts executing [automic reloading](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/master/master.go)，The process is as follows:
+After the cloud agent receives the reload event from the cloud management suite, OpenEdge starts executing [automatic reloading](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/master/master.go)，The process is as follows:
 
 ![Hot loading process](../../images/overview/design/reload.png)
 
