@@ -19,7 +19,7 @@ _**Notice**: OpenEdge requires that the compiled version of Go be above 1.10.0 .
 ### Install Docker
 
 > + The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-+ According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker version < 18.09.2 has some security implications. It is recommended to install/update the Docker version to 18.09. 2 and above.
++ According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of Docker lower than 18.09.2 has some security implications. It is recommended to install/update the Docker to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -44,7 +44,7 @@ Command:
 yum install docker
 ```
 
-***Notice*** : After the Docker installation is complete, use the following command to view the installed Docker version.
+***Notice*** : After the Docker installation is complete, use the following command to view the installed version of Docker.
 
 ```shell
 docker version
@@ -189,8 +189,8 @@ If the program has been installed to the specified path, such as installing into
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-output/bin/openedge -w example/docker # docker容器模式
-output/bin/openedge # native进程模式
+output/bin/openedge -w example/docker # docker container mode
+output/bin/openedge # native process mode
 ```
 
 **Notice**：

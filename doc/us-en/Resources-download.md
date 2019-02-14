@@ -1,6 +1,6 @@
 # Resources download
 
-## OpenEdge archieve download
+## OpenEdge download
 
 **Statement**: The official download page only provides the docker mode executable file.
 
