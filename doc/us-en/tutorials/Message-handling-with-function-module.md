@@ -20,7 +20,7 @@ This document will take the TCP connection mode as an example to show the messag
     - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully
 - Step 3：Check the publishing and receiving messages via MQTTBOX.
 
-![Workflow of using Local Function Module to hanle MQTT messages](../../images/tutorials/process/openedge-python-flow.png)
+![Workflow of using Local Function Module to handle MQTT messages](../../images/tutorials/process/openedge-python-flow.png)
 
 ## Message Handling Test
 

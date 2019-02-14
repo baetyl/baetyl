@@ -17,7 +17,7 @@ This document uses the TCP connection mode as an example to test the message rou
     - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
 - Step 3：Check the publishing and receiving messages via MQTTBOX.
 
-## Message Routering Test
+## Message Routing Test
 
 The configuration of the Local Hub Module used in the test is as follows:
 
@@ -64,13 +64,13 @@ As described in the MQTT protocol, the plus sign(`+` U+002B) is a wildcard chara
 
 For example, topic `sport/tennis/+` matches `sport/tennis/player1` and `sport/tennis/player2`, but not `sport/tennis/player1/ranking`. Also, because the single-level wildcard matches only a single level, `sport/+` does not match `sport` but it does match `sport/`.
 
-For OpenEdge, if the topic `+` is configured in the `permit` item list(whether `pub` action or `sub` action), the specfied account(depends on `username/password`) will have permission to all single-level legal topics of MQTT protocol.
+For OpenEdge, if the topic `+` is configured in the `permit` item list(whether `pub` action or `sub` action), the specified account(depends on `username/password`) will have permission to all single-level legal topics of MQTT protocol.
 
 _**NOTE**: For MQTT protocol, wildcard **ONLY** can be used in Topic Filter(`sub` action), and **MUST NOT** be used in Topic Name(`pub` action). But in the design of OpenEdge, in order to enhance the flexibility of the topic permissions configuration, wildcard configured in `permit` item(whether in `pub` action or `sub` action) is valid, as long as the topic of the published or subscribed meets the requirements of MQTT protocol is ok. In particular, wildcards ( `#` and `+` ) policies are recommended for developers who need to configure a large number of publish and subscribe topics in the `principals` configuration._
 
 ### Message Transfer Test Among Devices
 
-The message transfering and routing workflow among devices is as follows:
+The message transferring and routing workflow among devices is as follows:
 
 ![Message transfer test among devices](../../images/tutorials/trans/openedge-trans-flow.png)
 

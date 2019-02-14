@@ -13,7 +13,7 @@
 
 - The path in the configuration can be a relative path or an absolute path. If it is a relative path, it is relative to the working directory. The path configured in the container mode means the path in the container.
 - Supported unit:
-  - Size unit: b(byte), k(kilobyte), m(megobyte), g(gigabyte)
+  - Size unit: b(byte), k(kilobyte), m(megabyte), g(gigabyte)
   - Time unit: s(second), m(minute), h(hour)
 
 ## Master Configuration
@@ -196,7 +196,7 @@ rules: Router rules configuration
       topic: [MUST]means the message topic that subscribe from hub.
       qos: The default value is `0`, means the message QoS that subscribe from hub.
     compute:
-      function: [MUST]means the function name that be uesd to handle message.
+      function: [MUST]means the function name that be used to handle message.
     publish:
       topic: [MUST]means the message topic of the hub that the function handles the output of the output message.
       qos: The default value is `0`, means the message QoS of the hub that the function handles the output of the output message.
