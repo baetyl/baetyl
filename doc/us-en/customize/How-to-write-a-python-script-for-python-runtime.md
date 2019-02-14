@@ -47,7 +47,7 @@ functions:
 
 OpenEdge officially provides the Python27 runtime to load Python scripts written by users. The following description is about the name of the Python script, the execution function name, input, output parameters, and so on.
 
-## Function name convention
+## Function Name Convention
 
 The name of a Python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a Python script to handle an MQTT message, the configuration of the Local Function Module is as follows:
 
@@ -90,9 +90,9 @@ The Python 27 runtime provided by OpenEdge supports two parameters: `event` and 
     + context.functionInvokeID //MQTT function invokeID
     + context.invokeid // as above, be used to compatible with [CFC](https://cloud.baidu.com/product/cfc.html)
 
-_**Note**: When testing in the cloud CFC, please don't use the context defined by OpenEdge directly. The recommended method is to first determine whether the field is exists or not in the `context`. If exists, read it._
+_**NOTE**: When testing in the cloud CFC, please don't use the context defined by OpenEdge directly. The recommended method is to first determine whether the field is exists or not in the `context`. If exists, read it._
 
-## Hello world!
+## Hello World
 
 Now we will implement a simple Python function with the goal of appending a `hello world` message to each MQTT message. For a dictionary format message, return it directly, and for an none dictionary format message, convert it to string and return.
 
@@ -124,7 +124,7 @@ def handler(event, context):
 
 As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve this problem? We will provide a general solution below.
 
-## How to import third-party libraries
+## Import Third-Party Libraries
 
 Generally, using the standard library of the system python environment can not meet our needs. In actual practice, it is often necessary to import some third-party libraries. An example is given below.
 
