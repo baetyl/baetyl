@@ -1,14 +1,8 @@
-# Linux下OpenEdge安装及环境配置
+# Linux下OpenEdge运行环境配置及快速部署
 
 > OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
 
-本文主要介绍 OpenEdge 程序的安装以及运行所需环境的安装与配置。
-
-## OpenEdge 程序安装
-
-前往[下载页面](https://github.com/baidu/openedge/releases)找到机器对应版本并进行下载，完成后解压到任意目录。(推荐下载最新版程序运行包)
-
-***注：*** 官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考从[源码编译](./Build-OpenEdge-from-Source.md)相关内容。
+本文主要介绍 OpenEdge 运行所需环境的安装与配置以及 OpenEdge 在 Darwin 系统下的快速部署。
 
 ## 运行环境配置
 
@@ -117,30 +111,53 @@ pip install protobuf grpcio
 alias python=/yourpath/python2.7
 ```
 
-## 常见问题
+## OpenEdge 部署
 
-A. ***Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/images/json: dial unix /var/run/docker.sock: connect: permission denied***
+前往[下载页面](https://github.com/baidu/openedge/releases)找到机器对应版本并进行下载，完成后解压到任意目录。(推荐下载最新版程序运行包)
 
-1. 提供管理员权限
-2. 通过以下命令添加当前用户到docker用户组：
+***注：*** 官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考[源码编译](./Build-OpenEdge-from-Source.md)相关内容。
 
-```shell
-sudo usermod -aG docker ${USER}
-su - ${USER}
-``` 
+### 部署前准备
 
-如提示没有 docker group，使用如下命令创建新docker用户组后再执行上述命令：
+**声明**：本文以Ubuntu系统下OpenEdge的部署、运行为例，假定在此之前OpenEdge运行所需环境均已配置完毕。
 
-```shell
-sudo groupadd docker
-```
+ - OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务；
 
-B. ***Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?***
+![docker版本查询](../../images/setup/docker-version.png)
 
-按照问题A解决方案执行后如仍报出此问题，重新启动docker服务即可。
+**需要说明的是**：本文所提及的Ubuntu系统基于Linux Ubuntu 4.15.0-29-generic版本内核，CPU架构为x86_64。
 
-例，CentOs 下启动命令：
+### 部署流程
 
-```shell
-systemctl start docker
-```
+- **Step1**：从OpenEdge github开源项目中选择某release版本[下载](https://github.com/baidu/openedge/releases)。
+- **Step2**：打开终端，进入OpenEdge软件包下载目录，进行解压缩操作；
+	- 如果下载的是zip压缩包，执行命令`unzip -d . openedge-xxx.zip`；
+	- 如题下载的是tar.gz压缩包，执行命令`tar -zxvf openedge-xxx.tar.gz`；
+- **Step3**：完成解压缩操作后，直接进入OPenEdge程序包目录，执行命令`bin/openedge -w .`，然后分别查看OpenEdge启动、加载日志信息，及查看当前正在运行的容器（通过命令`docker ps`），并对比二者是否一致（假定当前系统中未启动其他docker容器）；
+- **Step4**：若查看结果一致，则表示OpenEdge已正常启动。
+
+### 开始部署
+
+如上所述，首先从 OpenEdge github开源项目中下载某版本的 OpenEdge（源码编译亦可，参见[Linux环境下编译OpenEdge](./Build-OpenEdge-from-Source.md)），然后打开终端进入OpenEdge程序包下载目录，进行解压缩操作，成功解压缩后，可以发现openedge目录中主要包括bin、etc、var等目录，具体如下图示。
+
+![OpenEdge可执行程序包目录](../../images/setup/openedge-dir.png)
+
+其中，bin目录存储openedge二进制可执行程序，etc目录存储了openedge程序启动的配置，var目录存储了模块启动的配置和资源。
+
+然后，执行命令`docker ps`查看当前正在运行的容器列表，如下图示；
+
+![当前运行docker容器查询](../../images/setup/docker-ps-before.png)
+
+可以发现，当前系统并未有正在运行的docker容器。
+
+接着，进入解压缩后的OpenEdge文件夹下，执行命令`bin/openedge -w .`，观察终端OpenEdge启动、加载日志，如下图示；
+
+![OpenEdge启动日志](../../images/setup/docker-openedge-start.png)
+
+显然，OpenEdge已经成功启动。
+
+最后，再次执行命令`docker ps`观察当前正在运行的Docker容器列表，不难发现openedge-hub、openedge-function、openedge-remote-mqtt等模块已经成功启动，具体如下图示。
+
+![当前运行docker容器查询](../../images/setup/docker-ps-after.png)
+
+如上所述，若各步骤执行无误，即可完成OpenEdge在Ubuntu系统上的快速部署、启动。

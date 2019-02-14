@@ -39,7 +39,7 @@ func TestIsSysTopics(t *testing.T) {
 	assert.Equal(t, true, isSysTopic("$SYS/"))
 	assert.Equal(t, true, isSysTopic("$SYS/iot/device"))
 	assert.Equal(t, true, isSysTopic("$function"))
-	assert.Equal(t, true, isSysTopic("$funciton/"))
+	assert.Equal(t, true, isSysTopic("$function/"))
 	assert.Equal(t, true, isSysTopic("$function/iot/device"))
 	assert.Equal(t, true, isSysTopic("$cloud"))
 	assert.Equal(t, true, isSysTopic("$cloud/"))

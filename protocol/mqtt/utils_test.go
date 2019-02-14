@@ -8,7 +8,6 @@ import (
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/256dpi/gomqtt/transport/flow"
-	openedge "github.com/baidu/openedge/api/go"
 	"github.com/creasty/defaults"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +20,7 @@ func safeReceive(ch chan struct{}) {
 	}
 }
 
-func newConfig(t *testing.T, port string) (c openedge.MqttClientInfo) {
+func newConfig(t *testing.T, port string) (c ClientInfo) {
 	c.CleanSession = true
 	c.Address = "tcp://localhost:" + port
 	defaults.Set(&c)

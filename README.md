@@ -14,43 +14,51 @@ About architecture design, OpenEdge takes **modularization** and **containerizat
 
 ### Docker container mode
 
-![](./doc/images/overview/design/mode_docker.png)
+![docker mode](./doc/images/overview/design/mode_docker.png)
 
 ### Native process mode
 
-![](./doc/images/overview/design/mode_native.png)
+![native mode](./doc/images/overview/design/mode_native.png)
+
+More detailed documents of design are as follows:
+
+> + [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
+> + [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
+> + [How to write a python srcipt for python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
+> + [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
+> + [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 
 ## Concepts
 
-OpenEdge is made up of **main program module, local hub module, local function module, MQTT remote module and Python2.7 runtime module.** The main capabilities of each module are as follows:
+OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module, MQTT Remote Module and Python2.7 Runtime Module.** The main capabilities of each module are as follows:
 
-> + **Main program module** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
->   + **Module engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **docker container mode** and **native process mode**.
->   + **Cloud agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **must** take two-way authentication of SSL/TLS; otherwise, you **must** take one-way authentication of SSL/TLS due to HTTPS protocol.
->   + The main program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
-> + **local hub module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL).**
-> + **local function module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
-> + **MQTT remote module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
-> + **Python2.7 runtime module** is an implementation of **local function module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
+> + **Master Program** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
+> + **Module Engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **Docker Container Mode** and **Native Process Mode**.
+> + **Cloud Agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **MUST** take two-way authentication of SSL/TLS; otherwise, you **MUST** take one-way authentication of SSL/TLS due to HTTPS protocol.
+> + The master program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
+> + **Local Hub Module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL)**.
+> + **Local Function Module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
+> + **MQTT Remote Module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
+> + **Python2.7 Runtime Module** is an implementation of **Local Function Module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
 
 ## Features
 
 > + support module management, include start, stop, restart, listen and upgrade
-> + support two mode: **docker container mode** and **native process mode**
+> + support two mode: **Docker Container Mode** and **Native Process Mode**
 > + docker container mode support resources isolation and restriction
 > + support cloud management suite, which can be used to report device hardware information and deploy configuration
-> + provide **local hub module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
-> + provide **local function module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
-> + provide **MQTT remote module**, which supports MQTT v3.1.1 protocol
-> + provide **module SDK(Golang)**, which can be used to develop customize module
+> + provide **Local Hub Module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
+> + provide **Local Function Module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
+> + provide **MQTT Remote Module**, which supports MQTT v3.1.1 protocol
+> + provide **Module SDK(Golang)**, which can be used to develop customize module
 
 ## Advantages
 
-> + **Shielding computing framework**: OpenEdge provides two official computing modules(**local function module** and **Python2.7 runtime module**), also supports customize module(which can be written in any programming language or any machine learning framework).
-> + **Simplified application production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis?castk=LTE%3D), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
-> + **Quickly deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
-> + **Deploy on demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
-> + **Rich configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
+> + **Shielding Computing Framework**: OpenEdge provides two official computing modules(**Local Function Module** and **Python Runtime Module**), also supports customize module(which can be written in any programming language or any machine learning framework).
+> + **Simplified Application Production**: OpenEdge combines with **Cloud Management Suite** of BIE and many other productions of Baidu Cloud(such as [CFC](https://cloud.baidu.com/product/cfc.html), [Infinite](https://cloud.baidu.com/product/infinite.html), [Jarvis](http://di.baidu.com/product/jarvis), [IoT EasyInsight](https://cloud.baidu.com/product/ist.html), [TSDB](https://cloud.baidu.com/product/tsdb.html), [IoT Visualization](https://cloud.baidu.com/product/iotviz.html)) to provide data calculation, storage, visible display, model training and many more abilities.
+> + **Quickly Deployment**: OpenEdge pursues docker container mode, it make developers quickly deploy OpenEdge on different operating system.
+> + **Deploy On Demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
+> + **Rich Configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
 
 # Getting Started
 
@@ -58,7 +66,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
 
 ### Running environment requirements
 
-+ Install Docker if running openedge in **docker container** mode (recommended)
++ Install Docker if running openedge in **Docker Container Mode**(recommended)
 
    **For Linux([support multiple platforms](./doc/us-en/setup/Support-platforms.md), recommended)**
    ```shell
@@ -144,7 +152,7 @@ OpenEdge is made up of **main program module, local hub module, local function m
    brew cask install docker
    ```
 
-+ Install Python2.7 and Python runtime requirements if running openedge in **native process** mode
++ Install Python2.7 and Python2.7 runtime requirements if running openedge in **Native Process Mode**
 
    **For Ubuntu or Debian**
    ```shell
@@ -231,7 +239,7 @@ In addition, OpenEdge need the version of golang is higher than 1.10. So, you ca
    bin/openedge -w . # Run OpenEdge in Docker containerization mode(OpenEdge official only support)
    ```
 
-   If you want to run OpenEdge in **Native process mode**, please build OpenEdge and other module first.
+   If you want to run OpenEdge in **Native Process Mode**, please build OpenEdge and other module first.
    ```shell
    # Clone OpenEdge source code
    go get github.com/baidu/openedge
@@ -283,5 +291,6 @@ As the first open edge computing framework in China, OpenEdge aims to create a l
 
 > + If you want to participate in OpenEdge's daily development communication, you are welcome to join [Wechat-for-OpenEdge](https://openedge.bj.bcebos.com/Wechat/Wechat-OpenEdge.png)
 > + If you have more about feature requirements or bug feedback of OpenEdge, please [Submit an issue](https://github.com/baidu/openedge/issues)
-> + If you want to know more about OpenEdge and other services of Baidu Cloud, you are welcome to visit [Baidu-Cloud-forum](https://cloud.baidu.com/forum/bce)
+> + If you want to know more about OpenEdge and other services of Baidu Cloud, please visit [Baidu-Cloud-forum](https://cloud.baidu.com/forum/bce)
+> + If you want to know more about Cloud Management Suite of BIE, please visit: [Baidu-IntelliEdge](https://cloud.baidu.com/product/bie.html)
 > + If you have better development advice about OpenEdge, please contact us: [contact@openedge.tech](contact@openedge.tech)

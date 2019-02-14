@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
-	openedge "github.com/baidu/openedge/api/go"
 	"github.com/baidu/openedge/utils"
 	"github.com/jpillora/backoff"
 )
@@ -15,15 +14,14 @@ var ErrDispatcherClosed = fmt.Errorf("dispatcher already closed")
 
 // Dispatcher dispatcher of mqtt client
 type Dispatcher struct {
-	config  openedge.MqttClientInfo
+	config  ClientInfo
 	channel chan packet.Generic
 	backoff *backoff.Backoff
 	tomb    utils.Tomb
-	log     openedge.Logger
 }
 
 // NewDispatcher creata a new dispatcher
-func NewDispatcher(cc openedge.MqttClientInfo) *Dispatcher {
+func NewDispatcher(cc ClientInfo) *Dispatcher {
 	return &Dispatcher{
 		config:  cc,
 		channel: make(chan packet.Generic, cc.BufferSize),
@@ -32,7 +30,6 @@ func NewDispatcher(cc openedge.MqttClientInfo) *Dispatcher {
 			Max:    cc.Interval,
 			Factor: 2,
 		},
-		log: openedge.WithField("dispatcher", "mqtt"),
 	}
 }
 
@@ -73,7 +70,7 @@ func (d *Dispatcher) supervisor(handler Handler) error {
 			// get backoff duration
 			next := d.backoff.Duration()
 
-			d.log.Debugln("delay reconnect:", next)
+			// d.log.Debugln("delay reconnect:", next)
 
 			// sleep but return on Stop
 			select {
@@ -83,22 +80,22 @@ func (d *Dispatcher) supervisor(handler Handler) error {
 			}
 		}
 
-		d.log.Debugln("next reconnect")
+		// d.log.Debugln("next reconnect")
 
 		client, err := NewClient(d.config, handler)
 		if err != nil {
-			d.log.WithError(err).Errorln("failed to create new client")
+			// d.log.WithError(err).Errorln("failed to create new client")
 			continue
 		}
 
 		// run callback
-		d.log.Debugln("client online")
+		// d.log.Debugln("client online")
 
 		// run dispatcher on client
 		current, dying = d.dispatcher(client, current)
 
 		// run callback
-		d.log.Debugln("client offline")
+		// d.log.Debugln("client offline")
 
 		// return goroutine if dying
 		if dying {
