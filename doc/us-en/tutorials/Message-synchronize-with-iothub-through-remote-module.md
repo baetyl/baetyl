@@ -107,7 +107,7 @@ Here, MQTT.fx and MQTTBOX will be used as message publishers, and the other one 
 
 Firstly, using MQTT.fx publishes a message `This message is from MQTT.fx.` to the topic `t2`.
 
-![Pbulishing a message to the topic `t2` via MQTT.fx](../../images/tutorials/remote/mqttfx-pub-t2-success.png)
+![Publishing a message to the topic `t2` via MQTT.fx](../../images/tutorials/remote/mqttfx-pub-t2-success.png)
 
 At the same time, observing the message receiving status of MQTTBOX via the topic `t2`.
 
