@@ -1,4 +1,4 @@
-# Messgae transfering among devices with Local Hub Module
+# Message transferring among devices with Local Hub Module
 
 **Statement**
 
@@ -54,9 +54,9 @@ For example, the configuration of `permit` item of `sub` action is `sport/tennis
 > + `sport/tennis/player1/ranking`
 > + `sport/tennis/player1/score/wimbledon`
 
-Bedides, topic `sport/#` also matches the singular `sport`, since `#` includes the parent level.
+Besides, topic `sport/#` also matches the singular `sport`, since `#` includes the parent level.
 
-For OpenEdge, if the topic `#` is configured in the `permit` item list(whether `pub` action or `sub` action), there is no need to configure any other topics. And the specfied account(depends on `username/password`) will have permission to all legal topics of MQTT protocol.
+For OpenEdge, if the topic `#` is configured in the `permit` item list(whether `pub` action or `sub` action), there is no need to configure any other topics. And the specified account(depends on `username/password`) will have permission to all legal topics of MQTT protocol.
 
 **`+` wildcard**
 

@@ -64,7 +64,7 @@ modules: Module list configuration
     restart: Module restart policy configuration
       retry:
         max: The default is `empty`(none configuration), which means always retry. If not, which means the maximum number of module restarts.
-      policy: The default value is `always`, restart policy, support `no`, `always`, `on-failure` and `unless-stopped` four configuratons. And `no` means none restart, `always` means always restart, `on-failure` means restart the module if it exits abnormally, `unless-stopped` means the module restarts normally and restarts.
+      policy: The default value is `always`, restart policy, support `no`, `always`, `on-failure` and `unless-stopped` four configurations. And `no` means none restart, `always` means always restart, `on-failure` means restart the module if it exits abnormally, `unless-stopped` means the module restarts normally and restarts.
       backoff:
         min: The default value is `1s`, minimum interval of restart.
         max: The default value is `5m`, maximum interval of restart.

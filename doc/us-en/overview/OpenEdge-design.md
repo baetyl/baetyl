@@ -57,7 +57,7 @@ After OpenEdge startup and hot loading are completed, the device information is 
 > - swap_total: total swap space of the device
 > - swap_free: the remaining capacity of the swap space of the device
 
-After the cloud agent receives the reload event from the cloud management suite, OpenEdge starts executing [automic reloading](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/master/master.go)，The process is as follows:
+After the cloud agent receives the reload event from the cloud management suite, OpenEdge starts executing [automatic reloading](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/master/master.go)，The process is as follows:
 
 ![Hot loading process](../../images/overview/design/reload.png)
 
