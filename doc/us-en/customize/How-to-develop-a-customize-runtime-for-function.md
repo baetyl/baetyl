@@ -1,6 +1,6 @@
-# Custom Function Runtime
+# How to develop a customize runtime for function
 
-The function runtime is the carrier of the function execution, which is strongly related to the language of the function script. For example, python script needs to be called using the python runtime. In order to solve the multi-language issues and unify the interface and protocol, we finally chose GRPC, and with its powerful cross-language IDL and high-performance RPC communication capabilities, we can create a flexible function computing framework.
+The function runtime is the carrier of the function execution, which is strongly related to the language of the function script. For example, python script needs to be called using the Python2.7 runtime. In order to solve the multi-language issues and unify the interface and protocol, we finally chose GRPC, and with its powerful cross-language IDL and high-performance RPC communication capabilities, we can create a flexible function computing framework.
 
 ## Protocol Convention
 

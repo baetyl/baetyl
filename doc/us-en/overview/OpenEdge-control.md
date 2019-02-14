@@ -1,4 +1,4 @@
-# OpenEdge control
+# OpenEdge Control
 
 OpenEdge controllable design mainly includes 2 aspects, the essence of which is OpenEdge together with [BIE](https://cloud.baidu.com/product/bie.html)(Baidu-IntelliEdge) cloud management suite generate OpenEdge configuration file by **"one-click configuration, one-click delivery"**, update configuration(include update docker images in docker container mode) by **"one-click update, automatic reloading"**.
 

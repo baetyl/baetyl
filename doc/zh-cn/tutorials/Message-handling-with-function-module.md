@@ -27,6 +27,7 @@
 本文测试使用的本地 Hub 及函数计算模块的相关配置信息如下：
 
 ```yaml
+# 本地 Hub 模块配置
 name: localhub
 listen:
   - tcp://:1883
@@ -39,7 +40,7 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# 本地函数计算模块配置：
+# 本地函数计算模块配置
 name: localfunc
 hub:
   address: tcp:/hub:1883
@@ -72,7 +73,7 @@ functions:
 
 如上配置，假若 MQTTBOX 基于上述配置信息已与本地 Hub 模块建立连接，向主题 `t` 发送的消息将会交给 `sayhi` 函数处理，然后将处理结果以主题 `t/hi` 发布回 Hub 模块，这时订阅主题 `t/hi` 的 MQTT client 将会接收到这条处理后的消息。
 
-_**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数，必须在 `functions` 配置项中进行函数执行具体配置，否则将不予启动。_
+_**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数，必须在 `functions` 配置项中进行函数执行具体配置，否则 OpenEdge 将不会被正常启动。_
 
 ### OpenEdge 启动
 
@@ -139,7 +140,9 @@ def handler(event, context):
 
 这里，我们通过 MQTTBOX 将消息 `{"id":10}` 发布给主题 `t` ，然后观察主题 `t/hi` 的接收消息情况，具体如下图示。
 
-![MQTTBOX 成功接收到经 Python 函数处理之后的消息](../../images/tutorials/process/mqttbox-tcp-process-success.png)，且结果与上面的分析结果吻合。由此，我们完成了消息路由的处理测试。
+![MQTTBOX 成功接收到经 Python 函数处理之后的消息](../../images/tutorials/process/mqttbox-tcp-process-success.png)
+
+不难发现，MQTTBOX 基于主题 `t/hi` 接收到的结果与上面的分析吻合。
 
 此外，我们这时可以观察 OpenEdge 的日志及再次执行命令 `docker ps` 查看系统当前正在运行的容器列表，其结果如下图示。
 
