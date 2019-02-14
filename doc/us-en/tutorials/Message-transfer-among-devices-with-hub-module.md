@@ -17,7 +17,7 @@ This document uses the TCP connection mode as an example to test the message rou
     - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
 - Step 3：Check the publishing and receiving messages via MQTTBOX.
 
-## Message Routeing Test
+## Message Routing Test
 
 The configuration of the Local Hub Module used in the test is as follows:
 
