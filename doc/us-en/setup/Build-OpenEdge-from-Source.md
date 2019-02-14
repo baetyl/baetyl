@@ -18,7 +18,8 @@ _**Notice**: OpenEdge requires that the compiled version of Go be above 1.10.0 .
 
 ### Install Docker
 
-> The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
+> + The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
++ According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker version < 18.09.2 has some security implications. It is recommended to install/update the Docker version to 18.09. 2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -108,7 +109,7 @@ _**Notice**: OpenEdge requires that the compiled version of Go be above 1.10.0 .
 
 Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag Docker into the Application folder.
 
-![Install On Darwin](../../images/setup/docker_install_on_mac.png)
+![Install On Darwin](../../images/setup/docker-install-on-mac.png)
 
 View the version of installed Docker:
 

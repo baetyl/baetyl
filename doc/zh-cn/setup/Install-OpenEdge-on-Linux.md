@@ -10,6 +10,11 @@
 
 > OpenEdge 提供两种运行方式。如需使用 ***docker*** 容器模式启动(推荐)，需要先完成 docker 安装。
 
+**注**：
+
++ 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
++ 根据[官方Release日志](https://docs.docker.com/engine/release-notes/#18092)说明，docker version < 18.09.2 的版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2及以上。
+
 可通过以下命令进行安装（适用于类Linux系统，[支持多种平台](./Support-platforms.md)）：
 
 ```shell
@@ -44,8 +49,6 @@ yum install docker
 ```shell
 docker version
 ```
-
-+ 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装17.05 及以上版本的 Docker 来build Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
 
 #### Debian 9/Raspberry Pi 3
 
@@ -117,16 +120,16 @@ alias python=/yourpath/python2.7
 
 **声明**：
 
-+ 本文以Ubuntu系统下OpenEdge的部署、运行为例进行介绍，其他linux发行版本下的部署操作与下述描述内容基本相同，假定在此之前OpenEdge运行所需环境均已配置完毕。
-+ 本文所提及的Ubuntu系统基于Linux Ubuntu 4.15.0-29-generic版本内核，CPU架构为x86_64。
++ 本文以Ubuntu系统下OpenEdge的部署、运行为例进行介绍，其他linux发行版本下的部署操作与下述描述内容基本相同，假定在此之前OpenEdge[运行所需环境](#运行环境配置)均已配置完毕。
++ 本文所提及的Ubuntu系统基于Linux Ubuntu 4.15.0-29-generic版本内核，CPU架构为x86_64。执行命令 `uname -ar` 显示内容如下图所示。
 
-OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务:
+![系统架构及内核版本查询](../../images/setup/os-ubuntu.png)
 
-![docker版本查询](../../images/setup/docker-version.png)
+OpenEdge容器化模式运行要求运行设备已完成Docker的安装与运行，可参照[上述步骤](#Docker-安装)进行安装。
 
 ### 部署流程
 
-- **Step1**：[下载](../Resources-download.md) OpenEdge docker 容器模式运行包
+- **Step1**：[下载](../Resources-download.md) OpenEdge 压缩包；
 - **Step2**：打开终端，进入OpenEdge软件包下载目录，进行解压缩操作：
 	- 执行命令 `tar -zxvf openedge-xxx.tar.gz`；
 - **Step3**：完成解压缩操作后，直接进入OpenEdge程序包目录，执行命令`bin/openedge -w .`，然后分别查看OpenEdge启动、加载日志信息，及查看当前正在运行的容器（通过命令`docker ps`），并对比二者是否一致（假定当前系统中未启动其他docker容器）；
@@ -142,20 +145,20 @@ OpenEdge容器化模式运行要求运行设备已安装好并启动Docker服务
 
 其中，bin目录存储openedge二进制可执行程序，etc目录存储了openedge程序启动的配置，var目录存储了模块启动的配置和资源。
 
-然后，执行命令`docker ps`查看当前正在运行的容器列表，如下图示；
+然后，新打开一个终端，执行命令 `docker stats` 查看当前docker中容器的运行状态，如下图示；
 
-![当前运行docker容器查询](../../images/setup/docker-ps-before.png)
+![当前运行docker容器查询](../../images/setup/docker-stats-before.png)
 
 可以发现，当前系统并未有正在运行的docker容器。
 
-接着，进入解压缩后的OpenEdge文件夹下，执行命令 `bin/openedge -w .`，观察终端OpenEdge启动、加载日志，如下图示；
+接着，进入解压缩后的OpenEdge文件夹下，在另一个终端中执行命令 `bin/openedge -w .`，观察终端OpenEdge启动、加载日志，如下图示；
 
-![OpenEdge启动日志](../../images/setup/docker-openedge-start.png)
+![OpenEdge启动日志](../../images/setup/openedge-started.png)
+
+同时观察显示容器运行状态的终端，具体如下图所示：
+
+![当前运行docker容器查询](../../images/setup/docker-stats-after.png)
 
 显然，OpenEdge已经成功启动。
-
-最后，再次执行命令`docker ps`观察当前正在运行的Docker容器列表，不难发现openedge-hub、openedge-function、openedge-remote-mqtt等模块已经成功启动，具体如下图示。
-
-![当前运行docker容器查询](../../images/setup/docker-ps-after.png)
 
 如上所述，若各步骤执行无误，即可完成OpenEdge在Ubuntu系统上的快速部署、启动。其他 Linux 发行版本的操作基本与上述相同。

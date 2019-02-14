@@ -4,26 +4,27 @@
 
 This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Darwin system.
 
-## Environment configuration
+## Environment Configuration
 
 ### Install Docker
 
 > OpenEdge offers two startup modes. To start using ***docker*** container mode (recommended), you need to complete the docker installation first.
 
+**Notice:**
+
++ The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
++ The production environment can run the image using a lower version of Docker, which is currently tested to a minimum usable version of 12.0.
++ According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker version < 18.09.2 has some security implications. It is recommended to install/update the Docker version to 18.09. 2 and above.
+
 Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag Docker into the Application folder.
 
-![Install On Darwin](../../images/setup/docker_install_on_mac.png)
+![Install On Darwin](../../images/setup/docker-install-on-mac.png)
 
 View the version of installed Docker:
 
 ```shell
 docker version
 ```
-
-**Notice:**
-
-+ The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-+ The production environment can run the image using a lower version of Docker, which is currently tested to a minimum usable version of 12.0.
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
@@ -57,46 +58,45 @@ alias python=/yourpath/python2.7
 
 **Statement**:
 
-+ The following is an example of the deployment and startup of OpenEdge on Darwin system. It is assumed that the environment required for OpenEdge operation has been configured [before](#Environment-configuration).
-+ The Darwin system mentioned below is based on the Darwin High Sierra Version 10.13.6 with a CPU architecture of x86_64.
++ The following is an example of the deployment and startup of OpenEdge on Darwin system. It is assumed that the environment required for OpenEdge operation has been configured [before](#Environment-Configuration).
++ The Darwin system mentioned below is based on the Darwin High Sierra Version 10.13.6 with a CPU architecture of x86_64. Execute command `uname -ar` and get the result like this:
 
-OpenEdge containerized mode startup requires the Docker to be installed and the Docker service started on the running device.
+![darwin kernel detail](../../images/setup/os-darwin.png)
 
-![view the version of docker](../../images/setup/docker-version.png)
+Starting OpenEdge containerization mode requires the running device to complete the installation and operation of Docker. You can install it by referring to [Steps above](#Install-Docker).
 
 ### Deployment Process
 
-- **Step1**: Select a [release](https://github.com/baidu/openedge/releases) from the OpenEdge github open source project.
+- **Step1**: [Download](../Resources-download.md) OpenEdge archive;
 - **Step2**: Open the terminal and enter the OpenEdge directory for decompression:
-	- .zip: using command `unzip -d . openedge-xxx.zip`;
-	- .tar.gz: using command `tar -zxvf openedge-xxx.tar.gz`;
-- **Step3**: After the decompression operation is complete, go directly to the OpenEdge package directory, execute the command `bin/openedge -w .`, then view the log, and view the currently running container (via the command `docker ps`). And compare the two are consistent (assuming that other docker containers are not started in the current system);
-- **Step4**：If the results are consistent, it means that OpenEdge has started normally.
+	- execute command `tar -zxvf openedge-xxx.tar.gz`;
+- **Step3**: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installted docker, and then execute the command `bin/openedge -w .`, respectively. Observe the contents displayed by the two terminals;
+- **Step4**: If the results are consistent, it means that OpenEdge has started normally.
 
 ***Notice:*** The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)
 
 ### Start deployment
 
-As mentioned above, download OpenEdge archive from the OpenEdge github open source project first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes bin, etc, var, etc., as shown in the following picture.
+As mentioned above, download OpenEdge archive from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes bin, etc, var, etc., as shown in the following picture:
 
 ![OpenEdge directory](../../images/setup/openedge-dir.png)
 
 The bin directory stores the openedge executable binary file, the etc directory stores the configuration of OpenEdge, and the var directory stores the configuration and resources for the modules of OpenEdge.
 
-Then, run the command `docker ps` to see a list of currently running containers, as shown below:
+Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installted docker, as shown in the following picture:
 
-![view the docker containers status](../../images/setup/docker-ps-before.png)
+![view the docker containers status](../../images/setup/docker-stats-before.png)
 
 It can be found that the current system does not have a docker container running.
 
-Then, go to the decompressed OpenEdge folder, execute the command `bin/openedge -w .`, observe the log of OpenEdge startup, as shown below:
+Then, go to the decompressed OpenEdge folder, execute the command `bin/openedge -w .` in the another terminal, observe the log of OpenEdge startup, as shown below:
 
 ![OpenEdge startup log](../../images/setup/docker-openedge-start.png)
 
+At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
+
+![running containers](../../images/setup/docker-stats-after.png)
+
 Obviously, OpenEdge has been successfully launched.
-
-Finally, execute the command `docker ps` again to observe the list of currently running Docker containers. It is not difficult to find that modules such as openedge-hub, openedge-function, and openedge-remote-mqtt have been successfully started, as shown in the following picture:
-
-![running containers](../../images/setup/docker-ps-after.png)
 
 As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the Darwin system.
