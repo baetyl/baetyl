@@ -36,7 +36,7 @@ docker version
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // 安装HomeBrew
 brew install python@2
-pip isntall protobuf grpcio
+pip install protobuf grpcio
 ```
 
 ***注*** : 安装完成后可通过以下命令查看所安装版本：

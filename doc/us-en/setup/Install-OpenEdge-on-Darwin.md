@@ -32,12 +32,12 @@ docker version
 
 > + OpenEdge provides Python Runtime, which supports running code written in Python version 2.7. If you plan to start using ***native*** process mode, you need to install Python 2.7 and the package you depend on. If you plan to start in ***docker*** container mode, you do not need to perform the following steps.
 
-Install by using HomeBrew(Recommened):
+Install by using HomeBrew(Recommended):
 
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // Install HomeBrew
 brew install python@2
-pip isntall protobuf grpcio
+pip install protobuf grpcio
 ```
 
 ***Notice***: Execute the following command to check the installed Python version:
@@ -70,7 +70,7 @@ Starting OpenEdge containerization mode requires the running device to complete 
 - **Step1**: [Download](../Resources-download.md) OpenEdge archive;
 - **Step2**: Open the terminal and enter the OpenEdge directory for decompression:
 	- execute command `tar -zxvf openedge-xxx.tar.gz`;
-- **Step3**: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installted docker, and then execute the command `bin/openedge -w .`, respectively. Observe the contents displayed by the two terminals;
+- **Step3**: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `bin/openedge -w .`, respectively. Observe the contents displayed by the two terminals;
 - **Step4**: If the results are consistent, it means that OpenEdge has started normally.
 
 ***Notice:*** The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)
@@ -83,7 +83,7 @@ As mentioned above, download OpenEdge archive from the [Download page](../Resour
 
 The bin directory stores the openedge executable binary file, the etc directory stores the configuration of OpenEdge, and the var directory stores the configuration and resources for the modules of OpenEdge.
 
-Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installted docker, as shown in the following picture:
+Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
 
 ![view the docker containers status](../../images/setup/docker-stats-before.png)
 
