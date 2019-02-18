@@ -1,4 +1,4 @@
-# Install OpenEdge on Linux
+# Install OpenEdge on Debian
 
 > OpenEdge is mainly developed in Go programming language and supports two startup modes: ***docker*** container mode and ***native*** process mode.
 
@@ -22,23 +22,6 @@ Can be installed by the following command(Suitable for linux-like systems, [Supp
 curl -sSL https://get.docker.com | sh
 ```
 
-#### Ubuntu
-
-Command:
-
-```shell
-sudo snap install docker # Ubuntu16.04 after
-sudo apt install docker.io # Ubuntu 16.04 before
-```
-
-#### CentOS
-
-Command:
-
-```shell
-yum install docker
-```
-
 ***Notice***: 
 
 + After the Docker installation is complete, use the following command to view the installed version of Docker.
@@ -47,21 +30,11 @@ yum install docker
 docker version
 ```
 
-#### Debian 9/Raspberry Pi 3
-
-Command:
-
-```shell
-curl -sSL https://get.docker.com | sh
-```
-
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
 ### Install Python2.7 and Python runtime dependency package
 
 > + OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
-
-#### Ubuntu 18.04 LTS/Debian 9/Raspberry Pi 3
 
 Commands:
 
@@ -71,34 +44,6 @@ sudo apt upgrade
 sudo apt install python2.7
 sudo apt install python-pip
 sudo pip install protobuf grpcio
-```
-
-#### CentOs 
-
-Execute the following command to check the installed version of Python:
-
-```shell
-python -V
-```
-
-If the result is not installed, you can install it using the following command:
-
-```shell
-yum install python
-yum install python-pip
-yum install protobuf grpcio
-```
-
-Or install from source code:
-
-```shell
-yum install gcc openssl-devel bzip2-devel
-wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
-tar xzf Python-2.7.15.tgz
-make altinstall
-curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-python2.7 get-pip.py
-pip install protobuf grpcio
 ```
 
 > Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
@@ -117,10 +62,7 @@ alias python=/yourpath/python2.7
 
 **Statement**:
 
-+ The following is an example of the deployment and startup of OpenEdge on Ubuntu system. The deployment operations on other Linux distributions are basically the same as the following descriptions. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-+ The Ubuntu system mentioned below is based on the version of kernel is 4.15.0-29-generic, and the CPU architecture is x86_64. Then execute the command `uname -ar` and get the result like this:
-
-![ubuntu kernel detail](../../images/setup/os-ubuntu.png)
++ The following is an example of the deployment and startup of OpenEdge on Debian system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
 
 Starting OpenEdge containerization mode requires the running device to complete the installation and operation of Docker. You can install it by referring to [Steps above](#Install-Docker).
 
@@ -158,4 +100,4 @@ At the same time, observe the terminal that shows the running status of the cont
 
 Obviously, OpenEdge has been successfully launched.
 
-As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the Ubuntu system. And operations on other Linux distributions are similar to the above.
+As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the Debian system.
