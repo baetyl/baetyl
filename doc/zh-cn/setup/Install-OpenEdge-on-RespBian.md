@@ -1,4 +1,4 @@
-# Linux下OpenEdge运行环境配置及快速部署
+# RespBian下OpenEdge运行环境配置及快速部署
 
 > OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 ***docker*** 容器模式和 ***native*** 进程模式。
 
@@ -21,50 +21,11 @@
 curl -sSL https://get.docker.com | sh
 ```
 
-#### Ubuntu
-
-使用命令
-
-```shell
-sudo snap install docker # Ubuntu16.04 after
-sudo apt install docker.io # Ubuntu 16.04 before
-```
-
-即可完成 Docker 安装。
-
-#### CentOS
-
-使用命令
-
-```shell
-yum install docker
-```
-
-即可完成 docker 安装。
-
-***注意*** : 
-
-+ Docker 安装完成后可通过一下命令查看所安装 Docker 版本。
-
-```shell
-docker version
-```
-
-#### Debian 9/Raspberry Pi 3
-
-使用以下命令完成安装：
-
-```shell
-curl -sSL https://get.docker.com | sh
-```
-
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
 ### Python2.7 及 Python Runtime 依赖包安装
 
 > + OpenEdge 提供了 Python Runtime，支持 Python 2.7 版本的运行，如计划使用 ***native*** 进程模式启动，需要安装 Python 2.7 及运行所依赖的包。如计划以 ***docker*** 容器模式启动，则无需进行以下步骤。
-
-#### Ubuntu 18.04 LTS/Debian 9/Raspberry Pi 3
 
 使用如下命令安装 Python 2.7:
 
@@ -76,35 +37,7 @@ sudo apt install python-pip
 sudo pip install protobuf grpcio
 ```
 
-#### CentOs 
-
-执行以下命令检查已安装Python版本：
-
-```shell
-python -V
-```
-
-如果显示未安装，可使用以下命令进行安装：
-
-```shell
-yum install python
-yum install python-pip
-yum install protobuf grpcio
-```
-
-或者通过源码编译安装：
-
-```shell
-yum install gcc openssl-devel bzip2-devel
-wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
-tar xzf Python-2.7.15.tgz
-make altinstall
-curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-python2.7 get-pip.py
-pip install protobuf grpcio
-```
-
-输入命令查看 Python 版本为 2.7.* 后为安装正确。
+输入命令 `python -V` 查看 Python 版本为 2.7.* 后为安装正确。
 
 ### 指定默认 Python 版本
 
@@ -120,10 +53,7 @@ alias python=/yourpath/python2.7
 
 **声明**：
 
-+ 本文以Ubuntu系统下OpenEdge的部署、运行为例进行介绍，其他linux发行版本下的部署操作与下述描述内容基本相同，假定在此之前OpenEdge[运行所需环境](#运行环境配置)均已配置完毕。
-+ 本文所提及的Ubuntu系统基于Linux Ubuntu 4.15.0-29-generic版本内核，CPU架构为x86_64。执行命令 `uname -ar` 显示内容如下图所示。
-
-![系统架构及内核版本查询](../../images/setup/os-ubuntu.png)
++ 本文主要介绍在RespBian系统下OpenEdge的部署、运行，假定在此之前OpenEdge[运行所需环境](#运行环境配置)均已配置完毕。
 
 OpenEdge容器化模式运行要求运行设备已完成Docker的安装与运行，可参照[上述步骤](#Docker-安装)进行安装。
 
@@ -161,4 +91,4 @@ OpenEdge容器化模式运行要求运行设备已完成Docker的安装与运行
 
 显然，OpenEdge已经成功启动。
 
-如上所述，若各步骤执行无误，即可完成OpenEdge在Ubuntu系统上的快速部署、启动。其他 Linux 发行版本的操作基本与上述相同。
+如上所述，若各步骤执行无误，即可完成OpenEdge在Respbian系统上的快速部署、启动。

@@ -172,7 +172,7 @@ def handler(event, context):
     return event
 ```
 
-_**提示**：Native 进程模式下，若要运行本代码库提供的 [sayhi.py](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py)，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio、pyyaml (采用 pip 安装即可，`pip install grpcio protobuf pyyaml`)。_
+_**提示**：Native 进程模式下，若要运行本代码库提供的 [sayhi.py](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py)，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio (采用 pip 安装即可，`pip install grpcio protobuf`)。_
 
 此外，对于 Native 进程模式 Python 脚本运行环境的构建，推荐通过 virtualenv 构建虚拟环境，并在此基础上安装相关依赖，相关步骤如下：
 
@@ -186,7 +186,7 @@ _**提示**：Native 进程模式下，若要运行本代码库提供的 [sayhi.
 > virtualenv native/workdir
 > # install requirements
 > source bin/activate # activate virtualenv
-> pip install grpcio protobuf pyyaml # install grpc, protobuf3, yaml via pip
+> pip install grpcio protobuf # install grpc, protobuf3, via pip
 > # test native mode
 > bin/openedge # run openedge under native mode
 > deactivate # deactivate virtualenv
