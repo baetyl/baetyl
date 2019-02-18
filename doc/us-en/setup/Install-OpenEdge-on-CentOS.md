@@ -62,7 +62,7 @@ Or install from source code:
 yum install gcc openssl-devel bzip2-devel
 wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
 tar xzf Python-2.7.15.tgz
-make altinstall
+make install
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
 python2.7 get-pip.py
 pip install protobuf grpcio

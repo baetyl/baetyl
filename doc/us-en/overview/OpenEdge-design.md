@@ -173,7 +173,7 @@ def handler(event, context):
     return event
 ```
 
-_**TIP**: In the native process mode, to run [sayhi.py](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py) provided by this codebase, you need to install python2.7 yourself, and you need to install protobuf3, grpcio, pyyaml based on python2.7 (`pip install grpcio protobuf pyyaml`)._
+_**TIP**: In the native process mode, to run [sayhi.py](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/native/var/db/openedge/module/func-nyeosbbch/sayhi.py) provided by this codebase, you need to install python2.7 yourself, and you need to install protobuf3, grpcio based on python2.7 (`pip install grpcio protobuf`)._
 
 In addition, for the construction of the native process mode python script runtime environment, it is recommended to build a virtual environment through virtualenv, and install related dependencies on this basis, the relevant steps are as follows:
 
@@ -187,7 +187,7 @@ In addition, for the construction of the native process mode python script runti
 > virtualenv native/workdir
 > # install requirements
 > source bin/activate # activate virtualenv
-> pip install grpcio protobuf pyyaml # install grpc, protobuf3, yaml via pip
+> pip install grpcio protobuf # install grpc, protobuf3 via pip
 > # test native mode
 > bin/openedge # run openedge under native mode
 > deactivate # deactivate virtualenv

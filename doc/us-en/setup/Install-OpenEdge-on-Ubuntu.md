@@ -26,7 +26,7 @@ Or install by using following command:
 
 ```shell
 sudo snap install docker # Ubuntu16.04 after
-sudo apt install docker.io # Ubuntu 16.04 before
+sudo apt-get install docker.io # Ubuntu 16.04 before
 ```
 
 ***Notice***: 
@@ -46,10 +46,10 @@ docker version
 Commands:
 
 ```shell
-sudo apt update
-sudo apt upgrade
-sudo apt install python2.7
-sudo apt install python-pip
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install python2.7
+sudo apt-get install python-pip
 sudo pip install protobuf grpcio
 ```
 
