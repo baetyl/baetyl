@@ -71,23 +71,23 @@ OpenEdge容器化模式运行要求运行设备已完成Docker的安装与运行
 
 如上所述，首先从[下载页面](../Resources-download.md)选择某版本的 OpenEdge 完成下载（也可选择从源码编译，参见[源码编译](./Build-OpenEdge-from-Source.md)），然后打开终端进入OpenEdge程序包下载目录，进行解压缩操作，成功解压缩后，可以发现openedge目录中主要包括bin、etc、var等目录，具体如下图示。
 
-![OpenEdge可执行程序包目录](../../images/setup/openedge-dir.png)
+![OpenEdge可执行程序包目录](../../images/setup/openedge-dir-debian.png)
 
 其中，bin目录存储openedge二进制可执行程序，etc目录存储了openedge程序启动的配置，var目录存储了模块启动的配置和资源。
 
 然后，新打开一个终端，执行命令 `docker stats` 查看当前docker中容器的运行状态，如下图示；
 
-![当前运行docker容器查询](../../images/setup/docker-stats-before.png)
+![当前运行docker容器查询](../../images/setup/docker-stats-before-debian.png)
 
 可以发现，当前系统并未有正在运行的docker容器。
 
 接着，进入解压缩后的OpenEdge文件夹下，在另一个终端中执行命令 `bin/openedge -w .`，观察终端OpenEdge启动、加载日志，如下图示；
 
-![OpenEdge启动日志](../../images/setup/openedge-started.png)
+![OpenEdge启动日志](../../images/setup/openedge-started-debian.png)
 
 同时观察显示容器运行状态的终端，具体如下图所示：
 
-![当前运行docker容器查询](../../images/setup/docker-stats-after.png)
+![当前运行docker容器查询](../../images/setup/docker-stats-after-debian.png)
 
 显然，OpenEdge已经成功启动。
 

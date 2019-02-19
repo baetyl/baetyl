@@ -72,23 +72,23 @@ Starting OpenEdge containerization mode requires the running device to complete 
 
 As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
 
-![OpenEdge directory](../../images/setup/openedge-dir.png)
+![OpenEdge directory](../../images/setup/openedge-dir-debian.png)
 
 The `bin` directory stores the openedge executable binary file, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge.
 
 Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
 
-![view the docker containers status](../../images/setup/docker-stats-before.png)
+![view the docker containers status](../../images/setup/docker-stats-before-debian.png)
 
 It can be found that the current system does not have a docker container running.
 
-Then, go to the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
+Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
-![OpenEdge startup log](../../images/setup/docker-openedge-start.png)
+![OpenEdge startup log](../../images/setup/docker-openedge-start-debian.png)
 
 At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
 
-![running containers](../../images/setup/docker-stats-after.png)
+![running containers](../../images/setup/docker-stats-after-debian.png)
 
 Obviously, OpenEdge has been successfully launched.
 
