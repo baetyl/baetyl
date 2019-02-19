@@ -100,7 +100,7 @@ Then, open a new terminal and execute the command `docker stats` to view the run
 
 It can be found that the current system does not have a docker container running.
 
-Then, go to the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
+Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
 ![OpenEdge startup log](../../images/setup/openedge-started-ubuntu.png)
 

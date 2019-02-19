@@ -35,7 +35,7 @@ docker version
 ### Install Python2.7 and Python runtime dependency package
 
 > + OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
-+ The Debian system mentioned in this article is based on the following kernel version and CPU architecture. Then execute command 'uname -ar` is displayed as shown below.
++ The Debian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute command 'uname -ar` is displayed as shown below.
 
 ![centos kernel detail](../../images/setup/os-debian.png)
 
@@ -93,7 +93,7 @@ Then, open a new terminal and execute the command `docker stats` to view the run
 
 It can be found that the current system does not have a docker container running.
 
-Then, go to the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
+Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
 ![OpenEdge startup log](../../images/setup/openedge-started-debian.png)
 

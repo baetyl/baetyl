@@ -85,7 +85,7 @@ alias python=/yourpath/python2.7
 **Statement**:
 
 + The following is an example of the deployment and startup of OpenEdge on CentOS system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-+ The CentOS system mentioned in this article is based on the following kernel version and CPU architecture. Then execute command 'uname -ar` is displayed as shown below.
++ The CentOS system mentioned in this document is based on the following kernel version and CPU architecture. Then execute command 'uname -ar` is displayed as shown below.
 
 ![centos kernel detail](../../images/setup/os-centos.png)
 
@@ -115,7 +115,7 @@ Then, open a new terminal and execute the command `docker stats` to view the run
 
 It can be found that the current system does not have a docker container running.
 
-Then, go to the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
+Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
 ![OpenEdge startup log](../../images/setup/docker-openedge-start-centos.png)
 
