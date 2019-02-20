@@ -55,7 +55,7 @@ alias python=/yourpath/python2.7
 **Statement**:
 
 + The following is an example of the deployment and startup of OpenEdge on RespBian system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-+ The Respbian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute command 'uname -ar` is displayed as shown below.
++ The Respbian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of Respbian.
 
 ![centos kernel detail](../../images/setup/os-respbian.png)
 
