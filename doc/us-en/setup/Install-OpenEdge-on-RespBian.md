@@ -55,6 +55,9 @@ alias python=/yourpath/python2.7
 **Statement**:
 
 + The following is an example of the deployment and startup of OpenEdge on RespBian system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
++ The Respbian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute command 'uname -ar` is displayed as shown below.
+
+![centos kernel detail](../../images/setup/os-respbian.png)
 
 Starting OpenEdge containerization mode requires the running device to complete the installation and operation of Docker. You can install it by referring to [Steps above](#Install-Docker).
 
@@ -72,23 +75,23 @@ Starting OpenEdge containerization mode requires the running device to complete 
 
 As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
 
-![OpenEdge directory](../../images/setup/openedge-dir-debian.png)
+![OpenEdge directory](../../images/setup/openedge-dir-respbian.png)
 
 The `bin` directory stores the openedge executable binary file, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge.
 
 Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
 
-![view the docker containers status](../../images/setup/docker-stats-before-debian.png)
+![view the docker containers status](../../images/setup/docker-stats-before-respbian.png)
 
 It can be found that the current system does not have a docker container running.
 
 Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
-![OpenEdge startup log](../../images/setup/docker-openedge-start-debian.png)
+![OpenEdge startup log](../../images/setup/docker-openedge-start-respbian.png)
 
 At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
 
-![running containers](../../images/setup/docker-stats-after-debian.png)
+![running containers](../../images/setup/docker-stats-after-respbian.png)
 
 Obviously, OpenEdge has been successfully launched.
 
