@@ -91,7 +91,7 @@ It can be found that the current system does not have a docker container running
 
 Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
-![OpenEdge startup log](../../images/setup/docker-openedge-start-darwin.png)
+![OpenEdge startup log](../../images/setup/openedge-started-darwin.png)
 
 At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
 
