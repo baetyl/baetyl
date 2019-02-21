@@ -1,4 +1,4 @@
-# Install OpenEdge On Darwin
+# Install OpenEdge on Darwin
 
 > OpenEdge is mainly developed in Go programming language and supports two startup modes: ***docker*** container mode and ***native*** process mode.
 
