@@ -45,7 +45,7 @@ sudo groupadd docker
 
 **问题5**: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
 
-按照问题A解决方案执行后如仍报出此问题，重新启动docker服务即可。
+按照问题4解决方案执行后如仍报出此问题，重新启动docker服务即可。
 
 例，CentOs 下启动命令：
 
