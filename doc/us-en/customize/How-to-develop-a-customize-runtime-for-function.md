@@ -61,7 +61,7 @@ type Function struct {
     ID      string `yaml:"id" json:"id" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
     // function name used to invoke
     Name    string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
-    // funciton invoke entry
+    // function invoke entry
     Handler string `yaml:"handler" json:"handler" validate:"nonzero"`
     // function code directory
 	CodeDir string `yaml:"codedir" json:"codedir"`
