@@ -1,8 +1,8 @@
-# Install OpenEdge on Darwin
+# Install OpenEdge on CentOS
 
 > OpenEdge is mainly developed in Go programming language and supports two startup modes: ***docker*** container mode and ***native*** process mode.
 
-This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Darwin system.
+This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
 
 ## Environment Configuration
 
@@ -16,11 +16,21 @@ This document focuses on the installation and configuration of the environment r
 + The production environment can run the image using a lower version of Docker, which is currently tested to a minimum usable version of 12.0.
 + According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of Docker lower than 18.09.2 has some security implications. It is recommended to install/update the Docker to 18.09.2 and above.
 
-Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag Docker into the Application folder.
+Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
-![Install On Darwin](../../images/setup/docker-install-on-mac.png)
+```shell
+curl -sSL https://get.docker.com | sh
+```
 
-View the version of installed Docker:
+Or install by using following command:
+
+```shell
+yum install docker
+```
+
+***Notice***: 
+
++ After the Docker installation is complete, use the following command to view the installed version of Docker.
 
 ```shell
 docker version
@@ -32,21 +42,37 @@ docker version
 
 > + OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
 
-Install by using HomeBrew(Recommended):
-
-```shell
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // Install HomeBrew
-brew install python@2
-pip install protobuf grpcio
-```
-
-***Notice***: Execute the following command to check the installed version of Python:
+Execute the following command to check the installed version of Python:
 
 ```shell
 python -V
 ```
- 
-Specify the default version of Python with following command:
+
+If the result is not installed, you can install it using the following command:
+
+```shell
+yum install python
+yum install python-pip
+yum install protobuf grpcio
+```
+
+Or install from source code:
+
+```shell
+yum install gcc openssl-devel bzip2-devel
+wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
+tar xzf Python-2.7.15.tgz
+make install
+curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+python2.7 get-pip.py
+pip install protobuf grpcio
+```
+
+> Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
+
+### Specify The Default Version Of Python
+
+In some cases, you need to specify the default version of Python for the above installed version. Complete with the following command (Valid after reboot):
 
 ```shell
 alias python=/yourpath/python2.7
@@ -58,10 +84,10 @@ alias python=/yourpath/python2.7
 
 **Statement**:
 
-+ The following is an example of the deployment and startup of OpenEdge on Darwin system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-+ The Darwin system mentioned below is based on the Darwin High Sierra Version 10.13.6 with a CPU architecture of x86_64. Execute the command `uname -ar` and get the result like this:
++ The following is an example of the deployment and startup of OpenEdge on CentOS system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
++ The CentOS system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of CentOS.
 
-![darwin kernel detail](../../images/setup/os-darwin.png)
+![centos kernel detail](../../images/setup/os-centos.png)
 
 Starting OpenEdge containerization mode requires the running device to complete the installation and operation of Docker. You can install it by referring to [Steps above](#Install-Docker).
 
@@ -79,24 +105,24 @@ Starting OpenEdge containerization mode requires the running device to complete 
 
 As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
 
-![OpenEdge directory](../../images/setup/openedge-dir-darwin.png)
+![OpenEdge directory](../../images/setup/openedge-dir-centos.png)
 
 The `bin` directory stores the openedge executable binary file, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge.
 
 Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
 
-![view the docker containers status](../../images/setup/docker-stats-before-darwin.png)
+![view the docker containers status](../../images/setup/docker-stats-before-centos.png)
 
 It can be found that the current system does not have a docker container running.
 
 Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
-![OpenEdge startup log](../../images/setup/openedge-started-darwin.png)
+![OpenEdge startup log](../../images/setup/openedge-started-centos.png)
 
 At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
 
-![running containers](../../images/setup/docker-stats-after-darwin.png)
+![running containers](../../images/setup/docker-stats-after-centos.png)
 
 Obviously, OpenEdge has been successfully launched.
 
-As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the Darwin system.
+As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the CentOS system.

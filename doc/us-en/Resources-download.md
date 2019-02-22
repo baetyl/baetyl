@@ -1,5 +1,15 @@
 # Resources download
 
+## OpenEdge download
+
+**Statement**: The official download page only provides the docker mode executable file.
+
+| OS         |  CPU  | SHA256                                                       | Download link                                                                       |
+| ------------ | ------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Linux | armv7 | 37b09a8e2a33e80f3e7a1fe0dfc749cf6c87829316bf8a2786588bc17d42e1e9 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.1/github/openedge-linux-armv7-0.1.1.tar.gz) |
+| Linux | amd64 | e09584a45a9de20759606fda0f6f803724152c8cce8955eca56a54dd4f8fa967 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.1/github/openedge-linux-amd64-0.1.1.tar.gz) |
+| Darwin | amd64 | ffe6e66cc478fe691372e494f3ef826112a02fad6cc616a8979cb77985ec0990 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.1/github/openedge-darwin-amd64-0.1.1.tar.gz) |
+
 ## Golang download
 
 Official website：[https://golang.org/dl/](https://golang.org/dl/)
