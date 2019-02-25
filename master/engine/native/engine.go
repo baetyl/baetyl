@@ -1,6 +1,8 @@
 package native
 
 import (
+	"fmt"
+	"os"
 	"path"
 	"time"
 
@@ -8,6 +10,7 @@ import (
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -44,26 +47,33 @@ func (e *nativeEngine) Close() error {
 }
 
 // Run new service
-func (e *nativeEngine) Run(cfg engine.ServiceInfo) (engine.Service, error) {
-	var pkg packageConfig
-	pkgDir := path.Join(e.pwd, "lib", "openedge", "packages", cfg.Image)
-	err := utils.LoadYAML(path.Join(pkgDir, packageConfigPath), &pkg)
+func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.VolumeInfo) (engine.Service, error) {
+	spwd := path.Join(e.pwd, "var", "run", "openedge", "services", cfg.Name)
+	err := mount(e.pwd, spwd, cfg.Mounts, vs)
 	if err != nil {
+		os.RemoveAll(spwd)
+		return nil, err
+	}
+	var pkg packageConfig
+	pkgDir := path.Join(spwd, "lib", "openedge", cfg.Image)
+	err = utils.LoadYAML(path.Join(pkgDir, packageConfigPath), &pkg)
+	if err != nil {
+		os.RemoveAll(spwd)
 		return nil, err
 	}
 	argv := make([]string, 0)
 	argv = append(argv, cfg.Name) // add prefix "openedge-service-"?
 	argv = append(argv, cfg.Args...)
-	cfgs := processConfigs{
+	params := processConfigs{
 		exec: path.Join(pkgDir, pkg.Entry),
 		argv: argv,
 		env:  utils.AppendEnv(cfg.Env, true),
-		pwd:  path.Join(e.pwd, "var", "run", "openedge", "services", cfg.Name),
+		pwd:  spwd,
 	}
 	s := &nativeService{
-		info:      cfg,
+		cfg:       cfg,
 		engine:    e,
-		cfgs:      cfgs,
+		params:    params,
 		instances: cmap.New(),
 		log:       e.log.WithField("service", cfg.Name),
 	}
@@ -73,4 +83,32 @@ func (e *nativeEngine) Run(cfg engine.ServiceInfo) (engine.Service, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+func mount(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.VolumeInfo) error {
+	for _, m := range ms {
+		v, ok := vs[m.Name]
+		if !ok {
+			return fmt.Errorf("volume '%s' not found", m.Name)
+		}
+		src := path.Join(epwd, path.Clean(v.Path))
+		err := os.MkdirAll(src, 0755)
+		if err != nil {
+			return err
+		}
+		dst := path.Join(spwd, path.Clean(m.Path))
+		err = os.MkdirAll(path.Dir(dst), 0755)
+		if err != nil {
+			return err
+		}
+		err = os.RemoveAll(dst)
+		if err != nil {
+			return err
+		}
+		err = os.Symlink(src, dst)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

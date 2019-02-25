@@ -5,7 +5,6 @@ import (
 
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/sdk-go/openedge"
-	"github.com/baidu/openedge/utils"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -17,19 +16,6 @@ func (m *Master) Auth(username, password string) bool {
 	}
 	p, ok := v.(string)
 	return ok && p == password
-}
-
-func (m *Master) initServices() error {
-	if utils.FileExists(configFile) {
-		curcfg := new(DynamicConfig)
-		err := utils.LoadYAML(configFile, curcfg)
-		if err != nil {
-			return err
-		}
-		m.curcfg = curcfg
-		return m.startServices(m.curcfg.Services)
-	}
-	return m.startServices(m.inicfg.Services)
 }
 
 func (m *Master) stopAllServices() {
@@ -46,8 +32,16 @@ func (m *Master) stopAllServices() {
 	wg.Wait()
 }
 
-func (m *Master) startServices(ss []engine.ServiceInfo) error {
-	for _, s := range ss {
+func (m *Master) startAllServices() error {
+	err := m.load()
+	if err != nil {
+		return err
+	}
+	vs := make(map[string]openedge.VolumeInfo)
+	for _, v := range m.appcfg.Volumes {
+		vs[v.Name] = v
+	}
+	for _, s := range m.appcfg.Services {
 		cur, ok := m.services.Get(s.Name)
 		if ok {
 			cur.(engine.Service).Stop()
@@ -56,29 +50,11 @@ func (m *Master) startServices(ss []engine.ServiceInfo) error {
 		m.accounts.Set(s.Name, token)
 		s.Env[openedge.EnvServiceNameKey] = s.Name
 		s.Env[openedge.EnvServiceTokenKey] = token
-		nxt, err := m.engine.Run(s)
+		nxt, err := m.engine.Run(s, vs)
 		if err != nil {
 			return err
 		}
 		m.services.Set(s.Name, nxt)
 	}
 	return nil
-}
-
-func (m *Master) stopServices(ss []engine.ServiceInfo) {
-	var wg sync.WaitGroup
-	for _, s := range ss {
-		cur, ok := m.services.Get(s.Name)
-		if !ok {
-			continue
-		}
-		wg.Add(1)
-		go func(ss engine.Service) {
-			defer wg.Done()
-			ss.Stop()
-			m.services.Remove(ss.Name())
-			m.accounts.Remove(ss.Name())
-		}(cur.(engine.Service))
-	}
-	wg.Wait()
 }

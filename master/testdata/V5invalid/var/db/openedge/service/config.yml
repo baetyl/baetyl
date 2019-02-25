@@ -1,4 +1,0 @@
-version: V5
-services:
-  - name: wait_exit_1
-    nonimage: 'cmd'

@@ -22,15 +22,23 @@ const (
 	EnvServiceTokenKey = "OPENEDGE_SERVICE_TOKEN"
 )
 
-// DefaultConfigPath is the path to config of this service
-const DefaultConfigPath = "etc/openedge/service.yml"
+const (
+	// DefaultConfFile config path of the service by default
+	DefaultConfFile = "etc/openedge/service.yml"
+	// DefaultDBDir db dir of the service by default
+	DefaultDBDir = "var/db/openedge"
+	// DefaultRunDir  run dir of the service by default
+	DefaultRunDir = "var/run/openedge"
+	// DefaultLogDir  log dir of the service by default
+	DefaultLogDir = "var/log/openedge"
+)
 
 // Context of module
 type Context interface {
-	Config() *Config
+	Config() *ServiceConfig
 	// Subscribe(topic mqtt.TopicInfo, handle func(*Message) error) error
 	// SendMessage(message *Message) error
-	UpdateSystem(*DatasetInfo) error
+	UpdateSystem(*AppConfig) error
 	InspectSystem() (*Inspect, error)
 	Log() logger.Logger
 	Wait()
@@ -38,14 +46,14 @@ type Context interface {
 
 type context struct {
 	*Client
-	cfg    Config
+	cfg    ServiceConfig
 	topic  string
 	handle func(*Message) error
 	hub    *mqtt.Dispatcher
 	log    logger.Logger
 }
 
-func (c *context) Config() *Config {
+func (c *context) Config() *ServiceConfig {
 	return &c.cfg
 }
 
@@ -114,8 +122,8 @@ func (c *context) ProcessError(err error) {
 }
 
 func newContext() (*context, error) {
-	var cfg Config
-	err := utils.LoadYAML(DefaultConfigPath, &cfg)
+	var cfg ServiceConfig
+	err := utils.LoadYAML(DefaultConfFile, &cfg)
 	if err != nil {
 		return nil, err
 	}

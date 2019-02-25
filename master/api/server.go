@@ -8,11 +8,11 @@ import (
 	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
-// Master master inerface
+// Master master interface
 type Master interface {
 	Auth(u, p string) bool
 	Inspect() *openedge.Inspect
-	Update(*openedge.DatasetInfo) error
+	Update(*openedge.AppConfig) error
 }
 
 // Server master api server
@@ -53,7 +53,7 @@ func (s *Server) update(_ http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
 	}
-	d := new(openedge.DatasetInfo)
+	d := new(openedge.AppConfig)
 	err := json.Unmarshal(reqBody, d)
 	if err != nil {
 		return nil, err

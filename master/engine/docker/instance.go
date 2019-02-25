@@ -3,6 +3,7 @@ package docker
 import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -18,12 +19,12 @@ type dockerInstance struct {
 func (s *dockerService) startInstance() error {
 	// TODO: support multiple instances
 	// can only start one instance now, use service name as instance name
-	cid, err := s.engine.startContainer(s.info.Name, s.cfgs)
+	cid, err := s.engine.startContainer(s.cfg.Name, s.params)
 	if err != nil {
 		s.log.WithError(err).Warnln("failed to start instance, clean and retry")
 		// remove and retry
-		s.engine.removeContainerByName(s.info.Name)
-		cid, err = s.engine.startContainer(s.info.Name, s.cfgs)
+		s.engine.removeContainerByName(s.cfg.Name)
+		cid, err = s.engine.startContainer(s.cfg.Name, s.params)
 		if err != nil {
 			s.log.WithError(err).Warnln("failed to start instance again")
 			return err
@@ -31,11 +32,11 @@ func (s *dockerService) startInstance() error {
 	}
 	i := &dockerInstance{
 		id:      cid,
-		name:    s.info.Name,
+		name:    s.cfg.Name,
 		service: s,
 		log:     s.log.WithField("instance", cid[:12]),
 	}
-	s.instances.Set(s.info.Name, i)
+	s.instances.Set(s.cfg.Name, i)
 	return i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
@@ -53,8 +54,8 @@ func (i *dockerInstance) Log() logger.Logger {
 	return i.log
 }
 
-func (i *dockerInstance) Policy() engine.RestartPolicyInfo {
-	return i.service.info.Restart
+func (i *dockerInstance) Policy() openedge.RestartPolicyInfo {
+	return i.service.cfg.Restart
 }
 
 func (i *dockerInstance) Wait(s chan<- error) {

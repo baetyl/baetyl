@@ -10,7 +10,7 @@ import (
 
 func run(ctx openedge.Context) error {
 	var cfg Config
-	err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
+	err := utils.LoadYAML(openedge.DefaultConfFile, &cfg)
 	if err != nil {
 		return err
 	}
@@ -18,7 +18,7 @@ func run(ctx openedge.Context) error {
 		hub := ctx.Config().Hub
 		hub.ClientID = fmt.Sprintf("openedge-function-%s", f.Name)
 		rt := RuntimeInfo{
-			Config: openedge.Config{
+			ServiceConfig: openedge.ServiceConfig{
 				Hub:    hub,
 				Logger: ctx.Config().Logger,
 			},
