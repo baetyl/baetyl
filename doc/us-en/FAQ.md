@@ -50,3 +50,14 @@ For example, execute the following command on CentOs:
 ```shell
 systemctl start docker
 ```
+
+**Question 6**: failed to create master: Error response from daemon: client version 1.39 is too new. Maximum supported API version is 1.38.
+
+workaround is to pass API version via environment variable:
+DOCKER_API_VERSION=1.38
+
+For example, execute the following command on CentOs:
+
+```shell
+export DOCKER_API_VERSION=1.38
+```
