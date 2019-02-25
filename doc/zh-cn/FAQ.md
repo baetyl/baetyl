@@ -62,3 +62,7 @@ systemctl start docker
 ```shell
 export DOCKER_API_VERSION=1.38
 ```
+
+**问题7**: BIE如何接入NB-IoT?
+
+NB-IoT 是一种网络制式，和 2/3/4G 类似，只是带宽窄。因此在NB-IoT上运行BIE，是没有问题的。但国内三大运营商中，电信对他们的 NB 卡做了白名单限制，仅允许电信的云服务 IP，所以目前只能使用移动NB卡和联通NB卡进行BIE正常的网络通信。

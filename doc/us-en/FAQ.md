@@ -61,3 +61,7 @@ For example, execute the following command on CentOs:
 ```shell
 export DOCKER_API_VERSION=1.38
 ```
+
+**Question 7**: How does BIE access the NB-IOT network?
+
+NB-IoT is a network standard similar to 2/3/4G, but with narrow bandwidth. So running BIE on NB-IoT is no problem. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow telecom cloud service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used for BIE normal network communication.
