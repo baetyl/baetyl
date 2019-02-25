@@ -52,3 +52,13 @@ sudo groupadd docker
 ```shell
 systemctl start docker
 ```
+
+**问题6**: failed to create master: Error response from daemon: client version 1.39 is too new. Maximum supported API version is 1.38.
+
+设置环境变量DOCKER_API_VERSION=1.38
+
+例，CentOs 下启动命令：
+
+```shell
+export DOCKER_API_VERSION=1.38
+```
