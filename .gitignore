@@ -18,6 +18,5 @@
 /**/*.pyc
 /**/*debug.test
 /**/debug
-/**/bin
 /**/*.log
 /cover*.out
