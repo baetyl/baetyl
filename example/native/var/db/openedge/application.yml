@@ -1,5 +1,19 @@
 version: v0
 services:
+  - name: localhub
+    image: openedge-hub
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub-db
+        path: var/db/openedge
+      - name: localhub-log
+        path: var/log/openedge
+      # native process mode only
+      - name: openedge-hub-bin
+        path: lib/openedge/openedge-hub
+        readonly: true
   # - name: agent
   #   image: openedge-agent
   #   mounts:
@@ -14,25 +28,33 @@ services:
   #     - name: agent-log
   #       path: var/log/openedge
   #     # native process mode only
-  #     - name: agent-bin
+  #     - name: openedge-agent-bin
   #       path: lib/openedge/openedge-agent
   #       readonly: true
-  - name: localhub
-    image: openedge-hub
-    mounts:
-      - name: localhub-conf
-        path: etc/openedge
-        readonly: true
-      - name: localhub-db
-        path: var/db/openedge
-      - name: localhub-log
-        path: var/log/openedge
-      # native process mode only
-      - name: localhub-bin
-        path: lib/openedge/openedge-hub
-        readonly: true
+  # - name: remote-iothub
+  #   image: openedge-remote-mqtt
+  #   mounts:
+  #     - name: remote-iothub-conf
+  #       path: etc/openedge
+  #       readonly: true
+  #     - name: remote-iothub-cert
+  #       path: var/db/openedge/cert
+  #       readonly: true
+  #     - name: remote-iothub-log
+  #       path: var/log/openedge
+  #     # native process mode only
+  #     - name: openedge-remote-mqtt-bin
+  #       path: lib/openedge/openedge-remote-mqtt
+  #       readonly: true
 volumes:
-  # agent's volumes
+  # hub
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-db
+    path: var/db/openedge/localhub-db
+  - name: localhub-log
+    path: var/log/openedge/localhub
+  # agent
   - name: agent-conf
     path: var/db/openedge/agent-conf
   - name: agent-cert
@@ -41,14 +63,17 @@ volumes:
     path: var/db/openedge
   - name: agent-log
     path: var/log/openedge/agent
-  - name: agent-bin
-    path: var/db/openedge/agent-bin
-  # hub's volumes
-  - name: localhub-conf
-    path: var/db/openedge/localhub-conf
-  - name: localhub-bin
-    path: var/db/openedge/localhub-bin
-  - name: localhub-db
-    path: var/db/openedge/localhub-db
-  - name: localhub-log
-    path: var/log/openedge/localhub
+  # remote mqtt
+  - name: remote-iothub-conf
+    path: var/db/openedge/remote-iothub-conf
+  - name: remote-iothub-cert
+    path: var/db/openedge/remote-iothub-cert
+  - name: remote-iothub-log
+    path: var/log/openedge/remote-iothub
+  # bin, native process mode only
+  - name: openedge-hub-bin
+    path: var/db/openedge/openedge-hub
+  - name: openedge-agent-bin
+    path: var/db/openedge/openedge-agent
+  - name: openedge-remote-mqtt-bin
+    path: var/db/openedge/openedge-remote-mqtt

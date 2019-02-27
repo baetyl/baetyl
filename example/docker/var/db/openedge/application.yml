@@ -1,5 +1,17 @@
 version: v0
 services:
+  - name: localhub
+    image: openedge-hub
+    ports:
+      - 1883:1883
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub-db
+        path: var/db/openedge
+      - name: localhub-log
+        path: var/log/openedge
   # - name: agent
   #   image: openedge-agent
   #   mounts:
@@ -13,20 +25,26 @@ services:
   #       path: var/db/openedge/volumes
   #     - name: agent-log
   #       path: var/log/openedge
-  - name: localhub
-    image: openedge-hub
-    ports:
-      - 1883:1883
-    mounts:
-      - name: localhub-conf
-        path: etc/openedge
-        readonly: true
-      - name: localhub-db
-        path: var/db/openedge
-      - name: localhub-log
-        path: var/log/openedge
+  # - name: remote-iothub
+  #   image: openedge-remote-mqtt
+  #   mounts:
+  #     - name: remote-iothub-conf
+  #       path: etc/openedge
+  #       readonly: true
+  #     - name: remote-iothub-cert
+  #       path: var/db/openedge/cert
+  #       readonly: true
+  #     - name: remote-iothub-log
+  #       path: var/log/openedge
 volumes:
-  # agent's volumes
+  # hub
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-db
+    path: var/db/openedge/localhub-db
+  - name: localhub-log
+    path: var/log/openedge/localhub
+  # agent
   - name: agent-conf
     path: var/db/openedge/agent-conf
   - name: agent-cert
@@ -35,10 +53,10 @@ volumes:
     path: var/db/openedge
   - name: agent-log
     path: var/log/openedge/agent
-  # hub's volumes
-  - name: localhub-conf
-    path: var/db/openedge/localhub-conf
-  - name: localhub-db
-    path: var/db/openedge/localhub-db
-  - name: localhub-log
-    path: var/log/openedge/localhub
+  # remote mqtt
+  - name: remote-iothub-conf
+    path: var/db/openedge/remote-iothub-conf
+  - name: remote-iothub-cert
+    path: var/db/openedge/remote-iothub-cert
+  - name: remote-iothub-log
+    path: var/log/openedge/remote-iothub

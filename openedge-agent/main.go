@@ -67,7 +67,7 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 		key:  key,
 		ctx:  ctx,
 		http: cli,
-		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT),
+		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
 		dir:  path.Join(openedge.DefaultDBDir, "volumes"),
 	}, nil
 }
@@ -141,7 +141,7 @@ func (m *mo) ProcessError(err error) {
 func (m *mo) reporting() error {
 	t := time.NewTicker(m.cfg.Remote.Report.Interval)
 	m.report()
-	defer m.report()
+	// defer m.report()
 	for {
 		select {
 		case <-t.C:

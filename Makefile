@@ -64,16 +64,16 @@ uninstall:
 install-native: openedge package
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
-	install -d -m 0755 ${PREFIX}/var/db/openedge/agent-bin
-	tar xzvf openedge-agent/package.tar.gz -C ${PREFIX}/var/db/openedge/agent-bin
-	install -d -m 0755 ${PREFIX}/var/db/openedge/localhub-bin
-	tar xzvf openedge-hub/package.tar.gz -C ${PREFIX}/var/db/openedge/localhub-bin
-	install -d -m 0755 ${PREFIX}/var/db/openedge/localfunc-bin
-	tar xzvf openedge-function/package.tar.gz -C ${PREFIX}/var/db/openedge/localfunc-bin
-	install -d -m 0755 ${PREFIX}/var/db/openedge/localfunc-python27
-	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/var/db/openedge/localfunc-python27
-	install -d -m 0755 ${PREFIX}/var/db/openedge/bridge-mqtt-bin
-	tar xzvf openedge-remote-mqtt/package.tar.gz -C ${PREFIX}/var/db/openedge/bridge-mqtt-bin
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-hub
+	tar xzvf openedge-hub/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-hub
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-agent
+	tar xzvf openedge-agent/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-agent
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function
+	tar xzvf openedge-function/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
+	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function-python27
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-remote-mqtt
+	tar xzvf openedge-remote-mqtt/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-remote-mqtt
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
 uninstall-native:
