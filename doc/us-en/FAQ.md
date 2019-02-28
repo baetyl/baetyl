@@ -64,4 +64,4 @@ export DOCKER_API_VERSION=1.38
 
 **Question 7**: How does BIE access the NB-IOT network?
 
-NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect the Baidu Cloud HUB, deploy OpenEdge application and communicate with BIE Cloud Management. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow telecom cloud service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used for BIE normal network communication.
+NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with BIE Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud Service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud Service.
