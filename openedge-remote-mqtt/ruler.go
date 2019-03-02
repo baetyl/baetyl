@@ -7,24 +7,20 @@ import (
 )
 
 type ruler struct {
-	r      *Rule
+	rule   *Rule
 	hub    *mqtt.Dispatcher
 	remote *mqtt.Dispatcher
 	log    logger.Logger
 }
 
-func create(r Rule, hub, remote mqtt.ClientInfo) *ruler {
-	if remote.ClientID == "" {
-		remote.ClientID = r.Remote.Name
-	}
-	hub.ClientID = remote.ClientID
-	hub.Subscriptions = r.Hub.Subscriptions
-	remote.Subscriptions = r.Remote.Subscriptions
+func create(rule Rule, hub, remote mqtt.ClientInfo) *ruler {
+	defaults(&rule, &hub, &remote)
+	log := logger.WithField("rule", rule.Remote.Name)
 	return &ruler{
-		r:      &r,
-		hub:    mqtt.NewDispatcher(hub),
-		remote: mqtt.NewDispatcher(remote),
-		log:    logger.WithField("rule", remote.ClientID),
+		rule:   &rule,
+		hub:    mqtt.NewDispatcher(hub, log),
+		remote: mqtt.NewDispatcher(remote, log),
+		log:    log,
 	}
 }
 
@@ -63,4 +59,23 @@ func (rr *ruler) start() error {
 func (rr *ruler) close() {
 	rr.hub.Close()
 	rr.remote.Close()
+}
+
+func defaults(rule *Rule, hub, remote *mqtt.ClientInfo) {
+	// set remote client id
+	// rules[].remote.clientid > remotes[].clientid > rules[].remote.name
+	if rule.Remote.ClientID != "" {
+		remote.ClientID = rule.Remote.ClientID
+	} else if remote.ClientID == "" {
+		remote.ClientID = rule.Remote.Name
+	}
+	// set hub client id
+	// rules[].hub.clientid > remote.ClientID
+	if rule.Hub.ClientID != "" {
+		hub.ClientID = rule.Hub.ClientID
+	} else {
+		hub.ClientID = remote.ClientID
+	}
+	hub.Subscriptions = rule.Hub.Subscriptions
+	remote.Subscriptions = rule.Remote.Subscriptions
 }

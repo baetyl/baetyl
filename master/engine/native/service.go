@@ -2,11 +2,9 @@ package native
 
 import (
 	"os"
-	"path"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/orcaman/concurrent-map"
 )
@@ -18,8 +16,8 @@ type packageConfig struct {
 }
 
 type nativeService struct {
-	info      engine.ServiceInfo
-	cfgs      processConfigs
+	cfg       openedge.ServiceInfo
+	params    processConfigs
 	engine    *nativeEngine
 	instances cmap.ConcurrentMap
 	wdir      string
@@ -27,7 +25,7 @@ type nativeService struct {
 }
 
 func (s *nativeService) Name() string {
-	return s.info.Name
+	return s.cfg.Name
 }
 
 func (s *nativeService) Stats() openedge.ServiceStatus {
@@ -35,7 +33,7 @@ func (s *nativeService) Stats() openedge.ServiceStatus {
 }
 
 func (s *nativeService) Stop() {
-	defer os.RemoveAll(s.cfgs.pwd)
+	defer os.RemoveAll(s.params.pwd)
 	var wg sync.WaitGroup
 	for _, v := range s.instances.Items() {
 		wg.Add(1)
@@ -48,31 +46,5 @@ func (s *nativeService) Stop() {
 }
 
 func (s *nativeService) start() error {
-	mounts := make([]engine.MountInfo, 0)
-	datasetsDir := path.Join("var", "db", "openedge", "datasets")
-	for _, m := range s.info.Datasets {
-		v := path.Join(datasetsDir, m.Name, m.Version)
-		mounts = append(mounts, engine.MountInfo{Volume: v, Target: m.Target, ReadOnly: m.ReadOnly})
-	}
-	for _, m := range s.info.Volumes {
-		mounts = append(mounts, m)
-	}
-
-	for _, m := range mounts {
-		src := path.Join(s.engine.pwd, m.Volume)
-		err := os.MkdirAll(src, 0755)
-		if err != nil {
-			return err
-		}
-		dst := path.Join(s.cfgs.pwd, m.Target)
-		err = os.MkdirAll(path.Dir(dst), 0755)
-		if err != nil {
-			return err
-		}
-		err = os.Symlink(src, dst)
-		if err != nil {
-			return err
-		}
-	}
 	return s.startInstance()
 }

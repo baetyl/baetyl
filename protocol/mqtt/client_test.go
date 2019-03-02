@@ -39,14 +39,14 @@ func (h *mackHandler) ProcessError(err error) {
 }
 
 func TestClientConnectErrorMissingAddress(t *testing.T) {
-	c, err := NewClient(ClientInfo{}, &mackHandler{t: t})
+	c, err := NewClient(ClientInfo{}, &mackHandler{t: t}, nil)
 	assert.EqualError(t, err, "parse : empty url")
 	assert.Nil(t, c)
 }
 
 func TestClientConnectErrorWrongPort(t *testing.T) {
 	cc := newConfig(t, "1234567")
-	c, err := NewClient(cc, &mackHandler{t: t})
+	c, err := NewClient(cc, &mackHandler{t: t}, nil)
 	assert.EqualError(t, err, "dial tcp: address 1234567: invalid port")
 	assert.Nil(t, c)
 }
@@ -61,7 +61,7 @@ func TestClientConnect(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	c, err := NewClient(cc, &mackHandler{t: t})
+	c, err := NewClient(cc, &mackHandler{t: t}, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -81,7 +81,7 @@ func TestClientConnectCustomDialer(t *testing.T) {
 	done, port := fakeBroker(t, broker)
 
 	cc := newConfig(t, port)
-	c, err := NewClient(cc, &mackHandler{t: t})
+	c, err := NewClient(cc, &mackHandler{t: t}, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -110,7 +110,7 @@ func TestClientConnectWithCredentials(t *testing.T) {
 	cc.Username = "test"
 	cc.Password = "test"
 	ch := &mackHandler{t: t, expectedError: "connection refused: bad user name or password"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.EqualError(t, err, "connection refused: bad user name or password")
 	assert.Nil(t, c)
 
@@ -130,7 +130,7 @@ func TestClientConnectionDenied(t *testing.T) {
 
 	cc := newConfig(t, port)
 	ch := &mackHandler{t: t, expectedError: "connection refused: not authorized"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "connection refused: not authorized")
 
@@ -147,7 +147,7 @@ func TestClientExpectedConnack(t *testing.T) {
 
 	cc := newConfig(t, port)
 	ch := &mackHandler{t: t, expectedError: "client expected connack"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "client expected connack")
 
@@ -165,7 +165,7 @@ func TestClientNotExpectedConnack(t *testing.T) {
 
 	cc := newConfig(t, port)
 	ch := &mackHandler{t: t, expectedError: "client already connecting"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.NoError(t, err)
 
 	safeReceive(done)
@@ -195,7 +195,7 @@ func TestClientKeepAlive(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.KeepAlive = time.Millisecond * 100
-	c, err := NewClient(cc, &mackHandler{t: t})
+	c, err := NewClient(cc, &mackHandler{t: t}, nil)
 	assert.NoError(t, err)
 
 	<-time.After(250 * time.Millisecond)
@@ -223,7 +223,7 @@ func TestClientKeepAliveTimeout(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.KeepAlive = time.Millisecond * 5
 	ch := &mackHandler{t: t, expectedError: "client missing pong"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.NoError(t, err)
 
 	safeReceive(done)
@@ -270,7 +270,7 @@ func TestClientPublishSubscribeQOS0(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.Subscriptions = []TopicInfo{{Topic: "test"}}
 	ch := &mackHandler{t: t, expectedProcessPublish: callback}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.NoError(t, err)
 
 	err = c.Send(publish)
@@ -333,7 +333,7 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.Subscriptions = []TopicInfo{{Topic: "test", QoS: 1}}
 	ch := &mackHandler{t: t, expectedProcessPublish: callback1, expectedProcessPuback: callback2}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.NoError(t, err)
 
 	err = c.Send(publish)
@@ -360,7 +360,7 @@ func TestClientUnexpectedClose(t *testing.T) {
 
 	cc := newConfig(t, port)
 	ch := &mackHandler{t: t, expectedError: "client not connected"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.NoError(t, err)
 
 	safeReceive(done)
@@ -379,7 +379,7 @@ func TestClientConnackFutureCancellation(t *testing.T) {
 
 	cc := newConfig(t, port)
 	ch := &mackHandler{t: t, expectedError: "client not connected"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "client not connected")
 
@@ -396,7 +396,7 @@ func TestClientConnackFutureTimeout(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.Timeout = time.Millisecond * 50
 	ch := &mackHandler{t: t, expectedError: "future timeout"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "future timeout")
 
@@ -420,7 +420,7 @@ func TestClientSubscribeFutureTimeout(t *testing.T) {
 	cc.Timeout = time.Millisecond * 50
 	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
 	ch := &mackHandler{t: t, expectedError: "future timeout"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "future timeout")
 
@@ -449,7 +449,7 @@ func TestClientSubscribeValidate(t *testing.T) {
 	cc.ValidateSubs = true
 	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
 	ch := &mackHandler{t: t, expectedError: "failed subscription"}
-	c, err := NewClient(cc, ch)
+	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
 	assert.EqualError(t, err, "failed subscription")
 
@@ -477,7 +477,7 @@ func TestClientSubscribeWithoutValidate(t *testing.T) {
 
 	cc := newConfig(t, port)
 	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
-	c, err := NewClient(cc, &mackHandler{t: t})
+	c, err := NewClient(cc, &mackHandler{t: t}, nil)
 	assert.NotNil(t, c)
 	assert.NoError(t, err)
 

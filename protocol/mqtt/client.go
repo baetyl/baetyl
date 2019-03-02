@@ -9,6 +9,7 @@ import (
 	"github.com/256dpi/gomqtt/client"
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport"
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/utils"
 	"github.com/creasty/defaults"
 	tomb "gopkg.in/tomb.v2"
@@ -24,11 +25,15 @@ type Client struct {
 	handler         Handler
 	finish          sync.Once
 	tomb            utils.Tomb
+	log             logger.Logger
 }
 
 // NewClient returns a new client
-func NewClient(cc ClientInfo, handler Handler) (*Client, error) {
+func NewClient(cc ClientInfo, handler Handler, log logger.Logger) (*Client, error) {
 	defaults.Set(&cc)
+	if log == nil {
+		log = logger.GlobalLogger()
+	}
 
 	dialer, err := NewDialer(cc.Certificate)
 	if err != nil {
@@ -45,6 +50,7 @@ func NewClient(cc ClientInfo, handler Handler) (*Client, error) {
 		connectFuture:   NewFuture(),
 		subscribeFuture: NewFuture(),
 		tracker:         client.NewTracker(cc.KeepAlive),
+		log:             log.WithField("mqtt", "client"),
 	}
 	err = c.connect()
 	if err != nil {
@@ -134,8 +140,8 @@ func (c *Client) Close() error {
 
 // processes incoming packets
 func (c *Client) processor() error {
-	// c.log.Debugln("processor starting ")
-	// defer c.log.Debugln("processor stopped")
+	c.log.Debugln("processor starting ")
+	defer c.log.Debugln("processor stopped")
 
 	if c.config.KeepAlive > 0 {
 		c.tomb.Go(c.pinger)
@@ -175,7 +181,7 @@ func (c *Client) processor() error {
 
 		switch p := pkt.(type) {
 		case *packet.Publish:
-			// c.log.Debugf("received: %s, pid: %d, qos: %d, topic: %s", p.Type(), p.ID, p.Message.QOS, p.Message.Topic)
+			c.log.Debugf("received: %s, pid: %d, qos: %d, topic: %s", p.Type(), p.ID, p.Message.QOS, p.Message.Topic)
 			if c.handler != nil {
 				err = c.handler.ProcessPublish(p)
 				if err != nil {
@@ -183,7 +189,7 @@ func (c *Client) processor() error {
 				}
 			}
 		case *packet.Puback:
-			// c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
+			c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
 			if c.handler != nil {
 				err = c.handler.ProcessPuback(p)
 				if err != nil {
@@ -191,7 +197,7 @@ func (c *Client) processor() error {
 				}
 			}
 		case *packet.Suback:
-			// c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
+			c.log.Debugf("received: %s, pid: %d", p.Type(), p.ID)
 			if c.config.ValidateSubs {
 				for _, code := range p.ReturnCodes {
 					if code == packet.QOSFailure {
@@ -202,10 +208,10 @@ func (c *Client) processor() error {
 			}
 			c.subscribeFuture.Complete()
 		case *packet.Pingresp:
-			// c.log.Debugln("received:", p.Type())
+			c.log.Debugln("received:", p.Type())
 			c.tracker.Pong()
 		case *packet.Connack:
-			// c.log.Debugln("received:", p.Type())
+			c.log.Debugln("received:", p.Type())
 			err = client.ErrClientAlreadyConnecting
 			return c.die(err)
 		default:
@@ -218,8 +224,8 @@ func (c *Client) processor() error {
 
 // manages the sending of ping packets to keep the connection alive
 func (c *Client) pinger() (err error) {
-	// c.log.Debugln("pinger starting")
-	// defer c.log.Debugln("pinger stopped")
+	c.log.Debugln("pinger starting")
+	defer c.log.Debugln("pinger stopped")
 
 	for {
 		// get current window
@@ -266,7 +272,7 @@ func (c *Client) send(pkt packet.Generic, async bool) error {
 		return err
 	}
 
-	// c.log.Debugln("sent:", pkt.Type())
+	c.log.Debugln("sent:", pkt.Type())
 
 	return nil
 }

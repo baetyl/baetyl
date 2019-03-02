@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/orcaman/concurrent-map"
 )
@@ -15,15 +14,15 @@ const (
 )
 
 type dockerService struct {
-	info      engine.ServiceInfo
-	cfgs      containerConfigs
+	cfg       openedge.ServiceInfo
+	params    containerConfigs
 	engine    *dockerEngine
 	instances cmap.ConcurrentMap
 	log       logger.Logger
 }
 
 func (s *dockerService) Name() string {
-	return s.info.Name
+	return s.cfg.Name
 }
 
 func (s *dockerService) Stats() openedge.ServiceStatus {
@@ -46,7 +45,7 @@ func (s *dockerService) Stats() openedge.ServiceStatus {
 	}
 	wg.Wait()
 	close(results)
-	r := openedge.NewServiceStatus(s.info.Name)
+	r := openedge.NewServiceStatus(s.cfg.Name)
 	for i := range results {
 		r.Instances = append(r.Instances, i)
 	}

@@ -50,7 +50,7 @@ func (c *Client) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *Client) UpdateSystem(d *DatasetInfo) error {
+func (c *Client) UpdateSystem(d *AppConfig) error {
 	data, err := json.Marshal(d)
 	if err != nil {
 		return err

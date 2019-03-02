@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"regexp"
+	"path"
 	"strings"
 	"time"
 
@@ -21,7 +21,7 @@ import (
 type mo struct {
 	cfg  Config
 	key  []byte
-	path string
+	dir  string
 	ctx  openedge.Context
 	mqtt *mqtt.Dispatcher
 	http *http.Client
@@ -30,7 +30,7 @@ type mo struct {
 
 func main() {
 	openedge.Run(func(ctx openedge.Context) error {
-		m, err := new(ctx)
+		m, err := newAgent(ctx)
 		if err != nil {
 			return err
 		}
@@ -44,9 +44,9 @@ func main() {
 	})
 }
 
-func new(ctx openedge.Context) (*mo, error) {
+func newAgent(ctx openedge.Context) (*mo, error) {
 	var cfg Config
-	err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
+	err := utils.LoadYAML(openedge.DefaultConfFile, &cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,8 @@ func new(ctx openedge.Context) (*mo, error) {
 		key:  key,
 		ctx:  ctx,
 		http: cli,
-		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT),
+		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
+		dir:  path.Join(openedge.DefaultDBDir, "volumes"),
 	}, nil
 }
 
@@ -90,20 +91,27 @@ func (m *mo) ProcessPublish(p *packet.Publish) error {
 	m.ctx.Log().Debugln("backward event:", e)
 	switch e.Type {
 	case Update:
-		dataset, err := openedge.NewDatasetInfoFromBytes(e.Content)
+		updateEvent, err := newUpdateEvent(e.Content)
 		if err != nil {
 			err := fmt.Errorf("update event invalid: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		if !isVersion(dataset.Version) {
-			err := fmt.Errorf("update event invalid: dataset version invalid")
+		if updateEvent.Version != "v2" {
+			err := fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		err = m.ctx.UpdateSystem(dataset)
+		err = m.prepare(updateEvent.Datasets)
+		if err != nil {
+			err := fmt.Errorf("update event invalid: %s", err.Error())
+			m.ctx.Log().Errorf(err.Error())
+			m.report(err.Error())
+			break
+		}
+		err = m.ctx.UpdateSystem(&updateEvent.Config)
 		if err != nil {
 			err := fmt.Errorf("failed to update system: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
@@ -133,7 +141,7 @@ func (m *mo) ProcessError(err error) {
 func (m *mo) reporting() error {
 	t := time.NewTicker(m.cfg.Remote.Report.Interval)
 	m.report()
-	defer m.report()
+	// defer m.report()
 	for {
 		select {
 		case <-t.C:
@@ -228,12 +236,6 @@ func defaults(c *Config) error {
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QoS: 1, Topic: c.Remote.Desire.Topic})
 	return nil
-}
-
-// IsVersion checks version
-func isVersion(v string) bool {
-	r := regexp.MustCompile("^[\\w\\.]+$")
-	return r.MatchString(v)
 }
 
 func trace(name string) func() {

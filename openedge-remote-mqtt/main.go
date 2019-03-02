@@ -16,7 +16,7 @@ type mo struct {
 func main() {
 	openedge.Run(func(ctx openedge.Context) error {
 		var cfg Config
-		err := utils.LoadYAML(openedge.DefaultConfigPath, &cfg)
+		err := utils.LoadYAML(openedge.DefaultConfFile, &cfg)
 		if err != nil {
 			return err
 		}

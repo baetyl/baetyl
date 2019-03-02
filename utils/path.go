@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"crypto/md5"
+	"encoding/base64"
+	"io"
 	"os"
 )
 
-// DirExists checkes dir exists
+// DirExists checks dir exists
 func DirExists(path string) bool {
 	fi, err := os.Stat(path)
 	if err != nil {
@@ -13,7 +16,7 @@ func DirExists(path string) bool {
 	return fi.IsDir()
 }
 
-// FileExists checkes file exists
+// FileExists checks file exists
 func FileExists(path string) bool {
 	fi, err := os.Stat(path)
 	if err != nil {
@@ -22,28 +25,30 @@ func FileExists(path string) bool {
 	return !fi.IsDir()
 }
 
-// // ParseVolumes parses valume mapping of docker container
-// func ParseVolumes(root string, volumes []string) ([]string, error) {
-// 	result := []string{}
-// 	for _, v := range volumes {
-// 		if strings.Contains(v, "..") {
-// 			return nil, fmt.Errorf("volume (%s) contains invalid string (..)", v)
-// 		}
-// 		parts := strings.Split(v, ":")
-// 		if len(parts) == 0 {
-// 			continue
-// 		}
-// 		for index := 0; index < len(parts); index++ {
-// 			parts[index] = path.Clean(parts[index])
-// 		}
-// 		if len(parts) == 1 {
-// 			parts = append(parts, parts[0])
-// 		}
-// 		if !path.IsAbs(parts[1]) {
-// 			return nil, fmt.Errorf("volume (%s) in container is not absolute", v)
-// 		}
-// 		parts[0] = path.Join(root, parts[0])
-// 		result = append(result, strings.Join(parts, ":"))
-// 	}
-// 	return result, nil
-// }
+// WriteFile writes data into file in chunk mode
+func WriteFile(fn string, r io.Reader) error {
+	f, err := os.Create(fn)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, r)
+	return err
+}
+
+// CalculateFileMD5 calculates file MD5
+func CalculateFileMD5(fn string) (string, error) {
+	f, err := os.Open(fn)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	hasher := md5.New()
+	_, err = io.Copy(hasher, f)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(hasher.Sum(nil)), nil
+}

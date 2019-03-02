@@ -21,9 +21,8 @@ var Version string
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	inicfg   Config
-	precfg   *DynamicConfig
-	curcfg   *DynamicConfig
+	cfg      Config
+	appcfg   openedge.AppConfig
 	server   *api.Server
 	engine   engine.Engine
 	services cmap.ConcurrentMap
@@ -34,27 +33,27 @@ type Master struct {
 }
 
 // New creates a new master
-func New(pwd, confpath string) (*Master, error) {
+func New(pwd, cfgFile string) (*Master, error) {
 	var cfg Config
-	err := utils.LoadYAML(path.Join(pwd, confpath), &cfg)
+	err := utils.LoadYAML(path.Join(pwd, cfgFile), &cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load %s: %s", cfgFile, err.Error())
 	}
 	err = defaults(&cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
 	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
 	}
 	m := &Master{
+		cfg:      cfg,
+		pwd:      pwd,
+		log:      log,
 		services: cmap.New(),
 		accounts: cmap.New(),
 		context:  cmap.New(),
-		inicfg:   cfg,
-		pwd:      pwd,
-		log:      log,
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, m.pwd)
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, m.pwd)
@@ -63,13 +62,13 @@ func New(pwd, confpath string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
-	m.server, err = api.New(m.inicfg.Server, m)
+	m.server, err = api.New(m.cfg.Server, m)
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
 	log.Infoln("server started")
-	err = m.initServices()
+	err = m.startAllServices()
 	if err != nil {
 		m.Close()
 		return nil, err
