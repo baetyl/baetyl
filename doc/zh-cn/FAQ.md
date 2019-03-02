@@ -62,3 +62,7 @@ systemctl start docker
 ```shell
 export DOCKER_API_VERSION=1.38
 ```
+
+**问题7**: BIE如何接入NB-IoT?
+
+NB-IoT是一种网络制式，和2/3/4G类似，带宽窄功耗低。NB-IoT支持基于TCP的MQTT通信协议，因此可以使用NB-IoT卡连接百度云物接入，部署OpenEdge应用和BIE云管理通信。但国内三大运营商中，电信对他们的NB卡做了限制，仅允许连接电信的云服务 IP，所以目前只能使用移动NB卡和联通NB卡连接百度云服务。
