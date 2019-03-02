@@ -43,7 +43,7 @@ volumes:
   - name: localhub-db
     path: var/db/openedge/localhub-db
   - name: localhub-log
-    path: var/log/openedge/localhub
+    path: var/db/openedge/localhub-log
   # agent
   - name: agent-conf
     path: var/db/openedge/agent-conf
@@ -52,11 +52,11 @@ volumes:
   - name: agent-volumes
     path: var/db/openedge
   - name: agent-log
-    path: var/log/openedge/agent
+    path: var/db/openedge/agent-log
   # remote mqtt
   - name: remote-iothub-conf
     path: var/db/openedge/remote-iothub-conf
   - name: remote-iothub-cert
     path: var/db/openedge/remote-iothub-cert
   - name: remote-iothub-log
-    path: var/log/openedge/remote-iothub
+    path: var/db/openedge/remote-iothub-log
