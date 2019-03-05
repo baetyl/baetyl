@@ -69,22 +69,12 @@ NB-IoT是一种网络制式，和2/3/4G类似，带宽窄功耗低。NB-IoT支�
 
 **问题8**: var/run/openedge.sock: address already in use
 
-删除var/run/openedge.sock，重启Openedge。
+删除var/run/openedge.sock，重启OpenEdge。
 
-**问题9**: Openedge支持数据计算后将计算结果推送Kafka吗？
+**问题9**: OpenEdge支持数据计算后将计算结果推送Kafka吗？
 
-支持，您可以使用函数计算框架，编写一个函数，负责从Hub订阅消息，并将消息逐个写入Kafka。您也可以自定义模块，该模块向Hub订阅消息，然后批量写入Kafka。
+支持，您可以[利用Python运行时编写Python脚本](https://github.com/baidu/openedge/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md)，向Hub订阅消息，并将消息逐个写入Kafka。您也可以[自定义模块](https://github.com/baidu/openedge/blob/master/doc/zh-cn/customize/How-to-develop-a-customize-module-for-openedge.md)，该模块向Hub订阅消息，然后批量写入Kafka。
       
-**问题10**: Openedge配置更改的方式有哪些？只能通过云端管理套件进行配置更改吗？
+**问题10**: Openedge配置更改的方式有哪些？只能通过[云端管理套件](https://cloud.baidu.com/product/bie.html)进行配置更改吗？
 
 目前，我们推荐通过云端管理套件进行配置定义和下发，但您也可以手动更改核心设备上的配置文件，然后重启Openedge使之生效。
-
-**问题11**: Openedge函数计算框架，支持函数的多运行实例吗？如何配置？
-
-函数计算框架会根据实时的计算负载启动多个运行实例为计算提供算力，核心配置如下：
-```
-instance: 函数实例配置项
-  min: 默认值：0，最小值：0，最大值：100，最小函数实例数
-  max: 默认值：1，最小值：1，最大值：100，最大函数实例数
-```
-更加具体的配置参见：[函数计算模块配置](https://github.com/baidu/openedge/blob/master/doc/zh-cn/tutorials/Config-interpretation.md#函数计算模块配置)
