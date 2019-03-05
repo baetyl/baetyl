@@ -41,7 +41,7 @@ func (s *dockerService) Stats() openedge.ServiceStatus {
 				status = openedge.InstanceStatus{"error": err.Error()}
 			}
 			status["id"] = i.ID()
-			status["name"] = i.ID()
+			status["name"] = i.Name()
 			results <- status
 		}(v.(*dockerInstance), &wg)
 	}

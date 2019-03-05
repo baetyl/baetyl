@@ -7,7 +7,7 @@ services:
       - name: localhub-conf
         path: etc/openedge
         readonly: true
-      - name: localhub-db
+      - name: localhub-data
         path: var/db/openedge
       - name: localhub-log
         path: var/log/openedge
@@ -80,8 +80,8 @@ volumes:
   # hub
   - name: localhub-conf
     path: var/db/openedge/localhub-conf
-  - name: localhub-db
-    path: var/db/openedge/localhub-db
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
   - name: localhub-log
     path: var/db/openedge/localhub-log
   # agent
