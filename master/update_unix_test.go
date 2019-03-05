@@ -89,7 +89,7 @@ volumes:
 `
 )
 
-func TestUpdate(t *testing.T) {
+func TestUpdateSystem(t *testing.T) {
 	err := os.Chdir("testdata")
 	assert.NoError(t, err)
 	defer os.RemoveAll(appConfigFile)
@@ -127,7 +127,7 @@ func TestUpdate(t *testing.T) {
 	err = utils.UnmarshalYAML([]byte(v6), c6)
 	assert.NoError(t, err)
 
-	err = m.Update(c4)
+	err = m.UpdateSystem(c4)
 	assert.EqualError(t, err, "failed to update system: application config is null")
 	assert.Equal(t, "", m.appcfg.Version)
 	assert.False(t, utils.FileExists(appConfigFile))
@@ -136,7 +136,7 @@ func TestUpdate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "failed to update system: application config is null", msg)
 
-	err = m.Update(c5)
+	err = m.UpdateSystem(c5)
 	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
 	assert.Equal(t, "", m.appcfg.Version)
 	assert.False(t, utils.FileExists(appConfigFile))
@@ -145,7 +145,7 @@ func TestUpdate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", msg)
 
-	err = m.Update(c6)
+	err = m.UpdateSystem(c6)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "", m.appcfg.Version)
@@ -155,7 +155,7 @@ func TestUpdate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Contains(t, msg, "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 
-	err = m.Update(c1)
+	err = m.UpdateSystem(c1)
 	assert.NoError(t, err)
 	assert.Equal(t, "V1", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -163,7 +163,7 @@ func TestUpdate(t *testing.T) {
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.Update(c4)
+	err = m.UpdateSystem(c4)
 	assert.EqualError(t, err, "failed to update system: application config is null")
 	assert.Equal(t, "V1", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -172,14 +172,14 @@ func TestUpdate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "failed to update system: application config is null", msg)
 
-	err = m.Update(c2)
+	err = m.UpdateSystem(c2)
 	assert.Equal(t, "V2", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.Update(c5)
+	err = m.UpdateSystem(c5)
 	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
 	assert.Equal(t, "V2", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -188,14 +188,14 @@ func TestUpdate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", msg)
 
-	err = m.Update(c3)
+	err = m.UpdateSystem(c3)
 	assert.Equal(t, "V3", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.Update(c6)
+	err = m.UpdateSystem(c6)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "V3", m.appcfg.Version)
@@ -205,14 +205,14 @@ func TestUpdate(t *testing.T) {
 	assert.True(t, ok)
 	assert.Contains(t, msg, "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 
-	err = m.Update(c2)
+	err = m.UpdateSystem(c2)
 	assert.Equal(t, "V2", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.Update(c1)
+	err = m.UpdateSystem(c1)
 	assert.NoError(t, err)
 	assert.Equal(t, "V1", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))

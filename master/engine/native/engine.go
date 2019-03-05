@@ -77,7 +77,7 @@ func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		instances: cmap.New(),
 		log:       e.log.WithField("service", cfg.Name),
 	}
-	err = s.start()
+	err = s.Start()
 	if err != nil {
 		s.Stop()
 		return nil, err

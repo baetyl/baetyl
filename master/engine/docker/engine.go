@@ -35,7 +35,7 @@ func New(grace time.Duration, pwd string) (engine.Engine, error) {
 		cli:   cli,
 		pwd:   pwd,
 		grace: grace,
-		log:   logger.WithField("mode", "docker"),
+		log:   logger.WithField("engine", NAME),
 	}
 	err = e.initNetwork()
 	if err != nil {
@@ -89,12 +89,12 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		return nil, err
 	}
 	var params containerConfigs
-	params.config = &container.Config{
+	params.config = container.Config{
 		Image:        cfg.Image,
 		Env:          utils.AppendEnv(cfg.Env, false),
 		ExposedPorts: exposedPorts,
 	}
-	params.hostConfig = &container.HostConfig{
+	params.hostConfig = container.HostConfig{
 		Binds:        volumes,
 		PortBindings: portBindings,
 		RestartPolicy: container.RestartPolicy{
@@ -109,7 +109,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			PidsLimit:  cfg.Resources.Pids.Limit,
 		},
 	}
-	params.networkConfig = &network.NetworkingConfig{
+	params.networkConfig = network.NetworkingConfig{
 		EndpointsConfig: map[string]*network.EndpointSettings{
 			defaultNetworkName: &network.EndpointSettings{
 				NetworkID: e.nid,
@@ -123,7 +123,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		instances: cmap.New(),
 		log:       e.log.WithField("service", cfg.Name),
 	}
-	err = s.start()
+	err = s.Start()
 	if err != nil {
 		s.Stop()
 		return nil, err

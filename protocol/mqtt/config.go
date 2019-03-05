@@ -8,8 +8,8 @@ import (
 
 // TopicInfo with topic and qos
 type TopicInfo struct {
+	QOS   byte   `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
 	Topic string `yaml:"topic" json:"topic" validate:"nonzero"`
-	QoS   byte   `yaml:"qos" json:"qos" validate:"max=1"`
 }
 
 // ClientInfo mqtt client config

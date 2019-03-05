@@ -16,8 +16,8 @@ var appDir = path.Join("var", "db", "openedge")
 var appConfigFile = path.Join(appDir, "application.yml")
 var appBackupFile = path.Join(appDir, "application.yml.old")
 
-// Update updates system
-func (m *Master) Update(cfg *openedge.AppConfig) error {
+// UpdateSystem updates system
+func (m *Master) UpdateSystem(cfg *openedge.AppConfig) error {
 	if cfg == nil {
 		err := fmt.Errorf("failed to update system: application config is null")
 		m.log.Errorf(err.Error())

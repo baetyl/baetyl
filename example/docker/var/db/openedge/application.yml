@@ -2,6 +2,7 @@ version: v0
 services:
   - name: localhub
     image: openedge-hub
+    replica: 1
     ports:
       - 1883:1883
     mounts:
@@ -14,6 +15,7 @@ services:
         path: var/log/openedge
   # - name: agent
   #   image: openedge-agent
+  #   replica: 1
   #   mounts:
   #     - name: agent-conf
   #       path: etc/openedge
@@ -27,6 +29,7 @@ services:
   #       path: var/log/openedge
   # - name: remote-iothub
   #   image: openedge-remote-mqtt
+  #   replica: 1
   #   mounts:
   #     - name: remote-iothub-conf
   #       path: etc/openedge
@@ -36,6 +39,25 @@ services:
   #       readonly: true
   #     - name: remote-iothub-log
   #       path: var/log/openedge
+  - name: function-manager
+    image: openedge-function-manager
+    replica: 1
+    mounts:
+      - name: function-manager-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-manager-log
+        path: var/log/openedge
+  - name: function-sayhi
+    image: openedge-function-python27
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
 volumes:
   # hub
   - name: localhub-conf
@@ -60,3 +82,12 @@ volumes:
     path: var/db/openedge/remote-iothub-cert
   - name: remote-iothub-log
     path: var/db/openedge/remote-iothub-log
+  # function
+  - name: function-manager-conf
+    path: var/db/openedge/function-manager-conf
+  - name: function-manager-log
+    path: var/db/openedge/function-manager-log
+  - name: function-sayhi-conf
+    path: var/db/openedge/function-sayhi-conf
+  - name: function-sayhi-code
+    path: var/db/openedge/function-sayhi-code

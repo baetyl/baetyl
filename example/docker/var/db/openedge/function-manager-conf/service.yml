@@ -1,0 +1,26 @@
+name: function-manager
+hub:
+  address: tcp://localhub:1883
+  username: test
+  password: hahaha
+rules:
+  - clientid: localfunc-1
+    subscribe:
+      topic: t
+      qos: 1
+    function:
+      name: sayhi
+    publish:
+      topic: t/hi
+      qos: 1
+functions:
+  - name: sayhi
+    service: function-sayhi
+    instance:
+      min: 0
+      max: 10
+      idletime: 1m
+logger:
+  path: var/log/openedge/service.log
+  console: true
+  level: "debug"

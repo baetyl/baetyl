@@ -104,14 +104,14 @@ func (m *mo) ProcessPublish(p *packet.Publish) error {
 			m.report(err.Error())
 			break
 		}
-		err = m.prepare(updateEvent.Datasets)
+		err = m.prepare(updateEvent.Volumes)
 		if err != nil {
 			err := fmt.Errorf("update event invalid: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		err = m.ctx.UpdateSystem(&updateEvent.Config)
+		err = m.ctx.UpdateSystem(&updateEvent.AppConfig)
 		if err != nil {
 			err := fmt.Errorf("failed to update system: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
@@ -234,7 +234,7 @@ func defaults(c *Config) error {
 	}
 	c.Remote.Desire.Topic = fmt.Sprintf(c.Remote.Desire.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
-	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QoS: 1, Topic: c.Remote.Desire.Topic})
+	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QOS: 1, Topic: c.Remote.Desire.Topic})
 	return nil
 }
 

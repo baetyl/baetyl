@@ -9,13 +9,14 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-// Enviroment variable keys
+// Env variable keys
 const (
-	EnvHostOSKey       = "OPENEDGE_HOST_OS"
-	EnvMasterAPIKey    = "OPENEDGE_MASTER_API"
-	EnvServiceModeKey  = "OPENEDGE_SERVICE_MODE"
-	EnvServiceNameKey  = "OPENEDGE_SERVICE_NAME"
-	EnvServiceTokenKey = "OPENEDGE_SERVICE_TOKEN"
+	EnvHostOSKey         = "OPENEDGE_HOST_OS"
+	EnvMasterAPIKey      = "OPENEDGE_MASTER_API"
+	EnvRunningModeKey    = "OPENEDGE_RUNNING_MODE"
+	EnvServiceNameKey    = "OPENEDGE_SERVICE_NAME"
+	EnvServiceTokenKey   = "OPENEDGE_SERVICE_TOKEN"
+	EnvServiceAddressKey = "OPENEDGE_SERVICE_ADDRESS"
 )
 
 const (
@@ -29,37 +30,42 @@ const (
 	DefaultLogDir = "var/log/openedge"
 )
 
-// Context of module
+// Context of service
 type Context interface {
 	Config() *ServiceConfig
 	UpdateSystem(*AppConfig) error
 	InspectSystem() (*Inspect, error)
 	Log() logger.Logger
 	Wait()
+
+	GetAvailablePort() (string, error)
+	// GetServiceInfo(serviceName string) (*ServiceInfo, error)
+	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	StopServiceInstance(serviceName, instanceName string) error
 }
 
-type context struct {
+type ctx struct {
 	*Client
 	cfg ServiceConfig
 	log logger.Logger
 }
 
-func (c *context) Config() *ServiceConfig {
+func (c *ctx) Config() *ServiceConfig {
 	return &c.cfg
 }
 
-func (c *context) Log() logger.Logger {
+func (c *ctx) Log() logger.Logger {
 	return c.log
 }
 
-func (c *context) Wait() {
+func (c *ctx) Wait() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	signal.Ignore(syscall.SIGPIPE)
 	<-sig
 }
 
-func newContext() (*context, error) {
+func newContext() (*ctx, error) {
 	var cfg ServiceConfig
 	err := utils.LoadYAML(DefaultConfFile, &cfg)
 	if err != nil {
@@ -70,7 +76,7 @@ func newContext() (*context, error) {
 		return nil, err
 	}
 
-	c := &context{
+	c := &ctx{
 		cfg: cfg,
 		log: log,
 	}

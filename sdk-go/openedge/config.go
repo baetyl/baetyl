@@ -5,6 +5,7 @@ import (
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/mqtt"
+	"github.com/baidu/openedge/utils"
 	units "github.com/docker/go-units"
 )
 
@@ -24,9 +25,9 @@ type AppConfig struct {
 
 // ServiceInfo of service
 type ServiceInfo struct {
-	Name      string            `yaml:"name" json:"name" validate:"nonzero"`
+	Name      string            `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,31}$"`
 	Image     string            `yaml:"image" json:"image" validate:"nonzero"`
-	Replica   int               `yaml:"replica" json:"replica" default:"1"`
+	Replica   int               `yaml:"replica" json:"replica" default:"0"`
 	Mounts    []MountInfo       `yaml:"mounts" json:"mounts" default:"[]"`
 	Ports     []string          `yaml:"ports" json:"ports" default:"[]"`
 	Args      []string          `yaml:"args" json:"args" default:"[]"`
@@ -37,9 +38,13 @@ type ServiceInfo struct {
 
 // VolumeInfo volume info
 type VolumeInfo struct {
-	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9-_]{1\\,32}$"`
+	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,31}$"`
 	Path     string `yaml:"path" json:"path" validate:"nonzero"`
 	ReadOnly bool   `yaml:"readonly" json:"readonly" default:"false"`
+	Meta     struct {
+		URL string `yaml:"url" json:"url"`
+		MD5 string `yaml:"md5" json:"md5"`
+	} `yaml:"meta" json:"meta"`
 }
 
 // MountInfo volume mount info
@@ -122,3 +127,36 @@ func (m *Memory) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
+
+/* functions */
+
+// FunctionClientConfig functions client config
+type FunctionClientConfig struct {
+	Address string `yaml:"address" json:"address" validate:"nonzero"`
+	Message struct {
+		Length utils.Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
+	} `yaml:"message" json:"message"`
+	Backoff struct {
+		Max time.Duration `yaml:"max" json:"max" default:"1m"`
+	} `yaml:"backoff" json:"backoff"`
+	Timeout time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
+}
+
+// FunctionServerConfig functions server config
+type FunctionServerConfig struct {
+	Address string `yaml:"address" json:"address" validate:"nonzero"`
+	Message struct {
+		Length utils.Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
+	} `yaml:"message" json:"message"`
+}
+
+// Thread  struct {
+// 	Workers struct {
+// 		Max int `yaml:"max" json:"max"`
+// 	} `yaml:"workers" json:"workers"`
+// } `yaml:"thread" json:"thread"`
+// Concurrent struct {
+// 	RPCs struct {
+// 		Max int `yaml:"max" json:"max"`
+// 	} `yaml:"rpcs" json:"rpcs"`
+// } `yaml:"concurrent" json:"concurrent"`

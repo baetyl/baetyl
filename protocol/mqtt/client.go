@@ -94,7 +94,7 @@ func (c *Client) connect() (err error) {
 	for _, s := range c.config.Subscriptions {
 		subscribe.Subscriptions = append(subscribe.Subscriptions, packet.Subscription{
 			Topic: s.Topic,
-			QOS:   packet.QOS(s.QoS),
+			QOS:   packet.QOS(s.QOS),
 		})
 	}
 
