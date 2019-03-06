@@ -94,7 +94,6 @@ func (s *dockerService) startInstance(instanceName string, dynamicConfig map[str
 	if dynamicConfig != nil {
 		// now only support to use env to pass dynamic config
 		params.config.Env = []string{}
-		params.config.Env = append(params.config.Env, s.params.config.Env...)
 		for k, v := range dynamicConfig {
 			params.config.Env = append(params.config.Env, fmt.Sprintf("%s=%s", k, v))
 		}

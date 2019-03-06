@@ -68,6 +68,11 @@ func New(pwd, cfgFile string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
+	err = m.prepareServices()
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
 	err = m.startAllServices()
 	if err != nil {
 		m.Close()

@@ -26,6 +26,7 @@ func Factories() map[string]Factory {
 type Engine interface {
 	io.Closer
 	Name() string
+	Prepare([]openedge.ServiceInfo)
 	Run(openedge.ServiceInfo, map[string]openedge.VolumeInfo) (Service, error)
 }
 

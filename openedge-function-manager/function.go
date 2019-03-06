@@ -15,7 +15,7 @@ type Function struct {
 	cfg  FunctionInfo
 	ctx  openedge.Context
 	pool *pool.ObjectPool
-	ids  chan int
+	ids  chan string
 	log  logger.Logger
 	tomb utils.Tomb
 }
@@ -25,11 +25,11 @@ func NewFunction(ctx openedge.Context, cfg FunctionInfo) *Function {
 	f := &Function{
 		cfg: cfg,
 		ctx: ctx,
-		ids: make(chan int, cfg.Instance.Max),
+		ids: make(chan string, cfg.Instance.Max),
 		log: logger.WithField("function", cfg.Name),
 	}
 	for index := 1; index <= cfg.Instance.Max; index++ {
-		f.ids <- index
+		f.ids <- fmt.Sprintf("f%d", index)
 	}
 	pc := pool.NewDefaultPoolConfig()
 	pc.MinIdle = cfg.Instance.Min
@@ -74,16 +74,16 @@ func (f *Function) Close() error {
 	return f.tomb.Wait()
 }
 
-func (f *Function) getID() (int, error) {
+func (f *Function) getID() (string, error) {
 	select {
 	case index := <-f.ids:
 		return index, nil
 	case <-f.tomb.Dying():
-		return 0, fmt.Errorf("function closed")
+		return "", fmt.Errorf("function closed")
 	}
 }
 
-func (f *Function) returnID(index int) {
+func (f *Function) returnID(index string) {
 	select {
 	case f.ids <- index:
 	case <-f.tomb.Dying():

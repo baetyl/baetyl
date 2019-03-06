@@ -9,7 +9,6 @@ import (
 
 // Instance function instance
 type Instance struct {
-	i int
 	n string
 	f *Function
 	c *openedge.FClient
@@ -17,12 +16,11 @@ type Instance struct {
 
 // NewInstance creates a new instance
 func (f *Function) NewInstance() (*Instance, error) {
-	id, err := f.getID()
+	name, err := f.getID()
 	if err != nil {
 		f.log.WithError(err).Errorf("failed to create new instance")
 		return nil, err
 	}
-	name := fmt.Sprintf("f%d", id)
 	host, port := fmt.Sprintf("%s.%s", f.cfg.Service, name), "50051"
 	if os.Getenv(openedge.EnvRunningModeKey) != "docker" {
 		var err error
@@ -51,7 +49,6 @@ func (f *Function) NewInstance() (*Instance, error) {
 		return nil, err
 	}
 	return &Instance{
-		i: id,
 		n: name,
 		f: f,
 		c: cli,
@@ -65,7 +62,7 @@ func (i *Instance) Call(msg *openedge.FunctionMessage) (*openedge.FunctionMessag
 
 // Close closes instance
 func (i *Instance) Close() error {
-	i.f.returnID(i.i)
+	i.f.returnID(i.n)
 	if i.c != nil {
 		i.c.Close()
 	}

@@ -46,6 +46,11 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
+// Prepare prepares all images
+func (e *nativeEngine) Prepare([]openedge.ServiceInfo) {
+	// do nothing in native mode
+}
+
 // Run new service
 func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.VolumeInfo) (engine.Service, error) {
 	spwd := path.Join(e.pwd, "var", "run", "openedge", "services", cfg.Name)

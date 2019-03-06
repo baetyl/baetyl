@@ -19,9 +19,16 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
+func (m *Master) prepareServices() error {
+	if err := m.load(); err != nil {
+		return err
+	}
+	m.engine.Prepare(m.appcfg.Services)
+	return nil
+}
+
 func (m *Master) startAllServices() error {
-	err := m.load()
-	if err != nil {
+	if err := m.load(); err != nil {
 		return err
 	}
 	vs := make(map[string]openedge.VolumeInfo)

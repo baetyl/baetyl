@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -59,6 +60,19 @@ func (e *dockerEngine) Name() string {
 
 func (e *dockerEngine) Close() error {
 	return e.cli.Close()
+}
+
+// Prepare prepares all images
+func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
+	var wg sync.WaitGroup
+	for _, s := range ss {
+		wg.Add(1)
+		go func(i string, w *sync.WaitGroup) {
+			defer w.Done()
+			e.pullImage(i)
+		}(s.Image, &wg)
+	}
+	wg.Wait()
 }
 
 // Run a new service

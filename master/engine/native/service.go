@@ -75,7 +75,6 @@ func (s *nativeService) startInstance(instanceName string, dynamicConfig map[str
 	if dynamicConfig != nil {
 		// now only support to use env to pass dynamic config
 		params.env = []string{}
-		params.env = append(params.env, s.params.env...)
 		for k, v := range dynamicConfig {
 			params.env = append(params.env, fmt.Sprintf("%s=%s", k, v))
 		}
