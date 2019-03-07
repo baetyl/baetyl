@@ -21,25 +21,29 @@ func (f *Function) NewInstance() (*Instance, error) {
 		f.log.WithError(err).Errorf("failed to create new instance")
 		return nil, err
 	}
-	host, port := fmt.Sprintf("%s.%s", f.cfg.Service, name), "50051"
-	if os.Getenv(openedge.EnvRunningModeKey) != "docker" {
+	fullName := fmt.Sprintf("%s.%s", f.cfg.Service, name)
+	port := "50051"
+	serverHost := "0.0.0.0"
+	clientHost := fullName
+	if os.Getenv(openedge.EnvRunningModeKey) == "native" {
 		var err error
-		host = "127.0.0.1"
 		port, err = f.ctx.GetAvailablePort()
 		if err != nil {
 			return nil, err
 		}
+		serverHost = "127.0.0.1"
+		clientHost = serverHost
 	}
 
 	dc := make(map[string]string)
-	dc[openedge.EnvServiceNameKey] = host
-	dc[openedge.EnvServiceAddressKey] = fmt.Sprintf("0.0.0.0:%s", port)
+	dc[openedge.EnvServiceNameKey] = fullName
+	dc[openedge.EnvServiceAddressKey] = fmt.Sprintf("%s:%s", serverHost, port)
 	err = f.ctx.StartServiceInstance(f.cfg.Service, name, dc)
 	if err != nil {
 		return nil, err
 	}
 	fcc := openedge.FunctionClientConfig{}
-	fcc.Address = fmt.Sprintf("%s:%s", host, port)
+	fcc.Address = fmt.Sprintf("%s:%s", clientHost, port)
 	fcc.Message = f.cfg.Message
 	fcc.Timeout = f.cfg.Timeout
 	fcc.Backoff = f.cfg.Backoff
