@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/utils"
 	"github.com/creasty/defaults"
 	"github.com/gorilla/mux"
@@ -27,6 +28,7 @@ type Server struct {
 	addr   string
 	auth   func(u, p string) bool
 	router *mux.Router
+	log    logger.Logger
 }
 
 // NewServer creates a new http server
@@ -54,12 +56,14 @@ func NewServer(c ServerInfo, a func(u, p string) bool) (*Server, error) {
 			TLSConfig:    tls,
 			Handler:      router,
 		},
+		log: logger.WithField("api", "server"),
 	}, nil
 }
 
 // Handle handle requests
 func (s *Server) Handle(handle func(Params, []byte) ([]byte, error), method, path string, params ...string) {
 	s.router.HandleFunc(path, func(res http.ResponseWriter, req *http.Request) {
+		s.log.Infof("[%s] %s", req.Method, req.URL.String())
 		if s.auth != nil {
 			if !s.auth(req.Header.Get(headerKeyUsername), req.Header.Get(headerKeyPassword)) {
 				http.Error(res, errAccountUnauthorized.Error(), 401)

@@ -3,14 +3,14 @@ VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 PACKAGE_PREFIX?=
 GOFLAG?=-ldflags "-X main.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X 'main.GoVersion=`go version`' -X 'main.Version=$(VERSION)' -X 'master.Version=$(VERSION)'"
 
-all: openedge
+all: openedge package
 
 package: \
-	openedge-agent/package.tar.gz \
 	openedge-hub/package.tar.gz \
-	openedge-function/package.tar.gz \
-	openedge-function-python27/package.tar.gz \
-	openedge-remote-mqtt/package.tar.gz
+	openedge-agent/package.tar.gz \
+	openedge-remote-mqtt/package.tar.gz \
+	openedge-function-manager/package.tar.gz \
+	openedge-function-python27/package.tar.gz
 
 SRC=$(wildcard *.go) $(shell find master sdk-go protocol utils -type f -name '*.go')
 
@@ -18,20 +18,20 @@ openedge: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-agent/package.tar.gz:
-	make -C openedge-agent
-
 openedge-hub/package.tar.gz:
 	make -C openedge-hub
 
-openedge-function/package.tar.gz:
-	make -C openedge-function
-
-openedge-function-python27/package.tar.gz:
-	make -C openedge-function-python27
+openedge-agent/package.tar.gz:
+	make -C openedge-agent
 
 openedge-remote-mqtt/package.tar.gz:
 	make -C openedge-remote-mqtt
+
+openedge-function-manager/package.tar.gz:
+	make -C openedge-function-manager
+
+openedge-function-python27/package.tar.gz:
+	make -C openedge-function-python27
 
 test:
 	go test --race ./...
@@ -64,16 +64,22 @@ uninstall:
 install-native: openedge package
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
+
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-hub
 	tar xzvf openedge-hub/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-hub
+
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-agent
 	tar xzvf openedge-agent/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-agent
-	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function
-	tar xzvf openedge-function/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function
-	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
-	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function-python27
+
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-remote-mqtt
 	tar xzvf openedge-remote-mqtt/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-remote-mqtt
+
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-manager
+	tar xzvf openedge-function-manager/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function-manager
+
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
+	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function-python27
+
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
 uninstall-native:
@@ -89,29 +95,24 @@ uninstall-native:
 .PHONY: clean
 clean:
 	rm -f openedge
-	make -C openedge-agent clean
 	make -C openedge-hub clean
-	make -C openedge-function clean
-	make -C openedge-function-python27 clean
+	make -C openedge-agent clean
 	make -C openedge-remote-mqtt clean
+	make -C openedge-function-manager clean
+	make -C openedge-function-python27 clean
 	rm -f pubsub openedge-consistency
 
 rebuild: clean all
 
-pb: protobuf
-
-protobuf:
-	@echo "If protoc not installed, please get it from https://github.com/protocolbuffers/protobuf/releases"
-	# protoc -Imodule/function/runtime --cpp_out=openedge-function-runtime-cxx --grpc_out=openedge-function-runtime-cxx --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` openedge_function_runtime.proto
-	protoc -Imodule/function/runtime --go_out=plugins=grpc:module/function/runtime openedge_function_runtime.proto
-	python -m grpc_tools.protoc -Imodule/function/runtime --python_out=openedge-function-runtime-python27 --grpc_python_out=openedge-function-runtime-python27 openedge_function_runtime.proto
+generate:
+	go generate ./...
 
 image:
 	make -C openedge-hub image
-	make -C openedge-function image
-	make -C openedge-function-python27 image
-	make -C openedge-remote-mqtt image
 	make -C openedge-agent image
+	make -C openedge-remote-mqtt image
+	make -C openedge-function-manager image
+	make -C openedge-function-python27 image
 
 release:
 	env GOOS=linux GOARCH=amd64 make image

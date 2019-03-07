@@ -331,7 +331,7 @@ func TestClientPublishSubscribeQOS1(t *testing.T) {
 		return nil
 	}
 	cc := newConfig(t, port)
-	cc.Subscriptions = []TopicInfo{{Topic: "test", QoS: 1}}
+	cc.Subscriptions = []TopicInfo{{Topic: "test", QOS: 1}}
 	ch := &mackHandler{t: t, expectedProcessPublish: callback1, expectedProcessPuback: callback2}
 	c, err := NewClient(cc, ch, nil)
 	assert.NoError(t, err)

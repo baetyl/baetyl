@@ -1,6 +1,7 @@
 package master
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/baidu/openedge/master/engine"
@@ -18,23 +19,16 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) stopAllServices() {
-	var wg sync.WaitGroup
-	for _, s := range m.services.Items() {
-		wg.Add(1)
-		go func(s engine.Service) {
-			defer wg.Done()
-			s.Stop()
-			m.services.Remove(s.Name())
-			m.accounts.Remove(s.Name())
-		}(s.(engine.Service))
+func (m *Master) prepareServices() error {
+	if err := m.load(); err != nil {
+		return err
 	}
-	wg.Wait()
+	m.engine.Prepare(m.appcfg.Services)
+	return nil
 }
 
 func (m *Master) startAllServices() error {
-	err := m.load()
-	if err != nil {
+	if err := m.load(); err != nil {
 		return err
 	}
 	vs := make(map[string]openedge.VolumeInfo)
@@ -57,4 +51,36 @@ func (m *Master) startAllServices() error {
 		m.services.Set(s.Name, nxt)
 	}
 	return nil
+}
+
+func (m *Master) stopAllServices() {
+	var wg sync.WaitGroup
+	for _, s := range m.services.Items() {
+		wg.Add(1)
+		go func(s engine.Service) {
+			defer wg.Done()
+			s.Stop()
+			m.services.Remove(s.Name())
+			m.accounts.Remove(s.Name())
+		}(s.(engine.Service))
+	}
+	wg.Wait()
+}
+
+// StartServiceInstance starts a service instance
+func (m *Master) StartServiceInstance(service, instance string, dynamicConfig map[string]string) error {
+	s, ok := m.services.Get(service)
+	if !ok {
+		return fmt.Errorf("service (%s) not found", service)
+	}
+	return s.(engine.Service).StartInstance(instance, dynamicConfig)
+}
+
+// StopServiceInstance stops a service instance
+func (m *Master) StopServiceInstance(service, instance string) error {
+	s, ok := m.services.Get(service)
+	if !ok {
+		return fmt.Errorf("service (%s) not found", service)
+	}
+	return s.(engine.Service).StopInstance(instance)
 }

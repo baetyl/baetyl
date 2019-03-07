@@ -5,13 +5,17 @@ import (
 	"os"
 	"path"
 
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 	"github.com/baidubce/bce-sdk-go/http"
 	"github.com/mholt/archiver"
 )
 
-func (m *mo) prepare(all []DatasetInfo) error {
+func (m *mo) prepare(all []openedge.VolumeInfo) error {
 	for _, ds := range all {
+		if ds.Meta.URL == "" {
+			continue
+		}
 		_, err := m.download(ds)
 		if err != nil {
 			return err
@@ -20,17 +24,17 @@ func (m *mo) prepare(all []DatasetInfo) error {
 	return nil
 }
 
-func (m *mo) download(d DatasetInfo) (string, error) {
-	datasetDir := path.Join(m.dir, d.Name, d.Version)
-	datasetZipFile := path.Join(datasetDir, d.Name+".zip")
+func (m *mo) download(v openedge.VolumeInfo) (string, error) {
+	volumeDir := path.Join(m.dir, path.Clean(v.Path))
+	volumeZipFile := path.Join(volumeDir, v.Name+".zip")
 
-	// dataset exists
-	if utils.FileExists(datasetZipFile) {
-		return datasetDir, nil
+	// volume exists
+	if utils.FileExists(volumeZipFile) {
+		return volumeDir, nil
 	}
 
 	req := new(http.Request)
-	req.SetUri(d.URL)
+	req.SetUri(v.Meta.URL)
 	res, err := http.Execute(req)
 	if err != nil {
 		return "", err
@@ -38,26 +42,26 @@ func (m *mo) download(d DatasetInfo) (string, error) {
 	body := res.Body()
 	defer body.Close()
 
-	err = utils.WriteFile(datasetZipFile, body)
+	err = utils.WriteFile(volumeZipFile, body)
 	if err != nil {
-		os.RemoveAll(datasetDir)
+		os.RemoveAll(volumeDir)
 		return "", err
 	}
 
-	datasetMD5, err := utils.CalculateFileMD5(datasetZipFile)
+	volumeMD5, err := utils.CalculateFileMD5(volumeZipFile)
 	if err != nil {
-		os.RemoveAll(datasetDir)
+		os.RemoveAll(volumeDir)
 		return "", err
 	}
-	if datasetMD5 != d.MD5 {
-		os.RemoveAll(datasetDir)
-		return "", fmt.Errorf("dateset (%s) downloaded with unexpected MD5", d.Name)
+	if volumeMD5 != v.Meta.MD5 {
+		os.RemoveAll(volumeDir)
+		return "", fmt.Errorf("dateset (%s) downloaded with unexpected MD5", v.Name)
 	}
 
-	err = archiver.Zip.Open(datasetZipFile, datasetDir)
+	err = archiver.Zip.Open(volumeZipFile, volumeDir)
 	if err != nil {
-		os.RemoveAll(datasetDir)
+		os.RemoveAll(volumeDir)
 		return "", err
 	}
-	return datasetDir, nil
+	return volumeDir, nil
 }

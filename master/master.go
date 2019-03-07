@@ -68,6 +68,11 @@ func New(pwd, cfgFile string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
+	err = m.prepareServices()
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
 	err = m.startAllServices()
 	if err != nil {
 		m.Close()
@@ -114,6 +119,6 @@ func defaults(c *Config) error {
 		utils.SetEnv(openedge.EnvMasterAPIKey, addr)
 	}
 	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
-	utils.SetEnv(openedge.EnvServiceModeKey, c.Mode)
+	utils.SetEnv(openedge.EnvRunningModeKey, c.Mode)
 	return nil
 }

@@ -19,9 +19,9 @@ import (
 const defaultNetworkName = "openedge"
 
 type containerConfigs struct {
-	config        *container.Config
-	hostConfig    *container.HostConfig
-	networkConfig *network.NetworkingConfig
+	config        container.Config
+	hostConfig    container.HostConfig
+	networkConfig network.NetworkingConfig
 }
 
 func (e *dockerEngine) initNetwork() error {
@@ -37,7 +37,7 @@ func (e *dockerEngine) initNetwork() error {
 	}
 	if len(nws) > 0 {
 		e.nid = nws[0].ID
-		e.log.Infof("network (%s:%s) exists", e.nid[:12], defaultNetworkName)
+		e.log.Debugf("network (%s:%s) exists", e.nid[:12], defaultNetworkName)
 		return nil
 	}
 	nw, err := e.cli.NetworkCreate(ctx, defaultNetworkName, types.NetworkCreate{Driver: "bridge", Scope: "local"})
@@ -49,7 +49,7 @@ func (e *dockerEngine) initNetwork() error {
 		e.log.Warnf(nw.Warning)
 	}
 	e.nid = nw.ID
-	e.log.Infof("network (%s:%s) created", e.nid[:12], defaultNetworkName)
+	e.log.Debugf("network (%s:%s) created", e.nid[:12], defaultNetworkName)
 	return nil
 }
 
@@ -66,7 +66,7 @@ func (e *dockerEngine) pullImage(name string) error {
 
 func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string, error) {
 	ctx := context.Background()
-	container, err := e.cli.ContainerCreate(ctx, cfg.config, cfg.hostConfig, cfg.networkConfig, name)
+	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, &cfg.networkConfig, name)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to create container (%s)", name)
 		return "", err
@@ -76,7 +76,7 @@ func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string
 		e.log.WithError(err).Warnf("failed to start container (%s:%s)", container.ID[:12], name)
 		return "", err
 	}
-	e.log.Infof("container (%s:%s) started", container.ID[:12], name)
+	e.log.Debugf("container (%s:%s) started", container.ID[:12], name)
 	return container.ID, nil
 }
 
@@ -86,7 +86,7 @@ func (e *dockerEngine) restartContainer(cid string) error {
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to restart container (%s)", cid[:12])
 	} else {
-		e.log.Infof("container (%s) restarted", cid[:12])
+		e.log.Debugf("container (%s) restarted", cid[:12])
 	}
 	return err
 }
@@ -99,7 +99,7 @@ func (e *dockerEngine) waitContainer(cid string) error {
 		e.log.WithError(err).Warnf("failed to wait container (%s)", cid[:12])
 		return err
 	case status := <-statusChan:
-		e.log.Infof("container (%s) exit status: %v", cid[:12], status)
+		e.log.Debugf("container (%s) exit status: %v", cid[:12], status)
 		if status.Error != nil {
 			return fmt.Errorf(status.Error.Message)
 		} else if status.StatusCode != 0 {
@@ -111,7 +111,7 @@ func (e *dockerEngine) waitContainer(cid string) error {
 }
 
 func (e *dockerEngine) stopContainer(cid string) error {
-	e.log.Infof("to stop container (%s)", cid[:12])
+	e.log.Debugf("to stop container (%s)", cid[:12])
 
 	ctx := context.Background()
 	err := e.cli.ContainerStop(ctx, cid, &e.grace)
@@ -129,7 +129,7 @@ func (e *dockerEngine) stopContainer(cid string) error {
 		e.log.WithError(err).Warnf("failed to wait container (%s)", cid[:12])
 		return err
 	case status := <-statusChan:
-		e.log.Infof("container (%s) exit status: %v", cid[:12], status)
+		e.log.Debugf("container (%s) exit status: %v", cid[:12], status)
 		return nil
 	}
 }
@@ -140,7 +140,7 @@ func (e *dockerEngine) removeContainer(cid string) error {
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to remove container (%s)", cid[:12])
 	} else {
-		e.log.Infof("container (%s) removed", cid[:12])
+		e.log.Debugf("container (%s) removed", cid[:12])
 	}
 	return err
 }
@@ -161,7 +161,7 @@ func (e *dockerEngine) removeContainerByName(name string) error {
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to remove container (%s:%s)", containers[0].ID[:12], name)
 	} else {
-		e.log.Infof("container (%s:%s) removed", containers[0].ID[:12], name)
+		e.log.Debugf("container (%s:%s) removed", containers[0].ID[:12], name)
 	}
 	return err
 }

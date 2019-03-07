@@ -20,3 +20,6 @@
 /**/debug
 /**/*.log
 /cover*.out
+
+/example/**/*-cert
+/openedge-timer

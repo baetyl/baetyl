@@ -11,8 +11,8 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-// Inspect inspects system
-func (m *Master) Inspect() *openedge.Inspect {
+// InspectSystem inspects system
+func (m *Master) InspectSystem() *openedge.Inspect {
 	ms := openedge.NewInspect()
 	ms.Time = time.Now().UTC()
 	ms.Platform.Mode = m.cfg.Mode

@@ -16,30 +16,38 @@ type dockerInstance struct {
 	tomb    utils.Tomb
 }
 
-func (s *dockerService) startInstance() error {
-	// TODO: support multiple instances
-	// can only start one instance now, use service name as instance name
-	cid, err := s.engine.startContainer(s.cfg.Name, s.params)
+func (s *dockerService) newInstance(name string, params containerConfigs) (*dockerInstance, error) {
+	log := s.log.WithField("instance", name)
+	containerName := s.cfg.Name
+	if name != "" {
+		containerName = containerName + "." + name
+	}
+	cid, err := s.engine.startContainer(containerName, params)
 	if err != nil {
-		s.log.WithError(err).Warnln("failed to start instance, clean and retry")
+		log.WithError(err).Warnln("failed to start instance, clean and retry")
 		// remove and retry
-		s.engine.removeContainerByName(s.cfg.Name)
-		cid, err = s.engine.startContainer(s.cfg.Name, s.params)
+		s.engine.removeContainerByName(containerName)
+		cid, err = s.engine.startContainer(containerName, params)
 		if err != nil {
-			s.log.WithError(err).Warnln("failed to start instance again")
-			return err
+			log.WithError(err).Warnln("failed to start instance again")
+			return nil, err
 		}
 	}
 	i := &dockerInstance{
 		id:      cid,
-		name:    s.cfg.Name,
+		name:    name,
 		service: s,
-		log:     s.log.WithField("instance", cid[:12]),
+		log:     log.WithField("cid", cid[:12]),
 	}
-	s.instances.Set(s.cfg.Name, i)
-	return i.tomb.Go(func() error {
+	err = i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
+	if err != nil {
+		i.Close()
+		return nil, err
+	}
+	i.log.Infof("instance started")
+	return i, nil
 }
 
 func (i *dockerInstance) ID() string {
@@ -67,12 +75,15 @@ func (i *dockerInstance) Wait(s chan<- error) {
 func (i *dockerInstance) Restart() error {
 	err := i.service.engine.restartContainer(i.id)
 	if err != nil {
-		i.log.WithError(err).Errorf("failed to restart instance, to retry")
+		i.log.WithError(err).Errorf("failed to restart instance")
+		return err
 	}
-	return err
+	i.log.Infof("instance restarted")
+	return nil
 }
 
 func (i *dockerInstance) Stop() {
+	i.log.Infof("to stop instance")
 	err := i.service.engine.stopContainer(i.id)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to stop instance")
@@ -85,6 +96,7 @@ func (i *dockerInstance) Dying() <-chan struct{} {
 }
 
 func (i *dockerInstance) Close() error {
+	i.log.Infof("to close instance")
 	i.tomb.Kill(nil)
 	return i.tomb.Wait()
 }

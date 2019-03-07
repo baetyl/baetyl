@@ -25,19 +25,9 @@ type Config struct {
 	} `yaml:"remote" json:"remote"`
 }
 
-// DatasetInfo dataset information
-type DatasetInfo struct {
-	Name    string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9-_]{1,32}$"`
-	Version string `yaml:"version" json:"version" validate:"regexp=^[a-zA-Z0-9-_]{0,32}$"`
-	URL     string `yaml:"url" json:"url"`
-	MD5     string `yaml:"md5" json:"md5"`
-}
-
 // UpdateEvent update event
 type UpdateEvent struct {
-	Version  string                 `yaml:"version" json:"version" validate:"regexp=^[a-zA-Z0-9-_]{1,32}$"`
-	Config   openedge.AppConfig `yaml:"config" json:"config" validate:"nonzero"`
-	Datasets []DatasetInfo          `yaml:"datasets" json:"datasets" default:"[]"`
+	openedge.AppConfig `yaml:",inline" json:",inline"`
 }
 
 func newUpdateEvent(d []byte) (*UpdateEvent, error) {

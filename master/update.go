@@ -16,8 +16,8 @@ var appDir = path.Join("var", "db", "openedge")
 var appConfigFile = path.Join(appDir, "application.yml")
 var appBackupFile = path.Join(appDir, "application.yml.old")
 
-// Update updates system
-func (m *Master) Update(cfg *openedge.AppConfig) error {
+// UpdateSystem updates system
+func (m *Master) UpdateSystem(cfg *openedge.AppConfig) error {
 	if cfg == nil {
 		err := fmt.Errorf("failed to update system: application config is null")
 		m.log.Errorf(err.Error())
@@ -43,11 +43,15 @@ func (m *Master) update(cfg *openedge.AppConfig) error {
 	}
 	defer m.clean()
 
-	// prepare new config
-	err = m.prepare(cfg)
+	// save new config
+	err = m.save(cfg)
 	if err != nil {
 		return err
 	}
+
+	// prepare services
+	m.engine.Prepare(cfg.Services)
+
 	// stop all old services
 	m.stopAllServices()
 	// start all new services
@@ -84,7 +88,7 @@ func (m *Master) rollback() error {
 	return os.Rename(appBackupFile, appConfigFile)
 }
 
-func (m *Master) prepare(cfg *openedge.AppConfig) error {
+func (m *Master) save(cfg *openedge.AppConfig) error {
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return err

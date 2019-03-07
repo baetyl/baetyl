@@ -3,16 +3,21 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/baidu/openedge/protocol/http"
 	"github.com/baidu/openedge/sdk-go/openedge"
+	"github.com/baidu/openedge/utils"
 )
 
 // Master master interface
 type Master interface {
 	Auth(u, p string) bool
-	Inspect() *openedge.Inspect
-	Update(*openedge.AppConfig) error
+	InspectSystem() *openedge.Inspect
+	UpdateSystem(*openedge.AppConfig) error
+
+	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	StopServiceInstance(serviceName, instanceName string) error
 }
 
 // Server master api server
@@ -31,8 +36,12 @@ func New(c http.ServerInfo, m Master) (*Server, error) {
 		m: m,
 		s: svr,
 	}
-	s.s.Handle(s.inspect, "GET", "/inspect")
-	s.s.Handle(s.update, "PUT", "/update")
+	s.s.Handle(s.inspectSystem, "GET", "/system/inspect")
+	s.s.Handle(s.updateSystem, "PUT", "/system/update")
+
+	s.s.Handle(s.getAvailablePort, "GET", "/ports/available")
+	s.s.Handle(s.startServiceInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/start")
+	s.s.Handle(s.stopServiceInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/stop")
 	return s, s.s.Start()
 }
 
@@ -41,15 +50,15 @@ func (s *Server) Close() error {
 	return s.s.Close()
 }
 
-func (s *Server) inspect(_ http.Params, reqBody []byte) ([]byte, error) {
-	resBody, err := json.Marshal(s.m.Inspect())
+func (s *Server) inspectSystem(_ http.Params, reqBody []byte) ([]byte, error) {
+	resBody, err := json.Marshal(s.m.InspectSystem())
 	if err != nil {
 		return nil, err
 	}
 	return resBody, nil
 }
 
-func (s *Server) update(_ http.Params, reqBody []byte) ([]byte, error) {
+func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
 	}
@@ -58,6 +67,54 @@ func (s *Server) update(_ http.Params, reqBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	go s.m.Update(d)
+	go s.m.UpdateSystem(d)
 	return nil, nil
+}
+
+func (s *Server) getAvailablePort(_ http.Params, reqBody []byte) ([]byte, error) {
+	port, err := utils.GetAvailablePort("127.0.0.1")
+	if err != nil {
+		return nil, err
+	}
+	res := make(map[string]string)
+	res["port"] = strconv.Itoa(port)
+	resBody, err := json.Marshal(res)
+	if err != nil {
+		return nil, err
+	}
+	return resBody, nil
+}
+
+func (s *Server) startServiceInstance(params http.Params, reqBody []byte) ([]byte, error) {
+	if reqBody == nil {
+		return nil, fmt.Errorf("request body invalid")
+	}
+	serviceName, ok := params["serviceName"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing service name")
+	}
+	instanceName, ok := params["instanceName"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing instance name")
+	}
+	dynamicConfig := make(map[string]string)
+	err := json.Unmarshal(reqBody, &dynamicConfig)
+	if err != nil {
+		return nil, err
+	}
+	err = s.m.StartServiceInstance(serviceName, instanceName, dynamicConfig)
+	return nil, err
+}
+
+func (s *Server) stopServiceInstance(params http.Params, _ []byte) ([]byte, error) {
+	serviceName, ok := params["serviceName"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing service name")
+	}
+	instanceName, ok := params["instanceName"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing instance name")
+	}
+	err := s.m.StopServiceInstance(serviceName, instanceName)
+	return nil, err
 }

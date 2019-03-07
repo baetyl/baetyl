@@ -6,11 +6,11 @@ import (
 
 // Run service
 func Run(handle func(Context) error) {
-	ctx, err := newContext()
+	c, err := newContext()
 	if err != nil {
 		logger.Fatalln("failed to create context:", err.Error())
 	}
-	err = handle(ctx)
+	err = handle(c)
 	if err != nil {
 		logger.Fatalln("failed to run service:", err.Error())
 	}

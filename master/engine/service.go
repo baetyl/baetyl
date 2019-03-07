@@ -10,7 +10,10 @@ import (
 type Service interface {
 	Name() string
 	Stats() openedge.ServiceStatus
+	Start() error
 	Stop()
+	StartInstance(instanceName string, dynamicConfig map[string]string) error
+	StopInstance(instanceName string) error
 }
 
 // Instance interfaces of instance
