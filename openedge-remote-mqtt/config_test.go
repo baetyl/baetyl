@@ -20,10 +20,10 @@ func TestConfig(t *testing.T) {
 	assert.Equal(t, "", c.Rules[0].Hub.ClientID)
 	assert.Len(t, c.Rules[0].Hub.Subscriptions, 1)
 	assert.Equal(t, "t", c.Rules[0].Hub.Subscriptions[0].Topic)
-	assert.Equal(t, byte(0), c.Rules[0].Hub.Subscriptions[0].QOS)
+	assert.Equal(t, uint32(0), c.Rules[0].Hub.Subscriptions[0].QOS)
 	assert.Equal(t, "iothub", c.Rules[0].Remote.Name)
 	assert.Equal(t, "", c.Rules[0].Remote.ClientID)
 	assert.Len(t, c.Rules[0].Remote.Subscriptions, 1)
 	assert.Equal(t, "t/remote", c.Rules[0].Remote.Subscriptions[0].Topic)
-	assert.Equal(t, byte(1), c.Rules[0].Remote.Subscriptions[0].QOS)
+	assert.Equal(t, uint32(1), c.Rules[0].Remote.Subscriptions[0].QOS)
 }

@@ -21,6 +21,9 @@ type RuleInfo struct {
 		Name string `yaml:"name" json:"name" validate:"nonzero"`
 	} `yaml:"function" json:"function"`
 	Publish mqtt.TopicInfo `yaml:"publish" json:"publish"`
+	Retry   struct {
+		Max int `yaml:"max" json:"max" default:"3"`
+	} `yaml:"retry" json:"retry"`
 }
 
 // FunctionInfo function config
