@@ -11,14 +11,14 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-// Inspect inspects system
-func (m *Master) Inspect() *openedge.Inspect {
+// InspectSystem inspects system
+func (m *Master) InspectSystem() *openedge.Inspect {
 	ms := openedge.NewInspect()
 	ms.Time = time.Now().UTC()
-	ms.Platform.Mode = m.inicfg.Mode
+	ms.Platform.Mode = m.cfg.Mode
 	ms.Platform.GoVersion = runtime.Version()
 	ms.Platform.BinVersion = Version
-	ms.Platform.ConfVersion = m.curcfg.Version
+	ms.Platform.ConfVersion = m.appcfg.Version
 	ms.HostInfo["os"] = runtime.GOOS
 	ms.HostInfo["arch"] = runtime.GOARCH
 	gpus, err := utils.GetGpu()

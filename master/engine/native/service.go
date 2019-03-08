@@ -1,12 +1,12 @@
 package native
 
 import (
+	"fmt"
 	"os"
-	"path"
+	"strconv"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/orcaman/concurrent-map"
 )
@@ -18,8 +18,8 @@ type packageConfig struct {
 }
 
 type nativeService struct {
-	info      engine.ServiceInfo
-	cfgs      processConfigs
+	cfg       openedge.ServiceInfo
+	params    processConfigs
 	engine    *nativeEngine
 	instances cmap.ConcurrentMap
 	wdir      string
@@ -27,15 +27,33 @@ type nativeService struct {
 }
 
 func (s *nativeService) Name() string {
-	return s.info.Name
+	return s.cfg.Name
 }
 
 func (s *nativeService) Stats() openedge.ServiceStatus {
 	return openedge.ServiceStatus{}
 }
 
+func (s *nativeService) Start() error {
+	s.log.Debugf("%s replica: %d", s.cfg.Name, s.cfg.Replica)
+	var instanceName string
+	for i := 0; i < s.cfg.Replica; i++ {
+		if i == 0 {
+			instanceName = ""
+		} else {
+			instanceName = strconv.Itoa(i)
+		}
+		err := s.startInstance(instanceName, nil)
+		if err != nil {
+			s.Stop()
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *nativeService) Stop() {
-	defer os.RemoveAll(s.cfgs.pwd)
+	defer os.RemoveAll(s.params.pwd)
 	var wg sync.WaitGroup
 	for _, v := range s.instances.Items() {
 		wg.Add(1)
@@ -47,32 +65,34 @@ func (s *nativeService) Stop() {
 	wg.Wait()
 }
 
-func (s *nativeService) start() error {
-	mounts := make([]engine.MountInfo, 0)
-	datasetsDir := path.Join("var", "db", "openedge", "datasets")
-	for _, m := range s.info.Datasets {
-		v := path.Join(datasetsDir, m.Name, m.Version)
-		mounts = append(mounts, engine.MountInfo{Volume: v, Target: m.Target, ReadOnly: m.ReadOnly})
-	}
-	for _, m := range s.info.Volumes {
-		mounts = append(mounts, m)
-	}
+func (s *nativeService) StartInstance(instanceName string, dynamicConfig map[string]string) error {
+	return s.startInstance(instanceName, dynamicConfig)
+}
 
-	for _, m := range mounts {
-		src := path.Join(s.engine.pwd, m.Volume)
-		err := os.MkdirAll(src, 0755)
-		if err != nil {
-			return err
-		}
-		dst := path.Join(s.cfgs.pwd, m.Target)
-		err = os.MkdirAll(path.Dir(dst), 0755)
-		if err != nil {
-			return err
-		}
-		err = os.Symlink(src, dst)
-		if err != nil {
-			return err
+func (s *nativeService) startInstance(instanceName string, dynamicConfig map[string]string) error {
+	s.StopInstance(instanceName)
+	params := s.params
+	if dynamicConfig != nil {
+		// now only support to use env to pass dynamic config
+		params.env = []string{}
+		for k, v := range dynamicConfig {
+			params.env = append(params.env, fmt.Sprintf("%s=%s", k, v))
 		}
 	}
-	return s.startInstance()
+	i, err := s.newInstance(instanceName, params)
+	if err != nil {
+		return err
+	}
+	s.instances.Set(instanceName, i)
+	return nil
+}
+
+func (s *nativeService) StopInstance(instanceName string) error {
+	i, ok := s.instances.Get(instanceName)
+	if !ok {
+		s.log.Debugf("instance (%s) not found", instanceName)
+		return nil
+	}
+	s.instances.Remove(instanceName)
+	return i.(*nativeInstance).Close()
 }

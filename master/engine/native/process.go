@@ -16,7 +16,7 @@ type processConfigs struct {
 	env  []string
 }
 
-func (e *nativeEngine) startProcess(name string, cfg processConfigs) (*os.Process, error) {
+func (e *nativeEngine) startProcess(cfg processConfigs) (*os.Process, error) {
 	p, err := os.StartProcess(
 		cfg.exec,
 		cfg.argv,
@@ -31,10 +31,10 @@ func (e *nativeEngine) startProcess(name string, cfg processConfigs) (*os.Proces
 		},
 	)
 	if err != nil {
-		e.log.WithError(err).Warnf("failed to start process (%s)", name)
+		e.log.WithError(err).Warnf("failed to start process")
 		return nil, err
 	}
-	e.log.Infof("process (%d:%s) started", p.Pid, name)
+	e.log.Debugf("process (%d) started", p.Pid)
 	return p, nil
 }
 
@@ -44,7 +44,7 @@ func (e *nativeEngine) waitProcess(p *os.Process) error {
 		e.log.WithError(err).Warnf("failed to wait process (%d)", p.Pid)
 		return err
 	}
-	e.log.Infof("process (%d) %s", p.Pid, ps.String())
+	e.log.Debugf("process (%d) %s", p.Pid, ps.String())
 	if !ps.Success() {
 		return fmt.Errorf("process exit code: %s", ps.String())
 	}
@@ -52,7 +52,7 @@ func (e *nativeEngine) waitProcess(p *os.Process) error {
 }
 
 func (e *nativeEngine) stopProcess(p *os.Process) error {
-	e.log.Infof("to stop process (%d)", p.Pid)
+	e.log.Debugf("to stop process (%d)", p.Pid)
 
 	err := p.Signal(syscall.SIGTERM)
 	if err != nil {

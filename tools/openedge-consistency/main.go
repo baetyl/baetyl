@@ -7,13 +7,15 @@ func main() {
 }
 
 // import (
-// 	"github.com/baidu/openedge/module"
 // 	"encoding/json"
 // 	"flag"
 // 	"fmt"
 // 	"log"
+// 	"os"
+// 	"os/signal"
 // 	"sync"
 // 	"sync/atomic"
+// 	"syscall"
 // 	"time"
 
 // 	"github.com/docker/distribution/uuid"
@@ -178,8 +180,8 @@ func main() {
 // 	password := flag.String("password", "hahaha", "Password which is used to connect to the mqtt broker")
 // 	pubnum := flag.Uint64("pubs", 1, "Number of publisher")
 // 	subnum := flag.Uint64("subs", 1, "Number of subscription")
-// 	pubqos := flag.Uint64("pubq", 0, "QoS level of publisher")
-// 	subqos := flag.Uint64("subq", 0, "QoS level of subscription")
+// 	pubqos := flag.Uint64("pubq", 0, "QOS level of publisher")
+// 	subqos := flag.Uint64("subq", 0, "QOS level of subscription")
 // 	pubtopic := flag.String("pubt", "benchmark", "Topic of publisher")
 // 	subtopic := flag.String("subt", "benchmark", "Topic of subscription")
 // 	total := flag.Uint64("total", 1000, "Total number of messages")
@@ -290,7 +292,10 @@ func main() {
 // 	fmt.Println("Resend count: ", resendCount)
 // 	fmt.Println("Validated")
 
-// 	module.Wait()
+// 	sig := make(chan os.Signal, 1)
+// 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
+// 	signal.Ignore(syscall.SIGPIPE)
+// 	<-sig
 // }
 
 // func watching() {

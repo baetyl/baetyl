@@ -1,11 +1,11 @@
 package master
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/sdk-go/openedge"
-	"github.com/baidu/openedge/utils"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -19,17 +19,38 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) initServices() error {
-	if utils.FileExists(configFile) {
-		curcfg := new(DynamicConfig)
-		err := utils.LoadYAML(configFile, curcfg)
+func (m *Master) prepareServices() error {
+	if err := m.load(); err != nil {
+		return err
+	}
+	m.engine.Prepare(m.appcfg.Services)
+	return nil
+}
+
+func (m *Master) startAllServices() error {
+	if err := m.load(); err != nil {
+		return err
+	}
+	vs := make(map[string]openedge.VolumeInfo)
+	for _, v := range m.appcfg.Volumes {
+		vs[v.Name] = v
+	}
+	for _, s := range m.appcfg.Services {
+		cur, ok := m.services.Get(s.Name)
+		if ok {
+			cur.(engine.Service).Stop()
+		}
+		token := uuid.Generate().String()
+		m.accounts.Set(s.Name, token)
+		s.Env[openedge.EnvServiceNameKey] = s.Name
+		s.Env[openedge.EnvServiceTokenKey] = token
+		nxt, err := m.engine.Run(s, vs)
 		if err != nil {
 			return err
 		}
-		m.curcfg = curcfg
-		return m.startServices(m.curcfg.Services)
+		m.services.Set(s.Name, nxt)
 	}
-	return m.startServices(m.inicfg.Services)
+	return nil
 }
 
 func (m *Master) stopAllServices() {
@@ -46,39 +67,20 @@ func (m *Master) stopAllServices() {
 	wg.Wait()
 }
 
-func (m *Master) startServices(ss []engine.ServiceInfo) error {
-	for _, s := range ss {
-		cur, ok := m.services.Get(s.Name)
-		if ok {
-			cur.(engine.Service).Stop()
-		}
-		token := uuid.Generate().String()
-		m.accounts.Set(s.Name, token)
-		s.Env[openedge.EnvServiceNameKey] = s.Name
-		s.Env[openedge.EnvServiceTokenKey] = token
-		nxt, err := m.engine.Run(s)
-		if err != nil {
-			return err
-		}
-		m.services.Set(s.Name, nxt)
+// StartServiceInstance starts a service instance
+func (m *Master) StartServiceInstance(service, instance string, dynamicConfig map[string]string) error {
+	s, ok := m.services.Get(service)
+	if !ok {
+		return fmt.Errorf("service (%s) not found", service)
 	}
-	return nil
+	return s.(engine.Service).StartInstance(instance, dynamicConfig)
 }
 
-func (m *Master) stopServices(ss []engine.ServiceInfo) {
-	var wg sync.WaitGroup
-	for _, s := range ss {
-		cur, ok := m.services.Get(s.Name)
-		if !ok {
-			continue
-		}
-		wg.Add(1)
-		go func(ss engine.Service) {
-			defer wg.Done()
-			ss.Stop()
-			m.services.Remove(ss.Name())
-			m.accounts.Remove(ss.Name())
-		}(cur.(engine.Service))
+// StopServiceInstance stops a service instance
+func (m *Master) StopServiceInstance(service, instance string) error {
+	s, ok := m.services.Get(service)
+	if !ok {
+		return fmt.Errorf("service (%s) not found", service)
 	}
-	wg.Wait()
+	return s.(engine.Service).StopInstance(instance)
 }

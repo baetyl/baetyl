@@ -5,13 +5,14 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/jpillora/backoff"
 )
 
 // Supervisee supervisee supervised by supervisor
 type Supervisee interface {
 	Log() logger.Logger
-	Policy() RestartPolicyInfo
+	Policy() openedge.RestartPolicyInfo
 	Wait(w chan<- error)
 	Dying() <-chan struct{}
 	Restart() error
@@ -38,14 +39,14 @@ func Supervising(supervisee Supervisee) error {
 			return nil
 		case err := <-s:
 			switch p.Policy {
-			case RestartOnFailure:
+			case openedge.RestartOnFailure:
 				if err == nil {
 					return nil
 				}
 				goto RESTART
-			case RestartAlways:
+			case openedge.RestartAlways:
 				goto RESTART
-			case RestartNo:
+			case openedge.RestartNo:
 				return nil
 			default:
 				l.Errorf("Restart policy (%s) invalid", p.Policy)

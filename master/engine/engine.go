@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"time"
+
+	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
 // Factory create engine by given config
@@ -24,7 +26,8 @@ func Factories() map[string]Factory {
 type Engine interface {
 	io.Closer
 	Name() string
-	Run(ServiceInfo) (Service, error)
+	Prepare([]openedge.ServiceInfo)
+	Run(openedge.ServiceInfo, map[string]openedge.VolumeInfo) (Service, error)
 }
 
 // New engine by given name

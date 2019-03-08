@@ -6,6 +6,7 @@ import (
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -14,33 +15,39 @@ type nativeInstance struct {
 	name    string
 	process *os.Process
 	service *nativeService
+	params  processConfigs
 	log     logger.Logger
 	tomb    utils.Tomb
 }
 
-func (s *nativeService) startInstance() error {
-	// TODO: support multiple instances
-	// can only start one instance now, use service name as instance name
-	p, err := s.engine.startProcess(s.info.Name, s.cfgs)
+func (s *nativeService) newInstance(name string, params processConfigs) (*nativeInstance, error) {
+	log := s.log.WithField("instance", name)
+	p, err := s.engine.startProcess(params)
 	if err != nil {
-		s.log.WithError(err).Warnln("failed to start instance")
+		log.WithError(err).Warnf("failed to start instance")
 		// retry
-		p, err = s.engine.startProcess(s.info.Name, s.cfgs)
+		p, err = s.engine.startProcess(params)
 		if err != nil {
-			s.log.WithError(err).Warnln("failed to start instance again")
-			return err
+			log.WithError(err).Warnf("failed to start instance again")
+			return nil, err
 		}
 	}
 	i := &nativeInstance{
-		name:    s.info.Name,
+		name:    name,
 		process: p,
 		service: s,
-		log:     s.log.WithField("instance", p.Pid),
+		params:  params,
+		log:     log.WithField("pid", p.Pid),
 	}
-	s.instances.Set(s.info.Name, i)
-	return i.tomb.Go(func() error {
+	err = i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
+	if err != nil {
+		i.Close()
+		return nil, err
+	}
+	i.log.Infof("instance started")
+	return i, nil
 }
 
 func (i *nativeInstance) ID() string {
@@ -55,8 +62,8 @@ func (i *nativeInstance) Log() logger.Logger {
 	return i.log
 }
 
-func (i *nativeInstance) Policy() engine.RestartPolicyInfo {
-	return i.service.info.Restart
+func (i *nativeInstance) Policy() openedge.RestartPolicyInfo {
+	return i.service.cfg.Restart
 }
 
 func (i *nativeInstance) Wait(s chan<- error) {
@@ -70,20 +77,25 @@ func (i *nativeInstance) Restart() error {
 	// if err != nil {
 	// 	i.log.WithError(err).Errorf("failed to stop instance")
 	// }
-	p, err := i.service.engine.startProcess(i.service.info.Name, i.service.cfgs)
+	p, err := i.service.engine.startProcess(i.params)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to restart instance")
 		return err
 	}
 	i.process = p
+	i.log = i.log.WithField("pid", p.Pid)
+	i.log.Infof("instance restarted")
 	return nil
 }
 
 func (i *nativeInstance) Stop() {
+	i.log.Infof("to stop instance")
 	err := i.service.engine.stopProcess(i.process)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to stop instance")
+		return
 	}
+
 }
 
 func (i *nativeInstance) Dying() <-chan struct{} {
@@ -91,6 +103,7 @@ func (i *nativeInstance) Dying() <-chan struct{} {
 }
 
 func (i *nativeInstance) Close() error {
+	i.log.Infof("to close instance")
 	i.tomb.Kill(nil)
 	return i.tomb.Wait()
 }

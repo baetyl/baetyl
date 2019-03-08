@@ -18,6 +18,8 @@
 /**/*.pyc
 /**/*debug.test
 /**/debug
-/**/bin
 /**/*.log
 /cover*.out
+
+/example/**/*-cert
+/openedge-timer

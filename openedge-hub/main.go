@@ -28,7 +28,7 @@ type mo struct {
 }
 
 func (m *mo) start() error {
-	err := utils.LoadYAML(openedge.DefaultConfigPath, &m.cfg)
+	err := utils.LoadYAML(openedge.DefaultConfFile, &m.cfg)
 	if err != nil {
 		m.log.Errorln("failed to load config:", err.Error())
 		return err

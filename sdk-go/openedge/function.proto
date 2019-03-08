@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package openedge;
+
+// The function server definition.
+service Function {
+  rpc Call(FunctionMessage) returns (FunctionMessage) {}
+  // rpc Talk(stream Message) returns (stream Message) {}
+}
+
+// FunctionMessage function message
+message FunctionMessage {
+  uint32 QOS                = 1;
+  string Topic              = 2;
+  bytes  Payload            = 3;
+
+  string  FunctionName      = 11;
+  string  FunctionInvokeID  = 12;
+}
