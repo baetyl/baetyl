@@ -1,5 +1,5 @@
 mode: docker
 logger:
   path: var/log/openedge/openedge.log
-  console: ture
+  console: true
   level: debug
