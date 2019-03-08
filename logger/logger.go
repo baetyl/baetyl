@@ -83,7 +83,14 @@ func (l *logger) Fatalln(args ...interface{}) {
 // NewLogger from config
 func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
 	var logOutWriter io.Writer
-	logOutWriter = ioutil.Discard
+	if c.Console == true {
+		logOutWriter = os.Stdout
+	} else {
+		logOutWriter = ioutil.Discard
+	}
+	if runtime.GOOS != "windows" {
+		logOutWriter = ioutil.Discard
+	}
 	logLevel, err := logrus.ParseLevel(c.Level)
 	if err != nil {
 		logLevel = logrus.DebugLevel

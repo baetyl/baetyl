@@ -1,4 +1,5 @@
 mode: native
 logger:
   path: var/log/openedge/openedge.log
+  console: ture
   level: debug
