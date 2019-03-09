@@ -27,12 +27,18 @@ var (
 )
 
 const defaultConfig = "etc/openedge/openedge.yml"
+const pidFilePath = "/var/run/openedge.pid"
 
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start openedge on background",
 	Long:  ``,
-	Run:   execute,
+	Run: func(cmd *cobra.Command, args []string) {
+		err := execute()
+		if err != nil {
+			log.Fatalln("failed to start openedge", err)
+		}
+	},
 }
 
 func init() {
@@ -41,23 +47,24 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
-func execute(cmd *cobra.Command, args []string) {
+func execute() error {
 	workDir, confPath = workPath(workDir, confPath)
 	cfg, err := readConfig(workDir, confPath)
 	if err != nil {
 		logger.Fatalln("failed to read configuration.")
-		return
+		return err
 	}
 	if runtime.GOOS == "windows" {
 		start(workDir, cfg)
 	} else {
 		onDaemon(workDir, cfg)
 	}
+	return nil
 }
 
 func onDaemon(workDir string, cfg *master.Config) {
 	cntxt := &daemon.Context{
-		PidFileName: "/var/run/openedge.pid",
+		PidFileName: pidFilePath,
 		PidFilePerm: 0644,
 		Umask:       027,
 	}

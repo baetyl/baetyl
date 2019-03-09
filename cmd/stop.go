@@ -2,6 +2,7 @@ package cmd
 
 import (
     "log"
+    "runtime"
     "syscall"
 
     "github.com/baidu/openedge/daemon"
@@ -13,6 +14,10 @@ var stopCmd = &cobra.Command{
     Short: "stop openedge",
     Long:  ``,
     Run: func(cmd *cobra.Command, args []string) {
+        if runtime.GOOS == "windows" {
+            log.Fatalln("The stop command is temporarily not supported on the Windows platform.")
+            return
+        }
         stop()
     },
 }
@@ -23,7 +28,7 @@ func init() {
 
 func stop() {
     cntxt := &daemon.Context{
-        PidFileName: "/var/run/openedge.pid",
+        PidFileName: pidFilePath,
     }
 
     d, err := cntxt.Search()
