@@ -34,7 +34,7 @@ var startCmd = &cobra.Command{
 	Short: "start openedge on background",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := execute()
+		err := start()
 		if err != nil {
 			log.Fatalln("failed to start openedge", err)
 		}
@@ -47,7 +47,7 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
-func execute() error {
+func start() error {
 	workDir, confPath = workPath(workDir, confPath)
 	cfg, err := readConfig(workDir, confPath)
 	if err != nil {
@@ -55,7 +55,7 @@ func execute() error {
 		return err
 	}
 	if runtime.GOOS == "windows" {
-		start(workDir, cfg)
+		startOpenEdge(workDir, cfg)
 	} else {
 		onDaemon(workDir, cfg)
 	}
@@ -89,10 +89,10 @@ func onDaemon(workDir string, cfg *master.Config) {
 		return
 	}
 
-	start(workDir, cfg)
+	startOpenEdge(workDir, cfg)
 }
 
-func start(pwd string, cfg *master.Config) {
+func startOpenEdge(pwd string, cfg *master.Config) {
 	m, err := master.New(workDir, cfg)
 	if err != nil {
 		logger.Fatalln("failed to create master:", err.Error())

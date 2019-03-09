@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -17,14 +17,16 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show the OpenEdge version information",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("OpenEdge version %s\nbuild time %s\n%s\n\n",
-			Version,
-			BuildTime,
-			GoVersion)
-	},
+	Run:   version,
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
+}
+
+func version(cmd *cobra.Command, args []string) {
+	log.Printf("OpenEdge version %s\nbuild time %s\n%s\n\n",
+		Version,
+		BuildTime,
+		GoVersion)
 }

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -10,13 +10,13 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "openedge",
 	Short: "OpenEdge, extend cloud computing, data and service seamlessly to edge devices",
-	Long:  `OpenEdge provides an open framework, which allows access to any protocol through a variety of networks, and allows any application to run on multiple systems.`,
+	Long:  ``,
 }
 
 // Execute execute
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 		os.Exit(1)
 	}
 }

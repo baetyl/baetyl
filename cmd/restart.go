@@ -30,7 +30,7 @@ func exeRestart(cmd *cobra.Command, args []string) {
     stop()
     // TODO wait the previous process release resources
     time.Sleep(2 * time.Second)
-    err := execute()
+    err := start()
     if err != nil {
         log.Fatalln("Restart openedge failed", err)
     }
