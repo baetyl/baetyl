@@ -37,7 +37,7 @@ func New(pwd string, cfg Config) (*Master, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
 	}
-	err = defaults(cfg)
+	err = defaults(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
@@ -89,7 +89,7 @@ func (m *Master) Close() error {
 	return nil
 }
 
-func defaults(c Config) error {
+func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll("/var/run", os.ModePerm)
 		if err != nil {
