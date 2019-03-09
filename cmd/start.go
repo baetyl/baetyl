@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -44,21 +43,23 @@ func start(cmd *cobra.Command, args []string) {
 
 func startInternal() {
 	workDir, confFile = workPath()
-	cfg, err := readConfig(workDir, confFile)
+	var cfg master.Config
+	err := utils.LoadYAML(path.Join(workDir, confFile), &cfg)
 	if err != nil {
-		logger.Fatalln("failed to read configuration.")
+		logger.Fatalf("failed to load %s: %s", confFile, err.Error())
 		return
 	}
 	onDaemon(cfg)
 }
 
-func onDaemon(cfg *master.Config) {
+func onDaemon(cfg master.Config) {
 	cntxt := &daemon.Context{
 		PidFileName: pidFilePath,
 		PidFilePerm: 0644,
 		Umask:       027,
 	}
 
+	defer cntxt.Release()
 	args := []string{"openedge", "start"}
 	if workDir != "" {
 		args = append(args, "-w", workDir)
@@ -70,7 +71,6 @@ func onDaemon(cfg *master.Config) {
 
 	cntxt.Args = args
 
-	defer cntxt.Release()
 	d, err := cntxt.Reborn()
 	if err != nil {
 		log.Fatalln(err)
@@ -82,7 +82,7 @@ func onDaemon(cfg *master.Config) {
 	startMaster(cfg)
 }
 
-func startMaster(cfg *master.Config) {
+func startMaster(cfg master.Config) {
 	m, err := master.New(workDir, cfg)
 	if err != nil {
 		logger.Fatalln("failed to create master:", err.Error())
@@ -121,14 +121,4 @@ func workPath() (string, string) {
 		confFile = defaultConfFile
 	}
 	return workDir, confFile
-}
-
-// TODO: make it utils
-func readConfig(pwd, cfgFile string) (*master.Config, error) {
-	var cfg master.Config
-	err := utils.LoadYAML(path.Join(pwd, cfgFile), &cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load %s: %s", cfgFile, err.Error())
-	}
-	return &cfg, err
 }

@@ -2,8 +2,8 @@ package cmd
 
 import (
     "log"
-    "time"
 
+    daemon "github.com/sevlyar/go-daemon"
     "github.com/spf13/cobra"
 )
 
@@ -23,8 +23,14 @@ func init() {
 
 func restart(cmd *cobra.Command, args []string) {
     stopInternal()
-    // TODO wait the previous process release resources
-    time.Sleep(2 * time.Second)
-    startInternal()
+    cntxt := &daemon.Context{
+        PidFileName: pidFilePath,
+    }
+    _, err := cntxt.Search()
+    if err != nil {
+        startInternal()
+    } else {
+        log.Println("openedge stop failed")
+    }
     log.Println("openedge restarted.")
 }

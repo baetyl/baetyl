@@ -32,7 +32,7 @@ type Master struct {
 }
 
 // New creates a new master
-func New(pwd string, cfg *Config) (*Master, error) {
+func New(pwd string, cfg Config) (*Master, error) {
 	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
 	if err != nil {
 		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
@@ -42,7 +42,7 @@ func New(pwd string, cfg *Config) (*Master, error) {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
 	m := &Master{
-		cfg:      *cfg,
+		cfg:      cfg,
 		pwd:      pwd,
 		log:      log,
 		services: cmap.New(),
@@ -89,7 +89,7 @@ func (m *Master) Close() error {
 	return nil
 }
 
-func defaults(c *Config) error {
+func defaults(c Config) error {
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll("/var/run", os.ModePerm)
 		if err != nil {

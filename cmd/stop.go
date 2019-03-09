@@ -37,6 +37,6 @@ func stopInternal() {
         log.Fatalln("Failed to stop openedge:", err)
         return
     }
-    log.Println("openedge stoped.")
+
     return
 }
