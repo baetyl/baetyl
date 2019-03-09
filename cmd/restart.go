@@ -2,7 +2,6 @@ package cmd
 
 import (
     "log"
-    "runtime"
     "time"
 
     "github.com/spf13/cobra"
@@ -11,28 +10,21 @@ import (
 // restartCmd represents the restart command
 var restartCmd = &cobra.Command{
     Use:   "restart",
-    Short: "restart openedge",
+    Short: "restart openedge and all services",
     Long:  ``,
-    Run:   exeRestart,
+    Run:   restart,
 }
 
 func init() {
-    restartCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "workdir")
-    restartCmd.Flags().StringVarP(&confPath, "config", "c", "", "config path")
+    restartCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "work directory of openedge")
+    restartCmd.Flags().StringVarP(&confFile, "config", "c", "", "config path of openedge")
     rootCmd.AddCommand(restartCmd)
 }
 
-func exeRestart(cmd *cobra.Command, args []string) {
-    if runtime.GOOS == "windows" {
-        log.Fatalln("The stop command is temporarily not supported on the Windows platform.")
-        return
-    }
-    stop()
+func restart(cmd *cobra.Command, args []string) {
+    stopInternal()
     // TODO wait the previous process release resources
     time.Sleep(2 * time.Second)
-    err := start()
-    if err != nil {
-        log.Fatalln("Restart openedge failed", err)
-    }
+    startInternal()
     log.Println("openedge restarted.")
 }

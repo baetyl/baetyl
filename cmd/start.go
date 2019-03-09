@@ -3,66 +3,56 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"os/signal"
 	"path"
 	"path/filepath"
-	"runtime"
-	"strings"
 	"syscall"
 
-	"github.com/baidu/openedge/daemon"
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master"
-	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
+	daemon "github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 )
 
 // compile variables
 var (
 	workDir  string
-	confPath string
+	confFile string
 )
 
-const defaultConfig = "etc/openedge/openedge.yml"
+const defaultConfFile = "etc/openedge/openedge.yml"
 const pidFilePath = "/var/run/openedge.pid"
 
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start openedge on background",
 	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := start()
-		if err != nil {
-			log.Fatalln("failed to start openedge", err)
-		}
-	},
+	Run:   start,
 }
 
 func init() {
-	startCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "workdir")
-	startCmd.Flags().StringVarP(&confPath, "config", "c", "", "config path")
+	startCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "work directory of openedge")
+	startCmd.Flags().StringVarP(&confFile, "config", "c", "", "config path of openedge")
 	rootCmd.AddCommand(startCmd)
 }
 
-func start() error {
-	workDir, confPath = workPath(workDir, confPath)
-	cfg, err := readConfig(workDir, confPath)
-	if err != nil {
-		logger.Fatalln("failed to read configuration.")
-		return err
-	}
-	if runtime.GOOS == "windows" {
-		startOpenEdge(workDir, cfg)
-	} else {
-		onDaemon(workDir, cfg)
-	}
-	return nil
+func start(cmd *cobra.Command, args []string) {
+	startInternal()
 }
 
-func onDaemon(workDir string, cfg *master.Config) {
+func startInternal() {
+	workDir, confFile = workPath()
+	cfg, err := readConfig(workDir, confFile)
+	if err != nil {
+		logger.Fatalln("failed to read configuration.")
+		return
+	}
+	onDaemon(cfg)
+}
+
+func onDaemon(cfg *master.Config) {
 	cntxt := &daemon.Context{
 		PidFileName: pidFilePath,
 		PidFilePerm: 0644,
@@ -74,8 +64,8 @@ func onDaemon(workDir string, cfg *master.Config) {
 		args = append(args, "-w", workDir)
 	}
 
-	if confPath != "" {
-		args = append(args, "-c", confPath)
+	if confFile != "" {
+		args = append(args, "-c", confFile)
 	}
 
 	cntxt.Args = args
@@ -89,10 +79,10 @@ func onDaemon(workDir string, cfg *master.Config) {
 		return
 	}
 
-	startOpenEdge(workDir, cfg)
+	startMaster(cfg)
 }
 
-func startOpenEdge(pwd string, cfg *master.Config) {
+func startMaster(cfg *master.Config) {
 	m, err := master.New(workDir, cfg)
 	if err != nil {
 		logger.Fatalln("failed to create master:", err.Error())
@@ -106,7 +96,7 @@ func startOpenEdge(pwd string, cfg *master.Config) {
 	<-sig
 }
 
-func workPath(workDir string, confPath string) (string, string) {
+func workPath() (string, string) {
 	exe, err := os.Executable()
 	if err != nil {
 		logger.Fatalln("failed to get executable path:", err.Error())
@@ -127,10 +117,10 @@ func workPath(workDir string, confPath string) (string, string) {
 	if err != nil {
 		logger.Fatalln("failed to change directory to workdir:", err.Error())
 	}
-	if confPath == "" {
-		confPath = defaultConfig
+	if confFile == "" {
+		confFile = defaultConfFile
 	}
-	return workDir, confPath
+	return workDir, confFile
 }
 
 // TODO: make it utils
@@ -140,37 +130,5 @@ func readConfig(pwd, cfgFile string) (*master.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to load %s: %s", cfgFile, err.Error())
 	}
-	err = defaults(&cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
-	}
 	return &cfg, err
-}
-
-func defaults(c *master.Config) error {
-	if runtime.GOOS == "linux" {
-		err := os.MkdirAll("/var/run", os.ModePerm)
-		if err != nil {
-			logger.WithError(err).Errorf("failed to make dir: /var/run")
-		}
-		c.Server.Address = "unix:///var/run/openedge.sock"
-		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
-	} else {
-		if c.Server.Address == "" {
-			c.Server.Address = "tcp://127.0.0.1:50050"
-		}
-		addr := c.Server.Address
-		uri, err := url.Parse(addr)
-		if err != nil {
-			return err
-		}
-		if c.Mode == "docker" {
-			parts := strings.SplitN(uri.Host, ":", 2)
-			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
-		}
-		utils.SetEnv(openedge.EnvMasterAPIKey, addr)
-	}
-	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
-	utils.SetEnv(openedge.EnvRunningModeKey, c.Mode)
-	return nil
 }
