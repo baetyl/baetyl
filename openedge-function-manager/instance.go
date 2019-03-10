@@ -2,32 +2,43 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/baidu/openedge/sdk-go/openedge"
 )
 
-// Instance function instance
-type Instance struct {
-	n string
-	f *Function
-	c *openedge.FClient
+// Instance function instance interface
+type Instance interface {
+	Name() string
+	Call(msg *openedge.FunctionMessage) (*openedge.FunctionMessage, error)
+	io.Closer
 }
 
-// NewInstance creates a new instance
-func (f *Function) NewInstance() (*Instance, error) {
-	name, err := f.getID()
-	if err != nil {
-		f.log.WithError(err).Errorf("failed to create new instance")
-		return nil, err
-	}
-	fullName := fmt.Sprintf("%s.%s", f.cfg.Service, name)
+// Producer function instance producer interface
+type Producer interface {
+	StartInstance(name string) (Instance, error)
+	StopInstance(i Instance) error
+}
+
+type producer struct {
+	ctx openedge.Context
+	cfg FunctionInfo
+}
+
+func newProducer(ctx openedge.Context, cfg FunctionInfo) Producer {
+	return &producer{ctx: ctx, cfg: cfg}
+}
+
+// StartInstance starts instance
+func (p *producer) StartInstance(name string) (Instance, error) {
+	fullName := fmt.Sprintf("%s.%s", p.cfg.Service, name)
 	port := "50051"
 	serverHost := "0.0.0.0"
 	clientHost := fullName
 	if os.Getenv(openedge.EnvRunningModeKey) == "native" {
 		var err error
-		port, err = f.ctx.GetAvailablePort()
+		port, err = p.ctx.GetAvailablePort()
 		if err != nil {
 			return nil, err
 		}
@@ -38,37 +49,38 @@ func (f *Function) NewInstance() (*Instance, error) {
 	dc := make(map[string]string)
 	dc[openedge.EnvServiceNameKey] = fullName
 	dc[openedge.EnvServiceAddressKey] = fmt.Sprintf("%s:%s", serverHost, port)
-	err = f.ctx.StartServiceInstance(f.cfg.Service, name, dc)
+	err := p.ctx.StartServiceInstance(p.cfg.Service, name, dc)
 	if err != nil {
 		return nil, err
 	}
 	fcc := openedge.FunctionClientConfig{}
 	fcc.Address = fmt.Sprintf("%s:%s", clientHost, port)
-	fcc.Message = f.cfg.Message
-	fcc.Timeout = f.cfg.Timeout
-	fcc.Backoff = f.cfg.Backoff
+	fcc.Message = p.cfg.Message
+	fcc.Timeout = p.cfg.Timeout
+	fcc.Backoff = p.cfg.Backoff
 	cli, err := openedge.NewFClient(fcc)
 	if err != nil {
-		f.ctx.StopServiceInstance(f.cfg.Service, name)
+		p.ctx.StopServiceInstance(p.cfg.Service, name)
 		return nil, err
 	}
-	return &Instance{
-		n: name,
-		f: f,
-		c: cli,
+	return &instance{
+		name:    name,
+		FClient: cli,
 	}, nil
 }
 
-// Call calls instance
-func (i *Instance) Call(msg *openedge.FunctionMessage) (*openedge.FunctionMessage, error) {
-	return i.c.Call(msg)
+// StopInstance stops instance
+func (p *producer) StopInstance(i Instance) error {
+	i.Close()
+	return p.ctx.StopServiceInstance(p.cfg.Service, i.Name())
 }
 
-// Close closes instance
-func (i *Instance) Close() error {
-	i.f.returnID(i.n)
-	if i.c != nil {
-		i.c.Close()
-	}
-	return i.f.ctx.StopServiceInstance(i.f.cfg.Service, i.n)
+type instance struct {
+	name string
+	*openedge.FClient
+}
+
+// Name returns name
+func (i *instance) Name() string {
+	return i.name
 }
