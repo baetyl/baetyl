@@ -7,24 +7,24 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
-	"github.com/jolestar/go-commons-pool"
+	pool "github.com/jolestar/go-commons-pool"
 )
 
 // Function function
 type Function struct {
+	p    Producer
 	cfg  FunctionInfo
-	ctx  openedge.Context
-	pool *pool.ObjectPool
 	ids  chan string
+	pool *pool.ObjectPool
 	log  logger.Logger
 	tomb utils.Tomb
 }
 
 // NewFunction creates a new function
-func NewFunction(ctx openedge.Context, cfg FunctionInfo) *Function {
+func NewFunction(cfg FunctionInfo, p Producer) *Function {
 	f := &Function{
+		p:   p,
 		cfg: cfg,
-		ctx: ctx,
 		ids: make(chan string, cfg.Instance.Max),
 		log: logger.WithField("function", cfg.Name),
 	}
@@ -37,7 +37,7 @@ func NewFunction(ctx openedge.Context, cfg FunctionInfo) *Function {
 	pc.MaxTotal = cfg.Instance.Max
 	pc.MinEvictableIdleTime = cfg.Instance.IdleTime
 	pc.TimeBetweenEvictionRuns = cfg.Instance.EvictTime
-	f.pool = pool.NewObjectPool(context.Background(), newFactory(f), pc)
+	f.pool = pool.NewObjectPool(context.Background(), f, pc)
 	return f
 }
 
@@ -47,19 +47,39 @@ func (f *Function) Call(msg *openedge.FunctionMessage) (*openedge.FunctionMessag
 	if err != nil {
 		return nil, err
 	}
-	fl := item.(*Instance)
-	res, err := fl.Call(msg)
+	return f.call(item.(Instance), msg, nil)
+}
+
+// CallAsync calls function to handle message and return result message
+func (f *Function) CallAsync(msg *openedge.FunctionMessage, cb func(in, out *openedge.FunctionMessage, err error)) error {
+	item, err := f.pool.BorrowObject(context.Background())
 	if err != nil {
-		f.log.WithError(err).Errorf("failed to talk with function instance")
-		err1 := f.pool.InvalidateObject(context.Background(), item)
-		if err1 != nil {
-			fl.Close()
-			f.log.WithError(err).Errorf("failed to invalidate function instance")
-		}
-		return nil, err
+		return err
 	}
-	f.pool.ReturnObject(context.Background(), item)
-	return res, nil
+	go f.call(item.(Instance), msg, cb)
+	return nil
+}
+
+func (f *Function) call(i Instance, in *openedge.FunctionMessage, c func(in, out *openedge.FunctionMessage, err error)) (*openedge.FunctionMessage, error) {
+	out, err := i.Call(in)
+	if err != nil {
+		f.log.Errorf("failed to talk with function instance: %s", err.Error())
+		err1 := f.pool.InvalidateObject(context.Background(), i)
+		if err1 != nil {
+			i.Close()
+			f.log.Errorf("failed to invalidate function instance: %s", err1.Error())
+		}
+	} else {
+		err1 := f.pool.ReturnObject(context.Background(), i)
+		if err1 != nil {
+			i.Close()
+			f.log.Errorf("failed to return function instance: %s", err1.Error())
+		}
+	}
+	if c != nil {
+		c(in, out, err)
+	}
+	return out, err
 }
 
 // Close close function and stop all function instances
@@ -74,18 +94,43 @@ func (f *Function) Close() error {
 	return f.tomb.Wait()
 }
 
-func (f *Function) getID() (string, error) {
+// MakeObject creates a new instance
+func (f *Function) MakeObject(_ context.Context) (*pool.PooledObject, error) {
 	select {
-	case index := <-f.ids:
-		return index, nil
+	case name := <-f.ids:
+		i, err := f.p.StartInstance(name)
+		if err != nil {
+			return nil, err
+		}
+		return pool.NewPooledObject(i), nil
 	case <-f.tomb.Dying():
-		return "", fmt.Errorf("function closed")
+		return nil, fmt.Errorf("function closed")
 	}
+
 }
 
-func (f *Function) returnID(index string) {
+// DestroyObject close an instance
+func (f *Function) DestroyObject(ctx context.Context, object *pool.PooledObject) error {
+	i := object.Object.(Instance)
+	i.Close()
 	select {
-	case f.ids <- index:
+	case f.ids <- i.Name():
 	case <-f.tomb.Dying():
 	}
+	return nil
+}
+
+// ValidateObject not implement
+func (f *Function) ValidateObject(ctx context.Context, object *pool.PooledObject) bool {
+	return true
+}
+
+// ActivateObject not implement
+func (f *Function) ActivateObject(ctx context.Context, object *pool.PooledObject) error {
+	return nil
+}
+
+// PassivateObject not implement
+func (f *Function) PassivateObject(ctx context.Context, object *pool.PooledObject) error {
+	return nil
 }

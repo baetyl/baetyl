@@ -10,9 +10,10 @@ service Function {
 
 // FunctionMessage function message
 message FunctionMessage {
-  uint32 QOS                = 1;
-  string Topic              = 2;
-  bytes  Payload            = 3;
+  uint64 ID                 = 1;
+  uint32 QOS                = 2;
+  string Topic              = 3;
+  bytes  Payload            = 4;
 
   string  FunctionName      = 11;
   string  FunctionInvokeID  = 12;
