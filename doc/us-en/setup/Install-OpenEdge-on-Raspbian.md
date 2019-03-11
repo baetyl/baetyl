@@ -1,4 +1,4 @@
-# Install OpenEdge on RespBian
+# Install OpenEdge on Raspbian
 
 > OpenEdge is mainly developed in Go programming language and supports two startup modes: ***docker*** container mode and ***native*** process mode.
 
@@ -54,10 +54,10 @@ alias python=/yourpath/python2.7
 
 **Statement**:
 
-+ The following is an example of the deployment and startup of OpenEdge on RespBian system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-+ The Respbian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of Respbian.
++ The following is an example of the deployment and startup of OpenEdge on Raspbian system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
++ The Raspbian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of Raspbian.
 
-![centos kernel detail](../../images/setup/os-respbian.png)
+![centos kernel detail](../../images/setup/os-Raspbian.png)
 
 Starting OpenEdge containerization mode requires the running device to complete the installation and operation of Docker. You can install it by referring to [Steps above](#Install-Docker).
 
@@ -75,24 +75,24 @@ Starting OpenEdge containerization mode requires the running device to complete 
 
 As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
 
-![OpenEdge directory](../../images/setup/openedge-dir-respbian.png)
+![OpenEdge directory](../../images/setup/openedge-dir-Raspbian.png)
 
 The `bin` directory stores the openedge executable binary file, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge.
 
 Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
 
-![view the docker containers status](../../images/setup/docker-stats-before-respbian.png)
+![view the docker containers status](../../images/setup/docker-stats-before-Raspbian.png)
 
 It can be found that the current system does not have a docker container running.
 
 Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
 
-![OpenEdge startup log](../../images/setup/openedge-started-respbian.png)
+![OpenEdge startup log](../../images/setup/openedge-started-Raspbian.png)
 
 At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
 
-![running containers](../../images/setup/docker-stats-after-respbian.png)
+![running containers](../../images/setup/docker-stats-after-Raspbian.png)
 
 Obviously, OpenEdge has been successfully launched.
 
-As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the RespBian system.
+As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the Raspbian system.
