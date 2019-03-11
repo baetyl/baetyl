@@ -10,7 +10,7 @@ import (
 
 var stopCmd = &cobra.Command{
     Use:   "stop",
-    Short: "stop openedge",
+    Short: "stop openedge and all services",
     Long:  ``,
     Run:   stop,
 }
@@ -37,6 +37,4 @@ func stopInternal() {
         log.Fatalln("Failed to stop openedge:", err)
         return
     }
-
-    return
 }
