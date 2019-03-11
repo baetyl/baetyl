@@ -63,23 +63,31 @@ For example, execute the following command on CentOs:
 export DOCKER_API_VERSION=1.38
 ```
 
-**Question 7**: How does BIE access the NB-IOT network?
+**Question 7**: How does OpenEdge connect to NB-IOT network?
 
-**Suggested Solution**: NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with BIE Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud Service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud Service.
+**Suggested Solution**: NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud Service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud Service.
 
-**Question 8**：According to OpenEdge's design, how many MQTT clients can be connected to One OpenEdge?
+**Question 8**: var/run/openedge.sock: address already in use
 
-**Suggested Solution**: The number of access MQTT clients depends on the hardware configuration and performance of the edge device which deployed OpenEdge.
+**Suggested Solution**: Remove var/run/openedge.sock and restart OpenEdge.
 
-**Question 9**：I deploy OpenEdge on NXP LS1046 ARDB box，but it reports an error of `{"errorDetail": {"message":"no matching manifest for linux/arm64 in the manifest list entries"}, "error":"no matching manifest for linux/arm64 in the manifest list entries"}` when OpenEdge start.
+**Question 9**: Does OpenEdge support to push data to Kafka?
+
+**Suggested Solution**: For support, you can use the local function module to write a [Python script](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md) that is responsible for subscribing messages from the local Hub module and writing them to Kafka service. Besides, you can also develop a [customize module](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-openedge.md), which subscribes message from the local Hub module and then writes it to Kafka.
+
+**Question 10**: What are the ways to change OpenEdge configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
+
+**Suggested Solution**: Currently, we recommend changing configurations through the BIE Cloud Management Suite, but you can also manually change the configuration file on the core device and then restart OpenEdge to take effect.
+
+**Question 11**：I deploy OpenEdge on NXP LS1046 ARDB box，but it reports an error of `{"errorDetail": {"message":"no matching manifest for linux/arm64 in the manifest list entries"}, "error":"no matching manifest for linux/arm64 in the manifest list entries"}` when OpenEdge start.
 
 **Suggested Solution**：The above problem occurs because the OpenEdge start will pull the module image due to manifest(the system CPU type). And now, OpenEdge does not support the Linux/arm64 docker image, and subsequent releases will be supported.
 
-**Question 10**：When using local Hub module to test an MQTT client's connection, how do I get the correct username and password (the Hub module configuration file stores the password as its SHA256 value)?
+**Question 12**：When using local Hub module to test an MQTT client's connection, how do I get the correct username and password (the Hub module configuration file stores the password as its SHA256 value)?
 
-**Suggested Solution**：Two solutions are provided: (1) When the Edge Management Core is created in the [Cloud Management Console](https://cloud.baidu.com/product/bie.html), the connected username and password are displayed in the window (plain text, stored its(password) SHA256 value when deploy), so you can record when creating the core(**Recommended**); (2) If other modules are also applied at startup, such as the Remote module, the Function module, the corresponding configuration file stores the username and password applied when connecting to the Hub module (other module as MQTT client when connected to Hub module), and it can be obtained directly.
+**Suggested Solution**：Two solutions are provided: (1) When the Edge Management Core is created in the [Cloud Management Console](https://cloud.baidu.com/product/bie.html), the connected username and password are displayed in the window (plain text, stored its(password) SHA256 value when deploy), so you can record when creating the core(**Recommended**); (2) If other modules are also applied at startup, such as the Remote module, the Function module, the corresponding configuration file stores the username and password applied when connecting to the Hub module (other module as MQTT client when connected to Hub module), and it can be obtained directly. Besides, OpenEdge v0.1.2 will remove it.
 
-**Question 11**：I download MQTTBOX client, extract it to a directory, and copy/move the executable file `MQTTBox` to `/usr/local/bin`(other directory is similar, such as `/usr/bin`, `/bin`, `/usr/sbin`, etc.). But it reports an error of `error while loading shared libraries: libgconf-2.so.4: cannot open shared object file: No such file or directory` when `MQTTBox` start.
+**Question 13**：I download MQTTBOX client, extract it to a directory, and copy/move the executable file `MQTTBox` to `/usr/local/bin`(other directory is similar, such as `/usr/bin`, `/bin`, `/usr/sbin`, etc.). But it reports an error of `error while loading shared libraries: libgconf-2.so.4: cannot open shared object file: No such file or directory` when `MQTTBox` start.
 
 **Suggested Solution**：As above description, this is because the lack of `libgconf-2.so.4` library when `MQTTBox` start, and the recommended use is as follows:
 
