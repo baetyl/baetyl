@@ -3,7 +3,6 @@ package cmd
 import (
     "log"
 
-    daemon "github.com/sevlyar/go-daemon"
     "github.com/spf13/cobra"
 )
 
@@ -23,14 +22,6 @@ func init() {
 
 func restart(cmd *cobra.Command, args []string) {
     stopInternal()
-    cntxt := &daemon.Context{
-        PidFileName: pidFilePath,
-    }
-    _, err := cntxt.Search()
-    if err != nil {
-        startInternal()
-    } else {
-        log.Println("openedge stop failed")
-    }
+    startInternal()
     log.Println("openedge restarted.")
 }
