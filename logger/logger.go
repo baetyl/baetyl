@@ -2,7 +2,6 @@ package logger
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -82,12 +81,6 @@ func (l *logger) Fatalln(args ...interface{}) {
 
 // NewLogger from config
 func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
-	var logOutWriter io.Writer
-	if c.Console == true {
-		logOutWriter = os.Stdout
-	} else {
-		logOutWriter = ioutil.Discard
-	}
 	logLevel, err := logrus.ParseLevel(c.Level)
 	if err != nil {
 		logLevel = logrus.DebugLevel
@@ -116,7 +109,6 @@ func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
 	entry := logrus.NewEntry(logrus.New())
 	// entry.Logger.SetReportCaller(true)
 	entry.Logger.Level = logLevel
-	entry.Logger.Out = logOutWriter
 	entry.Logger.Formatter = newFormatter(c.Format, true)
 	if fileHook != nil {
 		entry.Logger.Hooks.Add(fileHook)
