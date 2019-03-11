@@ -53,13 +53,6 @@ func startInternal() {
 }
 
 func onDaemon(cfg master.Config) {
-	cntxt := &daemon.Context{
-		PidFileName: pidFilePath,
-		PidFilePerm: 0644,
-		Umask:       027,
-	}
-
-	defer cntxt.Release()
 	args := []string{"openedge", "start"}
 	if workDir != "" {
 		args = append(args, "-w", workDir)
@@ -69,8 +62,14 @@ func onDaemon(cfg master.Config) {
 		args = append(args, "-c", confFile)
 	}
 
-	cntxt.Args = args
+	cntxt := &daemon.Context{
+		PidFileName: pidFilePath,
+		PidFilePerm: 0644,
+		Umask:       027,
+		Args:        args,
+	}
 
+	defer cntxt.Release()
 	d, err := cntxt.Reborn()
 	if err != nil {
 		log.Fatalln(err)
