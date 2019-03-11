@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='openedge',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0e\x66unction.proto\x12\x08openedge\"n\n\x0f\x46unctionMessage\x12\x0b\n\x03QOS\x18\x01 \x01(\r\x12\r\n\x05Topic\x18\x02 \x01(\t\x12\x0f\n\x07Payload\x18\x03 \x01(\x0c\x12\x14\n\x0c\x46unctionName\x18\x0b \x01(\t\x12\x18\n\x10\x46unctionInvokeID\x18\x0c \x01(\t2J\n\x08\x46unction\x12>\n\x04\x43\x61ll\x12\x19.openedge.FunctionMessage\x1a\x19.openedge.FunctionMessage\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x0e\x66unction.proto\x12\x08openedge\"z\n\x0f\x46unctionMessage\x12\n\n\x02ID\x18\x01 \x01(\x04\x12\x0b\n\x03QOS\x18\x02 \x01(\r\x12\r\n\x05Topic\x18\x03 \x01(\t\x12\x0f\n\x07Payload\x18\x04 \x01(\x0c\x12\x14\n\x0c\x46unctionName\x18\x0b \x01(\t\x12\x18\n\x10\x46unctionInvokeID\x18\x0c \x01(\t2J\n\x08\x46unction\x12>\n\x04\x43\x61ll\x12\x19.openedge.FunctionMessage\x1a\x19.openedge.FunctionMessage\"\x00\x62\x06proto3')
 )
 
 
@@ -33,35 +33,42 @@ _FUNCTIONMESSAGE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='QOS', full_name='openedge.FunctionMessage.QOS', index=0,
-      number=1, type=13, cpp_type=3, label=1,
+      name='ID', full_name='openedge.FunctionMessage.ID', index=0,
+      number=1, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='Topic', full_name='openedge.FunctionMessage.Topic', index=1,
-      number=2, type=9, cpp_type=9, label=1,
+      name='QOS', full_name='openedge.FunctionMessage.QOS', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='Topic', full_name='openedge.FunctionMessage.Topic', index=2,
+      number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='Payload', full_name='openedge.FunctionMessage.Payload', index=2,
-      number=3, type=12, cpp_type=9, label=1,
+      name='Payload', full_name='openedge.FunctionMessage.Payload', index=3,
+      number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='FunctionName', full_name='openedge.FunctionMessage.FunctionName', index=3,
+      name='FunctionName', full_name='openedge.FunctionMessage.FunctionName', index=4,
       number=11, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='FunctionInvokeID', full_name='openedge.FunctionMessage.FunctionInvokeID', index=4,
+      name='FunctionInvokeID', full_name='openedge.FunctionMessage.FunctionInvokeID', index=5,
       number=12, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -80,7 +87,7 @@ _FUNCTIONMESSAGE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=28,
-  serialized_end=138,
+  serialized_end=150,
 )
 
 DESCRIPTOR.message_types_by_name['FunctionMessage'] = _FUNCTIONMESSAGE
@@ -101,8 +108,8 @@ _FUNCTION = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=140,
-  serialized_end=214,
+  serialized_start=152,
+  serialized_end=226,
   methods=[
   _descriptor.MethodDescriptor(
     name='Call',
