@@ -69,7 +69,6 @@ func onDaemon(cfg master.Config) {
 		Args:        args,
 	}
 
-	defer cntxt.Release()
 	d, err := cntxt.Reborn()
 	if err != nil {
 		log.Fatalln(err)
@@ -77,6 +76,7 @@ func onDaemon(cfg master.Config) {
 	if d != nil {
 		return
 	}
+	defer cntxt.Release()
 
 	startMaster(cfg)
 }
