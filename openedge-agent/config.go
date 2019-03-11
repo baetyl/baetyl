@@ -27,7 +27,8 @@ type Config struct {
 
 // UpdateEvent update event
 type UpdateEvent struct {
-	openedge.AppConfig `yaml:",inline" json:",inline"`
+	Version string              `yaml:"version" json:"version"`
+	Config  openedge.VolumeInfo `yaml:"config" json:"config"`
 }
 
 func newUpdateEvent(d []byte) (*UpdateEvent, error) {

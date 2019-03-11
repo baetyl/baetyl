@@ -33,7 +33,7 @@ const (
 // Context of service
 type Context interface {
 	Config() *ServiceConfig
-	UpdateSystem(*AppConfig) error
+	UpdateSystem([]byte) error
 	InspectSystem() (*Inspect, error)
 	Log() logger.Logger
 	Wait()

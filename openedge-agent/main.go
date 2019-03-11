@@ -93,27 +93,27 @@ func (m *mo) ProcessPublish(p *packet.Publish) error {
 	case Update:
 		updateEvent, err := newUpdateEvent(e.Content)
 		if err != nil {
-			err := fmt.Errorf("update event invalid: %s", err.Error())
+			err = fmt.Errorf("update event invalid: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
 		if updateEvent.Version != "v2" {
-			err := fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
+			err = fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		err = m.prepare(updateEvent.Volumes)
+		cfg, err := m.prepare(updateEvent.Config)
 		if err != nil {
-			err := fmt.Errorf("update event invalid: %s", err.Error())
+			err = fmt.Errorf("update event invalid: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		err = m.ctx.UpdateSystem(&updateEvent.AppConfig)
+		err = m.ctx.UpdateSystem(cfg)
 		if err != nil {
-			err := fmt.Errorf("failed to update system: %s", err.Error())
+			err = fmt.Errorf("failed to update system: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 		} else {
