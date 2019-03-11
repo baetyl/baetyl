@@ -66,3 +66,15 @@ export DOCKER_API_VERSION=1.38
 **问题7**: BIE如何接入NB-IoT?
 
 NB-IoT是一种网络制式，和2/3/4G类似，带宽窄功耗低。NB-IoT支持基于TCP的MQTT通信协议，因此可以使用NB-IoT卡连接百度云物接入，部署OpenEdge应用和BIE云管理通信。但国内三大运营商中，电信对他们的NB卡做了限制，仅允许连接电信的云服务 IP，所以目前只能使用移动NB卡和联通NB卡连接百度云服务。
+
+**问题8**: var/run/openedge.sock: address already in use
+
+删除var/run/openedge.sock，重启OpenEdge。
+
+**问题9**: OpenEdge支持数据计算后将计算结果推送Kafka吗？
+
+支持，您可以[利用Python运行时编写Python脚本](https://github.com/baidu/openedge/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md)，向Hub订阅消息，并将消息逐个写入Kafka。您也可以[自定义模块](https://github.com/baidu/openedge/blob/master/doc/zh-cn/customize/How-to-develop-a-customize-module-for-openedge.md)，该模块向Hub订阅消息，然后批量写入Kafka。
+      
+**问题10**: Openedge配置更改的方式有哪些？只能通过[云端管理套件](https://cloud.baidu.com/product/bie.html)进行配置更改吗？
+
+目前，我们推荐通过云端管理套件进行配置定义和下发，但您也可以手动更改核心设备上的配置文件，然后重启Openedge使之生效。

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"path"
 	"runtime"
 	"strings"
 
@@ -33,19 +32,14 @@ type Master struct {
 }
 
 // New creates a new master
-func New(pwd, cfgFile string) (*Master, error) {
-	var cfg Config
-	err := utils.LoadYAML(path.Join(pwd, cfgFile), &cfg)
+func New(pwd string, cfg Config) (*Master, error) {
+	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
 	if err != nil {
-		return nil, fmt.Errorf("failed to load %s: %s", cfgFile, err.Error())
+		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
 	}
 	err = defaults(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
-	}
-	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
-	if err != nil {
-		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
 	}
 	m := &Master{
 		cfg:      cfg,

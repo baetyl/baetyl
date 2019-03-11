@@ -62,6 +62,18 @@ For example, execute the following command on CentOs:
 export DOCKER_API_VERSION=1.38
 ```
 
-**Question 7**: How does BIE access the NB-IOT network?
+**Question 7**: How does OpenEdge connect to NB-IOT network?
 
-NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with BIE Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud Service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud Service.
+NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud Service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud Service.
+
+**Question 8**: var/run/openedge.sock: address already in use
+
+Remove var/run/openedge.sock and restart OpenEdge.
+
+**Question 9**: Does OpenEdge support to push data to Kafka?
+
+For support, you can use the local function module to write a [Python script](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md) that is responsible for subscribing messages from the local Hub module and writing them to Kafka service. Besides, you can also develop a [customize module](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-openedge.md), which subscribes message from the local Hub module and then writes it to Kafka.
+
+**Question 10**: What are the ways to change OpenEdge configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
+
+Currently, we recommend changing configurations through the BIE Cloud Management Suite, but you can also manually change the configuration file on the core device and then restart OpenEdge to take effect.
