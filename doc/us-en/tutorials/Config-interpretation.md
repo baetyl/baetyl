@@ -43,7 +43,6 @@ logger: Logger configuration
   path: The default is `empty`(none configuration), that is, it does not print to the file. If the path is specified, it is output to the file(due to the path).
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
   format: The default value is `text`, log print format, support `text` and `json`.
-  console: The default value is `false`, means whether print the log to terminal or not.
   age:
     max: The default value is `15`, means maximum number of days the log file is kept.
   size:
@@ -155,7 +154,6 @@ logger: Logger configuration
   path: The default is `empty`(none configuration), that is, it does not print to the file. If the path is specified, it is output to the file(due to the path).
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
   format: The default value is `text`, log print format, support `text` and `json`.
-  console: The default value is `false`, means whether print the log to terminal or not.
   age:
     max: The default value is `15`, means maximum number of days the log file is kept.
   size:
@@ -206,7 +204,7 @@ functions:
     entry: The entry of the module(as above description), means the image or executable program of the runtime module running the function instance.
     handler: [MUST]handler function. For `sql` runtime, that is sql-expression, for example, `select uuid() as id, topic() as topic, * where id < 10`. For `python2.7` runtime, that is function package and handler function, for example, `sayhi.handler`. For `tensorflow` runtime, the configuration is `tag:input_tensor:output_tensor`, and the `tag` means the tag of the model, the `input_tensor` means the input node tensor name of the model network structure, the `output_tensor` the output node tensor name of the model network structure. Besides, for `tensorflow` runtime, only support saved_model network structure now, and the model must be designed to `single input, single output`.
     codedir: Optional configuration, only support `python2.7` and `tensorflow` runtime now, `sql` runtime no need. For `python2.7` runtime, means the path of the python script. For `tensorflow` runtime, means the model path, and you must set the model name to `saved_model.pb`(due to the saved_model network structure).
-    env: Function environment variables configuration 
+    env: Function environment variables configuration
       USER_ID: acuiot
     instance: function instance configuration
       min: The default value is `0`, means the minimum number of function instance. And the minimum configuration allowed to be set is `0`, the maximum configuration allowed to be set is `100`.
@@ -228,7 +226,6 @@ logger: Logger configuration
   path: The default is `empty`(none configuration), that is, it does not print to the file. If the path is specified, it is output to the file(due to the path).
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
   format: The default value is `text`, log print format, support `text` and `json`.
-  console: The default value is `false`, means whether print the log to terminal or not.
   age:
     max: The default value is `15`, means maximum number of days the log file is kept.
   size:
@@ -289,7 +286,6 @@ logger: Logger configuration
   path: The default is `empty`(none configuration), that is, it does not print to the file. If the path is specified, it is output to the file(due to the path).
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
   format: The default value is `text`, log print format, support `text` and `json`.
-  console: The default value is `false`, means whether print the log to terminal or not.
   age:
     max: The default value is `15`, means maximum number of days the log file is kept.
   size:

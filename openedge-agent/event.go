@@ -24,7 +24,7 @@ type Event struct {
 	Content []byte    `json:"content"`
 }
 
-// NewEvent ceates a new event
+// NewEvent creates a new event
 func NewEvent(v []byte) *Event {
 	var e Event
 	json.Unmarshal(v, &e)

@@ -9,7 +9,6 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/sdk-go/openedge"
 	"github.com/baidu/openedge/utils"
-	"gopkg.in/yaml.v2"
 )
 
 var appDir = path.Join("var", "db", "openedge")
@@ -17,7 +16,7 @@ var appConfigFile = path.Join(appDir, "application.yml")
 var appBackupFile = path.Join(appDir, "application.yml.old")
 
 // UpdateSystem updates system
-func (m *Master) UpdateSystem(cfg *openedge.AppConfig) error {
+func (m *Master) UpdateSystem(cfg []byte) error {
 	if cfg == nil {
 		err := fmt.Errorf("failed to update system: application config is null")
 		m.log.Errorf(err.Error())
@@ -35,7 +34,7 @@ func (m *Master) UpdateSystem(cfg *openedge.AppConfig) error {
 	return nil
 }
 
-func (m *Master) update(cfg *openedge.AppConfig) error {
+func (m *Master) update(cfg []byte) error {
 	// backup old config
 	err := m.backup()
 	if err != nil {
@@ -46,11 +45,16 @@ func (m *Master) update(cfg *openedge.AppConfig) error {
 	// save new config
 	err = m.save(cfg)
 	if err != nil {
+		m.rollback()
 		return err
 	}
 
 	// prepare services
-	m.engine.Prepare(cfg.Services)
+	err = m.prepareServices()
+	if err != nil {
+		m.rollback()
+		return err
+	}
 
 	// stop all old services
 	m.stopAllServices()
@@ -88,12 +92,8 @@ func (m *Master) rollback() error {
 	return os.Rename(appBackupFile, appConfigFile)
 }
 
-func (m *Master) save(cfg *openedge.AppConfig) error {
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(appConfigFile, data, 0755)
+func (m *Master) save(cfg []byte) error {
+	return ioutil.WriteFile(appConfigFile, cfg, 0755)
 }
 
 func (m *Master) load() error {

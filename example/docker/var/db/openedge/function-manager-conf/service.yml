@@ -22,5 +22,4 @@ functions:
       idletime: 1m
 logger:
   path: var/log/openedge/service.log
-  console: true
   level: "debug"

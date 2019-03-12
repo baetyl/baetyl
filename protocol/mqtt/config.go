@@ -8,7 +8,7 @@ import (
 
 // TopicInfo with topic and qos
 type TopicInfo struct {
-	QOS   uint32 `yaml:"qos" json:"qos" default:"0" validate:"min=0, max=1"`
+	QOS   uint32 `yaml:"qos" json:"qos" validate:"min=0, max=1"`
 	Topic string `yaml:"topic" json:"topic" validate:"nonzero"`
 }
 
@@ -19,7 +19,7 @@ type ClientInfo struct {
 	Password          string `yaml:"password" json:"password"`
 	utils.Certificate `yaml:",inline" json:",inline"`
 	ClientID          string        `yaml:"clientid" json:"clientid"`
-	CleanSession      bool          `yaml:"cleansession" json:"cleansession" default:"false"`
+	CleanSession      bool          `yaml:"cleansession" json:"cleansession"`
 	Timeout           time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
 	Interval          time.Duration `yaml:"interval" json:"interval" default:"1m"`
 	KeepAlive         time.Duration `yaml:"keepalive" json:"keepalive" default:"1m"`

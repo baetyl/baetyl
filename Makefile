@@ -1,6 +1,5 @@
 PREFIX?=/usr/local
 VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
-PACKAGE_PREFIX?=
 GOFLAG?=-ldflags "-X github.com/baidu/openedge/cmd.BuildTime=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X 'github.com/baidu/openedge/cmd.GoVersion=`go version`' -X 'github.com/baidu/openedge/cmd.Version=$(VERSION)' -X 'master.Version=$(VERSION)'"
 
 all: openedge package

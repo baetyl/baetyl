@@ -164,8 +164,6 @@ func TestBroker(t *testing.T) {
 //	os.RemoveAll("./var/db")
 //
 //	c, _ := config.New([]byte(""))
-//	// c.Logger.Console = true
-//	// c.Logger.Level = "debug"
 //	assert.NoError(t, sdk.InitLogger(&c.Logger))
 //	pf, err := persist.NewFactory("./var/db/")
 //	assert.NoError(t, err)

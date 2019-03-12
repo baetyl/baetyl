@@ -16,5 +16,4 @@ subscriptions:
       topic: 't/topic'
 logger:
   path: var/log/openedge/service.log
-  console: true
   level: "debug"

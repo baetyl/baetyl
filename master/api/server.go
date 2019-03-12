@@ -14,7 +14,7 @@ import (
 type Master interface {
 	Auth(u, p string) bool
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(*openedge.AppConfig) error
+	UpdateSystem([]byte) error
 
 	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
 	StopServiceInstance(serviceName, instanceName string) error
@@ -62,12 +62,7 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
 	}
-	d := new(openedge.AppConfig)
-	err := json.Unmarshal(reqBody, d)
-	if err != nil {
-		return nil, err
-	}
-	go s.m.UpdateSystem(d)
+	go s.m.UpdateSystem(reqBody)
 	return nil, nil
 }
 
