@@ -15,8 +15,8 @@ type Client struct {
 
 // NewEnvClient creates a new client by env
 func NewEnvClient() (*Client, error) {
-	addr := os.Getenv(EnvMasterAPIKey)
-	if len(addr) == 0 {
+	addr, ok := os.LookupEnv(EnvMasterAPIKey)
+	if !ok || len(addr) == 0 {
 		return nil, fmt.Errorf("Env (%s) not found", EnvMasterAPIKey)
 	}
 	c := http.ClientInfo{

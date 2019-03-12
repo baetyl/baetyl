@@ -7,19 +7,31 @@ rules:
   - clientid: localfunc-1
     subscribe:
       topic: t
-      qos: 1
     function:
       name: sayhi
     publish:
       topic: t/hi
-      qos: 1
+  # - clientid: localfunc-2
+  #   subscribe:
+  #     topic: t
+  #     qos: 1
+  #   function:
+  #     name: filter
+  #   publish:
+  #     topic: t/f
+  #     qos: 1
 functions:
   - name: sayhi
     service: function-sayhi
     instance:
-      min: 1
+      min: 0
       max: 10
       idletime: 1m
+  # - name: filter
+  #   service: function-filter
+  #   instance:
+  #     min: 1
+  #     max: 10
 logger:
   path: var/log/openedge/service.log
   level: "debug"

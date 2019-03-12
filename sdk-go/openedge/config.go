@@ -128,11 +128,11 @@ func (m *Memory) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-/* functions */
+/* function */
 
-// FunctionClientConfig functions client config
+// FunctionClientConfig function client config
 type FunctionClientConfig struct {
-	Address string `yaml:"address" json:"address" validate:"nonzero"`
+	Address string `yaml:"address" json:"address"`
 	Message struct {
 		Length utils.Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
 	} `yaml:"message" json:"message"`
@@ -142,21 +142,19 @@ type FunctionClientConfig struct {
 	Timeout time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
 }
 
-// FunctionServerConfig functions server config
+// FunctionServerConfig function server config
 type FunctionServerConfig struct {
-	Address string `yaml:"address" json:"address" validate:"nonzero"`
+	Address string        `yaml:"address" json:"address"`
+	Timeout time.Duration `yaml:"timeout" json:"timeout" default:"2m"`
 	Message struct {
 		Length utils.Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
 	} `yaml:"message" json:"message"`
+	Concurrent struct {
+		Max uint32 `yaml:"max" json:"max"`
+	} `yaml:"concurrent" json:"concurrent"`
+	// for python function server
+	Workers struct {
+		Max uint32 `yaml:"max" json:"max"`
+	} `yaml:"workers" json:"workers"`
+	utils.Certificate `yaml:",inline" json:",inline"`
 }
-
-// Thread  struct {
-// 	Workers struct {
-// 		Max int `yaml:"max" json:"max"`
-// 	} `yaml:"workers" json:"workers"`
-// } `yaml:"thread" json:"thread"`
-// Concurrent struct {
-// 	RPCs struct {
-// 		Max int `yaml:"max" json:"max"`
-// 	} `yaml:"rpcs" json:"rpcs"`
-// } `yaml:"concurrent" json:"concurrent"`

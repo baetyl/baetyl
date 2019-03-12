@@ -71,6 +71,9 @@ func newContext() (*ctx, error) {
 	if err != nil {
 		return nil, err
 	}
+	if name, ok := os.LookupEnv(EnvServiceNameKey); ok {
+		cfg.Name = name
+	}
 	log, err := logger.InitLogger(&cfg.Logger, "service", cfg.Name)
 	if err != nil {
 		return nil, err

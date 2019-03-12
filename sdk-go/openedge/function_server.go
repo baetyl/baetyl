@@ -4,8 +4,10 @@ import (
 	fmt "fmt"
 	"net"
 
+	"github.com/baidu/openedge/utils"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -26,11 +28,20 @@ func NewFServer(c FunctionServerConfig, call Call) (*FServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	svr := grpc.NewServer(
-		// grpc.ConnectionTimeout(c.Timeout),
+	// TODO: to test
+	tls, err := utils.NewTLSServerConfig(c.Certificate)
+	if err != nil {
+		return nil, err
+	}
+	opts := []grpc.ServerOption{
+		grpc.MaxConcurrentStreams(c.Concurrent.Max),
 		grpc.MaxRecvMsgSize(int(c.Message.Length.Max)),
 		grpc.MaxSendMsgSize(int(c.Message.Length.Max)),
-	)
+	}
+	if tls != nil {
+		opts = append(opts, grpc.Creds(credentials.NewTLS(tls)))
+	}
+	svr := grpc.NewServer(opts...)
 	s := &FServer{cfg: c, call: call, svr: svr, addr: lis.Addr().String()}
 	RegisterFunctionServer(svr, s)
 	reflection.Register(svr)
