@@ -2,6 +2,7 @@ package logger
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -108,6 +109,7 @@ func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
 
 	entry := logrus.NewEntry(logrus.New())
 	// entry.Logger.SetReportCaller(true)
+	entry.Logger.Out = ioutil.Discard
 	entry.Logger.Level = logLevel
 	entry.Logger.Formatter = newFormatter(c.Format, true)
 	if fileHook != nil {

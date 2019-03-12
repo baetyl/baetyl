@@ -12,5 +12,4 @@ remote:
     address: 'https://iot-edge.baidu-int.com'
 logger:
   path: var/log/openedge/service.log
-  console: true
   level: debug
