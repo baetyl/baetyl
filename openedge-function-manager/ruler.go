@@ -7,7 +7,7 @@ import (
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/mqtt"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/docker/distribution/uuid"
 )
 

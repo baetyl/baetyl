@@ -7,7 +7,7 @@ import (
 	"path"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 
