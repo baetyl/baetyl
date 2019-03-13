@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 

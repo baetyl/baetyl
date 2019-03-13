@@ -13,7 +13,7 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/http"
 	"github.com/baidu/openedge/protocol/mqtt"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 

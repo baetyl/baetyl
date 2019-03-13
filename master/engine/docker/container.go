@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"

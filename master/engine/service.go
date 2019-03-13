@@ -3,7 +3,7 @@ package engine
 import (
 	"io"
 
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
 // Service interfaces of service

@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
 // Factory create engine by given config
