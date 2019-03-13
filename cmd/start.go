@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"path"
@@ -49,10 +48,7 @@ func startInternal() {
 		logger.Fatalf("failed to load %s: %s", confFile, err.Error())
 		return
 	}
-	onDaemon(cfg)
-}
 
-func onDaemon(cfg master.Config) {
 	args := []string{"openedge", "start"}
 	if workDir != "" {
 		args = append(args, "-w", workDir)
@@ -62,29 +58,26 @@ func onDaemon(cfg master.Config) {
 		args = append(args, "-c", confFile)
 	}
 
-	cntxt := &daemon.Context{
+	ctx := &daemon.Context{
 		PidFileName: pidFilePath,
 		PidFilePerm: 0644,
 		Umask:       027,
 		Args:        args,
 	}
 
-	d, err := cntxt.Reborn()
+	d, err := ctx.Reborn()
 	if err != nil {
-		log.Fatalln(err)
+		logger.Errorf(err.Error())
+		return
 	}
 	if d != nil {
 		return
 	}
-	defer cntxt.Release()
+	defer ctx.Release()
 
-	startMaster(cfg)
-}
-
-func startMaster(cfg master.Config) {
 	m, err := master.New(workDir, cfg)
 	if err != nil {
-		logger.Fatalln("failed to create master:", err.Error())
+		logger.Errorf("failed to create master: %s", err.Error())
 		return
 	}
 	defer m.Close()

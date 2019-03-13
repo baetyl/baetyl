@@ -58,6 +58,13 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
+  # - name: function-filter
+  #   image: openedge-function-sql
+  #   replica: 0
+  #   mounts:
+  #     - name: function-filter-conf
+  #       path: etc/openedge
+  #       readonly: true
   - name: mosquitto
     image: eclipse-mosquitto
     replica: 1
@@ -104,6 +111,8 @@ volumes:
     path: var/db/openedge/function-sayhi-conf
   - name: function-sayhi-code
     path: var/db/openedge/function-sayhi-code
+  - name: function-filter-conf
+    path: var/db/openedge/function-filter-conf
   # mosquitto
   - name: mosquitto-config
     path: var/db/openedge/mosquitto-conf
