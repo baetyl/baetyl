@@ -65,7 +65,7 @@ func TestConfig(t *testing.T) {
 	err := utils.LoadYAML("../../example/native/var/db/openedge/localhub-conf/service.yml", &c)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "var/db/openedge", c.Storage.Dir)
+	assert.Equal(t, "var/db/openedge/data", c.Storage.Dir)
 
 	assert.Equal(t, 10000, c.Message.Ingress.Qos0.Buffer.Size)
 	assert.Equal(t, 100, c.Message.Ingress.Qos1.Buffer.Size)
