@@ -10,6 +10,7 @@ import (
 
 // Instance function instance interface
 type Instance interface {
+	ID() uint32
 	Name() string
 	Call(msg *openedge.FunctionMessage) (*openedge.FunctionMessage, error)
 	io.Closer
@@ -17,7 +18,7 @@ type Instance interface {
 
 // Producer function instance producer interface
 type Producer interface {
-	StartInstance(name string) (Instance, error)
+	StartInstance(id uint32) (Instance, error)
 	StopInstance(i Instance) error
 }
 
@@ -31,11 +32,11 @@ func newProducer(ctx openedge.Context, cfg FunctionInfo) Producer {
 }
 
 // StartInstance starts instance
-func (p *producer) StartInstance(name string) (Instance, error) {
-	fullName := fmt.Sprintf("%s.%s", p.cfg.Service, name)
+func (p *producer) StartInstance(id uint32) (Instance, error) {
+	name := fmt.Sprintf("%s.f%d", p.cfg.Service, id)
 	port := "50051"
 	serverHost := "0.0.0.0"
-	clientHost := fullName
+	clientHost := name
 	if os.Getenv(openedge.EnvRunningModeKey) == "native" {
 		var err error
 		port, err = p.ctx.GetAvailablePort()
@@ -47,7 +48,7 @@ func (p *producer) StartInstance(name string) (Instance, error) {
 	}
 
 	dc := make(map[string]string)
-	dc[openedge.EnvServiceNameKey] = fullName
+	dc[openedge.EnvServiceNameKey] = name
 	dc[openedge.EnvServiceAddressKey] = fmt.Sprintf("%s:%s", serverHost, port)
 	err := p.ctx.StartServiceInstance(p.cfg.Service, name, dc)
 	if err != nil {
@@ -76,8 +77,14 @@ func (p *producer) StopInstance(i Instance) error {
 }
 
 type instance struct {
+	id   uint32
 	name string
 	*openedge.FClient
+}
+
+// ID returns id
+func (i *instance) ID() uint32 {
+	return i.id
 }
 
 // Name returns name
