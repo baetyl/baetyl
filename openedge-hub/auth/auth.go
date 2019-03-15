@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"strings"
 
 	"github.com/256dpi/gomqtt/topic"
@@ -35,13 +33,13 @@ func NewAuth(principals []config.Principal) *Auth {
 				authorizer.Add(topic, p.Action)
 			}
 		}
-		if principal.SerialNumber == "" {
-			_accounts[principal.Username] = account{
-				Password:   principal.Password,
+		if principal.Password == "" {
+			_certs[principal.Username] = cert{
 				Authorizer: authorizer,
 			}
 		} else {
-			_certs[principal.SerialNumber] = cert{
+			_accounts[principal.Username] = account{
+				Password:   principal.Password,
 				Authorizer: authorizer,
 			}
 		}
@@ -73,7 +71,7 @@ func duplicatePubSubPermitRemove(permission []config.Permission) []config.Permis
 // AuthenticateAccount auth client account, then return authorizer if pass
 func (a *Auth) AuthenticateAccount(username, password string) *Authorizer {
 	_account, ok := a.accounts[username]
-	if ok && len(password) > 0 && strings.Compare(encodePassword(password), _account.Password) == 0 {
+	if ok && len(password) > 0 && strings.Compare(password, _account.Password) == 0 {
 		return _account.Authorizer
 	}
 	return nil
@@ -116,12 +114,4 @@ func (p *Authorizer) Authorize(action, topic string) bool {
 		}
 	}
 	return false
-}
-
-// encodePassword is used for client sigh in validate
-func encodePassword(password string) string {
-	hash := sha256.New()
-	hash.Write([]byte(password))
-	md := hash.Sum(nil)
-	return hex.EncodeToString(md)
 }

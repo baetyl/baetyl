@@ -10,7 +10,7 @@ import (
 func TestAuth(t *testing.T) {
 	p1 := []config.Principal{{
 		Username: "test",
-		Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+		Password: "hahaha",
 		Permissions: []config.Permission{
 			{Action: "pub", Permits: []string{"+"}},
 			{Action: "sub", Permits: []string{"+"}},
@@ -18,6 +18,9 @@ func TestAuth(t *testing.T) {
 	}
 	au := NewAuth(p1)
 
+	assert.Nil(t, au.AuthenticateAccount("", ""))
+	assert.Nil(t, au.AuthenticateAccount("test", ""))
+	assert.Nil(t, au.AuthenticateAccount("", "hahaha"))
 	assert.Nil(t, au.AuthenticateAccount("test", "hahaha1"))
 	assert.Nil(t, au.AuthenticateAccount("test1", "hahaha"))
 	authorizer := au.AuthenticateAccount("test", "hahaha")
@@ -52,7 +55,7 @@ func TestAuth(t *testing.T) {
 	// "#" strategy validate
 	p2 := []config.Principal{{
 		Username: "test",
-		Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+		Password: "hahaha",
 		Permissions: []config.Permission{
 			{Action: "pub", Permits: []string{"#"}},
 			{Action: "sub", Permits: []string{"#"}},
@@ -117,7 +120,7 @@ func TestAuth(t *testing.T) {
 	// "test/+" strategy validate
 	p3 := []config.Principal{{
 		Username: "test",
-		Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+		Password: "hahaha",
 		Permissions: []config.Permission{
 			{Action: "pub", Permits: []string{"test/+"}},
 			{Action: "sub", Permits: []string{"test/+"}},
@@ -184,7 +187,7 @@ func TestAuth(t *testing.T) {
 	// "a/+/b" strategy validate
 	p4 := []config.Principal{{
 		Username: "test",
-		Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+		Password: "hahaha",
 		Permissions: []config.Permission{
 			{Action: "pub", Permits: []string{"a/+/b"}},
 			{Action: "sub", Permits: []string{"a/+/b"}},
@@ -229,7 +232,7 @@ func TestAuth(t *testing.T) {
 	// "test/#" strategy validate
 	p5 := []config.Principal{{
 		Username: "test",
-		Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+		Password: "hahaha",
 		Permissions: []config.Permission{
 			{Action: "pub", Permits: []string{"test/#"}},
 			{Action: "sub", Permits: []string{"test/#"}},
@@ -308,7 +311,7 @@ func TestAuth(t *testing.T) {
 	principals := []config.Principal{
 		{
 			Username: "test",
-			Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+			Password: "hahaha",
 			Permissions: []config.Permission{
 				{Action: "pub", Permits: []string{"test", "benchmark", "test"}},
 				{Action: "sub", Permits: []string{"test", "benchmark"}},
@@ -318,14 +321,14 @@ func TestAuth(t *testing.T) {
 		},
 		{
 			Username: "temp",
-			Password: "3f29e1b2b05f8371595dc761fed8e8b37544b38d56dfce81a551b46c82f2f56b",
+			Password: "lalala",
 			Permissions: []config.Permission{
 				{Action: "pub", Permits: []string{"test", "benchmark"}},
 				{Action: "sub", Permits: []string{"test", "benchmark"}},
 			},
 		},
 		{
-			SerialNumber: "1",
+			Username: "1",
 			Permissions: []config.Permission{
 				{Action: "pub", Permits: []string{"test", "benchmark"}},
 				{Action: "sub", Permits: []string{"test", "benchmark"}},

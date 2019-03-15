@@ -757,7 +757,7 @@ func prepare() (res *resources, err error) {
 	c.Message.Egress.Qos1.Retry.Interval = time.Second
 	c.Principals = []config.Principal{{
 		Username: "u1",
-		Password: "f64551fcd6f07823cb87971cfb91446425da18286b3ab1ef935e0cbd7a69f68a", // p1
+		Password: "p1",
 		Permissions: []config.Permission{{
 			Action:  "sub",
 			Permits: []string{"test", "talks", "talks1", "talks2"},
@@ -766,7 +766,7 @@ func prepare() (res *resources, err error) {
 			Permits: []string{"test", "talks"},
 		}}}, {
 		Username: "u2",
-		Password: "3946ca64ff78d93ca61090a437cbb6b3d2ca0d488f5f9ccf3059608368b27693",
+		Password: "p2",
 		Permissions: []config.Permission{{
 			Action:  "pub",
 			Permits: []string{"test", "talks", "talks1", "talks2"},

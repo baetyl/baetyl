@@ -53,29 +53,23 @@ func TestMqttTcp(t *testing.T) {
 func TestMqttTcpTls(t *testing.T) {
 	addr := []string{"ssl://localhost:0"}
 	cert := utils.Certificate{
-		CA:   "./testcerts/ca.pem",
-		Key:  "./testcerts/server.key",
-		Cert: "./testcerts/server.pem",
+		CA:   "./testcert/ca.pem",
+		Key:  "./testcert/server.key",
+		Cert: "./testcert/server.pem",
 	}
 	count := int32(0)
 	m, err := NewManager(addr, cert, func(conn transport.Conn) {
-		atomic.AddInt32(&count, 1)
+		c := atomic.AddInt32(&count, 1)
 		p, err := conn.Receive()
-		// if atomic.LoadInt32(&count) == 1 {
-		// 	assert.EqualError(t, err, "remote error: tls: bad certificate")
-		// 	assert.Nil(t, p)
-		// 	return
-		// }
+
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
 
-		tlsconn, ok := mqtt.GetTLSConn(conn)
-		assert.True(t, ok)
-		sn, err := mqtt.GetClientCertSerialNumber(tlsconn)
-		if atomic.LoadInt32(&count) == 3 {
-			assert.Equal(t, "4447389398516293299", sn)
+		ok := mqtt.IsTwoWayTLS(conn)
+		if c == 3 {
+			assert.Truef(t, ok, "count: %d", c)
 		} else {
-			assert.EqualError(t, err, "certidicate not found")
+			assert.Falsef(t, ok, "count: %d", c)
 		}
 
 		err = conn.Send(p, false)
@@ -90,12 +84,7 @@ func TestMqttTcpTls(t *testing.T) {
 	request := packet.NewConnect()
 	request.ClientID = m.servers[0].Addr().String()
 
-	// dailer, err := mqtt.NewDialer(utils.Certificate{})
-	// assert.NoError(t, err)
-	// conn, err := dailer.Dial(url)
-	// assert.EqualError(t, err, "x509: cannot validate certificate for 127.0.0.1 because it doesn't contain any IP SANs")
-	// assert.Nil(t, conn)
-
+	// count: 1
 	dailer, err := mqtt.NewDialer(utils.Certificate{Insecure: true})
 	assert.NoError(t, err)
 	conn, err := dailer.Dial(url)
@@ -106,8 +95,9 @@ func TestMqttTcpTls(t *testing.T) {
 	assert.NoError(t, err)
 	conn.Close()
 
+	// count: 2
 	dailer, err = mqtt.NewDialer(utils.Certificate{
-		CA:       "./testcerts/ca.pem",
+		CA:       "./testcert/ca.pem",
 		Insecure: true,
 	})
 	assert.NoError(t, err)
@@ -117,12 +107,14 @@ func TestMqttTcpTls(t *testing.T) {
 	assert.NoError(t, err)
 	response, err = conn.Receive()
 	assert.NoError(t, err)
+	assert.Equal(t, request.String(), response.String())
 	conn.Close()
 
+	// count: 3
 	dailer, err = mqtt.NewDialer(utils.Certificate{
-		CA:       "./testcerts/root.pem",
-		Key:      "./testcerts/testssl2.key",
-		Cert:     "./testcerts/testssl2.pem",
+		CA:       "./testcert/ca.pem",
+		Key:      "./testcert/testssl2.key",
+		Cert:     "./testcert/testssl2.pem",
 		Insecure: true,
 	})
 	assert.NoError(t, err)
@@ -187,26 +179,23 @@ func TestMqttWebSocket(t *testing.T) {
 func TestMqttWebSocketTls(t *testing.T) {
 	addr := []string{"wss://localhost:0/mqtt"}
 	cert := utils.Certificate{
-		CA:   "./testcerts/ca.pem",
-		Key:  "./testcerts/server.key",
-		Cert: "./testcerts/server.pem",
+		CA:   "./testcert/ca.pem",
+		Key:  "./testcert/server.key",
+		Cert: "./testcert/server.pem",
 	}
 	count := int32(0)
 	m, err := NewManager(addr, cert, func(conn transport.Conn) {
-		count++
+		c := atomic.AddInt32(&count, 1)
 		fmt.Println(count, conn.LocalAddr())
 		p, err := conn.Receive()
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
 
-		tlsconn, ok := mqtt.GetTLSConn(conn)
-		assert.True(t, ok)
-		sn, err := mqtt.GetClientCertSerialNumber(tlsconn)
-		fmt.Println(count, sn, err)
-		if count == 3 {
-			assert.Equal(t, "4447389398516293299", sn)
+		ok := mqtt.IsTwoWayTLS(conn)
+		if c == 3 {
+			assert.Truef(t, ok, "count: %d", c)
 		} else {
-			assert.EqualError(t, err, "certidicate not found")
+			assert.Falsef(t, ok, "count: %d", c)
 		}
 
 		err = conn.Send(p, false)
@@ -232,6 +221,7 @@ func TestMqttWebSocketTls(t *testing.T) {
 		assert.FailNow(t, "error expected")
 	}
 
+	// count: 1
 	dailer, err = mqtt.NewDialer(utils.Certificate{Insecure: true})
 	assert.NoError(t, err)
 	conn, err = dailer.Dial(url)
@@ -242,8 +232,9 @@ func TestMqttWebSocketTls(t *testing.T) {
 	assert.NoError(t, err)
 	conn.Close()
 
+	// count: 2
 	dailer, err = mqtt.NewDialer(utils.Certificate{
-		CA:       "./testcerts/ca.pem",
+		CA:       "./testcert/ca.pem",
 		Insecure: true,
 	})
 	assert.NoError(t, err)
@@ -255,10 +246,11 @@ func TestMqttWebSocketTls(t *testing.T) {
 	assert.NoError(t, err)
 	conn.Close()
 
+	// count: 3
 	dailer, err = mqtt.NewDialer(utils.Certificate{
-		CA:       "./testcerts/root.pem",
-		Key:      "./testcerts/testssl2.key",
-		Cert:     "./testcerts/testssl2.pem",
+		CA:       "./testcert/ca.pem",
+		Key:      "./testcert/testssl2.key",
+		Cert:     "./testcert/testssl2.pem",
 		Insecure: true,
 	})
 	assert.NoError(t, err)

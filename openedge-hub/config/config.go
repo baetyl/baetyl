@@ -28,7 +28,7 @@ type Config struct {
 		} `yaml:"logging" json:"logging"`
 	} `yaml:"status" json:"status"`
 	Storage struct {
-		Dir string `yaml:"dir" json:"dir" default:"var/db/openedge"`
+		Dir string `yaml:"dir" json:"dir" default:"var/db/openedge/data"`
 	} `yaml:"storage" json:"storage"`
 	Shutdown struct {
 		Timeout time.Duration `yaml:"timeout" json:"timeout" default:"10m"`
