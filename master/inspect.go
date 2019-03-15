@@ -1,7 +1,6 @@
 package master
 
 import (
-	"fmt"
 	"runtime"
 	"sync"
 	"time"
@@ -13,54 +12,39 @@ import (
 
 // InspectSystem inspects system
 func (m *Master) InspectSystem() *openedge.Inspect {
+	defer utils.Trace("InspectSystem", m.log.Debugf)()
+
 	ms := openedge.NewInspect()
 	ms.Time = time.Now().UTC()
-	ms.Platform.Mode = m.cfg.Mode
-	ms.Platform.GoVersion = runtime.Version()
-	ms.Platform.BinVersion = Version
-	ms.Platform.ConfVersion = m.appcfg.Version
-	ms.HostInfo["os"] = runtime.GOOS
-	ms.HostInfo["arch"] = runtime.GOARCH
-	gpus, err := utils.GetGpu()
+	ms.Software.OS = runtime.GOOS
+	ms.Software.Arch = runtime.GOARCH
+	ms.Software.Mode = m.cfg.Mode
+	ms.Software.GoVersion = runtime.Version()
+	ms.Software.BinVersion = Version
+	ms.Software.ConfVersion = m.appcfg.Version
+
+	var err error
+	ms.Hardware.GPUInfo, err = utils.GetGPUInfo()
 	if err != nil {
 		m.log.Debugf("failed to get gpu information: %s", err.Error())
 	}
-	for _, gpu := range gpus {
-		ms.HostInfo[fmt.Sprintf("gpu%s", gpu.ID)] = gpu.Model
-		ms.HostInfo[fmt.Sprintf("gpu%s_mem_total", gpu.ID)] = gpu.Memory.Total
-		ms.HostInfo[fmt.Sprintf("gpu%s_mem_free", gpu.ID)] = gpu.Memory.Free
-	}
-	mem, err := utils.GetMem()
+	ms.Hardware.MemInfo, err = utils.GetMemInfo()
 	if err != nil {
 		m.log.Debugf("failed to get memory information: %s", err.Error())
 	}
-	if mem != nil {
-		ms.HostInfo["mem_total"] = mem.Total
-		ms.HostInfo["mem_free"] = mem.Free
-	}
-	swap, err := utils.GetSwap()
+	ms.Hardware.CPUInfo, err = utils.GetCPUInfo()
 	if err != nil {
-		m.log.Debugf("failed to get swap information: %s", err.Error())
+		m.log.Debugf("failed to get cpu information: %s", err.Error())
 	}
-	if swap != nil {
-		ms.HostInfo["swap_total"] = swap.Total
-		ms.HostInfo["swap_free"] = swap.Free
+	ms.Hardware.DiskInfo, err = utils.GetDiskInfo("/")
+	if err != nil {
+		m.log.Debugf("failed to get disk information: %s", err.Error())
 	}
-	/*
-		disk, err := utils.GetDisk()
-		if err != nil {
-			log.WithError(err).HostInfo("failed to get disk information")
-		}
-		if disk != nil {
-			ms.HostInfo["disk_total"] = disk.Total
-			ms.HostInfo["disk_free"] = disk.Free
-		}
-	*/
+	ms.Services = m.statServices()
 	v, ok := m.context.Get("error")
 	if ok {
 		ms.Error = v.(string)
 	}
-	ms.Services = m.statServices()
 	return ms
 }
 

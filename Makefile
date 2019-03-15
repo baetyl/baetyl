@@ -11,7 +11,7 @@ package: \
 	openedge-function-manager/package.tar.gz \
 	openedge-function-python27/package.tar.gz
 
-SRC=$(wildcard *.go) $(shell find master sdk-go protocol utils -type f -name '*.go')
+SRC=$(wildcard *.go) $(shell find cmd master logger sdk protocol utils -type f -name '*.go')
 
 openedge: $(SRC)
 	@echo "BUILD $@"

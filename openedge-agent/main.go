@@ -155,7 +155,7 @@ func (m *mo) reporting() error {
 
 // Report reports info
 func (m *mo) report(errors ...string) {
-	defer trace("report")()
+	defer utils.Trace("report", logger.Debugf)()
 
 	i, err := m.ctx.InspectSystem()
 	if err != nil {
@@ -236,11 +236,4 @@ func defaults(c *Config) error {
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QOS: 1, Topic: c.Remote.Desire.Topic})
 	return nil
-}
-
-func trace(name string) func() {
-	start := time.Now()
-	return func() {
-		logger.Debugf("%s elapsed time: %v", name, time.Since(start))
-	}
 }

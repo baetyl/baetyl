@@ -40,10 +40,3 @@ func (s *session) republish(msg common.Message) {
 	}
 	s.log.Debugf("message (pid=%d) resent", pid)
 }
-
-// func (s *session) trace() func() {
-// 	start := time.Now()
-// 	return func() {
-// 		s.log.Debugf("send message elapsed time: %v", time.Since(start))
-// 	}
-// }
