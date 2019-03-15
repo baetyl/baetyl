@@ -172,7 +172,7 @@ type mockProducer struct {
 	count uint32
 }
 
-func (p *mockProducer) StartInstance(name string) (Instance, error) {
+func (p *mockProducer) StartInstance(_ uint32) (Instance, error) {
 	return &mockInstance{index: atomic.AddUint32(&p.count, 1)}, nil
 }
 
@@ -184,9 +184,14 @@ type mockInstance struct {
 	index uint32
 }
 
+func (i *mockInstance) ID() uint32 {
+	return i.index
+}
+
 func (i *mockInstance) Name() string {
 	return ""
 }
+
 func (i *mockInstance) Call(msg *openedge.FunctionMessage) (*openedge.FunctionMessage, error) {
 	if msg.Topic == "delay" {
 		time.Sleep(50 * time.Millisecond)

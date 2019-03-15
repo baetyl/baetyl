@@ -2,7 +2,6 @@ package docker
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
@@ -36,13 +35,7 @@ func (s *dockerService) Stats() openedge.ServiceStatus {
 		wg.Add(1)
 		go func(i *dockerInstance, wg *sync.WaitGroup) {
 			defer wg.Done()
-			status, err := i.service.engine.statsContainer(i.id)
-			if err != nil {
-				status = openedge.InstanceStatus{"error": err.Error()}
-			}
-			status["id"] = i.ID()
-			status["name"] = i.Name()
-			results <- status
+			results <- i.State()
 		}(v.(*dockerInstance), &wg)
 	}
 	wg.Wait()
@@ -59,9 +52,9 @@ func (s *dockerService) Start() error {
 	var instanceName string
 	for i := 0; i < s.cfg.Replica; i++ {
 		if i == 0 {
-			instanceName = ""
+			instanceName = s.cfg.Name
 		} else {
-			instanceName = strconv.Itoa(i)
+			instanceName = fmt.Sprintf("%s.i%d", s.cfg.Name, i)
 		}
 		err := s.startInstance(instanceName, nil)
 		if err != nil {
@@ -112,6 +105,5 @@ func (s *dockerService) StopInstance(instanceName string) error {
 		s.log.Debugf("instance (%s) not found", instanceName)
 		return nil
 	}
-	s.instances.Remove(instanceName)
 	return i.(*dockerInstance).Close()
 }

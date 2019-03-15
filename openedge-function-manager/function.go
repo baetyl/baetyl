@@ -14,7 +14,7 @@ import (
 type Function struct {
 	p    Producer
 	cfg  FunctionInfo
-	ids  chan string
+	ids  chan uint32
 	pool *pool.ObjectPool
 	log  logger.Logger
 	tomb utils.Tomb
@@ -25,11 +25,11 @@ func NewFunction(cfg FunctionInfo, p Producer) *Function {
 	f := &Function{
 		p:   p,
 		cfg: cfg,
-		ids: make(chan string, cfg.Instance.Max),
+		ids: make(chan uint32, cfg.Instance.Max),
 		log: logger.WithField("function", cfg.Name),
 	}
 	for index := 1; index <= cfg.Instance.Max; index++ {
-		f.ids <- fmt.Sprintf("f%d", index)
+		f.ids <- uint32(index)
 	}
 	pc := pool.NewDefaultPoolConfig()
 	pc.MinIdle = cfg.Instance.Min
@@ -97,8 +97,8 @@ func (f *Function) Close() error {
 // MakeObject creates a new instance
 func (f *Function) MakeObject(_ context.Context) (*pool.PooledObject, error) {
 	select {
-	case name := <-f.ids:
-		i, err := f.p.StartInstance(name)
+	case id := <-f.ids:
+		i, err := f.p.StartInstance(id)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +114,7 @@ func (f *Function) DestroyObject(ctx context.Context, object *pool.PooledObject)
 	i := object.Object.(Instance)
 	i.Close()
 	select {
-	case f.ids <- i.Name():
+	case f.ids <- i.ID():
 	case <-f.tomb.Dying():
 	}
 	return nil
