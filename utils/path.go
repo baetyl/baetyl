@@ -37,6 +37,17 @@ func WriteFile(fn string, r io.Reader) error {
 	return err
 }
 
+// CopyFile copy data from one file to another
+func CopyFile(s, t string) error {
+	sf, err := os.Open(s)
+	if err != nil {
+		return err
+	}
+	defer sf.Close()
+
+	return WriteFile(t, sf)
+}
+
 // CalculateFileMD5 calculates file MD5
 func CalculateFileMD5(fn string) (string, error) {
 	f, err := os.Open(fn)

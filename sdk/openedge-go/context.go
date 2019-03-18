@@ -20,6 +20,8 @@ const (
 )
 
 const (
+	// AppConfFileName application config file name
+	AppConfFileName = "application.yml"
 	// DefaultConfFile config path of the service by default
 	DefaultConfFile = "etc/openedge/service.yml"
 	// DefaultDBDir db dir of the service by default
@@ -33,7 +35,7 @@ const (
 // Context of service
 type Context interface {
 	Config() *ServiceConfig
-	UpdateSystem([]byte) error
+	UpdateSystem(string, bool) error
 	InspectSystem() (*Inspect, error)
 	Log() logger.Logger
 	Wait()

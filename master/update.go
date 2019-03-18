@@ -2,7 +2,6 @@ package master
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -16,14 +15,8 @@ var appConfigFile = path.Join(appDir, "application.yml")
 var appBackupFile = path.Join(appDir, "application.yml.old")
 
 // UpdateSystem updates system
-func (m *Master) UpdateSystem(cfg []byte) error {
-	if cfg == nil {
-		err := fmt.Errorf("failed to update system: application config is null")
-		m.log.Errorf(err.Error())
-		m.context.Set("error", err.Error())
-		return err
-	}
-	err := m.update(cfg)
+func (m *Master) UpdateSystem(dir string, clean bool) error {
+	err := m.update(dir, clean)
 	if err != nil {
 		err := fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
@@ -34,23 +27,23 @@ func (m *Master) UpdateSystem(cfg []byte) error {
 	return nil
 }
 
-func (m *Master) update(cfg []byte) error {
-	// backup old config
+func (m *Master) update(dir string, clean bool) error {
+	// backup application.yml
 	err := m.backup()
 	if err != nil {
 		return err
 	}
 	defer m.clean()
 
-	// save new config
-	err = m.save(cfg)
+	// copy new config into application.yml
+	err = m.copy(dir)
 	if err != nil {
 		m.rollback()
 		return err
 	}
 
 	// prepare services
-	err = m.prepareServices()
+	rvs, err := m.prepareServices()
 	if err != nil {
 		m.rollback()
 		return err
@@ -75,6 +68,18 @@ func (m *Master) update(cfg []byte) error {
 		}
 		return err
 	}
+	if clean {
+		err = os.RemoveAll(dir)
+		if err != nil {
+			m.log.Warnf("failed to remove app config dir (%s)", dir)
+		}
+		for _, v := range rvs {
+			err = os.RemoveAll(v.Path)
+			if err != nil {
+				m.log.Warnf("failed to remove old volume (%s:%s)", v.Name, v.Path)
+			}
+		}
+	}
 	return nil
 }
 
@@ -92,8 +97,8 @@ func (m *Master) rollback() error {
 	return os.Rename(appBackupFile, appConfigFile)
 }
 
-func (m *Master) save(cfg []byte) error {
-	return ioutil.WriteFile(appConfigFile, cfg, 0755)
+func (m *Master) copy(dir string) error {
+	return utils.CopyFile(path.Join(dir, openedge.AppConfFileName), appConfigFile)
 }
 
 func (m *Master) load() error {

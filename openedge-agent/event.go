@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"time"
+
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baidu/openedge/utils"
 )
 
 // EventType the type of event from cloud
@@ -29,4 +32,20 @@ func NewEvent(v []byte) *Event {
 	var e Event
 	json.Unmarshal(v, &e)
 	return &e
+}
+
+// UpdateEvent update event
+type UpdateEvent struct {
+	Version string              `yaml:"version" json:"version"`
+	Clean   bool                `yaml:"clean" json:"clean"`
+	Config  openedge.VolumeInfo `yaml:"config" json:"config"`
+}
+
+func newUpdateEvent(d []byte) (*UpdateEvent, error) {
+	data := new(UpdateEvent)
+	err := utils.UnmarshalJSON(d, data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

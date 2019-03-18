@@ -104,14 +104,14 @@ func (m *mo) ProcessPublish(p *packet.Publish) error {
 			m.report(err.Error())
 			break
 		}
-		cfg, err := m.prepare(updateEvent.Config)
+		file, err := m.prepare(updateEvent.Config)
 		if err != nil {
 			err = fmt.Errorf("update event invalid: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())
 			m.report(err.Error())
 			break
 		}
-		err = m.ctx.UpdateSystem(cfg)
+		err = m.ctx.UpdateSystem(file, updateEvent.Clean)
 		if err != nil {
 			err = fmt.Errorf("failed to update system: %s", err.Error())
 			m.ctx.Log().Errorf(err.Error())

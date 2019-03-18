@@ -50,8 +50,15 @@ func (c *Client) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *Client) UpdateSystem(data []byte) error {
-	_, err := c.cli.Put(data, "/system/update")
+func (c *Client) UpdateSystem(file string, clean bool) error {
+	data, err := json.Marshal(map[string]string{
+		"file":  file,
+		"clean": fmt.Sprintf("%t", clean),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = c.cli.Put(data, "/system/update")
 	return err
 }
 

@@ -1,0 +1,10 @@
+version: v6
+services:
+  - name: wait_exit_5
+    image: cmd-nonexist
+    mounts:
+      - name: cmd-bin
+        path: lib/openedge/cmd
+volumes:
+  - name: cmd-bin
+    path: var/db/openedge/cmd
