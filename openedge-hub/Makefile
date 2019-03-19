@@ -16,7 +16,8 @@ package.tar.gz: openedge-hub
 
 image: openedge-hub
 	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<:$(TAG) .
+	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(VERSION) .
+	docker tag ${IMAGE_PREFIX}$<${IMAGE_SUFFIX}:$(VERSION) $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG)
 
 .PHONY: clean
 clean:

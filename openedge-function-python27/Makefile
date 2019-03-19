@@ -12,8 +12,8 @@ package.tar.gz: $(PYSRC)
 	rm -rf __package
 
 image:
-	@echo "IMAGE openedge-function-python27"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python27:$(TAG) .
+	@echo "IMAGE $<"
+	docker build -t $(IMAGE_PREFIX)$<(IMAGE_SUFFIX):$(TAG) .
 
 .PHONY: clean
 clean:

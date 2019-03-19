@@ -111,10 +111,11 @@ image:
 	make -C openedge-agent image
 	make -C openedge-remote-mqtt image
 	make -C openedge-function-manager image
-	make -C openedge-function-python27 image
+# 	make -C openedge-function-python27 image
 
 release:
-	env GOOS=linux GOARCH=amd64 make image
+# 	env GOOS=linux GOARCH=amd64 make image
+	make images-release
 	make clean
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
@@ -149,3 +150,17 @@ release:
 	make clean
 	# at last
 	rmdir __release_build
+
+images-release:
+	# linux-amd64 images release
+	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
+	make clean
+	# linux-386 images release
+	env GOOS=linux GOARCH=386 make image IMAGE_SUFFIX="-linux-386"
+	make clean
+	# linux-arm images release
+	env GOOS=linux GOARCH=arm make image IMAGE_SUFFIX="-linux-arm"
+	make clean
+	# linux-arm64 images release
+	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
+	make clean
