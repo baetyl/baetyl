@@ -1,6 +1,5 @@
 TAG?=latest
 SRC=$(shell find . -type f -name '*.go')
-VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 
 all: openedge-function-manager package.tar.gz
 
@@ -17,8 +16,7 @@ package.tar.gz: openedge-function-manager
 
 image: openedge-function-manager
 	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(VERSION) .
-	docker tag ${IMAGE_PREFIX}$<${IMAGE_SUFFIX}:$(VERSION) $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG)
+	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG) .
 
 .PHONY: clean
 clean:
