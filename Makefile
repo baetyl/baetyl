@@ -151,16 +151,16 @@ release:
 
 images-release:
 	# linux-amd64 images release
-	env GOOS=linux GOARCH=amd64 make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-amd64"
+	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
 	make clean
 	# linux-386 images release
-	env GOOS=linux GOARCH=386 make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-386"
+	env GOOS=linux GOARCH=386 make image IMAGE_SUFFIX="-linux-386"
 	make clean
 	# linux-arm images release
-	env GOOS=linux GOARCH=arm make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-arm"
+	env GOOS=linux GOARCH=arm make image IMAGE_SUFFIX="-linux-arm"
 	make clean
 	# linux-arm64 images release
-	env GOOS=linux GOARCH=arm64 make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-arm64"
+	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
 	make clean
 
 # Need push built images first
