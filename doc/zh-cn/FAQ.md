@@ -96,3 +96,18 @@ export DOCKER_API_VERSION=1.38
 `步骤 2`: 进入 MQTTBOX 软件包解压缩后的目录，为 MQTTBox 可执行文件配置执行权限；
 `步骤 3`：为 MQTTBox 设置软连接：`sudo ln -s /path/to/MQTTBox /usr/local/bin/MQTTBox`；
 `步骤 4`：进入终端，执行 `MQTTBox` 即可。
+
+**问题 14**： localfunc 无法进行消息处理，查看 `funclog` 有如下报错信息：
+
+> level=error msg="failed to create new client" dispatcher=mqtt error="dial tcp 0.0.0.0:1883:connect:connection refused"
+
+**参考方案**： 如果是使用BIE云端管理套件下发配置，有如下几个点需要注意：
+
+1. 云端下发配置目前只支持容器模式
+2. 如果是云端下发配置，`localfunc` 里配置的hub地址应为 `localhub` 而非 `0.0.0.0`
+
+根据以上信息结合实际报错进行判断，根据需要重新从云端进行配置下发，或者参考[配置解析文档](./tutorials/Config-interpretation.md)进行核对及配置。
+
+**问题 15**： 本地函数计算模块不论发送什么消息，`t/hi` 收到的消息内容都为 `hello world`
+
+**参考方案**： 请查看CFC中Python函数的代码，确定是否有误/Hard Code。
