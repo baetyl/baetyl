@@ -1,5 +1,6 @@
 TAG?=latest
 SRC=$(wildcard *.go)
+VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 
 all: openedge-agent package.tar.gz
 

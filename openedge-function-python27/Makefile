@@ -1,5 +1,6 @@
 TAG?=latest
 PYSRC=$(shell find . -type f -name '*.py')
+VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 
 all: package.tar.gz
 
@@ -12,8 +13,9 @@ package.tar.gz: $(PYSRC)
 	rm -rf __package
 
 image:
-	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<(IMAGE_SUFFIX):$(TAG) .
+	@echo "IMAGE openedge-function-python27"
+	docker build -t $(IMAGE_PREFIX)openedge-function-python27$(IMAGE_SUFFIX):$(VERSION) .
+	docker tag ${IMAGE_PREFIX}openedge-function-python27${IMAGE_SUFFIX}:$(VERSION) $(IMAGE_PREFIX)openedge-function-python27$(IMAGE_SUFFIX):$(TAG)
 
 .PHONY: clean
 clean:

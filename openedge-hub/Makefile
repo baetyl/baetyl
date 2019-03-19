@@ -1,5 +1,6 @@
 TAG?=latest
 SRC=$(shell find . -type f -name '*.go')
+VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 
 all: openedge-hub package.tar.gz
 

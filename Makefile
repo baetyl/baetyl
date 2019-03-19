@@ -111,12 +111,9 @@ image:
 	make -C openedge-agent image
 	make -C openedge-remote-mqtt image
 	make -C openedge-function-manager image
-# 	make -C openedge-function-python27 image
+	make -C openedge-function-python27 image
 
 release:
-# 	env GOOS=linux GOARCH=amd64 make image
-	make images-release
-	make clean
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
