@@ -197,7 +197,7 @@ output/bin/openedge # native process mode
 
 1. If run in docker container mode, the container runtime status can be viewed via the `docker stats` command.
 2. To use your own image, you need to modify the ***entry*** of the modules and functions in the application configuration to specify your own image.
-3. For custom configuration, follow the instructions in [Configuration Interpretation](../tutorials/local/Config-interpretation.md) to make the relevant settings.
+3. For custom configuration, follow the instructions in [Configuration Interpretation](../tutorials/Config-interpretation.md) to make the relevant settings.
 
 ## Uninstall OpenEdge
 
