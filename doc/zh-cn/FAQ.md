@@ -110,4 +110,4 @@ export DOCKER_API_VERSION=1.38
 
 **问题 15**： 本地函数计算模块不论发送什么消息，`t/hi` 收到的消息内容都为 `hello world`
 
-**参考方案**： 请查看CFC中Python函数的代码，确定是否有误/Hard Code。
+**参考方案**： 请查看CFC中Python函数的代码，确认是否有误/Hard Code。

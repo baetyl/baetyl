@@ -114,6 +114,7 @@ image:
 	make -C openedge-function-python27 image
 
 release:
+	images-release
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
@@ -150,14 +151,35 @@ release:
 
 images-release:
 	# linux-amd64 images release
-	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
+	env GOOS=linux GOARCH=amd64 make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-amd64"
 	make clean
 	# linux-386 images release
-	env GOOS=linux GOARCH=386 make image IMAGE_SUFFIX="-linux-386"
+	env GOOS=linux GOARCH=386 make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-386"
 	make clean
 	# linux-arm images release
-	env GOOS=linux GOARCH=arm make image IMAGE_SUFFIX="-linux-arm"
+	env GOOS=linux GOARCH=arm make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-arm"
 	make clean
 	# linux-arm64 images release
-	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
+	env GOOS=linux GOARCH=arm64 make image IMAGE_PREFIX=$(REGISTRY) IMAGE_SUFFIX="-linux-arm64"
 	make clean
+
+# Need push built images first
+manifest-push:
+	mkdir tmp
+	# Push openedge-agent manifest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-agent.yml
+	# Push openedge-hub manifest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-hub/manifest.yml.template > tmp/manifest-hub.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-hub.yml
+	# Push openedge-function-manager manifest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-manager/manifest.yml.template > tmp/manifest-function-manager.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-manager.yml
+	# Push openedge-function-python27 manifest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python27/manifest.yml.template > tmp/manifest-function-python27.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27.yml
+	# Push openedge-remote-mqtt manifest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt.yml
+
+	rm -rf tmp
