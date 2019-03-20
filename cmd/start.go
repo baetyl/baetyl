@@ -67,7 +67,12 @@ func startInternal() {
 
 	d, err := ctx.Reborn()
 	if err != nil {
-		logger.Errorf(err.Error())
+		// Package the error
+		if err == daemon.ErrWouldBlock {
+			logger.Errorf("Openedge has been started, please do not start again")
+		} else {
+			logger.Errorf(err.Error())
+		}
 		return
 	}
 	if d != nil {
