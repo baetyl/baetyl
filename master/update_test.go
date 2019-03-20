@@ -3,7 +3,9 @@
 package master
 
 import (
+	"io/ioutil"
 	"os"
+	"path"
 	"testing"
 	"time"
 
@@ -15,83 +17,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	v1 = []byte(`
-version: V1
-services:
-  - name: wait_exit_1
-    image: cmd
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-  - name: wait_exit_2
-    image: cmd
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-  - name: hi
-    image: cmd
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-volumes:
-  - name: cmd-bin
-    path: var/db/openedge/cmd
-`)
-	v2 = []byte(`
-version: V2
-services:
-  - name: wait_exit_2
-    image: hub.baidubce.com/openedge/cmd:0.1.2
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/hub.baidubce.com/openedge/cmd:0.1.2
-  - name: hi
-    image: cmd
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-  - name: wait_exit_4
-    image: cmd
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-volumes:
-  - name: cmd-bin
-    path: var/db/openedge/cmd
-`)
-	v3 = []byte(`
-version: V3
-services: []
-volumes: []
-`)
-	v4 []byte
-	v5 = []byte(`
-version: V5
-services:
-  - name: wait_exit_5
-    image: cmd
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-`)
-	v6 = []byte(`
-version: V6
-services:
-  - name: wait_exit_5
-    image: cmd-nonexist
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd
-volumes:
-  - name: cmd-bin
-    path: var/db/openedge/cmd
-`)
-)
-
 func TestUpdateSystem(t *testing.T) {
 	err := os.Chdir("testdata")
 	assert.NoError(t, err)
+	dir := path.Join("var", "db", "openedge", "app")
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
 	defer os.RemoveAll("var/run")
@@ -110,16 +39,16 @@ func TestUpdateSystem(t *testing.T) {
 	assert.NoError(t, err)
 	defer m.Close()
 
-	err = m.UpdateSystem(v4)
-	assert.EqualError(t, err, "failed to update system: application config is null")
+	err = m.UpdateSystem(path.Join(dir, "v4"), false)
+	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
 	assert.Equal(t, "", m.appcfg.Version)
 	assert.False(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	msg, ok := m.context.Get("error")
 	assert.True(t, ok)
-	assert.Equal(t, "failed to update system: application config is null", msg)
+	assert.Equal(t, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory", msg)
 
-	err = m.UpdateSystem(v5)
+	err = m.UpdateSystem(path.Join(dir, "v5"), false)
 	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
 	assert.Equal(t, "", m.appcfg.Version)
 	assert.False(t, utils.FileExists(appConfigFile))
@@ -128,7 +57,7 @@ func TestUpdateSystem(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", msg)
 
-	err = m.UpdateSystem(v6)
+	err = m.UpdateSystem(path.Join(dir, "v6"), false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "", m.appcfg.Version)
@@ -138,68 +67,108 @@ func TestUpdateSystem(t *testing.T) {
 	assert.True(t, ok)
 	assert.Contains(t, msg, "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 
-	err = m.UpdateSystem(v1)
+	err = m.UpdateSystem(path.Join(dir, "v1"), false)
 	assert.NoError(t, err)
-	assert.Equal(t, "V1", m.appcfg.Version)
+	assert.Equal(t, "v1", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.UpdateSystem(v4)
-	assert.EqualError(t, err, "failed to update system: application config is null")
-	assert.Equal(t, "V1", m.appcfg.Version)
+	err = m.UpdateSystem(path.Join(dir, "v4"), false)
+	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
+	assert.Equal(t, "v1", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	msg, ok = m.context.Get("error")
 	assert.True(t, ok)
-	assert.Equal(t, "failed to update system: application config is null", msg)
+	assert.Equal(t, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory", msg)
 
-	err = m.UpdateSystem(v2)
-	assert.Equal(t, "V2", m.appcfg.Version)
+	err = m.UpdateSystem(path.Join(dir, "v2"), false)
+	assert.Equal(t, "v2", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.UpdateSystem(v5)
+	err = m.UpdateSystem(path.Join(dir, "v5"), false)
 	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
-	assert.Equal(t, "V2", m.appcfg.Version)
+	assert.Equal(t, "v2", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	msg, ok = m.context.Get("error")
 	assert.True(t, ok)
 	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", msg)
 
-	err = m.UpdateSystem(v3)
-	assert.Equal(t, "V3", m.appcfg.Version)
+	err = m.UpdateSystem(path.Join(dir, "v3"), false)
+	assert.Equal(t, "v3", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.UpdateSystem(v6)
+	err = m.UpdateSystem(path.Join(dir, "v6"), false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	assert.Equal(t, "V3", m.appcfg.Version)
+	assert.Equal(t, "v3", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	msg, ok = m.context.Get("error")
 	assert.True(t, ok)
 	assert.Contains(t, msg, "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 
-	err = m.UpdateSystem(v2)
-	assert.Equal(t, "V2", m.appcfg.Version)
+	err = m.UpdateSystem(path.Join(dir, "v2"), false)
+	assert.Equal(t, "v2", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
 
-	err = m.UpdateSystem(v1)
+	dv := path.Join("var", "db", "openedge", "dummy")
+	err = os.MkdirAll(dv, 0755)
 	assert.NoError(t, err)
-	assert.Equal(t, "V1", m.appcfg.Version)
+	f7 := path.Join("var", "db", "openedge", "app", "v7", "application.yml")
+	err = os.MkdirAll(path.Dir(f7), 0755)
+	assert.NoError(t, err)
+	err = ioutil.WriteFile(f7, []byte(`
+version: v7
+volumes:
+  - name: cmd-bin
+    path: var/db/openedge/cmd
+  - name: cmd-bin
+    path: var/db/openedge/cmd
+  - name: dummy
+    path: var/db/openedge/dummy
+`), 0755)
+	assert.NoError(t, err)
+
+	err = m.UpdateSystem(path.Join(dir, "v7"), true)
+	assert.Equal(t, "v7", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	_, ok = m.context.Get("error")
 	assert.False(t, ok)
+	assert.True(t, utils.DirExists(dv))
+	assert.False(t, utils.FileExists(f7))
+
+	f8 := path.Join("var", "db", "openedge", "app", "v8", "application.yml")
+	err = os.MkdirAll(path.Dir(f8), 0755)
+	assert.NoError(t, err)
+	err = ioutil.WriteFile(f8, []byte(`
+version: v8
+volumes:
+  - name: cmd-bin
+    path: var/db/openedge/cmd
+`), 0755)
+	assert.NoError(t, err)
+
+	err = m.UpdateSystem(path.Join(dir, "v8"), true)
+	assert.NoError(t, err)
+	assert.Equal(t, "v8", m.appcfg.Version)
+	assert.True(t, utils.FileExists(appConfigFile))
+	assert.False(t, utils.FileExists(appBackupFile))
+	_, ok = m.context.Get("error")
+	assert.False(t, ok)
+	assert.False(t, utils.DirExists(dv))
+	assert.False(t, utils.FileExists(f8))
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -12,20 +11,16 @@ import (
 	"github.com/mholt/archiver"
 )
 
-func (m *mo) prepare(cfgVol openedge.VolumeInfo) ([]byte, error) {
-	dir, err := ioutil.TempDir(openedge.DefaultRunDir, "tmp")
-	if err != nil {
-		return nil, err
-	}
-	// defer os.RemoveAll(dir)
-	cfgVol.Path = dir // switch to temp dir
+func (m *mo) prepare(cfgVol openedge.VolumeInfo) (string, error) {
 	cfgDir, err := m.download(cfgVol)
-
+	if err != nil {
+		return "", err
+	}
 	var cfg openedge.AppConfig
-	cfgFile := path.Join(cfgDir, "application.yml")
+	cfgFile := path.Join(cfgDir, openedge.AppConfFileName)
 	err = utils.LoadYAML(cfgFile, &cfg)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	for _, ds := range cfg.Volumes {
 		if ds.Meta.URL == "" {
@@ -33,10 +28,10 @@ func (m *mo) prepare(cfgVol openedge.VolumeInfo) ([]byte, error) {
 		}
 		_, err := m.download(ds)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 	}
-	return ioutil.ReadFile(cfgFile)
+	return cfgDir, nil
 }
 
 func (m *mo) download(v openedge.VolumeInfo) (string, error) {

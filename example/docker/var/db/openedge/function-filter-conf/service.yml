@@ -1,4 +1,3 @@
-name: function-filter
 functions:
   - name: filter
     handler: 'select qos() as qos, topic() as topic, * where id < 10'

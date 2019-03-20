@@ -20,6 +20,8 @@ const (
 )
 
 const (
+	// AppConfFileName application config file name
+	AppConfFileName = "application.yml"
 	// DefaultConfFile config path of the service by default
 	DefaultConfFile = "etc/openedge/service.yml"
 	// DefaultDBDir db dir of the service by default
@@ -33,7 +35,7 @@ const (
 // Context of service
 type Context interface {
 	Config() *ServiceConfig
-	UpdateSystem([]byte) error
+	UpdateSystem(string, bool) error
 	InspectSystem() (*Inspect, error)
 	Log() logger.Logger
 	Wait()
@@ -71,10 +73,11 @@ func newContext() (*ctx, error) {
 	if err != nil {
 		return nil, err
 	}
-	if name, ok := os.LookupEnv(EnvServiceNameKey); ok {
-		cfg.Name = name
+	name, ok := os.LookupEnv(EnvServiceNameKey)
+	if !ok {
+		name = "<unknown>"
 	}
-	log, err := logger.InitLogger(&cfg.Logger, "service", cfg.Name)
+	log, err := logger.InitLogger(&cfg.Logger, "service", name)
 	if err != nil {
 		return nil, err
 	}

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
@@ -22,10 +23,12 @@ type mo struct {
 	cfg  Config
 	key  []byte
 	dir  string
+	errs []string
 	ctx  openedge.Context
 	mqtt *mqtt.Dispatcher
 	http *http.Client
 	tomb utils.Tomb
+	lock sync.RWMutex
 }
 
 func main() {
@@ -67,6 +70,7 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 		key:  key,
 		ctx:  ctx,
 		http: cli,
+		errs: []string{},
 		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
 		dir:  path.Join(openedge.DefaultDBDir, "volumes"),
 	}, nil
@@ -87,40 +91,12 @@ func (m *mo) close() {
 }
 
 func (m *mo) ProcessPublish(p *packet.Publish) error {
-	e := NewEvent(p.Message.Payload)
-	m.ctx.Log().Debugln("backward event:", e)
-	switch e.Type {
-	case Update:
-		updateEvent, err := newUpdateEvent(e.Content)
-		if err != nil {
-			err = fmt.Errorf("update event invalid: %s", err.Error())
-			m.ctx.Log().Errorf(err.Error())
-			m.report(err.Error())
-			break
-		}
-		if updateEvent.Version != "v2" {
-			err = fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
-			m.ctx.Log().Errorf(err.Error())
-			m.report(err.Error())
-			break
-		}
-		cfg, err := m.prepare(updateEvent.Config)
-		if err != nil {
-			err = fmt.Errorf("update event invalid: %s", err.Error())
-			m.ctx.Log().Errorf(err.Error())
-			m.report(err.Error())
-			break
-		}
-		err = m.ctx.UpdateSystem(cfg)
-		if err != nil {
-			err = fmt.Errorf("failed to update system: %s", err.Error())
-			m.ctx.Log().Errorf(err.Error())
-			m.report(err.Error())
-		} else {
-			m.report()
-		}
-	default:
-		m.ctx.Log().Warnf("event type unexpected")
+	err := m.processEvent(p.Message.Payload)
+	if err != nil {
+		m.ctx.Log().Errorf(err.Error())
+		m.report(true, err.Error())
+	} else {
+		m.report(true)
 	}
 	if p.Message.QOS == 1 {
 		puback := packet.NewPuback()
@@ -138,15 +114,36 @@ func (m *mo) ProcessError(err error) {
 	m.ctx.Log().Errorf(err.Error())
 }
 
+func (m *mo) processEvent(payload []byte) error {
+	m.ctx.Log().Debugln("backward event:", string(payload))
+	e, err := NewEvent(payload)
+	if err != nil {
+		return fmt.Errorf("update event invalid: %s", err.Error())
+	}
+	updateEvent := e.Content.(*UpdateEvent)
+	if updateEvent.Version != "v2" {
+		return fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
+	}
+	file, err := m.prepare(updateEvent.Config)
+	if err != nil {
+		return fmt.Errorf("update event invalid: %s", err.Error())
+	}
+	err = m.ctx.UpdateSystem(file, updateEvent.Clean)
+	if err != nil {
+		return fmt.Errorf("failed to update system: %s", err.Error())
+	}
+	return nil
+}
+
 func (m *mo) reporting() error {
 	t := time.NewTicker(m.cfg.Remote.Report.Interval)
-	m.report()
+	m.report(false)
 	// defer m.report()
 	for {
 		select {
 		case <-t.C:
 			m.ctx.Log().Debugln("to report stats")
-			m.report()
+			m.report(false)
 		case <-m.tomb.Dying():
 			return nil
 		}
@@ -154,8 +151,18 @@ func (m *mo) reporting() error {
 }
 
 // Report reports info
-func (m *mo) report(errors ...string) {
+func (m *mo) report(overwrite bool, errors ...string) {
 	defer utils.Trace("report", logger.Debugf)()
+
+	if overwrite {
+		m.lock.Lock()
+		m.errs = errors
+		m.lock.Unlock()
+	} else {
+		m.lock.RLock()
+		errors = append(m.errs, errors...)
+		m.lock.RUnlock()
+	}
 
 	i, err := m.ctx.InspectSystem()
 	if err != nil {
@@ -189,8 +196,9 @@ func (m *mo) send(data []byte) error {
 		return err
 	}
 	header := map[string]string{
-		"x-iot-edge-clientid": m.cfg.Remote.MQTT.ClientID,
 		"x-iot-edge-key":      key,
+		"x-iot-edge-cert":     m.cfg.Remote.Meta.Cert,
+		"x-iot-edge-clientid": m.cfg.Remote.MQTT.ClientID,
 		"Content-Type":        "application/x-www-form-urlencoded",
 	}
 	_, err = m.http.Send("POST", m.cfg.Remote.Report.URL, body, header)

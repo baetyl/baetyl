@@ -5,8 +5,6 @@ import (
 
 	"github.com/baidu/openedge/protocol/http"
 	"github.com/baidu/openedge/protocol/mqtt"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
 )
 
 // Config agent config
@@ -22,20 +20,8 @@ type Config struct {
 		Desire struct {
 			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
 		} `yaml:"desire" json:"desire"`
+		Meta struct {
+			Cert string `yaml:"cert" json:"cert"`
+		} `yaml:"meta" json:"meta"`
 	} `yaml:"remote" json:"remote"`
-}
-
-// UpdateEvent update event
-type UpdateEvent struct {
-	Version string              `yaml:"version" json:"version"`
-	Config  openedge.VolumeInfo `yaml:"config" json:"config"`
-}
-
-func newUpdateEvent(d []byte) (*UpdateEvent, error) {
-	data := new(UpdateEvent)
-	err := utils.UnmarshalJSON(d, data)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
 }
