@@ -18,11 +18,11 @@ Native 进程模式结构图:
 
 [模块引擎](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/engine/engine.go)负责模块的启动、停止、重启、监听和守护，目前支持docker容器模式和native进程模式。
 
-模块引擎从工作目录的 [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) 配置中加载模块列表，并以列表的顺序逐个启动模块。模块引擎会为每个模块启动一个守护协程对模块状态进行监听，如果模块异常退出，会根据模块的 [Restart Policy](../tutorials/local/Config-interpretation.md#应用配置) 配置项执行重启或退出。主程序关闭后模块引擎会按照列表的逆序逐个关闭模块。
+模块引擎从工作目录的 [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) 配置中加载模块列表，并以列表的顺序逐个启动模块。模块引擎会为每个模块启动一个守护协程对模块状态进行监听，如果模块异常退出，会根据模块的 [Restart Policy](../tutorials/Config-interpretation.md#应用配置) 配置项执行重启或退出。主程序关闭后模块引擎会按照列表的逆序逐个关闭模块。
 
 _**提示**：工作目录可在 OpenEdge 启动时通过 `-w` 指定，默认为 OpenEdge 的可执行文件所在目录的上一级目录。_
 
-Docker 容器模式下，模块通过 Docker Client 启动 `entry` 指定的模块镜像，并自动加入自定义网络（openedge）中，由于 Docker 自带了 DNS Server，模块间可通过模块名进行互相通讯。另外模块可通过 `expose` 配置项来向外暴露端口；通过 `resources` 配置项限制模块可使用的资源，目前支持 CPU、内存和进程数的限制。[配置参考](../tutorials/local/Config-interpretation.md#应用配置)
+Docker 容器模式下，模块通过 Docker Client 启动 `entry` 指定的模块镜像，并自动加入自定义网络（openedge）中，由于 Docker 自带了 DNS Server，模块间可通过模块名进行互相通讯。另外模块可通过 `expose` 配置项来向外暴露端口；通过 `resources` 配置项限制模块可使用的资源，目前支持 CPU、内存和进程数的限制。[配置参考](../tutorials/Config-interpretation.md#应用配置)
 
 Docker 容器模式下，模块在容器中的工作目录是根目录：/，配置路径是：/etc/openedge/module.yml，资源读取目录是：/var/db/openedge/module/<模块名>，持久化数据输出目录是：/var/db/openedge/volume/<模块名>，日志输出目录是：/var/log/openedge/<模块名>。具体的映射如下：
 
@@ -37,7 +37,7 @@ Native 进程模式下，通过 syscall 启动 `entry` 指定模块可执行文�
 
 ### 云代理(agent)
 
-云代理负责和云端管理套件通讯，走 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证。配置参考 [cloud](../tutorials/local/Config-interpretation.md#主程序配置)。
+云代理负责和云端管理套件通讯，走 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证。配置参考 [cloud](../tutorials/Config-interpretation.md#主程序配置)。
 
 OpenEdge 启动和热加载（reload）完成后会通过云代理上报一次设备信息，目前[上报的内容](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/agent/report.go)如下：
 
@@ -66,7 +66,7 @@ _**提示**：如果设备无法连接外网或者脱离云端管理，可移除
 
 ### API(api)
 
-OpenEdge 主程序会暴露一组 HTTP API，目前支持获取空闲端口，模块的启动和停止。API Server 在 Linux 系统下默认采用 Unix Domain Socket，工作目录下的 `var/openedge.sock`；其他环境采用 TCP，默认监听 `tcp://127.0.0.1:50050`。开发者可以通过 [api](../tutorials/local/Config-interpretation.md#主程序配置)配置项修改监听的地址。为了方便管理，我们对模块做了一个划分，从 [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) 中加载的模块称为常驻模块，通过 API 启动的模块称为临时模块，临时模块遵循谁启动谁负责停止的原则。OpenEdge 退出时，会先逆序停止所有常驻模块，常驻模块停止过程中也会调用 API 来停止其启动的模块，最后如果还有遗漏的临时模块，会随机全部停止。访问 API 需要提供账号和密码，设置如下两个请求头：
+OpenEdge 主程序会暴露一组 HTTP API，目前支持获取空闲端口，模块的启动和停止。API Server 在 Linux 系统下默认采用 Unix Domain Socket，工作目录下的 `var/openedge.sock`；其他环境采用 TCP，默认监听 `tcp://127.0.0.1:50050`。开发者可以通过 [api](../tutorials/Config-interpretation.md#主程序配置)配置项修改监听的地址。为了方便管理，我们对模块做了一个划分，从 [var/db/openedge/module/module.yml](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/example/docker/var/db/openedge/module/module.yml) 中加载的模块称为常驻模块，通过 API 启动的模块称为临时模块，临时模块遵循谁启动谁负责停止的原则。OpenEdge 退出时，会先逆序停止所有常驻模块，常驻模块停止过程中也会调用 API 来停止其启动的模块，最后如果还有遗漏的临时模块，会随机全部停止。访问 API 需要提供账号和密码，设置如下两个请求头：
 
 > - x-iot-edge-username：账号名称，即常驻模块名
 > - x-iot-edge-password：账号密码，即常驻模块的 token，使用```module.GetEnv(module.EnvOpenEdgeModuleToken)```从环境变量中获取，OpenEdge 主程序启动时会为每个常驻模块生成临时的 token。
