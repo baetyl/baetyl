@@ -11,7 +11,6 @@ import (
 
 // ServiceConfig base config of service
 type ServiceConfig struct {
-	Name   string          `yaml:"name" json:"name"`
 	Hub    mqtt.ClientInfo `yaml:"hub" json:"hub"`
 	Logger logger.LogInfo  `yaml:"logger" json:"logger"`
 }
