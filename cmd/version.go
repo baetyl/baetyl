@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Compile parameter
 var (
 	Version   string
 	BuildTime string
