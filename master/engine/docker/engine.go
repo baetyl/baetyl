@@ -17,6 +17,7 @@ import (
 	"github.com/docker/docker/pkg/sysinfo"
 	"github.com/docker/go-connections/nat"
 	"github.com/orcaman/concurrent-map"
+	"strings"
 )
 
 // NAME ot docker engine
@@ -102,6 +103,10 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	if err != nil {
 		return nil, err
 	}
+	deviceBindings, err := e.parseDeviceSpecs(cfg.Devices)
+	if err != nil {
+		return nil, err
+	}
 	var params containerConfigs
 	params.config = container.Config{
 		Image:        cfg.Image,
@@ -121,6 +126,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			Memory:     cfg.Resources.Memory.Limit,
 			MemorySwap: cfg.Resources.Memory.Swap,
 			PidsLimit:  cfg.Resources.Pids.Limit,
+			Devices:    deviceBindings,
 		},
 	}
 	params.networkConfig = network.NetworkingConfig{
@@ -143,4 +149,24 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		return nil, err
 	}
 	return s, nil
+}
+
+func (e *dockerEngine) parseDeviceSpecs(devices []string) (deviceBindings []container.DeviceMapping, err error) {
+	for _, rawDevice := range devices {
+		deviceMapping := strings.Split(rawDevice, ":")
+		device := container.DeviceMapping{}
+		switch len(deviceMapping) {
+		case 3:
+			device.CgroupPermissions = deviceMapping[2]
+		case 2:
+			device.CgroupPermissions = "mrw"
+		default:
+			err = fmt.Errorf("error device mapping[%s]", rawDevice)
+			return
+		}
+		device.PathOnHost = deviceMapping[0]
+		device.PathInContainer = deviceMapping[1]
+		deviceBindings = append(deviceBindings, device)
+	}
+	return
 }
