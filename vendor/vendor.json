@@ -57,18 +57,6 @@
 			"revisionTime": "2018-08-23T22:24:21Z"
 		},
 		{
-			"checksumSHA1": "xVuhAsueOmMb6XRO5572vmNf7vs=",
-			"path": "github.com/baidubce/bce-sdk-go/http",
-			"revision": "8fa9e5a1f3045eaf84cc002b3ee22f904911cc5e",
-			"revisionTime": "2019-01-11T09:39:54Z"
-		},
-		{
-			"checksumSHA1": "U78G9VTYdRthxDWGXdMxhD5VAF4=",
-			"path": "github.com/baidubce/bce-sdk-go/util",
-			"revision": "8fa9e5a1f3045eaf84cc002b3ee22f904911cc5e",
-			"revisionTime": "2019-01-11T09:39:54Z"
-		},
-		{
 			"checksumSHA1": "pQ8RLppvYgZPuUUVJxk8cchTktk=",
 			"path": "github.com/creasty/defaults",
 			"revision": "a7e48e2230891fc7456c8ab918c424c5b06c3192",
