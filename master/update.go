@@ -28,6 +28,8 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 }
 
 func (m *Master) update(dir string, clean bool) error {
+	m.log.Infof("system is updating")
+
 	// backup application.yml
 	err := m.backup()
 	if err != nil {
@@ -68,6 +70,7 @@ func (m *Master) update(dir string, clean bool) error {
 		}
 		return err
 	}
+	m.log.Infof("system is updated")
 	if clean {
 		err = os.RemoveAll(dir)
 		if err != nil {
@@ -79,6 +82,7 @@ func (m *Master) update(dir string, clean bool) error {
 				m.log.Warnf("failed to remove old volume (%s:%s)", v.Name, v.Path)
 			}
 		}
+		m.log.Infof("old volumes are removed")
 	}
 	return nil
 }

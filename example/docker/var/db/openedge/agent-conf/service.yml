@@ -9,8 +9,9 @@ remote:
   http:
     ca: var/db/openedge/cert/openapi.pem
     address: "https://iot-edge.baidu-int.com"
+    insecure: true # shold be false online
   meta:
-    cert: v1
+    cert: V1
 logger:
   path: var/log/openedge/service.log
   level: debug
