@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"path"
 	"strings"
 	"sync"
 	"time"
@@ -22,7 +21,6 @@ import (
 type mo struct {
 	cfg  Config
 	key  []byte
-	dir  string
 	errs []string
 	ctx  openedge.Context
 	mqtt *mqtt.Dispatcher
@@ -72,7 +70,6 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 		http: cli,
 		errs: []string{},
 		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
-		dir:  path.Join(openedge.DefaultDBDir, "volumes"),
 	}, nil
 }
 
@@ -91,17 +88,17 @@ func (m *mo) close() {
 }
 
 func (m *mo) ProcessPublish(p *packet.Publish) error {
+	if p.Message.QOS == 1 {
+		puback := packet.NewPuback()
+		puback.ID = p.ID
+		m.mqtt.Send(puback)
+	}
 	err := m.processEvent(p.Message.Payload)
 	if err != nil {
 		m.ctx.Log().Errorf(err.Error())
 		m.report(true, err.Error())
 	} else {
 		m.report(true)
-	}
-	if p.Message.QOS == 1 {
-		puback := packet.NewPuback()
-		puback.ID = p.ID
-		m.mqtt.Send(puback)
 	}
 	return nil
 }
@@ -124,11 +121,11 @@ func (m *mo) processEvent(payload []byte) error {
 	if updateEvent.Version != "v2" {
 		return fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
 	}
-	file, err := m.prepare(updateEvent.Config)
+	volumeHostDir, err := m.prepare(updateEvent.Config)
 	if err != nil {
 		return fmt.Errorf("update event invalid: %s", err.Error())
 	}
-	err = m.ctx.UpdateSystem(file, updateEvent.Clean)
+	err = m.ctx.UpdateSystem(volumeHostDir, updateEvent.Clean)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}
@@ -201,7 +198,7 @@ func (m *mo) send(data []byte) error {
 		"x-iot-edge-clientid": m.cfg.Remote.MQTT.ClientID,
 		"Content-Type":        "application/x-www-form-urlencoded",
 	}
-	_, err = m.http.Send("POST", m.cfg.Remote.Report.URL, body, header)
+	_, err = m.http.SendPath("POST", m.cfg.Remote.Report.URL, body, header)
 	return err
 }
 

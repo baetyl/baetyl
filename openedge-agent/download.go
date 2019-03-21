@@ -4,20 +4,21 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"time"
 
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
-	"github.com/baidubce/bce-sdk-go/http"
 	"github.com/mholt/archiver"
 )
 
 func (m *mo) prepare(cfgVol openedge.VolumeInfo) (string, error) {
-	cfgDir, err := m.download(cfgVol)
+	volumeHostDir, volumeContainerDir, err := m.download(cfgVol)
 	if err != nil {
 		return "", err
 	}
 	var cfg openedge.AppConfig
-	cfgFile := path.Join(cfgDir, openedge.AppConfFileName)
+	cfgFile := path.Join(volumeContainerDir, openedge.AppConfFileName)
 	err = utils.LoadYAML(cfgFile, &cfg)
 	if err != nil {
 		return "", err
@@ -26,52 +27,68 @@ func (m *mo) prepare(cfgVol openedge.VolumeInfo) (string, error) {
 		if ds.Meta.URL == "" {
 			continue
 		}
-		_, err := m.download(ds)
+		_, _, err = m.download(ds)
 		if err != nil {
 			return "", err
 		}
 	}
-	return cfgDir, nil
+	return volumeHostDir, nil
 }
 
-func (m *mo) download(v openedge.VolumeInfo) (string, error) {
-	volumeDir := path.Join(m.dir, path.Clean(v.Path))
-	volumeZipFile := path.Join(volumeDir, v.Name+".zip")
+func (m *mo) download(v openedge.VolumeInfo) (string, string, error) {
+	rp, err := filepath.Rel(openedge.DefaultDBDir, v.Path)
+	if err != nil {
+		return "", "", fmt.Errorf("path of volume (%s) invalid: %s", v.Name, err.Error())
+	}
+
+	volumeHostDir := path.Join(openedge.DefaultDBDir, rp)
+	volumeContainerDir := path.Join(openedge.DefaultDBDir, "volumes", rp)
+	volumeZipFile := path.Join(volumeContainerDir, v.Name+".zip")
 
 	// volume exists
 	if utils.FileExists(volumeZipFile) {
-		return volumeDir, nil
+		volumeMD5, err := utils.CalculateFileMD5(volumeZipFile)
+		if err == nil && volumeMD5 == v.Meta.MD5 {
+			m.ctx.Log().Debugf("volume (%s) exists", v.Name)
+			return volumeHostDir, volumeContainerDir, nil
+		}
 	}
 
-	req := new(http.Request)
-	req.SetUri(v.Meta.URL)
-	res, err := http.Execute(req)
-	if err != nil {
-		return "", err
+	res, err := m.http.SendUrl("GET", v.Meta.URL, nil, nil)
+	if err != nil || res == nil {
+		// retry
+		time.Sleep(time.Second)
+		res, err = m.http.SendUrl("GET", v.Meta.URL, nil, nil)
+		if err != nil || res == nil {
+			return "", "", fmt.Errorf("failed to download volume (%s): %v", v.Name, err)
+		}
 	}
-	body := res.Body()
-	defer body.Close()
+	defer res.Close()
 
-	err = utils.WriteFile(volumeZipFile, body)
+	err = os.MkdirAll(volumeContainerDir, 0755)
 	if err != nil {
-		os.RemoveAll(volumeDir)
-		return "", err
+		return "", "", fmt.Errorf("failed to prepare volume (%s): %s", v.Name, err.Error())
+	}
+	err = utils.WriteFile(volumeZipFile, res)
+	if err != nil {
+		os.RemoveAll(volumeContainerDir)
+		return "", "", fmt.Errorf("failed to prepare volume (%s): %s", v.Name, err.Error())
 	}
 
 	volumeMD5, err := utils.CalculateFileMD5(volumeZipFile)
 	if err != nil {
-		os.RemoveAll(volumeDir)
-		return "", err
+		os.RemoveAll(volumeContainerDir)
+		return "", "", fmt.Errorf("failed to calculate MD5 of volume (%s): %s", v.Name, err.Error())
 	}
 	if volumeMD5 != v.Meta.MD5 {
-		os.RemoveAll(volumeDir)
-		return "", fmt.Errorf("dateset (%s) downloaded with unexpected MD5", v.Name)
+		os.RemoveAll(volumeContainerDir)
+		return "", "", fmt.Errorf("MD5 of volume (%s) invalid", v.Name)
 	}
 
-	err = archiver.Zip.Open(volumeZipFile, volumeDir)
+	err = archiver.Zip.Open(volumeZipFile, volumeContainerDir)
 	if err != nil {
-		os.RemoveAll(volumeDir)
-		return "", err
+		os.RemoveAll(volumeContainerDir)
+		return "", "", fmt.Errorf("failed to unzip volume (%s): %s", v.Name, err.Error())
 	}
-	return volumeDir, nil
+	return volumeHostDir, volumeContainerDir, nil
 }
