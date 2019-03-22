@@ -152,21 +152,27 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 }
 
 func (e *dockerEngine) parseDeviceSpecs(devices []string) (deviceBindings []container.DeviceMapping, err error) {
-	for _, rawDevice := range devices {
-		deviceMapping := strings.Split(rawDevice, ":")
-		device := container.DeviceMapping{}
-		switch len(deviceMapping) {
-		case 3:
-			device.CgroupPermissions = deviceMapping[2]
+	for _, device := range devices {
+		deviceParts := strings.Split(device, ":")
+		deviceMapping := container.DeviceMapping{}
+		switch len(deviceParts) {
+		case 1:
+			deviceMapping.PathOnHost = deviceParts[0]
+			deviceMapping.PathInContainer = deviceParts[0]
+			deviceMapping.CgroupPermissions = "mrw"
 		case 2:
-			device.CgroupPermissions = "mrw"
+			deviceMapping.PathOnHost = deviceParts[0]
+			deviceMapping.PathInContainer = deviceParts[1]
+			deviceMapping.CgroupPermissions = "mrw"
+		case 3:
+			deviceMapping.PathOnHost = deviceParts[0]
+			deviceMapping.PathInContainer = deviceParts[1]
+			deviceMapping.CgroupPermissions = deviceParts[2]
 		default:
-			err = fmt.Errorf("error device mapping[%s]", rawDevice)
+			err = fmt.Errorf("invaild device mapping(%s)", device)
 			return
 		}
-		device.PathOnHost = deviceMapping[0]
-		device.PathInContainer = deviceMapping[1]
-		deviceBindings = append(deviceBindings, device)
+		deviceBindings = append(deviceBindings, deviceMapping)
 	}
 	return
 }
