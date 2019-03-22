@@ -29,6 +29,7 @@ type ServiceInfo struct {
 	Replica   int               `yaml:"replica" json:"replica"`
 	Mounts    []MountInfo       `yaml:"mounts" json:"mounts" default:"[]"`
 	Ports     []string          `yaml:"ports" json:"ports" default:"[]"`
+	Devices   []string          `yaml:"devices" json:"devices" default:"[]"`
 	Args      []string          `yaml:"args" json:"args" default:"[]"`
 	Env       map[string]string `yaml:"env" json:"env" default:"{}"`
 	Restart   RestartPolicyInfo `yaml:"restart" json:"restart"`
