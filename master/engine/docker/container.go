@@ -61,6 +61,7 @@ func (e *dockerEngine) pullImage(name string) error {
 	}
 	defer out.Close()
 	io.Copy(os.Stdout, out)
+	e.log.Debugf("image (%s) pulled", name)
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 
@@ -91,11 +92,11 @@ func (m *Master) Close() error {
 
 func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
-		err := os.MkdirAll("/var/run", os.ModePerm)
+		err := os.MkdirAll(path.Dir(openedge.DefaultSockFile), os.ModePerm)
 		if err != nil {
 			logger.WithError(err).Errorf("failed to make dir: /var/run")
 		}
-		c.Server.Address = "unix:///var/run/openedge.sock"
+		c.Server.Address = "unix://" + openedge.DefaultSockFile
 		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
 	} else {
 		if c.Server.Address == "" {
