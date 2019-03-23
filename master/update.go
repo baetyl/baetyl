@@ -18,7 +18,7 @@ var appBackupFile = path.Join(appDir, "application.yml.old")
 func (m *Master) UpdateSystem(dir string, clean bool) error {
 	err := m.update(dir, clean)
 	if err != nil {
-		err := fmt.Errorf("failed to update system: %s", err.Error())
+		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
 		m.context.Set("error", err.Error())
 		return err
