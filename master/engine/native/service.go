@@ -3,11 +3,10 @@ package native
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/orcaman/concurrent-map"
 )
 
@@ -31,7 +30,11 @@ func (s *nativeService) Name() string {
 }
 
 func (s *nativeService) Stats() openedge.ServiceStatus {
-	return openedge.ServiceStatus{}
+	r := openedge.NewServiceStatus(s.cfg.Name)
+	for _, i := range s.instances.Items() {
+		r.Instances = append(r.Instances, i.(*nativeInstance).State())
+	}
+	return r
 }
 
 func (s *nativeService) Start() error {
@@ -39,9 +42,9 @@ func (s *nativeService) Start() error {
 	var instanceName string
 	for i := 0; i < s.cfg.Replica; i++ {
 		if i == 0 {
-			instanceName = ""
+			instanceName = s.cfg.Name
 		} else {
-			instanceName = strconv.Itoa(i)
+			instanceName = fmt.Sprintf("%s.i%d", s.cfg.Name, i)
 		}
 		err := s.startInstance(instanceName, nil)
 		if err != nil {
@@ -93,6 +96,5 @@ func (s *nativeService) StopInstance(instanceName string) error {
 		s.log.Debugf("instance (%s) not found", instanceName)
 		return nil
 	}
-	s.instances.Remove(instanceName)
 	return i.(*nativeInstance).Close()
 }

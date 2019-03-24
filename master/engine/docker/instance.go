@@ -3,7 +3,7 @@ package docker
 import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -18,16 +18,12 @@ type dockerInstance struct {
 
 func (s *dockerService) newInstance(name string, params containerConfigs) (*dockerInstance, error) {
 	log := s.log.WithField("instance", name)
-	containerName := s.cfg.Name
-	if name != "" {
-		containerName = containerName + "." + name
-	}
-	cid, err := s.engine.startContainer(containerName, params)
+	cid, err := s.engine.startContainer(name, params)
 	if err != nil {
 		log.WithError(err).Warnln("failed to start instance, clean and retry")
 		// remove and retry
-		s.engine.removeContainerByName(containerName)
-		cid, err = s.engine.startContainer(containerName, params)
+		s.engine.removeContainerByName(name)
+		cid, err = s.engine.startContainer(name, params)
 		if err != nil {
 			log.WithError(err).Warnln("failed to start instance again")
 			return nil, err
@@ -50,20 +46,22 @@ func (s *dockerService) newInstance(name string, params containerConfigs) (*dock
 	return i, nil
 }
 
-func (i *dockerInstance) ID() string {
-	return i.id
-}
-
-func (i *dockerInstance) Name() string {
-	return i.name
-}
-
 func (i *dockerInstance) Log() logger.Logger {
 	return i.log
 }
 
 func (i *dockerInstance) Policy() openedge.RestartPolicyInfo {
 	return i.service.cfg.Restart
+}
+
+func (i *dockerInstance) State() openedge.InstanceStatus {
+	status, err := i.service.engine.statsContainer(i.id)
+	if err != nil {
+		status = openedge.InstanceStatus{"error": err.Error()}
+	}
+	status["id"] = i.id
+	status["name"] = i.name
+	return status
 }
 
 func (i *dockerInstance) Wait(s chan<- error) {
@@ -89,6 +87,7 @@ func (i *dockerInstance) Stop() {
 		i.log.WithError(err).Errorf("failed to stop instance")
 	}
 	i.service.engine.removeContainer(i.id)
+	i.service.instances.Remove(i.name)
 }
 
 func (i *dockerInstance) Dying() <-chan struct{} {

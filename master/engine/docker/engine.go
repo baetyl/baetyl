@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -98,7 +99,14 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		}
 		volumes = append(volumes, fmt.Sprintf(f, path.Join(e.pwd, path.Clean(v.Path)), path.Clean(m.Path)))
 	}
+	if runtime.GOOS == "linux" {
+		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, openedge.DefaultSockFile, openedge.DefaultSockFile))
+	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
+	if err != nil {
+		return nil, err
+	}
+	deviceBindings, err := e.parseDeviceSpecs(cfg.Devices)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +129,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			Memory:     cfg.Resources.Memory.Limit,
 			MemorySwap: cfg.Resources.Memory.Swap,
 			PidsLimit:  cfg.Resources.Pids.Limit,
+			Devices:    deviceBindings,
 		},
 	}
 	params.networkConfig = network.NetworkingConfig{
@@ -143,4 +152,30 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		return nil, err
 	}
 	return s, nil
+}
+
+func (e *dockerEngine) parseDeviceSpecs(devices []string) (deviceBindings []container.DeviceMapping, err error) {
+	for _, device := range devices {
+		deviceParts := strings.Split(device, ":")
+		deviceMapping := container.DeviceMapping{}
+		switch len(deviceParts) {
+		case 1:
+			deviceMapping.PathOnHost = deviceParts[0]
+			deviceMapping.PathInContainer = deviceParts[0]
+			deviceMapping.CgroupPermissions = "mrw"
+		case 2:
+			deviceMapping.PathOnHost = deviceParts[0]
+			deviceMapping.PathInContainer = deviceParts[1]
+			deviceMapping.CgroupPermissions = "mrw"
+		case 3:
+			deviceMapping.PathOnHost = deviceParts[0]
+			deviceMapping.PathInContainer = deviceParts[1]
+			deviceMapping.CgroupPermissions = deviceParts[2]
+		default:
+			err = fmt.Errorf("invaild device mapping(%s)", device)
+			return
+		}
+		deviceBindings = append(deviceBindings, deviceMapping)
+	}
+	return
 }

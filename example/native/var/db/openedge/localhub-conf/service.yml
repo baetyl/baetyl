@@ -1,9 +1,20 @@
 name: localhub
 listen:
   - tcp://0.0.0.0:1883
+  - ssl://0.0.0.0:8883
+certificate:
+  ca: var/db/openedge/cert/ca.pem
+  cert: var/db/openedge/cert/server.pem
+  key: var/db/openedge/cert/server.key
 principals:
-  - username: 'test'
-    password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
+  - username: two-way-tls
+    permissions:
+      - action: 'pub'
+        permit: ['tls/#']
+      - action: 'sub'
+        permit: ['tls/#']
+  - username: test
+    password: hahaha
     permissions:
       - action: 'pub'
         permit: ['#']
@@ -16,5 +27,4 @@ subscriptions:
       topic: 't/topic'
 logger:
   path: var/log/openedge/service.log
-  console: true
   level: "debug"

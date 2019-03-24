@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -39,16 +40,20 @@ func NewClient(c ClientInfo) (*Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: tls,
 	}
-	url, err := utils.ParseURL(c.Address)
-	if err != nil {
-		return nil, err
-	}
-	sockets.ConfigureTransport(transport, url.Scheme, url.Host)
-	if url.Scheme == "unix" {
-		url.Host = "openedge"
-	}
-	if url.Scheme != "http" && url.Scheme != "https" {
-		url.Scheme = "http"
+
+	var url *url.URL
+	if c.Address != "" {
+		url, err = utils.ParseURL(c.Address)
+		if err != nil {
+			return nil, err
+		}
+		sockets.ConfigureTransport(transport, url.Scheme, url.Host)
+		if url.Scheme == "unix" {
+			url.Host = "openedge"
+		}
+		if url.Scheme != "http" && url.Scheme != "https" {
+			url.Scheme = "http"
+		}
 	}
 	return &Client{
 		cfg: c,
@@ -62,23 +67,40 @@ func NewClient(c ClientInfo) (*Client, error) {
 
 // Get sends get request
 func (c *Client) Get(path string, params ...interface{}) ([]byte, error) {
-	return c.Send("GET", fmt.Sprintf(path, params...), nil, c.genHeader())
+	return c.SendPath("GET", fmt.Sprintf(path, params...), nil, c.genHeader())
 }
 
 // Put sends put request
 func (c *Client) Put(body []byte, path string, params ...interface{}) ([]byte, error) {
-	return c.Send("PUT", fmt.Sprintf(path, params...), body, c.genHeader())
+	return c.SendPath("PUT", fmt.Sprintf(path, params...), body, c.genHeader())
 }
 
 // Post sends post request
 func (c *Client) Post(body []byte, path string, params ...interface{}) ([]byte, error) {
-	return c.Send("POST", fmt.Sprintf(path, params...), body, c.genHeader())
+	return c.SendPath("POST", fmt.Sprintf(path, params...), body, c.genHeader())
 }
 
-// Send sends request
-func (c *Client) Send(method, path string, body []byte, header map[string]string) ([]byte, error) {
+// SendPath sends http request by path
+func (c *Client) SendPath(method, path string, body []byte, header map[string]string) ([]byte, error) {
 	url := fmt.Sprintf("%s://%s%s", c.url.Scheme, c.url.Host, path)
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	res, err := c.SendUrl(method, url, bytes.NewBuffer(body), header)
+	if err != nil {
+		return nil, err
+	}
+	var resBody []byte
+	if res != nil {
+		defer res.Close()
+		resBody, err = ioutil.ReadAll(res)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return resBody, nil
+}
+
+// SendUrl sends http request by url
+func (c *Client) SendUrl(method, url string, body io.Reader, header map[string]string) (io.ReadCloser, error) {
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -92,18 +114,15 @@ func (c *Client) Send(method, path string, body []byte, header map[string]string
 	if err != nil {
 		return nil, err
 	}
-	var resBody []byte
-	if res.Body != nil {
-		defer res.Body.Close()
-		resBody, err = ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, err
-		}
-	}
 	if res.StatusCode >= 400 {
+		var resBody []byte
+		if res.Body != nil {
+			defer res.Body.Close()
+			resBody, _ = ioutil.ReadAll(res.Body)
+		}
 		return nil, fmt.Errorf("[%d] %s", res.StatusCode, strings.TrimRight(string(resBody), "\n"))
 	}
-	return resBody, nil
+	return res.Body, nil
 }
 
 func (c *Client) genHeader() map[string]string {

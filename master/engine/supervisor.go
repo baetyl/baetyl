@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/jpillora/backoff"
 )
 
@@ -40,6 +40,7 @@ func Supervising(supervisee Supervisee) error {
 		case err := <-s:
 			switch p.Policy {
 			case openedge.RestartOnFailure:
+				// TODO: to test
 				if err == nil {
 					return nil
 				}
@@ -47,6 +48,7 @@ func Supervising(supervisee Supervisee) error {
 			case openedge.RestartAlways:
 				goto RESTART
 			case openedge.RestartNo:
+				// TODO: to test
 				return nil
 			default:
 				l.Errorf("Restart policy (%s) invalid", p.Policy)

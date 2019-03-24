@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/api"
 	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
@@ -62,7 +63,7 @@ func New(pwd string, cfg Config) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
-	err = m.prepareServices()
+	_, err = m.prepareServices()
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -91,11 +92,11 @@ func (m *Master) Close() error {
 
 func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
-		err := os.MkdirAll("/var/run", os.ModePerm)
+		err := os.MkdirAll(path.Dir(openedge.DefaultSockFile), os.ModePerm)
 		if err != nil {
 			logger.WithError(err).Errorf("failed to make dir: /var/run")
 		}
-		c.Server.Address = "unix:///var/run/openedge.sock"
+		c.Server.Address = "unix://" + openedge.DefaultSockFile
 		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
 	} else {
 		if c.Server.Address == "" {

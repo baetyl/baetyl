@@ -23,7 +23,7 @@ Native 进程模式设计架构图：
 更多 OpenEdge 设计文档请参考：
 
 > + [OpenEdge 设计](./doc/zh-cn/overview/OpenEdge-design.md)
-> + [OpenEdge 配置解读](./doc/zh-cn/tutorials/local/Config-interpretation.md)
+> + [OpenEdge 配置解读](./doc/zh-cn/tutorials/Config-interpretation.md)
 > + [如何针对 Python 运行时编写 Python 脚本](./doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md)
 > + [如何开发一个自定义函数运行时](./doc/zh-cn/customize/How-to-develop-a-customize-runtime-for-function.md)
 > + [如何开发一个自定义模块](./doc/zh-cn/customize/How-to-develop-a-customize-module-for-OpenEdge.md)

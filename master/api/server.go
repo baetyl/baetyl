@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/baidu/openedge/protocol/http"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -14,7 +15,7 @@ import (
 type Master interface {
 	Auth(u, p string) bool
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(*openedge.AppConfig) error
+	UpdateSystem(string, bool) error
 
 	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
 	StopServiceInstance(serviceName, instanceName string) error
@@ -62,12 +63,16 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
 	}
-	d := new(openedge.AppConfig)
-	err := json.Unmarshal(reqBody, d)
+	args := make(map[string]string)
+	err := json.Unmarshal(reqBody, &args)
 	if err != nil {
 		return nil, err
 	}
-	go s.m.UpdateSystem(d)
+	clean := false
+	if s, ok := args["clean"]; ok && strings.ToLower(s) == "true" {
+		clean = true
+	}
+	go s.m.UpdateSystem(args["file"], clean)
 	return nil, nil
 }
 

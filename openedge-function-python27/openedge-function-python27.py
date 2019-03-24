@@ -128,17 +128,16 @@ def get_grpc_server(c):
     """
     get grpc server
     """
-    max_thread_workers = None
-    max_concurrent_rpcs = None
+    # TODO: to test
+    max_workers = None
+    max_concurrent = None
     max_message_length = 4 * 1024 * 1024
-    if 'thread' in c:
-        if 'workers' in c['thread']:
-            if 'max' in c['thread']['workers']:
-                max_thread_workers = c['thread']['workers']['max']
+    if 'workers' in c:
+        if 'max' in c['workers']:
+            max_workers = c['workers']['max']
     if 'concurrent' in c:
-        if 'rpcs' in c['concurrent']:
-            if 'max' in c['concurrent']['rpcs']:
-                max_concurrent_rpcs = c['concurrent']['rpcs']['max']
+        if 'max' in c['concurrent']:
+            max_concurrent = c['concurrent']['max']
     if 'message' in c:
         if 'length' in c['message']:
             if 'max' in c['message']['length']:
@@ -157,10 +156,10 @@ def get_grpc_server(c):
         with open(c['cert'], 'rb') as f:
             ssl_cert = f.read()
 
-    s = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=max_thread_workers),
+    s = grpc.server(thread_pool=futures.ThreadPoolExecutor(max_workers=max_workers),
                     options=[('grpc.max_send_message_length', max_message_length),
                              ('grpc.max_receive_message_length', max_message_length)],
-                    maximum_concurrent_rpcs=max_concurrent_rpcs)
+                    maximum_concurrent_rpcs=max_concurrent)
     if ssl_key is not None and ssl_cert is not None:
         credentials = grpc.ssl_server_credentials(
             ((ssl_key, ssl_cert),), ssl_ca, ssl_ca is not None)

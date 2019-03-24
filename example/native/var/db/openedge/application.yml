@@ -7,8 +7,11 @@ services:
       - name: localhub-conf
         path: etc/openedge
         readonly: true
+      - name: localhub-cert
+        path: var/db/openedge/cert
+        readonly: true
       - name: localhub-data
-        path: var/db/openedge
+        path: var/db/openedge/data
       - name: localhub-log
         path: var/log/openedge
       # native process mode only
@@ -76,12 +79,25 @@ services:
       - name: openedge-function-python27-bin
         path: lib/openedge/openedge-function-python27
         readonly: true
+  # - name: function-filter
+  #   image: openedge-function-sql
+  #   replica: 0
+  #   mounts:
+  #     - name: function-filter-conf
+  #       path: etc/openedge
+  #       readonly: true
+  #     # native process mode only
+  #     - name: openedge-function-sql-bin
+  #       path: lib/openedge/openedge-function-sql
+  #       readonly: true
 volumes:
   # hub
   - name: localhub-conf
     path: var/db/openedge/localhub-conf
   - name: localhub-data
     path: var/db/openedge/localhub-data
+  - name: localhub-cert
+    path: var/db/openedge/localhub-cert-only-for-test
   - name: localhub-log
     path: var/db/openedge/localhub-log
   # agent
@@ -109,6 +125,8 @@ volumes:
     path: var/db/openedge/function-sayhi-conf
   - name: function-sayhi-code
     path: var/db/openedge/function-sayhi-code
+  - name: function-filter-conf
+    path: var/db/openedge/function-filter-conf
   # bin, native process mode only
   - name: openedge-hub-bin
     path: var/db/openedge/openedge-hub
@@ -120,3 +138,5 @@ volumes:
     path: var/db/openedge/openedge-function-manager
   - name: openedge-function-python27-bin
     path: var/db/openedge/openedge-function-python27
+  - name: openedge-function-sql-bin
+    path: var/db/openedge/openedge-function-sql

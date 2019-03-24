@@ -95,3 +95,18 @@ export DOCKER_API_VERSION=1.38
 `Step 2`: `cd /pat/to/MQTTBOX/directory and sudo chmod +x MQTTBox`;
 `Step 3`：`sudo ln -s /path/to/MQTTBox /usr/local/bin/MQTTBox`;
 `Step 4`：Open terminal and execute the command `MQTTBox`.
+
+**Question 14**: localfunc can't process the message, check `funclog` has the following error message:
+
+> level=error msg="failed to create new client" dispatcher=mqtt error="dial tcp 0.0.0.0:1883:connect:connection refused"
+
+**Suggested Solution**: If you are using the BIE Cloud Management Suite to deliver the configuration, there are a few points to note:
+
+1. Cloud delivery configuration currently only supports container mode.
+2. If the configuration is sent in the cloud, the hub address configured in `localfunc` should be `localhub` instead of `0.0.0.0`.
+
+According to the above information, the actual error is judged, and the configuration is delivered from the cloud as needed, or by referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md) for verification and configuration.
+
+**Question 15**: The local function calculation module receives the message, `t/hi` receives the message content as `hello world`.
+
+**Suggested Solution**: Please check the code of the Python function in CFC to determine if there is a mistake/Hard Code.

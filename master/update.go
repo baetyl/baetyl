@@ -2,14 +2,12 @@ package master
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
 	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
-	"gopkg.in/yaml.v2"
 )
 
 var appDir = path.Join("var", "db", "openedge")
@@ -17,16 +15,10 @@ var appConfigFile = path.Join(appDir, "application.yml")
 var appBackupFile = path.Join(appDir, "application.yml.old")
 
 // UpdateSystem updates system
-func (m *Master) UpdateSystem(cfg *openedge.AppConfig) error {
-	if cfg == nil {
-		err := fmt.Errorf("failed to update system: application config is null")
-		m.log.Errorf(err.Error())
-		m.context.Set("error", err.Error())
-		return err
-	}
-	err := m.update(cfg)
+func (m *Master) UpdateSystem(dir string, clean bool) error {
+	err := m.update(dir, clean)
 	if err != nil {
-		err := fmt.Errorf("failed to update system: %s", err.Error())
+		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
 		m.context.Set("error", err.Error())
 		return err
@@ -35,22 +27,29 @@ func (m *Master) UpdateSystem(cfg *openedge.AppConfig) error {
 	return nil
 }
 
-func (m *Master) update(cfg *openedge.AppConfig) error {
-	// backup old config
+func (m *Master) update(dir string, clean bool) error {
+	m.log.Infof("system is updating")
+
+	// backup application.yml
 	err := m.backup()
 	if err != nil {
 		return err
 	}
 	defer m.clean()
 
-	// save new config
-	err = m.save(cfg)
+	// copy new config into application.yml
+	err = m.copy(dir)
 	if err != nil {
+		m.rollback()
 		return err
 	}
 
 	// prepare services
-	m.engine.Prepare(cfg.Services)
+	rvs, err := m.prepareServices()
+	if err != nil {
+		m.rollback()
+		return err
+	}
 
 	// stop all old services
 	m.stopAllServices()
@@ -71,6 +70,20 @@ func (m *Master) update(cfg *openedge.AppConfig) error {
 		}
 		return err
 	}
+	m.log.Infof("system is updated")
+	if clean {
+		err = os.RemoveAll(dir)
+		if err != nil {
+			m.log.Warnf("failed to remove app config dir (%s)", dir)
+		}
+		for _, v := range rvs {
+			err = os.RemoveAll(v.Path)
+			if err != nil {
+				m.log.Warnf("failed to remove old volume (%s:%s)", v.Name, v.Path)
+			}
+		}
+		m.log.Infof("old volumes are removed")
+	}
 	return nil
 }
 
@@ -88,12 +101,8 @@ func (m *Master) rollback() error {
 	return os.Rename(appBackupFile, appConfigFile)
 }
 
-func (m *Master) save(cfg *openedge.AppConfig) error {
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(appConfigFile, data, 0755)
+func (m *Master) copy(dir string) error {
+	return utils.CopyFile(path.Join(dir, openedge.AppConfFileName), appConfigFile)
 }
 
 func (m *Master) load() error {

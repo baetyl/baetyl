@@ -67,6 +67,7 @@ func (s *Server) Handle(handle func(Params, []byte) ([]byte, error), method, pat
 		if s.auth != nil {
 			if !s.auth(req.Header.Get(headerKeyUsername), req.Header.Get(headerKeyPassword)) {
 				http.Error(res, errAccountUnauthorized.Error(), 401)
+				s.log.Errorf("[%s] %s %s", req.Method, req.URL.String(), errAccountUnauthorized.Error())
 				return
 			}
 		}
@@ -77,12 +78,14 @@ func (s *Server) Handle(handle func(Params, []byte) ([]byte, error), method, pat
 			reqBody, err = ioutil.ReadAll(req.Body)
 			if err != nil {
 				http.Error(res, err.Error(), 400)
+				s.log.Errorf("[%s] %s %s", req.Method, req.URL.String(), err.Error())
 				return
 			}
 		}
 		resBody, err := handle(mux.Vars(req), reqBody)
 		if err != nil {
 			http.Error(res, err.Error(), 400)
+			s.log.Errorf("[%s] %s %s", req.Method, req.URL.String(), err.Error())
 			return
 		}
 		if resBody != nil {

@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,34 +38,15 @@ func TestPathJoin(t *testing.T) {
 	assert.Equal(t, "/var/db/var/db/a", path.Join("/var/db", "/var/db/a"))
 	assert.Equal(t, "/var/db/var/db/a", path.Join("/var/db", "var/db/a"))
 	assert.Equal(t, "/var/db/a/b", path.Join("/var/db", "a/b/c/./.."))
+	p, err := filepath.Rel("var/db/openedge", "var/db/openedge/vv/v1")
+	assert.NoError(t, err)
+	assert.Equal(t, "vv/v1", p)
+	p, err = filepath.Rel("var/db/openedge", "var/db/openedge/../../../vv/v1")
+	assert.NoError(t, err)
+	assert.Equal(t, "../../../vv/v1", p)
+	assert.Equal(t, "../../../vv/v1", path.Clean(p))
+	assert.Equal(t, "vv/v1", path.Join("var/db/openedge", p))
+	assert.False(t, path.IsAbs(p))
+	assert.False(t, path.IsAbs("var/db/openedge/./vv/v1"))
+	assert.False(t, path.IsAbs("var/db/openedge/vv/v1"))
 }
-
-// func TestParseVolumes(t *testing.T) {
-// 	valumes := []string{
-// 		"var/db/openedge/module/m1:/m1/config:ro",
-// 		"var/db/openedge/volume/m1:/m1/data",
-// 		"var/log/openedge/m1:/m1/log",
-// 		"/m1/",
-// 	}
-// 	result, err := ParseVolumes("/work/dir", valumes)
-// 	assert.NoError(t, err)
-// 	assert.EqualValues(t, []string{
-// 		"/work/dir/var/db/openedge/module/m1:/m1/config:ro",
-// 		"/work/dir/var/db/openedge/volume/m1:/m1/data",
-// 		"/work/dir/var/log/openedge/m1:/m1/log",
-// 		"/work/dir/m1:/m1",
-// 	}, result)
-
-// 	valumes = []string{
-// 		"../../../:/m1",
-// 	}
-// 	result, err = ParseVolumes("/work/dir", valumes)
-// 	assert.EqualError(t, err, "volume (../../../:/m1) contains invalid string (..)")
-// 	assert.Nil(t, result)
-// 	valumes = []string{
-// 		"m1",
-// 	}
-// 	result, err = ParseVolumes("/work/dir", valumes)
-// 	assert.EqualError(t, err, "volume (m1) in container is not absolute")
-// 	assert.Nil(t, result)
-// }

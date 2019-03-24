@@ -57,30 +57,6 @@
 			"revisionTime": "2018-08-23T22:24:21Z"
 		},
 		{
-			"checksumSHA1": "xVuhAsueOmMb6XRO5572vmNf7vs=",
-			"path": "github.com/baidubce/bce-sdk-go/http",
-			"revision": "8fa9e5a1f3045eaf84cc002b3ee22f904911cc5e",
-			"revisionTime": "2019-01-11T09:39:54Z"
-		},
-		{
-			"checksumSHA1": "U78G9VTYdRthxDWGXdMxhD5VAF4=",
-			"path": "github.com/baidubce/bce-sdk-go/util",
-			"revision": "8fa9e5a1f3045eaf84cc002b3ee22f904911cc5e",
-			"revisionTime": "2019-01-11T09:39:54Z"
-		},
-		{
-			"checksumSHA1": "BwBXwFar+Dsn8GJ0V1TjUqSrIsk=",
-			"path": "github.com/cloudfoundry/gosigar",
-			"revision": "50ddd08d81d770b1e0ce2c969a46e46c73580e2a",
-			"revisionTime": "2018-09-07T19:28:54Z"
-		},
-		{
-			"checksumSHA1": "tnB8CBzekPnkcZ6SYs0FJn09GRA=",
-			"path": "github.com/cloudfoundry/gosigar/sys/windows",
-			"revision": "50ddd08d81d770b1e0ce2c969a46e46c73580e2a",
-			"revisionTime": "2018-09-07T19:28:54Z"
-		},
-		{
 			"checksumSHA1": "pQ8RLppvYgZPuUUVJxk8cchTktk=",
 			"path": "github.com/creasty/defaults",
 			"revision": "a7e48e2230891fc7456c8ab918c424c5b06c3192",
@@ -479,6 +455,30 @@
 			"revisionTime": "2018-10-06T20:25:41Z"
 		},
 		{
+			"checksumSHA1": "fSc4y4MLX7EWgGg9lOGSZbs21MM=",
+			"path": "github.com/shirou/gopsutil/cpu",
+			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
+			"revisionTime": "2019-03-13T17:43:15Z"
+		},
+		{
+			"checksumSHA1": "EBwtvlQYXXZPvgGMMrO8VU0NaoA=",
+			"path": "github.com/shirou/gopsutil/disk",
+			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
+			"revisionTime": "2019-03-13T17:43:15Z"
+		},
+		{
+			"checksumSHA1": "GR7l7Ez4ppxIfonl7aJayYRVPWc=",
+			"path": "github.com/shirou/gopsutil/internal/common",
+			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
+			"revisionTime": "2019-03-13T17:43:15Z"
+		},
+		{
+			"checksumSHA1": "3jbGU2YJ8u841jDH3QTVIQnJ1rM=",
+			"path": "github.com/shirou/gopsutil/mem",
+			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
+			"revisionTime": "2019-03-13T17:43:15Z"
+		},
+		{
 			"checksumSHA1": "HBvdI4AkWfRbjneWZ1UKXM0o9zE=",
 			"path": "github.com/sirupsen/logrus",
 			"revision": "eef6b768ab01a0598a0a6db97bad2a37d31df1d1",
@@ -593,16 +593,16 @@
 			"revisionTime": "2018-12-15T14:29:05Z"
 		},
 		{
-			"checksumSHA1": "A70JgGLKFke+YGfveo5hGstN7zQ=",
+			"checksumSHA1": "5rBiPRCALD1lczQlx5Oz4V1VYhc=",
 			"path": "golang.org/x/sys/unix",
-			"revision": "074acd46bca67915925527c07849494d115e7c43",
-			"revisionTime": "2018-12-18T18:24:21Z"
+			"revision": "c8c8c57fd1e1a977c10821a559dda983a9a9a3b5",
+			"revisionTime": "2019-03-11T08:52:23Z"
 		},
 		{
-			"checksumSHA1": "Y7nctMxT58lRM78VtElPerhcnEs=",
+			"checksumSHA1": "CNnzejzoVpXX9vEtZEu2tMpvR80=",
 			"path": "golang.org/x/sys/windows",
-			"revision": "074acd46bca67915925527c07849494d115e7c43",
-			"revisionTime": "2018-12-18T18:24:21Z"
+			"revision": "c8c8c57fd1e1a977c10821a559dda983a9a9a3b5",
+			"revisionTime": "2019-03-11T08:52:23Z"
 		},
 		{
 			"checksumSHA1": "CbpjEkkOeh0fdM/V8xKDdI0AA88=",

@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"time"
 
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -60,7 +59,8 @@ func (e *dockerEngine) pullImage(name string) error {
 		return err
 	}
 	defer out.Close()
-	io.Copy(os.Stdout, out)
+	io.Copy(ioutil.Discard, out)
+	e.log.Debugf("image (%s) pulled", name)
 	return nil
 }
 

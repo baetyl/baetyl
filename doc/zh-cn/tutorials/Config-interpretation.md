@@ -42,7 +42,6 @@ logger: 日志配置项
   path: 默认为空，即不打印到文件；如果指定文件则输出到文件
   level: 默认值：info，日志等级，支持debug、info、warn和error
   format: 默认值：text，日志打印格式，支持text和json
-  console: 默认值：false，日志是否输出到控制台
   age:
     max: 默认值：15，日志文件保留的最大天数
   size:
@@ -154,7 +153,6 @@ logger: 日志配置项
   path: 默认为空，即不打印到文件；如果指定文件则输出到文件
   level: 默认值：info，日志等级，支持debug、info、warn和error
   format: 默认值：text，日志打印格式，支持text和json
-  console: 默认值：false，日志是否输出到控制台
   age:
     max: 默认值：15，日志文件保留的最大天数
   size:
@@ -227,7 +225,6 @@ logger: 日志配置项
   path: 默认为空，即不打印到文件；如果指定文件则输出到文件
   level: 默认值：info，日志等级，支持debug、info、warn和error
   format: 默认值：text，日志打印格式，支持text和json
-  console: 默认值：false，日志是否输出到控制台
   age:
     max: 默认值：15，日志文件保留的最大天数
   size:
@@ -288,7 +285,6 @@ logger: 日志配置项
   path: 默认为空，即不打印到文件；如果指定文件则输出到文件
   level: 默认值：info，日志等级，支持debug、info、warn和error
   format: 默认值：text，日志打印格式，支持text和json
-  console: 默认值：false，日志是否输出到控制台
   age:
     max: 默认值：15，日志文件保留的最大天数
   size:

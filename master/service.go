@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/sdk-go/openedge"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -19,12 +19,15 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) prepareServices() error {
-	if err := m.load(); err != nil {
-		return err
+func (m *Master) prepareServices() ([]openedge.VolumeInfo, error) {
+	ovs := m.appcfg.Volumes
+	err := m.load()
+	if err != nil {
+		return nil, err
 	}
 	m.engine.Prepare(m.appcfg.Services)
-	return nil
+	nvs := m.appcfg.Volumes
+	return openedge.GetRemovedVolumes(ovs, nvs), nil
 }
 
 func (m *Master) startAllServices() error {
