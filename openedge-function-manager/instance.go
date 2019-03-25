@@ -33,7 +33,7 @@ func newProducer(ctx openedge.Context, cfg FunctionInfo) Producer {
 
 // StartInstance starts instance
 func (p *producer) StartInstance(id uint32) (Instance, error) {
-	name := fmt.Sprintf("%s.f%d", p.cfg.Service, id)
+	name := fmt.Sprintf("%s.%s.%d", p.cfg.Service, p.cfg.Name, id)
 	port := "50051"
 	serverHost := "0.0.0.0"
 	clientHost := name

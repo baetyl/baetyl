@@ -3,6 +3,7 @@ package native
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
@@ -76,8 +77,17 @@ func (s *nativeService) startInstance(instanceName string, dynamicConfig map[str
 	s.StopInstance(instanceName)
 	params := s.params
 	if dynamicConfig != nil {
-		// now only support to use env to pass dynamic config
 		params.env = []string{}
+		for _, v := range s.params.env {
+			// remove auth info for dynamic instances
+			if strings.HasPrefix(openedge.EnvServiceNameKey, v) {
+				continue
+			}
+			if strings.HasPrefix(openedge.EnvServiceTokenKey, v) {
+				continue
+			}
+			params.env = append(params.env, v)
+		}
 		for k, v := range dynamicConfig {
 			params.env = append(params.env, fmt.Sprintf("%s=%s", k, v))
 		}
