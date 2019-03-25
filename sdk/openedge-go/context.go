@@ -24,6 +24,8 @@ const (
 	AppConfFileName = "application.yml"
 	// DefaultSockFile sock file of openedge by default
 	DefaultSockFile = "/var/run/openedge.sock"
+	// DefaultPidFile pid file of openedge by default
+	DefaultPidFile = "/var/run/openedge.pid"
 	// DefaultConfFile config path of the service by default
 	DefaultConfFile = "etc/openedge/service.yml"
 	// DefaultDBDir db dir of the service by default
