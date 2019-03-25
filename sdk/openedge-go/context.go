@@ -27,7 +27,7 @@ const (
 	// DefaultPidFile pid file of openedge by default
 	DefaultPidFile = "/var/run/openedge.pid"
 	// DefaultConfFile config path of the service by default
-	DefaultConfFile = "etc/openedge/openedge.yml"
+	DefaultConfFile = "etc/openedge/service.yml"
 	// DefaultDBDir db dir of the service by default
 	DefaultDBDir = "var/db/openedge"
 	// DefaultRunDir  run dir of the service by default

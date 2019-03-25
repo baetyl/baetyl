@@ -15,6 +15,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const defaultConfFile = "etc/openedge/openedge.yml"
+
 // compile variables
 var (
 	workDir  string
@@ -122,7 +124,7 @@ func workPath() (string, string) {
 		logger.Fatalln("failed to change directory to workdir:", err.Error())
 	}
 	if confFile == "" {
-		confFile = openedge.DefaultConfFile
+		confFile = defaultConfFile
 	}
 	return workDir, confFile
 }
