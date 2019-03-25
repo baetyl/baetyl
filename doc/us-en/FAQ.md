@@ -117,7 +117,7 @@ According to the above information, the actual error is judged, and the configur
 1. Make sure your BIE configuration and CFC functions in the same region, such as beijing/guangzhou.
 2. Make sure your CFC functions are published.
 
-**Question 17**： What‘s the relationship between the parameter expose  and the parameter listen which in the hub configuration file?
+**Question 17**： What‘s the relationship between the parameter expose and the parameter listen which in the hub configuration file?
 
 **Answer**： 
 1. expose: Port exposed configuration in Docker container mode.
