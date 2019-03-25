@@ -9,19 +9,19 @@ import (
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	daemon "github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 )
+
+const defaultConfFile = "etc/openedge/openedge.yml"
 
 // compile variables
 var (
 	workDir  string
 	confFile string
 )
-
-const defaultConfFile = "etc/openedge/openedge.yml"
-const pidFilePath = "/var/run/openedge.pid"
 
 var startCmd = &cobra.Command{
 	Use:   "start",
@@ -59,7 +59,7 @@ func startInternal() {
 	}
 
 	ctx := &daemon.Context{
-		PidFileName: pidFilePath,
+		PidFileName: openedge.DefaultPidFile,
 		PidFilePerm: 0644,
 		Umask:       027,
 		Args:        args,
@@ -67,7 +67,6 @@ func startInternal() {
 
 	d, err := ctx.Reborn()
 	if err != nil {
-		// Package the error
 		if err == daemon.ErrWouldBlock {
 			logger.Errorf("Openedge has been started, please do not start again")
 		} else {
@@ -75,9 +74,19 @@ func startInternal() {
 		}
 		return
 	}
+
 	if d != nil {
 		return
 	}
+
+	if utils.FileExists(openedge.DefaultSockFile) {
+		err = os.Remove(openedge.DefaultSockFile)
+		if err != nil {
+			logger.Errorf("Cannot remove sock file: %s", err.Error())
+			return
+		}
+	}
+
 	defer ctx.Release()
 
 	m, err := master.New(workDir, cfg)
