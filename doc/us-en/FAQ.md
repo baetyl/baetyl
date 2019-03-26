@@ -110,3 +110,16 @@ According to the above information, the actual error is judged, and the configur
 **Question 15**: The local function calculation module receives the message, `t/hi` receives the message content as `hello world`.
 
 **Suggested Solution**: Please check the code of the Python function in CFC to determine if there is a mistake/Hard Code.
+
+**Question 16**： How can i use BIE Cloud Management Suite with [CFC(Cloud Function Compute)](https://cloud.baidu.com/product/cfc.html)?
+
+**Suggested Solution**： 
+1. Make sure your BIE configuration and CFC functions in the same region, such as beijing/guangzhou.
+2. Make sure your CFC functions are published.
+
+**Question 17**： What‘s the relationship between the parameter expose and the parameter listen which in the hub configuration file?
+
+**Answer**： 
+1. expose: Port exposed configuration in Docker container mode.
+2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
+3. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)

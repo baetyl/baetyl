@@ -111,3 +111,16 @@ export DOCKER_API_VERSION=1.38
 **问题 15**： 本地函数计算模块不论发送什么消息，`t/hi` 收到的消息内容都为 `hello world`
 
 **参考方案**： 请查看CFC中Python函数的代码，确认是否有误/Hard Code。
+
+**问题 16**： 在使用云端管理套件时，如何选取[CFC(Cloud Function Compute)](https://cloud.baidu.com/product/cfc.html)函数?
+
+**参考方案**： 
+1. 确保您的BIE配置和CFC配置在同一区域，例如北京/广州。
+2. 确保您的函数在CFC平台已经发布。
+
+**问题 17**： 配置文件中的expose和hub配置文件中的listen有什么关系？
+
+**回答**： 
+1. expose配置了宿主机和容器内的端口映射关系。
+2. listen则是hub的监听端口，hub是进程模式则监听宿主机的端口，hub是容器模式则监听容器内的端口。
+3. 请参考[配置解析文档](./tutorials/Config-interpretation.md)
