@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
@@ -85,8 +86,17 @@ func (s *dockerService) startInstance(instanceName string, dynamicConfig map[str
 	s.StopInstance(instanceName)
 	params := s.params
 	if dynamicConfig != nil {
-		// now only support to use env to pass dynamic config
 		params.config.Env = []string{}
+		for _, v := range s.params.config.Env {
+			// remove auth info for dynamic instances
+			if strings.HasPrefix(openedge.EnvServiceNameKey, v) {
+				continue
+			}
+			if strings.HasPrefix(openedge.EnvServiceTokenKey, v) {
+				continue
+			}
+			params.config.Env = append(params.config.Env, v)
+		}
 		for k, v := range dynamicConfig {
 			params.config.Env = append(params.config.Env, fmt.Sprintf("%s=%s", k, v))
 		}

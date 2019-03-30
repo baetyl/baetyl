@@ -20,8 +20,5 @@ type Config struct {
 		Desire struct {
 			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
 		} `yaml:"desire" json:"desire"`
-		Meta struct {
-			Cert string `yaml:"cert" json:"cert"`
-		} `yaml:"meta" json:"meta"`
 	} `yaml:"remote" json:"remote"`
 }

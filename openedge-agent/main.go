@@ -20,13 +20,15 @@ import (
 // mo agent module
 type mo struct {
 	cfg  Config
-	key  []byte
 	errs []string
 	ctx  openedge.Context
 	mqtt *mqtt.Dispatcher
 	http *http.Client
 	tomb utils.Tomb
 	lock sync.RWMutex
+
+	certSN  string
+	certKey []byte
 }
 
 func main() {
@@ -55,6 +57,10 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 	if err != nil {
 		return nil, err
 	}
+	sn, err := utils.GetSerialNumber(cfg.Remote.MQTT.Cert)
+	if err != nil {
+		return nil, err
+	}
 	key, err := ioutil.ReadFile(cfg.Remote.MQTT.Key)
 	if err != nil {
 		return nil, err
@@ -64,12 +70,13 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 		return nil, err
 	}
 	return &mo{
-		cfg:  cfg,
-		key:  key,
-		ctx:  ctx,
-		http: cli,
-		errs: []string{},
-		mqtt: mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
+		cfg:     cfg,
+		ctx:     ctx,
+		http:    cli,
+		certSN:  sn,
+		certKey: key,
+		errs:    []string{},
+		mqtt:    mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
 	}, nil
 }
 
@@ -193,8 +200,8 @@ func (m *mo) send(data []byte) error {
 		return err
 	}
 	header := map[string]string{
+		"x-iot-edge-sn":       m.certSN,
 		"x-iot-edge-key":      key,
-		"x-iot-edge-cert":     m.cfg.Remote.Meta.Cert,
 		"x-iot-edge-clientid": m.cfg.Remote.MQTT.ClientID,
 		"Content-Type":        "application/x-www-form-urlencoded",
 	}
@@ -210,7 +217,7 @@ func (m *mo) encryptData(data []byte) ([]byte, string, error) {
 		return nil, "", err
 	}
 	// encrypt AES key using RSA
-	k, err := utils.RsaPrivateEncrypt(aesKey, m.key)
+	k, err := utils.RsaPrivateEncrypt(aesKey, m.certKey)
 	if err != nil {
 		return nil, "", err
 	}
