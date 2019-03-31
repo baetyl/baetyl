@@ -4,7 +4,7 @@
 
 > + 本文测试所用设备系统为 Darwin
 > + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
-> + 本文所提到的测试案例中，对应本地 Hub 模块和函数计算模块的配置统一配置如下
+> + 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
 # 本地 Hub 配置
@@ -105,7 +105,7 @@ OpenEdge 官方提供了 Python 运行时，可以加载用户所编写的 Pytho
 
 ## 函数名约定
 
-Python 脚本的名称可以参照 Python 的通用命名规范，OpenEdge 并未对此做特别限制。如果要应用某 Python 脚本对某条 MQTT 消息做处理，则相应的函数运行时模块的配置如下：
+Python 脚本的名称可以参照 Python 的通用命名规范，OpenEdge 并未对此做特别限制。如果要应用某 Python 脚本对某条 MQTT 消息做处理，则相应的函数运行时服务的配置如下：
 
 ```yaml
 functions:
@@ -122,7 +122,7 @@ function-sayhi-code/
 └── sayhi.py
 ```
 
-更多函数运行时模块配置请查看[函数运行时模块配置释义](../tutorials/Config-interpretation.md)。
+更多函数运行时服务配置请查看[函数运行时服务配置释义](../tutorials/Config-interpretation.md)。
 
 ## 参数约定
 
