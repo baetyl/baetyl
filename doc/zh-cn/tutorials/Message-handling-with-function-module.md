@@ -1,4 +1,4 @@
-# 利用本地函数计算模块进行消息处理
+# 利用本地函数计算服务进行消息处理
 
 **声明**：
 
@@ -6,78 +6,145 @@
 > + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 > + 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
-与基于本地 Hub 模块实现设备间消息转发不同的是，本文主要介绍利用本地函数计算模块进行消息处理。其中，本地 Hub 模块用于建立 OpenEdge 与 MQTT 客户端之间的连接，Python 运行时模块用于处理 MQTT 消息，而本地函数计算模块则通过 MQTT 消息上下文衔接本地 Hub 模块与 Python 运行时模块。
+与基于本地 Hub 服务实现设备间消息转发不同的是，本文主要介绍利用本地函数计算服务进行消息处理。其中，本地 Hub 服务用于建立 OpenEdge 与 MQTT 客户端之间的连接，Python 运行时服务用于处理 MQTT 消息，而本地函数计算服务则通过 MQTT 消息上下文衔接本地 Hub 服务与 Python 运行时服务。
 
-本文将以 TCP 连接方式为例，展示本地函数计算模块的消息处理、计算功能。
+本文将以 TCP 连接方式为例，展示本地函数计算服务的消息处理、计算功能。
 
 ## 操作流程
 
 - Step 1：以 Docker 容器模式启动 OpenEdge 可执行程序；
-- Step 2：通过 MQTTBOX 以 TCP 方式与 OpenEdge Hub 模块[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)；
-    - 若成功与 OpenEdge Hub 模块建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察 OpenEdge 日志信息；
-      - 若 OpenEdge 日志显示已经启动 Python 运行时模块，则表明发布的消息受到了预期的函数处理；
-      - 若 OpenEdge 日志显示未成功启动 Python 运行时模块，则重复上述操作，直至看到 OpenEdge 主程序成功启动了 Python 运行时模块。
-    - 若与 OpenEdge Hub 建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 OpenEdge Hub 模块成功建立连接为止。
+- Step 2：通过 MQTTBOX 以 TCP 方式与 OpenEdge Hub 服务[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)；
+    - 若成功与 OpenEdge Hub 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察 OpenEdge 日志信息；
+      - 若 OpenEdge 日志显示已经启动 Python 运行时服务，则表明发布的消息受到了预期的函数处理；
+      - 若 OpenEdge 日志显示未成功启动 Python 运行时服务，则重复上述操作，直至看到 OpenEdge 主程序成功启动了 Python 运行时服务。
+    - 若与 OpenEdge Hub 建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 OpenEdge Hub 服务成功建立连接为止。
 - Step 3：通过 MQTTBOX 查看对应主题消息的收发状态。
 
-![基于本地函数计算模块实现设备消息处理流程](../../images/tutorials/process/openedge-python-flow.png)
+![基于本地函数计算服务实现设备消息处理流程](../../images/tutorials/process/openedge-python-flow.png)
 
 ## 消息处理测试
 
-本文测试使用的本地 Hub 及函数计算模块的相关配置信息如下：
+本文测试使用的本地 Hub 及函数计算服务的相关配置信息如下：
 
 ```yaml
-# 本地 Hub 模块配置
-name: localhub
+# 本地 Hub 配置
 listen:
   - tcp://:1883
 principals:
   - username: 'test'
-    password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
+    password: 'hahaha'
     permissions:
       - action: 'pub'
         permit: ['#']
       - action: 'sub'
         permit: ['#']
 
-# 本地函数计算模块配置
-name: localfunc
+# 本地 openedge-function-manager 配置
 hub:
-  address: tcp:/hub:1883
+  address: tcp://localhub:1883
   username: test
   password: hahaha
 rules:
-  - id: rule-e1iluuac1
+  - clientid: localfunc-1
     subscribe:
       topic: t
-      qos: 1
-    compute:
-      function: sayhi
+    function:
+      name: sayhi
     publish:
       topic: t/hi
-      qos: 1
 functions:
-  - id: func-nyeosbbch
-    name: 'sayhi'
-    runtime: 'python27'
-    handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/module/func-nyeosbbch'
-    entry: "openedge-function-runtime-python27:build"
-    env:
-      USER_ID: acuiot
+  - name: sayhi
+    service: function-sayhi
     instance:
       min: 0
       max: 10
-      timeout: 1m
+      idletime: 1m
+
+# python function 配置
+functions:
+  - name: 'sayhi'
+    handler: 'sayhi.handler'
+    codedir: 'var/db/openedge/function-sayhi'
+
+# application.yml配置
+version: v0
+services:
+  - name: localhub
+    image: openedge-hub
+    replica: 1
+    ports:
+      - 1883:1883
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub-data
+        path: var/db/openedge/data
+      - name: localhub-log
+        path: var/log/openedge
+  - name: function-manager
+    image: openedge-function-manager
+    replica: 1
+    mounts:
+      - name: function-manager-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-manager-log
+        path: var/log/openedge
+  - name: function-sayhi
+    image: openedge-function-python27
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
+volumes:
+  # hub
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
+  # function manager
+  - name: function-manager-conf
+    path: var/db/openedge/function-manager-conf
+  - name: function-manager-log
+    path: var/db/openedge/function-manager-log
+  # function python runtime sayhi
+  - name: function-sayhi-conf
+    path: var/db/openedge/function-sayhi-conf
+  - name: function-sayhi-code
+    path: var/db/openedge/function-sayhi-code
 ```
 
-如上配置，假若 MQTTBOX 基于上述配置信息已与本地 Hub 模块建立连接，向主题 `t` 发送的消息将会交给 `sayhi` 函数处理，然后将处理结果以主题 `t/hi` 发布回 Hub 模块，这时订阅主题 `t/hi` 的 MQTT client 将会接收到这条处理后的消息。
+目录结构如下：
+```shell
+var/
+└── db
+    └── openedge
+        ├── application.yml
+        ├── function-manager-conf
+        │   └── service.yml
+        ├── function-sayhi-code
+        │   ├── __init__.py
+        │   └── sayhi.py
+        ├── function-sayhi-conf
+        │   └── service.yml
+        └── localhub-conf
+            └── service.yml
+```
+
+如上配置，假若 MQTTBOX 基于上述配置信息已与本地 Hub 服务建立连接，向主题 `t` 发送的消息将会交给 `sayhi` 函数处理，然后将处理结果以主题 `t/hi` 发布回 Hub 服务，这时订阅主题 `t/hi` 的 MQTT client 将会接收到这条处理后的消息。
 
 _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数，必须在 `functions` 配置项中进行函数执行具体配置，否则 OpenEdge 将不会被正常启动。_
 
 ### OpenEdge 启动
 
-如 `Step 1` 所述，以 Docker 容器模式启动 OpenEdge，通过观察 OpenEdge 启动日志可以发现本地 Hub 模块和函数计算模块均已被成功加载，具体如下图示。
+如 `Step 1` 所述，以 Docker 容器模式启动 OpenEdge，通过观察 OpenEdge 启动日志可以发现本地 Hub 服务和函数计算服务均已被成功加载，具体如下图示。
 
 ![OpenEdge 加载、启动日志](../../images/tutorials/process/openedge-function-start.png)
 
@@ -85,7 +152,7 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 ![通过 `docker ps` 命令查看系统当前运行 Docker 容器列表](../../images/tutorials/process/openedge-docker-ps-after.png)
 
-经过对比，不难发现，本次 OpenEdge 启动时已经成功加载了本地 Hub 模块和函数计算模块两个容器模块。
+经过对比，不难发现，本次 OpenEdge 启动时已经成功加载了本地 Hub 服务和函数计算服务两个容器服务。
 
 ### MQTTBOX 建立连接
 
@@ -150,4 +217,4 @@ def handler(event, context):
 
 ![通过 `docker ps` 命令查看系统当前正在运行的容器列表](../../images/tutorials/process/openedge-docker-ps-python-start.png)
 
-从上述两张图片中可以看出，除了 OpenEdge 启动时已加载的本地 Hub 模块和函数计算模块容器，在利用 Python 函数 `sayhi` 对主题 `t` 消息进行处理时，系统还启动、并运行了 Python 运行时模块，其主要用于对消息作运行时处理（各类模块加载、启动细节可参见 [OpenEdge 设计](../overview/OpenEdge-design.md)）。
+从上述两张图片中可以看出，除了 OpenEdge 启动时已加载的本地 Hub 服务和函数计算服务容器，在利用 Python 函数 `sayhi` 对主题 `t` 消息进行处理时，系统还启动、并运行了 Python 运行时服务，其主要用于对消息作运行时处理（各类服务加载、启动细节可参见 [OpenEdge 设计](../overview/OpenEdge-design.md)）。
