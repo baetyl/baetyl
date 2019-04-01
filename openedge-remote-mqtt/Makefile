@@ -1,17 +1,17 @@
 TAG?=latest
 SRC=$(wildcard *.go)
 
-all: openedge-remote-mqtt package.tar.gz
+all: openedge-remote-mqtt package.zip
 
 openedge-remote-mqtt: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-package.tar.gz: openedge-remote-mqtt
+package.zip: openedge-remote-mqtt
 	install -d -m 0755 __package/bin
 	cp $< __package/bin
 	cp package.yml __package/
-	tar czvf $@ -C __package bin package.yml
+	cd __package && zip -q -r ../package.zip bin/ package.yml
 	rm -rf __package
 
 image: openedge-remote-mqtt
@@ -20,6 +20,6 @@ image: openedge-remote-mqtt
 
 .PHONY: clean
 clean:
-	rm -f openedge-remote-mqtt package.tar.gz
+	rm -f openedge-remote-mqtt package.zip
 
 rebuild: clean all

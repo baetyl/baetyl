@@ -5,11 +5,11 @@ GOFLAG?=-ldflags "-X github.com/baidu/openedge/cmd.BuildTime=`date -u '+%Y-%m-%d
 all: openedge package
 
 package: \
-	openedge-hub/package.tar.gz \
-	openedge-agent/package.tar.gz \
-	openedge-remote-mqtt/package.tar.gz \
-	openedge-function-manager/package.tar.gz \
-	openedge-function-python27/package.tar.gz
+	openedge-hub/package.zip \
+	openedge-agent/package.zip \
+	openedge-remote-mqtt/package.zip \
+	openedge-function-manager/package.zip \
+	openedge-function-python27/package.zip
 
 SRC=$(wildcard *.go) $(shell find cmd master logger sdk protocol utils -type f -name '*.go')
 
@@ -17,19 +17,19 @@ openedge: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-hub/package.tar.gz:
+openedge-hub/package.zip:
 	make -C openedge-hub
 
-openedge-agent/package.tar.gz:
+openedge-agent/package.zip:
 	make -C openedge-agent
 
-openedge-remote-mqtt/package.tar.gz:
+openedge-remote-mqtt/package.zip:
 	make -C openedge-remote-mqtt
 
-openedge-function-manager/package.tar.gz:
+openedge-function-manager/package.zip:
 	make -C openedge-function-manager
 
-openedge-function-python27/package.tar.gz:
+openedge-function-python27/package.zip:
 	make -C openedge-function-python27
 
 test:
@@ -118,27 +118,32 @@ release: images-release
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
 	tar cjf openedge-linux-386-$(VERSION).tar.bz2 -C __release_build/openedge-linux-386-$(VERSION) bin etc var
+	cd __release_build/openedge-linux-386-$(VERSION) && zip -q -r ../../openedge-linux-386-$(VERSION).zip bin/
 	make uninstall clean PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	# release linux amd64
 	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
 	tar czf openedge-linux-amd64-$(VERSION).tar.gz -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
 	tar cjf openedge-linux-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
+	cd __release_build/openedge-linux-amd64-$(VERSION) && zip -q -r ../../openedge-linux-amd64-$(VERSION).zip bin/
 	make uninstall clean PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
 	# release linux arm
 	env GOOS=linux GOARCH=arm make install PREFIX=__release_build/openedge-linux-arm-$(VERSION)
 	tar czf openedge-linux-arm-$(VERSION).tar.gz -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
 	tar cjf openedge-linux-arm-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
+	cd __release_build/openedge-linux-arm-$(VERSION) && zip -q -r ../../openedge-linux-arm-$(VERSION).zip bin/
 	make uninstall clean PREFIX=__release_build/openedge-linux-arm-$(VERSION)
 	# release linux arm64
 	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
 	tar czf openedge-linux-arm64-$(VERSION).tar.gz -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
 	tar cjf openedge-linux-arm64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
+	cd __release_build/openedge-linux-arm64-$(VERSION) && zip -q -r ../../openedge-linux-arm64-$(VERSION).zip bin/
 	make uninstall clean PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
 	# release darwin amd64
 	env GOOS=darwin GOARCH=amd64 make all
 	make install PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
 	tar czf openedge-darwin-amd64-$(VERSION).tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
 	tar cjf openedge-darwin-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
+	cd __release_build/openedge-darwin-amd64-$(VERSION) && zip -q -r ../../openedge-darwin-amd64-$(VERSION).zip bin/
 	make uninstall PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
 	make install-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
 	tar czf openedge-darwin-amd64-$(VERSION)-native.tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
@@ -182,3 +187,40 @@ manifest-push:
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt.yml
 
 	rm -rf tmp
+
+packages-release:
+	# Release modules' package -- linux arm
+	env GOOS=linux GOARCH=arm make package
+	mv openedge-agent/package.zip ./openedge-agent-linux-arm-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-arm-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-arm-$(VERSION).zip
+	# Release modules' package -- linux amd64
+	env GOOS=linux GOARCH=amd64 make package
+	mv openedge-agent/package.zip ./openedge-agent-linux-amd64-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-amd64-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-amd64-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-amd64-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-amd64-$(VERSION).zip
+	# Release modules' package -- linux arm64
+	env GOOS=linux GOARCH=arm64 make package
+	mv openedge-agent/package.zip ./openedge-agent-linux-arm64-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-arm64-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm64-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm64-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-arm64-$(VERSION).zip
+	# Release modules' package -- linux 386
+	env GOOS=linux GOARCH=386 make package
+	mv openedge-agent/package.zip ./openedge-agent-linux-386-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-386-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-386-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-386-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-386-$(VERSION).zip
+	# Release modules' package -- darwin amd64
+	env GOOS=darwin GOARCH=amd64 make package
+	mv openedge-agent/package.zip ./openedge-agent-darwin-amd64-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-darwin-amd64-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-darwin-amd64-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-darwin-amd64-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip

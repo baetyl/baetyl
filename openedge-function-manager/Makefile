@@ -1,17 +1,17 @@
 TAG?=latest
 SRC=$(shell find . -type f -name '*.go')
 
-all: openedge-function-manager package.tar.gz
+all: openedge-function-manager package.zip
 
 openedge-function-manager: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-package.tar.gz: openedge-function-manager
+package.zip: openedge-function-manager
 	install -d -m 0755 __package/bin
 	cp $< __package/bin
 	cp package.yml __package/
-	tar czvf $@ -C __package bin package.yml
+	cd __package && zip -q -r ../package.zip bin/ package.yml
 	rm -rf __package
 
 image: openedge-function-manager
@@ -20,7 +20,7 @@ image: openedge-function-manager
 
 .PHONY: clean
 clean:
-	rm -f openedge-function-manager package.tar.gz
+	rm -f openedge-function-manager package.zip
 
 .PHONY: rebuild
 rebuild: clean all
