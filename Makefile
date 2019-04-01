@@ -113,8 +113,7 @@ image:
 	make -C openedge-function-manager image
 	make -C openedge-function-python27 image
 
-release:
-	make images-release
+release: images-release
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
