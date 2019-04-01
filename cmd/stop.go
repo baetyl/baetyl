@@ -4,6 +4,7 @@ import (
     "log"
     "syscall"
 
+    openedge "github.com/baidu/openedge/sdk/openedge-go"
     daemon "github.com/sevlyar/go-daemon"
     "github.com/spf13/cobra"
 )
@@ -25,7 +26,7 @@ func stop(cmd *cobra.Command, args []string) {
 
 func stopInternal() {
     cntxt := &daemon.Context{
-        PidFileName: pidFilePath,
+        PidFileName: openedge.DefaultPidFile,
     }
     d, err := cntxt.Search()
     if err != nil {

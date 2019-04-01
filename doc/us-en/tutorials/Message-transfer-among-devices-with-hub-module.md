@@ -1,33 +1,33 @@
-# Message transferring among devices with Local Hub Module
+# Message transferring among devices with Local Hub Service
 
 **Statement**
 
 > + The operating system as mentioned in this document is Darwin.
 > + The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 
-Different from [Device-connect-to-OpenEdge-with-hub-module](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub module, please refer to [Hub module configuration](./Config-interpretation.md#local-hub-configuration).
+Different from [Device-connect-to-OpenEdge-with-hub-service](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
 
-This document uses the TCP connection mode as an example to test the message routing and forwarding capabilities of the Local Hub Module.
+This document uses the TCP connection mode as an example to test the message routing and forwarding capabilities of the Local Hub Service.
 
 ## Workflow
 
 - Step 1：Startup OpenEdge in docker container mode.
-- Step 2：MQTTBOX connect to Local Hub Module by TCP connection mode, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Module](./Device-connect-to-OpenEdge-with-hub-module.md).
-    - If connect successfully, then subscribe the MQTT topic due to the configuration of Local Hub Module.
+- Step 2：MQTTBOX connect to Local Hub Service by TCP connection mode, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Service](./Device-connect-to-OpenEdge-with-hub-module.md).
+    - If connect successfully, then subscribe the MQTT topic due to the configuration of Local Hub Service.
     - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
 - Step 3：Check the publishing and receiving messages via MQTTBOX.
 
 ## Message Routing Test
 
-The configuration of the Local Hub Module used in the test is as follows:
+The configuration of the Local Hub Service used in the test is as follows:
 
 ```yaml
-name: openedge-hub
+# The configuration of Local Hub Service
 listen:
   - tcp://:1883
 principals:
   - username: 'test'
-    password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
+    password: 'hahaha'
     permissions:
       - action: 'pub'
         permit: ['#']
@@ -38,6 +38,42 @@ subscriptions:
       topic: 't'
     target:
       topic: 't/topic'
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
+  
+# The configuration of application.yml
+services:
+  - name: localhub
+    image: openedge-hub
+    replica: 1
+    ports:
+      - 1883:1883
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub-data
+        path: var/db/openedge/data
+      - name: localhub-log
+        path: var/log/openedge
+volumes:
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
+```
+
+The directory of configuration tree is as follows:
+```shell
+var
+└── db
+    └── openedge
+        ├── application.yml
+        └── localhub-conf
+            └── service.yml
 ```
 
 As configured above, message routing rules depends on the `subscriptions` configuration item, which means that messages published to the topic `t` will be forwarded to all devices(users, or mqtt clients) that subscribe the topic `t/topic`.
@@ -74,14 +110,14 @@ The message transferring and routing workflow among devices is as follows:
 
 ![Message transfer test among devices](../../images/tutorials/trans/openedge-trans-flow.png)
 
-Specifically, as shown in the above figure, **client1**, **client2**, and **client3** respectively establish a connection to OpenEdge with Local Hub Module, **client1** has the permission to publish messages to the topic `t`, and **client2** and **client3** respectively have the permission to subscribe topic `t` and `t/topic`.
+Specifically, as shown in the above figure, **client1**, **client2**, and **client3** respectively establish a connection to OpenEdge with Local Hub Service, **client1** has the permission to publish messages to the topic `t`, and **client2** and **client3** respectively have the permission to subscribe topic `t` and `t/topic`.
 
-Once the connection to OpenEdge for the above three clients with Local Hub Module is established, as the configuration of the above three clients, **client2** and **client3** will respectively get the message from **client1** published to the topic `t` to Local Hub Module.
+Once the connection to OpenEdge for the above three clients with Local Hub Service is established, as the configuration of the above three clients, **client2** and **client3** will respectively get the message from **client1** published to the topic `t` to Local Hub Service.
 
 In particular, **client1**, **client2**, and **client3** can be combined into one client, and the new client will have the permission to publish messages to the topic `t`, with permissions to subscribe messages to the topic `t` and `t/topic`. Here, using MQTTBOX as the new client, click the `Add subscriber` button to subscribe the topic `t` and `t/topic`. More detailed contents are as shown below.
 
 ![The configuration of MQTTBOX about message transfer test among devices](../../images/tutorials/trans/mqttbox-tcp-trans-sub-config.png)
 
-As shown above, it can be found that after establishing a connection with OpenEdge depend on the Local Hub Module by TCP connection mode, the MQTTBOX successfully subscribes the topic `t` and `t/topic`, and then clicks the `Publish` button to publish message(`This message is From openedge.`) to the topic `t`, you will find this message is received by MQTTBOX with the subscribed topics `t` and `t/topic`. More detailed contents are as below.
+As shown above, it can be found that after establishing a connection with OpenEdge depend on the Local Hub Service by TCP connection mode, the MQTTBOX successfully subscribes the topic `t` and `t/topic`, and then clicks the `Publish` button to publish message(`This message is From openedge.`) to the topic `t`, you will find this message is received by MQTTBOX with the subscribed topics `t` and `t/topic`. More detailed contents are as below.
 
 ![MQTTBOX received message successfully](../../images/tutorials/trans/mqttbox-tcp-trans-message-success.png)

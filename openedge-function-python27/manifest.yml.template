@@ -6,6 +6,11 @@ manifests:
       architecture: amd64
       os: linux
   -
+    image: __REGISTRY__/__NAMESPACE__/openedge-function-python27-linux-amd64:__VERSION__
+    platform:
+      architecture: amd64
+      os: darwin
+  -
     image: __REGISTRY__/__NAMESPACE__/openedge-function-python27-linux-arm:__VERSION__
     platform:
       architecture: arm
