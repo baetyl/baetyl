@@ -35,16 +35,6 @@ openedge-function-python27/package.zip:
 test:
 	go test --race ./...
 
-tools: pubsub openedge-consistency
-
-pubsub:
-	@echo "BUILD $@"
-	@go build ${GOFLAG} ./tools/pubsub
-
-openedge-consistency:
-	@echo "BUILD $@"
-	@go build ${GOFLAG} ./tools/openedge-consistency
-
 install: openedge
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
@@ -113,7 +103,7 @@ image:
 	make -C openedge-function-manager image
 	make -C openedge-function-python27 image
 
-release: images-release
+release: release-image
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
@@ -153,7 +143,7 @@ release: images-release
 	# at last
 	rmdir __release_build
 
-images-release:
+release-image:
 	# linux-amd64 images release
 	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
 	make clean
@@ -168,7 +158,7 @@ images-release:
 	make clean
 
 # Need push built images first
-manifest-push:
+release-manifest:
 	mkdir tmp
 	# Push openedge-agent manifest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent.yml
@@ -188,7 +178,7 @@ manifest-push:
 
 	rm -rf tmp
 
-packages-release:
+release-package:
 	# Release modules' package -- linux arm
 	env GOOS=linux GOARCH=arm make package
 	mv openedge-agent/package.zip ./openedge-agent-linux-arm-$(VERSION).zip
