@@ -4,11 +4,10 @@
 
 > + The operating system as mentioned in this document is Darwin.
 > + The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-> + In the test case mentioned in this document, the configuration of the Local Hub Module and Local Function Module is as follows:
+> + In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
 
 ```yaml
-# Local Hub Module Configuration
-name: localhub
+# The configuration of Local Hub Service
 listen:
   - tcp://:1883
 principals:
@@ -20,55 +19,110 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# Local Function Module Configuration
-name: localfunc
+# The configuration of Local Function Manager Service
 hub:
   address: tcp://localhub:1883
   username: test
   password: hahaha
 rules:
-  - id: rule-e1iluuac1
+  - clientid: localfunc-1
     subscribe:
-      topic: py
-      qos: 0
-    compute:
-      function: get
+      topic: t
+    function:
+      name: sayhi
     publish:
-      topic: py/hi
-      qos: 0
+      topic: t/hi
 functions:
-  - id: func-nyeosbbch
-    name: 'get'
-    runtime: 'python27'
-    handler: 'get.handler'
-    codedir: 'var/db/openedge/module/func-nyeosbbch'
-    entry: "hub.baidubce.com/openedge/openedge-function-runtime-python27:0.1.1"
+  - name: sayhi
+    service: function-sayhi
+    instance:
+      min: 0
+      max: 10
+      idletime: 1m
+
+# The configuration of python function runtime
+functions:
+  - name: 'sayhi'
+    handler: 'sayhi.handler'
+    codedir: 'var/db/openedge/function-sayhi'
+
+# The configuration of application.yml
+version: v0
+services:
+  - name: localhub
+    image: openedge-hub
+    replica: 1
+    ports:
+      - 1883:1883
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub-data
+        path: var/db/openedge/data
+      - name: localhub-log
+        path: var/log/openedge
+  - name: function-manager
+    image: openedge-function-manager
+    replica: 1
+    mounts:
+      - name: function-manager-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-manager-log
+        path: var/log/openedge
+  - name: function-sayhi
+    image: openedge-function-python27
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
+volumes:
+  # hub
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
+  # function manager
+  - name: function-manager-conf
+    path: var/db/openedge/function-manager-conf
+  - name: function-manager-log
+    path: var/db/openedge/function-manager-log
+  # function python runtime sayhi
+  - name: function-sayhi-conf
+    path: var/db/openedge/function-sayhi-conf
+  - name: function-sayhi-code
+    path: var/db/openedge/function-sayhi-code
 ```
 
 OpenEdge officially provides the Python27 runtime to load Python scripts written by users. The following description is about the name of the Python script, the execution function name, input, output parameters, and so on.
 
 ## Function Name Convention
 
-The name of a Python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a Python script to handle an MQTT message, the configuration of the Local Function Module is as follows:
+The name of a Python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a Python script to handle an MQTT message, the configuration of the Python Function Runtime Service is as follows:
 
 ```yaml
 functions:
-  - id: func-nyeosbbch
-    name: 'sayhi'
-    runtime: 'python27'
+  - name: 'sayhi'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/module/func-nyeosbbch'
-    entry: "hub.baidubce.com/openedge/openedge-function-runtime-python27:0.1.1"
+    codedir: 'var/db/openedge/function-sayhi'
 ```
 
 Here, we focus on the `handler` attribute, where `sayhi` represents the script name and the `handler` represents the entry function called in the file.
 
 ```
-func-nyeosbbch
-    sayhi.py 
+function-sayhi-code/
+├── __init__.py
+└── sayhi.py
 ```
 
-More detailed configuration of Local Function Module, please refer to [Local-Function-Module-Configuration-Interpretation](../tutorials/Config-interpretation.md).
+More detailed configuration of Python Runtime Function Service, please refer to [Python-Runtime-Function-Service-Configuration-Interpretation](../tutorials/Config-interpretation.md).
 
 ## Parameter Convention
 
@@ -140,7 +194,7 @@ If the above operation is normal, the resulting script directory structure is as
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir.png)
 
-Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python27 runtime receives the "A" command from the Local Hub Module. More detailed contents are as follows:
+Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python27 runtime receives the "A" command from the Local Hub Service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python
