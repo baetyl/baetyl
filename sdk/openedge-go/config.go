@@ -24,7 +24,7 @@ type AppConfig struct {
 
 // ServiceInfo of service
 type ServiceInfo struct {
-	Name      string            `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,31}$"`
+	Name      string            `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
 	Image     string            `yaml:"image" json:"image" validate:"nonzero"`
 	Replica   int               `yaml:"replica" json:"replica"`
 	Mounts    []MountInfo       `yaml:"mounts" json:"mounts" default:"[]"`
@@ -38,7 +38,7 @@ type ServiceInfo struct {
 
 // VolumeInfo volume info
 type VolumeInfo struct {
-	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,31}$"`
+	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
 	Path     string `yaml:"path" json:"path" validate:"nonzero"`
 	ReadOnly bool   `yaml:"readonly" json:"readonly"`
 	Meta     struct {
@@ -49,7 +49,7 @@ type VolumeInfo struct {
 
 // MountInfo volume mount info
 type MountInfo struct {
-	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9-_]{1\\,32}$"`
+	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
 	Path     string `yaml:"path" json:"path" validate:"nonzero"`
 	ReadOnly bool   `yaml:"readonly" json:"readonly"`
 }
