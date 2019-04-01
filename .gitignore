@@ -10,6 +10,7 @@
 /output*
 /openedge-*.tar.gz
 /openedge-*.tar.bz2
+/openedge*.zip
 /**/.DS_Store
 /.vscode
 /**/libexec
