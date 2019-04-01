@@ -9,7 +9,6 @@ import (
 	"github.com/baidu/openedge/openedge-hub/server"
 	"github.com/baidu/openedge/openedge-hub/session"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
 )
 
 // "net/http"
@@ -28,7 +27,7 @@ type mo struct {
 }
 
 func (m *mo) start() error {
-	err := utils.LoadYAML(openedge.DefaultConfFile, &m.cfg)
+	err := ctx.LoadConfig(&m.cfg)
 	if err != nil {
 		m.log.Errorln("failed to load config:", err.Error())
 		return err

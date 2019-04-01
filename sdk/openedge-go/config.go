@@ -26,7 +26,7 @@ type AppConfig struct {
 type ServiceInfo struct {
 	Name      string            `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
 	Image     string            `yaml:"image" json:"image" validate:"nonzero"`
-	Replica   int               `yaml:"replica" json:"replica"`
+	Replica   int               `yaml:"replica" json:"replica" validate:"min=0"`
 	Mounts    []MountInfo       `yaml:"mounts" json:"mounts" default:"[]"`
 	Ports     []string          `yaml:"ports" json:"ports" default:"[]"`
 	Devices   []string          `yaml:"devices" json:"devices" default:"[]"`
@@ -40,7 +40,6 @@ type ServiceInfo struct {
 type VolumeInfo struct {
 	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
 	Path     string `yaml:"path" json:"path" validate:"nonzero"`
-	ReadOnly bool   `yaml:"readonly" json:"readonly"`
 	Meta     struct {
 		URL string `yaml:"url" json:"url"`
 		MD5 string `yaml:"md5" json:"md5"`

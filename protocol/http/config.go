@@ -10,7 +10,6 @@ import (
 type ServerInfo struct {
 	Address           string        `yaml:"address" json:"address"`
 	Timeout           time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
-	KeepAlive         time.Duration `yaml:"keepalive" json:"keepalive" default:"60s"`
 	utils.Certificate `yaml:",inline" json:",inline"`
 }
 

@@ -2,103 +2,41 @@
 
 - [自定义函数运行时](#自定义函数运行时)
   - [协议约定](#协议约定)
-  - [配置约定](#配置约定)
   - [启动约定](#启动约定)
 
 函数运行时是函数执行的载体，通过加载函数代码来调用函数，跟函数实现的语言强相关。比如 Python 代码需要使用 Python 运行时来调用。这里就涉及到多种语言的问题，为了统一调用接口和协议，我们最终选择了 GRPC，借助其强大的跨语言 IDL 和高性能 RPC 通讯能力，打造可灵活扩展的函数计算框架。
 
+在函数计算服务中，openedge-funtcion-manager负责函数实例的管理和调用。函数实例由函数运行时服务提供，函数运行时服务只需满足下面介绍的约定。
+
 ## 协议约定
 
-[GRPC 的消息和服务定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/openedge_function_runtime.proto)如下，开发者可直接用于生成各自编程语言的消息和服务实现，GRPC使用方法可参考[`make pb` 命令](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/Makefile)，也可参考 [GRPC 官网的文档](https://grpc.io/docs/quickstart/go.html)。
+开发者可直接使用sdk/openedge-go中的function.proto生成各自编程语言的消息和服务实现，具体定义如下。GRPC使用方法可参考 [GRPC 官网的文档](https://grpc.io/docs/quickstart/go.html)。
 
 ```proto
 syntax = "proto3";
 
-package runtime;
+package openedge;
 
-// The runtime definition.
-service Runtime {
-  // Handle handles request
-  rpc Handle (Message) returns (Message) {} // 消息处理接口
+// The function server definition.
+service Function {
+  rpc Call(FunctionMessage) returns (FunctionMessage) {}
+  // rpc Talk(stream Message) returns (stream Message) {}
 }
 
-// The request message.
-message Message {
-  uint32 QOS                = 1; // MQTT消息的QOS
-  string Topic              = 2; // MQTT消息的主题
-  bytes  Payload            = 3; // MQTT消息的内容
+// FunctionMessage function message
+message FunctionMessage {
+  uint64 ID                 = 1;
+  uint32 QOS                = 2;
+  string Topic              = 3;
+  bytes  Payload            = 4;
 
-  string FunctionName       = 11; // 被调用的函数名
-  string FunctionInvokeID   = 12; // 函数调用ID
+  string  FunctionName      = 11;
+  string  FunctionInvokeID  = 12;
 }
 ```
 
 **注意**：Docker 容器模式下，函数实例的资源限制不要低于 `50M` 内存，20 个线程。
 
-## 配置约定
-
-[函数配置的所有定义](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/config/function.go)如下。对于自定义函数运行时，只需关注 `Function.Handler` 和 `Function.CodeDir` 的定义和使用，其他配置都是函数计算框架使用的配置。
-
-```golang
-
-// Runtime runtime config
-type Runtime struct {
-    // 模块配置
-    Module   `yaml:",inline" json:",inline"`
-    // 服务配置
-    Server   RuntimeServer `yaml:"server" json:"server"`
-    //
-	Function Function      `yaml:"function" json:"function"`
-}
-
-// RuntimeServer function runtime server config
-type RuntimeServer struct {
-	Address string        `yaml:"address" json:"address" validate:"nonzero"`
-	Timeout time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
-	Message struct {
-		Length Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
-	} `yaml:"message" json:"message"`
-}
-
-// Function function config
-type Function struct {
-    // 函数ID，目前用于映射函数代码所在的目录
-    ID      string `yaml:"id" json:"id" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
-    // 函数名，函数调用使用的名称
-    Name    string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
-    // 函数执行的入口
-    Handler string `yaml:"handler" json:"handler" validate:"nonzero"`
-    // 函数代码所在目录
-	CodeDir string `yaml:"codedir" json:"codedir"`
-    // 实例配置
-    Instance Instance          `yaml:"instance" json:"instance"`
-    // 函数runtime，docker容器模式下是函数runtime的镜像，native进程模式下是函数runtime的可执行程序路径
-    Entry    string            `yaml:"entry" json:"entry"`
-    // 函数runtime启动进程时传入的环境变量
-	Env      map[string]string `yaml:"env" json:"env"`
-}
-
-// Instance instance config for function runtime module
-type Instance struct {
-    // 最少实例数
-    Min       int           `yaml:"min" json:"min" default:"0" validate:"min=0, max=100"`
-    // 最多实例数
-    Max       int           `yaml:"max" json:"max" default:"1" validate:"min=1, max=100"`
-    // 实例最大空闲时间
-    IdleTime  time.Duration `yaml:"idletime" json:"idletime" default:"10m"`
-    // 实例调用超时时间
-    Timeout   time.Duration `yaml:"timeout" json:"timeout" default:"5m"`
-    // 实例的资源配置
-    Resources Resources     `yaml:",inline"  json:",inline"`
-    // 消息最大长度限制
-	Message   struct {
-		Length Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
-	} `yaml:"message" json:"message"`
-}
-```
-
 ## 启动约定
 
-函数运行时实际上也是一种模块，只是比较特殊，是被函数计算模块在运行过程中按需启动的模块，归为临时模块。其启动方式和普通模块启动的方式基本一致，只不过临时模块没有固定路径，不支持从配置文件中加载配置。因此约定通过传参的方式传入配置信息，使用 JSON 格式，比如 `-c "{\"name\":\"sayhi\", ...}"`。
-
-函数运行时启动并加载配置后，首先根据 Server 配置初始化 GRPC Server，然后根据 `Function` 的配置加载函数代码入口，等待函数计算模块来调用，最后注意监听 `SIGTERM` 信号来优雅退出。完整的实现过程可参考 [Python2.7 运行时](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)。
+函数运行时服务同其他服务一样，唯一的区别是示例是被其他服务动态启动的。比如为了避免监听端口的冲突，可以动态指定端口。函数运行时模块约定从环境变量中读取`OPENEDGE_SERVICE_ADDRESS`作为GPRC Server监听的地址。另外动态启动的函数实例是没有权限调用主程序的API的。最后注意监听 `SIGTERM` 信号来优雅退出。完整的实现过程可参考 Python2.7 运行时（openedge-function-python27）。

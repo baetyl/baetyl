@@ -8,8 +8,8 @@ import (
 
 // Inspect openedge information inspected
 type Inspect struct {
-	Error    string    `json:"error,omitempty"`
-	Time     time.Time `json:"time,omitempty"`
+	Error    string    `json:"error"`
+	Time     time.Time `json:"time"`
 	Software Software  `json:"software,omitempty"`
 	Hardware Hardware  `json:"hardware,omitempty"`
 	Services Services  `json:"services,omitempty"`
