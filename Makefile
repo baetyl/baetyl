@@ -5,11 +5,11 @@ GOFLAG?=-ldflags "-X github.com/baidu/openedge/cmd.BuildTime=`date -u '+%Y-%m-%d
 all: openedge package
 
 package: \
-	openedge-hub/package.tar.gz \
-	openedge-agent/package.tar.gz \
-	openedge-remote-mqtt/package.tar.gz \
-	openedge-function-manager/package.tar.gz \
-	openedge-function-python27/package.tar.gz
+	openedge-hub/package.zip \
+	openedge-agent/package.zip \
+	openedge-remote-mqtt/package.zip \
+	openedge-function-manager/package.zip \
+	openedge-function-python27/package.zip
 
 SRC=$(wildcard *.go) $(shell find cmd master logger sdk protocol utils -type f -name '*.go')
 
@@ -17,19 +17,19 @@ openedge: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
 
-openedge-hub/package.tar.gz:
+openedge-hub/package.zip:
 	make -C openedge-hub
 
-openedge-agent/package.tar.gz:
+openedge-agent/package.zip:
 	make -C openedge-agent
 
-openedge-remote-mqtt/package.tar.gz:
+openedge-remote-mqtt/package.zip:
 	make -C openedge-remote-mqtt
 
-openedge-function-manager/package.tar.gz:
+openedge-function-manager/package.zip:
 	make -C openedge-function-manager
 
-openedge-function-python27/package.tar.gz:
+openedge-function-python27/package.zip:
 	make -C openedge-function-python27
 
 test:
@@ -188,140 +188,39 @@ manifest-push:
 
 	rm -rf tmp
 
-packages-release: \
-	linux-arm-packages \
-	linux-amd64-packages \
-	linux-arm64-packages \
-	linux-386-packages \
-	darwin-amd64-packages
-
-
-linux-arm-packages:
-	mkdir __tmp
-	# Release linux arm
+packages-release:
+	# Release modules' package -- linux arm
 	env GOOS=linux GOARCH=arm make package
-	mv openedge-agent/package.tar.gz ./__tmp/openedge-agent-linux-arm.tar.gz
-	mv openedge-hub/package.tar.gz ./__tmp/openedge-hub-linux-arm.tar.gz
-	mv openedge-remote-mqtt/package.tar.gz ./__tmp/openedge-remote-mqtt-linux-arm.tar.gz
-	mv openedge-function-manager/package.tar.gz ./__tmp/openedge-function-manager-linux-arm.tar.gz
-	mv openedge-function-python27/package.tar.gz ./__tmp/openedge-function-python27-linux-arm.tar.gz
-	tar -zxvf __tmp/openedge-agent-linux-arm.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-agent-linux-arm-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-hub-linux-arm.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-hub-linux-arm-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-remote-mqtt-linux-arm.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-remote-mqtt-linux-arm-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-python27-linux-arm.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-python27-linux-arm-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-manager-linux-arm.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-manager-linux-arm-$(VERSION).zip bin/ package.yml
-
-	rm -rf __tmp
-
-linux-amd64-packages:
-	mkdir __tmp
-	# Release linux amd64
+	mv openedge-agent/package.zip ./openedge-agent-linux-arm-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-arm-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-arm-$(VERSION).zip
+	# Release modules' package -- linux amd64
 	env GOOS=linux GOARCH=amd64 make package
-	mv openedge-agent/package.tar.gz ./__tmp/openedge-agent-linux-amd64.tar.gz
-	mv openedge-hub/package.tar.gz ./__tmp/openedge-hub-linux-amd64.tar.gz
-	mv openedge-remote-mqtt/package.tar.gz ./__tmp/openedge-remote-mqtt-linux-amd64.tar.gz
-	mv openedge-function-manager/package.tar.gz ./__tmp/openedge-function-manager-linux-amd64.tar.gz
-	mv openedge-function-python27/package.tar.gz ./__tmp/openedge-function-python27-linux-amd64.tar.gz
-	tar -zxvf __tmp/openedge-agent-linux-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-agent-linux-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-hub-linux-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-hub-linux-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-remote-mqtt-linux-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-remote-mqtt-linux-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-python27-linux-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-python27-linux-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-manager-linux-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-manager-linux-amd64-$(VERSION).zip bin/ package.yml
-
-	rm -rf __tmp
-
-linux-arm64-packages:
-	mkdir __tmp
-	# Release linux arm64
+	mv openedge-agent/package.zip ./openedge-agent-linux-amd64-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-amd64-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-amd64-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-amd64-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-amd64-$(VERSION).zip
+	# Release modules' package -- linux arm64
 	env GOOS=linux GOARCH=arm64 make package
-	mv openedge-agent/package.tar.gz ./__tmp/openedge-agent-linux-arm64.tar.gz
-	mv openedge-hub/package.tar.gz ./__tmp/openedge-hub-linux-arm64.tar.gz
-	mv openedge-remote-mqtt/package.tar.gz ./__tmp/openedge-remote-mqtt-linux-arm64.tar.gz
-	mv openedge-function-manager/package.tar.gz ./__tmp/openedge-function-manager-linux-arm64.tar.gz
-	mv openedge-function-python27/package.tar.gz ./__tmp/openedge-function-python27-linux-arm64.tar.gz
-	tar -zxvf __tmp/openedge-agent-linux-arm64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-agent-linux-arm64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-hub-linux-arm64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-hub-linux-arm64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-remote-mqtt-linux-arm64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-remote-mqtt-linux-arm64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-python27-linux-arm64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-python27-linux-arm64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-manager-linux-arm64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-manager-linux-arm64-$(VERSION).zip bin/ package.yml
-
-	rm -rf __tmp
-
-linux-386-packages:
-	mkdir __tmp
-	# Release linux 386
+	mv openedge-agent/package.zip ./openedge-agent-linux-arm64-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-arm64-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm64-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm64-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-arm64-$(VERSION).zip
+	# Release modules' package -- linux 386
 	env GOOS=linux GOARCH=386 make package
-	mv openedge-agent/package.tar.gz ./__tmp/openedge-agent-linux-386.tar.gz
-	mv openedge-hub/package.tar.gz ./__tmp/openedge-hub-linux-386.tar.gz
-	mv openedge-remote-mqtt/package.tar.gz ./__tmp/openedge-remote-mqtt-linux-386.tar.gz
-	mv openedge-function-manager/package.tar.gz ./__tmp/openedge-function-manager-linux-386.tar.gz
-	mv openedge-function-python27/package.tar.gz ./__tmp/openedge-function-python27-linux-386.tar.gz
-	tar -zxvf __tmp/openedge-agent-linux-386.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-agent-linux-386-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-hub-linux-386.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-hub-linux-386-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-remote-mqtt-linux-386.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-remote-mqtt-linux-386-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-python27-linux-386.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-python27-linux-386-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-manager-linux-386.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-manager-linux-386-$(VERSION).zip bin/ package.yml
-
-	rm -rf __tmp
-
-darwin-amd64-packages:
-	mkdir __tmp
-	# Release darwin amd64
+	mv openedge-agent/package.zip ./openedge-agent-linux-386-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-386-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-386-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-386-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-386-$(VERSION).zip
+	# Release modules' package -- darwin amd64
 	env GOOS=darwin GOARCH=amd64 make package
-	mv openedge-agent/package.tar.gz ./__tmp/openedge-agent-darwin-amd64.tar.gz
-	mv openedge-hub/package.tar.gz ./__tmp/openedge-hub-darwin-amd64.tar.gz
-	mv openedge-remote-mqtt/package.tar.gz ./__tmp/openedge-remote-mqtt-darwin-amd64.tar.gz
-	mv openedge-function-manager/package.tar.gz ./__tmp/openedge-function-manager-darwin-amd64.tar.gz
-	mv openedge-function-python27/package.tar.gz ./__tmp/openedge-function-python27-darwin-amd64.tar.gz
-	tar -zxvf __tmp/openedge-agent-darwin-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-agent-darwin-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-hub-darwin-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-hub-darwin-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-remote-mqtt-darwin-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-remote-mqtt-darwin-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-python27-darwin-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-python27-darwin-amd64-$(VERSION).zip bin/ package.yml
-	rm -rf __tmp/bin
-	tar -zxvf __tmp/openedge-function-manager-darwin-amd64.tar.gz -C __tmp
-	cd __tmp && zip -q -r ../openedge-function-manager-darwin-amd64-$(VERSION).zip bin/ package.yml
-
-	rm -rf __tmp
+	mv openedge-agent/package.zip ./openedge-agent-darwin-amd64-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-darwin-amd64-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-darwin-amd64-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-darwin-amd64-$(VERSION).zip
+	mv openedge-function-python27/package.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip

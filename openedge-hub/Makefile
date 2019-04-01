@@ -1,11 +1,18 @@
 TAG?=latest
 SRC=$(shell find . -type f -name '*.go')
 
-all: openedge-hub package.tar.gz
+all: openedge-hub package.zip
 
 openedge-hub: $(SRC)
 	@echo "BUILD $@"
 	@go build ${GOFLAG} .
+
+package.zip: openedge-hub
+	install -d -m 0755 __package/bin
+	cp $< __package/bin
+	cp package.yml __package/
+	cd __package && zip -q -r ../package.zip bin/ package.yml
+	rm -rf __package
 
 package.tar.gz: openedge-hub
 	install -d -m 0755 __package/bin
@@ -20,6 +27,6 @@ image: openedge-hub
 
 .PHONY: clean
 clean:
-	rm -f openedge-hub package.tar.gz
+	rm -f openedge-hub package.zip
 
 rebuild: clean all
