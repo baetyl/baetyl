@@ -42,8 +42,8 @@ type FunctionInfo struct {
 
 // InstanceInfo function instance info
 type InstanceInfo struct {
-	Min       int           `yaml:"min" json:"min"`
-	Max       int           `yaml:"max" json:"max" default:"1"`
+	Min       int           `yaml:"min" json:"min" validate:"min=0,max=100"`
+	Max       int           `yaml:"max" json:"max" default:"1" validate:"min=1,max=100"`
 	IdleTime  time.Duration `yaml:"idletime" json:"idletime" default:"10m"`
 	EvictTime time.Duration `yaml:"evicttime" json:"evicttime" default:"1m"`
 }

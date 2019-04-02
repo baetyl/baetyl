@@ -40,30 +40,31 @@ const (
 
 // Context of service
 type Context interface {
-	// returns service common config, such as hub, logger
+	// returns the system configuration of the service, such as hub and logger
 	Config() *ServiceConfig
-	// loads service custom config
+	// loads the custom configuration of the service
 	LoadConfig(interface{}) error
-	// creates a hub client
+	// creates a Client that connects to the Hub through system configuration,
+	// you can specify the Client ID and the topic information of the subscription.
 	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
-	// returns logger
+	// returns logger interface
 	Log() logger.Logger
-	// waits until SIGTERM or SIGINT notified
+	// waiting to exit, receiving SIGTERM and SIGINT signals
 	Wait()
-	// returns wait chan
+	// returns wait channel
 	WaitChan() <-chan os.Signal
 
-	// Master RESTfull API
+	// Master RESTful API
 
-	// updates system
+	// updates system and
 	UpdateSystem(string, bool) error
-	// inspects system
+	// inspects system stats
 	InspectSystem() (*Inspect, error)
-	// gets an available port of host
+	// gets an available port of the host
 	GetAvailablePort() (string, error)
-	// starts a service instance
+	// starts an instance of a service
 	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-	// stops a service instance
+	// stop an instance of a service
 	StopServiceInstance(serviceName, instanceName string) error
 }
 

@@ -8,6 +8,7 @@ import (
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
+// custom configuration of the timer module
 type config struct {
 	Timer struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
@@ -16,7 +17,7 @@ type config struct {
 }
 
 func main() {
-	// Running service in openedge context
+	// Running module in openedge context
 	openedge.Run(func(ctx openedge.Context) error {
 		var cfg config
 		// load custom config

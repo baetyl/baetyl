@@ -15,30 +15,45 @@ type ServiceConfig struct {
 	Logger logger.LogInfo  `yaml:"logger" json:"logger"`
 }
 
-// AppConfig dynamic config of application
+// AppConfig application configuration
 type AppConfig struct {
+	// specifies the version of the application configuration
 	Version  string        `yaml:"version" json:"version"`
+	// specifies the service information of the application
 	Services []ServiceInfo `yaml:"services" json:"services" default:"[]"`
+	// specifies the storage volume information of the application
 	Volumes  []VolumeInfo  `yaml:"volumes" json:"volumes" default:"[]"`
 }
 
-// ServiceInfo of service
+// ServiceInfo service configuration
 type ServiceInfo struct {
+	// specifies the unique name of the service
 	Name      string            `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the image of the service, usually using the Docker image name
 	Image     string            `yaml:"image" json:"image" validate:"nonzero"`
+	// specifies the number of instances started
 	Replica   int               `yaml:"replica" json:"replica" validate:"min=0"`
+	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
 	Mounts    []MountInfo       `yaml:"mounts" json:"mounts" default:"[]"`
+    // specifies the port bindings which exposed by the service, only for Docker container mode
 	Ports     []string          `yaml:"ports" json:"ports" default:"[]"`
+	// specifies the device bindings which used by the service, only for Docker container mode
 	Devices   []string          `yaml:"devices" json:"devices" default:"[]"`
+	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Args      []string          `yaml:"args" json:"args" default:"[]"`
+	// specifies the environment variable of the service program
 	Env       map[string]string `yaml:"env" json:"env" default:"{}"`
+	// specifies the restart policy of the instance of the service
 	Restart   RestartPolicyInfo `yaml:"restart" json:"restart"`
+	// specifies resource limits for a single instance of the service,  only for Docker container mode
 	Resources Resources         `yaml:"resources" json:"resources"`
 }
 
-// VolumeInfo volume info
+// VolumeInfo storage volume configuration
 type VolumeInfo struct {
+	// specifies a unique name for the storage volume
 	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the directory where the storage volume is on the host
 	Path     string `yaml:"path" json:"path" validate:"nonzero"`
 	Meta     struct {
 		URL string `yaml:"url" json:"url"`
@@ -46,10 +61,13 @@ type VolumeInfo struct {
 	} `yaml:"meta" json:"meta"`
 }
 
-// MountInfo volume mount info
+// MountInfo storage volume mapping configuration
 type MountInfo struct {
+	// specifies the name of the mapped storage volume
 	Name     string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the directory where the storage volume is in the container
 	Path     string `yaml:"path" json:"path" validate:"nonzero"`
+	// specifies the operation permission of the storage volume, read-only or writable
 	ReadOnly bool   `yaml:"readonly" json:"readonly"`
 }
 

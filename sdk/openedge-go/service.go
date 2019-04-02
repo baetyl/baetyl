@@ -10,9 +10,8 @@ func Run(handle func(Context) error) {
 	if err != nil {
 		logger.Fatalln("failed to create context:", err.Error())
 		return
-	} else {
-		logger.Debugln("service starting")
 	}
+	logger.Debugln("service starting")
 	err = handle(c)
 	if err != nil {
 		logger.Fatalln("failed to run service:", err.Error())
