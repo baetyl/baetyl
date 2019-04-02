@@ -17,6 +17,7 @@ import (
 // "runtime/trace"
 
 type mo struct {
+	ctx      openedge.Context
 	cfg      config.Config
 	Rules    *rule.Manager
 	Sessions *session.Manager
@@ -27,7 +28,7 @@ type mo struct {
 }
 
 func (m *mo) start() error {
-	err := ctx.LoadConfig(&m.cfg)
+	err := m.ctx.LoadConfig(&m.cfg)
 	if err != nil {
 		m.log.Errorln("failed to load config:", err.Error())
 		return err
@@ -104,7 +105,7 @@ func main() {
 	// defer trace.Stop()
 
 	openedge.Run(func(ctx openedge.Context) error {
-		m := mo{log: ctx.Log()}
+		m := mo{ctx: ctx, log: ctx.Log()}
 		defer m.close()
 		err := m.start()
 		if err != nil {
