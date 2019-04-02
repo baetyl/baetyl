@@ -55,19 +55,19 @@ install-native: openedge package
 	install -m 0755 openedge ${PREFIX}/bin/
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-hub
-	tar xzvf openedge-hub/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-hub
+	unzip openedge-hub/package.zip -d ${PREFIX}/var/db/openedge/openedge-hub
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-agent
-	tar xzvf openedge-agent/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-agent
+	unzip openedge-agent/package.zip -d ${PREFIX}/var/db/openedge/openedge-agent
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-remote-mqtt
-	tar xzvf openedge-remote-mqtt/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-remote-mqtt
+	unzip openedge-remote-mqtt/package.zip -d ${PREFIX}/var/db/openedge/openedge-remote-mqtt
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-manager
-	tar xzvf openedge-function-manager/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function-manager
+	unzip openedge-function-manager/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-manager
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
-	tar xzvf openedge-function-python27/package.tar.gz -C ${PREFIX}/var/db/openedge/openedge-function-python27
+	unzip openedge-function-python27/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-python27
 
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
