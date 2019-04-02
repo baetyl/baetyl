@@ -9,7 +9,6 @@ import (
 // compile variables
 var (
 	Version   string
-	BuildTime string
 	GoVersion string
 )
 

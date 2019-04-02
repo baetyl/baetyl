@@ -16,11 +16,9 @@ import (
 	cmap "github.com/orcaman/concurrent-map"
 )
 
-// Version of master
-var Version string
-
 // Master master manages all modules and connects with cloud
 type Master struct {
+	ver      string
 	cfg      Config
 	appcfg   openedge.AppConfig
 	server   *api.Server
@@ -33,7 +31,7 @@ type Master struct {
 }
 
 // New creates a new master
-func New(pwd string, cfg Config) (*Master, error) {
+func New(pwd string, cfg Config, ver string) (*Master, error) {
 	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
 	if err != nil {
 		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
@@ -43,6 +41,7 @@ func New(pwd string, cfg Config) (*Master, error) {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
 	m := &Master{
+		ver:      ver,
 		cfg:      cfg,
 		pwd:      pwd,
 		log:      log,

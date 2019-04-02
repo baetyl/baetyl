@@ -20,7 +20,7 @@ func (m *Master) InspectSystem() *openedge.Inspect {
 	ms.Software.Arch = runtime.GOARCH
 	ms.Software.Mode = m.cfg.Mode
 	ms.Software.GoVersion = runtime.Version()
-	ms.Software.BinVersion = Version
+	ms.Software.BinVersion = m.ver
 	ms.Software.ConfVersion = m.appcfg.Version
 
 	var err error
