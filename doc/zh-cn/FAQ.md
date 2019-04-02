@@ -1,10 +1,10 @@
 本文主要提供 OpenEdge 在各系统、平台部署、启动的相关问题及解决方案。
 
-**问题 1**: 在以容器模式启动OpenEdge时，提示缺少启动依赖配置项。
+**问题 1**: 在以容器模式启动 OpenEdge 时，提示缺少启动依赖配置文件。
 
-![图片](../images/setup/docker-engine-conf-miss.png)
+![图片](../images/faq/docker-engine-conf-miss.png)
 
-**参考方案**: 如上图所示，OpenEdge启动缺少配置依赖文件，参考[OpenEdge设计文档](./overview/OpenEdge-design.md)及[GitHub项目开源包](https://github.com/baidu/openedge) example 文件夹补充相应配置文件即可。
+**参考方案**: 如上图所示，OpenEdge启动缺少配置依赖文件，参考 [GitHub-OpenEdge](https://github.com/baidu/openedge) example 文件夹补充相应配置文件即可（位于 `etc/openedge/openedge.yml`）。
 
 **问题 2**: Ubuntu/Debian 下输入命令 `docker info` 后显示如下信息：
 
@@ -15,16 +15,15 @@ WARNING: No swap limit support
 **参考方案**:
 
 1. 修改 `/etc/default/grub` 文件，在其中，编辑或者添加 `GRUB_CMDLINE_LINUX` 为如下内容：
-	
-	> GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
+> GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
 
 2. 保存后执行命令 `sudo update-grub`，完成后重启系统生效。
 
-**注意**：如果执行第二步时提示出错，可能是 `grub` 设置有误，请检查后重复步骤1和步骤2.
+**注意**：如果执行第 2 步时提示出错，可能是 `grub` 设置有误，请检查后重复步骤 1 和步骤 2。
 
-**问题 3**: WARNING: Your kernel does not support swap limit capabilities. Limitation discarded.
+**问题 3**: 启动 OpenEdge 服务提示：`WARNING: Your kernel does not support swap limit capabilities. Limitation discarded`。
 
-**参考方案**: 参考问题2。
+**参考方案**: 参考问题 2。
 
 **问题 4**: Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/images/json: dial unix /var/run/docker.sock: connect: permission denied.
 
@@ -118,7 +117,7 @@ export DOCKER_API_VERSION=1.38
 1. 确保您的BIE配置和CFC配置在同一区域，例如北京/广州。
 2. 确保您的函数在CFC平台已经发布。
 
-**问题 17**： 配置文件中的expose和hub配置文件中的listen有什么关系？
+**问题 17**： 配置文件中的exports和hub配置文件中的listen有什么关系？
 
 **回答**： 
 1. expose配置了宿主机和容器内的端口映射关系。

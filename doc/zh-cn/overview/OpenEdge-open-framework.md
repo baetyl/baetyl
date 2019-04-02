@@ -12,17 +12,16 @@ OpenEdge 针对网络协议的支持，具体表现在三个方面：其一是�
 OpenEdge 最大的特点和优势就是可以支持在多操作系统、多 CPU 平台上无缝运行。其具体可支持的系统平台列表如下：
 
 > + Docker 容器模式
->   - Darwin-x86_64
->   - Linux-x86_64
+>   - Darwin-amd64
+>   - Linux-386
+>   - Linux-amd64
 >   - Linux-armv7
->   - Linux-aarch64
+>   - Linux-arm64
 > + Native 进程模式
->   - Darwin-x86_64
->   - Linux-x86
->   - Linux-x86_64
+>   - Darwin-amd64
+>   - Linux-386
+>   - Linux-amd64
 >   - Linux-armv7
->   - Linux-aarch64
->   - Windows-x86
->   - Windows-x86_64
+>   - Linux-arm64
 
-特别地，OpenEdge 对 Linux 各系统平台的适配支持，仅仅依赖于 Linux 标准内核，且版本高于 2.6.32 即可。此外，针对 Docker 容器模式，还支持资源隔离和限制（须启用 CGROUP，并以 root 权限启动），比如 CPU、内存等。**需要注意的是**，Windows 系统平台及 Native 进程模式暂不支持资源隔离和限制。
+特别地，OpenEdge 对 Linux 各系统平台的适配支持，仅仅依赖于 Linux 标准内核，且版本高于 2.6.32 即可。此外，针对 Docker 容器模式，还支持资源隔离和限制（须启用 CGROUP，并以 root 权限启动），比如 CPU、内存等。
