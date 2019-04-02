@@ -5,7 +5,7 @@
 
 > + 针对 Hub 模块，其主要是提供设备接入能力，目前可支持 TCP、SSL（TCP + SSL）、WS(Websocket)及 WSS（Websocket + SSL）四种接入方式；
 >   - 其中，针对 SSL 接入方式，OpenEdge 支持证书单向和双向认证两种模式；
-> + 针对 MQTT 远程通讯模块，在使用智能边缘 BIE 云端 console 管理套件的情况下（推荐），仅支持证书认证配置；在不使用智能边缘 BIE 云端 console 管理套件的情况下，可以支持用户名/密码、证书认证两种方式；
+> + 针对 MQTT 远程通讯模块，强烈推荐用户采用证书认证模式；
 > + 针对 Agent 模块设备信息上报服务，OpenEdge 强制使用 HTTPS 安全通道协议，确保信息上报的安全；
 > + 针对 Agent 模块配置下发服务，OpenEdge 同样强制使用 HTTPS 安全通道协议，确保配置下发的安全。
 

@@ -1,10 +1,8 @@
 # OpenEdge Features
 
-> + support module management, include start, stop, restart, listen and upgrade
-> + support two mode: **Docker Container Mode** and **Native Process Mode**
-> + docker container mode support resources isolation and restriction
-> + support cloud management suite, which can be used to report device hardware information and deploy configuration
-> + provide **Local Hub Module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
-> + provide **Local Function Module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
-> + provide **MQTT Remote Module**, which supports MQTT v3.1.1 protocol
-> + provide **Module SDK(Golang)**, which can be used to develop customize module
+- **IoT device access**: support device connect to Hub module through MQTT protocol(v3.1 and v3.1.1);
+- **Message transmit**: support transmit MQTT message the any topic, any function script through router configuration;
+- **Function computing**: support function script(sql, python2.7 and any other programming language) execute;
+- **Customize develop**: support developers develop customize runtime or module through SDK; 
+- **Resources report**: support resources(CPU, disk, memory usage) report through agent module;
+- **Remote synchronization**: support message synchronization(such as local Hub and Baidu IoT Hub) through Remote MQTT module.
