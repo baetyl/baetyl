@@ -123,3 +123,13 @@ According to the above information, the actual error is judged, and the configur
 1. expose: Port exposed configuration in Docker container mode.
 2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
 3. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
+
+**Question 18**： How to process data in the cloud platform after message send to [Baidu IoT Hub]((https://cloud.baidu.com/product/iot.html)) by OpenEdge?
+
+**Answer**： 
+In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html) can be used to transmit data to other cloud services, such as [CFC(Cloud Function Compute)](https://cloud.baidu.com/product/cfc.html), [TSDB](https://cloud.baidu.com/product/tsdb.html).
+
+**Question 19**： How to connect the [Device management](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B) of Baidu IoT Hub？
+
+**Answer**： 
+The Device management of Baidu IoT Hub does not support ssl authentication. As a temporary solution, you can configure [Remote Feature](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) to connect the Device management with username and password authentication manually.
