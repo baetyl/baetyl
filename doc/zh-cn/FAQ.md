@@ -123,3 +123,13 @@ export DOCKER_API_VERSION=1.38
 1. expose配置了宿主机和容器内的端口映射关系。
 2. listen则是hub的监听端口，hub是进程模式则监听宿主机的端口，hub是容器模式则监听容器内的端口。
 3. 请参考[配置解析文档](./tutorials/Config-interpretation.md)
+
+**问题 18**：消息通过OpenEdge传输到[百度云物接入](https://cloud.baidu.com/product/iot.html)后，如何在云端进行后续的数据处理？
+
+**回答**： 
+消息到达物接入后，可以通过[规则引擎](https://cloud.baidu.com/product/re.html)进行简单的sql处理，或者通过规则引擎传输给[百度云函数计算平台](https://cloud.baidu.com/product/cfc.html)等其他云端服务，具体配置详情参考[规则引擎操作指南](https://cloud.baidu.com/doc/RE/GUIGettingStarted.html#.E6.93.8D.E4.BD.9C.E5.87.86.E5.A4.87).
+
+**问题 19**：OpenEdge如何使用[Remote](./tutorials/Message-synchronize-with-iothub-through-remote-module.md)功能连接[百度云物接入设备型项目](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B)？
+
+**回答**： 
+OpenEdge端云协同强制使用证书认证，目前物接入设备型项目还不支持证书认证，作为临时方案可以在本地手动配置用户名密码和物接入设备型项目交互。
