@@ -97,7 +97,7 @@ OpenEdge容器化模式运行要求运行设备已完成Docker的安装与运行
 - **Step1**：[下载](../Resources-download.md) OpenEdge 压缩包；
 - **Step2**：打开终端，进入OpenEdge软件包下载目录，进行解压缩操作：
 	- 执行命令 `tar -zxvf openedge-xxx.tar.gz`；
-- **Step3**：完成解压缩操作后，直接进入OpenEdge程序包目录，执行命令`bin/openedge -w .`，然后分别查看OpenEdge启动、加载日志信息，及查看当前正在运行的容器（通过命令`docker ps`），并对比二者是否一致（假定当前系统中未启动其他docker容器）；
+- **Step3**：完成解压缩操作后，直接进入OpenEdge程序包目录，执行命令`sudo ./bin/openedge start`，然后分别查看OpenEdge启动、加载日志信息，及查看当前正在运行的容器（通过命令`docker ps`），并对比二者是否一致（假定当前系统中未启动其他docker容器）；
 - **Step4**：若查看结果一致，则表示OpenEdge已正常启动。
 
 ***注：*** 官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考[源码编译](./Build-OpenEdge-from-Source.md)相关内容。
@@ -116,9 +116,11 @@ OpenEdge容器化模式运行要求运行设备已完成Docker的安装与运行
 
 可以发现，当前系统并未有正在运行的docker容器。
 
-接着，进入解压缩后的OpenEdge文件夹下，在另一个终端中执行命令 `bin/openedge -w .`，观察终端OpenEdge启动、加载日志，如下图示；
+接着，进入解压缩后的OpenEdge文件夹下，在另一个终端中执行命令 `sudo .bin/openedge start`，完成后可通过命令 `ps -ef | grep "openedge"` 来查看运行情况：
 
-![OpenEdge启动日志](../../images/setup/openedge-started-centos.png)
+![OpenEdge](../../images/setup/openedge-started-thread-centos.png)
+
+另外，可以通过查看日志了解更多 OpenEdge 运行情况。日志的默认存放位置为工作目录下的 `var/log/openedge.log`。
 
 同时观察显示容器运行状态的终端，具体如下图所示：
 

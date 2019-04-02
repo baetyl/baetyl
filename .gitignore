@@ -11,6 +11,7 @@
 /openedge-*.tar.gz
 /openedge-*.tar.bz2
 /openedge*.zip
+/**/package.zip
 /**/.DS_Store
 /.vscode
 /**/libexec

@@ -70,7 +70,7 @@ Starting OpenEdge containerization mode requires the running device to complete 
 - **Step1**: [Download](../Resources-download.md) OpenEdge;
 - **Step2**: Open the terminal and enter the OpenEdge directory for decompression:
 	- Execute the command `tar -zxvf openedge-xxx.tar.gz`;
-- **Step3**: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `bin/openedge -w .`, respectively. Observe the contents displayed by the two terminals;
+- **Step3**: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `sudo ./bin/openedge start`, respectively. Observe the contents displayed by the two terminals;
 - **Step4**: If the results are consistent, it means that OpenEdge has started normally.
 
 ***Notice:*** The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)
@@ -89,9 +89,9 @@ Then, open a new terminal and execute the command `docker stats` to view the run
 
 It can be found that the current system does not have a docker container running.
 
-Then, step into the decompressed folder of OpenEdge, execute the command `bin/openedge -w .` In the another terminal, observe the log of OpenEdge startup, as shown below:
+Then, step into the decompressed folder of OpenEdge, execute the command `sudo ./bin/openedge start` in the another terminal, check the result by executing the command `ps -ef | grep "openedge"` , as shown below:
 
-![OpenEdge startup log](../../images/setup/openedge-started-darwin.png)
+![OpenEdge startup log](../../images/setup/openedge-started-thread-darwin.png)
 
 At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
 
