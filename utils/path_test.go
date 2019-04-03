@@ -10,6 +10,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPathExists(t *testing.T) {
+	dirpath, err := ioutil.TempDir("", "")
+	assert.NoError(t, err)
+	defer os.RemoveAll(dirpath)
+
+	assert.True(t, PathExists(dirpath))
+	assert.False(t, PathExists(path.Join(dirpath, "nonexist")))
+
+	filepath, err := ioutil.TempFile("", "")
+	assert.NoError(t, err)
+	defer os.RemoveAll(filepath.Name())
+
+	assert.True(t, PathExists(filepath.Name()))
+	assert.False(t, PathExists(filepath.Name()+"-nonexist"))
+}
+
 func TestDirExists(t *testing.T) {
 	dir, err := ioutil.TempDir("", "")
 	assert.NoError(t, err)
