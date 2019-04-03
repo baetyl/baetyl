@@ -7,6 +7,18 @@ import (
 	"os"
 )
 
+// PathExists checks path exists
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
+}
+
 // DirExists checks dir exists
 func DirExists(path string) bool {
 	fi, err := os.Stat(path)
