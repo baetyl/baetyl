@@ -80,10 +80,10 @@ func (s *nativeService) startInstance(instanceName string, dynamicConfig map[str
 		params.env = []string{}
 		for _, v := range s.params.env {
 			// remove auth info for dynamic instances
-			if strings.HasPrefix(openedge.EnvServiceNameKey, v) {
+			if strings.HasPrefix(v, openedge.EnvServiceNameKey) {
 				continue
 			}
-			if strings.HasPrefix(openedge.EnvServiceTokenKey, v) {
+			if strings.HasPrefix(v, openedge.EnvServiceTokenKey) {
 				continue
 			}
 			params.env = append(params.env, v)
