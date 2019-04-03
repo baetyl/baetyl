@@ -1,4 +1,3 @@
-name: function-manager
 hub:
   address: tcp://:1883
   username: test

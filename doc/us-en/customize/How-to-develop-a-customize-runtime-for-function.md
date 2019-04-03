@@ -1,30 +1,37 @@
-# How to develop a customize runtime for function
+# Customize Runtime Module
 
-The function runtime is the carrier of the function execution, which is strongly related to the language of the function script. For example, python script needs to be called using the Python2.7 runtime. In order to solve the multi-language issues and unify the interface and protocol, we finally chose GRPC, and with its powerful cross-language IDL and high-performance RPC communication capabilities, we can create a flexible function computing framework.
+- [Protocol Convention](#protocol-convention)
+- [Configuration Convention](#configuration-convention)
+- [Start/Stop Convention](#startstop-convention)
+
+The function runtime is the carrier of the function execution. The function is executed by dynamically loading the function code, which is strongly related to the language of the function implementation. For example, Python code needs to be called using the Python runtime. This is a multi-language issue. In order to unify the interface and protocol, we finally chose GRPC to create a flexible functional computing framework with its powerful cross-language IDL and high-performance RPC communication capabilities.
+
+In the function compute service (FaaS), `openedge-function-manager` is responsible for the management and invocation of function instances. The function instance is provided by the function runtime service, and the function runtime service only needs to meet the conventions described below.
 
 ## Protocol Convention
 
-[GRPC message and service definition](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/openedge_function_runtime.proto) is as follows, developers can directly use .pb file to generate messages and service implementations in their respective programming languages. For GRPC usage, refer to [```make pb``` command](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/Makefile), or [GRPC official documentation](https://grpc.io/docs/quickstart/go.html)。
+Developers can use the `function.proto` in sdk/openedge-go to generate messages and service implementations for their respective programming languages, as defined below. For the usage of GRPC, refer to [GRPC Official Documents] (https://grpc.io/docs/quickstart/go.html).
 
 ```proto
 syntax = "proto3";
 
-package runtime;
+package openedge;
 
-// The runtime definition.
-service Runtime {
-  // Handle handles request
-  rpc Handle (Message) returns (Message) {} // message handling interface
+// The function server definition.
+service Function {
+  rpc Call(FunctionMessage) returns (FunctionMessage) {}
+  // rpc Talk(stream Message) returns (stream Message) {}
 }
 
-// The request message.
-message Message {
-  uint32 QOS                = 1; // QOS of MQTT message
-  string Topic              = 2; // Topic of MQTT message
-  bytes  Payload            = 3; // Payload of MQTT message
+// FunctionMessage function message
+message FunctionMessage {
+  uint64 ID                 = 1;
+  uint32 QOS                = 2;
+  string Topic              = 3;
+  bytes  Payload            = 4;
 
-  string FunctionName       = 11; // Function name invoked
-  string FunctionInvokeID   = 12; // Function invoke id
+  string  FunctionName      = 11;
+  string  FunctionInvokeID  = 12;
 }
 ```
 
@@ -32,68 +39,21 @@ _**NOTE**: In docker container mode, the resource limit of the function instance
 
 ## Configuration Convention
 
-[All definitions of function configuration](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/config/function.go) are as follows. For the custom function runtime, just pay attention to the definition of Function.Handler and Function.CodeDir. Other configurations are only used by the function framework.
+The function runtime module does not enforce the configuration. However, for the unified configuration mode, the following configuration items are recommended.
 
-```golang
+- name: function name
+- handler: function processing interface
+- codedir: The path to the function code, if any.
 
-// Runtime runtime config
-type Runtime struct {
-    // module configuration
-    Module   `yaml:",inline" json:",inline"`
-    // server configuration
-    Server   RuntimeServer `yaml:"server" json:"server"`
-    // function configuration
-	  Function Function      `yaml:"function" json:"function"`
-}
+The following is a configuration example of a Python function runtime service:
 
-// RuntimeServer function runtime server config
-type RuntimeServer struct {
-	Address string        `yaml:"address" json:"address" validate:"nonzero"`
-	Timeout time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
-	Message struct {
-		Length Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
-	} `yaml:"message" json:"message"`
-}
-
-// Function function config
-type Function struct {
-    // function ID used to map the directory of the function runtime work directory
-    ID      string `yaml:"id" json:"id" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
-    // function name used to invoke
-    Name    string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9_-]{1\\,140}$"`
-    // function invoke entry
-    Handler string `yaml:"handler" json:"handler" validate:"nonzero"`
-    // function code directory
-	CodeDir string `yaml:"codedir" json:"codedir"`
-    // instance configuration
-    Instance Instance          `yaml:"instance" json:"instance"`
-    // function runtime, it is docker image in docker container mode and is executable program path in native process mode
-    Entry    string            `yaml:"entry" json:"entry"`
-    // function runtime env
-	Env      map[string]string `yaml:"env" json:"env"`
-}
-
-// Instance instance config for function runtime module
-type Instance struct {
-    // minimum number of instances
-    Min       int           `yaml:"min" json:"min" default:"0" validate:"min=0, max=100"`
-    // maximum number of instances
-    Max       int           `yaml:"max" json:"max" default:"1" validate:"min=1, max=100"`
-    // maximum idle time
-    IdleTime  time.Duration `yaml:"idletime" json:"idletime" default:"10m"`
-    // invoke timeout
-    Timeout   time.Duration `yaml:"timeout" json:"timeout" default:"5m"`
-    // resources configuration
-    Resources Resources     `yaml:",inline"  json:",inline"`
-    // maximum length of message
-	  Message   struct {
-		    Length Length `yaml:"length" json:"length" default:"{\"max\":4194304}"`
-	  } `yaml:"message" json:"message"`
-}
+```yaml
+functions:
+  - name: 'sayhi'
+    handler: 'sayhi.handler'
+    codedir: 'var/db/openedge/function-sayhi'
 ```
 
 ## Start/Stop Convention
 
-The function runtime is actually a module, but it is special. It is a module that is started by the function module during running and is classified as a temporary module. The start/stop convention is basically the same as that of the resident module, except that the temporary module does not have a fixed path and does not support loading the configuration from the configuration file. Therefore, it is agreed to pass configuration in through process arguments in JSON format, such as -c "{\"name\":\"sayhi\", ...}".
-
-After the function runtime starts and loads the configuration, first initialize the GRPC server according to the server configuration, then load the function code entry according to the configuration of the Function, wait for the function module to call, and finally monitor the SIGTERM signal to gracefully exit. The complete implementation can refer to [python27 runtime](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)。
+The function runtime service is the same as other services, the only difference is that the instance is dynamically started by other services. For example, to avoid listening port conflicts, you can specify the port dynamically. The function runtime module can read `OPENEDGE_SERVICE_ADDRESS` from the environment variable as the address that the GRPC Server listens on. In addition, dynamically launched function instances do not have permission to call the main program's API. Finally, the module listens for the `SIGTERM` signal to gracefully exit. A complete implementation can be found in the Python 2.7 runtime module (`openedge-function-python27`).

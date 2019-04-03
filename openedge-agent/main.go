@@ -49,7 +49,7 @@ func main() {
 
 func newAgent(ctx openedge.Context) (*mo, error) {
 	var cfg Config
-	err := utils.LoadYAML(openedge.DefaultConfFile, &cfg)
+	err := ctx.LoadConfig(&cfg)
 	if err != nil {
 		return nil, err
 	}

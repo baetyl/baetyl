@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
 )
 
 // mo bridge module of mqtt servers
@@ -16,7 +15,7 @@ type mo struct {
 func main() {
 	openedge.Run(func(ctx openedge.Context) error {
 		var cfg Config
-		err := utils.LoadYAML(openedge.DefaultConfFile, &cfg)
+		err := ctx.LoadConfig(&cfg)
 		if err != nil {
 			return err
 		}

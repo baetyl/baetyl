@@ -52,7 +52,6 @@ func NewServer(c ServerInfo, a func(u, p string) bool) (*Server, error) {
 		svr: &http.Server{
 			WriteTimeout: c.Timeout,
 			ReadTimeout:  c.Timeout,
-			IdleTimeout:  c.KeepAlive,
 			TLSConfig:    tls,
 			Handler:      router,
 		},

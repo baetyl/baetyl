@@ -4,15 +4,11 @@
 *.jar
 *.iml
 /.idea
-/openedge
-/pubsub
-/openedge-consistency
-/output*
-/openedge-*.tar.gz
-/openedge-*.tar.bz2
-/openedge*.zip
-/**/.DS_Store
 /.vscode
+/output*
+/openedge
+/**/*.zip
+/**/.DS_Store
 /**/libexec
 /**/*.db
 /**/*.db.lock
@@ -23,4 +19,3 @@
 /cover*.out
 
 /example/**/*-cert
-/openedge-timer
