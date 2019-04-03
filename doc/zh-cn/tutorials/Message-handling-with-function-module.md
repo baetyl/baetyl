@@ -66,7 +66,7 @@ functions:
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
 
-# application.yml配置
+# application.yml 配置
 version: v0
 services:
   - name: localhub
@@ -148,7 +148,7 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 ![OpenEdge 加载、启动日志](../../images/tutorials/process/openedge-function-start.png)
 
-同样，我们也可以通过执行命令`docker ps`查看系统当前正在运行的docker容器列表，具体如下图示。
+同样，我们也可以通过执行命令 `docker ps` 查看系统当前正在运行的 docker 容器列表，具体如下图示。
 
 ![通过 `docker ps` 命令查看系统当前运行 Docker 容器列表](../../images/tutorials/process/openedge-docker-ps-after.png)
 

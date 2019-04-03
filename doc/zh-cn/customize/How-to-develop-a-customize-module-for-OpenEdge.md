@@ -6,7 +6,7 @@
 
 在开发自定义模块前请阅读[从源码编译 OpenEdge](../setup/Build-OpenEdge-from-Source.md)，了解 OpenEdge 的编译环境要求。
 
-自定义模块不限定开发语言，可运行即可，基本没有限制，甚至可以直接使用 hub.docker.com 上已有的镜像，比如 `eclipse-mosquitto`。但是了解下面介绍的约定，有利于更好、更快地开发自定义模块。
+自定义模块不限定开发语言，可运行即可，基本没有限制，甚至可以直接使用 `hub.docker.com` 上已有的镜像，比如 `eclipse-mosquitto`。但是了解下面介绍的约定，有利于更好、更快地开发自定义模块。
 
 ## 目录约定
 

@@ -3,7 +3,7 @@
 **声明**：
 
 > + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
+> + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端)
 > + 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
@@ -122,7 +122,7 @@ function-sayhi-code/
 └── sayhi.py
 ```
 
-更多函数运行时服务配置请查看[函数运行时服务配置释义](../tutorials/Config-interpretation.md)。
+更多函数运行时服务配置请查看 [函数运行时服务配置释义](../tutorials/Config-interpretation.md)。
 
 ## 参数约定
 

@@ -3,8 +3,8 @@
 **声明**：
 
 > + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT Client行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
-> + 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
+> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
+> + 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
 OpenEdge Hub 模块的完整的配置参考 [Hub 模块配置](./Config-interpretation.md#Hub模块配置)。
 
