@@ -79,7 +79,7 @@ func startInternal() {
 		return
 	}
 
-	if utils.FileExists(openedge.DefaultSockFile) {
+	if utils.DirExists(openedge.DefaultSockFile) {
 		err = os.Remove(openedge.DefaultSockFile)
 		if err != nil {
 			logger.Errorf("Cannot remove sock file: %s", err.Error())
