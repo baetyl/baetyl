@@ -5,7 +5,7 @@
 > + 本文测试所用设备系统为 Darwin
 > + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 
-与[连接测试](./Device-connect-to-OpenEdge-with-hub-module.md)不同的是，若需要通过本地 Hub 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考[Hub 服务配置](./Config-interpretation.md#openedge-hub配置)。
+与 [连接测试](./Device-connect-to-OpenEdge-with-hub-module.md) 不同的是，若需要通过本地 Hub 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考 [Hub 服务配置](./Config-interpretation.md#openedge-hub配置)。
 
 本文以 TCP 连接方式为例，测试本地 Hub 服务的消息路由、转发功能。
 
@@ -42,7 +42,7 @@ logger:
   path: var/log/openedge/service.log
   level: "debug"
 
-# application.yml配置
+# application.yml 配置
 services:
   - name: localhub
     image: openedge-hub

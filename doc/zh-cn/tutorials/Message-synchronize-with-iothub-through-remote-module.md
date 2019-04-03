@@ -3,11 +3,11 @@
 **声明**：
 
 > + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端) 和 [MQTT.fx](../Resources-download.md#下载MQTT.fx客户端)
+> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端) 和 [MQTT.fx](../Resources-download.md#下载 MQTT.fx 客户端)
 > + 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 > + 远程 Hub 接入平台选用 [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)、[AWS IoT Core](https://amazonaws-china.com/iot-core/)、[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考[远程服务模块配置](./Config-interpretation.md#远程服务模块配置)。
+Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)、[AWS IoT Core](https://amazonaws-china.com/iot-core/)、[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [远程服务模块配置](./Config-interpretation.md#远程服务模块配置)。
 
 ## 操作流程
 
