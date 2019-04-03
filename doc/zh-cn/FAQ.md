@@ -107,10 +107,10 @@ source ~/.bash_profile
 1. 确保您的智能边缘 BIE 配置和 CFC 配置处于同一区域，例如同在北京/广州；
 2. 确保您的函数在 CFC 平台已经发布。
 
-**问题 14**：配置文件中的 exports 和 Hub 配置文件中的 listen 有什么关系？
+**问题 14**：配置文件中的 ports 和 Hub 配置文件中的 listen 有什么关系？
 
 **参考方案**：
-1. exports 配置了宿主机和容器内的端口映射关系；
+1. ports 配置了宿主机和容器内的端口映射关系；
 2. listen 则是 Hub 的监听端口，Hub 是进程模式则监听宿主机的端口，Hub 是容器模式则监听容器内的端口；
 3. 请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
 

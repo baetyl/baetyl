@@ -107,10 +107,10 @@ According to the above information, the actual error is judged, and the configur
 1. Make sure your BIE configuration and CFC functions in the same region, such as beijing/guangzhou.
 2. Make sure your CFC functions are published.
 
-**Question 14**： What‘s the relationship between the parameter exports and the parameter listen which in the hub configuration file?
+**Question 14**： What‘s the relationship between the parameter ports and the parameter listen which in the hub configuration file?
 
 **Suggested Solution**:
-1. exports: Port exposed configuration in Docker container mode.
+1. ports: Port exposed configuration in Docker container mode.
 2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
 3. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
 
