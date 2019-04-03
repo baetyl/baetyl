@@ -1,75 +1,121 @@
-# How to develop a customize module for OpenEdge
+# Customize Module
 
-Read the Development Compilation Guide before developing and integrating custom modules to understand OpenEdge's build environment requirements.
+- [Directory Convention](#directory-convention)
+- [Start/Stop Convention](#startstop-convention)
+- [SDK](#sdk)
+
+Read [Build OpenEdge From Source](../setup/Build-OpenEdge-from-Source.md) before developing custom modules to understand OpenEdge's build environment requirements.
 
 Custom modules do not limit the development language. Understand these conventions below to integrate custom modules better and faster.
 
+The custom module does not limit the development language. As long as it is a runnable program, you can even use the image already on hub.docker.com, such as `eclipse-mosquitto`. But understanding the conventions described below will help you develop custom modules better and faster.
+
 ## Directory Convention
 
-### Docker Container Mode
+At present, the native process mode, like the docker container mode, opens up a separate workspace for each service. Although it does not achieve the effect of isolation, it can guarantee the consistency of the user experience. The process mode creates a separate directory for each service in the `var/run/openedge/services` directory, using service name. When the server starts, it specifies the directory as the working directory, and the service-bound storage volumes will be mapped (soft link) to the working directory. Here we keep the definition of the docker container mode, the workspace under the directory is also called the container, then the directory in the container has the following recommended usage:
 
-The working directory in the container is: /
+- Default working directory in the container: /
+- Default configuration file in the container: /etc/openedge/service.yml
+- Default persistence path in the container: /var/db/openedge
+- Default log directory in the container: /var/log/openedge
 
-The configuration path in the container is: /etc/openedge/module.yml
-
-The resource file directory in the container is: /var/db/openedge/module/<module name>
-
-The persistent data output directory in the container is: /var/db/openedge/volume/<module name>
-
-The persistent log output directory in the container is: /var/log/openedge/<module name>
-
-The docker volumes mapping is as follows:
-
-> - <openedge_host_work_dir>/var/db/openedge/module/<module_name>/module.yml:/etc/openedge/module.yml
-> - <openedge_host_work_dir>/var/db/openedge/module/<module_name>:/var/db/openedge/module/<module_name>
-> - <openedge_host_work_dir>/var/db/openedge/volume/<module_name>:/var/db/openedge/volume/<module_name>
-> - <openedge_host_work_dir>/var/log/openedge/<module_name>:/var/log/openedge/<module_name>
-
-_**NOTE**: If the data needs to be persisted on the device (host), such as the database and log, it must be saved in the persistent directory specified above, otherwise after the container destruction data will be lost._
-
-### Native Process Mode
-
-The working directory of the module is the same as the working directory of the OpenEdge master program.
-
-The configuration path of the module is: <openedge_host_work_dir>/var/db/openedge/module/<module name>/module.yml
-
-The module's resource file directory is: <openedge_host_work_dir>/var/db/openedge/module/<module name>
-
-The module's data output directory is: <openedge_host_work_dir>/var/db/openedge/volume/<module name>
-
-The module's log output directory is: <openedge_host_work_dir>/var/log/openedge/<module name>
-
-## Configuration Convention
-
-The module supports loading the yaml format configuration from the file, reading /etc/openedge/module.yml in Docker container mode, and reading <openedge_host_work_dir>/var/db/openedge/module/<module name>/module.yml in native process mode.
-
-It also supports getting the configuration from the input parameters, which can be a string in json format. such as:
-
-    modules:
-      - name: 'my_module'
-        entry: 'my_module_docker_image'
-        params:
-          - '-c'
-          - '{"name":"my_module","address":"127.0.0.1:1234",...}'
-
+**Note**: If the data needs to be persisted on the device (host), such as database and log, the directory in the container must be mapped to the host directory through the storage volume, otherwise the data will be lost after the service is stopped.
 
 ## Start/Stop Convention
 
-The module is started as a process independently by master with module's configuration, and the module should listen to the SIGTERM signal to gracefully exit when stopped by master. A simple golang module implementation can refer to [MQTT Remote Module](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-remote-mqtt).
+There is no excessive requirement for the module to be started. But it is recommended to load the YMAL format configuration from the default file, then run the module's business logic, and finally listen to the `SIGTERM` signal to gracefully exit. A simple `Golang` module implementation can refer to the MQTT remote communication module (`openedge-remote-mqtt`).
 
-## Module SDK
+## SDK
 
-If the module is developed using golang, you can use the module SDK provided in openedge, located at github.com/baidu/openedge/module.
+If the module is developed using `Golang`, you can use the SDK provided by OpenEdge, located in the sdk directory of the project, and the functional interfaces are provided by `Context`. At present, the SDK capabilities provided are still not enough, and the follow-up will be gradually strengthened.
 
-[mqtt.Dispatcher](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/mqtt/dispatcher.go) can be used to subscribe to the mqtt server and support automatic reconnection. The mqtt dispatcher does not support message persistence. The message persistence should be handled by the mqtt hub. If the message subscribed by the mqtt dispatcher is 1, the message needs to be replied to ack after the message is processed, otherwise the hub will resend the message. [remote mqtt module reference](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-remote-mqtt/main.go)
+The list of `Context` interfaces are as follows:
 
-[runtime.Server](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/function/runtime/server.go) encapsulates the grpc server and function invoke logic, which is convenient for developers to implement the function runtime of message processing. [python2.7 runtime reference]
-(https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/openedge-function-runtime-python27/openedge_function_runtime_python27.py)
+```golang
+	// returns the system configuration of the service, such as hub and logger
+	Config() *ServiceConfig
+	// loads the custom configuration of the service
+	LoadConfig(interface{}) error
+	// creates a Client that connects to the Hub through system configuration,
+	// you can specify the Client ID and the topic information of the subscription.
+	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
+	// returns logger interface
+	Log() logger.Logger
+	// waiting to exit, receiving SIGTERM and SIGINT signals
+	Wait()
+	// returns wait channel
+	WaitChan() <-chan os.Signal
 
-[master.Client](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/master/client.go) can be used to call the master program's API to start or stop the temporary module. The account username is the resident module name and the password is obtained from the environment variable using ```module.GetEnv(module.EnvOpenEdgeModuleToken)```.
+	// Master RESTful API
 
-[module.Load](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/module.go) can be used to load the configuration of the module, support to read the configuration from file in yaml format and from process arguments in json format.
+	// updates system and
+	UpdateSystem(string, bool) error
+	// inspects system stats
+	InspectSystem() (*Inspect, error)
+	// gets an available port of the host
+	GetAvailablePort() (string, error)
+	// starts an instance of a service
+	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	// stop an instance of a service
+	StopServiceInstance(serviceName, instanceName string) error
+```
 
-[module.Wait](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/module.go) can be used to wait the SIGTERM signal for the module to exit.
+The following uses the simple timer module implementation as an example to introduce the usage of the SDK.
 
-[logger](https://github.com/baidu/openedge/tree/5010a0d8a4fc56241d5febbc03fdf1b3ec28905e/module/logger/logger.go) can be used to log.
+```golang
+package main
+
+import (
+	"encoding/json"
+	"time"
+
+	"github.com/baidu/openedge/protocol/mqtt"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
+)
+
+// custom configuration of the timer module
+type config struct {
+	Timer struct {
+		Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
+	} `yaml:"timer" json:"timer"`
+	Publish mqtt.TopicInfo `yaml:"publish" json:"publish" default:"{\"topic\":\"timer\"}"`
+}
+
+func main() {
+	// Running module in openedge context
+	openedge.Run(func(ctx openedge.Context) error {
+		var cfg config
+		// load custom config
+		err := ctx.LoadConfig(&cfg)
+		if err != nil {
+			return err
+		}
+		// create a hub client
+		cli, err := ctx.NewHubClient("", nil)
+		if err != nil {
+			return err
+		}
+		// start client to keep connection with hub
+		cli.Start(nil)
+		// create a timer
+		ticker := time.NewTicker(cfg.Timer.Interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case t := <-ticker.C:
+				msg := map[string]int64{"time": t.Unix()}
+				pld, _ := json.Marshal(msg)
+				// send a message to hub triggered by timer
+				err := cli.Publish(cfg.Publish, pld)
+				if err != nil {
+					// log error message
+					ctx.Log().Errorf(err.Error())
+				}
+			case <-ctx.WaitChan():
+				// wait until service is stopped
+				return nil
+			}
+		}
+	})
+}
+```

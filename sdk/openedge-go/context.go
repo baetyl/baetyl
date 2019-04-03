@@ -1,11 +1,13 @@
 package openedge
 
 import (
+	fmt "fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/protocol/mqtt"
 	"github.com/baidu/openedge/utils"
 )
 
@@ -38,15 +40,31 @@ const (
 
 // Context of service
 type Context interface {
+	// returns the system configuration of the service, such as hub and logger
 	Config() *ServiceConfig
-	UpdateSystem(string, bool) error
-	InspectSystem() (*Inspect, error)
+	// loads the custom configuration of the service
+	LoadConfig(interface{}) error
+	// creates a Client that connects to the Hub through system configuration,
+	// you can specify the Client ID and the topic information of the subscription.
+	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
+	// returns logger interface
 	Log() logger.Logger
+	// waiting to exit, receiving SIGTERM and SIGINT signals
 	Wait()
+	// returns wait channel
+	WaitChan() <-chan os.Signal
 
+	// Master RESTful API
+
+	// updates system and
+	UpdateSystem(string, bool) error
+	// inspects system stats
+	InspectSystem() (*Inspect, error)
+	// gets an available port of the host
 	GetAvailablePort() (string, error)
-	// GetServiceInfo(serviceName string) (*ServiceInfo, error)
+	// starts an instance of a service
 	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	// stop an instance of a service
 	StopServiceInstance(serviceName, instanceName string) error
 }
 
@@ -54,6 +72,24 @@ type ctx struct {
 	*Client
 	cfg ServiceConfig
 	log logger.Logger
+}
+
+func (c *ctx) NewHubClient(cid string, subs []mqtt.TopicInfo) (*mqtt.Dispatcher, error) {
+	if c.cfg.Hub.Address == "" {
+		return nil, fmt.Errorf("hub not configured")
+	}
+	cc := c.cfg.Hub
+	if cid != "" {
+		cc.ClientID = cid
+	}
+	if subs != nil {
+		cc.Subscriptions = subs
+	}
+	return mqtt.NewDispatcher(cc, c.log.WithField("cid", cid)), nil
+}
+
+func (c *ctx) LoadConfig(cfg interface{}) error {
+	return utils.LoadYAML(DefaultConfFile, cfg)
 }
 
 func (c *ctx) Config() *ServiceConfig {
@@ -65,10 +101,14 @@ func (c *ctx) Log() logger.Logger {
 }
 
 func (c *ctx) Wait() {
+	<-c.WaitChan()
+}
+
+func (c *ctx) WaitChan() <-chan os.Signal {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	signal.Ignore(syscall.SIGPIPE)
-	<-sig
+	return sig
 }
 
 func newContext() (*ctx, error) {

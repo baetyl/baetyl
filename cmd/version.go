@@ -9,7 +9,6 @@ import (
 // Compile parameter
 var (
 	Version   string
-	BuildTime string
 	GoVersion string
 )
 
@@ -26,8 +25,7 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	log.Printf("OpenEdge version %s\nbuild time %s\n%s\n\n",
+	log.Printf("\nOpenEdge version %s\n%s\n\n",
 		Version,
-		BuildTime,
 		GoVersion)
 }

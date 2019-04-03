@@ -89,7 +89,7 @@ func startInternal() {
 
 	defer ctx.Release()
 
-	m, err := master.New(workDir, cfg)
+	m, err := master.New(workDir, cfg, Version)
 	if err != nil {
 		logger.Errorf("failed to create master: %s", err.Error())
 		return
