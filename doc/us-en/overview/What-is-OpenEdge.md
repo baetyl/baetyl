@@ -6,10 +6,8 @@ About architecture design, OpenEdge takes **modularization** and **containerizat
 
 More about OpenEdge, please visit:
 
-- [OpenEdge design](./OpenEdge-design.md)
-- [OpenEdge concepts](./OpenEdge-concepts.md)
-- [OpenEdge features](./OpenEdge-features.md)
 - [OpenEdge advantages](./OpenEdge-advantages.md)
+- [OpenEdge design](./OpenEdge-design.md)
 - [OpenEdge open framework](./OpenEdge-open-framework.md)
 - [OpenEdge customize extension](./OpenEdge-extension.md)
 - [OpenEdge security](./OpenEdge-security.md)

@@ -35,7 +35,7 @@ WARNING: No swap limit support
 ```shell
 sudo usermod -aG docker ${USER}
 su - ${USER}
-``` 
+```
 
 如提示没有 `docker group`，使用如下命令创建新 docker 用户组后再执行上述命令：
 
@@ -81,10 +81,10 @@ source ~/.bash_profile
 
 **参考方案**：这是由于 MQTTBOX 启动缺少 `libgconf-2.so.4` 库所致。推荐做法如下：
 
-> + `步骤 1`: 下载并解压缩 MQTTBOX 软件包；
-> + `步骤 2`: 进入 MQTTBOX 软件包解压缩后的目录，为 MQTTBox 可执行文件配置执行权限；
-> + `步骤 3`：为 MQTTBox 设置软连接：`sudo ln -s /path/to/MQTTBox /usr/local/bin/MQTTBox`；
-> + `步骤 4`：进入终端，执行 `MQTTBox` 即可。
+- 步骤 1：下载并解压缩 MQTTBOX 软件包；
+- 步骤 2：进入 MQTTBOX 软件包解压缩后的目录，为 MQTTBox 可执行文件配置执行权限；
+- 步骤 3：为 MQTTBox 设置软连接：`sudo ln -s /path/to/MQTTBox /usr/local/bin/MQTTBox`；
+- 步骤 4：进入终端，执行 `MQTTBox` 即可。
 
 **问题 11**：在使用智能边缘 BIE 下发配置后，本地启动 OpenEdge 服务，利用函数计算模块进行消息处理，发现 `localfunc` 无法进行消息处理，查看 `funclog` 有如下报错信息：
 
@@ -92,8 +92,8 @@ source ~/.bash_profile
 
 **参考方案**：如果是使用智能边缘 BIE 云端管理套件下发配置，有如下几个点需要注意：
 
-1. 云端下发配置目前只支持容器模式
-2. 如果是云端下发配置，`localfunc` 里配置的hub地址应为 `localhub` 而非 `0.0.0.0`
+- 云端下发配置目前只支持容器模式
+- 如果是云端下发配置，`localfunc` 里配置的hub地址应为 `localhub` 而非 `0.0.0.0`
 
 根据以上信息结合实际报错进行判断，根据需要重新从云端进行配置下发，或者参考 [配置解析文档](./tutorials/Config-interpretation.md) 进行核对及配置。
 
@@ -103,16 +103,18 @@ source ~/.bash_profile
 
 **问题 13**： 在使用智能边缘 BIE 云端管理套件时，如何选取 [CFC](https://cloud.baidu.com/product/cfc.html) 函数?
 
-**参考方案**： 
-1. 确保您的智能边缘 BIE 配置和 CFC 配置处于同一区域，例如同在北京/广州；
-2. 确保您的函数在 CFC 平台已经发布。
+**参考方案**：
+
+- 确保您的智能边缘 BIE 配置和 CFC 配置处于同一区域，例如同在北京/广州；
+- 确保您的函数在 CFC 平台已经发布。
 
 **问题 14**：配置文件中的 ports 和 Hub 配置文件中的 listen 有什么关系？
 
 **参考方案**：
-1. ports 配置了宿主机和容器内的端口映射关系；
-2. listen 则是 Hub 的监听端口，Hub 是进程模式则监听宿主机的端口，Hub 是容器模式则监听容器内的端口；
-3. 请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
+
+- ports 配置了宿主机和容器内的端口映射关系；
+- listen 则是 Hub 的监听端口，Hub 是进程模式则监听宿主机的端口，Hub 是容器模式则监听容器内的端口；
+- 请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
 
 **问题 15**：消息通过 OpenEdge 传输到 [百度云 IoT Hub](https://cloud.baidu.com/product/iot.html) 后，如何在云端进行后续的数据处理？
 

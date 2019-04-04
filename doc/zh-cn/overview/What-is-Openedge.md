@@ -6,10 +6,8 @@
 
 更多 OpenEdge 构成、功能、特性与优势等内容，请参考：
 
-> + [OpenEdge 设计](./OpenEdge-design.md)
-> + [OpenEdge 构成](./OpenEdge-concepts.md)
-> + [OpenEdge 功能](./OpenEdge-features.md)
 > + [OpenEdge 优势](./OpenEdge-advantages.md)
+> + [OpenEdge 设计](./OpenEdge-design.md)
 > + [OpenEdge 开放式设计框架](./OpenEdge-open-framework.md)
 > + [OpenEdge 自定义扩展](./OpenEdge-extension.md)
 > + [OpenEdge 安全](./OpenEdge-security.md)
