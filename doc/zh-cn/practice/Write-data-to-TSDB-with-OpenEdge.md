@@ -2,9 +2,9 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT client 向本地 Hub 模块发送消息的客户端为 [MQTT.fx](../Resources-download.md#下载MQTT.fx客户端)
-> + 模拟 MQTT client 向云端远程 Hub 模块订阅消息的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
+- 本文测试所用设备系统为 Darwin
+- 模拟 MQTT client 向本地 Hub 模块发送消息的客户端为 [MQTT.fx](../Resources-download.md#下载-MQTT.fx-客户端)
+- 模拟 MQTT client 向云端远程 Hub 模块订阅消息的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 
 ## 测试前准备
 
@@ -38,9 +38,10 @@
 
 如上，已创建好一个名为 filter 的规则，该规则用于对本地设备实际产生的原始数据进行 **过滤、脱敏** 等处理。图中所示为筛选实际生产数据中的 **temperature、ts、unit** 等字段，且满足 **temperature > 50** 信息，然后将之上传至远程云端 Hub 模块。
 
-> **提示**：
-> + 这里不需要为规则设置数据目的地；
-> + 实例和主题配置虽是必选项，但该条规则从 BIE 云端管理平台下发后会自动抽取 SQL 语句部分，其他配置内容不会连同下发。
+**提示**：
+
+- 这里不需要为规则设置数据目的地；
+- 实例和主题配置虽是必选项，但该条规则从 BIE 云端管理平台下发后会自动抽取 SQL 语句部分，其他配置内容不会连同下发。
 
 **物接入既定主题接收消息用规则**：
 
@@ -95,7 +96,7 @@ _**提示**：以上创建的物接入 Endpoint、规则引擎 Rule、TSDB 数�
 
 ## 测试与验证
 
-本节中将会结合 [智能边缘 BIE 云端管理套件](https://console.bce.baidu.com/iot2/edge/)从云端创建 OpenEdge 执行所需的一切配置信息，然后由 智能边缘 BIE 云端管理套件下发本地部署，最后由本地启动 OpenEdge，完成整个 case 的测试与验证。
+本节中将会结合 [智能边缘 BIE 云端管理套件](https://console.bce.baidu.com/iot2/edge/)从云端创建 OpenEdge 执行所需的一切配置信息，然后由 智能边缘 BIE 云端管理套件下发本地部署，最后由本地启动 OpenEdge，完成整个测试例的测试与验证。
 
 ### OpenEdge 主程序配置
 

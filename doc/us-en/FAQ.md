@@ -26,7 +26,7 @@ _**NOTE**: If you got some error when you execute `step2`, it may be that the `g
 
 **Suggested Solution**: Refer to Question 2.
 
-**Question 4**: Found `Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/images/json: dial unix /var/run/docker.sock: connect: permission denied` when OpenEdge start.
+**Question 4**: Found `Got permission denied while trying to connect to the docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/images/json: dial unix /var/run/docker.sock: connect: permission denied` when OpenEdge start.
 
 **Suggested Solution**: Add the docker group if it doesn't already exist:
 
@@ -41,7 +41,7 @@ sudo usermod -aG docker ${USER}
 su - ${USER}
 ``` 
 
-**Question 5**: Found `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` when OpenEdge start.
+**Question 5**: Found `Cannot connect to the docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` when OpenEdge start.
 
 **Suggested Solution**: If you still report this issue after the solution of Question 4 solution is executed, restart the docker service.
 
@@ -71,7 +71,7 @@ source ~/.bash_profile
 
 **Question 8**: Does OpenEdge support to push data to Kafka?
 
-**Suggested Solution**: Support, you can refer to [How-to-write-a-python-script-for-python-runtime](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How-to-develop-a-customize-module-for-OpenEdge](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md), which subscribes message from the local Hub module and then writes it to Kafka.
+**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for OpenEdge](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md), which subscribes message from the local Hub module and then writes it to Kafka.
 
 **Question 9**: What are the ways to change OpenEdge configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
 
@@ -110,7 +110,7 @@ According to the above information, the actual error is judged, and the configur
 **Question 14**： What‘s the relationship between the parameter ports and the parameter listen which in the hub configuration file?
 
 **Suggested Solution**:
-1. ports: Port exposed configuration in Docker container mode.
+1. ports: Port exposed configuration in docker container mode.
 2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
 3. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
 

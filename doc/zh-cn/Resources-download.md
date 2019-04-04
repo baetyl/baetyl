@@ -2,15 +2,15 @@
 
 ## OpenEdge 程序包下载
 
-**说明**：OpenEdge 仅在此处提供 Docker 容器模式下 OpenEdge 主程序及相关配置文件程序包下载。
+**说明**：OpenEdge 仅在此处提供 docker 容器模式下 OpenEdge 主程序及相关配置文件程序包下载。
 
 | 系统         | 平台   | SHA256编码                                                       | 下载链接                                                                       |
 | ------------ | ------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Linux | 386 | 07ac94223906cb2b60ffddc78b4c4b5889480d9b36dced912151e34cf829fb6f | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-386-0.1.2.tar.gz) |
-| Linux | amd64 | 7b6393af47476d101c78a147f5bcfb3828d9c902e4def0370c434f658d4697f7 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-amd64-0.1.2.tar.gz) |
-| Linux | armv7 | e1b4c1791d6353470411de65be8547ae93bdf3342e8a8f03d48d83342e783502 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-armv7-0.1.2.tar.gz) |
-| Linux | arm64 | 51e440da0a1abd5ef1d8f2d224ef21469a96f60b3f12966f2b394e756c715972 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-arm64-0.1.2.tar.gz) |
-| Darwin | amd64 | 4ba1ef2828feeb80266c7cd45e7296e918a46566659cd51c5278119a1694c4a1 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-darwin-amd64-0.1.2.tar.gz) |
+| Linux | 386 | 7adc0b08f735325bc14d382ac5979e45435bddabcd3366b8c91027a541ad0f52 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-386-0.1.2.tar.gz) |
+| Linux | amd64 | b1b979fdffdc0b5e39faa324fda61aba118f4c5644e31eee8bfa90a1c3bdccfb | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-amd64-0.1.2.tar.gz) |
+| Linux | armv7 | 2e1a95606ee3d5dc277b65899508aadc4f95cde6fba784e6ebce61da805deb23 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-armv7-0.1.2.tar.gz) |
+| Linux | arm64 | b91623a61adceb6b6589c07a33cdb7af117e287097104a212f4cbbecbe45a7e6 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-arm64-0.1.2.tar.gz) |
+| Darwin | amd64 | cc0aa24ea7965a7e31102c24ab3f21578dd9fcd4d77d32347d8e8b2ffaa1d29f | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-darwin-amd64-0.1.2.tar.gz) |
 
 ## Golang 安装包下载
 

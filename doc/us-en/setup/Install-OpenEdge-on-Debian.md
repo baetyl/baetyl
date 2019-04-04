@@ -1,6 +1,6 @@
 # Install OpenEdge on Debian
 
-OpenEdge is mainly developed in Go programming language and supports two startup modes: **Docker container mode** and **Native process mode**.
+OpenEdge is mainly developed in Go programming language and supports two startup modes: **docker** container mode and **native** process mode.
 
 This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
 
@@ -8,13 +8,13 @@ This document focuses on the installation and configuration of the environment r
 
 ### Install Docker
 
-OpenEdge offers two startup modes. To start using **Docker** container mode (recommended), you need to complete the docker installation first.
+OpenEdge offers two startup modes. To start using **docker** container mode (recommended), you need to complete the docker installation first.
 
 **NOTE**:
 
 - The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-- The production environment can run the image using a lower version of Docker, which is currently tested to a minimum usable version of 12.0.
-- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of Docker lower than 18.09.2 has some security implications. It is recommended to install/update the Docker to 18.09.2 and above.
+- The production environment can run the image using a lower version of docker, which is currently tested to a minimum usable version of 12.0.
+- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -24,7 +24,7 @@ curl -sSL https://get.docker.com | sh
 
 **NOTE**:
 
-- After the Docker installation is complete, use the following command to view the installed version of Docker.
+- After the docker installation is complete, use the following command to view the installed version of docker.
 
 ```shell
 docker version
@@ -34,7 +34,7 @@ docker version
 
 ### Install Python2.7 and Python runtime dependency package
 
-- OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
+- OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native** process mode, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in **docker** container mode, you do not need to perform the following steps.
 - The Debian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of Debian.
 
 ![centos kernel detail](../../images/setup/os-debian.png)
@@ -70,7 +70,7 @@ alias python=/yourpath/python2.7
 
 ![debian kernel detail](../../images/setup/os-debian.png)
 
-Starting OpenEdge containerization mode requires the running device to complete the installation and operation of Docker. You can install it by referring to [Steps above](#Install-Docker).
+Starting OpenEdge containerization mode requires the running device to complete the installation and operation of docker. You can install it by referring to [Steps above](#Install-Docker).
 
 ### Deployment Process
 
