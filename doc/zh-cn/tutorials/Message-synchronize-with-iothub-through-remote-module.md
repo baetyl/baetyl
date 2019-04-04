@@ -1,19 +1,14 @@
-/*
-Title: 利用 Remote 模块进行 OpenEdge 与百度 IoT Hub 间消息同步
-Sort: 50
-*/
-
 # 利用 Remote 模块进行 OpenEdge 与百度 IoT Hub 间消息同步
 
 **声明**：
 
 > + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../../Resources-download#mqtt-download) 和 [MQTT.fx](../../Resources-download)
-> + 本文所用的Hub模块镜像和Remote模块镜像为OpenEdge云端管理套件中发布的官方镜像：`hub.baidubce.com/openedgedev/openedge-hub:latest`、`hub.baidubce.com/openedgedev/openedge-remote-mqtt-linux-amd64:latest`
-> + 您也可以通过OpenEdge 源码自行编译所需的Hub模块镜像和Remote模块镜像，具体请查看[如何从源码构建镜像](../../setup/Build-OpenEdge-from-Source)
+> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md) 和 [MQTT.fx](../Resources-download.md)
+> + 本文所用的Hub模块镜像和Remote模块镜像为OpenEdge云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest`
+> + 您也可以通过OpenEdge 源码自行编译所需的Hub模块镜像和Remote模块镜像，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 > + 远程 Hub 接入平台选用 [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [Remote 模块配置](./Config-interpretation)。
+Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [Remote 模块配置](./Config-interpretation.md)。
 
 ## 操作流程
 
@@ -21,10 +16,10 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 - `Step 2`：依据步骤 `Step 1` 中创建的连接信息，选择 MQTT.fx 作为测试用 MQTT 客户端，配置相关连接信息，并将之与 Baidu IoT Hub 建立连接，并订阅既定主题；
   - 若成功建立连接，则继续下一步操作；
   - 若未成功建立连接，则重复上述步骤，直至看到 MQTT.fx 与 Baidu IoT Hub 成功[建立连接](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E6.95.B0.E6.8D.AE.E5.9E.8B.E9.A1.B9.E7.9B.AE)。
-- `Step 3`：打开终端，进入 OpenEdge 程序包目录，执行 `bin/openedge start` 以 Docker 模式启动 OpenEdge 可执行程序，并观察 Hub 模块、Remote 模块启动状态；
+- `Step 3`：打开终端，进入 OpenEdge 程序包目录，执行 `sudo openedge start` 以 Docker 模式启动 OpenEdge 可执行程序，并观察 Hub 模块、Remote 模块启动状态；
   - 若 Hub、Remote 模块成功启动，则继续下一步操作；
   - 若 Hub、Remote 模块未成功启动，则重复 `Step 3`，直至看到 Hub、Remote 模块成功启动。
-- `Step 4`：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-OpenEdge-with-local-hub-module)，并订阅既定主题；
+- `Step 4`：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)，并订阅既定主题；
     - 若成功与 Hub 模块建立连接，则继续下一步操作；
     - 若与 Hub 建立连接失败，则重复 `Step 4` 操作，直至 MQTTBOX 与本地 Hub 模块成功建立连接。
 - `Step 5`：依据 Remote 模块的相关配置信息，从 MQTTBOX 向既定主题发布消息，观察 MQTT.fx 的消息接收情况；同理，从 MQTT.fx 向既定主题发布消息，观察 MQTTBOX 的消息接收情况。
@@ -42,7 +37,7 @@ OpenEdge 主程序的核心配置如下：
 version: V2
 services:
   - name: localhub
-    image: 'hub.baidubce.com/openedgedev/openedge-hub:latest'
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
     replica: 1
     ports:
       - '1883:1883'
@@ -63,7 +58,7 @@ services:
         path: var/db/openedge/certclient
         readonly: true
   - name: remote-iothub
-    image: hub.baidubce.com/openedgedev/openedge-remote-mqtt-linux-amd64:latest
+    image: hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest
     replica: 1
     mounts:
       - name: remote-iothub-conf

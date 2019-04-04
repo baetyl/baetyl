@@ -1,19 +1,14 @@
-/*
-Title: Message synchronize between OpenEdge and Baidu IoT Hub via remote module
-Sort: 40
-*/
-
 # Message Synchronize between OpenEdge and Baidu IoT Hub via Remote Module
 
 **Statement**
 
 > + The operating system as mentioned in this document is Darwin.
-> + The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download) and [MQTT.fx](../Resources-download).
-> + The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): ：`hub.baidubce.com/openedgedev/openedge-hub:latest`、`hub.baidubce.com/openedgedev/openedge-remote-mqtt-linux-amd64:latest`
-> + Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source)
+> + The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
+> + The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): ：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest`
+> + Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
 > + The Remote Hub as mentioned in this document is [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-The Remote Module was developed to meet the needs of the IoT scenario. The OpenEdge(via Local Hub Module) can synchronize message with Remote Hub services(such as [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/), [AWS IoT Core](https://amazonaws-china.com/iot-core/), [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html), etc.) via the Remote Module. That is to say, through the Remote Module, we can either subscribe the message from Remote Hub and publish it to the Local Hub Module or subscribe the message from Local Hub Module and publish it to Remote Hub service. The configuration of Remote Module can refer to [Remote Module Configuration](./Config-interpretation).
+The Remote Module was developed to meet the needs of the IoT scenario. The OpenEdge(via Local Hub Module) can synchronize message with Remote Hub services([Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)) via the Remote Module. That is to say, through the Remote Module, we can either subscribe the message from Remote Hub and publish it to the Local Hub Module or subscribe the message from Local Hub Module and publish it to Remote Hub service. The configuration of Remote Module can refer to [Remote Module Configuration](./Config-interpretation.md).
 
 ## Workflow
 
@@ -42,7 +37,7 @@ The principal configuration of OpenEdge Master is as follows:
 version: V2
 services:
   - name: localhub
-    image: 'hub.baidubce.com/openedgedev/openedge-hub:latest'
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
     replica: 1
     ports:
       - '1883:1883'
@@ -63,7 +58,7 @@ services:
         path: var/db/openedge/certclient
         readonly: true
   - name: remote-iothub
-    image: hub.baidubce.com/openedgedev/openedge-remote-mqtt-linux-amd64:latest
+    image: hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest
     replica: 1
     mounts:
       - name: remote-iothub-conf
@@ -121,7 +116,7 @@ logger:
   path: var/log/openedge/service.log
   level: "debug"
 ```
-According to the configuration of the above, it means that the Remote Module subscribes the topic `t1` from the Local Hub Module, subscribes the topic `t2` from Baidu IoT Hub. When MQTTBOX publishes a message to the topic `t1`, the Local Hub Module will receive this message and forward it to Baidu IoT Hub via Remote Module, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoT Hub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoT Hub will receive it and forward it to the Local Hub Module via Remote module. Finally, MQTTBOX will receive this message(suppose MQTTBOX has already subscribed the topic `t2` before).
+According to the configuration of the above, it means that the Remote module subscribes the topic `t1` from the Local Hub module, subscribes the topic `t2` from Baidu IoT Hub. When MQTTBOX publishes a message to the topic `t1`, the Local Hub module will receive this message and forward it to Baidu IoT Hub via Remote module, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoT Hub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoT Hub will receive it and forward it to the Local Hub module via Remote module. Finally, MQTTBOX will receive this message(suppose MQTTBOX has already subscribed the topic `t2` before).
 
 In a word, from MQTTBOX publishes a message to the topic `t1`, to MQTT.fx receives the message, the routing path of the message is as follows.
 
