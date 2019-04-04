@@ -72,13 +72,13 @@ _**提示**：以上创建的物接入 Endpoint、规则引擎 Rule、TSDB 数�
 
 将生产设备数据经**脱敏**后上云、写入 TSDB 及在云端物可视进行展示所涉及的流程步骤主要包括：
 
-- 步骤1: **创建核心并下载配置(含主程序)** 在 BIE 云端管理套件页面选定区域（北京，或广州）创建核心，完善核心创建所需配置信息，点击“下载配置”，然后选择包含主程序，具体请参考[管理核心](../tutorials/console/Manage-core-device.md)
+- 步骤1: **创建核心并下载配置(含主程序)** 在 BIE 云端管理套件页面选定区域（北京，或广州）创建核心，完善核心创建所需配置信息，点击“下载配置”，然后选择包含主程序，具体请参考[BIE操作指南](https://cloud.baidu.com/doc/BIE/GettingStarted.html)
 - 步骤2: **本地启动 OpenEdge** 本地解压缩主程序（含配置）后，启动 OpenEdge，然后点击核心连接状态按钮，如 OpenEdge 正常启动，即可看到核心连接状态已变更为 **已连接**
     - OpenEdge 启动参考命令：
         - `tar -zxvf openedge-xxx.tar.gz`
         - `cd openedge-xxx`
         - `sudo openedge start`
-- 步骤3: **建立服务配置** 进入已创建的核心，然后开始依次创建本次测试所需的服务配置信息（Hub 服务配置、Function Manager服务配置、Function Filter服务配置、Remote服务配置），详细内容可参考[建立应用配置](../tutorials/console/Create-app-config.md)
+- 步骤3: **建立服务配置** 进入已创建的核心，然后开始依次创建本次测试所需的服务配置信息（Hub 服务配置、Function Manager服务配置、Function Filter服务配置、Remote服务配置），详细内容可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
     - Hub 服务配置：需要挂载conf、data、cert、log四个挂载卷，分别存储Hub服务的配置、持久化数据、ssl认证资源和日志
     ![localhub_volume](../../images/practice/write-tsdb/localhub_volume.png)
     - Function Manager 服务配置：需要挂载conf、log两个挂载卷，分别存储配置和日志数据
@@ -87,7 +87,7 @@ _**提示**：以上创建的物接入 Endpoint、规则引擎 Rule、TSDB 数�
     ![localhubfunction_filter_volume](../../images/practice/write-tsdb/localfunction_filter_volume.png)
     - Remote 服务配置：需要挂载conf、cert、log三个挂载卷，存储配置、ssl认证资源和日志
     ![localhubremote_volume](../../images/practice/write-tsdb/localremote_volume.png)
-- 步骤4: **发布及下发服务配置** 完成核心所需的各个服务的配置后，点击“生成配置”按钮生成当前版本配置，然后再点击“下发配置”按钮将生成的版本配置下发至本地，OpenEdge 服务会自动切换、加载该下发的新配置信息，具体可参考[发布及下发应用配置](../tutorials/console/Deploy-app-config.md)
+- 步骤4: **发布及下发服务配置** 完成核心所需的各个服务的配置后，点击“生成配置”按钮生成当前版本配置，然后再点击“下发配置”按钮将生成的版本配置下发至本地，OpenEdge 服务会自动切换、加载该下发的新配置信息，具体可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
     - 此过程要求 OpenEdge 持续 **保持连接** 状态，如果 OpenEdge 在下发配置前已断开连接，则重新启动 OpenEdge，在连接状态恢复至 **已连接** 后下发新配置即可（推荐）；或可选择 **下载配置** 按钮，将该新配置下载至本地，然后自行在本地替换，然后再启动 OpenEdge
 - 步骤5: **配置 MQTTBOX 连接信息** 启动 MQTTBOX，配置其与本地 Hub 模块建立连接所需的各配置信息
 - 步骤6: **发送测试数据** 在 MQTTBOX 与本地 Hub 模块建立连接后，向主题 **data** 发送测试数据，然后打开 TSDB 面板，查看是否有数据成功写入，同时打开物可视展示板，观察数据写入的状态
