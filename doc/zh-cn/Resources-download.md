@@ -6,9 +6,11 @@
 
 | 系统         | 平台   | SHA256编码                                                       | 下载链接                                                                       |
 | ------------ | ------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Linux | armv7 | 37b09a8e2a33e80f3e7a1fe0dfc749cf6c87829316bf8a2786588bc17d42e1e9 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.1/github/openedge-linux-armv7-0.1.1.tar.gz) |
-| Linux | amd64 | e09584a45a9de20759606fda0f6f803724152c8cce8955eca56a54dd4f8fa967 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.1/github/openedge-linux-amd64-0.1.1.tar.gz) |
-| Darwin | amd64 | ffe6e66cc478fe691372e494f3ef826112a02fad6cc616a8979cb77985ec0990 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.1/github/openedge-darwin-amd64-0.1.1.tar.gz) |
+| Linux | 386 | 07ac94223906cb2b60ffddc78b4c4b5889480d9b36dced912151e34cf829fb6f | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-386-0.1.2.tar.gz) |
+| Linux | amd64 | 7b6393af47476d101c78a147f5bcfb3828d9c902e4def0370c434f658d4697f7 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-amd64-0.1.2.tar.gz) |
+| Linux | armv7 | e1b4c1791d6353470411de65be8547ae93bdf3342e8a8f03d48d83342e783502 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-armv7-0.1.2.tar.gz) |
+| Linux | arm64 | 51e440da0a1abd5ef1d8f2d224ef21469a96f60b3f12966f2b394e756c715972 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-arm64-0.1.2.tar.gz) |
+| Darwin | amd64 | 4ba1ef2828feeb80266c7cd45e7296e918a46566659cd51c5278119a1694c4a1 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-darwin-amd64-0.1.2.tar.gz) |
 
 ## Golang 安装包下载
 
@@ -34,9 +36,9 @@
 
 ### 下载 MQTT 客户端代码示例
 
-C代码示例：下载 [MQTT-c-client 压缩包](https://openedge.bj.bcebos.com/MQTT-client-example/MQTT-c.tar.gz)
+C代码示例：下载 [MQTT-C-MQTT-client](https://openedge.bj.bcebos.com/MQTT-client-example/MQTT-c.tar.gz)
 
-python代码示例：下载 [MQTT-python-client 压缩包](https://openedge.bj.bcebos.com/MQTT-client-example/MQTT-python.tar.gz)
+Python代码示例：下载 [MQTT-Python-MQTT-client](https://openedge.bj.bcebos.com/MQTT-client-example/MQTT-python.tar.gz)
 
 ### 下载 MQTT.fx 客户端
 

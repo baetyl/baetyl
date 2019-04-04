@@ -334,6 +334,6 @@ _**Tips**: In the native process mode, to run sayhi.py provided in the example o
 
 `openedge-remote-mqtt`, also known as the remote MQTT communication module, bridges two MQTT Servers for message synchronization. Currently, you can configure multiple message routing rules. The structure is as follows:
 
-[Remote MQTT Communication Example](../../images/overview/design/openedge_remote_mqtt.png)
+![Remote MQTT Communication Example](../../images/overview/design/openedge_remote_mqtt.png)
 
 As shown in the figure above, the OpenEdge remote communication module is used to forward and synchronize messages between the OpenEdge Local Hub Module and the remote cloud Hub. Further, the edge-cloud collaborative message forwarding and delivery can be realized by accessing the MQTT Client at both ends.

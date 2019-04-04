@@ -1,6 +1,6 @@
 # Install OpenEdge on CentOS
 
-> OpenEdge is mainly developed in Go programming language and supports two startup modes: ***docker*** container mode and ***native*** process mode.
+OpenEdge is mainly developed in Go programming language and supports two startup modes: **Docker container mode** and **Native process mode**.
 
 This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
 
@@ -8,13 +8,13 @@ This document focuses on the installation and configuration of the environment r
 
 ### Install Docker
 
-> OpenEdge offers two startup modes. To start using ***docker*** container mode (recommended), you need to complete the docker installation first.
+OpenEdge offers two startup modes. To start using **Docker** container mode (recommended), you need to complete the docker installation first.
 
-**Notice:**
+**NOTE**:
 
-+ The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-+ The production environment can run the image using a lower version of Docker, which is currently tested to a minimum usable version of 12.0.
-+ According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of Docker lower than 18.09.2 has some security implications. It is recommended to install/update the Docker to 18.09.2 and above.
+- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
+- The production environment can run the image using a lower version of Docker, which is currently tested to a minimum usable version of 12.0.
+- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of Docker lower than 18.09.2 has some security implications. It is recommended to install/update the Docker to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -28,9 +28,9 @@ Or install by using following command:
 yum install docker
 ```
 
-***Notice***: 
+**NOTE**:
 
-+ After the Docker installation is complete, use the following command to view the installed version of Docker.
+- After the Docker installation is complete, use the following command to view the installed version of Docker.
 
 ```shell
 docker version
@@ -40,7 +40,7 @@ docker version
 
 ### Install Python2.7 and Python runtime dependency package
 
-> + OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **Native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in **Docker container mode**, you do not need to perform the following steps.
 
 Execute the following command to check the installed version of Python:
 
@@ -68,7 +68,7 @@ python2.7 get-pip.py
 pip install protobuf grpcio
 ```
 
-> Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
+**NOTE**: Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
 
 ### Specify The Default Version Of Python
 
@@ -84,8 +84,8 @@ alias python=/yourpath/python2.7
 
 **Statement**:
 
-+ The following is an example of the deployment and startup of OpenEdge on CentOS system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-+ The CentOS system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of CentOS.
+- The following is an example of the deployment and startup of OpenEdge on CentOS system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
+- The CentOS system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of CentOS.
 
 ![centos kernel detail](../../images/setup/os-centos.png)
 
@@ -93,17 +93,17 @@ Starting OpenEdge containerization mode requires the running device to complete 
 
 ### Deployment Process
 
-- **Step1**: [Download](../Resources-download.md) OpenEdge;
-- **Step2**: Open the terminal and enter the OpenEdge directory for decompression:
+- Step1: [Download](../Resources-download.md) OpenEdge;
+- Step2: Open the terminal and enter the OpenEdge directory for decompression:
 	- Execute the command `tar -zxvf openedge-xxx.tar.gz`;
-- **Step3**: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `sudo openedge start`, respectively. Observe the contents displayed by the two terminals;
-- **Step4**: If the results are consistent, it means that OpenEdge has started normally.
+- Step3: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `sudo openedge start`, respectively. Observe the contents displayed by the two terminals;
+- Step4: If the results are consistent, it means that OpenEdge has started normally.
 
-***Notice:*** The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)
+**NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)
 
 ### Start Deployment
 
-As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source.md](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
+As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
 
 ![OpenEdge directory](../../images/setup/openedge-dir-centos.png)
 

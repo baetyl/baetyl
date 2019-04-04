@@ -2,13 +2,13 @@
 
 **Statement**
 
-> + The operating system as mentioned in this document is Darwin.
-> + The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-> + The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
+- The operating system as mentioned in this document is Darwin.
+- The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
+- The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
 
-Different from the Local Hub Service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager Service(also include Local Hub Service and Python27 Runtime Service). In the document, Local Hub Service is used to establish connection between OpenEdge and mqtt client, Python27 Runtime Service is used to handle MQTT messages, and the Local Function Manager Service is used to combine Local Hub Service with Python27 Runtime Service with message context.
+Different from the Local Hub service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Local Hub service and Python27 runtime service). In the document, Local Hub service is used to establish connection between OpenEdge and mqtt client, Python27 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine Local Hub service with Python27 runtime service with message context.
 
-This document will take the TCP connection mode as an example to show the message handling, calculation and forwarding with Local Function Manager Service.
+This document will take the TCP connection mode as an example to show the message handling, calculation and forwarding with Local Function Manager service.
 
 ## Workflow
 
@@ -27,7 +27,7 @@ This document will take the TCP connection mode as an example to show the messag
 The configuration of the Local Hub Service and the Local Function Manager Service used in the test is as follows:
 
 ```yaml
-# The configuration of Local Hub Service
+# The configuration of Local Hub service
 listen:
   - tcp://:1883
 principals:
@@ -39,7 +39,7 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# The configuration of Local Function Manager Service
+# The configuration of Local Function Manager service
 hub:
   address: tcp://localhub:1883
   username: test
@@ -60,7 +60,7 @@ functions:
       max: 10
       idletime: 1m
 
-# The configuration of python function runtime
+# The configuration of python2.7 runtime
 functions:
   - name: 'sayhi'
     handler: 'sayhi.handler'
@@ -122,6 +122,7 @@ volumes:
 ```
 
 The directory of configuration tree is as follows:
+
 ```shell
 var/
 └── db
@@ -174,7 +175,6 @@ service to say hi
 """
 
 import os
-
 
 def handler(event, context):
     """

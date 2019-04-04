@@ -2,12 +2,12 @@
 
 **Statement**
 
-> + The operating system as mentioned in this document is Darwin.
-> + The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
+- The operating system as mentioned in this document is Darwin.
+- The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 
 Different from [Device-connect-to-OpenEdge-with-hub-service](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
 
-This document uses the TCP connection mode as an example to test the message routing and forwarding capabilities of the Local Hub Service.
+This document uses the TCP connection mode as an example to test the message routing and forwarding capabilities of the Local Hub service.
 
 ## Workflow
 
@@ -22,7 +22,7 @@ This document uses the TCP connection mode as an example to test the message rou
 The configuration of the Local Hub Service used in the test is as follows:
 
 ```yaml
-# The configuration of Local Hub Service
+# The configuration of Local Hub service
 listen:
   - tcp://:1883
 principals:
@@ -67,6 +67,7 @@ volumes:
 ```
 
 The directory of configuration tree is as follows:
+
 ```shell
 var
 └── db
@@ -82,13 +83,13 @@ _**NOTE**: In the above configuration, the permitted topics which are configured
 
 **`#` wildcard**
 
-For [MQTT protocol](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html), the number sign(`#` U+0023) is a wildcard character that matches any number of levels within a topic. The multi-level wildcard represents the parent and any number of child levels. The multi-level wildcard character MUST be specified either on its own or following a topic level separator(`/` U+002F). In either case it MUST be the last character specified in the topic. 
+For [MQTT protocol](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html), the number sign(`#` U+0023) is a wildcard character that matches any number of levels within a topic. The multi-level wildcard represents the parent and any number of child levels. The multi-level wildcard character MUST be specified either on its own or following a topic level separator(`/` U+002F). In either case it MUST be the last character specified in the topic.
 
 For example, the configuration of `permit` item of `sub` action is `sport/tennis/player1/#`, it would receive messages published using these topic names:
 
-> + `sport/tennis/player1`
-> + `sport/tennis/player1/ranking`
-> + `sport/tennis/player1/score/wimbledon`
+- `sport/tennis/player1`
+- `sport/tennis/player1/ranking`
+- `sport/tennis/player1/score/wimbledon`
 
 Besides, topic `sport/#` also matches the singular `sport`, since `#` includes the parent level.
 
@@ -96,13 +97,13 @@ For OpenEdge, if the topic `#` is configured in the `permit` item list(whether `
 
 **`+` wildcard**
 
-As described in the MQTT protocol, the plus sign(`+` U+002B) is a wildcard character that matches only one topic level. The single-level wildcard can be used at any level in the topic, including first and last levels. Where it is used it MUST occupy an entire level of the topic. It can be used at more than one level in the topic and can be used in conjunction with the multi-level wildcard. 
+As described in the MQTT protocol, the plus sign(`+` U+002B) is a wildcard character that matches only one topic level. The single-level wildcard can be used at any level in the topic, including first and last levels. Where it is used it MUST occupy an entire level of the topic. It can be used at more than one level in the topic and can be used in conjunction with the multi-level wildcard.
 
 For example, topic `sport/tennis/+` matches `sport/tennis/player1` and `sport/tennis/player2`, but not `sport/tennis/player1/ranking`. Also, because the single-level wildcard matches only a single level, `sport/+` does not match `sport` but it does match `sport/`.
 
 For OpenEdge, if the topic `+` is configured in the `permit` item list(whether `pub` action or `sub` action), the specified account(depends on `username/password`) will have permission to all single-level legal topics of MQTT protocol.
 
-_**NOTE**: For MQTT protocol, wildcard **ONLY** can be used in Topic Filter(`sub` action), and **MUST NOT** be used in Topic Name(`pub` action). But in the design of OpenEdge, in order to enhance the flexibility of the topic permissions configuration, wildcard configured in `permit` item(whether in `pub` action or `sub` action) is valid, as long as the topic of the published or subscribed meets the requirements of MQTT protocol is ok. In particular, wildcards ( `#` and `+` ) policies are recommended for developers who need to configure a large number of publish and subscribe topics in the `principals` configuration._
+**NOTE**: For MQTT protocol, wildcard **ONLY** can be used in Topic Filter(`sub` action), and **MUST NOT** be used in Topic Name(`pub` action). But in the design of OpenEdge, in order to enhance the flexibility of the topic permissions configuration, wildcard configured in `permit` item(whether in `pub` action or `sub` action) is valid, as long as the topic of the published or subscribed meets the requirements of MQTT protocol is ok. In particular, wildcards ( `#` and `+` ) policies are recommended for developers who need to configure a large number of publish and subscribe topics in the `principals` configuration.
 
 ### Message Transfer Test Among Devices
 
