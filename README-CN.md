@@ -1,6 +1,6 @@
 # OpenEdge
 
-[![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)  [![LICENSE](https://img.shields.io/github/license/baidu/openedge.svg?style=flat-square)](https://github.com/openedge/openedge/blob/master/LICENSE)
+[![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)  [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 
 ![OpenEdge-logo](./doc/images/logo/logo-with-name.png)
 
@@ -52,10 +52,6 @@ OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力�
 ## 如何贡献
 
 如果您热衷于开源社区贡献，OpenEdge 将为您提供两种贡献方式，分别是代码贡献和文档贡献。具体请参考 [如何向 OpenEdge 贡献代码和文档](./CONTRIBUTING-CN.md)。
-
-## 版权和许可证
-
-OpenEdge 由 [Apache-2.0 license](./LICENSE) 提供。
 
 ## 讨论与联系
 
