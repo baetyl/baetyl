@@ -10,7 +10,7 @@ In the function compute service (FaaS), `openedge-function-manager` is responsib
 
 ## Protocol Convention
 
-Developers can use the `function.proto` in sdk/openedge-go to generate messages and service implementations for their respective programming languages, as defined below. For the usage of GRPC, refer to [GRPC Official Documents] (https://grpc.io/docs/quickstart/go.html).
+Developers can use the `function.proto` in `sdk/openedge-go` to generate messages and service implementations for their respective programming languages, as defined below. For the usage of GRPC, refer to [GRPC Official Documents](https://grpc.io/docs/quickstart/go.html).
 
 ```proto
 syntax = "proto3";
@@ -19,23 +19,23 @@ package openedge;
 
 // The function server definition.
 service Function {
-  rpc Call(FunctionMessage) returns (FunctionMessage) {}
-  // rpc Talk(stream Message) returns (stream Message) {}
+    rpc Call(FunctionMessage) returns (FunctionMessage) {}
+    // rpc Talk(stream Message) returns (stream Message) {}
 }
 
 // FunctionMessage function message
 message FunctionMessage {
-  uint64 ID                 = 1;
-  uint32 QOS                = 2;
-  string Topic              = 3;
-  bytes  Payload            = 4;
+    uint64 ID                 = 1;
+    uint32 QOS                = 2;
+    string Topic              = 3;
+    bytes  Payload            = 4;
 
-  string  FunctionName      = 11;
-  string  FunctionInvokeID  = 12;
+    string  FunctionName      = 11;
+    string  FunctionInvokeID  = 12;
 }
 ```
 
-_**NOTE**: In docker container mode, the resource limit of the function instance should not be lower than 50M memory and 20 threads._
+_**NOTE**: In docker container mode, the resource limit of the function instance should not be lower than `50M` memory and 20 threads._
 
 ## Configuration Convention
 

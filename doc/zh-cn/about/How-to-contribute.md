@@ -38,19 +38,19 @@ OpenEdge 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-succes
 
 ## 代码评审规范
 
-> + Golang 的代码风格请参照 [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
-> + 请在代码 CI 测试通过后及时通过 Email 向你的代码评审人发送代码提交请求URL
-> + 请及时回答评审人的每一个 comment，如果您采纳评审人给出的建议，请直接回复 **好的** 或是 **Done**；如果您不同意，请给出您的理由
-> + 如果您不想您的代码评审人被邮件通知频繁打扰，您可以通过 **交互框** 回复评审人提出的每一个建议，具体请参考 [如何使用交互框回复评审人信息](https://help.github.com/articles/reviewing-proposed-changes-in-a-pull-request/)
-> + 尽可能减少不必要的代码提交。一些开发者总是频繁提交代码。如果您想要向提交的代码中增加一个微小的改动，请使用命令 `git commit --amend` 代替 `git commit`
+- Golang 的代码风格请参照 [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+- 请在代码 CI 测试通过后及时通过 Email 向你的代码评审人发送代码提交请求URL
+- 请及时回答评审人的每一个 comment，如果您采纳评审人给出的建议，请直接回复 **好的** 或是 **Done**；如果您不同意，请给出您的理由
+- 如果您不想您的代码评审人被邮件通知频繁打扰，您可以通过 **交互框** 回复评审人提出的每一个建议，具体请参考 [如何使用交互框回复评审人信息](https://help.github.com/articles/reviewing-proposed-changes-in-a-pull-request/)
+- 尽可能减少不必要的代码提交。一些开发者总是频繁提交代码。如果您想要向提交的代码中增加一个微小的改动，请使用命令 `git commit --amend` 代替 `git commit`
 
 ## 代码合入规范
 
 无规矩不成方圆。这里规定，凡是提交 OpenEdge 代码合入请求的代码，一律要求遵循以下规范：
 
-> + 建议您提交代码前再次执行命令 `govendor fmt +local`，具体请参考 [govendor](https://github.com/kardianos/govendor)
-> + 代码提交前 **必须** 进行单元测试（提交代码应包含）和竞争检测，参考执行命令 `make test`
-> + 仅有提交代码通过单元测试和竞争检测，才允许向 OpenEdge 官方仓库提交
-> + 所有向 OpenEdge 官方仓库提交的代码，**必须至少** 有 **1** 个代码评审员评审通过后，才可以将提交代码合入 OpenEdge 官方代码仓库
+- 建议您提交代码前再次执行命令 `govendor fmt +local`，具体请参考 [govendor](https://github.com/kardianos/govendor)
+- 代码提交前 **必须** 进行单元测试（提交代码应包含）和竞争检测，参考执行命令 `make test`
+- 仅有提交代码通过单元测试和竞争检测，才允许向 OpenEdge 官方仓库提交
+- 所有向 OpenEdge 官方仓库提交的代码，**必须至少** 有 **1** 个代码评审员评审通过后，才可以将提交代码合入 OpenEdge 官方代码仓库
 
 **注意**：以上所有代码提交步骤要求及规范，同样适用文档贡献。

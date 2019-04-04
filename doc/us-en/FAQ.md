@@ -67,7 +67,7 @@ source ~/.bash_profile
 
 **Question 7**: How does OpenEdge connect to NB-IOT network?
 
-**Suggested Solution**: NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud Service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud Service.
+**Suggested Solution**: NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud service.
 
 **Question 8**: Does OpenEdge support to push data to Kafka?
 
@@ -81,10 +81,10 @@ source ~/.bash_profile
 
 **Suggested Solution**：As above description, this is because the lack of `libgconf-2.so.4` library when `MQTTBox` start, and the recommended use is as follows:
 
-> + `Step 1`: Download and extract the MQTTBOX software package;
-> + `Step 2`: `cd /pat/to/MQTTBOX/directory and sudo chmod +x MQTTBox`;
-> + `Step 3`：`sudo ln -s /path/to/MQTTBox /usr/local/bin/MQTTBox`;
-> + `Step 4`：Open terminal and execute the command `MQTTBox`.
+- Step 1: Download and extract the MQTTBOX software package;
+- Step 2: `cd /pat/to/MQTTBOX/directory and sudo chmod +x MQTTBox`;
+- Step 3：`sudo ln -s /path/to/MQTTBox /usr/local/bin/MQTTBox`;
+- Step 4：Open terminal and execute the command `MQTTBox`.
 
 **Question 11**: `localfunc` can't process the message, check `funclog` has the following error message:
 

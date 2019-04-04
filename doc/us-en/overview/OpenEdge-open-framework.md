@@ -10,17 +10,17 @@ OpenEdge supports network protocols in 3 aspects: one is for IoT applications, O
 
 The biggest advantage of OpenEdge is that it can support seamlessly running on multiple operating systems and CPU platforms. The list of specific supported system platforms is as follows:
 
-> + Docker container mode
->   - Darwin-amd64
->   - Linux-386
->   - Linux-amd64
->   - Linux-armv7
->   - Linux-arm64
-> + Native Process Mode
->   - Darwin-amd64
->   - Linux-386
->   - Linux-amd64
->   - Linux-armv7
->   - Linux-arm64
+- Docker container mode
+   - Darwin-amd64
+   - Linux-386
+   - Linux-amd64
+   - Linux-armv7
+   - Linux-arm64
+- Native Process Mode
+   - Darwin-amd64
+   - Linux-386
+   - Linux-amd64
+   - Linux-armv7
+   - Linux-arm64
 
 In particular, for Linux, OpenEdge only depends on the standard Linux kernel, and the version of Linux kernel should be higher than 2.6.32. In addition, for Docker container mode, OpenEdge also isolates and limits the resources of containers, and allocates the CPU, memory and other resources of each running instance accurately to improve the efficiency of resource utilization.

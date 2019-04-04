@@ -1,6 +1,6 @@
 # OpenEdge Control
 
-OpenEdge controllable design mainly includes 2 aspects, the essence of which is OpenEdge together with [BIE](https://cloud.baidu.com/product/bie.html)(Baidu-IntelliEdge) cloud management suite generate OpenEdge configuration file by **one-click configuration, one-click delivery**, update configuration(include update docker images in docker container mode) by **one-click update, automatic reloading"**.
+OpenEdge controllable design mainly includes 2 aspects, the essence of which is OpenEdge together with [BIE](https://cloud.baidu.com/product/bie.html)(Baidu-IntelliEdge) cloud management suite generate OpenEdge configuration file by **one-click configuration, one-click delivery**, update configuration(include update docker images in docker container mode) by **one-click update, automatic reloading**.
 
 Among them, **one-click configuration, one-click delivery** means that BIE cloud console supports users to establish edge core devices in the cloud, create volumes and services, write function scripts through [CFC](https://cloud.baidu.com/product/cfc.html) for `python2.7` runtime(also can write `sql` expression through [Rule Engine](https://cloud.baidu.com/product/re.html) for `sql` runtime), generate and delivery configuration files. In addition, through BIE console users can update configuration at any time. Not only the design can meet actual demands of users to update the configuration, but also  reduce the loss once found a wrong configuration.
 

@@ -14,10 +14,10 @@ The custom module does not limit the development language. As long as it is a ru
 
 At present, the native process mode, like the docker container mode, opens up a separate workspace for each service. Although it does not achieve the effect of isolation, it can guarantee the consistency of the user experience. The process mode creates a separate directory for each service in the `var/run/openedge/services` directory, using service name. When the server starts, it specifies the directory as the working directory, and the service-bound storage volumes will be mapped (soft link) to the working directory. Here we keep the definition of the docker container mode, the workspace under the directory is also called the container, then the directory in the container has the following recommended usage:
 
-- Default working directory in the container: /
-- Default configuration file in the container: /etc/openedge/service.yml
-- Default persistence path in the container: /var/db/openedge
-- Default log directory in the container: /var/log/openedge
+- Default working directory in the container: `/`
+- Default configuration file in the container: `/etc/openedge/service.yml`
+- Default persistence path in the container: `/var/db/openedge`
+- Default log directory in the container: `/var/log/openedge`
 
 **Note**: If the data needs to be persisted on the device (host), such as database and log, the directory in the container must be mapped to the host directory through the storage volume, otherwise the data will be lost after the service is stopped.
 
@@ -32,32 +32,32 @@ If the module is developed using `Golang`, you can use the SDK provided by OpenE
 The list of `Context` interfaces are as follows:
 
 ```golang
-	// returns the system configuration of the service, such as hub and logger
-	Config() *ServiceConfig
-	// loads the custom configuration of the service
-	LoadConfig(interface{}) error
-	// creates a Client that connects to the Hub through system configuration,
-	// you can specify the Client ID and the topic information of the subscription.
-	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
-	// returns logger interface
-	Log() logger.Logger
-	// waiting to exit, receiving SIGTERM and SIGINT signals
-	Wait()
-	// returns wait channel
-	WaitChan() <-chan os.Signal
+// returns the system configuration of the service, such as hub and logger
+Config() *ServiceConfig
+// loads the custom configuration of the service
+LoadConfig(interface{}) error
+// creates a Client that connects to the Hub through system configuration,
+// you can specify the Client ID and the topic information of the subscription.
+NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
+// returns logger interface
+Log() logger.Logger
+// waiting to exit, receiving SIGTERM and SIGINT signals
+Wait()
+// returns wait channel
+WaitChan() <-chan os.Signal
 
-	// Master RESTful API
+// Master RESTful API
 
-	// updates system and
-	UpdateSystem(string, bool) error
-	// inspects system stats
-	InspectSystem() (*Inspect, error)
-	// gets an available port of the host
-	GetAvailablePort() (string, error)
-	// starts an instance of a service
-	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-	// stop an instance of a service
-	StopServiceInstance(serviceName, instanceName string) error
+// updates system and
+UpdateSystem(string, bool) error
+// inspects system stats
+InspectSystem() (*Inspect, error)
+// gets an available port of the host
+GetAvailablePort() (string, error)
+// starts an instance of a service
+StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+// stop an instance of a service
+StopServiceInstance(serviceName, instanceName string) error
 ```
 
 The following uses the simple timer module implementation as an example to introduce the usage of the SDK.

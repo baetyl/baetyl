@@ -101,11 +101,11 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-OpenEdge officially provides the Python27 runtime to load Python scripts written by users. The following description is about the name of the Python script, the execution function name, input, output parameters, and so on.
+OpenEdge officially provides the Python2.7 runtime to load python scripts written by users. The following description is about the name of the python script, the execution function name, input, output parameters, and so on.
 
 ## Function Name Convention
 
-The name of a Python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a Python script to handle an MQTT message, the configuration of the Python Function Runtime Service is as follows:
+The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of the python2.7 runtime service is as follows:
 
 ```yaml
 functions:
@@ -122,7 +122,7 @@ function-sayhi-code/
 └── sayhi.py
 ```
 
-More detailed configuration of Python Runtime Function Service, please refer to [Python-Runtime-Function-Service-Configuration-Interpretation](../tutorials/Config-interpretation.md).
+More detailed configuration of Python2.7 runtime, please refer to [Python2.7-runtime-configuration](../tutorials/Config-interpretation.md).
 
 ## Parameter Convention
 
@@ -132,7 +132,7 @@ def handler(event, context):
     return event
 ```
 
-The Python 27 runtime provided by OpenEdge supports two parameters: `event` and `context`, which are described separately below.
+The Python2.7 runtime provided by OpenEdge supports two parameters: `event` and `context`, which are described separately below.
 
 + **event**：Depend on the `Payload` in the MQTT message
     + If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
@@ -148,7 +148,7 @@ _**NOTE**: When testing in the cloud CFC, please don't use the context defined b
 
 ## Hello World
 
-Now we will implement a simple Python function with the goal of appending a `hello world` message to each MQTT message. For a dictionary format message, return it directly, and for an none dictionary format message, convert it to string and return.
+Now we will implement a simple python script with the goal of appending a `hello world` message to each MQTT message. For a dictionary format message, return it directly, and for an none dictionary format message, convert it to string and return.
 
 ```python
 #!/usr/bin/env python
@@ -176,7 +176,7 @@ def handler(event, context):
 
 ![Publish an non-dict format message](../../images/customize/write-python-script-none-dict.png)
 
-As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve this problem? We will provide a general solution below.
+As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution below.
 
 ## Import Third-Party Libraries
 
@@ -184,11 +184,11 @@ Generally, using the standard library of the system python environment can not m
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [requests](https://pypi.org/project/requests). How to import it, as shown below:
 
-> + Step 1: `pip download requests` // download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
-> + Step 2: `cp requests-package /directory/to/Python/script` // copy `requests` package and its dependency package to the directory of the Python script
-> + Step 3: `touch __init__.py` // make the directory of the Python script as a package
-> + Step 4: `import requests` // import the third-party library `requests`, and write the Python script
-> + Step 5: `python your_script.py` // execute your Python script
+> + Step 1: `pip download requests` # download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
+> + Step 2: `cp requests-package /directory/to/Python/script` # copy `requests` package and its dependency package to the directory of the Python script
+> + Step 3: `touch __init__.py` # make the directory of the Python script as a package
+> + Step 4: `import requests` # import the third-party library `requests`, and write the Python script
+> + Step 5: `python your_script.py` # execute your Python script
 
 If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 
@@ -206,20 +206,19 @@ def handler(event, context):
     """
     data: {"action": "A"}
     """
-	if 'action' in event:
-		if event['action'] == 'A':
-			r = requests.get('https://openedge.tech')
-			if str(r.status_code) == '200':
-				event['info'] = r.headers
-			else:
-				event['info'] = 'exception found'
-		else:
-			event['info'] = 'action error'
+    if 'action' in event:
+        if event['action'] == 'A':
+            r = requests.get('https://openedge.tech')
+            if str(r.status_code) == '200':
+                event['info'] = r.headers
+            else:
+                event['info'] = 'exception found'
+        else:
+            event['info'] = 'action error'
+    else:
+        event['error'] = 'action not found'
 
-	else:
-		event['error'] = 'action not found'
-
-	return event
+return event
 ```
 
 As above, after receiving the message publish to the topic `py`, the Local Hub will call the `get.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "A"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, the headers information of [https://openedge.tech](https://openedge.tech) can be obtained normally.
