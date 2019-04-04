@@ -127,7 +127,7 @@ The docker engine interprets the service Image as a docker image address and sta
 
 On platforms that do not provide container services (such as older versions of Windows), the Native engine simulates the container's experience as much as possible. The engine interprets the service image as the package name. The package is provided by the storage volume and contains the program required by the service, but the dependencies of this program (such as Python interpreter, lib, etc.) need to be installed on the host in advance. All services use the host network directly, all ports are exposed, and users need to be careful to avoid port conflicts. Each instance of the service corresponds to a process, and the engine is responsible for starting and stopping the process.
 
-_**NOTE**: Process mode does not support resource restrictions, no need to expose ports, map devices. _
+_**NOTE**: Process mode does not support resource restrictions, no need to expose ports, map devices._
 
 At present, the above two modes basically achieve unified configuration, leaving only the difference in service address configuration, so the configuration in example is divided into two directories, native and docker, but will eventually be unified.
 
@@ -207,7 +207,7 @@ This interface is used to update the application in the system. We call it the a
 
 ![update](../../images/overview/design/openedge_update.png)
 
-_**NOTE**: At present, the application OTA adopts the full update method, that is, all the old services are stopped and all new services are started, so the service will be interrupted. _
+_**NOTE**: At present, the application OTA adopts the full update method, that is, all the old services are stopped and all new services are started, so the service will be interrupted._
 
 #### /services/{}/instances/{}/start|stop
 
@@ -227,7 +227,7 @@ OpenEdge currently sets the following system environment variables for the servi
 
 The official function manager service is to connect to the OpenEdge Master by reading `OPENEDGE_MASTER_API`. For example, the `OPENEDGE_MASTER_API` under Linux system is `unix:///var/run/openedge.sock`; In the container mode under other systems, the default value of `OPENEDGE_MASTER_API` is `tcp://host.docker.internal:50050`; In the process mode under other systems, the default value of `OPENEDGE_MASTER_API` is `tcp://127.0.0.1:50050`.
 
-_**NOTE**: Environment variables configured in the application will be overwritten if they are the same as the above system environment variables. _
+_**NOTE**: Environment variables configured in the application will be overwritten if they are the same as the above system environment variables._
 
 ## Official Modules
 
@@ -260,7 +260,7 @@ Currently supports 4 access methods: TCP, SSL (TCP + SSL), WS (Websocket) and WS
 - **Not Support** topics subscribed with prefix `$`
 - **Not Support** Client's Keep Alive feature and QoS Level 2
 
-_**NOTE**:_
+**NOTE**:
 
 - The maximum number of separators `/` in the publish and subscribe topics is no more than 8, and the topic name can be up to 255 characters in length.
 - The maximum length of the message message is 32k. The maximum length that can be supported is 268, 435, 455 (Byte), about 256 MB, which can be modified by the `message` configuration item.

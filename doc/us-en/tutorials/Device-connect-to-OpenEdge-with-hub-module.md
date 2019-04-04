@@ -36,7 +36,7 @@ As you can see, the image of Hub module has been loaded after OpenEdge starts up
 
 ![docker ps](../../images/tutorials/connect/container-openedge-hub-run.png)
 
-**NOTE**：The hub.baidubce.com/openedge/openedge-agent:latest image in the log is the Agent module which is delivered by BIE Cloud Management Suite.
+**NOTE**：The `hub.baidubce.com/openedge/openedge-agent:latest` image in the log is the Agent module which is delivered by BIE Cloud Management Suite.
 
 ### OpenEdge Connection Test
 

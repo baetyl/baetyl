@@ -70,7 +70,7 @@ Python代码示例：下载 [MQTT-Python-MQTT-client](https://openedge.bj.bcebos
 | Darwin(zip)   | dda9549dbf35e6ad2dfbdb640020a0153ab62d6b27fbbe86da9ef0a8b997b4b9 | [点击下载](https://openedge.bj.bcebos.com/MQTTBOX/MQTTBox-mac.zip) |
 | Windows(exe)  | 86ab9beb3e1241119f8a4e36550da755fead40be84a91eff3c0eb96ce4e4621e | [点击下载](https://openedge.bj.bcebos.com/MQTTBOX/MQTTBox-win.exe) |
 
-### 下载MQTT Client SDK
+### 下载 MQTT Client SDK
 
 物接入与 Paho（即MQTT Client SDK）完全兼容，如果开发者需要开发MQTT客户端，可到 [Paho 官方网站](http://www.eclipse.org/paho/) 下载 SDK 并获取帮助文档，详情如下：
 
