@@ -8,8 +8,32 @@
 
 [OpenEdge](https://openedge.tech) 是开放的边缘计算平台，可将云计算能力拓展至用户现场，提供临时离线、低延时的计算服务，包括设备接入、消息路由、消息远程同步、函数计算、视频接入预处理、AI推断等功能。OpenEdge 和[智能边缘 BIE](https://cloud.baidu.com/product/bie.html)（Baidu-IntelliEdge）云端管理套件配合使用，通过在云端进行智能边缘核心设备的建立、身份制定、策略规则制定、函数编写，然后生成配置文件下发至 OpenEdge 本地运行包，可达到云端管理和应用下发，边缘设备上运行应用的效果，满足各种边缘计算场景。
 
+## 优势
 
-## 功能列表
+> + **屏蔽计算框架**：OpenEdge 提供主流运行时支持的同时，提供各类运行时转换服务，基于任意语言编写、基于任意框架训练的函数或模型，都可以在 OpenEdge 中执行
+> + **简化应用生产**：[智能边缘 BIE](https://cloud.baidu.com/product/bie.html)云端管理套件配合 OpenEdge，联合百度云，一起为 OpenEdge 提供强大的应用生产环境，通过 [CFC](https://cloud.baidu.com/product/cfc.html)、[Infinite](https://cloud.baidu.com/product/infinite.html)、[Jarvis](http://di.baidu.com/product/jarvis)、[IoT EasyInsight](https://cloud.baidu.com/product/ist.html)、[TSDB](https://cloud.baidu.com/product/tsdb.html)、[IoT Visualization](https://cloud.baidu.com/product/iotviz.html) 等产品，可以在云端轻松生产各类函数、AI模型，及将数据写入百度云天工云端 TSDB 及物可视进行展示
+> + **简化运行环境部署**：OpenEdge 推行 Docker 容器化，开发者可以根据 OpenEdge 源码包中各模块的 DockerFile 快速构建 OpenEdge 运行环境
+> + **按需部署**：OpenEdge 推行功能模块化，各模块独立运行互相隔离，开发者完全可以根据自己的需求选择部署
+> + **丰富配置**：OpenEdge 支持 X86、ARM 等多种硬件以及 Linux、Darwin 和 Windows 等主流操作系统
+
+## 构成及功能
+
+### 构成
+
+由上述介绍，不难看出 OpenEdge 主要由主程序和若干功能模块构成，目前官方提供本地 Hub、本地函数计算（和多种函数计算运行时）、MQTT 远程通讯模块等。各模块的主要提供的能力如下：
+    
+> + OpenEdge 主程序负责所有模块的管理，如启动、退出等，由模块引擎、API、云代理构成；
+> + [模块引擎](./doc/zh-cn/overview/OpenEdge-design.md#模块引擎(engine))负责模块的启动、停止、重启、监听和守护，目前支持 Docker 容器模式和 Native 进程模式；
+> + [云代理](./doc/zh-cn/overview/OpenEdge-design.md#云代理(agent))负责和云端管理套件通讯，走 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证；
+> + OpenEdge 主程序会暴露一组[HTTP API](./doc/zh-cn/overview/OpenEdge-design.md#API(api))，目前支持获取空闲端口，模块的启动和停止。
+> + 本地Hub模块提供基于 [MQTT 协议](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html)的订阅和发布功能，支持 TCP、SSL（TCP+SSL）、WS（Websocket）及WSS（Websocket+SSL）四种接入方式、消息路由转发等功能；
+> + 本地函数计算模块提供基于 MQTT 消息机制，弹性、高可用、扩展性好、响应快的的计算能力，函数通过一个或多个具体的实例执行，每个实例都是一个独立的进程，现采用 GRPC Server 运行函数实例；
+> + 远程通讯模块目前支持 MQTT 协议，其实质是两个 MQTT Server 的桥接（Bridge）模块，用于订阅一个 Server 的消息并转发给另一个 Server；目前支持配置多路消息转发，可配置多个 Remote 和 Hub 同时进行消息同步；
+> + 函数计算 Python 运行时模块是本地函数计算模块的具体实例化表现形式，开发者通过编写的自己的 Python 函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。
+
+![结构图](./doc/images/overview/design/openedge_design.png)
+
+### 功能
 
 > + 支持应用模块的管理，包括启停、重启、监听、守护和升级
 > + 支持两种运行模式：Native进程模式和 Docker 容器模式
@@ -20,14 +44,6 @@
 > + 官方提供远程服务通讯模块，支持 MQTT 协议
 > + 官方提供视频流接入模块，支持 RTMP
 > + 提供模块 SDK(Golang)，可用于开发自定义模块
-
-## 优势
-
-> + **屏蔽计算框架**：OpenEdge 提供主流运行时支持的同时，提供各类运行时转换服务，基于任意语言编写、基于任意框架训练的函数或模型，都可以在 OpenEdge 中执行
-> + **简化应用生产**：[智能边缘 BIE](https://cloud.baidu.com/product/bie.html)云端管理套件配合 OpenEdge，联合百度云，一起为 OpenEdge 提供强大的应用生产环境，通过 [CFC](https://cloud.baidu.com/product/cfc.html)、[Infinite](https://cloud.baidu.com/product/infinite.html)、[Jarvis](http://di.baidu.com/product/jarvis)、[IoT EasyInsight](https://cloud.baidu.com/product/ist.html)、[TSDB](https://cloud.baidu.com/product/tsdb.html)、[IoT Visualization](https://cloud.baidu.com/product/iotviz.html) 等产品，可以在云端轻松生产各类函数、AI模型，及将数据写入百度云天工云端 TSDB 及物可视进行展示
-> + **简化运行环境部署**：OpenEdge 推行 Docker 容器化，开发者可以根据 OpenEdge 源码包中各模块的 DockerFile 快速构建 OpenEdge 运行环境
-> + **按需部署**：OpenEdge 推行功能模块化，各模块独立运行互相隔离，开发者完全可以根据自己的需求选择部署
-> + **丰富配置**：OpenEdge 支持 X86、ARM 等多种硬件以及 Linux、Darwin 和 Windows 等主流操作系统
 
 ## 安装
 
