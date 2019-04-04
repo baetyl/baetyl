@@ -8,30 +8,12 @@
 
 **[OpenEdge](https://openedge.tech) is an open edge computing framework that extends cloud computing, data and service seamlessly to edge devices.** It can provide temporary offline, low-latency computing services, and include device connect, message routing, remote synchronization, function computing, video access pre-processing, AI inference, etc. The combination of OpenEdge and the **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html)(Baidu IntelliEdge) will achieve cloud management and application distribution, enable applications running on edge devices and meet all kinds of edge computing scenario.
 
-## Design
+## System Composition and Features
 
-About architecture design, OpenEdge takes **modularization** and **containerization** design mode. Based on the modular design pattern, OpenEdge splits the product to multiple modules, and make sure each one of them is a separate, independent module. In general, OpenEdge can fully meet the conscientious needs of users to deploy on demand. Besides, OpenEdge also takes containerization design mode to build images. Due to the cross-platform characteristics of docker to ensure the running environment of each operating system is consistent. In addition, **OpenEdge also isolates and limits the resources of containers**, and allocates the CPU, memory and other resources of each running instance accurately to improve the efficiency of resource utilization.
-
-### Docker container mode
-
-![docker mode](./doc/images/overview/design/mode_docker.png)
-
-### Native process mode
-
-![native mode](./doc/images/overview/design/mode_native.png)
-
-More detailed documents of design are as follows:
-
-> + [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
-> + [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
-> + [How to write a python srcipt for python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
-> + [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
-> + [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
-
-## Concepts
-
+### System Composition
+    
 OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module, MQTT Remote Module and Python2.7 Runtime Module.** The main capabilities of each module are as follows:
-
+    
 > + **Master Program** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
 > + **Module Engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **Docker Container Mode** and **Native Process Mode**.
 > + **Cloud Agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **MUST** take two-way authentication of SSL/TLS; otherwise, you **MUST** take one-way authentication of SSL/TLS due to HTTPS protocol.
@@ -41,7 +23,9 @@ OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module
 > + **MQTT Remote Module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
 > + **Python2.7 Runtime Module** is an implementation of **Local Function Module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
 
-## Features
+![Structure Diagram](./doc/images/overview/design/openedge_design.png)
+
+### Features
 
 > + support module management, include start, stop, restart, listen and upgrade
 > + support two mode: **Docker Container Mode** and **Native Process Mode**
@@ -60,232 +44,33 @@ OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module
 > + **Deploy On Demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
 > + **Rich Configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
 
-# Getting Started
+## Install OpenEdge 
 
-## Requirements
+> + [Install OpenEdge on CentOS](./doc/us-en/setup/Install-OpenEdge-on-CentOS.md)
+> + [Install OpenEdge on Debian](./doc/us-en/setup/Install-OpenEdge-on-Debian.md)
+> + [Install OpenEdge on Raspbian](./doc/us-en/setup/Install-OpenEdge-on-Raspbian.md)
+> + [Install OpenEdge on Ubuntu](./doc/us-en/setup/Install-OpenEdge-on-Ubuntu.md)
+> + [Install OpenEdge on Darwin](./doc/us-en/setup/Install-OpenEdge-on-Darwin.md)
+> + [Build OpenEdge from Source](./doc/us-en/setup/Build-OpenEdge-from-Source.md)
 
-### Running environment requirements
+## Documents Of Design
 
-+ Install Docker if running openedge in **Docker Container Mode**(recommended)
+> + [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
+> + [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
+> + [How to write a python srcipt for python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
+> + [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
+> + [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 
-   **For Linux([support multiple platforms](./doc/us-en/setup/Support-platforms.md), recommended)**
-   ```shell
-   curl -sSL https://get.docker.com | sh
-   ```
 
-   **For Ubuntu**
-   ```shell
-   # Install Docker from Ubuntu's repositories
-   sudo apt-get update
-   sudo snap install -y docker # Ubuntu16.04 after
-   sudo apt install -y docker.io # Ubuntu 16.04 before
-
-   # or install Docker CE from Docker's repositories for Ubuntu
-   sudo apt-get update && sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
-   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-   add-apt-repository \
-        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-        $(lsb_release -cs) \
-        stable"
-   sudo apt-get update && sudo apt-get install docker-ce
-   ```
-
-   **For CentOS**
-   ```shell
-   # Install Docker from CentOS/RHEL repository
-   yum install -y docker
-
-   # or install Docker CE from Docker's CentOS repositories
-   yum install yum-utils device-mapper-persistent-data lvm2
-   yum-config-manager \
-        --add-repo \
-        https://download.docker.com/linux/centos/docker-ce.repo
-   yum update && yum install docker-ce
-   ```
-
-   **For Debian**
-   ```shell
-   # Install Docker from Debian's repositories
-   sudo apt-get update
-   sudo apt-get install -y dockerio
-
-   # or install Docker CE from Docker's Debian repositories
-   # Debian 8 jessie or Debian 9 stretch
-   sudo apt-get update && sudo apt-get install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg2 \
-        lsb-release \
-        software-properties-common
-   # Debian 7 Wheezy
-   sudo apt-get update && sudo apt-get install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        lsb-release \
-        python-software-properties
-
-   curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
-
-   # add docker-ce-repository to sources.list
-   sudo add-apt-repository \
-        "deb [arch=amd64] https://download.docker.com/linux/debian \
-        $(lsb_release -cs) \
-        stable"
-
-   # Only for Debian 7 Wheezy, comment below line use "#"
-   deb-src [arch=amd64] https://download.docker.com/linux/debian wheezy stable
-
-   # install docker-ce
-   sudo apt-get update
-   sudo apt-get install -y docker-ce
-   ```
-
-   **For Darwin**
-   ```shell
-   # Install Homebrew
-   /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-
-   # Instal docker
-   brew tap caskroom/cask
-   brew cask install docker
-   ```
-
-+ Install Python2.7 and Python2.7 runtime requirements if running openedge in **Native Process Mode**
-
-   **For Ubuntu or Debian**
-   ```shell
-   # Check python is installed or not
-   python -V
-
-   # If not installed, install it
-   sudo apt-get update
-   sudo apt-get install python python-pip
-   sudo pip install protobuf grpcio
-   ```
-
-   **For CentOS**
-   ```shell
-   # Check python is installed or not
-   python -V
-
-   # If python is not installed, install it
-   sudo yum install python python-pip
-   sudo pip install protobuf grpcio
-   ```
-
-   **For Darwin**
-   ```shell
-   # Check python is installed or not
-   python -V
-
-   # If not installed, install it
-   brew install python@2
-   pip install protobuf grpcio
-   ```
-
-### Developing environment requirements
-
-Except docker and python application as above mentioned, if you want to build OpenEdge from source or contribute code to OpenEdge, you also need install golang.
-
-In addition, OpenEdge need the version of golang is higher than 1.10. So, you can install golang use below command.
-
-1. For Linux
-
-   You should download the golang from [download-page](https://golang.org/dl/) first.
-   ```shell
-   # Extract golang to /usr/local(or a specified directory)
-   tar -C /usr/local -zxf go$VERSION.linux-$ARCH.tar.gz
-
-   # Set GOPATH(such as ~/.bashrc)
-   export PATH=$PATH:/usr/local/go/bin
-   export GOPATH=yourpath
-   ```
-
-2. For Darwin
-
-   ```shell
-   # Install golang
-   brew install go
-
-   # Set GOPATH, GOROOT(such as ~/.bash_profile)
-   export GOPATH="${HOME}/go"
-   export GOROOT="$(brew --prefix golang)/libexec"
-   export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin"
-
-   # Source GOPATH, GOROOT
-   source yourfile
-
-   # Set GOPATH directory
-   test -d "${GOPATH}" || mkdir "${GOPATH}"
-   ```
-
-   Show golang version and golang environment:
-   ```shell
-   go env # show golang environment
-   go version # show golang version
-   ```
-
-## Build
-
-   You must download OpenEdge executable from [Release-page](https://github.com/baidu/openedge/releases) first.
-   ```shell
-   # Extract OpenEdge
-   tar -zxvf /path/to/openege-$OS-$ARCH-$VERSION.tar.gz /path/to/openedge/extract
-
-   # Execute
-   cd /path/to/openedge/extract
-   bin/openedge -w . # Run OpenEdge in Docker containerization mode(OpenEdge official only support)
-   ```
-
-   If you want to run OpenEdge in **Native Process Mode**, please build OpenEdge and other module first.
-   ```shell
-   # Clone OpenEdge source code
-   go get github.com/baidu/openedge
-
-   # Build OpenEdge from source
-   make
-
-   # Build local Docker image
-   make images
-
-   # Install OpenEdge(default directory /usr/local)
-   make PFEFIX=yourpath install
-
-   # Uninstall OpenEdge
-   make PFEFIX=yourpath uninstall
-
-   # Clean log
-   make PFEFIX=yourpath clean
-   ```
-
-## Usage
-
-   ```shell
-   # Run OpenEdge in Docker containerization mode(such as install OpenEdge in $GOPATH/src/github.com/baidu/openedge/output)
-   cd $GOPATH/src/github.com/baidu/openedge
-   output/bin/openedge -w example/docker
-
-   # Run OpenEdge in Native process mode
-   output/bin/openedge
-   ```
-
-# Running the tests
-
-   ```shell
-   make test
-   ```
-
-# Contributing
+## Contributing
 
 If you are passionate about contributing to open source community, OpenEdge will provide you with both code contributions and document contributions. More details, please see: [How to contribute code or document to OpenEdge](./doc/us-en/about/How-to-contribute.md).
 
-# Copyright and License
+## Copyright and License
 
 OpenEdge is provided under the [Apache-2.0 license](./LICENSE).
 
-# Discussion
+## Discussion
 
 As the first open edge computing framework in China, OpenEdge aims to create a lightweight, secure, reliable and scalable edge computing community that will create a good ecological environment. Here, we offer the following options for you to choose from:
 
