@@ -20,7 +20,7 @@ _**提示**：要求部署、启动 OpenEdge 的设备系统已安装好 Docker�
     - 若采用 WS 连接，与 TCP 连接配置一样，仅需配置用户名、密码、相应端口即可；
 - Step 3：若上述步骤一切正常，操作无误，即可通过 OpenEdge 日志或 MQTT Client 查看连接状态。
 
-**提示**：最新版Openedge Hub模块`principals` 配置项中 `password` 已改为明文存储。
+**提示**：最新版OpenEdge Hub模块`principals` 配置项中 `password` 已改为明文存储。
 
 ## 连接测试
 
@@ -63,7 +63,7 @@ services:
         path: var/db/openedge/data
       - name: dxc_localhub_log-V1
         path: var/log/openedge
-volumes:  
+volumes:
   - name: dxc_localhub_conf-V2
     path: var/db/openedge/dxc_localhub_conf/V2
   - name: dxc_localhub_cert-V1
@@ -71,7 +71,7 @@ volumes:
   - name: dxc_localhub_data-V1
     path: var/db/openedge/dxc_localhub_data
   - name: dxc_localhub_log-V1
-    path: var/db/openedge/dxc_localhub_log  
+    path: var/db/openedge/dxc_localhub_log
 ```
 OpenEdge Hub 模块启动的连接相关配置信息如下：
 
