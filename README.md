@@ -1,6 +1,6 @@
 # OpenEdge
 
-[![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)  [![LICENSE](https://img.shields.io/github/license/baidu/openedge.svg?style=flat-square)](https://github.com/openedge/openedge/blob/master/LICENSE)
+[![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)  [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 
 ![OpenEdge-logo](./doc/images/logo/logo-with-name.png)
 
@@ -52,10 +52,6 @@ As an edge computing platform, **OpenEdge** not only provides features such as u
 ## Contributing
 
 If you are passionate about contributing to open source community, OpenEdge will provide you with both code contributions and document contributions. More details, please see: [How to contribute code or document to OpenEdge](./CONTRIBUTING.md).
-
-## Copyright and License
-
-OpenEdge is provided under the [Apache-2.0 license](./LICENSE).
 
 ## Discussion
 
