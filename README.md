@@ -8,33 +8,21 @@
 
 **[OpenEdge](https://openedge.tech) is an open edge computing framework that extends cloud computing, data and service seamlessly to edge devices.** It can provide temporary offline, low-latency computing services, and include device connect, message routing, remote synchronization, function computing, video access pre-processing, AI inference, etc. The combination of OpenEdge and the **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html)(Baidu IntelliEdge) will achieve cloud management and application distribution, enable applications running on edge devices and meet all kinds of edge computing scenario.
 
-## System Composition and Features
+## Components
 
-### System Composition
-    
-OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module, MQTT Remote Module and Python2.7 Runtime Module.** The main capabilities of each module are as follows:
-    
-> + **Master Program** is used to manage all modules's behavior, such as start, stop, etc. And it is composed of module engine, API and cloud agent.
-> + **Module Engine** controls the behavior of all modules, such as start, stop, restart, listen, etc, and currently supports **Docker Container Mode** and **Native Process Mode**.
-> + **Cloud Agent** is responsible for the communication with **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html), and supports MQTT and HTTPS protocols. In addition, if you use MQTT protocol for communication, **MUST** take two-way authentication of SSL/TLS; otherwise, you **MUST** take one-way authentication of SSL/TLS due to HTTPS protocol.
-> + The master program exposes a set of **HTTP API**, which currently supports to start, stop and restart module, also can get free port.
-> + **Local Hub Module** is based on [MQTT](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html) protocol, which supports four connect modes, including **TCP**、**SSL(TCP+SSL)**、**WS(Websocket)** and **WSS(Websocket+SSL)**.
-> + **Local Function Module** provides a high flexible, high available, rich scalable and quickly responsible power due to MQTT protocol. Functions are executed by one or more instances, each of them is a separate process. GRPC Server is used to run a function instance.
-> + **MQTT Remote Module** supports MQTT protocol, can be used to synchronize messages with remote hub. In fact, it is two MQTT Server Bridge modules, which are used to subscribe to messages from one Server and forward them to the other.
-> + **Python2.7 Runtime Module** is an implementation of **Local Function Module**. So developers can write python script to handler messages, such as filter, exchange, forward, etc.
+As an edge computing platform, **OpenEdge** not only provides features such as underlying service management, but also provides some basic functional modules, as follows:
 
-![Structure Diagram](./doc/images/overview/design/openedge_design.png)
++ OpenEdge [Master](./doc/us-en/overview/OpenEdge-design.md#master) is responsible for the management of service instances, such as start, stop, supervise, etc., consisting of Engine, API, Command Line. And supports two modes of running service: **native** process mode and **docker** container mode
++ The official module [openedge-agent](./doc/us-en/overview/OpenEdge-design.md#openedge-agent) is responsible for communication with the BIE cloud management suite, which can be used for application delivery, device information reporting, etc. Mandatory certificate authentication to ensure transmission security;
++ The official module [openedge-hub](./doc/us-en/overview/OpenEdge-design.md#openedge-hub) provides message subscription and publishing functions based on the [MQTT protocol](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html), and supports four access methods: TCP, SSL, WS, and WSS;
++ The official module [openedge-remote-mqtt](./doc/us-en/overview/OpenEdge-design.md#openedge-remote-mqtt) is used to bridge two MQTT Servers for message synchronization and supports configuration of multiple message route rules. ;
++ The official module [openedge-function-manager](./doc/us-en/overview/OpenEdge-design.md#openedge-function-manager) provides computing power based on MQTT message mechanism, flexible, high availability, good scalability, and fast response;
++ The official module [openedge-function-python27](./doc/us-en/overview/OpenEdge-design.md#openedge-function-python27) provides the Python27 function runtime, which can be dynamically started by `openedge-function-manager`;
++ SDK (Golang) can be used to develop custom modules.
 
-### Features
+### Architecture
 
-> + support module management, include start, stop, restart, listen and upgrade
-> + support two mode: **Docker Container Mode** and **Native Process Mode**
-> + docker container mode support resources isolation and restriction
-> + support cloud management suite, which can be used to report device hardware information and deploy configuration
-> + provide **Local Hub Module**, which supports MQTT v3.1.1 protocol, qos 0 or 1, SSL/TLS authentication
-> + provide **Local Function Module**, which supports function instance scaling, **Python2.7** runtime and customize runtime
-> + provide **MQTT Remote Module**, which supports MQTT v3.1.1 protocol
-> + provide **Module SDK(Golang)**, which can be used to develop customize module
+![Architecture](./doc/images/overview/design/openedge_design.png)
 
 ## Advantages
 
@@ -44,7 +32,7 @@ OpenEdge is made up of **Master Program, Local Hub Module, Local Function Module
 > + **Deploy On Demand**: OpenEdge takes modularization mode and splits functions to multiple independent modules. Developers can select some modules which they need to deploy.
 > + **Rich Configuration**: OpenEdge supports X86 and ARM CPU processors, as well as Linux, Darwin and Windows operating systems.
 
-## Install OpenEdge 
+## Install OpenEdge
 
 > + [Install OpenEdge on CentOS](./doc/us-en/setup/Install-OpenEdge-on-CentOS.md)
 > + [Install OpenEdge on Debian](./doc/us-en/setup/Install-OpenEdge-on-Debian.md)
