@@ -36,7 +36,7 @@ _**提示**：要求部署、启动 OpenEdge 的设备系统已安装好 Docker�
 
 ![查看系统当前正在运行的容器](../../images/tutorials/connect/container-openedge-hub-run.png)
 
-**提示**图中的hub.baidubce.com/openedge/openedge-agent:latest镜像是Openedge连接云端管理套件的Agent模块
+**提示**图中的hub.baidubce.com/openedge/openedge-agent:latest镜像是OpenEdge连接云端管理套件的Agent模块
 
 ### OpenEdge 连接测试
 
@@ -61,10 +61,8 @@ services:
         readonly: true
       - name: dxc_localhub_data-V1
         path: var/db/openedge/data
-        readonly: true
       - name: dxc_localhub_log-V1
         path: var/log/openedge
-        readonly: true
 volumes:  
   - name: dxc_localhub_conf-V2
     path: var/db/openedge/dxc_localhub_conf/V2
