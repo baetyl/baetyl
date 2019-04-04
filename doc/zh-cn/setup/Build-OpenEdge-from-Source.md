@@ -136,26 +136,40 @@ cd $GOPATH/src/github.com/baidu/openedge
 make # 编译主程序和模块的可执行程序
 ```
 
-编译完成后会在根目录下生成如下四个可执行文件:
+编译完成后会在根目录及各个模块目录下生成如下五个可执行文件:
 
 ```shell
 openedge
-openedge-hub
-openedge-function
-openedge-remote-mqtt
+openedge-agent/openedge-agent
+openedge-hub/openedge-hub
+openedge-function-manager/openedge-function-manager
+openedge-remote-mqtt/openedge-remote-mqtt
 ```
 
+除此之外,会在各个模块目录下共生成五个名为 `package.zip` 文件。
+
+如果之前为不同的平台编译了可执行文件，在为指定平台编译镜像之前，需要执行以下命令：
+
 ```shell
-make image # 在本地生成模块镜像
+env GOOS=linux GOARCH=amd64 make rebuild
 ```
 
-通过上述命令编译生成如下四个镜像:
+或者直接执行命令 `make clean` 去清理上述文件。
 
 ```shell
-openedge-hub:build
-openedge-function:build
-openedge-remote-mqtt:build
-openedge-function-runtime-python27:build
+env GOOS=linux GOARCH=amd64 make image # 在本地生成模块镜像
+```
+
+**注：** GOOS 及 GOARCH 的值需要修改成对应的系统类型及CPU架构，特别的是，darwin系统下，GOOS 和 GOARCH 仍然分别是 linux 和 amd64。
+
+通过上述命令编译生成如下五个镜像:
+
+```shell
+openedge-agent:latest
+openedge-hub:latest
+openedge-function-manager:latest
+openedge-remote-mqtt:latest
+openedge-function-python27:latest
 ```
 
 通过以下命令查看生成的镜像：
@@ -170,14 +184,15 @@ docker images
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-make install
+make install # Docker容器模式安装并使用示例配置
+make install-native # Native运行模式安装并使用示例配置
 ```
 
 指定安装路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-make PREFIX=output install
+make install PREFIX=output
 ```
 
 ## 程序运行
@@ -185,23 +200,24 @@ make PREFIX=output install
 如果程序已经安装到默认路径：/usr/local。
 
 ```shell
-openedge -w example/docker # docker容器模式
-openedge # native进程模式
+sudo openedge start
 ```
 
 如果程序已经安装到了指定路径，比如安装到output目录中。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-output/bin/openedge -w example/docker # docker容器模式
-output/bin/openedge # native进程模式
+sudo ./output/bin/openedge start
 ```
+
+**注：**启动方式根据安装方式的不同而不同，即，若选择 Docker 运行模式安装，则上述命令会以 Docker 容器模式运行 OpenEdge。
 
 **提示**：
 
-1. docker容器模式运行，可通过 ```docker stats``` 命令查看容器运行状态。
-2. 如需使用自己的镜像，需要修改应用配置中的模块和函数的 entry，指定自己的镜像。
-3. 如需自定义配置，请按照 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行相关设置。
+1. openedge 启动后，可通过 `ps -ef | grep "openedge"` 查看 openedge 是否已经成功运行，并确定启动时所使用的参数。通过查看日志确定更多信息，日志文件默认存放在工作目录下的 `var/log/openedge` 目录中。
+2. docker容器模式运行，可通过 `docker stats` 命令查看容器运行状态。
+3. 如需使用自己的镜像，需要修改应用配置中的模块和函数的 `image`，指定自己的镜像。
+4. 如需自定义配置，请按照 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行相关设置。
 
 ## 程序卸载
 
@@ -210,7 +226,8 @@ output/bin/openedge # native进程模式
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
-make uninstall
+make uninstall # 卸载docker容器模式的安装
+make uninstall-native # 卸载native运行模式的安装
 ```
 
 如果是指定了安装路径，比如安装到output目录中。
@@ -218,5 +235,6 @@ make uninstall
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
-make PREFIX=output uninstall
+make uninstall PREFIX=output # 卸载docker容器模式的安装
+make uninstall-native PREFIX=output # 卸载native运行模式的安装
 ```
