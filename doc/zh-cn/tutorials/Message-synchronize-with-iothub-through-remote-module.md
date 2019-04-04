@@ -54,9 +54,6 @@ services:
         path: var/db/openedge/data
       - name: dxc_localhub_log-V1
         path: var/log/openedge
-      - name: dxc_localhub_client_cert-V1
-        path: var/db/openedge/certclient
-        readonly: true
   - name: remote-iothub
     image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
     replica: 1
