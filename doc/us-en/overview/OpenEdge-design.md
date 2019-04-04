@@ -22,6 +22,7 @@
 
 - **System**: Refers to the OpenEdge system, including **Master**, **Service**, **Volume** and system resources used.
 - **Master**: Refers to the core part of the OpenEdge, responsible for managing **Volume** and **Service**, built-in **Engine**, external RESTful API and command line.
+- **Module**: Provides an executable package for **Service**, such as a Docker image, to launch instances of **Service**.
 - **Service**: Refers to a set of running programs that managed by OpenEdge to provide specific functions such as message routing services, function computing services, micro-services, etc.
 - **Instance**: Refers to the specific running program or container launched by the **Service**, a **Service** can start multiple instances, or can be dynamically started by other services. For example, the instances of function runtime service are dynamically started and stopped by the function manager service.
 - **Volume**: Refers to the directory used by the **Service**, can be a read-only directory, such as a directory for placing resources such as configuration, certificates, scripts, etc., or a writable directory to persist data, such as logs and database.

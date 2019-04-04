@@ -32,7 +32,7 @@
 
 一个完整的 OpenEdge 系统由**主程序**、**服务**、**存储卷**和使用的系统资源组成，主程序根据应用配置加载各个模块启动相应的服务，一个服务又可以启动若干个实例，所有实例都由主程序负责管理和守护。需要注意的是同一个服务下的实例共享该服务绑定的存储卷，所以如果出现独占的资源，比如监听同一个端口，只能成功启动一个实例；如果使用同一个 Client ID 连接 Hub，会出现连接互踢的情况。
 
-目前OpenEdge开源了如下几个官方模块：
+目前 OpenEdge 开源了如下几个官方模块：
 
 - [openedge-agent](#openedge-agent)：提供 BIE 云代理服务，进行状态上报和应用下发。
 - [openedge-hub](#openedge-hub)：提供基于 MQTT 的消息路由服务。
@@ -106,7 +106,7 @@ type ServiceInfo struct {
     Args      []string          `yaml:"args" json:"args" default:"[]"`
     // 指定服务程序的环境变量
     Env       map[string]string `yaml:"env" json:"env" default:"{}"`
-    // 指定服务示例重启策略
+    // 指定服务实例重启策略
     Restart   RestartPolicyInfo `yaml:"restart" json:"restart"`
     // 指定服务单个实例的资源限制，用于Docker容器模式
     Resources Resources         `yaml:"resources" json:"resources"`

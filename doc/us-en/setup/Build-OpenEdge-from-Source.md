@@ -206,8 +206,6 @@ cd $GOPATH/src/github.com/baidu/openedge
 sudo ./output/bin/openedge start
 ```
 
-**NOTE**: The startup method varies depending on the installation method. That is, if you choose Docker mode installation, the above command will run OpenEdge in Docker container mode.
-
 **NOTE**:
 
 1. After the openedge is started, you can check if the openedge has run successfully by `ps -ef | grep "openedge"` and determine the parameters used at startup. And you can check the log file for details. Log files are stored by default in the `var/log/openedge` directory of the working directory.

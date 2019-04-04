@@ -72,128 +72,268 @@ _**提示**：以上创建的物接入 Endpoint、规则引擎 Rule、TSDB 数�
 
 将生产设备数据经 **脱敏** 后上云、写入 TSDB 及在云端物可视进行展示所涉及的流程步骤主要包括：
 
-- 步骤1: **创建核心并下发连接配置** 在 BIE 云端管理套件页面选定区域（北京，或广州）创建核心，完善核心创建所需配置信息，点击 “查看连接配置”，然后选择下载主程序（含配置），具体请参考 [管理核心](https://openedge.tech/docs/tutorials/console/Manage-core-device)
+- 步骤1: **创建核心并下载配置(含主程序)** 在 BIE 云端管理套件页面选定区域（北京，或广州）创建核心，完善核心创建所需配置信息，点击“下载配置”，然后选择包含主程序，具体请参考[BIE操作指南](https://cloud.baidu.com/doc/BIE/GettingStarted.html)
 - 步骤2: **本地启动 OpenEdge** 本地解压缩主程序（含配置）后，启动 OpenEdge，然后点击核心连接状态按钮，如 OpenEdge 正常启动，即可看到核心连接状态已变更为 **已连接**
     - OpenEdge 启动参考命令：
-        - `unzip -d openedge openedge.zip`
-        - `cd openedge && chmod +x bin/openedge`
-        - `bin/openedge`
-- 步骤3: **建立应用配置** 进入已创建的核心，然后开始依次创建本次测试所需的应用配置信息（本地 Hub 模块配置、本地函数计算模块配置、远程 Hub 模块配置），详细内容可参考 [建立应用配置](https://openedge.tech/docs/tutorials/console/Create-app-config)
-    - 本地 Hub 模块配置：需要在 [认证资源](https://openedge.tech/docs/tutorials/console/Auth-resource) 页面添加本地 Hub 模块的认证资源信息
-    - 本地函数计算模块配置：需要选定本次测试所需要的 SQL 规则（须事先在云端规则引擎页面创建好相关的规则，即上文在规则引擎创建的 **filter** 规则）
-    - 远程 Hub 模块配置：需要在 [认证资源](https://openedge.tech/docs/tutorials/console/Auth-resource) 页面添加远程 Hub 模块的认证资源信息
-- 步骤4: **发布及下发应用配置** 完成核心所需的各个应用模块的配置后，点击 “生成配置” 按钮生成当前版本配置，然后再点击 “下发配置” 按钮将生成的版本配置下发至本地，OpenEdge 服务会自动切换、加载该下发的新配置信息，具体可参考 [发布及下发应用配置](https://openedge.tech/docs/tutorials/console/Deploy-app-config)
+        - `tar -zxvf openedge-xxx.tar.gz`
+        - `cd openedge-xxx`
+        - `sudo openedge start`
+- 步骤3: **建立服务配置** 进入已创建的核心，然后开始依次创建本次测试所需的服务配置信息（Hub 服务配置、Function Manager服务配置、Function Filter服务配置、Remote服务配置），详细内容可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
+    - Hub 服务配置：需要挂载conf、data、cert、log四个挂载卷，分别存储Hub服务的配置、持久化数据、ssl认证资源和日志
+    ![localhub_volume](../../images/practice/write-tsdb/localhub_volume.png)
+    - Function Manager 服务配置：需要挂载conf、log两个挂载卷，分别存储配置和日志数据
+    ![localhubfunction_manager_volume](../../images/practice/write-tsdb/localfunction_manager_volume.png)
+    - Function Filter 服务配置：需要挂载conf挂载卷，存储配置信息
+    ![localhubfunction_filter_volume](../../images/practice/write-tsdb/localfunction_filter_volume.png)
+    - Remote 服务配置：需要挂载conf、cert、log三个挂载卷，存储配置、ssl认证资源和日志
+    ![localhubremote_volume](../../images/practice/write-tsdb/localremote_volume.png)
+- 步骤4: **发布及下发服务配置** 完成核心所需的各个服务的配置后，点击“生成配置”按钮生成当前版本配置，然后再点击“下发配置”按钮将生成的版本配置下发至本地，OpenEdge 服务会自动切换、加载该下发的新配置信息，具体可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
     - 此过程要求 OpenEdge 持续 **保持连接** 状态，如果 OpenEdge 在下发配置前已断开连接，则重新启动 OpenEdge，在连接状态恢复至 **已连接** 后下发新配置即可（推荐）；或可选择 **下载配置** 按钮，将该新配置下载至本地，然后自行在本地替换，然后再启动 OpenEdge
-- 步骤5: **配置 MQTT.fx 连接信息** 启动 MQTT.fx，配置其与本地 Hub 模块建立连接所需的各配置信息
-- 步骤6: **发送测试数据** 在 MQTT.fx 与本地 Hub 模块建立连接后，向主题 **data** 发送测试数据，然后打开 TSDB 面板，查看是否有数据成功写入，同时打开物可视展示板，观察数据写入的状态
+- 步骤5: **配置 MQTTBOX 连接信息** 启动 MQTTBOX，配置其与本地 Hub 模块建立连接所需的各配置信息
+- 步骤6: **发送测试数据** 在 MQTTBOX 与本地 Hub 模块建立连接后，向主题 **data** 发送测试数据，然后打开 TSDB 面板，查看是否有数据成功写入，同时打开物可视展示板，观察数据写入的状态
 - 步骤7：**结果验证** 若上述过程顺利，则可以看到刚才已发送的测试已经成功写入 TSDB，并在物可视进行展示。
 
 ## 测试与验证
 
 本节中将会结合 [智能边缘 BIE 云端管理套件](https://console.bce.baidu.com/iot2/edge/)从云端创建 OpenEdge 执行所需的一切配置信息，然后由 智能边缘 BIE 云端管理套件下发本地部署，最后由本地启动 OpenEdge，完成整个 case 的测试与验证。
 
-### 本地 Hub 模块配置信息
+### OpenEdge 主程序配置
 
 ```yaml
-name: localhub
-listen:
-  - 'tcp://:1883'
-  - 'ssl://:1884'
-  - 'ws://:8080/mqtt'
-  - 'wss://:8884/mqtt'
-certificate:
-  ca: var/db/openedge/module/localhub/cert-j2x9n4n8f/ca.pem
-  cert: var/db/openedge/module/localhub/cert-j2x9n4n8f/server.pem
-  key: var/db/openedge/module/localhub/cert-j2x9n4n8f/server.key
-principals:
-  - username: localhub
-    password: e3b7f46849653a0b618f9b1edf1af72b86cd40ce171b840a543ce7408c5f5e4b
-    permissions:
-      - action: pub
-        permit: ['#']
-      - action: sub
-        permit: ['#']
+version: V2
+services:
+  - name: agent
+    image: 'hub.baidubce.com/openedge/openedge-agent:latest'
+    replica: 1
+    mounts:
+      - name: agent-conf-c8a2r4voa-V1
+        path: etc/openedge
+        readonly: true
+      - name: agent-cert-c8a2r4voa-V1
+        path: var/db/openedge/cert
+        readonly: true
+      - name: agent-volumes-c8a2r4voa-V1
+        path: var/db/openedge/volumes
+      - name: agent-log-c8a2r4voa-V1
+        path: var/log/openedge
+  - name: dxc-localhub
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    replica: 1
+    ports:
+      - '1883:1883'
+      - '8883:8883'
+    env: {}
+    mounts:
+      - name: dxc-localhub-conf-V1
+        path: etc/openedge
+      - name: dxc-localhub-cert-V1
+        path: var/db/openedge/cert
+      - name: dxc-localhub-data-V1
+        path: var/db/openedge/data
+      - name: dxc-localhub-log-V1
+        path: var/log/openedge
+  - name: dxc-remote-iothub
+    image: 'hub.baidubce.com/openedge/openedge-remote-mqtt:latest'
+    replica: 1
+    env: {}
+    mounts:
+      - name: dxc-remote-iothub-conf-V1
+        path: etc/openedge
+        readonly: true
+      - name: dxc-remote-iothub-cert-V1
+        path: var/db/openedge/cert
+      - name: dxc-remote-iothub-log-V1
+        path: var/log/openedge
+  - name: dxc-function-manager
+    image: 'hub.baidubce.com/openedge/openedge-function-manager:latest'
+    replica: 1
+    env: {}
+    mounts:
+      - name: dxc-function-manager-conf-V1
+        path: etc/openedge
+        readonly: true
+      - name: dxc-function-manager-log-V1
+        path: var/log/openedge
+  - name: dxc-function-filter
+    image: 'hub.baidubce.com/openedge/openedge-function-sql:latest'
+    replica: 0
+    env: {}
+    mounts:
+      - name: dxc-function-filter-conf-V1
+        path: etc/openedge
+volumes:
+  - name: agent-conf-c8a2r4voa-V1
+    path: var/db/openedge/agent-conf-c8a2r4voa/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxxx
+      md5: sXH/NXjPLTn17eNDMRxHTg==
+  - name: agent-cert-c8a2r4voa-V1
+    path: var/db/openedge/agent-cert-c8a2r4voa/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxx
+      md5: Bs/LsR58pMh8yuFZnTZlGw==
+  - name: agent-volumes-c8a2r4voa-V1
+    path: var/db/openedge
+  - name: agent-log-c8a2r4voa-V1
+    path: var/db/openedge/agent-log
+  - name: dxc-localhub-conf-V1
+    path: var/db/openedge/dxc-localhub-conf/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxx
+      md5: xacIA6W8XL6ZKS5dsjX0aQ==
+  - name: dxc-localhub-cert-V1
+    path: var/db/openedge/dxc-localhub-cert/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxxxx
+      md5: mSoMOQHl914HEHKTQiOyDQ==
+  - name: dxc-localhub-data-V1
+    path: var/db/openedge/dxc-localhub-data
+  - name: dxc-localhub-log-V1
+    path: var/db/openedge/dxc-localhub-log
+  - name: dxc-remote-iothub-conf-V1
+    path: var/db/openedge/dxc-remote-iothub-conf/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxxxxx
+      md5: oPDBGL3jRqo38EHnRO9F1w==
+  - name: dxc-remote-iothub-cert-V1
+    path: var/db/openedge/dxc-remote-iothub-cert/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxxxxxx
+      md5: T7TS786mCX2n9R/O0JpH3Q==
+  - name: dxc-remote-iothub-log-V1
+    path: var/db/openedge/dxc-remote-iothub-log
+  - name: dxc-function-manager-conf-V1
+    path: var/db/openedge/dxc-function-manager-conf/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxxxxxx
+      md5: SOCtclXmEZCGLpQxx7LthQ==
+  - name: dxc-function-manager-log-V1
+    path: var/db/openedge/dxc-function-manager-log
+  - name: dxc-function-filter-conf-V1
+    path: var/db/openedge/dxc-function-filter-conf/V1
+    meta:
+      url: >-
+        https://edge.bos.gz.xxxxxxxxxx
+      md5: 6GxcIxNVAAIPTfx0xJ69gQ==
 ```
 
-### 本地函数计算模块配置
+### Hub 服务配置
 
 ```yaml
-name: localfunc
+listen:
+  - tcp://0.0.0.0:1883
+  - ssl://0.0.0.0:8883
+certificate:
+  ca: var/db/openedge/cert/ca.pem
+  cert: var/db/openedge/cert/server.pem
+  key: var/db/openedge/cert/server.key
+principals:
+  - username: two-way-tls
+    permissions:
+      - action: 'pub'
+        permit: ['tls/#']
+      - action: 'sub'
+        permit: ['tls/#']
+  - username: test
+    password: hahaha
+    permissions:
+      - action: 'pub'
+        permit: ['#']
+      - action: 'sub'
+        permit: ['#']
+logger:
+  path: var/log/openedge/service.log
+  level: "info"
+```
+
+### Function Manager 服务配置
+
+```yaml
 hub:
-  clientid: 2e00df9d360a4eb1876124b1550f1a2b
-  address: 'tcp://localhub:1883'
-  username: localhub
-  password: fb41c1dfd81a449a8504f5a58a3eb2cb
+  address: tcp://dxc-localhub:1883
+  username: test
+  password: hahaha
 rules:
-  - id: rule-9a9svnjg2
+  - clientid: localfunc-1
     subscribe:
       topic: data
-      qos: 0
-    compute:
-      function: filter-index0
+      qos: 1
+    function:
+      name: filter
     publish:
       topic: data/filter
-      qos: 0
+      qos: 1
 functions:
-  - id: func-70ycl32mq
-    name: filter-index0
-    runtime: sql
-    handler: 'SELECT temperature, ts, unit WHERE temperature > 50'
-    entry: 'hub.baidubce.com/openedge/openedge-function-runtime-sql:0.1.1'
+  - name: filter
+    service: dxc-function-filter
     instance:
       min: 1
       max: 10
-      timeout: 30s
-      message:
-        length:
-          max: 4m
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
+```
+
+### Function Filter 服务配置
+
+```yaml
+functions:
+  - name: filter
+    handler: 'SELECT temperature, ts, unit WHERE temperature > 50'
 ```
 
 如上配置，发送到主题 **data** 的消息会被 SQL 运行时进行处理（脱敏、过滤），然后将处理结果反馈给主题 **data/filter**。
 
-### Remote 远程模块配置
+### Remote 服务配置
 
 ```yaml
-name: remotemqtt
 hub:
-  clientid: 6e5cb3da72b24efdb004c2e22a71b673
-  address: 'tcp://localhub:1883'
-  username: localhub
-  password: fb41c1dfd81a449a8504f5a58a3eb2cb
+  address: tcp://dxc-localhub:1883
+  username: test
+  password: hahaha
+remotes:
+  - name: iothub
+    address: 'ssl://xxxx.mqtt.iot.bj.baidubce.com:8884'
+    clientid: 11dd7422353c46fc8851ef8fb7114533
+    username: eqzw9sq/edge_client
+    ca: var/db/openedge/cert/ca.pem
+    cert: var/db/openedge/cert/client.pem
+    key: var/db/openedge/cert/client.key
 rules:
-  - id: rule-iyltvpr5d
-    hub:
+  - hub:
       subscriptions:
         - topic: data/filter
           qos: 0
     remote:
-      name: remotemqtt
+      name: iothub
       subscriptions:
         - topic: data
           qos: 0
-remotes:
-  - name: remotemqtt
-    address: 'ssl://vn33eye.mqtt.iot.bj.baidubce.com:1884'
-    clientid: fd3582d79a1242e9b990e9b70db42107
-    username: vn33eye/test
-    ca: var/db/openedge/module/remotemqtt/cert-kpa6leuh6/ca.pem
-    cert: var/db/openedge/module/remotemqtt/cert-kpa6leuh6/client.pem
-    key: var/db/openedge/module/remotemqtt/cert-kpa6leuh6/client.key
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
 ```
 
 如上配置，本地 Hub 模块会将主题 **data/filter** 的消息发送给 Remote 远程服务模块（上文创建物接入 Endpoint 已拥有主题 **data/filter** 的订阅权限），然后远程 Hub 模块接收到主题 **data/filter** 的消息触发规则 **openedge-demo** （上文已创建），然后由规则引擎对消息进行封装（以满足 TSDB 规范），传送给 TSDB，最终在物可视进行可视化展示。
 
 ### 测试
 
-依据本地 Hub 模块配置文件对 MQTT.fx 进行连接设置，具体如下图示。
-
-![配置 MQTT.fx 连接信息](../../images/practice/write-tsdb/practice-mqttfx-config.png)
-
-同理，依据云端远程 Hub 模块的配置方式，对 MQTTBOX 进行连接配置，具体如下图示。
+依据 Hub 服务配置对 MQTTBOX 进行连接设置，具体如下图示。
 
 ![配置 MQTTBOX 连接信息](../../images/practice/write-tsdb/practice-mqttbox-config.png)
 
-然后通过 MQTT.fx 向主题 **data** 发送消息，消息内容格式参考：
+同理，依据云端物接入的配置信息，对 MQTT.fx 进行连接配置，具体如下图示。
+
+![配置 MQTTBOX 连接信息](../../images/practice/write-tsdb/practice-mqttfx-config.png)
+
+然后通过 MQTTBOX 向主题 **data** 发送消息，消息内容格式参考：
 
 ```json
 {
@@ -206,15 +346,15 @@ remotes:
 }
 ```
 
-如按上文的消息处理逻辑，该条消息会被筛选出来（处理后发给本地 Hub 模块），（由本地 Hub 模块）发送给 Remote 远程服务模块，然后上传至云端 Hub 模块，经由规则 **openedge-demo** 封装处理，传送给 TSDB，最终在物可视展示。相关示意图如下示。
+如按上文的消息处理逻辑，该条消息会被筛选出来，并回传给本地 Hub 服务，再由本地 Hub 服务将数据发送给 Remote 服务，最后上传至云端物接入，经由规则 **openedge-demo** 封装处理，传送给 TSDB，最终在物可视展示。相关示意图如下示。
 
-**MQTT.fx 收到处理后的消息**：
+**MQTTBOX 收到处理后的消息**，表示消息已被 Function Filter 服务处理，并将结果回传给了 Hub 服务。
 
-![MQTT.fx 收到处理后的消息](../../images/practice/write-tsdb/practice-mqttfx-data1-succ.png)
+![MQTTBOX 收到处理后的消息](../../images/practice/write-tsdb/practice-mqttfx-data1-succ.png)
 
-**云端远程 Hub 收到 Remote 远程服务模块发送的消息**：
+**MQTT.fx 收到云端物接入的消息**，表示该消息已通过 Remote 服务发往了云端物接入
 
-![MQTTBOX 收到处理后的消息](../../images/practice/write-tsdb/practice-mqttbox-data1-succ.png)
+![MQTTFX 收到处理后的消息](../../images/practice/write-tsdb/practice-mqttbox-data1-succ.png)
 
 **TSDB 查询面板得到的信息**：
 
@@ -224,7 +364,7 @@ remotes:
 
 ![物可视展示板得到的信息](../../images/practice/write-tsdb/practice-iotvz-single-view.png)
 
-如果我们通过 MQTT.fx 向主题 **data** 发送的消息内容为：
+如果我们通过 MQTTBOX 向主题 **data** 发送的消息内容为：
 
 ```json
 {
@@ -237,29 +377,29 @@ remotes:
 }
 ```
 
-则 MQTT.fx 和 MQTTBOX 均不会收到处理后的消息（`temperature < 50` 被过滤掉）。具体如下图示：
+则 MQTTBOX 和 MQTT.fx 均不会收到处理后的消息（`temperature < 50` 被过滤掉）。具体如下图示：
 
-**MQTT.fx 未收到处理后的消息**：
+**MQTTBOX 未收到处理后的消息**，还是最初收到的消息
 
-![MQTT.fx 未收到处理后的消息](../../images/practice/write-tsdb/practice-mqttfx-data1-succ.png)
+![MQTTBOX 未收到处理后的消息](../../images/practice/write-tsdb/practice-mqttfx-data1-succ.png)
 
-**云端远程 Hub 未收到 Remote 远程服务模块发送的消息**：
+**云端物接入未收到 Remote 服务发送的消息**，还是最初收到的消息
 
-![MQTTBOX 未收到处理后的消息](../../images/practice/write-tsdb/practice-mqttbox-data1-succ.png)
+![MQTTfx 未收到处理后的消息](../../images/practice/write-tsdb/practice-mqttbox-data1-succ.png)
 
-可见，MQTT.fx 和 MQTTBOX 均未收到被处理后的消息，是因为该条消息不符合 SQL 运行时过滤规则（本文 case 为 `temperature < 50`）被过滤掉了。
+可见，MQTTBOX 和 MQTT.fx 均未收到被处理后的消息，是因为该条消息不符合 SQL 运行时过滤规则（本文 case 为 `temperature < 50`）被过滤掉了。
 
 同理，规则引擎 **openedge-demo**、TSDB 和物可视均不会收到该处理后的消息。
 
 为更清晰地在云端展示处理后的结果，我们写入多条符合要求的数据，得到对应的 TSDB 和物可视的展示效果如下图示。
 
-**MQTT.fx 收到多条处理结果**
-
-![MQTT.fx 收到多条处理结果](../../images/practice/write-tsdb/practice-mqttfx-multi-succ.png)
-
 **MQTTBOX 收到多条处理结果**
 
 ![MQTTBOX 收到多条处理结果](../../images/practice/write-tsdb/practice-mqttbox-multi-succ.png)
+
+**MQTT.fx 收到多条处理结果**
+
+![MQTT.fx 收到多条处理结果](../../images/practice/write-tsdb/practice-mqttfx-multi-succ.png)
 
 **TSDB 收到多条处理结果**
 
