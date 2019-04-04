@@ -3,11 +3,12 @@
 **声明**：
 
 > + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端) 和 [MQTT.fx](../Resources-download.md#下载 MQTT.fx 客户端)
-> + 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
+> + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md) 和 [MQTT.fx](../Resources-download.md)
+> + 本文所用的Hub模块镜像和Remote模块镜像为OpenEdge云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
+> + 您也可以通过OpenEdge 源码自行编译所需的Hub模块镜像和Remote模块镜像，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 > + 远程 Hub 接入平台选用 [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)、[AWS IoT Core](https://amazonaws-china.com/iot-core/)、[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [远程服务模块配置](./Config-interpretation.md#远程服务模块配置)。
+Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [Remote 模块配置](./Config-interpretation.md)。
 
 ## 操作流程
 
@@ -15,7 +16,7 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 - `Step 2`：依据步骤 `Step 1` 中创建的连接信息，选择 MQTT.fx 作为测试用 MQTT 客户端，配置相关连接信息，并将之与 Baidu IoT Hub 建立连接，并订阅既定主题；
   - 若成功建立连接，则继续下一步操作；
   - 若未成功建立连接，则重复上述步骤，直至看到 MQTT.fx 与 Baidu IoT Hub 成功[建立连接](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E6.95.B0.E6.8D.AE.E5.9E.8B.E9.A1.B9.E7.9B.AE)。
-- `Step 3`：打开终端，进入 OpenEdge 程序包目录，然后以 Docker 容器模式启动 OpenEdge 可执行程序，并观察 Hub 模块、Remote 模块启动状态；
+- `Step 3`：打开终端，进入 OpenEdge 程序包目录，执行 `sudo openedge start` 以 Docker 模式启动 OpenEdge 可执行程序，并观察 Hub 模块、Remote 模块启动状态；
   - 若 Hub、Remote 模块成功启动，则继续下一步操作；
   - 若 Hub、Remote 模块未成功启动，则重复 `Step 3`，直至看到 Hub、Remote 模块成功启动。
 - `Step 4`：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)，并订阅既定主题；
@@ -30,34 +31,90 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 
 ## Remote 模块消息远程同步
 
-首先，需要说明的是，本次通过 OpenEdge Remote 远程服务模块实现消息远程同步所依赖的主题信息如下所示。
+OpenEdge 主程序的核心配置如下：
 
 ```yaml
-name: openedge-remote-mqtt
+version: V2
+services:
+  - name: localhub
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    replica: 1
+    ports:
+      - '1883:1883'
+      - '8080:8080'
+      - '8883:8883'
+    env: {}
+    mounts:
+      - name: dxc_localhub_conf-V2
+        path: etc/openedge
+        readonly: true
+      - name: dxc_localhub_cert-V1
+        path: var/db/openedge/cert
+      - name: dxc_localhub_data-V1
+        path: var/db/openedge/data
+      - name: dxc_localhub_log-V1
+        path: var/log/openedge
+  - name: remote-iothub
+    image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
+    replica: 1
+    mounts:
+      - name: remote-iothub-conf
+        path: etc/openedge
+        readonly: true
+      - name: remote-iothub-cert
+        path: var/db/openedge/cert
+        readonly: true
+      - name: remote-iothub-log
+        path: var/log/openedge      
+volumes:
+  # remote mqtt
+  - name: remote-iothub-conf
+    path: var/db/openedge/remote-iothub-conf
+  - name: remote-iothub-cert
+    path: var/db/openedge/remote-iothub-cert
+  - name: remote-iothub-log
+    path: var/db/openedge/remote-iothub-log
+  - name: dxc_localhub_conf-V2
+    path: var/db/openedge/dxc_localhub_conf/V2
+  - name: dxc_localhub_cert-V1
+    path: var/db/openedge/dxc_localhub_cert/V1
+  - name: dxc_localhub_log-V1
+    path: var/db/openedge/dxc_localhub_log
+  - name: dxc_localhub_data-V1
+    path: var/db/openedge/dxc_localhub_data
+```
+
+Remote模块的配置如下：
+
+```yaml
+name: remote-iothub
 hub:
-  address: tcp://openedge-hub:1883
+  address: tcp://localhub:1883
   username: test
   password: hahaha
 remotes:
-  - name: remote
-    address: tcp://u4u6zk2.mqtt.iot.bj.baidubce.com:1883
-    clientid: 349360d3c91a4c55a57139e9085e526f
-    username: u4u6zk2/demo
-    password: XqySIYMBsjK0JkEh
+  - name: iothub
+    address: 'ssl://h7gvsuh.mqtt.iot.bj.baidubce.com:1884'
+    clientid: 11dd7422353c46fc8851ef8fb7114509
+    username: h7gvsuh/test_edge_client
+    ca: var/db/openedge/cert/ca.pem
+    cert: var/db/openedge/cert/client.pem
+    key: var/db/openedge/cert/client.key
 rules:
-  - id: rule-rcg3k6ytq
-    hub:
+  - hub:
       subscriptions:
         - topic: t1
-          qos: 1
     remote:
-      name: remote
+      name: iothub
       subscriptions:
         - topic: t2
           qos: 1
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
 ```
 
-依据上述 Remote 模块的配置信息，意即 Remote 模块向本地 Hub 模块订阅主题 `t1` 的消息，向 Baidu IoT Hub订 阅主题 `t2` 的消息；当 MQTTBOX 向主题 `t1` 发布消息时，当 Hub 模块接收到主题 `t1` 的消息后，将其转发给 Remote 模块，再由 Remote 模块降之转发给 Baidu IoT Hub，这样如果 MQTT.fx 订阅了主题 `t1`，即会收到该条从 MQTTBOX 发布的消息；同理，当 MQTT.fx 向主题 `t2` 发布消息时，Baidu IoT Hub 会将消息转发给 Remote 模块，由 Remote 模块将之转发给本地 Hub 模块，这样如果 MQTTBOX 订阅了主题 `t2`，即会收到该消息。
+依据上述 Remote 模块的配置信息，意即 Remote 模块向本地 Hub 模块订阅主题 `t1` 的消息，向 Baidu IoT Hub订 阅主题 `t2` 的消息；当 MQTTBOX 向主题 `t1` 发布消息时，Hub 模块接收到主题 `t1` 的消息后，将其转发给 Remote 模块，再由 Remote 模块将之转发给 Baidu IoT Hub，这样如果 MQTT.fx 订阅了主题 `t1`，即会收到该条从 MQTTBOX 发布的消息；同理，当 MQTT.fx 向主题 `t2` 发布消息时，Baidu IoT Hub 会将消息转发给 Remote 模块，由 Remote 模块将之转发给本地 Hub 模块，这样如果 MQTTBOX 订阅了主题 `t2`，即会收到该消息。
 
 简单来说，由 MQTT.fx 发布的消息，到 MQTTBOX 接收到该消息，流经的路径信息为：
 
@@ -75,7 +132,9 @@ rules:
 
 ![基于 Baidu IoT Hub 创建的 endpoint 下属设备信息](../../images/tutorials/remote/cloud-iothub-user-config.png)
 
-![用于连接 Baidu IoT Hub 的 MQTT.fx 配置信息](../../images/tutorials/remote/mqttfx-connect-hub-config.png)
+![用于连接 Baidu IoT Hub 的 MQTT.fx 配置信息](../../images/tutorials/remote/mqttfx-connect-hub-config1.png)
+
+![用于连接 Baidu IoT Hub 的 MQTT.fx 配置信息](../../images/tutorials/remote/mqttfx-connect-hub-config2.png)
 
 完成连接信息的相关配置工作后，点击 `OK` 或 `Apply` 按钮使配置信息生效，然后在 MQTT.fx 连接操作页面点击 `Connect` 按钮，通过按钮的 **颜色** （成功建立连接后，右上方指示灯变为 **绿色**）即可判断 MQTT.fx 是否已与 Baidu IoT Hub 建立连接，成功建立连接的状态如下图示。
 
@@ -83,7 +142,7 @@ rules:
 
 在建立连接后，切换至 `Subscribe` 页面，依据既定配置，订阅相应主题 `t1`，成功订阅的状态如下图示。
 
-![MQTT.fx 成功订阅主题 `t1`](../../images/tutorials/remote/mqttfx-sub-t1-success.png)
+![MQTT.fx 成功订阅主题 t1](../../images/tutorials/remote/mqttfx-sub-t1-success.png)
 
 ### 通过 MQTTBOX 与本地 Hub 模块建立连接
 
@@ -93,11 +152,11 @@ rules:
 
 此外，亦可通过执行命令 `docker ps` 查看系统当前正在运行的 Docker 容器列表，具体如下图示。
 
-![通过命令 `docker ps` 查看系统当前正在运行的 Docker 容器列表](../../images/tutorials/remote/openedge-docker-ps-hub-remote-run.png)
+![通过命令docker ps查看系统当前正在运行的 Docker 容器列表](../../images/tutorials/remote/openedge-docker-ps-hub-remote-run.png)
 
 成功启动 OpenEdge 后，通过 MQTTBOX 成功与 Hub 模块建立连接，并订阅主题 `t2`，成功订阅的状态如下图示。
 
-![MQTTBOX 成功订阅主题 `t2`](../../images/tutorials/remote/mqttbox-sub-t2-success.png)
+![MQTTBOX 成功订阅主题t2](../../images/tutorials/remote/mqttbox-sub-t2-success.png)
 
 ### Remote 消息远程同步
 
@@ -107,7 +166,7 @@ rules:
 
 首先，通过 MQTT.fx 向主题 `t2` 发布消息 `This message is from MQTT.fx.`，具体如下图示。
 
-![通过 MQTT.fx 向主题 `t2` 发布消息](../../images/tutorials/remote/mqttfx-pub-t2-success.png)
+![通过 MQTT.fx 向主题t2发布消息](../../images/tutorials/remote/mqttfx-pub-t2-success.png)
 
 同时，观察 MQTTBOX 在订阅主题 `t2` 的消息接收状态，具体如下图示。
 
@@ -117,7 +176,7 @@ rules:
 
 同理，通过 MQTTBOX 作为发布端向主题 `t1` 发布消息 `This message is from MQTTBOX.`，具体如下图示。
 
-![通过 MQTTBOX 向主题 `t1` 发布消息](../../images/tutorials/remote/mqttbox-pub-t1-success.png)
+![通过 MQTTBOX 向主题t1发布消息](../../images/tutorials/remote/mqttbox-pub-t1-success.png)
 
 同时，观察 MQTT.fx 在订阅主题 `t1` 的消息接收状态，具体如下图示。
 
