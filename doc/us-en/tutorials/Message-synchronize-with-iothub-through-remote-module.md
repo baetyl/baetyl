@@ -2,28 +2,28 @@
 
 **Statement**
 
-> + The operating system as mentioned in this document is Darwin.
-> + The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
-> + The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): ：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
-> + Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
-> + The Remote Hub as mentioned in this document is [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
+- The operating system as mentioned in this document is Darwin.
+- The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
+- The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
+- Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
+- The Remote Hub as mentioned in this document is [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
 The Remote Module was developed to meet the needs of the IoT scenario. The OpenEdge(via Local Hub Module) can synchronize message with Remote Hub services([Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)) via the Remote Module. That is to say, through the Remote Module, we can either subscribe the message from Remote Hub and publish it to the Local Hub Module or subscribe the message from Local Hub Module and publish it to Remote Hub service. The configuration of Remote Module can refer to [Remote Module Configuration](./Config-interpretation.md).
 
 ## Workflow
 
-- `Step 1`：Create device(MQTT client) connection info(include `endpoint`, `user`, `principal`, `policy`, etc.) via Baidu IoT Hub.
-- `Step 2`：Select MQTT.fx as the MQTT client that used to connect to Baidu IoT Hub.
+- Step 1：Create device(MQTT client) connection info(include `endpoint`, `user`, `principal`, `policy`, etc.) via Baidu IoT Hub.
+- Step 2：Select MQTT.fx as the MQTT client that used to connect to Baidu IoT Hub.
   - If connect successfully, then do the following next.
   - If connect unsuccessfully, then retry it until it connect successfully. More detailed contents can refer to [How to connect to Baidu IoT Hub via MQTT.fx](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E6.95.B0.E6.8D.AE.E5.9E.8B.E9.A1.B9.E7.9B.AE)。
-- `Step 3`：Startup OpenEdge in docker container mode, and observe the log of OpenEdge.
+- Step 3：Startup OpenEdge in docker container mode, and observe the log of OpenEdge.
   - If the Local Hub Module and Remote Module start successfully, then do the following next.
   - If the Local Hub Module and Remote Module start unsuccessfully, then retry `Step 3` until they start successfully.
-- `Step 4`：Select MQTTBOX as the MQTT client that used to connect to the Local Hub.
+- Step 4：Select MQTTBOX as the MQTT client that used to connect to the Local Hub.
     - If connect successfully, then do the following next.
     - If connect unsuccessfully, then retry `Step 4` until it connect successfully.
-- `Step 5`：Due to the configuration of Remote Module, using MQTTBOX publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBOX.
-- `Step 6`：If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
+- Step 5：Due to the configuration of Remote Module, using MQTTBOX publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBOX.
+- Step 6：If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
 
 The workflow diagram is as follows.
 

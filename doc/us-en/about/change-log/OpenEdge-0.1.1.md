@@ -3,7 +3,7 @@
 ## Features
 
 - optimize MQTT Remote module, support multiple remotes and message router
-- add validatesubs config to check MQTT client subscribe result or not
+- add validate subscription config to check MQTT client subscribe result or not
 
 ## Bug fixes
 
