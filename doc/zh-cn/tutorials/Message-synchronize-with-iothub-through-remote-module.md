@@ -4,7 +4,7 @@
 
 > + 本文测试所用设备系统为 Darwin
 > + 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md) 和 [MQTT.fx](../Resources-download.md)
-> + 本文所用的Hub模块镜像和Remote模块镜像为OpenEdge云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest`
+> + 本文所用的Hub模块镜像和Remote模块镜像为OpenEdge云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
 > + 您也可以通过OpenEdge 源码自行编译所需的Hub模块镜像和Remote模块镜像，具体请查看[如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 > + 远程 Hub 接入平台选用 [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
@@ -58,7 +58,7 @@ services:
         path: var/db/openedge/certclient
         readonly: true
   - name: remote-iothub
-    image: hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest
+    image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
     replica: 1
     mounts:
       - name: remote-iothub-conf

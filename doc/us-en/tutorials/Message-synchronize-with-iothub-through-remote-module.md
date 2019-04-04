@@ -4,7 +4,7 @@
 
 > + The operating system as mentioned in this document is Darwin.
 > + The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
-> + The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): ：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest`
+> + The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): ：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
 > + Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
 > + The Remote Hub as mentioned in this document is [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
@@ -58,7 +58,7 @@ services:
         path: var/db/openedge/certclient
         readonly: true
   - name: remote-iothub
-    image: hub.baidubce.com/openedge/openedge-remote-mqtt-linux-amd64:latest
+    image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
     replica: 1
     mounts:
       - name: remote-iothub-conf
