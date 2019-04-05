@@ -1,6 +1,6 @@
 # OpenEdge
 
-[![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)  [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://openedge.tech/en)    [![Release](https://img.shields.io/github/release-pre/baidu/openedge.svg?color=blue)](https://github.com/baidu/openedge/releases)    [![License](https://img.shields.io/github/license/baidu/openedge.svg?color=blue)](LICENSE)
+[![OpenEdge Status](https://travis-ci.com/baidu/openedge.svg?branch=master)](https://travis-ci.com/baidu/openedge)  [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://openedge.tech/en)    [![Release](https://img.shields.io/github/release-pre/baidu/openedge.svg?color=blue&label=pre-release)](https://github.com/baidu/openedge/releases)    [![License](https://img.shields.io/github/license/baidu/openedge.svg?color=blue)](LICENSE)
 
 ![OpenEdge-logo](./doc/images/logo/logo-with-name.png)
 
