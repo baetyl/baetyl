@@ -3,7 +3,7 @@
 ## Features
 
 - 从主程序分离 Agent 模块，定时上报（核心）设备状态信息
-- 针对资源配置引入数据卷（volume）概念，灵活配置，支持第三方已有的镜像，比如 `hub.docker.com` 中的 mosquitto
+- 针对资源配置引入存储卷（volume）概念，灵活配置，支持第三方已有的镜像，比如 `hub.docker.com` 中的 mosquitto
 - 支持命令行启动（后台以服务方式运行）、停止 OpenEdge 服务
 - 统一两种模式（Docker 容器模式 和 Native 进程模式）配置，例如为本机 Native 进程模式中的每个服务创建单独的工作目录
 - 引入服务概念，代替模块，用于支持启动多实例
