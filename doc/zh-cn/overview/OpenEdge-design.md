@@ -1,7 +1,7 @@
 # OpenEdge
 
-- [基本概念](#基本概念)
-- [系统组成](#系统组成)
+- [概念](#概念)
+- [组成](#组成)
 - [主程序](#主程序)
   - [引擎系统](#引擎系统)
     - [Docker 引擎](#docker-引擎)
@@ -18,7 +18,7 @@
   - [openedge-function-python27](#openedge-function-python27)
   - [openedge-remote-mqtt](#openedge-remote-mqtt)
 
-## 基本概念
+## 概念
 
 - **系统**：这里专指 OpenEdge 系统，包行 **主程序**、**服务**、**存储卷** 和使用的系统资源。
 - **主程序**： 指 OpenEdge 实现的核心部分，负责管理所有 **存储卷** 和 **服务**，内置 **引擎系统**，对外提供 RESTful API 和命令行等。
@@ -28,7 +28,7 @@
 - **引擎系统**： 指 **服务** 的各类运行模式的操作抽象和具体实现，比如 Docker 容器模式和 Native 进程模式。
 - **服务** 和 **系统** 的关系：OpenEdge 系统可以启动多个服务，服务之间没有依赖关系，不应当假设他们的启动顺序（虽然当前还是顺序启动的）。服务在运行时产生的所有信息都是临时的，服务停止后这些信息都会被删除，除非映射到持久化目录。服务内的程序由于种种原因可能会停止，服务会根据用户的配置对程序进行重启，这种情况不等于服务的停止，所以信息不会被删除。
 
-## 系统组成
+## 组成
 
 一个完整的 OpenEdge 系统由**主程序**、**服务**、**存储卷**和使用的系统资源组成，主程序根据应用配置加载各个模块启动相应的服务，一个服务又可以启动若干个实例，所有实例都由主程序负责管理和守护。需要注意的是同一个服务下的实例共享该服务绑定的存储卷，所以如果出现独占的资源，比如监听同一个端口，只能成功启动一个实例；如果使用同一个 Client ID 连接 Hub，会出现连接互踢的情况。
 
@@ -40,9 +40,9 @@
 - [openedge-function-manager](#openedge-function-manager)：提供函数计算服务，进行函数实例管理和消息触发的函数调用。
 - [openedge-function-python27](#openedge-function-python27)：提供加载 Python 脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
 
-结构图:
+架构图:
 
-![结构图](../../images/overview/design/openedge_design.png)
+![架构图](../../images/overview/design/openedge_design.png)
 
 ## 主程序
 

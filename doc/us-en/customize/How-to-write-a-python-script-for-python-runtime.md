@@ -2,12 +2,12 @@
 
 **Statement**
 
-> + The operating system as mentioned in this document is Darwin.
-> + The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-> + In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
+- The operating system as mentioned in this document is Darwin.
+- The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
+- In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
 
 ```yaml
-# The configuration of Local Hub Service
+# The configuration of Local Hub service
 listen:
   - tcp://:1883
 principals:
@@ -19,7 +19,7 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# The configuration of Local Function Manager Service
+# The configuration of Local Function Manager service
 hub:
   address: tcp://localhub:1883
   username: test
@@ -122,7 +122,7 @@ function-sayhi-code/
 └── sayhi.py
 ```
 
-More detailed configuration of Python2.7 runtime, please refer to [Python2.7-runtime-configuration](../tutorials/Config-interpretation.md).
+More detailed configuration of Python2.7 runtime, please refer to [Python2.7 runtime configuration](../tutorials/Config-interpretation.md).
 
 ## Parameter Convention
 
@@ -134,15 +134,15 @@ def handler(event, context):
 
 The Python2.7 runtime provided by OpenEdge supports two parameters: `event` and `context`, which are described separately below.
 
-+ **event**：Depend on the `Payload` in the MQTT message
-    + If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
-    + If the original `Payload` is Byte, string(not Json), then pass in the original `Payload`。
-+ **context**：MQTT message context
-    + context.messageQOS // MQTT QoS
-    + context.messageTopic // MQTT Topic
-    + context.functionName // MQTT functionName
-    + context.functionInvokeID //MQTT function invokeID
-    + context.invokeid // as above, be used to compatible with [CFC](https://cloud.baidu.com/product/cfc.html)
+- **event**：Depend on the `Payload` in the MQTT message
+    - If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
+    - If the original `Payload` is Byte, string(not Json), then pass in the original `Payload`。
+- **context**：MQTT message context
+    - context.messageQOS // MQTT QoS
+    - context.messageTopic // MQTT Topic
+    - context.functionName // MQTT functionName
+    - context.functionInvokeID //MQTT function invokeID
+    - context.invokeid // as above, be used to compatible with [CFC](https://cloud.baidu.com/product/cfc.html)
 
 _**NOTE**: When testing in the cloud CFC, please don't use the context defined by OpenEdge directly. The recommended method is to first determine whether the field is exists or not in the `context`. If exists, read it._
 
@@ -168,11 +168,11 @@ def handler(event, context):
     return result
 ```
 
-+ **Publish a dict format message**：
+**Publish a dict format message**：
 
 ![Publish a dict format message](../../images/customize/write-python-script-dict.png)
 
-+ **Publish an non-dict format message**：
+**Publish an non-dict format message**：
 
 ![Publish an non-dict format message](../../images/customize/write-python-script-none-dict.png)
 
@@ -184,11 +184,11 @@ Generally, using the standard library of the system python environment can not m
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [requests](https://pypi.org/project/requests). How to import it, as shown below:
 
-> + Step 1: `pip download requests` # download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
-> + Step 2: `cp requests-package /directory/to/Python/script` # copy `requests` package and its dependency package to the directory of the Python script
-> + Step 3: `touch __init__.py` # make the directory of the Python script as a package
-> + Step 4: `import requests` # import the third-party library `requests`, and write the Python script
-> + Step 5: `python your_script.py` # execute your Python script
+- Step 1: `pip download requests` # download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
+- Step 2: `cp requests-package /directory/to/Python/script` # copy `requests` package and its dependency package to the directory of the Python script
+- Step 3: `touch __init__.py` # make the directory of the Python script as a package
+- Step 4: `import requests` # import the third-party library `requests`, and write the Python script
+- Step 5: `python your_script.py` # execute your Python script
 
 If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 

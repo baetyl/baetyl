@@ -19,7 +19,7 @@ At present, the native process mode, like the docker container mode, opens up a 
 - Default persistence path in the container: `/var/db/openedge`
 - Default log directory in the container: `/var/log/openedge`
 
-**Note**: If the data needs to be persisted on the device (host), such as database and log, the directory in the container must be mapped to the host directory through the storage volume, otherwise the data will be lost after the service is stopped.
+**NOTE**: If the data needs to be persisted on the device (host), such as database and log, the directory in the container must be mapped to the host directory through the storage volume, otherwise the data will be lost after the service is stopped.
 
 ## Start/Stop Convention
 

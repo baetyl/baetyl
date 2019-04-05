@@ -8,12 +8,12 @@
 
 Different from the Local Hub service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Local Hub service and Python27 runtime service). In the document, Local Hub service is used to establish connection between OpenEdge and mqtt client, Python27 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine Local Hub service with Python27 runtime service with message context.
 
-This document will take the TCP connection mode as an example to show the message handling, calculation and forwarding with Local Function Manager service.
+This document will take the TCP connection method as an example to show the message handling, calculation and forwarding with Local Function Manager service.
 
 ## Workflow
 
 - Step 1：Startup OpenEdge in docker container mode.
-- Step 2：MQTTBOX connect to Local Hub Service by TCP connection mode, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Service](./Device-connect-to-OpenEdge-with-hub-module.md)
+- Step 2：MQTTBOX connect to Local Hub Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Service](./Device-connect-to-OpenEdge-with-hub-module.md)
     - If connect successfully, then subscribe the MQTT topic due to the configuration of Local Hub Service, and observe the log of OpenEdge.
         - If the OpenEdge's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
         - If the OpenEdge's log shows that the Python Runtime Service has not been started, then retry it until the Python Runtime Service has been started.

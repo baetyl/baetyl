@@ -2,8 +2,8 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
+- 本文测试所用设备系统为 Darwin
+- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 
 与 [连接测试](./Device-connect-to-OpenEdge-with-hub-module.md) 不同的是，若需要通过本地 Hub 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考 [Hub 服务配置](./Config-interpretation.md#openedge-hub配置)。
 
@@ -85,9 +85,9 @@ var
 
 例如，如果客户端订阅主题 `sport/tennis/player1/#`，它会收到使用下列主题名发布的消息：
 
-> + `sport/tennis/player1`
-> + `sport/tennis/player1/ranking`
-> + `sport/tennis/player1/score/wimbledon`
+- `sport/tennis/player1`
+- `sport/tennis/player1/ranking`
+- `sport/tennis/player1/score/wimbledon`
 
 此外，主题 `sport/#` 也匹配单独的 `sport`，因为 `#` 包括它的父级。
 
@@ -101,7 +101,7 @@ var
 
 对于 OpenEdge 来说，如果在 `permit` 配置项中配置了主题 `+`（不论是发布行为，还是订阅行为），都不需要再额外配置其他的单层主题。这时，配置项中的账户（依据 `username/password`）拥有向所有合法的 MQTT 协议单层主题发布或订阅的权限。
 
-_**提示**：在 MQTT 协议中，通配符（不论是多层通配符 `#`，还是单层通配符 `+`）**只能**出现在订阅的主题过滤器中，而**不准**出现在发布的主题中。但是，为了增强主题权限配置的灵活性，OpenEdge 在设计中认定，通配符不论出现在订阅行为的主题配置项中，还是出现在发布行为的主题配置项中，都是**合法**的。这里，在进行具体的发布/订阅行为时，发布或订阅的主题**只要**符合 MQTT 协议的要求即可。特别地，对于需要在 `principals` 配置项中配置大量发布和订阅主题的开发者来说，推荐采用通配符（ `#` 和 `+` ）策略。_
+**提示**：在 MQTT 协议中，通配符（不论是多层通配符 `#`，还是单层通配符 `+`）**只能**出现在订阅的主题过滤器中，而**不准**出现在发布的主题中。但是，为了增强主题权限配置的灵活性，OpenEdge 在设计中认定，通配符不论出现在订阅行为的主题配置项中，还是出现在发布行为的主题配置项中，都是**合法**的。这里，在进行具体的发布/订阅行为时，发布或订阅的主题**只要**符合 MQTT 协议的要求即可。特别地，对于需要在 `principals` 配置项中配置大量发布和订阅主题的开发者来说，推荐采用通配符（ `#` 和 `+` ）策略。
 
 ### 设备间消息转发路由测试
 

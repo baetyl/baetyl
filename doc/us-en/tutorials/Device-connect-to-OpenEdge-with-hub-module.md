@@ -2,18 +2,18 @@
 
 **Statement**:
 
-> + The device system used in this test is Darwin
-> + MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
-> + The hub module image used  is the official image published in the OpenEdge Cloud Management Suite: `hub.baidubce.com/openedge/openedge-hub:latest`
-> + You can also compile the required Hub module image by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md)
+- The device system used in this test is Darwin
+- MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
+- The hub module image used  is the official image published in the OpenEdge Cloud Management Suite: `hub.baidubce.com/openedge/openedge-hub:latest`
+- You can also compile the required Hub module image by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md)
 
 The complete configuration reference for [Hub Module Configuration](./Config-interpretation.md).
 
-**Tip**：Docker is required to install on the device system which deploy OpenEdge. See [Install OpenEdge on Darwin System](../setup/Install-OpenEdge-on-Darwin.md).
+**NOTE**：Docker is required to install on the device system which deploy OpenEdge. See [Install OpenEdge on Darwin System](../setup/Install-OpenEdge-on-Darwin.md).
 
 ## Workflow
 
-- Step 1: Write the configuration according to the usage requirements, and then execute sudo openedge start(you should install openedge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode.
+- Step 1: Write the configuration according to the usage requirements, and then execute `sudo openedge start`(you should install OpenEdge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode.
 - Step 2: Configure the MQTT Client according to the connection protocol selected.
     - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
     - If SSL protocol was selected, username, private key, certificate and CA should be need. then fill in the corresponding port;
@@ -118,7 +118,7 @@ Then close the configuration page, select the Profile Name configured, then clic
 
 **SSL Connection Test**
 
-Startup MQTT.fx and enter the Edit Connection Profiles page. Similar to the TCP connection configuration, fill in the profile name, broker address, and port. For SSL protocol, you need to fill in the username in `User Credentials` and configure SSL/TLS option as shown below. Then click the `Apply` button to complete the connection configuration of MQTT.fx in SSL connection mode.
+Startup MQTT.fx and enter the Edit Connection Profiles page. Similar to the TCP connection configuration, fill in the profile name, broker address, and port. For SSL protocol, you need to fill in the username in `User Credentials` and configure SSL/TLS option as shown below. Then click the `Apply` button to complete the connection configuration of MQTT.fx in SSL connection method.
 
 ![SSL connection configuration1](../../images/tutorials/connect/mqttbox-ssl-connect-config1.png)
 
@@ -130,7 +130,7 @@ Then close the configuration page, select the Profile Name configured, then clic
 
 **WS (Websocket) Connection Test**
 
-Startup MQTTBOX, enter the Client creation page, select the `ws` protocol, configure the broker address and port according to the OpenEdge Hub module, fill in the username and password according to the `principals` configuration option, and click the `save` button. Then complete the connection configuration of MQTTBOX in WS connection mode which as shown below.
+Startup MQTTBOX, enter the Client creation page, select the `ws` protocol, configure the broker address and port according to the OpenEdge Hub module, fill in the username and password according to the `principals` configuration option, and click the `save` button. Then complete the connection configuration of MQTTBOX in WS connection method which as shown below.
 
 ![WS（Websocket）connection configuration](../../images/tutorials/connect/mqttbox-ws-connect-config.png)
 
