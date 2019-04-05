@@ -2,9 +2,9 @@
 
 **声明**：
 
-> + 本文测试所用设备系统为 Darwin
-> + 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端)
-> + 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
+- 本文测试所用设备系统为 Darwin
+- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端)
+- 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
 # 本地 Hub 配置
@@ -134,15 +134,15 @@ def handler(event, context):
 
 OpenEdge 官方提供的 Python 运行时支持2个参数: event 和 context，下面将分别介绍其用法。
 
-+ **event**：根据 MQTT 报文中的 Payload 传入不同参数
-    + 若原始 Payload 为一个 Json 数据，则传入经过 json.loads(Payload) 处理后的数据;
-    + 若原始 Payload 为字节流、字符串(非 Json)，则传入原 Payload 数据。
-+ **context**：MQTT 消息上下文
-    + context.messageQOS // MQTT QoS
-    + context.messageTopic // MQTT Topic
-    + context.functionName // MQTT functionName
-    + context.functionInvokeID //MQTT function invokeID
-    + context.invokeid // 同上，用于兼容 [CFC](https://cloud.baidu.com/product/cfc.html)
+- **event**：根据 MQTT 报文中的 Payload 传入不同参数
+    - 若原始 Payload 为一个 Json 数据，则传入经过 json.loads(Payload) 处理后的数据;
+    - 若原始 Payload 为字节流、字符串(非 Json)，则传入原 Payload 数据。
+- **context**：MQTT 消息上下文
+    - context.messageQOS // MQTT QoS
+    - context.messageTopic // MQTT Topic
+    - context.functionName // MQTT functionName
+    - context.functionInvokeID //MQTT function invokeID
+    - context.invokeid // 同上，用于兼容 [CFC](https://cloud.baidu.com/product/cfc.html)
 
 _**提示**：在云端 CFC 测试时，请注意不要直接使用 OpenEdge 定义的上下文信息。推荐做法是先判断字段是否在 context 中存在，如果存在再读取。_
 
@@ -184,11 +184,11 @@ def handler(event, context):
 
 假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-> + 步骤1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi）
-> + 步骤2: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
-> + 步骤3: `touch __init__.py` // 使执行脚本所在目录成为一个 package
-> + 步骤4: `import requests` // 引入第三方库 requests，然后编写具体执行脚本
-> + 步骤5: `python your_script.py` // 执行脚本
+- 步骤 1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi）
+- 步骤 2: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
+- 步骤 3: `touch __init__.py` // 使执行脚本所在目录成为一个 package
+- 步骤 4: `import requests` // 引入第三方库 requests，然后编写具体执行脚本
+- 步骤 5: `python your_script.py` // 执行脚本
 
 如上述操作正常，则形成的脚本目录结构如下图所示。
 
@@ -203,23 +203,22 @@ def handler(event, context):
 import requests
 
 def handler(event, context):
-    """
-    data: {"action": "A"}
-    """
-	if 'action' in event:
-		if event['action'] == 'A':
-			r = requests.get('https://openedge.tech')
-			if str(r.status_code) == '200':
-				event['info'] = r.headers
-			else:
-				event['info'] = 'exception found'
-		else:
-			event['info'] = 'action error'
-
-	else:
-		event['error'] = 'action not found'
-
-	return event
+  """
+  data: {"action": "A"}
+  """
+  if 'action' in event:
+    if event['action'] == 'A':
+      r = requests.get('https://openedge.tech')
+      if str(r.status_code) == '200':
+        event['info'] = r.headers
+      else:
+        event['info'] = 'exception found'
+    else:
+      event['info'] = 'action error'
+  else:
+    event['error'] = 'action not found'
+    
+  return event
 ```
 
 如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息。
