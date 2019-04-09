@@ -64,9 +64,9 @@
 type AppConfig struct {
     // 指定应用配置的版本号
     Version  string        `yaml:"version" json:"version"`
-    // 指定应用的所以服务信息
+    // 指定应用的所有服务信息
     Services []ServiceInfo `yaml:"services" json:"services" default:"[]"`
-    // 指定应用的所以存储卷信息
+    // 指定应用的所有存储卷信息
     Volumes  []VolumeInfo  `yaml:"volumes" json:"volumes" default:"[]"`
 }
 

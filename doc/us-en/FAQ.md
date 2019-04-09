@@ -123,3 +123,23 @@ In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html
 
 **Suggested Solution**:
 The Device management of Baidu IoT Hub does not support ssl authentication. As a temporary solution, you can configure [Remote Feature](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) to connect the Device management with username and password authentication manually.
+
+**Question 17**: After OpenEdge is closed, it is found that the main program has been stopped and related files have been cleaned up, such as `/var/run/openedge.pid` and `/var/run/openedge.sock`, but the command `docker ps -a` is executed, the container was not stopped. Check the log and find that the error message is roughly `cannot stop container, permission denied`, and then execute the command `dmesg | grep apparmor`. The output is similar to the following figure:
+
+![Picture](../images/faq/apparmor-stop-signal.png)
+
+As can be seen from the above, the problem arises because the `apparmor` prevents the signal sent, and the docker does not receive a signal to stop and clean the container.
+
+**Suggested Solution**:
+
+Execute the following commands in order:
+
+```sh
+Sudo aa-status # View apparmor working status
+Sudo systemctl disable apparmor.service --now # Close apparmor
+Sudo service apparmor teardown # uninstall apparmor configuration
+Sudo systemctl enable apparmor.service --now # restart apparmor
+Sudo aa-status # View apparmor working status
+```
+
+After the completion, manually stop and clean up the container where the problem occurs, and then OpenEdge will run normally.

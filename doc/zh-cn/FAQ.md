@@ -123,3 +123,23 @@ source ~/.bash_profile
 **问题 16**：OpenEdge 如何使用 [Remote](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) 功能连接 [百度云 IoT Hub 设备型项目](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B) ？
 
 **参考方案**：OpenEdge 端云协同强制使用证书认证，目前物接入设备型项目还不支持证书认证，作为临时方案可以在本地手动配置用户名密码和物接入设备型项目交互。
+
+**问题 17**：OpenEdge 关闭后，发现主程序已管理，且相关文件已被清理，比如 `/var/run/openedge.pid` 以及 `/var/run/openedge.sock`，但是执行命令 `docker ps -a` 后发现容器并未被停止清理。查看日志发现报错内容大致为 `cannot stop container,permission denied`，再执行命令 `dmesg | grep apparmor`，输出结果类似下图所示：
+
+![图片](../images/faq/apparmor-stop-signal.png)
+
+由上可知，问题的产生是由于 apparmor 阻止了信号的发送，docker 未收到停止并清理容器的信号。
+
+**参考方案**：
+
+按照顺序执行下面的命令：
+
+```sh
+sudo aa-status # 查看 apparmor 工作状态
+sudo systemctl disable apparmor.service --now # 关闭 apparmor
+sudo service apparmor teardown # 卸载 apparmor 配置
+sudo systemctl enable apparmor.service --now # 重启 apparmor
+sudo aa-status # 查看 apparmor 工作状态
+```
+
+完成后手动停止并清理发生此问题的容器，后续可正常运行 OpenEdge。
