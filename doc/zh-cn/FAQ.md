@@ -124,7 +124,7 @@ source ~/.bash_profile
 
 **参考方案**：OpenEdge 端云协同强制使用证书认证，目前物接入设备型项目还不支持证书认证，作为临时方案可以在本地手动配置用户名密码和物接入设备型项目交互。
 
-**问题 17**：OpenEdge 关闭后，发现主程序已管理，且相关文件已被清理，比如 `/var/run/openedge.pid` 以及 `/var/run/openedge.sock`，但是执行命令 `docker ps -a` 后发现容器并未被停止清理。查看日志发现报错内容大致为 `cannot stop container,permission denied`，再执行命令 `dmesg | grep apparmor`，输出结果类似下图所示：
+**问题 17**：OpenEdge 关闭后，发现主程序已退出，且相关文件已被清理，比如 `/var/run/openedge.pid` 以及 `/var/run/openedge.sock`，但是执行命令 `docker ps -a` 后发现容器并未被停止清理。查看日志发现报错内容大致为 `cannot stop container,permission denied`，再执行命令 `dmesg | grep apparmor`，输出结果类似下图所示：
 
 ![图片](../images/faq/apparmor-stop-signal.png)
 
