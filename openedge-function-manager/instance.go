@@ -47,10 +47,12 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 		clientHost = serverHost
 	}
 
-	dc := make(map[string]string)
-	dc[openedge.EnvServiceNameKey] = name
-	dc[openedge.EnvServiceAddressKey] = fmt.Sprintf("%s:%s", serverHost, port)
-	err := p.ctx.StartServiceInstance(p.cfg.Service, name, dc)
+	address := fmt.Sprintf("%s:%s", serverHost, port)
+	dc := map[string]string{
+		openedge.EnvServiceAddressKey:         address, // deprecated, for v0.1.2
+		openedge.EnvServiceInstanceAddressKey: address,
+	}
+	err := p.ctx.StartInstance(p.cfg.Service, name, dc)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +63,7 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 	fcc.Backoff = p.cfg.Backoff
 	cli, err := openedge.NewFClient(fcc)
 	if err != nil {
-		p.ctx.StopServiceInstance(p.cfg.Service, name)
+		p.ctx.StopInstance(p.cfg.Service, name)
 		return nil, err
 	}
 	return &instance{
@@ -73,7 +75,7 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 // StopInstance stops instance
 func (p *producer) StopInstance(i Instance) error {
 	i.Close()
-	return p.ctx.StopServiceInstance(p.cfg.Service, i.Name())
+	return p.ctx.StopInstance(p.cfg.Service, i.Name())
 }
 
 type instance struct {

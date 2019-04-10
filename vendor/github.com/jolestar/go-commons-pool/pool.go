@@ -377,7 +377,6 @@ func (pool *ObjectPool) ReturnObject(ctx context.Context, object interface{}) er
 		return errors.New("object is nil")
 	}
 	p, ok := pool.allObjects.Get(object).(*PooledObject)
-
 	if !ok {
 		if !pool.isAbandonedConfig() {
 			return NewIllegalStateErr(

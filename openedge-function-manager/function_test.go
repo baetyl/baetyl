@@ -161,10 +161,10 @@ func (c *mockContext) Wait() {
 func (c *mockContext) GetAvailablePort() (string, error) {
 	return "", nil
 }
-func (c *mockContext) StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
+func (c *mockContext) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
 	return nil
 }
-func (c *mockContext) StopServiceInstance(serviceName, instanceName string) error {
+func (c *mockContext) StopInstance(serviceName, instanceName string) error {
 	return nil
 }
 

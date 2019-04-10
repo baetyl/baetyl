@@ -23,7 +23,7 @@ func TestRuleTopicFanout(t *testing.T) {
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
-	b, err := bb.NewBroker(c, pf)
+	b, err := bb.NewBroker(c, pf, nil)
 	assert.NoError(t, err)
 	defer b.Close()
 	subs := make([]config.Subscription, 2)
@@ -33,7 +33,7 @@ func TestRuleTopicFanout(t *testing.T) {
 	subs[1].Source.Topic = "all"
 	subs[1].Target.QOS = 1
 	subs[1].Target.Topic = "11"
-	r, err := NewManager(subs, b)
+	r, err := NewManager(subs, b, nil)
 	assert.NoError(t, err)
 	defer r.Close()
 	r.Start()
@@ -103,7 +103,7 @@ func TestRuleTopicFanin(t *testing.T) {
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
-	b, err := bb.NewBroker(c, pf)
+	b, err := bb.NewBroker(c, pf, nil)
 	assert.NoError(t, err)
 	defer b.Close()
 	subs := make([]config.Subscription, 2)
@@ -113,7 +113,7 @@ func TestRuleTopicFanin(t *testing.T) {
 	subs[1].Source.Topic = "11"
 	subs[1].Target.QOS = 1
 	subs[1].Target.Topic = "all"
-	r, err := NewManager(subs, b)
+	r, err := NewManager(subs, b, nil)
 	assert.NoError(t, err)
 	defer r.Close()
 	r.Start()
@@ -194,7 +194,7 @@ func TestRuleTopicRedo(t *testing.T) {
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
-	b, err := bb.NewBroker(c, pf)
+	b, err := bb.NewBroker(c, pf, nil)
 	assert.NoError(t, err)
 	defer b.Close()
 	subs := make([]config.Subscription, 2)
@@ -202,7 +202,7 @@ func TestRuleTopicRedo(t *testing.T) {
 	subs[0].Source.Topic = "a"
 	subs[0].Target.QOS = 1
 	subs[0].Target.Topic = "b"
-	r, err := NewManager(subs, b)
+	r, err := NewManager(subs, b, nil)
 	assert.NoError(t, err)
 	defer r.Close()
 	tmp, ok := r.rules.Get(common.RuleTopic)

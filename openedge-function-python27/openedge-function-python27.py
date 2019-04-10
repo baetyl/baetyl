@@ -34,9 +34,16 @@ class mo(function_pb2_grpc.FunctionServicer):
         self.config = yaml.load(open(conf, 'r').read())
 
         # overwrite config from env
-        if 'OPENEDGE_SERVICE_NAME' in os.environ:
+        if 'OPENEDGE_SERVICE_INSTANCE_NAME' in os.environ:
+            self.config['name'] = os.environ['OPENEDGE_SERVICE_INSTANCE_NAME']
+        elif 'OPENEDGE_SERVICE_NAME' in os.environ: # deprecated
             self.config['name'] = os.environ['OPENEDGE_SERVICE_NAME']
-        if 'OPENEDGE_SERVICE_ADDRESS' in os.environ:
+
+        if 'OPENEDGE_SERVICE_INSTANCE_ADDRESS' in os.environ:
+            if 'server' not in self.config:
+                self.config['server'] = {}
+            self.config['server']['address'] = os.environ['OPENEDGE_SERVICE_INSTANCE_ADDRESS']
+        elif 'OPENEDGE_SERVICE_ADDRESS' in os.environ: # deprecated
             if 'server' not in self.config:
                 self.config['server'] = {}
             self.config['server']['address'] = os.environ['OPENEDGE_SERVICE_ADDRESS']

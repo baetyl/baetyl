@@ -1,8 +1,6 @@
 package engine
 
 import (
-	"io"
-
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
@@ -12,14 +10,7 @@ type Service interface {
 	Stats() openedge.ServiceStatus
 	Start() error
 	Stop()
+	ReportInstance(instanceName string, stats map[string]interface{}) error
 	StartInstance(instanceName string, dynamicConfig map[string]string) error
 	StopInstance(instanceName string) error
-}
-
-// Instance interfaces of instance
-type Instance interface {
-	ID() string
-	Name() string
-	Supervisee
-	io.Closer
 }

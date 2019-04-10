@@ -38,12 +38,12 @@ func (m *mo) start() error {
 		m.log.Errorln("failed to new factory:", err.Error())
 		return err
 	}
-	m.broker, err = broker.NewBroker(&m.cfg, m.factory)
+	m.broker, err = broker.NewBroker(&m.cfg, m.factory, m.ctx.ReportInstance)
 	if err != nil {
 		m.log.Errorln("failed to new broker:", err.Error())
 		return err
 	}
-	m.Rules, err = rule.NewManager(m.cfg.Subscriptions, m.broker)
+	m.Rules, err = rule.NewManager(m.cfg.Subscriptions, m.broker, m.ctx.ReportInstance)
 	if err != nil {
 		m.log.Errorln("failed to new rule manager:", err.Error())
 		return err

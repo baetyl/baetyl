@@ -14,11 +14,15 @@ import (
 // Master master interface
 type Master interface {
 	Auth(u, p string) bool
+
+	// for system
 	InspectSystem() *openedge.Inspect
 	UpdateSystem(string, bool) error
 
-	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-	StopServiceInstance(serviceName, instanceName string) error
+	// for instance
+	ReportInstance(serviceName, instanceName string, stats map[string]interface{}) error
+	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	StopInstance(serviceName, instanceName string) error
 }
 
 // Server master api server
@@ -41,8 +45,9 @@ func New(c http.ServerInfo, m Master) (*Server, error) {
 	s.s.Handle(s.updateSystem, "PUT", "/system/update")
 
 	s.s.Handle(s.getAvailablePort, "GET", "/ports/available")
-	s.s.Handle(s.startServiceInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/start")
-	s.s.Handle(s.stopServiceInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/stop")
+	s.s.Handle(s.reportInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/report")
+	s.s.Handle(s.startInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/start")
+	s.s.Handle(s.stopInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/stop")
 	return s, s.s.Start()
 }
 
@@ -52,11 +57,7 @@ func (s *Server) Close() error {
 }
 
 func (s *Server) inspectSystem(_ http.Params, reqBody []byte) ([]byte, error) {
-	resBody, err := json.Marshal(s.m.InspectSystem())
-	if err != nil {
-		return nil, err
-	}
-	return resBody, nil
+	return json.Marshal(s.m.InspectSystem())
 }
 
 func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
@@ -83,14 +84,30 @@ func (s *Server) getAvailablePort(_ http.Params, reqBody []byte) ([]byte, error)
 	}
 	res := make(map[string]string)
 	res["port"] = strconv.Itoa(port)
-	resBody, err := json.Marshal(res)
+	return json.Marshal(res)
+}
+
+func (s *Server) reportInstance(params http.Params, reqBody []byte) ([]byte, error) {
+	if reqBody == nil {
+		return nil, fmt.Errorf("request body invalid")
+	}
+	serviceName, ok := params["serviceName"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing service name")
+	}
+	instanceName, ok := params["instanceName"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing instance name")
+	}
+	stats := make(map[string]interface{})
+	err := json.Unmarshal(reqBody, &stats)
 	if err != nil {
 		return nil, err
 	}
-	return resBody, nil
+	return nil, s.m.ReportInstance(serviceName, instanceName, stats)
 }
 
-func (s *Server) startServiceInstance(params http.Params, reqBody []byte) ([]byte, error) {
+func (s *Server) startInstance(params http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
 	}
@@ -107,11 +124,10 @@ func (s *Server) startServiceInstance(params http.Params, reqBody []byte) ([]byt
 	if err != nil {
 		return nil, err
 	}
-	err = s.m.StartServiceInstance(serviceName, instanceName, dynamicConfig)
-	return nil, err
+	return nil, s.m.StartInstance(serviceName, instanceName, dynamicConfig)
 }
 
-func (s *Server) stopServiceInstance(params http.Params, _ []byte) ([]byte, error) {
+func (s *Server) stopInstance(params http.Params, _ []byte) ([]byte, error) {
 	serviceName, ok := params["serviceName"]
 	if !ok {
 		return nil, fmt.Errorf("request params invalid, missing service name")
@@ -120,6 +136,5 @@ func (s *Server) stopServiceInstance(params http.Params, _ []byte) ([]byte, erro
 	if !ok {
 		return nil, fmt.Errorf("request params invalid, missing instance name")
 	}
-	err := s.m.StopServiceInstance(serviceName, instanceName)
-	return nil, err
+	return nil, s.m.StopInstance(serviceName, instanceName)
 }

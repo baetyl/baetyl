@@ -30,31 +30,33 @@
 `Context` 接口列表如下：
 
 ```golang
-	// 返回服务的系统配置，比如 hub 和 logger
-	Config() *ServiceConfig
-	// 加载服务的自定义配置
-	LoadConfig(interface{}) error
-	// 通过系统配置创建一个连接 Hub 的 Client，可以指定 Client ID 和订阅的主题信息
-	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
-	// 返回日志接口
-	Log() logger.Logger
-	// 等待退出，接收 SIGTERM 和 SIGINT 信号
-	Wait()
-	// 返回等待退出的 Channel
-	WaitChan() <-chan os.Signal
+// 返回服务的系统配置，比如 hub 和 logger
+Config() *ServiceConfig
+// 加载服务的自定义配置
+LoadConfig(interface{}) error
+// 通过系统配置创建一个连接 Hub 的 Client，可以指定 Client ID 和订阅的主题信息
+NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
+// 返回日志接口
+Log() logger.Logger
+// 等待退出，接收 SIGTERM 和 SIGINT 信号
+Wait()
+// 返回等待退出的 Channel
+WaitChan() <-chan os.Signal
 
-	// 主程序 RESTful API
+// 主程序 RESTful API
 
-	// 更新系统服务
-	UpdateSystem(string, bool) error
-	// 查看系统状态
-	InspectSystem() (*Inspect, error)
-	// 获取一个宿主机的空闲端口
-	GetAvailablePort() (string, error)
-	// 启动某个服务的某个实例
-	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-	// 停止某个服务的某个实例
-	StopServiceInstance(serviceName, instanceName string) error
+// 更新系统服务
+UpdateSystem(string, bool) error
+// 查看系统状态
+InspectSystem() (*Inspect, error)
+// 获取一个宿主机的空闲端口
+GetAvailablePort() (string, error)
+// 报告本实例的状态信息
+ReportInstance(stats map[string]interface{}) error
+// 启动某个服务的某个实例
+StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+// 停止某个服务的某个实例
+StopInstance(serviceName, instanceName string) error
 ```
 
 下面以简单定时器模块实现为例，介绍SDK的用法。

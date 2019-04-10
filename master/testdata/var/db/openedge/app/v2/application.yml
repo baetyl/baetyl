@@ -4,7 +4,7 @@ services:
     image: hub.baidubce.com/openedge/cmd:0.1.2
     mounts:
       - name: cmd-bin
-        path: lib/openedge/hub.baidubce.com/openedge/cmd:0.1.2
+        path: lib/openedge/hub.baidubce.com/openedge/cmd/0.1.2
   - name: hi
     image: cmd
     mounts:

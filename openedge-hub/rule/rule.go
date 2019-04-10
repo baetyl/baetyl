@@ -1,7 +1,7 @@
 package rule
 
 import (
-	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
@@ -17,7 +17,7 @@ type base interface {
 	channel() *msgchan
 	register(sub *sinksub)
 	remove(id, topic string)
-	info() string
+	info() map[string]interface{}
 }
 
 type rulebase struct {
@@ -127,7 +127,16 @@ func (r *rulebase) persist(sid uint64) {
 	}
 }
 
-func (r *rulebase) info() string {
-	return fmt.Sprintf("offset:%d, msgq0:%d, msgq1:%d, msgack:%d, id: %s",
-		r.sink.getOffset(), len(r.msgchan.msgq0), len(r.msgchan.msgq1), len(r.msgchan.msgack), r.uid())
+func (r *rulebase) info() map[string]interface{} {
+	offsetPersisted := "-"
+	if v, _ := r.broker.OffsetPersisted(r.uid()); v != nil {
+		offsetPersisted = strconv.FormatUint(*v, 10)
+	}
+	return map[string]interface{}{
+		"persisted_offset":      offsetPersisted,
+		"buffered_offset":       r.sink.getOffset(),
+		"buffered_message_qos0": len(r.msgchan.msgq0),
+		"buffered_message_qos1": len(r.msgchan.msgq1),
+		"buffered_message_ack":  len(r.msgchan.msgack),
+	}
 }

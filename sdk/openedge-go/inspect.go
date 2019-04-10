@@ -9,15 +9,15 @@ import (
 // Inspect all openedge information and status inspected
 type Inspect struct {
 	// exception information
-	Error    string    `json:"error"`
+	Error string `json:"error"`
 	// inspect time
-	Time     time.Time `json:"time"`
+	Time time.Time `json:"time"`
 	// software information
-	Software Software  `json:"software,omitempty"`
+	Software Software `json:"software,omitempty"`
 	// hardware information
-	Hardware Hardware  `json:"hardware,omitempty"`
+	Hardware Hardware `json:"hardware,omitempty"`
 	// service information, including service name, instance running status, etc.
-	Services Services  `json:"services,omitempty"`
+	Services Services `json:"services,omitempty"`
 	// storage volume information, currently not implemented
 	// Volumes  []VolumeStatus `json:"volumes,omitempty"`
 }
@@ -25,15 +25,17 @@ type Inspect struct {
 // Software software information
 type Software struct {
 	// operating system information of host
-	OS          string `json:"os,omitempty"`
+	OS string `json:"os,omitempty"`
 	// CPU information of host
-	Arch        string `json:"arch,omitempty"`
+	Arch string `json:"arch,omitempty"`
+	// OpenEdge process work directory
+	PWD string `json:"pwd,omitempty"`
 	// OpenEdge running mode of application services
-	Mode        string `json:"mode,omitempty"`
-    // OpenEdge compiled Golang version
-	GoVersion   string `json:"go_version,omitempty"`
+	Mode string `json:"mode,omitempty"`
+	// OpenEdge compiled Golang version
+	GoVersion string `json:"go_version,omitempty"`
 	// OpenEdge release version
-	BinVersion  string `json:"bin_version,omitempty"`
+	BinVersion string `json:"bin_version,omitempty"`
 	// OpenEdge loaded application configuration version
 	ConfVersion string `json:"conf_version,omitempty"`
 }
@@ -41,13 +43,13 @@ type Software struct {
 // Hardware hardware information
 type Hardware struct {
 	// memory usage information of host
-	MemInfo  *utils.MemInfo  `json:"mem_stats,omitempty"`
+	MemInfo *utils.MemInfo `json:"mem_stats,omitempty"`
 	// CPU usage information of host
-	CPUInfo  *utils.CPUInfo  `json:"cpu_stats,omitempty"`
+	CPUInfo *utils.CPUInfo `json:"cpu_stats,omitempty"`
 	// disk usage information of host
 	DiskInfo *utils.DiskInfo `json:"disk_stats,omitempty"`
 	// CPU usage information of host
-	GPUInfo  []utils.GPUInfo `json:"gpu_stats,omitempty"`
+	GPUInfo []utils.GPUInfo `json:"gpu_stats,omitempty"`
 }
 
 // Services all services' information

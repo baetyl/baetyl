@@ -3,10 +3,10 @@ package native
 import (
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/orcaman/concurrent-map"
 )
@@ -33,7 +33,7 @@ func (s *nativeService) Name() string {
 func (s *nativeService) Stats() openedge.ServiceStatus {
 	r := openedge.NewServiceStatus(s.cfg.Name)
 	for _, i := range s.instances.Items() {
-		r.Instances = append(r.Instances, i.(*nativeInstance).State())
+		r.Instances = append(r.Instances, i.(*nativeInstance).Stats())
 	}
 	return r
 }
@@ -69,6 +69,16 @@ func (s *nativeService) Stop() {
 	wg.Wait()
 }
 
+func (s *nativeService) ReportInstance(instanceName string, stats map[string]interface{}) error {
+	i, ok := s.instances.Get(instanceName)
+	if !ok {
+		s.log.Debugf("instance (%s) not found", instanceName)
+		return nil
+	}
+	i.(*nativeInstance).SetStats(stats)
+	return nil
+}
+
 func (s *nativeService) StartInstance(instanceName string, dynamicConfig map[string]string) error {
 	return s.startInstance(instanceName, dynamicConfig)
 }
@@ -76,22 +86,7 @@ func (s *nativeService) StartInstance(instanceName string, dynamicConfig map[str
 func (s *nativeService) startInstance(instanceName string, dynamicConfig map[string]string) error {
 	s.StopInstance(instanceName)
 	params := s.params
-	if dynamicConfig != nil {
-		params.env = []string{}
-		for _, v := range s.params.env {
-			// remove auth info for dynamic instances
-			if strings.HasPrefix(v, openedge.EnvServiceNameKey) {
-				continue
-			}
-			if strings.HasPrefix(v, openedge.EnvServiceTokenKey) {
-				continue
-			}
-			params.env = append(params.env, v)
-		}
-		for k, v := range dynamicConfig {
-			params.env = append(params.env, fmt.Sprintf("%s=%s", k, v))
-		}
-	}
+	params.env = engine.GenerateInstanceEnv(instanceName, s.params.env, dynamicConfig)
 	i, err := s.newInstance(instanceName, params)
 	if err != nil {
 		return err

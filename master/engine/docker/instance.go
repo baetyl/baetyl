@@ -9,8 +9,7 @@ import (
 
 // Instance instance of service
 type dockerInstance struct {
-	id      string
-	name    string
+	engine.InstanceStats
 	service *dockerService
 	log     logger.Logger
 	tomb    utils.Tomb
@@ -30,11 +29,13 @@ func (s *dockerService) newInstance(name string, params containerConfigs) (*dock
 		}
 	}
 	i := &dockerInstance{
-		id:      cid,
-		name:    name,
 		service: s,
 		log:     log.WithField("cid", cid[:12]),
 	}
+	i.SetStats(map[string]interface{}{
+		"id":   cid,
+		"name": name,
+	})
 	err = i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
@@ -55,23 +56,24 @@ func (i *dockerInstance) Policy() openedge.RestartPolicyInfo {
 }
 
 func (i *dockerInstance) State() openedge.InstanceStatus {
-	status, err := i.service.engine.statsContainer(i.id)
+	s, err := i.service.engine.statsContainer(i.ID())
 	if err != nil {
-		status = openedge.InstanceStatus{"error": err.Error()}
+		i.log.WithError(err).Errorf("failed to stats instance")
+		i.SetStatus(engine.Offline)
+	} else {
+		i.SetStats(s)
 	}
-	status["id"] = i.id
-	status["name"] = i.name
-	return status
+	return i.Stats()
 }
 
 func (i *dockerInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
-	err := i.service.engine.waitContainer(i.id)
+	err := i.service.engine.waitContainer(i.ID())
 	s <- err
 }
 
 func (i *dockerInstance) Restart() error {
-	err := i.service.engine.restartContainer(i.id)
+	err := i.service.engine.restartContainer(i.ID())
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to restart instance")
 		return err
@@ -82,12 +84,12 @@ func (i *dockerInstance) Restart() error {
 
 func (i *dockerInstance) Stop() {
 	i.log.Infof("to stop instance")
-	err := i.service.engine.stopContainer(i.id)
+	err := i.service.engine.stopContainer(i.ID())
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to stop instance")
 	}
-	i.service.engine.removeContainer(i.id)
-	i.service.instances.Remove(i.name)
+	i.service.engine.removeContainer(i.ID())
+	i.service.instances.Remove(i.Name())
 }
 
 func (i *dockerInstance) Dying() <-chan struct{} {

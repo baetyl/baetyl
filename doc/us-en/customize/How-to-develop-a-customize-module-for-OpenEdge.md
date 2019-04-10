@@ -54,10 +54,12 @@ UpdateSystem(string, bool) error
 InspectSystem() (*Inspect, error)
 // gets an available port of the host
 GetAvailablePort() (string, error)
-// starts an instance of a service
-StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-// stop an instance of a service
-StopServiceInstance(serviceName, instanceName string) error
+// reports the stats of the instance of the service
+ReportInstance(stats map[string]interface{}) error
+// starts an instance of the service
+StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+// stop the instance of the service
+StopInstance(serviceName, instanceName string) error
 ```
 
 The following uses the simple timer module implementation as an example to introduce the usage of the SDK.

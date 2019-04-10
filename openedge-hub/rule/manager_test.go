@@ -23,7 +23,7 @@ func TestBroker(t *testing.T) {
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
-	b, err := bb.NewBroker(c, pf)
+	b, err := bb.NewBroker(c, pf, nil)
 	assert.NoError(t, err)
 	defer b.Close()
 	subs := make([]config.Subscription, 2)
@@ -31,7 +31,7 @@ func TestBroker(t *testing.T) {
 	subs[0].Target.Topic = "next"
 	subs[1].Source.Topic = "next"
 	subs[1].Target.Topic = "tail"
-	r, err := NewManager(subs, b)
+	r, err := NewManager(subs, b, nil)
 	assert.NoError(t, err)
 	defer r.Close()
 	r.Start()
@@ -319,11 +319,11 @@ func TestBrokerCleaning(t *testing.T) {
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
-	b, err := bb.NewBroker(c, pf)
+	b, err := bb.NewBroker(c, pf, nil)
 	assert.NoError(t, err)
 	defer b.Close()
 	subs := make([]config.Subscription, 0)
-	r, err := NewManager(subs, b)
+	r, err := NewManager(subs, b, nil)
 	assert.NoError(t, err)
 	defer r.Close()
 	q0 := make(chan *common.Message, 10)
@@ -369,7 +369,7 @@ func TestBrokerPerf(t *testing.T) {
 	pf, err := persist.NewFactory("./var/db/")
 	assert.NoError(t, err)
 	defer pf.Close()
-	b, err := bb.NewBroker(c, pf)
+	b, err := bb.NewBroker(c, pf, nil)
 	assert.NoError(t, err)
 	defer b.Close()
 	subs := make([]config.Subscription, 2)
@@ -377,7 +377,7 @@ func TestBrokerPerf(t *testing.T) {
 	subs[0].Source.Topic = "head"
 	subs[0].Target.QOS = 1
 	subs[0].Target.Topic = "tail"
-	r, err := NewManager(subs, b)
+	r, err := NewManager(subs, b, nil)
 	assert.NoError(t, err)
 	defer r.Close()
 	r.Start()
