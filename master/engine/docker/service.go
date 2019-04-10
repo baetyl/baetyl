@@ -2,10 +2,10 @@ package docker
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/orcaman/concurrent-map"
 )
@@ -78,6 +78,16 @@ func (s *dockerService) Stop() {
 	wg.Wait()
 }
 
+func (s *dockerService) ReportInstance(instanceName string, stats map[string]interface{}) error {
+	i, ok := s.instances.Get(instanceName)
+	if !ok {
+		s.log.Debugf("instance (%s) not found", instanceName)
+		return nil
+	}
+	i.(*dockerInstance).SetStats(stats)
+	return nil
+}
+
 func (s *dockerService) StartInstance(instanceName string, dynamicConfig map[string]string) error {
 	return s.startInstance(instanceName, dynamicConfig)
 }
@@ -85,22 +95,7 @@ func (s *dockerService) StartInstance(instanceName string, dynamicConfig map[str
 func (s *dockerService) startInstance(instanceName string, dynamicConfig map[string]string) error {
 	s.StopInstance(instanceName)
 	params := s.params
-	if dynamicConfig != nil {
-		params.config.Env = []string{}
-		for _, v := range s.params.config.Env {
-			// remove auth info for dynamic instances
-			if strings.HasPrefix(v, openedge.EnvServiceNameKey) {
-				continue
-			}
-			if strings.HasPrefix(v, openedge.EnvServiceTokenKey) {
-				continue
-			}
-			params.config.Env = append(params.config.Env, v)
-		}
-		for k, v := range dynamicConfig {
-			params.config.Env = append(params.config.Env, fmt.Sprintf("%s=%s", k, v))
-		}
-	}
+	params.config.Env = engine.GenerateInstanceEnv(instanceName, s.params.config.Env, dynamicConfig)
 	i, err := s.newInstance(instanceName, params)
 	if err != nil {
 		return err

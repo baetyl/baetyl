@@ -3,7 +3,6 @@ package native
 import (
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -12,33 +11,13 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-// State state of instance
-type State string
-
-// all states
-const (
-	Created    State = "created"    // 已创建
-	Running    State = "running"    // 运行中
-	Paused     State = "paused"     // 已暂停
-	Restarting State = "restarting" // 重启中
-	Removing   State = "removing"   // 退出中
-	Exited     State = "exited"     // 已退出
-	Dead       State = "dead"       // 未启动（默认值）
-	Offline    State = "offline"    // 离线（同核心的状态）
-)
-
 // Instance instance of service
 type nativeInstance struct {
-	name    string
+	engine.InstanceStats
 	service *nativeService
 	params  processConfigs
 	tomb    utils.Tomb
 	log     logger.Logger
-
-	mutex     sync.RWMutex
-	state     State
-	process   *os.Process
-	startTime time.Time
 }
 
 func (s *nativeService) newInstance(name string, params processConfigs) (*nativeInstance, error) {
@@ -54,14 +33,17 @@ func (s *nativeService) newInstance(name string, params processConfigs) (*native
 		}
 	}
 	i := &nativeInstance{
-		name:      name,
-		process:   p,
-		service:   s,
-		params:    params,
-		state:     Running,
-		startTime: time.Now().UTC(),
-		log:       log.WithField("pid", p.Pid),
+		service: s,
+		params:  params,
+		log:     log.WithField("pid", p.Pid),
 	}
+	i.SetStats(map[string]interface{}{
+		"id":         strconv.Itoa(p.Pid),
+		"name":       name,
+		"status":     engine.Running,
+		"start_time": time.Now().UTC(),
+		"process":    p,
+	})
 	err = i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
@@ -81,55 +63,27 @@ func (i *nativeInstance) Policy() openedge.RestartPolicyInfo {
 	return i.service.cfg.Restart
 }
 
-func (i *nativeInstance) State() openedge.InstanceStatus {
-	i.mutex.RLock()
-	defer i.mutex.RUnlock()
-
-	return openedge.InstanceStatus{
-		"status":     i.state,
-		"id":         strconv.Itoa(i.process.Pid),
-		"name":       i.name,
-		"start_time": i.startTime,
-	}
-}
-
-func (i *nativeInstance) setState(s State) {
-	i.mutex.Lock()
-	i.state = s
-	i.mutex.Unlock()
-}
-
-func (i *nativeInstance) getProcess() *os.Process {
-	i.mutex.RLock()
-	defer i.mutex.RUnlock()
-	return i.process
-}
-
-func (i *nativeInstance) setProcess(p *os.Process) {
-	i.mutex.Lock()
-	i.process = p
-	i.startTime = time.Now().UTC()
-	i.mutex.Unlock()
-}
-
 func (i *nativeInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
-	err := i.service.engine.waitProcess(i.getProcess())
+	err := i.service.engine.waitProcess(i.Stat("process").(*os.Process))
 	s <- err
-	i.setState(Exited)
+	i.SetStatus(engine.Exited)
 }
 
 func (i *nativeInstance) Restart() error {
-	i.setState(Restarting)
+	i.SetStatus(engine.Restarting)
 
 	p, err := i.service.engine.startProcess(i.params)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to restart instance")
 		return err
 	}
-
-	i.setProcess(p)
-	i.setState(Running)
+	i.SetStats(map[string]interface{}{
+		"id":         strconv.Itoa(p.Pid),
+		"status":     engine.Running,
+		"start_time": time.Now().UTC(),
+		"process":    p,
+	})
 	i.log = i.log.WithField("pid", p.Pid)
 	i.log.Infof("instance restarted")
 	return nil
@@ -137,12 +91,12 @@ func (i *nativeInstance) Restart() error {
 
 func (i *nativeInstance) Stop() {
 	i.log.Infof("to stop instance")
-	err := i.service.engine.stopProcess(i.getProcess())
+	err := i.service.engine.stopProcess(i.Stat("process").(*os.Process))
 	if err != nil {
 		i.log.Debugf("failed to stop instance: %s", err.Error())
 	}
-	i.setState(Dead)
-	i.service.instances.Remove(i.name)
+	i.SetStatus(engine.Dead)
+	i.service.instances.Remove(i.Name())
 }
 
 func (i *nativeInstance) Dying() <-chan struct{} {

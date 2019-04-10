@@ -9,20 +9,29 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (b *Broker) logging() error {
-	defer b.log.Debugf("status logging task stopped")
+func (b *Broker) reporting() error {
+	defer b.log.Debugf("metrics reporting task stopped")
 
-	t := time.NewTicker(b.config.Status.Logging.Interval)
+	var err error
+	t := time.NewTicker(b.config.Metrics.Report.Interval)
 	defer t.Stop()
 	for {
 		select {
 		case <-b.tomb.Dying():
 			return nil
 		case <-t.C:
-			b.log.Infof("broker status")
-			b.log.Infof("  ingress msgqos0 buffer: %d", len(b.msgQ0Chan))
-			b.log.Infof("  ingress msgqos1 buffer: %d", len(b.msgQ1Chan))
-			b.log.Infof("  egress offsets buffer: %d", len(b.offsetChan))
+			stats := map[string]interface{}{
+				"broker_stats": map[string]interface{}{
+					"ingress_buffered_message_qos0":  len(b.msgQ0Chan),
+					"ingress_buffered_message_qos1":  len(b.msgQ1Chan),
+					"egress_buffered_offset": len(b.offsetChan),
+				},
+			}
+			err = b.report(stats)
+			if err != nil {
+				b.log.Warnf("failed to report broker stats")
+			}
+			b.log.Debugln(stats)
 		}
 	}
 }

@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"time"
 
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -166,7 +165,7 @@ func (e *dockerEngine) removeContainerByName(name string) error {
 	return err
 }
 
-func (e *dockerEngine) statsContainer(cid string) (openedge.InstanceStatus, error) {
+func (e *dockerEngine) statsContainer(cid string) (map[string]interface{}, error) {
 	ctx := context.Background()
 	iresp, err := e.cli.ContainerInspect(ctx, cid)
 	if err != nil {
@@ -190,11 +189,11 @@ func (e *dockerEngine) statsContainer(cid string) (openedge.InstanceStatus, erro
 		e.log.WithError(err).Warnf("failed to unmarshal stats response of container (%s)", cid[:12])
 		return nil, err
 	}
-	return openedge.InstanceStatus{
-		"status":       iresp.State.Status,
-		"start_time":   iresp.State.StartedAt,
-		"finish_time":  iresp.State.FinishedAt,
-		"cpu_stats":    tstats.CPUStats,
-		"memory_stats": tstats.MemoryStats,
+	return map[string]interface{}{
+		"status":      iresp.State.Status,
+		"start_time":  iresp.State.StartedAt,
+		"finish_time": iresp.State.FinishedAt,
+		"cpu_stats":   tstats.CPUStats,
+		"mem_stats":   tstats.MemoryStats,
 	}, nil
 }

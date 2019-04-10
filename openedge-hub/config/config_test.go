@@ -80,8 +80,7 @@ func TestConfig(t *testing.T) {
 	assert.Equal(t, 10000, c.Message.Offset.Buffer.Size)
 	assert.Equal(t, 100, c.Message.Offset.Batch.Max)
 
-	assert.Equal(t, false, c.Status.Logging.Enable)
-	assert.Equal(t, time.Minute, c.Status.Logging.Interval)
+	assert.Equal(t, time.Minute, c.Metrics.Report.Interval)
 
 	assert.Equal(t, int64(32768), c.Message.Length.Max)
 }
