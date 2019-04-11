@@ -163,8 +163,8 @@ type Inspect struct {
     Hardware Hardware  `json:"hardware,omitempty"`
     // 服务信息，包括服务名、实例运行状态等
     Services Services  `json:"services,omitempty"`
-    // 存储卷信息，当前未实现
-    // Volumes  []VolumeStatus `json:"volumes,omitempty"`
+    // 存储卷信息，包括存储卷名称和版本
+    Volumes  Volumes   `json:"volumes,omitempty"`
 }
 
 // 软件信息

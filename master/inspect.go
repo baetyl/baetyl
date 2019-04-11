@@ -34,6 +34,7 @@ func (m *Master) InspectSystem() *openedge.Inspect {
 		m.log.Debugf("failed to get disk information: %s", err.Error())
 	}
 	m.stats.Services = m.statServices()
+	m.stats.Volumes = m.statVolumes()
 	return m.stats
 }
 
@@ -42,18 +43,29 @@ func (m *Master) statServices() openedge.Services {
 	results := make(chan openedge.ServiceStatus, len(services))
 
 	var wg sync.WaitGroup
-	for _, s := range services {
+	for _, item := range services {
 		wg.Add(1)
 		go func(s engine.Service, wg *sync.WaitGroup) {
 			defer wg.Done()
 			results <- s.Stats()
-		}(s.(engine.Service), &wg)
+		}(item.(engine.Service), &wg)
 	}
 	wg.Wait()
 	close(results)
 	r := openedge.Services{}
 	for s := range results {
 		r = append(r, s)
+	}
+	return r
+}
+
+func (m *Master) statVolumes() openedge.Volumes {
+	r := openedge.Volumes{}
+	for _, v := range m.appcfg.Volumes {
+		r = append(r, openedge.VolumeStatus{
+			Name:    v.Name,
+			Version: v.Meta.Version,
+		})
 	}
 	return r
 }

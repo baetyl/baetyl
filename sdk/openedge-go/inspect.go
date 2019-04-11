@@ -9,17 +9,17 @@ import (
 // Inspect all openedge information and status inspected
 type Inspect struct {
 	// exception information
-	Error string `json:"error"`
+	Error string `json:"error,omitempty"`
 	// inspect time
-	Time time.Time `json:"time"`
+	Time time.Time `json:"time,omitempty"`
 	// software information
 	Software Software `json:"software,omitempty"`
 	// hardware information
 	Hardware Hardware `json:"hardware,omitempty"`
 	// service information, including service name, instance running status, etc.
 	Services Services `json:"services,omitempty"`
-	// storage volume information, currently not implemented
-	// Volumes  []VolumeStatus `json:"volumes,omitempty"`
+	// storage volume information, including name and version
+	Volumes Volumes `json:"volumes,omitempty"`
 }
 
 // Software software information
@@ -77,4 +77,13 @@ func NewServiceStatus(name string) ServiceStatus {
 		Name:      name,
 		Instances: []InstanceStatus{},
 	}
+}
+
+// Volumes all volumes' information
+type Volumes []VolumeStatus
+
+// VolumeStatus volume status
+type VolumeStatus struct {
+	Name    string `json:"name,omitempty"`
+	Version string `json:"version,omitempty"`
 }

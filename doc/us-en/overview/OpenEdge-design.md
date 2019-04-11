@@ -156,17 +156,17 @@ This interface is used to obtain the following information and status:
 // Inspect all openedge information and status inspected
 type Inspect struct {
 	// exception information
-	Error    string    `json:"error"`
+	Error    string    `json:"error,omitempty"`
 	// inspect time
-	Time     time.Time `json:"time"`
+	Time     time.Time `json:"time,omitempty"`
 	// software information
 	Software Software  `json:"software,omitempty"`
 	// hardware information
 	Hardware Hardware  `json:"hardware,omitempty"`
 	// service information, including service name, instance running status, etc.
 	Services Services  `json:"services,omitempty"`
-	// storage volume information, currently not implemented
-	// Volumes  []VolumeStatus `json:"volumes,omitempty"`
+	// storage volume information, including name and version
+	Volumes  Volumes   `json:"volumes,omitempty"`
 }
 
 // Software software information

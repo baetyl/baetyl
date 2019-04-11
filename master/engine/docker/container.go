@@ -167,33 +167,42 @@ func (e *dockerEngine) removeContainerByName(name string) error {
 
 func (e *dockerEngine) statsContainer(cid string) (map[string]interface{}, error) {
 	ctx := context.Background()
-	iresp, err := e.cli.ContainerInspect(ctx, cid)
+	status, err := e.cli.ContainerInspect(ctx, cid)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to inspect container (%s)", cid[:12])
 		return nil, err
 	}
-	sresp, err := e.cli.ContainerStats(ctx, cid, false)
+	resp, err := e.cli.ContainerStats(ctx, cid, false)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to stats container (%s)", cid[:12])
 		return nil, err
 	}
-	defer sresp.Body.Close()
-	data, err := ioutil.ReadAll(sresp.Body)
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to read stats response of container (%s)", cid[:12])
 		return nil, err
 	}
-	var tstats types.Stats
-	err = json.Unmarshal(data, &tstats)
+	var stats types.Stats
+	err = json.Unmarshal(data, &stats)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to unmarshal stats response of container (%s)", cid[:12])
 		return nil, err
 	}
+
+	stats.MemoryStats.Stats = nil
+	cpuStats := map[string]interface{}{
+		"online_cpus":         stats.CPUStats.OnlineCPUs,
+		"system_cpu_usage":    stats.CPUStats.SystemUsage,
+		"total_usage":         stats.CPUStats.CPUUsage.TotalUsage,
+		"usage_in_kernelmode": stats.CPUStats.CPUUsage.UsageInKernelmode,
+		"usage_in_usermode":   stats.CPUStats.CPUUsage.UsageInUsermode,
+	}
 	return map[string]interface{}{
-		"status":      iresp.State.Status,
-		"start_time":  iresp.State.StartedAt,
-		"finish_time": iresp.State.FinishedAt,
-		"cpu_stats":   tstats.CPUStats,
-		"mem_stats":   tstats.MemoryStats,
+		"status":      status.State.Status,
+		"start_time":  status.State.StartedAt,
+		"finish_time": status.State.FinishedAt,
+		"cpu_stats":   cpuStats,
+		"mem_stats":   stats.MemoryStats,
 	}, nil
 }
