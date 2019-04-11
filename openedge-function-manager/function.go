@@ -98,6 +98,7 @@ func (f *Function) Close() error {
 func (f *Function) MakeObject(_ context.Context) (*pool.PooledObject, error) {
 	select {
 	case id := <-f.ids:
+		f.log.Infof("instance created")
 		i, err := f.p.StartInstance(id)
 		if err != nil {
 			return nil, err
@@ -111,8 +112,9 @@ func (f *Function) MakeObject(_ context.Context) (*pool.PooledObject, error) {
 
 // DestroyObject close an instance
 func (f *Function) DestroyObject(ctx context.Context, object *pool.PooledObject) error {
+	f.log.Infof("instance destroyed")
 	i := object.Object.(Instance)
-	i.Close()
+	f.p.StopInstance(i)
 	select {
 	case f.ids <- i.ID():
 	case <-f.tomb.Dying():

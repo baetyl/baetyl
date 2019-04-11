@@ -31,9 +31,9 @@ type Engine interface {
 }
 
 // New engine by given name
-func New(name string, grace time.Duration, wdir string) (Engine, error) {
+func New(name string, grace time.Duration, pwd string) (Engine, error) {
 	if f, ok := factories[name]; ok {
-		return f(grace, wdir)
+		return f(grace, pwd)
 	}
 	return nil, errors.New("no such engine")
 }

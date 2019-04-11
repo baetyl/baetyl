@@ -18,15 +18,13 @@ import (
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	ver      string
 	cfg      Config
 	appcfg   openedge.AppConfig
 	server   *api.Server
 	engine   engine.Engine
+	stats    *openedge.Inspect
 	services cmap.ConcurrentMap
 	accounts cmap.ConcurrentMap
-	context  cmap.ConcurrentMap
-	pwd      string
 	log      logger.Logger
 }
 
@@ -41,16 +39,23 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
 	m := &Master{
-		ver:      ver,
 		cfg:      cfg,
-		pwd:      pwd,
 		log:      log,
 		services: cmap.New(),
 		accounts: cmap.New(),
-		context:  cmap.New(),
+		stats: &openedge.Inspect{
+			Software: openedge.Software{
+				OS:         runtime.GOOS,
+				Arch:       runtime.GOARCH,
+				PWD:        pwd,
+				Mode:       cfg.Mode,
+				GoVersion:  runtime.Version(),
+				BinVersion: ver,
+			},
+		},
 	}
-	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, m.pwd)
-	m.engine, err = engine.New(cfg.Mode, cfg.Grace, m.pwd)
+	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, pwd)
+	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd)
 	if err != nil {
 		m.Close()
 		return nil, err

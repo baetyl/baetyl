@@ -1,7 +1,6 @@
 package master
 
 import (
-	"runtime"
 	"sync"
 	"time"
 
@@ -14,38 +13,29 @@ import (
 func (m *Master) InspectSystem() *openedge.Inspect {
 	defer utils.Trace("InspectSystem", m.log.Debugf)()
 
-	ms := openedge.NewInspect()
-	ms.Time = time.Now().UTC()
-	ms.Software.OS = runtime.GOOS
-	ms.Software.Arch = runtime.GOARCH
-	ms.Software.Mode = m.cfg.Mode
-	ms.Software.GoVersion = runtime.Version()
-	ms.Software.BinVersion = m.ver
-	ms.Software.ConfVersion = m.appcfg.Version
+	m.stats.Time = time.Now().UTC()
+	m.stats.Software.ConfVersion = m.appcfg.Version
 
 	var err error
-	ms.Hardware.GPUInfo, err = utils.GetGPUInfo()
+	m.stats.Hardware.GPUInfo, err = utils.GetGPUInfo()
 	if err != nil {
 		m.log.Debugf("failed to get gpu information: %s", err.Error())
 	}
-	ms.Hardware.MemInfo, err = utils.GetMemInfo()
+	m.stats.Hardware.MemInfo, err = utils.GetMemInfo()
 	if err != nil {
 		m.log.Debugf("failed to get memory information: %s", err.Error())
 	}
-	ms.Hardware.CPUInfo, err = utils.GetCPUInfo()
+	m.stats.Hardware.CPUInfo, err = utils.GetCPUInfo()
 	if err != nil {
 		m.log.Debugf("failed to get cpu information: %s", err.Error())
 	}
-	ms.Hardware.DiskInfo, err = utils.GetDiskInfo("/")
+	m.stats.Hardware.DiskInfo, err = utils.GetDiskInfo("/")
 	if err != nil {
 		m.log.Debugf("failed to get disk information: %s", err.Error())
 	}
-	ms.Services = m.statServices()
-	v, ok := m.context.Get("error")
-	if ok {
-		ms.Error = v.(string)
-	}
-	return ms
+	m.stats.Services = m.statServices()
+	m.stats.Volumes = m.statVolumes()
+	return m.stats
 }
 
 func (m *Master) statServices() openedge.Services {
@@ -53,18 +43,29 @@ func (m *Master) statServices() openedge.Services {
 	results := make(chan openedge.ServiceStatus, len(services))
 
 	var wg sync.WaitGroup
-	for _, s := range services {
+	for _, item := range services {
 		wg.Add(1)
 		go func(s engine.Service, wg *sync.WaitGroup) {
 			defer wg.Done()
 			results <- s.Stats()
-		}(s.(engine.Service), &wg)
+		}(item.(engine.Service), &wg)
 	}
 	wg.Wait()
 	close(results)
 	r := openedge.Services{}
 	for s := range results {
 		r = append(r, s)
+	}
+	return r
+}
+
+func (m *Master) statVolumes() openedge.Volumes {
+	r := openedge.Volumes{}
+	for _, v := range m.appcfg.Volumes {
+		r = append(r, openedge.VolumeStatus{
+			Name:    v.Name,
+			Version: v.Meta.Version,
+		})
 	}
 	return r
 }

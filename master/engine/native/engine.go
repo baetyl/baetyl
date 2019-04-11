@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
-
-	"github.com/orcaman/concurrent-map"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
+	"github.com/orcaman/concurrent-map"
 )
 
 // NAME of this engine
@@ -60,7 +60,8 @@ func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		return nil, err
 	}
 	var pkg packageConfig
-	pkgDir := path.Join(spwd, "lib", "openedge", cfg.Image)
+	image := strings.Replace(strings.TrimSpace(cfg.Image), ":", "/", -1)
+	pkgDir := path.Join(spwd, "lib", "openedge", image)
 	err = utils.LoadYAML(path.Join(pkgDir, packageConfigPath), &pkg)
 	if err != nil {
 		os.RemoveAll(spwd)
@@ -101,7 +102,7 @@ func mount(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.Vo
 		if err != nil {
 			return err
 		}
-		dst := path.Join(spwd, path.Clean(m.Path))
+		dst := path.Join(spwd, path.Clean(strings.TrimSpace(m.Path)))
 		err = os.MkdirAll(path.Dir(dst), 0755)
 		if err != nil {
 			return err

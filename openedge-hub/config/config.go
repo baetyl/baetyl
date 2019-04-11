@@ -21,18 +21,17 @@ type Config struct {
 	Subscriptions []Subscription `yaml:"subscriptions" json:"subscriptions" validate:"subscriptions"`
 
 	Message Message `yaml:"message" json:"message"`
-	Status  struct {
-		Logging struct {
-			Enable   bool          `yaml:"enable" json:"enable"`
-			Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
-		} `yaml:"logging" json:"logging"`
-	} `yaml:"status" json:"status"`
 	Storage struct {
 		Dir string `yaml:"dir" json:"dir" default:"var/db/openedge/data"`
 	} `yaml:"storage" json:"storage"`
 	Shutdown struct {
 		Timeout time.Duration `yaml:"timeout" json:"timeout" default:"10m"`
 	} `yaml:"shutdown" json:"shutdown"`
+	Metrics struct {
+		Report struct {
+			Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
+		} `yaml:"report" json:"report"`
+	} `yaml:"metrics" json:"metrics"`
 }
 
 // New config

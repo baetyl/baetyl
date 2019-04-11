@@ -19,11 +19,11 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 	err := m.update(dir, clean)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
+		m.stats.Error = err.Error()
 		m.log.Errorf(err.Error())
-		m.context.Set("error", err.Error())
 		return err
 	}
-	m.context.Remove("error")
+	m.stats.Error = ""
 	return nil
 }
 
@@ -72,13 +72,11 @@ func (m *Master) update(dir string, clean bool) error {
 	}
 	m.log.Infof("system is updated")
 	if clean {
-		err = os.RemoveAll(dir)
-		if err != nil {
+		if os.RemoveAll(dir) != nil {
 			m.log.Warnf("failed to remove app config dir (%s)", dir)
 		}
 		for _, v := range rvs {
-			err = os.RemoveAll(v.Path)
-			if err != nil {
+			if os.RemoveAll(v.Path) != nil {
 				m.log.Warnf("failed to remove old volume (%s:%s)", v.Name, v.Path)
 			}
 		}

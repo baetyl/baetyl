@@ -21,5 +21,4 @@ rules:
           qos: 1
 logger:
   path: var/log/openedge/service.log
-  : true
   level: "debug"

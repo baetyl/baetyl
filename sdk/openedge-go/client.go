@@ -80,8 +80,18 @@ func (c *Client) GetAvailablePort() (string, error) {
 	return port, nil
 }
 
-// StartServiceInstance starts a new service instance with dynamic config
-func (c *Client) StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
+// ReportInstance reports the stats of the instance of the service
+func (c *Client) ReportInstance(serviceName, instanceName string, stats map[string]interface{}) error {
+	data, err := json.Marshal(stats)
+	if err != nil {
+		return err
+	}
+	_, err = c.cli.Put(data, "/services/%s/instances/%s/report", serviceName, instanceName)
+	return err
+}
+
+// StartInstance starts a new service instance with dynamic config
+func (c *Client) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
 	data, err := json.Marshal(dynamicConfig)
 	if err != nil {
 		return err
@@ -90,8 +100,8 @@ func (c *Client) StartServiceInstance(serviceName, instanceName string, dynamicC
 	return err
 }
 
-// StopServiceInstance stops a service instance
-func (c *Client) StopServiceInstance(serviceName, instanceName string) error {
+// StopInstance stops a service instance
+func (c *Client) StopInstance(serviceName, instanceName string) error {
 	_, err := c.cli.Put(nil, "/services/%s/instances/%s/stop", serviceName, instanceName)
 	return err
 }

@@ -776,11 +776,11 @@ func prepare() (res *resources, err error) {
 	if err != nil {
 		return
 	}
-	res.broker, err = bb.NewBroker(c, res.factory)
+	res.broker, err = bb.NewBroker(c, res.factory, nil)
 	if err != nil {
 		return
 	}
-	res.rules, err = rule.NewManager(make([]config.Subscription, 0), res.broker)
+	res.rules, err = rule.NewManager(make([]config.Subscription, 0), res.broker, nil)
 	if err != nil {
 		return
 	}

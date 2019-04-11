@@ -13,12 +13,14 @@ import (
 
 // Env variable keys
 const (
-	EnvHostOSKey         = "OPENEDGE_HOST_OS"
-	EnvMasterAPIKey      = "OPENEDGE_MASTER_API"
-	EnvRunningModeKey    = "OPENEDGE_RUNNING_MODE"
-	EnvServiceNameKey    = "OPENEDGE_SERVICE_NAME"
-	EnvServiceTokenKey   = "OPENEDGE_SERVICE_TOKEN"
-	EnvServiceAddressKey = "OPENEDGE_SERVICE_ADDRESS"
+	EnvHostOSKey                 = "OPENEDGE_HOST_OS"
+	EnvMasterAPIKey              = "OPENEDGE_MASTER_API"
+	EnvRunningModeKey            = "OPENEDGE_RUNNING_MODE"
+	EnvServiceNameKey            = "OPENEDGE_SERVICE_NAME"
+	EnvServiceTokenKey           = "OPENEDGE_SERVICE_TOKEN"
+	EnvServiceAddressKey         = "OPENEDGE_SERVICE_ADDRESS"
+	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
+	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 )
 
 const (
@@ -62,16 +64,52 @@ type Context interface {
 	InspectSystem() (*Inspect, error)
 	// gets an available port of the host
 	GetAvailablePort() (string, error)
-	// starts an instance of a service
-	StartServiceInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-	// stop an instance of a service
-	StopServiceInstance(serviceName, instanceName string) error
+	// reports the stats of the instance of the service
+	ReportInstance(stats map[string]interface{}) error
+	// starts an instance of the service
+	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	// stop the instance of the service
+	StopInstance(serviceName, instanceName string) error
 }
 
 type ctx struct {
-	*Client
+	sn  string // service name
+	in  string // instance name
+	cli *Client
 	cfg ServiceConfig
 	log logger.Logger
+}
+
+func newContext() (*ctx, error) {
+	var cfg ServiceConfig
+	err := utils.LoadYAML(DefaultConfFile, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	sn, ok := os.LookupEnv(EnvServiceNameKey)
+	if !ok {
+		sn = "<unknown>"
+	}
+	in, ok := os.LookupEnv(EnvServiceInstanceNameKey)
+	if !ok {
+		in = "<unknown>"
+	}
+	log, err := logger.InitLogger(&cfg.Logger, "service", sn, "instance", in)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &ctx{
+		sn:  sn,
+		in:  in,
+		cfg: cfg,
+		log: log,
+	}
+	c.cli, err = NewEnvClient()
+	if err != nil {
+		log.Warnln(err.Error())
+	}
+	return c, nil
 }
 
 func (c *ctx) NewHubClient(cid string, subs []mqtt.TopicInfo) (*mqtt.Dispatcher, error) {
@@ -111,28 +149,32 @@ func (c *ctx) WaitChan() <-chan os.Signal {
 	return sig
 }
 
-func newContext() (*ctx, error) {
-	var cfg ServiceConfig
-	err := utils.LoadYAML(DefaultConfFile, &cfg)
-	if err != nil {
-		return nil, err
-	}
-	name, ok := os.LookupEnv(EnvServiceNameKey)
-	if !ok {
-		name = "<unknown>"
-	}
-	log, err := logger.InitLogger(&cfg.Logger, "service", name)
-	if err != nil {
-		return nil, err
-	}
+// InspectSystem inspect all stats
+func (c *ctx) InspectSystem() (*Inspect, error) {
+	return c.cli.InspectSystem()
+}
 
-	c := &ctx{
-		cfg: cfg,
-		log: log,
-	}
-	c.Client, err = NewEnvClient()
-	if err != nil {
-		log.Warnln(err.Error())
-	}
-	return c, nil
+// UpdateSystem updates and reloads config
+func (c *ctx) UpdateSystem(file string, clean bool) error {
+	return c.cli.UpdateSystem(file, clean)
+}
+
+// GetAvailablePort gets available port
+func (c *ctx) GetAvailablePort() (string, error) {
+	return c.cli.GetAvailablePort()
+}
+
+// ReportInstance reports the stats of the instance of the service
+func (c *ctx) ReportInstance(stats map[string]interface{}) error {
+	return c.cli.ReportInstance(c.sn, c.in, stats)
+}
+
+// StartInstance starts a new service instance with dynamic config
+func (c *ctx) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
+	return c.cli.StartInstance(serviceName, instanceName, dynamicConfig)
+}
+
+// StopInstance stops a service instance
+func (c *ctx) StopInstance(serviceName, instanceName string) error {
+	return c.cli.StopInstance(serviceName, instanceName)
 }

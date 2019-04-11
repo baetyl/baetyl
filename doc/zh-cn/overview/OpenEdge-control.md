@@ -1,4 +1,3 @@
-
 # OpenEdge 可控式设计
 
 OpenEdge 可控式设计主要包括 2 个方面的内容，其本质是 OpenEdge 联合[智能边缘 BIE](https://cloud.baidu.com/product/bie.html)（Baidu-IntelliEdge）云端 console 管理套件一起实现对 OpenEdge 配置文件 **一键配置、一键下发**，下发配置信息 **一键更新、自动热加载**，包括在 Docker 容器模式下 **一键更新** 容器镜像版本。

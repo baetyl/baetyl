@@ -2,7 +2,6 @@ package rule
 
 import (
 	"fmt"
-	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -23,10 +22,14 @@ const (
 
 var errRuleManagerClosed = fmt.Errorf("rule manager already closed")
 
+// Report reports stats
+type report func(map[string]interface{}) error
+
 // Manager manages all rules of message routing
 type Manager struct {
 	status int32
 	broker broker
+	report report
 	trieq0 *router.Trie
 	rules  cmap.ConcurrentMap
 	tomb   utils.Tomb
@@ -34,9 +37,10 @@ type Manager struct {
 }
 
 // NewManager creates a new rule manager
-func NewManager(c []config.Subscription, b broker) (*Manager, error) {
+func NewManager(c []config.Subscription, b broker, r report) (*Manager, error) {
 	m := &Manager{
 		broker: b,
+		report: r,
 		rules:  cmap.New(),
 		trieq0: router.NewTrie(),
 		log:    logger.WithField("manager", "rule"),
@@ -49,8 +53,8 @@ func NewManager(c []config.Subscription, b broker) (*Manager, error) {
 			return nil, fmt.Errorf("failed to add subscription (%v): %s", sub.Source, err.Error())
 		}
 	}
-	if b.Config().Status.Logging.Enable {
-		return m, m.tomb.Gos(m.logging)
+	if r != nil {
+		return m, m.tomb.Gos(m.reporting)
 	}
 	return m, nil
 }
@@ -163,26 +167,31 @@ func (m *Manager) RemoveSinkSub(id, topic string) error {
 	return nil
 }
 
-func (m *Manager) logging() error {
+func (m *Manager) reporting() error {
 	defer m.log.Debugf("status logging task stopped")
 
-	t := time.NewTicker(m.broker.Config().Status.Logging.Interval)
+	var err error
+	t := time.NewTicker(m.broker.Config().Metrics.Report.Interval)
 	defer t.Stop()
 	for {
 		select {
 		case <-m.tomb.Dying():
 			return nil
 		case <-t.C:
-			m.log.Infof("rule Status")
-			m.log.Infof("  rule count: %d", m.rules.Count())
+			ruleStats := map[string]interface{}{}
 			for item := range m.rules.IterBuffered() {
 				r := item.Val.(base)
-				offsetPersisted := "<nil>"
-				if v, _ := m.broker.OffsetPersisted(r.uid()); v != nil {
-					offsetPersisted = strconv.FormatUint(*v, 10)
-				}
-				m.log.Infof("  persisted offset:%s, %s", offsetPersisted, r.info())
+				ruleStats[r.uid()] = r.info()
 			}
+			stats := map[string]interface{}{
+				"rule_count": len(ruleStats),
+				"rule_stats": ruleStats,
+			}
+			err = m.report(stats)
+			if err != nil {
+				m.log.Warnf("failed to report rule stats")
+			}
+			m.log.Debugln(stats)
 		}
 	}
 }

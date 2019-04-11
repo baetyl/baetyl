@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/logger"
-
 	"github.com/baidu/openedge/openedge-hub/common"
 	"github.com/baidu/openedge/openedge-hub/config"
 	"github.com/baidu/openedge/openedge-hub/persist"
@@ -13,6 +12,9 @@ import (
 )
 
 var errBrokerClosed = fmt.Errorf("broker alreay closed")
+
+// Report reports stats
+type Report func(map[string]interface{}) error
 
 // Offset sink's offset to persist
 type Offset struct {
@@ -31,12 +33,13 @@ type Broker struct {
 	offsetChan chan *Offset
 	// others
 	config *config.Config
+	report Report
 	tomb   utils.Tomb
 	log    logger.Logger
 }
 
 // NewBroker NewBroker
-func NewBroker(c *config.Config, pf *persist.Factory) (b *Broker, err error) {
+func NewBroker(c *config.Config, pf *persist.Factory, report Report) (b *Broker, err error) {
 	msgqos1DB, err := pf.NewDB("msgqos1.db")
 	if err != nil {
 		return nil, err
@@ -52,10 +55,11 @@ func NewBroker(c *config.Config, pf *persist.Factory) (b *Broker, err error) {
 		msgQ1DB:    msgqos1DB,
 		offsetDB:   offsetDB,
 		offsetChan: make(chan *Offset, c.Message.Offset.Buffer.Size),
+		report:     report,
 		log:        logger.WithField("broker", "mqtt"),
 	}
-	if c.Status.Logging.Enable {
-		return b, b.tomb.Gos(b.persistingMsgQos1, b.persistingOffset, b.cleaningMsgQos1, b.logging)
+	if report != nil {
+		return b, b.tomb.Gos(b.persistingMsgQos1, b.persistingOffset, b.cleaningMsgQos1, b.reporting)
 	}
 	return b, b.tomb.Gos(b.persistingMsgQos1, b.persistingOffset, b.cleaningMsgQos1)
 }

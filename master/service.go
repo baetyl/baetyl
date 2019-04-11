@@ -49,9 +49,11 @@ func (m *Master) startAllServices() error {
 		s.Env[openedge.EnvServiceTokenKey] = token
 		nxt, err := m.engine.Run(s, vs)
 		if err != nil {
+			m.log.Infof("failed to start service (%s)", s.Name)
 			return err
 		}
 		m.services.Set(s.Name, nxt)
+		m.log.Infof("service (%s) started", s.Name)
 	}
 	return nil
 }
@@ -65,13 +67,23 @@ func (m *Master) stopAllServices() {
 			s.Stop()
 			m.services.Remove(s.Name())
 			m.accounts.Remove(s.Name())
+			m.log.Infof("service (%s) stopped", s.Name())
 		}(s.(engine.Service))
 	}
 	wg.Wait()
 }
 
-// StartServiceInstance starts a service instance
-func (m *Master) StartServiceInstance(service, instance string, dynamicConfig map[string]string) error {
+// ReportInstance reports the stats of the instance of the service
+func (m *Master) ReportInstance(service, instance string, stats map[string]interface{}) error {
+	s, ok := m.services.Get(service)
+	if !ok {
+		return fmt.Errorf("service (%s) not found", service)
+	}
+	return s.(engine.Service).ReportInstance(instance, stats)
+}
+
+// StartInstance starts a service instance
+func (m *Master) StartInstance(service, instance string, dynamicConfig map[string]string) error {
 	s, ok := m.services.Get(service)
 	if !ok {
 		return fmt.Errorf("service (%s) not found", service)
@@ -79,8 +91,8 @@ func (m *Master) StartServiceInstance(service, instance string, dynamicConfig ma
 	return s.(engine.Service).StartInstance(instance, dynamicConfig)
 }
 
-// StopServiceInstance stops a service instance
-func (m *Master) StopServiceInstance(service, instance string) error {
+// StopInstance stops a service instance
+func (m *Master) StopInstance(service, instance string) error {
 	s, ok := m.services.Get(service)
 	if !ok {
 		return fmt.Errorf("service (%s) not found", service)
