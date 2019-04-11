@@ -66,13 +66,13 @@ func (f *Function) call(i Instance, in *openedge.FunctionMessage, c func(in, out
 		f.log.Errorf("failed to talk with function instance: %s", err.Error())
 		err1 := f.pool.InvalidateObject(context.Background(), i)
 		if err1 != nil {
-			i.Close()
+			f.p.StopInstance(i) // stop the instance if it cannot be returned to pool
 			f.log.Errorf("failed to invalidate function instance: %s", err1.Error())
 		}
 	} else {
 		err1 := f.pool.ReturnObject(context.Background(), i)
 		if err1 != nil {
-			i.Close()
+			f.p.StopInstance(i) // stop the instance if it cannot be returned to pool
 			f.log.Errorf("failed to return function instance: %s", err1.Error())
 		}
 	}
