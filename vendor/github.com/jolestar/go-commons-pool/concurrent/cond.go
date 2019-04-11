@@ -10,9 +10,9 @@ import (
 
 // TimeoutCond is a sync.Cond  improve for support wait timeout.
 type TimeoutCond struct {
+	hasWaiters uint64
 	L          sync.Locker
 	signal     chan int
-	hasWaiters uint64
 }
 
 // NewTimeoutCond return a new TimeoutCond
