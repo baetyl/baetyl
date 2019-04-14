@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -23,17 +24,20 @@ func init() {
 
 // New native engine
 func New(grace time.Duration, pwd string) (engine.Engine, error) {
-	return &nativeEngine{
+	e := &nativeEngine{
 		pwd:   pwd,
 		grace: grace,
 		log:   logger.WithField("engine", NAME),
-	}, nil
+	}
+	e.initHistory()
+	return e, nil
 }
 
 type nativeEngine struct {
 	pwd   string // work directory
 	grace time.Duration
 	log   logger.Logger
+	mut   sync.Mutex
 }
 
 // Name of engine
@@ -43,6 +47,7 @@ func (e *nativeEngine) Name() string {
 
 // Close engine
 func (e *nativeEngine) Close() error {
+	e.cleanHistory()
 	return nil
 }
 

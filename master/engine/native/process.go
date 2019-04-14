@@ -36,6 +36,7 @@ func (e *nativeEngine) startProcess(cfg processConfigs) (*os.Process, error) {
 		return nil, err
 	}
 	e.log.Debugf("process (%d) started", p.Pid)
+	e.appendHistory(p.Pid)
 	return p, nil
 }
 
