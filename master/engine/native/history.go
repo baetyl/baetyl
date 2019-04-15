@@ -47,7 +47,7 @@ func (e *nativeEngine) cleanHistory() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		e.log.Debugf("get process (%s) from processes.history", line)
+		e.log.Debugf("get line (%s) from processes.history", line)
 		parts := strings.SplitN(line, " ", 2)
 		if len(parts) != 2 {
 			e.log.WithError(err).Warnf("get invalid line (%s) from processes.history", line)
@@ -59,17 +59,19 @@ func (e *nativeEngine) cleanHistory() {
 			continue
 		}
 		p, _ := process.NewProcess(int32(pid))
-		n, err := p.Name()
+		n, err := p.Exe()
 		if err != nil {
-			e.log.WithError(err).Warnf("failed to get name of process (%s) from processes.history", line)
+			if !strings.Contains(err.Error(), "exit") {
+				e.log.WithError(err).Warnf("failed to get exe of process (%d) from processes.history", pid)
+			}
 			continue
 		}
 		if parts[1] == n {
 			err = p.Kill()
 			if err != nil {
-				e.log.WithError(err).Debugf("failed to kill process (%s) from processes.history", line)
+				e.log.WithError(err).Debugf("failed to kill process (%d) from processes.history", pid)
 			} else {
-				e.log.Infof("kill process (%s) from processes.history", line)
+				e.log.Infof("kill process (%d) from processes.history", pid)
 			}
 		}
 	}
@@ -84,21 +86,21 @@ func (e *nativeEngine) appendHistory(pid int) {
 	defer e.mut.Unlock()
 
 	p, _ := process.NewProcess(int32(pid))
-	n, err := p.Name()
+	n, err := p.Exe()
 	if err != nil {
-		e.log.WithError(err).Warnf("failed to get name of process (%d) to write into processes.history", pid)
+		e.log.WithError(err).Warnf("failed to get exe of process (%d) to write into processes.history", pid)
 		return
 	}
 
-	line := fmt.Sprintln(pid, n)
 	f, err := os.OpenFile(historyFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
-		e.log.WithError(err).Warnf("failed to open processes.history to write process (%s)", line)
+		e.log.WithError(err).Warnf("failed to open processes.history to write process (%s)", pid)
 		return
 	}
 	defer f.Close()
-	_, err = f.WriteString(line)
+
+	_, err = f.WriteString(fmt.Sprintln(pid, n))
 	if err != nil {
-		e.log.WithError(err).Warnf("failed to write processes (%s) into processes.history", line)
+		e.log.WithError(err).Warnf("failed to write processes (%s) into processes.history", pid)
 	}
 }
