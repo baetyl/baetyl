@@ -90,6 +90,17 @@ services:
   #     - name: openedge-function-sql-bin
   #       path: lib/openedge/openedge-function-sql
   #       readonly: true
+  - name: timer
+    image: openedge-timer
+    replica: 1
+    mounts:
+      - name: timer-conf
+        path: etc/openedge
+        readonly: true
+      # native process mode only
+      - name: openedge-timer-bin
+        path: lib/openedge/openedge-timer
+        readonly: true
 volumes:
   # hub
   - name: localhub-conf
@@ -127,6 +138,9 @@ volumes:
     path: var/db/openedge/function-sayhi-code
   - name: function-filter-conf
     path: var/db/openedge/function-filter-conf
+  # timer
+  - name: timer-conf
+    path: var/db/openedge/timer-conf
   # bin, native process mode only
   - name: openedge-hub-bin
     path: var/db/openedge/openedge-hub
@@ -140,3 +154,5 @@ volumes:
     path: var/db/openedge/openedge-function-python27
   - name: openedge-function-sql-bin
     path: var/db/openedge/openedge-function-sql
+  - name: openedge-timer-bin
+    path: var/db/openedge/openedge-timer

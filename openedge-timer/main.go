@@ -2,10 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"os"
 	"time"
 
-	"github.com/baidu/openedge/protocol/mqtt"
+	"github.com/256dpi/gomqtt/packet"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
@@ -14,13 +13,16 @@ type config struct {
 	Timer struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
 	} `yaml:"timer" json:"timer"`
-	Publish mqtt.TopicInfo `yaml:"publish" json:"publish" default:"{\"topic\":\"timer\"}"`
+	Publish struct {
+		QOS     uint32                 `yaml:"qos" json:"qos" validate:"min=0, max=1"`
+		Topic   string                 `yaml:"topic" json:"topic" default:"timer" validate:"nonzero"`
+		Payload map[string]interface{} `yaml:"payload" json:"payload" default:"{}"`
+	} `yaml:"publish" json:"publish"`
 }
 
 func main() {
 	// Running module in openedge context
 	openedge.Run(func(ctx openedge.Context) error {
-		ctx.Log().Debugln(os.Args)
 		var cfg config
 		// load custom config
 		err := ctx.LoadConfig(&cfg)
@@ -40,10 +42,14 @@ func main() {
 		for {
 			select {
 			case t := <-ticker.C:
-				msg := map[string]int64{"time": t.Unix()}
-				pld, _ := json.Marshal(msg)
+				cfg.Publish.Payload["time"] = t.Unix()
+				pld, _ := json.Marshal(cfg.Publish.Payload)
+				pkt := packet.NewPublish()
+				pkt.Message.Topic = cfg.Publish.Topic
+				pkt.Message.QOS = packet.QOS(cfg.Publish.QOS)
+				pkt.Message.Payload = pld
 				// send a message to hub triggered by timer
-				err := cli.Publish(cfg.Publish, pld)
+				err := cli.Send(pkt)
 				if err != nil {
 					// log error message
 					ctx.Log().Errorf(err.Error())
