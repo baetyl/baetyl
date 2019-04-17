@@ -28,8 +28,6 @@ type DiskInfo struct {
 
 // GetDiskInfo gets disk information
 func GetDiskInfo(path string) (*DiskInfo, error) {
-	// defer Trace("GetDiskInfo", logger.Debugf)()
-
 	d, err := disk.Usage(path)
 	if err != nil {
 		return nil, err
@@ -62,8 +60,6 @@ type MemInfo struct {
 
 // GetMemInfo gets memory information
 func GetMemInfo() (*MemInfo, error) {
-	// defer Trace("GetMemInfo", logger.Debugf)()
-
 	vm, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, err
@@ -86,15 +82,13 @@ func GetMemInfo() (*MemInfo, error) {
 
 // CPUInfo CPU information
 type CPUInfo struct {
-	CPUs        int     `json:"cpus,omitempty"`
-	UsedPercent float64 `json:"used_percent,omitempty"`
+	UsedPercent float64        `json:"used_percent,omitempty"`
+	CPUs        []cpu.InfoStat `json:"cpus,omitempty"`
 }
 
 // GetCPUInfo gets CPU information
 func GetCPUInfo() (*CPUInfo, error) {
-	// defer Trace("GetCPUInfo", logger.Debugf)()
-
-	cc, err := cpu.Counts(false)
+	pci, err := cpu.Info()
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +97,7 @@ func GetCPUInfo() (*CPUInfo, error) {
 		return nil, err
 	}
 	ci := &CPUInfo{
-		CPUs: cc,
+		CPUs: pci,
 	}
 	if len(cp) == 1 {
 		ci.UsedPercent = cp[0]
@@ -113,47 +107,68 @@ func GetCPUInfo() (*CPUInfo, error) {
 
 // GPUInfo GPU information
 type GPUInfo struct {
-	ID    string  `json:"id,omitempty"`
-	Model string  `json:"model,omitempty"`
-	Mem   MemInfo `json:"mem_stat,omitempty"`
+	Index          string  `json:"index,omitempty"`
+	Model          string  `json:"model,omitempty"`
+	MemTotal       int64   `json:"mem_total,omitempty"`
+	MemFree        int64   `json:"mem_free,omitempty"`
+	MemUsedPercent float64 `json:"mem_used_percent,omitempty"`
+	GPUUsedPercent float64 `json:"gpu_used_percent,omitempty"`
 }
+
+/********************************************************************************************
+* nvidia-smi --query-gpu=index,name,memory.total,memory.free,utilization.memory,utilization.gpu --format=csv,noheader,nounits
+* 0, TITAN X (Pascal), 12189, 12187, 0, 0
+* 1, TITAN X (Pascal), 12189, 12187, 0, 0
+* 2, TITAN X (Pascal), 12189, 12187, 0, 0
+* 3, TITAN X (Pascal), 12189, 12187, 0, 0
+********************************************************************************************/
+
+const (
+	nvSmiBin    = "nvidia-smi"
+	nvQueryArg  = "--query-gpu=index,name,memory.total,memory.free,utilization.memory,utilization.gpu"
+	nvFormatArg = "--format=csv,noheader,nounits"
+)
 
 // GetGPUInfo gets GPU information
 func GetGPUInfo() ([]GPUInfo, error) {
-	// defer Trace("GetGPUInfo", logger.Debugf)()
-
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	cmd := exec.Command("/bin/bash", "-c", `nvidia-smi --query-gpu=index,name,memory.total,memory.free --format=csv,noheader,nounits`)
+	cmd := exec.Command(nvSmiBin, nvQueryArg, nvFormatArg)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("%s: %s", err.Error(), strings.Trim(stderr.String(), "\n"))
-
 	}
-	var gpus []GPUInfo
-	for _, raw := range strings.Split(stdout.String(), "\n") {
-		if strings.TrimSpace(raw) == "" {
+	return parseGPUInfo(stdout.String())
+}
+
+func parseGPUInfo(in string) (gpus []GPUInfo, err error) {
+	for _, raw := range strings.Split(in, "\n") {
+		var g GPUInfo
+		parts := strings.Split(raw, ",")
+		if len(parts) != 6 {
 			continue
 		}
-		var g GPUInfo
-		t := strings.Split(raw, ",")
-		total, err := strconv.Atoi(strings.TrimSpace(t[2]))
+		g.Index = strings.TrimSpace(parts[0])
+		g.Model = strings.TrimSpace(parts[1])
+		g.MemTotal, err = strconv.ParseInt(strings.TrimSpace(parts[2]), 10, 64)
 		if err != nil {
-			return gpus, err
+			return
 		}
-		free, err := strconv.Atoi(strings.TrimSpace(t[3]))
+		g.MemFree, err = strconv.ParseInt(strings.TrimSpace(parts[3]), 10, 64)
 		if err != nil {
-			return gpus, err
+			return
 		}
-		g.ID = strings.TrimSpace(t[0])
-		g.Model = strings.TrimSpace(t[1])
-		g.Mem.Total = uint64(total * 1024 * 1024)
-		g.Mem.Free = uint64(free * 1024 * 1024)
-		g.Mem.Used = g.Mem.Total - g.Mem.Free
-		g.Mem.UsedPercent = float64(g.Mem.Used) / float64(g.Mem.Total) * 100
+		g.MemUsedPercent, err = strconv.ParseFloat(strings.TrimSpace(parts[4]), 64)
+		if err != nil {
+			return
+		}
+		g.GPUUsedPercent, err = strconv.ParseFloat(strings.TrimSpace(parts[5]), 64)
+		if err != nil {
+			return
+		}
 		gpus = append(gpus, g)
 	}
-	return gpus, nil
+	return
 }

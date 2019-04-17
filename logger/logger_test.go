@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewEntry(t *testing.T) {
+func TestInitLogger(t *testing.T) {
 	type args struct {
 		vs []string
 	}
@@ -47,10 +47,9 @@ func TestNewEntry(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l, err := NewLogger(&LogInfo{
+			l := InitLogger(LogInfo{
 				Level: "debug",
 			}, tt.args.vs...)
-			assert.NoError(t, err)
 			assert.EqualValues(t, l.(*logger).entry.Data, tt.want)
 		})
 	}

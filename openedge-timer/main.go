@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"time"
 
 	"github.com/baidu/openedge/protocol/mqtt"
@@ -19,6 +20,7 @@ type config struct {
 func main() {
 	// Running module in openedge context
 	openedge.Run(func(ctx openedge.Context) error {
+		ctx.Log().Debugln(os.Args)
 		var cfg config
 		// load custom config
 		err := ctx.LoadConfig(&cfg)

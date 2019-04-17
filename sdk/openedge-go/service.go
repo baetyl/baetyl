@@ -1,21 +1,31 @@
 package openedge
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/baidu/openedge/logger"
 )
 
 // Run service
 func Run(handle func(Context) error) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintln(os.Stderr, "service stopped with panic:", r)
+		}
+	}()
 	c, err := newContext()
 	if err != nil {
-		logger.Fatalln("failed to create context:", err.Error())
+		fmt.Fprintf(os.Stderr, "[%s][%s] failed to create context: %s\n", c.sn, c.in, err.Error())
+		logger.WithError(err).Errorln("failed to create context")
 		return
 	}
-	logger.Debugln("service starting")
+	logger.Infoln("service starting: ", os.Args)
 	err = handle(c)
 	if err != nil {
-		logger.Fatalln("failed to run service:", err.Error())
+		fmt.Fprintf(os.Stderr, "[%s][%s] service stopped with error: %s\n", c.sn, c.in, err.Error())
+		logger.WithError(err).Errorln("service stopped with error")
 	} else {
-		logger.Debugln("service stopped")
+		logger.Infoln("service stopped")
 	}
 }

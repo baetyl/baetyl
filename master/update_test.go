@@ -21,7 +21,9 @@ import (
 func TestUpdateSystem(t *testing.T) {
 	err := os.Chdir("testdata")
 	assert.NoError(t, err)
-	dir := path.Join("var", "db", "openedge", "app")
+	os.RemoveAll(appConfigFile)
+	os.RemoveAll(appBackupFile)
+	os.RemoveAll("var/run")
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
 	defer os.RemoveAll("var/run")
@@ -39,6 +41,7 @@ func TestUpdateSystem(t *testing.T) {
 	assert.NoError(t, err)
 	defer m.Close()
 
+	dir := path.Join("var", "db", "openedge", "app")
 	err = m.UpdateSystem(path.Join(dir, "v4"), false)
 	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
 	assert.Equal(t, "", m.appcfg.Version)

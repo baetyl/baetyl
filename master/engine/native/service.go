@@ -86,6 +86,7 @@ func (s *nativeService) StartInstance(instanceName string, dynamicConfig map[str
 func (s *nativeService) startInstance(instanceName string, dynamicConfig map[string]string) error {
 	s.StopInstance(instanceName)
 	params := s.params
+	params.argv = append([]string{instanceName}, s.params.argv...)
 	params.env = engine.GenerateInstanceEnv(instanceName, s.params.env, dynamicConfig)
 	i, err := s.newInstance(instanceName, params)
 	if err != nil {

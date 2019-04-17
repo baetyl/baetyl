@@ -82,34 +82,25 @@ type ctx struct {
 
 func newContext() (*ctx, error) {
 	var cfg ServiceConfig
+	sn := os.Getenv(EnvServiceNameKey)
+	in := os.Getenv(EnvServiceInstanceNameKey)
 	err := utils.LoadYAML(DefaultConfFile, &cfg)
+	if err != nil && !os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "[%s][%s] failed to load config: %s\n", sn, in, err.Error())
+	}
+	log := logger.InitLogger(cfg.Logger, "service", sn, "instance", in)
+	cli, err := NewEnvClient()
 	if err != nil {
-		return nil, err
+		fmt.Fprintf(os.Stderr, "[%s][%s] failed to create master client: %s\n", sn, in, err.Error())
+		log.WithError(err).Errorf("failed to create master client")
 	}
-	sn, ok := os.LookupEnv(EnvServiceNameKey)
-	if !ok {
-		sn = "<unknown>"
-	}
-	in, ok := os.LookupEnv(EnvServiceInstanceNameKey)
-	if !ok {
-		in = "<unknown>"
-	}
-	log, err := logger.InitLogger(&cfg.Logger, "service", sn, "instance", in)
-	if err != nil {
-		return nil, err
-	}
-
-	c := &ctx{
+	return &ctx{
 		sn:  sn,
 		in:  in,
 		cfg: cfg,
+		cli: cli,
 		log: log,
-	}
-	c.cli, err = NewEnvClient()
-	if err != nil {
-		log.Warnln(err.Error())
-	}
-	return c, nil
+	}, nil
 }
 
 func (c *ctx) NewHubClient(cid string, subs []mqtt.TopicInfo) (*mqtt.Dispatcher, error) {
