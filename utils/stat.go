@@ -3,14 +3,50 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"net"
 	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
+	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 )
+
+// HostInfo host information
+type HostInfo struct {
+	Hostname        string `json:"hostname,omitempty"`
+	Uptime          uint64 `json:"uptime,omitempty"`
+	BootTime        uint64 `json:"boot_time,omitempty"`
+	ProcessNum      uint64 `json:"process_num,omitempty"`
+	OS              string `json:"os,omitempty"`
+	Platform        string `json:"platform,omitempty"`
+	PlatformFamily  string `json:"platform_family,omitempty"`
+	PlatformVersion string `json:"platform_version,omitempty"`
+	KernelVersion   string `json:"kernel_version,omitempty"`
+	HostID          string `json:"host_id,omitempty"`
+}
+
+// GetHostInfo returns host information
+func GetHostInfo() (*HostInfo, error) {
+	hi, err := host.Info()
+	if err != nil {
+		return nil, err
+	}
+	return &HostInfo{
+		Hostname:        hi.Hostname,
+		Uptime:          hi.Uptime,
+		BootTime:        hi.BootTime,
+		ProcessNum:      hi.Procs,
+		OS:              hi.OS,
+		Platform:        hi.Platform,
+		PlatformFamily:  hi.PlatformFamily,
+		PlatformVersion: hi.PlatformVersion,
+		KernelVersion:   hi.KernelVersion,
+		HostID:          hi.HostID,
+	}, nil
+}
 
 // DiskInfo disk information
 type DiskInfo struct {
@@ -80,27 +116,61 @@ func GetMemInfo() (*MemInfo, error) {
 	}, nil
 }
 
+// NetInfo host information
+type NetInfo struct {
+	Interfaces []Interface `json:"interfaces,omitempty"`
+}
+
+// Interface interface information
+type Interface struct {
+	Index int    `json:"index,omitempty"`
+	Name  string `json:"name,omitempty"`
+	MAC   string `json:"mac,omitempty"`
+}
+
+// GetNetInfo returns host information
+func GetNetInfo() (*NetInfo, error) {
+	nis, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+	ni := &NetInfo{Interfaces: []Interface{}}
+	for _, v := range nis {
+		ni.Interfaces = append(ni.Interfaces, Interface{
+			Index: v.Index,
+			Name:  v.Name,
+			MAC:   v.HardwareAddr.String(),
+		})
+	}
+	return ni, nil
+}
+
 // CPUInfo CPU information
 type CPUInfo struct {
-	UsedPercent float64        `json:"used_percent,omitempty"`
-	CPUs        []cpu.InfoStat `json:"cpus,omitempty"`
+	UsedPercent float64      `json:"used_percent,omitempty"`
+	CPUs        []PerCPUInfo `json:"cpus,omitempty"`
+}
+
+type PerCPUInfo struct {
+	UsedPercent float64 `json:"used_percent,omitempty"`
 }
 
 // GetCPUInfo gets CPU information
 func GetCPUInfo() (*CPUInfo, error) {
-	pci, err := cpu.Info()
-	if err != nil {
-		return nil, err
-	}
 	cp, err := cpu.Percent(0, false)
 	if err != nil {
 		return nil, err
 	}
-	ci := &CPUInfo{
-		CPUs: pci,
+	pcp, err := cpu.Percent(0, true)
+	if err != nil {
+		return nil, err
 	}
+	ci := &CPUInfo{CPUs: []PerCPUInfo{}}
 	if len(cp) == 1 {
 		ci.UsedPercent = cp[0]
+	}
+	for _, v := range pcp {
+		ci.CPUs = append(ci.CPUs, PerCPUInfo{UsedPercent: v})
 	}
 	return ci, nil
 }
