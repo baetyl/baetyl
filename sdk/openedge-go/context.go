@@ -26,6 +26,8 @@ const (
 const (
 	// AppConfFileName application config file name
 	AppConfFileName = "application.yml"
+	// AppStatsFileName application stats file name
+	AppStatsFileName = "application.stats"
 	// DefaultSockFile sock file of openedge by default
 	DefaultSockFile = "/var/run/openedge.sock"
 	// DefaultPidFile pid file of openedge by default

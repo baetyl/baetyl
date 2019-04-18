@@ -2,7 +2,6 @@ package docker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -50,6 +49,63 @@ func (e *dockerEngine) initNetwork() error {
 	e.log.Debugf("network (%s:%s) created", e.nid[:12], defaultNetworkName)
 	return nil
 }
+
+// func (e *dockerEngine) monitoring() error {
+// 	ctx := context.Background()
+// 	options := types.EventsOptions{
+// 		Filters: filters.NewArgs(
+// 			filters.Arg("type", "container"),
+// 			filters.Arg("event", "restart"),
+// 			filters.Arg("label", "openedge"),
+// 		),
+// 	}
+// 	eventC, errC := e.cli.Events(ctx, options)
+// 	for {
+// 		select {
+// 		case event := <-eventC:
+// 			if event.Action != "restart" {
+// 				e.log.Warnf("unexpected event action (%s) from docker engine", event.Action)
+// 				continue
+// 			}
+// 			if _, ok := event.Actor.Attributes["openedge"]; !ok {
+// 				e.log.Debugf("docker container (%s) is not managed by openedge", event.Actor.ID[:12])
+// 				continue
+// 			}
+// 			serviceName, ok := event.Actor.Attributes["service"]
+// 			if !ok {
+// 				e.log.Warnf("unexpected docker container (%s) without service name", event.Actor.ID[:12])
+// 				continue
+// 			}
+// 			instanceName, ok := event.Actor.Attributes["name"]
+// 			if !ok {
+// 				e.log.Warnf("unexpected docker container (%s) without instance name", event.Actor.ID[:12])
+// 				continue
+// 			}
+// 			status, err := e.cli.ContainerInspect(ctx, event.Actor.ID)
+// 			if err != nil {
+// 				e.log.WithError(err).Warnf("failed to inspect container (%s)", event.Actor.ID[:12])
+// 				return nil, err
+// 			}
+// 			stats, err := e.statsContainer(event.Actor.ID)
+// 			if err != nil {
+// 				e.log.Warnf("failed to stats container (%s)", event.Actor.ID[:12])
+// 				e.stats.UpdateInstanceStats(serviceName, instanceName, map[string]interface{}{
+// 					"status": engine.Offline,
+// 				})
+// 				i.SetStatus(engine.Offline)
+// 			} else {
+// 				i.SetStats(s)
+// 			}
+// 			return i.Stats()
+// 			serviceName := event.Status
+// 		case err := <-errC:
+// 			e.log.Errorf("failed to monitor events from docker engine, to retry")
+// 			eventC, errC = e.cli.Events(ctx, options)
+// 		case <-e.tomb.Dying():
+// 			return nil
+// 		}
+// 	}
+// }
 
 func (e *dockerEngine) pullImage(name string) error {
 	out, err := e.cli.ImagePull(context.Background(), name, types.ImagePullOptions{})
@@ -165,44 +221,44 @@ func (e *dockerEngine) removeContainerByName(name string) error {
 	return err
 }
 
-func (e *dockerEngine) statsContainer(cid string) (map[string]interface{}, error) {
-	ctx := context.Background()
-	status, err := e.cli.ContainerInspect(ctx, cid)
-	if err != nil {
-		e.log.WithError(err).Warnf("failed to inspect container (%s)", cid[:12])
-		return nil, err
-	}
-	resp, err := e.cli.ContainerStats(ctx, cid, false)
-	if err != nil {
-		e.log.WithError(err).Warnf("failed to stats container (%s)", cid[:12])
-		return nil, err
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		e.log.WithError(err).Warnf("failed to read stats response of container (%s)", cid[:12])
-		return nil, err
-	}
-	var stats types.Stats
-	err = json.Unmarshal(data, &stats)
-	if err != nil {
-		e.log.WithError(err).Warnf("failed to unmarshal stats response of container (%s)", cid[:12])
-		return nil, err
-	}
+// func (e *dockerEngine) statsContainer(cid string) (map[string]interface{}, error) {
+// 	ctx := context.Background()
+// 	status, err := e.cli.ContainerInspect(ctx, cid)
+// 	if err != nil {
+// 		e.log.WithError(err).Warnf("failed to inspect container (%s)", cid[:12])
+// 		return nil, err
+// 	}
+// 	resp, err := e.cli.ContainerStats(ctx, cid, false)
+// 	if err != nil {
+// 		e.log.WithError(err).Warnf("failed to stats container (%s)", cid[:12])
+// 		return nil, err
+// 	}
+// 	defer resp.Body.Close()
+// 	data, err := ioutil.ReadAll(resp.Body)
+// 	if err != nil {
+// 		e.log.WithError(err).Warnf("failed to read stats response of container (%s)", cid[:12])
+// 		return nil, err
+// 	}
+// 	var stats types.Stats
+// 	err = json.Unmarshal(data, &stats)
+// 	if err != nil {
+// 		e.log.WithError(err).Warnf("failed to unmarshal stats response of container (%s)", cid[:12])
+// 		return nil, err
+// 	}
 
-	stats.MemoryStats.Stats = nil
-	cpuStats := map[string]interface{}{
-		"online_cpus":         stats.CPUStats.OnlineCPUs,
-		"system_cpu_usage":    stats.CPUStats.SystemUsage,
-		"total_usage":         stats.CPUStats.CPUUsage.TotalUsage,
-		"usage_in_kernelmode": stats.CPUStats.CPUUsage.UsageInKernelmode,
-		"usage_in_usermode":   stats.CPUStats.CPUUsage.UsageInUsermode,
-	}
-	return map[string]interface{}{
-		"status":      status.State.Status,
-		"start_time":  status.State.StartedAt,
-		"finish_time": status.State.FinishedAt,
-		"cpu_stats":   cpuStats,
-		"mem_stats":   stats.MemoryStats,
-	}, nil
-}
+// 	stats.MemoryStats.Stats = nil
+// 	cpuStats := map[string]interface{}{
+// 		"online_cpus":         stats.CPUStats.OnlineCPUs,
+// 		"system_cpu_usage":    stats.CPUStats.SystemUsage,
+// 		"total_usage":         stats.CPUStats.CPUUsage.TotalUsage,
+// 		"usage_in_kernelmode": stats.CPUStats.CPUUsage.UsageInKernelmode,
+// 		"usage_in_usermode":   stats.CPUStats.CPUUsage.UsageInUsermode,
+// 	}
+// 	return map[string]interface{}{
+// 		"status":      status.State.Status,
+// 		"start_time":  status.State.StartedAt,
+// 		"finish_time": status.State.FinishedAt,
+// 		"cpu_stats":   cpuStats,
+// 		"mem_stats":   stats.MemoryStats,
+// 	}, nil
+// }

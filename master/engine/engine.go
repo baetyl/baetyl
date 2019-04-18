@@ -9,7 +9,7 @@ import (
 )
 
 // Factory create engine by given config
-type Factory func(grace time.Duration, wdir string) (Engine, error)
+type Factory func(grace time.Duration, pwd string, is InfoStats) (Engine, error)
 
 var factories map[string]Factory
 
@@ -27,13 +27,15 @@ type Engine interface {
 	io.Closer
 	Name() string
 	Prepare([]openedge.ServiceInfo)
+	AddInstanceStats(serviceName, instanceName string, partialStats PartialStats)
+	DelInstanceStats(serviceName, instanceName string)
 	Run(openedge.ServiceInfo, map[string]openedge.VolumeInfo) (Service, error)
 }
 
 // New engine by given name
-func New(name string, grace time.Duration, pwd string) (Engine, error) {
+func New(name string, grace time.Duration, pwd string, is InfoStats) (Engine, error) {
 	if f, ok := factories[name]; ok {
-		return f(grace, pwd)
+		return f(grace, pwd, is)
 	}
 	return nil, errors.New("no such engine")
 }

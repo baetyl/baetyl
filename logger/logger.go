@@ -121,8 +121,8 @@ func InitLogger(c LogInfo, fields ...string) Logger {
 	for index := 0; index < len(fields)-1; index = index + 2 {
 		logrusFields[fields[index]] = fields[index+1]
 	}
-	gLogger = &logger{entry.WithFields(logrusFields)}
-	return gLogger
+	Global = &logger{entry.WithFields(logrusFields)}
+	return Global
 }
 
 type fileConfig struct {
