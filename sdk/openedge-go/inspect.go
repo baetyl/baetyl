@@ -42,6 +42,10 @@ type Software struct {
 
 // Hardware hardware information
 type Hardware struct {
+	// host information
+	HostInfo *utils.HostInfo `json:"host_stats,omitempty"`
+	// net information of host
+	NetInfo *utils.NetInfo `json:"net_stats,omitempty"`
 	// memory usage information of host
 	MemInfo *utils.MemInfo `json:"mem_stats,omitempty"`
 	// CPU usage information of host

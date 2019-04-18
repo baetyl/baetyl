@@ -62,13 +62,13 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  # - name: function-filter
-  #   image: openedge-function-sql
-  #   replica: 0
-  #   mounts:
-  #     - name: function-filter-conf
-  #       path: etc/openedge
-  #       readonly: true
+  - name: function-filter
+    image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
+    replica: 0
+    mounts:
+      - name: function-filter-conf
+        path: etc/openedge
+        readonly: true
   - name: mosquitto
     image: eclipse-mosquitto
     replica: 1
@@ -82,6 +82,13 @@ services:
         path: /mosquitto/data
       - name: mosquitto-log
         path: /mosquitto/log
+  - name: timer
+    image: openedge-timer
+    replica: 1
+    mounts:
+      - name: timer-conf
+        path: etc/openedge
+        readonly: true
 volumes:
   # hub
   - name: localhub-conf
@@ -126,3 +133,6 @@ volumes:
     path: var/db/openedge/mosquitto-data
   - name: mosquitto-log
     path: var/db/openedge/mosquitto-log
+  # timer
+  - name: timer-conf
+    path: var/db/openedge/timer-conf

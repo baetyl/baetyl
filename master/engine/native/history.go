@@ -59,10 +59,11 @@ func (e *nativeEngine) cleanHistory() {
 			continue
 		}
 		p, _ := process.NewProcess(int32(pid))
-		n, err := p.Exe()
+		// n, err := p.Exe()
+		n, err := p.Name()
 		if err != nil {
 			if !strings.Contains(err.Error(), "exit") {
-				e.log.WithError(err).Warnf("failed to get exe of process (%d) from processes.history", pid)
+				e.log.WithError(err).Warnf("failed to get name of process (%d) from processes.history", pid)
 			}
 			continue
 		}
@@ -86,9 +87,10 @@ func (e *nativeEngine) appendHistory(pid int) {
 	defer e.mut.Unlock()
 
 	p, _ := process.NewProcess(int32(pid))
-	n, err := p.Exe()
+	// n, err := p.Exe()
+	n, err := p.Name()
 	if err != nil {
-		e.log.WithError(err).Warnf("failed to get exe of process (%d) to write into processes.history", pid)
+		e.log.WithError(err).Warnf("failed to get name of process (%d) to write into processes.history", pid)
 		return
 	}
 

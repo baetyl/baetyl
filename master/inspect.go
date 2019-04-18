@@ -17,6 +17,19 @@ func (m *Master) InspectSystem() *openedge.Inspect {
 	m.stats.Software.ConfVersion = m.appcfg.Version
 
 	var err error
+
+	if m.stats.Hardware.HostInfo == nil {
+		m.stats.Hardware.HostInfo, err = utils.GetHostInfo()
+		if err != nil {
+			m.log.Debugf("failed to get host information: %s", err.Error())
+		}
+	}
+	if m.stats.Hardware.NetInfo == nil {
+		m.stats.Hardware.NetInfo, err = utils.GetNetInfo()
+		if err != nil {
+			m.log.Debugf("failed to get net information: %s", err.Error())
+		}
+	}
 	m.stats.Hardware.GPUInfo, err = utils.GetGPUInfo()
 	if err != nil {
 		m.log.Debugf("failed to get gpu information: %s", err.Error())

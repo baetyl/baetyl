@@ -1,11 +1,11 @@
 package logger
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -80,38 +80,40 @@ func (l *logger) Fatalln(args ...interface{}) {
 	l.entry.Fatalln(args...)
 }
 
-// NewLogger from config
-func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
+// InitLogger init global logger
+func InitLogger(c LogInfo, fields ...string) Logger {
 	logLevel, err := logrus.ParseLevel(c.Level)
 	if err != nil {
-		logLevel = logrus.DebugLevel
+		fmt.Fprintf(os.Stderr, "failed to parse log level (%s), use default level (info)", c.Level)
+		logLevel = logrus.InfoLevel
 	}
 
 	var fileHook logrus.Hook
-	if len(c.Path) != 0 {
-		err := os.MkdirAll(filepath.Dir(c.Path), 0755)
+	if c.Path != "" {
+		err = os.MkdirAll(filepath.Dir(c.Path), 0755)
 		if err != nil {
-			return nil, err
-		}
-		fileHook, err = newFileHook(fileConfig{
-			Filename:   c.Path,
-			Formatter:  newFormatter(c.Format, false),
-			Level:      logLevel,
-			MaxAge:     c.Age.Max,  //days
-			MaxSize:    c.Size.Max, // megabytes
-			MaxBackups: c.Backup.Max,
-			Compress:   true,
-		})
-		if err != nil {
-			return nil, err
+			fmt.Fprintf(os.Stderr, "failed to create log directory: %s", err.Error())
+		} else {
+			fileHook, err = newFileHook(fileConfig{
+				Filename:   c.Path,
+				Formatter:  newFormatter(c.Format),
+				Level:      logLevel,
+				MaxAge:     c.Age.Max,  //days
+				MaxSize:    c.Size.Max, // megabytes
+				MaxBackups: c.Backup.Max,
+				Compress:   true,
+			})
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to create log file hook: %s", err.Error())
+			}
 		}
 	}
 
 	entry := logrus.NewEntry(logrus.New())
-	// entry.Logger.SetReportCaller(true)
+	entry.Level = logLevel
 	entry.Logger.Out = ioutil.Discard
 	entry.Logger.Level = logLevel
-	entry.Logger.Formatter = newFormatter(c.Format, true)
+	entry.Logger.Formatter = newFormatter(c.Format)
 	if fileHook != nil {
 		entry.Logger.Hooks.Add(fileHook)
 	}
@@ -119,19 +121,8 @@ func NewLogger(c *LogInfo, fields ...string) (Logger, error) {
 	for index := 0; index < len(fields)-1; index = index + 2 {
 		logrusFields[fields[index]] = fields[index+1]
 	}
-	return &logger{
-		entry: entry.WithFields(logrusFields),
-	}, err
-}
-
-// InitLogger of global logger
-func InitLogger(c *LogInfo, fields ...string) (Logger, error) {
-	l, err := NewLogger(c, fields...)
-	if err != nil {
-		return nil, err
-	}
-	SetGlobalLogger(l)
-	return GlobalLogger(), nil
+	gLogger = &logger{entry.WithFields(logrusFields)}
+	return gLogger
 }
 
 type fileConfig struct {
@@ -201,15 +192,12 @@ func (hook *fileHook) Fire(entry *logrus.Entry) (err error) {
 	return nil
 }
 
-func newFormatter(format string, color bool) logrus.Formatter {
+func newFormatter(format string) logrus.Formatter {
 	var formatter logrus.Formatter
 	if strings.ToLower(format) == "json" {
 		formatter = &logrus.JSONFormatter{}
 	} else {
-		if runtime.GOOS == "windows" {
-			color = false
-		}
-		formatter = &logrus.TextFormatter{FullTimestamp: true, DisableColors: !color}
+		formatter = &logrus.TextFormatter{FullTimestamp: true, DisableColors: true}
 	}
 	return formatter
 }

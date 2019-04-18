@@ -17,5 +17,5 @@
 /**/debug
 /**/*.log
 /cover*.out
-
 /example/**/*-cert
+/**/processes.history*

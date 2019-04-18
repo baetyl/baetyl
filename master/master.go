@@ -30,14 +30,11 @@ type Master struct {
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
-	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
-	if err != nil {
-		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
-	}
-	err = defaults(&cfg)
+	err := defaults(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
+	log := logger.InitLogger(cfg.Logger, "openedge", "master")
 	m := &Master{
 		cfg:      cfg,
 		log:      log,
@@ -98,7 +95,7 @@ func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll(path.Dir(openedge.DefaultSockFile), os.ModePerm)
 		if err != nil {
-			logger.WithError(err).Errorf("failed to make dir: /var/run")
+			return fmt.Errorf("failed to make directory of sock file: %s", err.Error())
 		}
 		c.Server.Address = "unix://" + openedge.DefaultSockFile
 		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
@@ -109,7 +106,7 @@ func defaults(c *Config) error {
 		addr := c.Server.Address
 		uri, err := url.Parse(addr)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse address of server: %s", err.Error())
 		}
 		if c.Mode == "docker" {
 			parts := strings.SplitN(uri.Host, ":", 2)

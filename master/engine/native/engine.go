@@ -73,7 +73,6 @@ func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		return nil, err
 	}
 	argv := make([]string, 0)
-	argv = append(argv, cfg.Name) // add prefix "openedge-service-"?
 	argv = append(argv, cfg.Args...)
 	params := processConfigs{
 		exec: path.Join(pkgDir, pkg.Entry),
