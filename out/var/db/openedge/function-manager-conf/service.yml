@@ -19,6 +19,13 @@ rules:
   #   publish:
   #     topic: t/f
   #     qos: 1
+  - clientid: localfunc-3
+    subscribe:
+      topic: t
+    function:
+      name: sayhi3
+    publish:
+      topic: t/hi3
 functions:
   - name: sayhi
     service: function-sayhi
@@ -31,6 +38,12 @@ functions:
   #   instance:
   #     min: 1
   #     max: 10
+  - name: sayhi3
+    service: function-sayhi3
+    instance:
+      min: 0
+      max: 10
+      idletime: 1m
 logger:
   path: var/log/openedge/service.log
   level: "debug"

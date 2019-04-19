@@ -1,36 +1,1340 @@
 Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportError: ImportError: No module named grpcNo module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+    import grpc
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError:     import grpc
+No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+: ImportError: No module named grpcNo module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError    import grpc
+ImportError: No module named grpc
+: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    ImportError: import grpc
+No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+import grpc
+ImportError: ImportErrorNo module named grpc
+: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    ImportError: No module named grpcimport grpc
+ImportError: No module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+ImportError  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+ImportError: No module named grpc
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+        import grpc
+import grpc
+ImportErrorImportError: : No module named grpc
+No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportErrorImportError: : No module named grpcNo module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportErrorImportError: No module named grpc
+: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+import grpc
+    import grpc
+ImportErrorImportError: No module named grpc
+: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+        import grpc
+ImportError: No module named grpcimport grpc
+ImportError: No module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+    import grpc
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+ImportError:     import grpc
+No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportError: ImportError: No module named grpcNo module named grpc
+
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportErrorImportError: No module named grpc
+: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: ImportError: No module named grpcNo module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportErrorTraceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+: ImportError: No module named grpcNo module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    ImportError: import grpc
+No module named grpcImportError: 
+No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    import grpc
+ImportError: No module named grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    ImportError: No module named grpc
+import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+    ImportError: import grpc
+No module named grpcImportError: No module named grpc
+
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
+    import grpc
+ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -39,6 +1343,10 @@ Traceback (most recent call last):
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -54,11 +1362,19 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -66,11 +1382,19 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -78,7 +1402,15 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -90,19 +1422,35 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -110,6 +1458,10 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
@@ -119,9 +1471,17 @@ Traceback (most recent call last):
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
@@ -135,9 +1495,17 @@ Traceback (most recent call last):
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
@@ -147,6 +1515,10 @@ Traceback (most recent call last):
     import grpc
 ImportError: No module named grpc
 Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py", line 13, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
@@ -222,6 +1594,10 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
 Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
@@ -278,3 +1654,51 @@ Traceback (most recent call last):
   File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 12, in <module>
     import grpc
 ImportError: No module named grpc
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+Traceback (most recent call last):
+  File "/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py", line 13, in <module>
+    import yaml
+ImportError: No module named yaml
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
