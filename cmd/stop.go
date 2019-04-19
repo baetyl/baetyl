@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"syscall"
 
@@ -51,7 +50,7 @@ func stopInternal() error {
 func watcher() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Errorf("error:", err)
 	}
 	defer watcher.Close()
 
@@ -72,7 +71,7 @@ func watcher() {
 
 	err = watcher.Add(openedge.DefaultPidFile)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Errorf("error:", err)
 	}
 	<-done
 }
