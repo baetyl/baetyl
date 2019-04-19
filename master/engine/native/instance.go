@@ -2,12 +2,27 @@ package native
 
 import (
 	"os"
-	"strconv"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/utils"
+	"github.com/shirou/gopsutil/process"
 )
+
+type attribute struct {
+	Name    string `yaml:"name" json:"name"`
+	Process struct {
+		ID   int    `yaml:"id" json:"id"`
+		Name string `yaml:"name" json:"name"`
+	} `yaml:"process" json:"process"`
+}
+
+func (a attribute) toPartialStats() engine.PartialStats {
+	return engine.PartialStats{
+		engine.KeyName: a.Name,
+		"process":      a.Process,
+	}
+}
 
 // Instance instance of service
 type nativeInstance struct {
@@ -49,16 +64,30 @@ func (s *nativeService) newInstance(name string, params processConfigs) (*native
 	return i, nil
 }
 
-func (i *nativeInstance) ID() string {
-	return strconv.Itoa(i.proc.Pid)
+func (i *nativeInstance) Service() engine.Service {
+	return i.service
 }
 
 func (i *nativeInstance) Name() string {
 	return i.name
 }
 
-func (i *nativeInstance) Service() engine.Service {
-	return i.service
+func (i *nativeInstance) Info() engine.PartialStats {
+	var pn string
+	p, err := process.NewProcess(int32(i.proc.Pid))
+	if err != nil {
+		i.log.Warnf("failed to create the process (%s) to get its name", i.proc.Pid)
+	} else {
+		pn, err = p.Name()
+		if err != nil {
+			i.log.Warnf("failed to get the process (%s) name", i.proc.Pid)
+		}
+	}
+	var attr attribute
+	attr.Name = i.name
+	attr.Process.ID = i.proc.Pid
+	attr.Process.Name = pn
+	return attr.toPartialStats()
 }
 
 func (i *nativeInstance) Wait(s chan<- error) {

@@ -18,6 +18,7 @@ func NewPartialStatsByStatus(status string) PartialStats {
 
 // InfoStats interfaces of the storage of info and stats
 type InfoStats interface {
+	LoadStats(sss interface{}) bool
 	AddInstanceStats(serviceName, instanceName string, partialStats PartialStats)
 	DelInstanceStats(serviceName, instanceName string)
 }

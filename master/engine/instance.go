@@ -10,7 +10,6 @@ import (
 
 // all status
 const (
-	KeyID         = "id"
 	KeyName       = "name"
 	KeyStatus     = "status"
 	KeyCreateTime = "create_time"
@@ -29,9 +28,9 @@ const (
 
 // Instance interfaces of instance
 type Instance interface {
-	ID() string
-	Name() string
 	Service() Service
+	Name() string
+	Info() PartialStats
 	Wait(w chan<- error)
 	Dying() <-chan struct{}
 	Restart() error

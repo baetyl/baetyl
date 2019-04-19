@@ -28,12 +28,10 @@ func Supervising(instance Instance) error {
 	l := logger.Global.WithField("service", serviceName).WithField("instance", instanceName)
 	s := make(chan error, 1)
 	for {
-		_engine.AddInstanceStats(serviceName, instanceName, PartialStats{
-			KeyID:        instance.ID(),
-			KeyName:      instance.Name(),
-			KeyStatus:    Running,
-			KeyStartTime: time.Now().UTC(),
-		})
+		instanceInfo := instance.Info()
+		instanceInfo[KeyStatus]=Running
+		instanceInfo[KeyStartTime]=time.Now().UTC()
+		_engine.AddInstanceStats(serviceName, instanceName, instanceInfo)
 		go instance.Wait(s)
 		select {
 		case <-instance.Dying():
