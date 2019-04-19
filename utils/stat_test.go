@@ -12,8 +12,7 @@ func Test_parseGPUInfo(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantGpus []GPUInfo
-		wantErr  bool
+		wantGpus []PerGPUInfo
 	}{
 		{
 			name: "normal",
@@ -22,8 +21,8 @@ func Test_parseGPUInfo(t *testing.T) {
 				0, TITAN X (Pascal), 12189, 12187, 0, 0
 				1, TITAN X (Pascal), 12189, 12187, 12.3, 1`,
 			},
-			wantGpus: []GPUInfo{
-				GPUInfo{
+			wantGpus: []PerGPUInfo{
+				PerGPUInfo{
 					Index:          "0",
 					Model:          "TITAN X (Pascal)",
 					MemTotal:       12189,
@@ -31,7 +30,7 @@ func Test_parseGPUInfo(t *testing.T) {
 					MemUsedPercent: 0.0,
 					GPUUsedPercent: 0.0,
 				},
-				GPUInfo{
+				PerGPUInfo{
 					Index:          "1",
 					Model:          "TITAN X (Pascal)",
 					MemTotal:       12189,
@@ -48,8 +47,8 @@ func Test_parseGPUInfo(t *testing.T) {
 				0, TITAN X (Pascal), 12189, 12187, 0
 				1, TITAN X (Pascal), 12189, 12187, 12.3, 1`,
 			},
-			wantGpus: []GPUInfo{
-				GPUInfo{
+			wantGpus: []PerGPUInfo{
+				PerGPUInfo{
 					Index:          "1",
 					Model:          "TITAN X (Pascal)",
 					MemTotal:       12189,
@@ -65,16 +64,12 @@ func Test_parseGPUInfo(t *testing.T) {
 				in: `
 				0, TITAN X (Pascal), 12189, 12187, xxx, 0`,
 			},
-			wantErr: true,
+			wantGpus: []PerGPUInfo{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotGpus, err := parseGPUInfo(tt.args.in)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseGPUInfo() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			gotGpus := parseGPUInfo(tt.args.in)
 			if !reflect.DeepEqual(gotGpus, tt.wantGpus) {
 				t.Errorf("parseGPUInfo() = %v, want %v", gotGpus, tt.wantGpus)
 			}

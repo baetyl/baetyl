@@ -18,14 +18,14 @@ import (
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	cfg      Config
-	appcfg   openedge.AppConfig
-	server   *api.Server
-	engine   engine.Engine
-	stats    *openedge.Inspect
-	services cmap.ConcurrentMap
-	accounts cmap.ConcurrentMap
-	log      logger.Logger
+	cfg       Config
+	appcfg    openedge.AppConfig
+	server    *api.Server
+	engine    engine.Engine
+	services  cmap.ConcurrentMap
+	accounts  cmap.ConcurrentMap
+	infostats *infoStats
+	log       logger.Logger
 }
 
 // New creates a new master
@@ -34,25 +34,20 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
+	err = os.MkdirAll(openedge.DefaultDBDir, 0755)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
+	}
 	log := logger.InitLogger(cfg.Logger, "openedge", "master")
 	m := &Master{
-		cfg:      cfg,
-		log:      log,
-		services: cmap.New(),
-		accounts: cmap.New(),
-		stats: &openedge.Inspect{
-			Software: openedge.Software{
-				OS:         runtime.GOOS,
-				Arch:       runtime.GOARCH,
-				PWD:        pwd,
-				Mode:       cfg.Mode,
-				GoVersion:  runtime.Version(),
-				BinVersion: ver,
-			},
-		},
+		cfg:       cfg,
+		log:       log,
+		services:  cmap.New(),
+		accounts:  cmap.New(),
+		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(openedge.DefaultDBDir, openedge.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, pwd)
-	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd)
+	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)
 	if err != nil {
 		m.Close()
 		return nil, err

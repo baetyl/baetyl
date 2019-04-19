@@ -19,12 +19,10 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 	err := m.update(dir, clean)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
-		m.stats.Error = err.Error()
 		m.log.Errorf(err.Error())
-		return err
 	}
-	m.stats.Error = ""
-	return nil
+	m.infostats.updateError(err)
+	return err
 }
 
 func (m *Master) update(dir string, clean bool) error {
@@ -115,6 +113,7 @@ func (m *Master) load() error {
 		return err
 	}
 	m.appcfg = cfg
+	m.infostats.refreshAppInfo(m.appcfg)
 	return nil
 }
 

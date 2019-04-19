@@ -25,7 +25,7 @@ type Dispatcher struct {
 // NewDispatcher creates a new dispatcher
 func NewDispatcher(cc ClientInfo, log logger.Logger) *Dispatcher {
 	if log == nil {
-		log = logger.Global()
+		log = logger.Global
 	}
 	return &Dispatcher{
 		config:  cc,

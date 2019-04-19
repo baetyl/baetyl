@@ -53,7 +53,7 @@ type Hardware struct {
 	// disk usage information of host
 	DiskInfo *utils.DiskInfo `json:"disk_stats,omitempty"`
 	// CPU usage information of host
-	GPUInfo []utils.GPUInfo `json:"gpu_stats,omitempty"`
+	GPUInfo *utils.GPUInfo `json:"gpu_stats,omitempty"`
 }
 
 // Services all services' information

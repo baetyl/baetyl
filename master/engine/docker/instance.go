@@ -3,13 +3,13 @@ package docker
 import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 
 // Instance instance of service
 type dockerInstance struct {
-	engine.InstanceStats
+	id      string
+	name    string
 	service *dockerService
 	log     logger.Logger
 	tomb    utils.Tomb
@@ -30,12 +30,10 @@ func (s *dockerService) newInstance(name string, params containerConfigs) (*dock
 	}
 	i := &dockerInstance{
 		service: s,
+		id:      cid,
+		name:    name,
 		log:     log.WithField("cid", cid[:12]),
 	}
-	i.SetStats(map[string]interface{}{
-		"id":   cid,
-		"name": name,
-	})
 	err = i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
@@ -47,33 +45,26 @@ func (s *dockerService) newInstance(name string, params containerConfigs) (*dock
 	return i, nil
 }
 
-func (i *dockerInstance) Log() logger.Logger {
-	return i.log
+func (i *dockerInstance) ID() string {
+	return i.id
 }
 
-func (i *dockerInstance) Policy() openedge.RestartPolicyInfo {
-	return i.service.cfg.Restart
+func (i *dockerInstance) Name() string {
+	return i.name
 }
 
-func (i *dockerInstance) State() openedge.InstanceStatus {
-	s, err := i.service.engine.statsContainer(i.ID())
-	if err != nil {
-		i.log.WithError(err).Errorf("failed to stats instance")
-		i.SetStatus(engine.Offline)
-	} else {
-		i.SetStats(s)
-	}
-	return i.Stats()
+func (i *dockerInstance) Service() engine.Service {
+	return i.service
 }
 
 func (i *dockerInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
-	err := i.service.engine.waitContainer(i.ID())
+	err := i.service.engine.waitContainer(i.id)
 	s <- err
 }
 
 func (i *dockerInstance) Restart() error {
-	err := i.service.engine.restartContainer(i.ID())
+	err := i.service.engine.restartContainer(i.id)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to restart instance")
 		return err
@@ -84,12 +75,12 @@ func (i *dockerInstance) Restart() error {
 
 func (i *dockerInstance) Stop() {
 	i.log.Infof("to stop instance")
-	err := i.service.engine.stopContainer(i.ID())
+	err := i.service.engine.stopContainer(i.id)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to stop instance")
 	}
-	i.service.engine.removeContainer(i.ID())
-	i.service.instances.Remove(i.Name())
+	i.service.engine.removeContainer(i.id)
+	i.service.instances.Remove(i.name)
 }
 
 func (i *dockerInstance) Dying() <-chan struct{} {

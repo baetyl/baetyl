@@ -74,12 +74,13 @@ func (m *Master) stopAllServices() {
 }
 
 // ReportInstance reports the stats of the instance of the service
-func (m *Master) ReportInstance(service, instance string, stats map[string]interface{}) error {
-	s, ok := m.services.Get(service)
+func (m *Master) ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error {
+	_, ok := m.services.Get(serviceName)
 	if !ok {
-		return fmt.Errorf("service (%s) not found", service)
+		return fmt.Errorf("service (%s) not found", serviceName)
 	}
-	return s.(engine.Service).ReportInstance(instance, stats)
+	m.infostats.AddInstanceStats(serviceName, instanceName, partialStats)
+	return nil
 }
 
 // StartInstance starts a service instance

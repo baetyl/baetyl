@@ -6,7 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var gLogger Logger
+// Global the global logger
+var Global Logger
 
 func init() {
 	entry := logrus.NewEntry(logrus.New())
@@ -14,70 +15,65 @@ func init() {
 	entry.Logger.Out = ioutil.Discard
 	entry.Logger.Level = logrus.InfoLevel
 	entry.Logger.Formatter = newFormatter("text")
-	gLogger = &logger{entry}
-}
-
-// Global returns the global logger
-func Global() Logger {
-	return gLogger
+	Global = &logger{entry}
 }
 
 // WithField to global logger
 func WithField(key string, value interface{}) Logger {
-	return gLogger.WithField(key, value)
+	return Global.WithField(key, value)
 }
 
 // WithError to global logger
 func WithError(err error) Logger {
-	return gLogger.WithError(err)
+	return Global.WithError(err)
 }
 
 // Debugf to global logger
 func Debugf(format string, args ...interface{}) {
-	gLogger.Debugf(format, args...)
+	Global.Debugf(format, args...)
 }
 
 // Infof to global logger
 func Infof(format string, args ...interface{}) {
-	gLogger.Infof(format, args...)
+	Global.Infof(format, args...)
 }
 
 // Warnf to global logger
 func Warnf(format string, args ...interface{}) {
-	gLogger.Warnf(format, args...)
+	Global.Warnf(format, args...)
 }
 
 // Errorf to global logger
 func Errorf(format string, args ...interface{}) {
-	gLogger.Errorf(format, args...)
+	Global.Errorf(format, args...)
 }
 
 // Fatalf to global logger
 func Fatalf(format string, args ...interface{}) {
-	gLogger.Fatalf(format, args...)
+	Global.Fatalf(format, args...)
 }
 
 // Debugln to global logger
 func Debugln(args ...interface{}) {
-	gLogger.Debugln(args...)
+	Global.Debugln(args...)
 }
 
 // Infoln to global logger
 func Infoln(args ...interface{}) {
-	gLogger.Infoln(args...)
+	Global.Infoln(args...)
 }
 
 // Warnln to global logger
 func Warnln(args ...interface{}) {
-	gLogger.Warnln(args...)
+	Global.Warnln(args...)
 }
 
 // Errorln to global logger
 func Errorln(args ...interface{}) {
-	gLogger.Errorln(args...)
+	Global.Errorln(args...)
 }
 
 // Fatalln to global logger
 func Fatalln(args ...interface{}) {
-	gLogger.Fatalln(args)
+	Global.Fatalln(args)
 }

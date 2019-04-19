@@ -30,12 +30,12 @@ func (s *nativeService) Name() string {
 	return s.cfg.Name
 }
 
-func (s *nativeService) Stats() openedge.ServiceStatus {
-	r := openedge.NewServiceStatus(s.cfg.Name)
-	for _, i := range s.instances.Items() {
-		r.Instances = append(r.Instances, i.(*nativeInstance).Stats())
-	}
-	return r
+func (s *nativeService) Engine() engine.Engine {
+	return s.engine
+}
+
+func (s *nativeService) RestartPolicy() openedge.RestartPolicyInfo {
+	return s.cfg.Restart
 }
 
 func (s *nativeService) Start() error {
@@ -67,16 +67,6 @@ func (s *nativeService) Stop() {
 		}(v.(*nativeInstance), &wg)
 	}
 	wg.Wait()
-}
-
-func (s *nativeService) ReportInstance(instanceName string, stats map[string]interface{}) error {
-	i, ok := s.instances.Get(instanceName)
-	if !ok {
-		s.log.Debugf("instance (%s) not found", instanceName)
-		return nil
-	}
-	i.(*nativeInstance).SetStats(stats)
-	return nil
 }
 
 func (s *nativeService) StartInstance(instanceName string, dynamicConfig map[string]string) error {
