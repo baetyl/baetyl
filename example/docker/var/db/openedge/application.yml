@@ -62,6 +62,16 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
+  - name: function-sayhi3
+    image: openedge-function-python36
+    replica: 0
+    mounts:
+      - name: function-sayhi3-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi3-code
+        path: var/db/openedge/function-sayhi3
+        readonly: true
   - name: function-filter
     image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
     replica: 0
@@ -124,6 +134,10 @@ volumes:
     path: var/db/openedge/function-sayhi-conf
   - name: function-sayhi-code
     path: var/db/openedge/function-sayhi-code
+  - name: function-sayhi3-conf
+    path: var/db/openedge/function-sayhi3-conf
+  - name: function-sayhi3-code
+    path: var/db/openedge/function-sayhi3-code
   - name: function-filter-conf
     path: var/db/openedge/function-filter-conf
   # mosquitto
