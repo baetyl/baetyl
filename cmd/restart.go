@@ -16,17 +16,17 @@ var restartCmd = &cobra.Command{
 }
 
 func restart(cmd *cobra.Command, args []string) {
-	fmt.Fprintln("restart openedge")
+	fmt.Fprintln(os.Stdout, "restart openedge")
 	err := stopInternal()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
-	fmt.Fprintln("openedge restarting...")
+	fmt.Fprintln(os.Stdout, "openedge restarting...")
 	err = startInternal()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
-	fmt.Fprintln("openedge restarted")
+	fmt.Fprintln(os.Stdout, "openedge restarted")
 }
 
 func init() {
