@@ -12,6 +12,7 @@ import (
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	"github.com/orcaman/concurrent-map"
+	"github.com/shirou/gopsutil/process"
 )
 
 // NAME of this engine
@@ -29,6 +30,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
 	}
+	e.clean()
 	return e, nil
 }
 
@@ -47,6 +49,39 @@ func (e *nativeEngine) Name() string {
 // Prepare prepares all images
 func (e *nativeEngine) Prepare([]openedge.ServiceInfo) {
 	// do nothing in native mode
+}
+
+// Clean clean all old instances
+func (e *nativeEngine) clean() {
+	sss := map[string]map[string]attribute{}
+	if e.LoadStats(&sss) {
+		for sn, instances := range sss {
+			for in, instance := range instances {
+				id := int32(instance.Process.ID)
+				name := instance.Process.Name
+				p, err := process.NewProcess(id)
+				if err != nil {
+					e.log.WithError(err).Warnf("[%s][%s] failed to get old process (%d)", sn, in, id)
+					continue
+				}
+				pn, err := p.Name()
+				if err != nil {
+					e.log.WithError(err).Warnf("[%s][%s] failed to get name of old process (%d)", sn, in, id)
+					continue
+				}
+				if pn != name {
+					e.log.Debugf("[%s][%s] name of old process (%d) not matched, %s -> %s", sn, in, id, name, pn)
+					continue
+				}
+				err = p.Kill()
+				if err != nil {
+					e.log.Warnf("[%s][%s] failed to stop the old process (%d)", sn, in, id)
+				} else {
+					e.log.Infof("[%s][%s] old process (%d) stopped", sn, in, id)
+				}
+			}
+		}
+	}
 }
 
 // Run new service
@@ -88,6 +123,11 @@ func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	return s, nil
 }
 
+// Close engine
+func (e *nativeEngine) Close() error {
+	return nil
+}
+
 func mount(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.VolumeInfo) error {
 	for _, m := range ms {
 		v, ok := vs[m.Name]
@@ -113,10 +153,5 @@ func mount(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.Vo
 			return err
 		}
 	}
-	return nil
-}
-
-// Close engine
-func (e *nativeEngine) Close() error {
 	return nil
 }
