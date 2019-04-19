@@ -63,7 +63,7 @@ services:
         path: var/db/openedge/function-sayhi
         readonly: true
   - name: function-filter
-    image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
+    image: openedge-function-sql:0.1.2
     replica: 0
     mounts:
       - name: function-filter-conf

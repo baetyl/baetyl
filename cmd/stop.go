@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"syscall"
 
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/fsnotify/fsnotify"
 	daemon "github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
 )
@@ -40,5 +42,37 @@ func stopInternal() error {
 	if err != nil {
 		return fmt.Errorf("failed to stop openedge: %s", err.Error())
 	}
+	fmt.Fprintln(os.Stdout, "openedge stopping...")
+	watcher()
+	fmt.Fprintln(os.Stdout, "openedge stopped")
 	return nil
+}
+
+func watcher() {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				if event.Op&fsnotify.Remove == fsnotify.Remove {
+					done <- true
+					break
+				}
+			case err := <-watcher.Errors:
+				fmt.Errorf("error:", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(openedge.DefaultPidFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	<-done
 }
