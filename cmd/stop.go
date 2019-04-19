@@ -50,7 +50,7 @@ func stopInternal() error {
 func watcher() {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		fmt.Errorf("error:", err)
+		fmt.Errorf("error: %s", err.Error())
 	}
 	defer watcher.Close()
 
@@ -64,14 +64,14 @@ func watcher() {
 					break
 				}
 			case err := <-watcher.Errors:
-				fmt.Errorf("error:", err)
+				fmt.Errorf("error: %s", err.Error())
 			}
 		}
 	}()
 
 	err = watcher.Add(openedge.DefaultPidFile)
 	if err != nil {
-		fmt.Errorf("error:", err)
+		fmt.Errorf("error: %s", err.Error())
 	}
 	<-done
 }
