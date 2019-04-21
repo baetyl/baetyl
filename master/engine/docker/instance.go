@@ -6,6 +6,21 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
+type attribute struct {
+	Name      string `yaml:"name" json:"name"`
+	Container struct {
+		ID   string `yaml:"id" json:"id"`
+		Name string `yaml:"name" json:"name"`
+	} `yaml:"container" json:"container"`
+}
+
+func (a attribute) toPartialStats() engine.PartialStats {
+	return engine.PartialStats{
+		engine.KeyName: a.Name,
+		"container":    a.Container,
+	}
+}
+
 // Instance instance of service
 type dockerInstance struct {
 	id      string
@@ -45,16 +60,20 @@ func (s *dockerService) newInstance(name string, params containerConfigs) (*dock
 	return i, nil
 }
 
-func (i *dockerInstance) ID() string {
-	return i.id
+func (i *dockerInstance) Service() engine.Service {
+	return i.service
 }
 
 func (i *dockerInstance) Name() string {
 	return i.name
 }
 
-func (i *dockerInstance) Service() engine.Service {
-	return i.service
+func (i *dockerInstance) Info() engine.PartialStats {
+	var attr attribute
+	attr.Name = i.name
+	attr.Container.ID = i.id
+	attr.Container.Name = i.name
+	return attr.toPartialStats()
 }
 
 func (i *dockerInstance) Wait(s chan<- error) {
