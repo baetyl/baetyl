@@ -88,6 +88,7 @@ func startInternal() error {
 		Args:        args,
 	}
 	if cfg.Logger.Path != "" {
+		os.MkdirAll(path.Dir(cfg.Logger.Path), 0755)
 		ctx.LogFileName = cfg.Logger.Path + ".console"
 	} else {
 		ctx.LogFileName = "openedge.log.console"
