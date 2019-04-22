@@ -1,3 +1,5 @@
+// +build linux
+
 package native
 
 import (
@@ -27,7 +29,7 @@ func (e *nativeEngine) startProcess(cfg processConfigs) (*os.Process, error) {
                 os.Stdout,
                 os.Stderr,
             },
-            Sys: &syscall.SysProcAttr{Pdeathsig: syscal.SIGTERM},
+            Sys: &syscall.SysProcAttr{Pdeathsig: syscall.SIGTERM},
         },
     )
     if err != nil {
