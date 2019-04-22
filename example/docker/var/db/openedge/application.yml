@@ -62,6 +62,16 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
+  - name: function-sayhi3
+    image: openedge-function-python36
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
   - name: function-filter
     image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
     replica: 0
