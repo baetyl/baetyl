@@ -45,10 +45,14 @@ def handler(event, context):
         res['invoked'] = True
         return res
 
-    event['functionName'] = context['functionName']
-    event['functionInvokeID'] = context['functionInvokeID']
-    event['messageQOS'] = context['messageQOS']
-    event['messageTopic'] = context['messageTopic']
+    if 'functionName' in context:
+        event['functionName'] = context['functionName']
+    if 'functionInvokeID' in context:
+        event['functionInvokeID'] = context['functionInvokeID']
+    if 'messageQOS' in context:
+        event['messageQOS'] = context['messageQOS']
+    if 'messageTopic' in context:
+        event['messageTopic'] = context['messageTopic']
     event['py'] = '你好，世界！'
 
     return event
