@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/protocol/http"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
@@ -20,7 +21,7 @@ type Master interface {
 	UpdateSystem(string, bool) error
 
 	// for instance
-	ReportInstance(serviceName, instanceName string, stats map[string]interface{}) error
+	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
 	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
 	StopInstance(serviceName, instanceName string) error
 }

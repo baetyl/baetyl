@@ -1,13 +1,13 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"path"
 	"path/filepath"
 	"syscall"
 
-	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
@@ -37,16 +37,39 @@ func init() {
 }
 
 func start(cmd *cobra.Command, args []string) {
-	startInternal()
+	err := startInternal()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
-func startInternal() {
-	workDir, confFile = workPath()
-	var cfg master.Config
-	err := utils.LoadYAML(path.Join(workDir, confFile), &cfg)
+func startInternal() error {
+	exe, err := os.Executable()
 	if err != nil {
-		logger.Fatalf("failed to load %s: %s", confFile, err.Error())
-		return
+		return fmt.Errorf("failed to get executable: %s", err.Error())
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		return fmt.Errorf("failed to get path of executable: %s", err.Error())
+	}
+	if workDir == "" {
+		workDir = path.Dir(path.Dir(exe))
+	}
+	workDir, err = filepath.Abs(workDir)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path of work directory: %s", err.Error())
+	}
+	err = os.Chdir(workDir)
+	if err != nil {
+		return fmt.Errorf("failed to change work directory: %s", err.Error())
+	}
+	if confFile == "" {
+		confFile = defaultConfFile
+	}
+	var cfg master.Config
+	err = utils.LoadYAML(path.Join(workDir, confFile), &cfg)
+	if err != nil {
+		return fmt.Errorf("failed to load config: %s", err.Error())
 	}
 
 	args := []string{"openedge", "start"}
@@ -64,26 +87,28 @@ func startInternal() {
 		Umask:       027,
 		Args:        args,
 	}
+	if cfg.Logger.Path != "" {
+		ctx.LogFileName = cfg.Logger.Path + ".console"
+	} else {
+		ctx.LogFileName = "openedge.log.console"
+	}
 
 	d, err := ctx.Reborn()
 	if err != nil {
 		if err == daemon.ErrWouldBlock {
-			logger.Errorf("OpenEdge has been started, please do not start again")
-		} else {
-			logger.Errorf(err.Error())
+			err = fmt.Errorf("OpenEdge has been started, please do not start again")
 		}
-		return
+		return err
 	}
 
 	if d != nil {
-		return
+		return nil
 	}
 
 	if utils.PathExists(openedge.DefaultSockFile) {
 		err = os.RemoveAll(openedge.DefaultSockFile)
 		if err != nil {
-			logger.Errorf("Cannot remove sock file: %s", err.Error())
-			return
+			return fmt.Errorf("failed to remove sock file: %s", err.Error())
 		}
 	}
 
@@ -91,8 +116,7 @@ func startInternal() {
 
 	m, err := master.New(workDir, cfg, Version)
 	if err != nil {
-		logger.Errorf("failed to create master: %s", err.Error())
-		return
+		return fmt.Errorf("failed to create master: %s", err.Error())
 	}
 	defer m.Close()
 
@@ -100,31 +124,5 @@ func startInternal() {
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	signal.Ignore(syscall.SIGPIPE)
 	<-sig
-}
-
-func workPath() (string, string) {
-	exe, err := os.Executable()
-	if err != nil {
-		logger.Fatalln("failed to get executable path:", err.Error())
-	}
-	exe, err = filepath.EvalSymlinks(exe)
-	if err != nil {
-		logger.Fatalln("failed to get realpath of executable:", err.Error())
-	}
-	if workDir == "" {
-		workDir = path.Dir(path.Dir(exe))
-	}
-
-	workDir, err = filepath.Abs(workDir)
-	if err != nil {
-		logger.Fatalln("failed to get absolute path of workdir:", err.Error())
-	}
-	err = os.Chdir(workDir)
-	if err != nil {
-		logger.Fatalln("failed to change directory to workdir:", err.Error())
-	}
-	if confFile == "" {
-		confFile = defaultConfFile
-	}
-	return workDir, confFile
+	return nil
 }

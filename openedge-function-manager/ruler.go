@@ -63,7 +63,7 @@ func (rr *ruler) close() {
 func (rr *ruler) callback(in, out *openedge.FunctionMessage, err error) {
 	if err != nil {
 		for index := 1; index < rr.cfg.Retry.Max && err != nil; index++ {
-			rr.log.Debugf("retry %d", index)
+			rr.log.Debugf("function (%s) retried %d time(s)", rr.fun.cfg.Name, index)
 			out, err = rr.fun.Call(in)
 		}
 	}

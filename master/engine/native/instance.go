@@ -2,20 +2,34 @@ package native
 
 import (
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
+	"github.com/shirou/gopsutil/process"
 )
+
+type attribute struct {
+	Name    string `yaml:"name" json:"name"`
+	Process struct {
+		ID   int    `yaml:"id" json:"id"`
+		Name string `yaml:"name" json:"name"`
+	} `yaml:"process" json:"process"`
+}
+
+func (a attribute) toPartialStats() engine.PartialStats {
+	return engine.PartialStats{
+		engine.KeyName: a.Name,
+		"process":      a.Process,
+	}
+}
 
 // Instance instance of service
 type nativeInstance struct {
-	engine.InstanceStats
+	name    string
 	service *nativeService
 	params  processConfigs
+	proc    *os.Process
 	tomb    utils.Tomb
 	log     logger.Logger
 }
@@ -33,17 +47,12 @@ func (s *nativeService) newInstance(name string, params processConfigs) (*native
 		}
 	}
 	i := &nativeInstance{
+		name:    name,
 		service: s,
 		params:  params,
+		proc:    p,
 		log:     log.WithField("pid", p.Pid),
 	}
-	i.SetStats(map[string]interface{}{
-		"id":         strconv.Itoa(p.Pid),
-		"name":       name,
-		"status":     engine.Running,
-		"start_time": time.Now().UTC(),
-		"process":    p,
-	})
 	err = i.tomb.Go(func() error {
 		return engine.Supervising(i)
 	})
@@ -55,35 +64,45 @@ func (s *nativeService) newInstance(name string, params processConfigs) (*native
 	return i, nil
 }
 
-func (i *nativeInstance) Log() logger.Logger {
-	return i.log
+func (i *nativeInstance) Service() engine.Service {
+	return i.service
 }
 
-func (i *nativeInstance) Policy() openedge.RestartPolicyInfo {
-	return i.service.cfg.Restart
+func (i *nativeInstance) Name() string {
+	return i.name
+}
+
+func (i *nativeInstance) Info() engine.PartialStats {
+	var pn string
+	p, err := process.NewProcess(int32(i.proc.Pid))
+	if err != nil {
+		i.log.Warnf("failed to create the process (%s) to get its name", i.proc.Pid)
+	} else {
+		pn, err = p.Name()
+		if err != nil {
+			i.log.Warnf("failed to get the process (%s) name", i.proc.Pid)
+		}
+	}
+	var attr attribute
+	attr.Name = i.name
+	attr.Process.ID = i.proc.Pid
+	attr.Process.Name = pn
+	return attr.toPartialStats()
 }
 
 func (i *nativeInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
-	err := i.service.engine.waitProcess(i.Stat("process").(*os.Process))
+	err := i.service.engine.waitProcess(i.proc)
 	s <- err
-	i.SetStatus(engine.Exited)
 }
 
 func (i *nativeInstance) Restart() error {
-	i.SetStatus(engine.Restarting)
-
 	p, err := i.service.engine.startProcess(i.params)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to restart instance")
 		return err
 	}
-	i.SetStats(map[string]interface{}{
-		"id":         strconv.Itoa(p.Pid),
-		"status":     engine.Running,
-		"start_time": time.Now().UTC(),
-		"process":    p,
-	})
+	i.proc = p
 	i.log = i.log.WithField("pid", p.Pid)
 	i.log.Infof("instance restarted")
 	return nil
@@ -91,12 +110,11 @@ func (i *nativeInstance) Restart() error {
 
 func (i *nativeInstance) Stop() {
 	i.log.Infof("to stop instance")
-	err := i.service.engine.stopProcess(i.Stat("process").(*os.Process))
+	err := i.service.engine.stopProcess(i.proc)
 	if err != nil {
 		i.log.Debugf("failed to stop instance: %s", err.Error())
 	}
-	i.SetStatus(engine.Dead)
-	i.service.instances.Remove(i.Name())
+	i.service.instances.Remove(i.name)
 }
 
 func (i *nativeInstance) Dying() <-chan struct{} {

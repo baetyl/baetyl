@@ -1,77 +1,79 @@
 package logger
 
-var gLogger Logger
+import (
+	"io/ioutil"
+
+	"github.com/sirupsen/logrus"
+)
+
+// Global the global logger
+var Global Logger
 
 func init() {
-	gLogger = &stdLogger{}
-}
-
-// GlobalLogger of openedge
-func GlobalLogger() Logger {
-	return gLogger
-}
-
-// SetGlobalLogger for openedge
-func SetGlobalLogger(logger Logger) {
-	gLogger = logger
+	entry := logrus.NewEntry(logrus.New())
+	entry.Level = logrus.InfoLevel
+	entry.Logger.Out = ioutil.Discard
+	entry.Logger.Level = logrus.InfoLevel
+	entry.Logger.Formatter = newFormatter("text")
+	Global = &logger{entry}
 }
 
 // WithField to global logger
 func WithField(key string, value interface{}) Logger {
-	return GlobalLogger().WithField(key, value)
+	return Global.WithField(key, value)
 }
 
 // WithError to global logger
 func WithError(err error) Logger {
-	return GlobalLogger().WithError(err)
+	return Global.WithError(err)
 }
 
 // Debugf to global logger
 func Debugf(format string, args ...interface{}) {
-	GlobalLogger().Debugf(format, args...)
+	Global.Debugf(format, args...)
 }
 
 // Infof to global logger
 func Infof(format string, args ...interface{}) {
-	GlobalLogger().Infof(format, args...)
+	Global.Infof(format, args...)
 }
 
 // Warnf to global logger
 func Warnf(format string, args ...interface{}) {
-	GlobalLogger().Warnf(format, args...)
+	Global.Warnf(format, args...)
 }
 
 // Errorf to global logger
 func Errorf(format string, args ...interface{}) {
-	GlobalLogger().Errorf(format, args...)
+	Global.Errorf(format, args...)
 }
 
 // Fatalf to global logger
 func Fatalf(format string, args ...interface{}) {
-	GlobalLogger().Fatalf(format, args...)
+	Global.Fatalf(format, args...)
 }
 
 // Debugln to global logger
 func Debugln(args ...interface{}) {
-	GlobalLogger().Debugln(args...)
+	Global.Debugln(args...)
 }
 
 // Infoln to global logger
 func Infoln(args ...interface{}) {
-	GlobalLogger().Infoln(args...)
+	Global.Infoln(args...)
 }
 
 // Warnln to global logger
 func Warnln(args ...interface{}) {
-	GlobalLogger().Warnln(args...)
+	Global.Warnln(args...)
 }
 
 // Errorln to global logger
 func Errorln(args ...interface{}) {
-	GlobalLogger().Errorln(args...)
+	Global.Errorln(args...)
 }
 
 // Fatalln to global logger
 func Fatalln(args ...interface{}) {
-	GlobalLogger().Fatalln(args)
+	Global.Fatalln(args)
 }

@@ -5,8 +5,6 @@ import (
 	"os"
 	"syscall"
 	"time"
-
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
 type processConfigs struct {
@@ -80,8 +78,4 @@ func (e *nativeEngine) stopProcess(p *os.Process) error {
 		}
 		return nil
 	}
-}
-
-func (e *nativeEngine) statsProcess(p *os.Process) (openedge.InstanceStatus, error) {
-	return openedge.InstanceStatus{}, nil
 }

@@ -9,33 +9,32 @@ import (
 	"github.com/jpillora/backoff"
 )
 
-// Supervisee supervisee supervised by supervisor
-type Supervisee interface {
-	Log() logger.Logger
-	Policy() openedge.RestartPolicyInfo
-	Wait(w chan<- error)
-	Dying() <-chan struct{}
-	Restart() error
-	Stop()
-}
-
-// Supervising supervise a supervisee
-func Supervising(supervisee Supervisee) error {
-	defer supervisee.Stop()
+// Supervising supervise an instance
+func Supervising(instance Instance) error {
+	service := instance.Service()
+	_engine := service.Engine()
+	serviceName := service.Name()
+	instanceName := instance.Name()
+	defer _engine.DelInstanceStats(serviceName, instanceName)
+	defer instance.Stop()
 
 	c := 0
-	p := supervisee.Policy()
+	p := instance.Service().RestartPolicy()
 	b := &backoff.Backoff{
 		Min:    p.Backoff.Min,
 		Max:    p.Backoff.Max,
 		Factor: p.Backoff.Factor,
 	}
-	l := supervisee.Log()
+	l := logger.Global.WithField("service", serviceName).WithField("instance", instanceName)
 	s := make(chan error, 1)
 	for {
-		go supervisee.Wait(s)
+		instanceInfo := instance.Info()
+		instanceInfo[KeyStatus]=Running
+		instanceInfo[KeyStartTime]=time.Now().UTC()
+		_engine.AddInstanceStats(serviceName, instanceName, instanceInfo)
+		go instance.Wait(s)
 		select {
-		case <-supervisee.Dying():
+		case <-instance.Dying():
 			return nil
 		case err := <-s:
 			switch p.Policy {
@@ -44,8 +43,10 @@ func Supervising(supervisee Supervisee) error {
 				if err == nil {
 					return nil
 				}
+				_engine.AddInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting))
 				goto RESTART
 			case openedge.RestartAlways:
+				_engine.AddInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting))
 				goto RESTART
 			case openedge.RestartNo:
 				// TODO: to test
@@ -65,11 +66,11 @@ func Supervising(supervisee Supervisee) error {
 
 		select {
 		case <-time.After(b.Duration()):
-		case <-supervisee.Dying():
+		case <-instance.Dying():
 			return nil
 		}
 
-		err := supervisee.Restart()
+		err := instance.Restart()
 		if err != nil {
 			l.Errorf("failed to restart module, keep to restart")
 			goto RESTART

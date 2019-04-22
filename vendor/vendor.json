@@ -57,6 +57,12 @@
 			"revisionTime": "2018-08-23T22:24:21Z"
 		},
 		{
+			"checksumSHA1": "4+grAgmYt+QU+sftz+pm7/UV5FM=",
+			"path": "github.com/StackExchange/wmi",
+			"revision": "e0a55b97c70558c92ce14085e41b35a894e93d3d",
+			"revisionTime": "2018-12-12T23:48:31Z"
+		},
+		{
 			"checksumSHA1": "pQ8RLppvYgZPuUUVJxk8cchTktk=",
 			"path": "github.com/creasty/defaults",
 			"revision": "a7e48e2230891fc7456c8ab918c424c5b06c3192",
@@ -280,6 +286,18 @@
 			"revisionTime": "2018-09-12T20:56:54Z"
 		},
 		{
+			"checksumSHA1": "vTmc/uvCPpTs51Rl9bVomPZMZIM=",
+			"path": "github.com/go-ole/go-ole",
+			"revision": "97b6244175ae18ea6eef668034fd6565847501c9",
+			"revisionTime": "2019-02-26T14:26:00Z"
+		},
+		{
+			"checksumSHA1": "PArleDBtadu2qO4hJwHR8a3IOTA=",
+			"path": "github.com/go-ole/go-ole/oleutil",
+			"revision": "97b6244175ae18ea6eef668034fd6565847501c9",
+			"revisionTime": "2019-02-26T14:26:00Z"
+		},
+		{
 			"checksumSHA1": "47nJ3iu1bVvK9jPXwAinFYr4mBU=",
 			"path": "github.com/gogo/protobuf/proto",
 			"revision": "61dbc136cf5d2f08d68a011382652244990a53a9",
@@ -455,10 +473,10 @@
 			"revisionTime": "2018-10-06T20:25:41Z"
 		},
 		{
-			"checksumSHA1": "fSc4y4MLX7EWgGg9lOGSZbs21MM=",
+			"checksumSHA1": "LvrQYiHnmi+OseM0g/4XZudwphw=",
 			"path": "github.com/shirou/gopsutil/cpu",
-			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
-			"revisionTime": "2019-03-13T17:43:15Z"
+			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
+			"revisionTime": "2019-03-23T13:16:28Z"
 		},
 		{
 			"checksumSHA1": "EBwtvlQYXXZPvgGMMrO8VU0NaoA=",
@@ -467,16 +485,34 @@
 			"revisionTime": "2019-03-13T17:43:15Z"
 		},
 		{
-			"checksumSHA1": "GR7l7Ez4ppxIfonl7aJayYRVPWc=",
-			"path": "github.com/shirou/gopsutil/internal/common",
-			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
-			"revisionTime": "2019-03-13T17:43:15Z"
+			"checksumSHA1": "NExSedkX89S1e1bVoZVG+qVyIOs=",
+			"path": "github.com/shirou/gopsutil/host",
+			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
+			"revisionTime": "2019-03-23T13:16:28Z"
 		},
 		{
-			"checksumSHA1": "3jbGU2YJ8u841jDH3QTVIQnJ1rM=",
+			"checksumSHA1": "1ujqYt7cDGVfqksAffUSKNzJaMY=",
+			"path": "github.com/shirou/gopsutil/internal/common",
+			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
+			"revisionTime": "2019-03-23T13:16:28Z"
+		},
+		{
+			"checksumSHA1": "sOvosfg/04t189l5WJQYzdiifAI=",
 			"path": "github.com/shirou/gopsutil/mem",
-			"revision": "ebc97eefea9b062f9f1624c042c98f196fc90248",
-			"revisionTime": "2019-03-13T17:43:15Z"
+			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
+			"revisionTime": "2019-03-23T13:16:28Z"
+		},
+		{
+			"checksumSHA1": "GkJTdMJ4m9V5pcOSuspNbsitN2k=",
+			"path": "github.com/shirou/gopsutil/net",
+			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
+			"revisionTime": "2019-03-23T13:16:28Z"
+		},
+		{
+			"checksumSHA1": "/t2ttWgHEJjtABiCJD+3cDLB3zU=",
+			"path": "github.com/shirou/gopsutil/process",
+			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
+			"revisionTime": "2019-03-23T13:16:28Z"
 		},
 		{
 			"checksumSHA1": "HBvdI4AkWfRbjneWZ1UKXM0o9zE=",

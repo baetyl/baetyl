@@ -32,7 +32,7 @@ type Client struct {
 func NewClient(cc ClientInfo, handler Handler, log logger.Logger) (*Client, error) {
 	defaults.Set(&cc)
 	if log == nil {
-		log = logger.GlobalLogger()
+		log = logger.Global
 	}
 
 	dialer, err := NewDialer(cc.Certificate)

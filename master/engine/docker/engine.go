@@ -28,17 +28,19 @@ func init() {
 }
 
 // New docker engine
-func New(grace time.Duration, pwd string) (engine.Engine, error) {
+func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return nil, err
 	}
 	e := &dockerEngine{
-		cli:   cli,
-		pwd:   pwd,
-		grace: grace,
-		log:   logger.WithField("engine", NAME),
+		InfoStats: stats,
+		cli:       cli,
+		pwd:       pwd,
+		grace:     grace,
+		log:       logger.WithField("engine", NAME),
 	}
+	e.clean()
 	err = e.initNetwork()
 	if err != nil {
 		e.Close()
@@ -48,19 +50,17 @@ func New(grace time.Duration, pwd string) (engine.Engine, error) {
 }
 
 type dockerEngine struct {
+	engine.InfoStats
 	cli   *client.Client
 	nid   string // network id
 	pwd   string // work directory
 	grace time.Duration
+	tomb  utils.Tomb
 	log   logger.Logger
 }
 
 func (e *dockerEngine) Name() string {
 	return NAME
-}
-
-func (e *dockerEngine) Close() error {
-	return e.cli.Close()
 }
 
 // Prepare prepares all images
@@ -74,6 +74,30 @@ func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
 		}(s.Image, &wg)
 	}
 	wg.Wait()
+}
+
+// Clean clean all old instances
+func (e *dockerEngine) clean() {
+	sss := map[string]map[string]attribute{}
+	if e.LoadStats(&sss) {
+		for sn, instances := range sss {
+			for in, instance := range instances {
+				id := instance.Container.ID
+				err := e.stopContainer(id)
+				if err != nil {
+					e.log.Warnf("[%s][%s] failed to stop the old container (%s)", sn, in, id[:12])
+				} else {
+					e.log.Infof("[%s][%s] old container (%s) stopped", sn, in, id[:12])
+				}
+				err = e.removeContainer(id)
+				if err != nil {
+					e.log.Warnf("[%s][%s] failed to remove the old container (%s)", sn, in, id[:12])
+				} else {
+					e.log.Infof("[%s][%s] old container (%s) removed", sn, in, id[:12])
+				}
+			}
+		}
+	}
 }
 
 // Run a new service
@@ -115,14 +139,13 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		Image:        strings.TrimSpace(cfg.Image),
 		Env:          utils.AppendEnv(cfg.Env, false),
 		ExposedPorts: exposedPorts,
+		Labels:       map[string]string{"openedge": "openedge", "service": cfg.Name},
 	}
 	params.hostConfig = container.HostConfig{
 		Binds:        volumes,
 		PortBindings: portBindings,
-		RestartPolicy: container.RestartPolicy{
-			Name:              cfg.Restart.Policy,
-			MaximumRetryCount: cfg.Restart.Retry.Max,
-		},
+		// container is supervised by openedge,
+		RestartPolicy: container.RestartPolicy{Name: "no"},
 		Resources: container.Resources{
 			CpusetCpus: cfg.Resources.CPU.SetCPUs,
 			NanoCPUs:   int64(cfg.Resources.CPU.Cpus * 1e9),
@@ -178,4 +201,8 @@ func (e *dockerEngine) parseDeviceSpecs(devices []string) (deviceBindings []cont
 		deviceBindings = append(deviceBindings, deviceMapping)
 	}
 	return
+}
+
+func (e *dockerEngine) Close() error {
+	return e.cli.Close()
 }

@@ -18,44 +18,36 @@ import (
 
 // Master master manages all modules and connects with cloud
 type Master struct {
-	cfg      Config
-	appcfg   openedge.AppConfig
-	server   *api.Server
-	engine   engine.Engine
-	stats    *openedge.Inspect
-	services cmap.ConcurrentMap
-	accounts cmap.ConcurrentMap
-	log      logger.Logger
+	cfg       Config
+	appcfg    openedge.AppConfig
+	server    *api.Server
+	engine    engine.Engine
+	services  cmap.ConcurrentMap
+	accounts  cmap.ConcurrentMap
+	infostats *infoStats
+	log       logger.Logger
 }
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
-	log, err := logger.InitLogger(&cfg.Logger, "openedge", "master")
-	if err != nil {
-		return nil, fmt.Errorf("failed to init logger: %s", err.Error())
-	}
-	err = defaults(&cfg)
+	err := defaults(&cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
 	}
+	err = os.MkdirAll(openedge.DefaultDBDir, 0755)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
+	}
+	log := logger.InitLogger(cfg.Logger, "openedge", "master")
 	m := &Master{
-		cfg:      cfg,
-		log:      log,
-		services: cmap.New(),
-		accounts: cmap.New(),
-		stats: &openedge.Inspect{
-			Software: openedge.Software{
-				OS:         runtime.GOOS,
-				Arch:       runtime.GOARCH,
-				PWD:        pwd,
-				Mode:       cfg.Mode,
-				GoVersion:  runtime.Version(),
-				BinVersion: ver,
-			},
-		},
+		cfg:       cfg,
+		log:       log,
+		services:  cmap.New(),
+		accounts:  cmap.New(),
+		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(openedge.DefaultDBDir, openedge.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, pwd)
-	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd)
+	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -98,7 +90,7 @@ func defaults(c *Config) error {
 	if runtime.GOOS == "linux" {
 		err := os.MkdirAll(path.Dir(openedge.DefaultSockFile), os.ModePerm)
 		if err != nil {
-			logger.WithError(err).Errorf("failed to make dir: /var/run")
+			return fmt.Errorf("failed to make directory of sock file: %s", err.Error())
 		}
 		c.Server.Address = "unix://" + openedge.DefaultSockFile
 		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
@@ -109,7 +101,7 @@ func defaults(c *Config) error {
 		addr := c.Server.Address
 		uri, err := url.Parse(addr)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse address of server: %s", err.Error())
 		}
 		if c.Mode == "docker" {
 			parts := strings.SplitN(uri.Host, ":", 2)

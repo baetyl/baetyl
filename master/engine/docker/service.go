@@ -27,25 +27,12 @@ func (s *dockerService) Name() string {
 	return s.cfg.Name
 }
 
-func (s *dockerService) Stats() openedge.ServiceStatus {
-	instances := s.instances.Items()
-	results := make(chan openedge.InstanceStatus, len(instances))
+func (s *dockerService) Engine() engine.Engine {
+	return s.engine
+}
 
-	var wg sync.WaitGroup
-	for _, v := range instances {
-		wg.Add(1)
-		go func(i *dockerInstance, wg *sync.WaitGroup) {
-			defer wg.Done()
-			results <- i.State()
-		}(v.(*dockerInstance), &wg)
-	}
-	wg.Wait()
-	close(results)
-	r := openedge.NewServiceStatus(s.cfg.Name)
-	for i := range results {
-		r.Instances = append(r.Instances, i)
-	}
-	return r
+func (s *dockerService) RestartPolicy() openedge.RestartPolicyInfo {
+	return s.cfg.Restart
 }
 
 func (s *dockerService) Start() error {
@@ -76,16 +63,6 @@ func (s *dockerService) Stop() {
 		}(v.(*dockerInstance), &wg)
 	}
 	wg.Wait()
-}
-
-func (s *dockerService) ReportInstance(instanceName string, stats map[string]interface{}) error {
-	i, ok := s.instances.Get(instanceName)
-	if !ok {
-		s.log.Debugf("instance (%s) not found", instanceName)
-		return nil
-	}
-	i.(*dockerInstance).SetStats(stats)
-	return nil
 }
 
 func (s *dockerService) StartInstance(instanceName string, dynamicConfig map[string]string) error {
