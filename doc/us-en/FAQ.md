@@ -128,3 +128,11 @@ The Device management of Baidu IoT Hub does not support ssl authentication. As a
 
 **Suggested Solution**:
 the remote sub's qos must be 1 and the pub's qos must be 1 too which is sent to local hub. By the way, the local hub will persist the topic. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
+
+
+**问题 17**：If you do not want to lose messages and want to ensure all messages are synchronized to cloud, you must meet the following 2 conditions:
+
+**参考方案**：
+
+- To make sure messages will be persist in local disk which are sent to local hub, the topic's QoS must be set to 1.
+- To make sure messages will be sent to cloud successful, the QoS of `rules` configuration of Remote module must be set to 1, which includes remote sub's QoS and the pub's QoS. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
