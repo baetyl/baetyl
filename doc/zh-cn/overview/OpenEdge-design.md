@@ -325,7 +325,7 @@ def handler(event, context):
     return event
 ```
 
-_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio (采用 pip 安装即可，`pip install grpcio protobuf`)。_
+_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio (采用 pip 安装即可，`pip install pyyaml protobuf grpcio`)。_
 
 ### openedge-remote-mqtt
 

@@ -328,7 +328,7 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages protobuf3 and grpcio (pip installation can be used, `pip install grpcio protobuf`). _
+_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages protobuf3 and grpcio (pip installation can be used, `pip install pyyaml protobuf grpcio`). _
 
 ### openedge-remote-mqtt
 
