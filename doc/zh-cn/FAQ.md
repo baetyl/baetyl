@@ -123,3 +123,7 @@ source ~/.bash_profile
 **问题 16**：OpenEdge 如何使用 [Remote](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) 功能连接 [百度云 IoT Hub 设备型项目](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B) ？
 
 **参考方案**：OpenEdge 端云协同强制使用证书认证，目前物接入设备型项目还不支持证书认证，作为临时方案可以在本地手动配置用户名密码和物接入设备型项目交互。
+
+**问题 17**：OpenEdge 运行时发生断网，如何在网络恢复后继续传输信息至远程 hub？
+
+**参考方案**：remote 订阅的主题 qos 须为 1，并且发送给本地 hub 的 qos 也须为 1，这样本地 hub 会进行持久化。请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
