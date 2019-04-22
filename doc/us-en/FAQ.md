@@ -124,12 +124,6 @@ In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html
 **Suggested Solution**:
 The Device management of Baidu IoT Hub does not support ssl authentication. As a temporary solution, you can configure [Remote Feature](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) to connect the Device management with username and password authentication manually.
 
-**Question 17**: How to send message to remote hub when openedge resume from break point?
-
-**Suggested Solution**:
-the remote sub's qos must be 1 and the pub's qos must be 1 too which is sent to local hub. By the way, the local hub will persist the topic. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
-
-
 **问题 17**：If you do not want to lose messages and want to ensure all messages are synchronized to cloud, you must meet the following 2 conditions:
 
 **参考方案**：
