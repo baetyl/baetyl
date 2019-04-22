@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 #-*- coding:utf-8 -*-
 """
 module to say hi in python36
