@@ -1,4 +1,0 @@
-functions:
-  - name: 'sayhi3'
-    handler: 'sayhi3.handler'
-    codedir: 'var/db/openedge/function-sayhi3'

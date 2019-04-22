@@ -6,7 +6,6 @@
 /.idea
 /.vscode
 /output*
-/out*
 /openedge
 /**/*.zip
 /**/.DS_Store

@@ -1,0 +1,9 @@
+failed to create master: Error response from daemon: driver failed programming external connectivity on endpoint localhub (7de836bda4b8c5ecc26ae18eadd90dc2291abdcc7828fe7668576e79a88cf61c): Error starting userland proxy: Bind for 0.0.0.0:1883 failed: port is already allocated
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi/lib/openedge/openedge-function-python27/bin/openedge-function-python27.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
+/Users/chensheng06/go/src/github.com/baidu/openedge/out/var/run/openedge/services/function-sayhi3/lib/openedge/openedge-function-python36/bin/openedge-function-python36.py:34: YAMLLoadWarning: calling yaml.load() without Loader=... is deprecated, as the default Loader is unsafe. Please read https://msg.pyyaml.org/load for full details.
+  self.config = yaml.load(open(conf, 'r').read())
