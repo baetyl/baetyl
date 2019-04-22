@@ -18,7 +18,7 @@ const (
 	EnvRunningModeKey            = "OPENEDGE_RUNNING_MODE"
 	EnvServiceNameKey            = "OPENEDGE_SERVICE_NAME"
 	EnvServiceTokenKey           = "OPENEDGE_SERVICE_TOKEN"
-	EnvServiceAddressKey         = "OPENEDGE_SERVICE_ADDRESS"
+	EnvServiceAddressKey         = "OPENEDGE_SERVICE_ADDRESS" // deprecated
 	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 )

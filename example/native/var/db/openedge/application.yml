@@ -79,6 +79,20 @@ services:
       - name: openedge-function-python27-bin
         path: lib/openedge/openedge-function-python27
         readonly: true
+  - name: function-sayhi3
+    image: openedge-function-python36
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
+      # native process mode only
+      - name: openedge-function-python36-bin
+        path: lib/openedge/openedge-function-python36
+        readonly: true
   # - name: function-filter
   #   image: openedge-function-sql
   #   replica: 0
@@ -152,6 +166,8 @@ volumes:
     path: var/db/openedge/openedge-function-manager
   - name: openedge-function-python27-bin
     path: var/db/openedge/openedge-function-python27
+  - name: openedge-function-python36-bin
+    path: var/db/openedge/openedge-function-python36
   - name: openedge-function-sql-bin
     path: var/db/openedge/openedge-function-sql
   - name: openedge-timer-bin

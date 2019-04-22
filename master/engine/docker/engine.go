@@ -40,6 +40,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
 	}
+	e.clean()
 	err = e.initNetwork()
 	if err != nil {
 		e.Close()
@@ -73,6 +74,30 @@ func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
 		}(s.Image, &wg)
 	}
 	wg.Wait()
+}
+
+// Clean clean all old instances
+func (e *dockerEngine) clean() {
+	sss := map[string]map[string]attribute{}
+	if e.LoadStats(&sss) {
+		for sn, instances := range sss {
+			for in, instance := range instances {
+				id := instance.Container.ID
+				err := e.stopContainer(id)
+				if err != nil {
+					e.log.Warnf("[%s][%s] failed to stop the old container (%s)", sn, in, id[:12])
+				} else {
+					e.log.Infof("[%s][%s] old container (%s) stopped", sn, in, id[:12])
+				}
+				err = e.removeContainer(id)
+				if err != nil {
+					e.log.Warnf("[%s][%s] failed to remove the old container (%s)", sn, in, id[:12])
+				} else {
+					e.log.Infof("[%s][%s] old container (%s) removed", sn, in, id[:12])
+				}
+			}
+		}
+	}
 }
 
 // Run a new service

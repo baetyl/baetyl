@@ -1,9 +1,12 @@
 package master
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
@@ -117,11 +120,31 @@ func (is *infoStats) persistStats() {
 	data, err := yaml.Marshal(is.sss)
 	if err != nil {
 		logger.Global.WithError(err).Warnf("failed to persist services stats")
+		return
 	}
 	err = ioutil.WriteFile(is.file, data, 0755)
 	if err != nil {
 		logger.Global.WithError(err).Warnf("failed to persist services stats")
 	}
+}
+
+func (is *infoStats) LoadStats(sss interface{}) bool {
+	if !utils.FileExists(is.file) {
+		return false
+	}
+	data, err := ioutil.ReadFile(is.file)
+	if err != nil {
+		logger.Global.WithError(err).Warnf("failed to read old stats")
+		os.Rename(is.file, fmt.Sprintf("%s.%d", is.file, time.Now().Unix()))
+		return false
+	}
+	err = yaml.Unmarshal(data, sss)
+	if err != nil {
+		logger.Global.WithError(err).Warnf("failed to unmarshal old stats")
+		os.Rename(is.file, fmt.Sprintf("%s.%d", is.file, time.Now().Unix()))
+		return false
+	}
+	return true
 }
 
 func (is *infoStats) getInfoStats() *openedge.Inspect {
