@@ -278,7 +278,7 @@ _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有�
 }
 ```
 
-则 OpenEdge 的 Agent 模块后续上报到云端的 JSON 如下：
+则 OpenEdge 的 Agent 模块后续上报到云端的 JSON 如下, 旧 info 被保持，旧 stats 被覆盖：
 
 ```json
 {

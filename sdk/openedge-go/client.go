@@ -40,7 +40,7 @@ func NewClient(c http.ClientInfo) (*Client, error) {
 
 // InspectSystem inspect all stats
 func (c *Client) InspectSystem() (*Inspect, error) {
-	body, err := c.cli.Get("/system/inspect")
+	body, err := c.cli.Get("/v1/system/inspect")
 	if err != nil {
 		return nil, err
 	}
@@ -58,13 +58,13 @@ func (c *Client) UpdateSystem(file string, clean bool) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.cli.Put(data, "/system/update")
+	_, err = c.cli.Put(data, "/v1/system/update")
 	return err
 }
 
 // GetAvailablePort gets available port
 func (c *Client) GetAvailablePort() (string, error) {
-	res, err := c.cli.Get("/ports/available")
+	res, err := c.cli.Get("/v1/ports/available")
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +86,7 @@ func (c *Client) ReportInstance(serviceName, instanceName string, stats map[stri
 	if err != nil {
 		return err
 	}
-	_, err = c.cli.Put(data, "/services/%s/instances/%s/report", serviceName, instanceName)
+	_, err = c.cli.Put(data, "/v1/services/%s/instances/%s/report", serviceName, instanceName)
 	return err
 }
 
@@ -96,12 +96,12 @@ func (c *Client) StartInstance(serviceName, instanceName string, dynamicConfig m
 	if err != nil {
 		return err
 	}
-	_, err = c.cli.Put(data, "/services/%s/instances/%s/start", serviceName, instanceName)
+	_, err = c.cli.Put(data, "/v1/services/%s/instances/%s/start", serviceName, instanceName)
 	return err
 }
 
 // StopInstance stops a service instance
 func (c *Client) StopInstance(serviceName, instanceName string) error {
-	_, err := c.cli.Put(nil, "/services/%s/instances/%s/stop", serviceName, instanceName)
+	_, err := c.cli.Put(nil, "/v1/services/%s/instances/%s/stop", serviceName, instanceName)
 	return err
 }

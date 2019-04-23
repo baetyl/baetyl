@@ -58,6 +58,10 @@ func (e *nativeEngine) clean() {
 		for sn, instances := range sss {
 			for in, instance := range instances {
 				id := int32(instance.Process.ID)
+				if id == 0 {
+					e.log.Warnf("[%s][%s] process id not found, maybe running mode changed", sn, in)
+					continue
+				}
 				name := instance.Process.Name
 				p, err := process.NewProcess(id)
 				if err != nil {
