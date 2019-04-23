@@ -124,9 +124,11 @@ In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html
 **Suggested Solution**:
 The Device management of Baidu IoT Hub does not support ssl authentication. As a temporary solution, you can configure [Remote Feature](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) to connect the Device management with username and password authentication manually.
 
-**问题 17**：If you do not want to lose messages and want to ensure all messages are synchronized to cloud, you must meet the following 2 conditions:
+**Question 17**：If I don't want to lose messages and want to ensure all messages are synchronized to cloud, how can I do?
 
-**参考方案**：
+**Suggested Solution**：
+
+You must meet the following 2 conditions:
 
 - To make sure messages will be persist in local disk which are sent to local hub, the topic's QoS must be set to 1.
 - To make sure messages will be sent to cloud successful, the QoS of `rules` configuration of Remote module must be set to 1, which includes remote sub's QoS and the pub's QoS. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
