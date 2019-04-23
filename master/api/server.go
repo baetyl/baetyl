@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/protocol/http"
@@ -42,13 +43,20 @@ func New(c http.ServerInfo, m Master) (*Server, error) {
 		m: m,
 		s: svr,
 	}
-	s.s.Handle(s.inspectSystem, "GET", "/system/inspect")
+	// v0, deprecated
+	s.s.Handle(s.inspectSystemV0, "GET", "/system/inspect")
 	s.s.Handle(s.updateSystem, "PUT", "/system/update")
-
 	s.s.Handle(s.getAvailablePort, "GET", "/ports/available")
-	s.s.Handle(s.reportInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/report")
 	s.s.Handle(s.startInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/start")
 	s.s.Handle(s.stopInstance, "PUT", "/services/{serviceName}/instances/{instanceName}/stop")
+
+	// v1
+	s.s.Handle(s.inspectSystem, "GET", "/v1/system/inspect")
+	s.s.Handle(s.updateSystem, "PUT", "/v1/system/update")
+	s.s.Handle(s.getAvailablePort, "GET", "/v1/ports/available")
+	s.s.Handle(s.reportInstance, "PUT", "/v1/services/{serviceName}/instances/{instanceName}/report")
+	s.s.Handle(s.startInstance, "PUT", "/v1/services/{serviceName}/instances/{instanceName}/start")
+	s.s.Handle(s.stopInstance, "PUT", "/v1/services/{serviceName}/instances/{instanceName}/stop")
 	return s, s.s.Start()
 }
 
@@ -138,4 +146,85 @@ func (s *Server) stopInstance(params http.Params, _ []byte) ([]byte, error) {
 		return nil, fmt.Errorf("request params invalid, missing instance name")
 	}
 	return nil, s.m.StopInstance(serviceName, instanceName)
+}
+
+// deprecated
+
+func (s *Server) inspectSystemV0(_ http.Params, reqBody []byte) ([]byte, error) {
+	return toInspectSystemV0(s.m.InspectSystem())
+}
+
+func toInspectSystemV0(v1 *openedge.Inspect) ([]byte, error) {
+	v0 := &InspectV0{
+		Time:     v1.Time,
+		Error:    v1.Error,
+		Software: v1.Software,
+		Services: v1.Services,
+		Volumes:  v1.Volumes,
+	}
+	v0.Hardware.HostInfo = v1.Hardware.HostInfo
+	v0.Hardware.DiskInfo = v1.Hardware.DiskInfo
+	v0.Hardware.NetInfo = v1.Hardware.NetInfo
+	v0.Hardware.MemInfo = v1.Hardware.MemInfo
+	v0.Hardware.CPUInfo = &CPUInfoV0{}
+	v0.Hardware.CPUInfo.CPUs = len(v1.Hardware.CPUInfo.CPUs)
+	v0.Hardware.CPUInfo.UsedPercent = v1.Hardware.CPUInfo.UsedPercent
+	v0.Hardware.GPUInfo = []GPUInfoV0{}
+	for _, v := range v1.Hardware.GPUInfo.GPUs {
+		v0.Hardware.GPUInfo = append(v0.Hardware.GPUInfo, GPUInfoV0{
+			ID:    v.Index,
+			Model: v.Model,
+			Mem: utils.MemInfo{
+				Total:       v.MemTotal,
+				Free:        v.MemFree,
+				UsedPercent: v.MemUsedPercent,
+			},
+		})
+	}
+	return json.Marshal(v0)
+}
+
+// InspectV0 all openedge information and status inspected
+type InspectV0 struct {
+	// exception information
+	Error string `json:"error,omitempty"`
+	// inspect time
+	Time time.Time `json:"time,omitempty"`
+	// software information
+	Software openedge.Software `json:"software,omitempty"`
+	// hardware information
+	Hardware HardwareV0 `json:"hardware,omitempty"`
+	// service information, including service name, instance running status, etc.
+	Services openedge.Services `json:"services,omitempty"`
+	// storage volume information, including name and version
+	Volumes openedge.Volumes `json:"volumes,omitempty"`
+}
+
+// HardwareV0 hardware information
+type HardwareV0 struct {
+	// host information
+	HostInfo *utils.HostInfo `json:"host_stats,omitempty"`
+	// net information of host
+	NetInfo *utils.NetInfo `json:"net_stats,omitempty"`
+	// memory usage information of host
+	MemInfo *utils.MemInfo `json:"mem_stats,omitempty"`
+	// CPU usage information of host
+	CPUInfo *CPUInfoV0 `json:"cpu_stats,omitempty"`
+	// disk usage information of host
+	DiskInfo *utils.DiskInfo `json:"disk_stats,omitempty"`
+	// CPU usage information of host
+	GPUInfo []GPUInfoV0 `json:"gpu_stats,omitempty"`
+}
+
+// CPUInfoV0 CPU information
+type CPUInfoV0 struct {
+	CPUs        int     `json:"cpus,omitempty"`
+	UsedPercent float64 `json:"used_percent,omitempty"`
+}
+
+// GPUInfoV0 GPU information
+type GPUInfoV0 struct {
+	ID    string        `json:"id,omitempty"`
+	Model string        `json:"model,omitempty"`
+	Mem   utils.MemInfo `json:"mem_stat,omitempty"`
 }

@@ -161,6 +161,7 @@ func (is *infoStats) getInfoStats() *openedge.Inspect {
 	result := is.raw
 	is.Unlock()
 
+	result.Time = time.Now().UTC()
 	result.Services = openedge.Services{}
 	for serviceName, serviceStats := range is.sss {
 		service := openedge.NewServiceStatus(serviceName)

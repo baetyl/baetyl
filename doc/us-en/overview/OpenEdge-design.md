@@ -270,7 +270,7 @@ The subsequent JSON that `openedge-agent` reports to the cloud is as follows:
 }
 ```
 
-If the instance of the service `infer` reports the following information for the second time, containing only stats, the old stats will be overwritten:
+If the instance of the service `infer` reports the following information for the second time, containing only `stats`, the old `stats` will be overwritten:
 
 ```json
 {
@@ -281,7 +281,7 @@ If the instance of the service `infer` reports the following information for the
 }
 ```
 
-The subsequent JSON that `openedge-agent` reports to the cloud is as follows:
+The subsequent JSON that `openedge-agent` reports to the cloud is as follows, the old `info` is kept and the old `stats` is overwritten:
 
 ```json
 {

@@ -83,6 +83,10 @@ func (e *dockerEngine) clean() {
 		for sn, instances := range sss {
 			for in, instance := range instances {
 				id := instance.Container.ID
+				if id == "" {
+					e.log.Warnf("[%s][%s] container id not found, maybe running mode changed", sn, in)
+					continue
+				}
 				err := e.stopContainer(id)
 				if err != nil {
 					e.log.Warnf("[%s][%s] failed to stop the old container (%s)", sn, in, id[:12])
