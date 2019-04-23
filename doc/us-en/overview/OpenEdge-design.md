@@ -7,10 +7,10 @@
   - [Docker Engine](#docker-engine)
     - [Native Engine](#native-engine)
   - [RESTful API](#restful-api)
-    - [/system/inspect](#systeminspect)
-    - [/system/update](#systemupdate)
-    - [/services/{}/instances/{}/start|stop](#servicesinstancesstartstop)
-    - [/services/{}/instances/{}/report](#servicesinstancesreport)
+    - [System Inspect](#system-inspect)
+    - [System Update](#system-update)
+    - [Instance Start&Stop](#instance-startstop)
+    - [Instance Report](#instance-report)
   - [Environment Variable](#environment-variable)
 - [Official Modules](#official-modules)
   - [openedge-agent](#openedge-agent)
@@ -145,14 +145,14 @@ The Header key is as follows：
 
 The following are the currently available interfaces:
 
-- GET /system/inspect gets system information and status
-- PUT /system/update updates system and services
-- GET /ports/available gets available port on host
-- PUT /services/{serviceName}/instances/{instanceName}/start starts an instance of a service dynamically
-- PUT /services/{serviceName}/instances/{instanceName}/stop stops an instance of a service dynamically
-- PUT /services/{serviceName}/instances/{instanceName}/report reports the custom info or stats of the instance of the service
+- GET /v1/system/inspect gets system information and status
+- PUT /v1/system/update updates system and services
+- GET /v1/ports/available gets available port on host
+- PUT /v1/services/{serviceName}/instances/{instanceName}/start starts an instance of a service dynamically
+- PUT /v1/services/{serviceName}/instances/{instanceName}/stop stops an instance of a service dynamically
+- PUT /v1/services/{serviceName}/instances/{instanceName}/report reports the custom info or stats of the instance of the service
 
-#### /system/inspect
+#### System Inspect
 
 This interface is used to obtain the following information and status:
 
@@ -180,7 +180,9 @@ type Software struct {
 	// CPU information of host
 	Arch        string `json:"arch,omitempty"`
 	// OpenEdge running mode of application services
-	Mode        string `json:"mode,omitempty"`
+    Mode        string `json:"mode,omitempty"`
+    // OpenEdge work directory
+	PWD string `json:"pwd,omitempty"`
     // OpenEdge compiled Golang version
 	GoVersion   string `json:"go_version,omitempty"`
 	// OpenEdge release version
@@ -203,7 +205,7 @@ type Hardware struct {
 
 ```
 
-#### /system/update
+#### System Update
 
 This interface is used to update the application in the system. We call it the application OTA, and the Master OTA (that is, the self-upgrade of the OpenEdge Master) will be implemented later. Application OTA will stop all old services and then start all new services, so there will be a downtime. We will continue to optimize to avoid restarting the services which configuration is not changed.
 
@@ -213,13 +215,13 @@ This interface is used to update the application in the system. We call it the a
 
 _**NOTE**: At present, the application OTA adopts the full update method, that is, all the old services are stopped and all new services are started, so the service will be interrupted._
 
-#### /services/{}/instances/{}/start|stop
+#### Instance Start&Stop
 
 This interface is used to dynamically start and stop an instance of a service. You need to specify the service name and instance name. If you repeatedly launch an instance of the same name with the same service, the previously started instance will be stopped first, and then the new instance will be started.
 
 This interface supports the dynamic configuration of the service to cover the static configuration in the storage volume. The overlay logic adopts the environment variable. When the instance starts, the environment variable can be loaded to overwrite the configuration in the storage volume to avoid resource conflicts. For example, in the native process mode, when the function manager service starts the function runtime instance, the free ports are allocated in advance, so that the function runtime instances can listen to different ports.
 
-#### /services/{}/instances/{}/report
+#### Instance Report
 
 This interface is used to periodically report the custom status information of the service instance to the OpenEdge Master. The content of the report is placed in the body of the request, and JSON format is used. The first layer of the JSON field is used as the key and its value will be overwritten if it is reported multiple times. For example:
 

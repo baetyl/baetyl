@@ -7,10 +7,10 @@
     - [Docker 引擎](#docker-引擎)
     - [Native 引擎](#native-引擎)
   - [RESTful API](#restful-api)
-    - [/system/inspect](#systeminspect)
-    - [/system/update](#systemupdate)
-    - [/services/{}/instances/{}/start|stop](#servicesinstancesstartstop)
-    - [/services/{}/instances/{}/report](#servicesinstancesreport)
+    - [System Inspect](#system-inspect)
+    - [System Update](#system-update)
+    - [Instance Start&Stop](#instance-startstop)
+    - [Instance Report](#instance-report)
   - [环境变量](#环境变量)
 - [官方模块](#官方模块)
   - [openedge-agent](#openedge-agent)
@@ -143,14 +143,14 @@ Header 名称如下：
 
 下面是目前提供的接口：
 
-- GET /system/inspect 获取系统信息和状态
-- PUT /system/update 更新系统和服务
-- GET /ports/available 获取宿主机的空闲端口
-- PUT /services/{serviceName}/instances/{instanceName}/start 动态启动某个服务的一个实例
-- PUT /services/{serviceName}/instances/{instanceName}/stop 动态停止某个服务的某个实例
-- PUT /services/{serviceName}/instances/{instanceName}/report 报告服务实例的自定义状态信息
+- GET /v1/system/inspect 获取系统信息和状态
+- PUT /v1/system/update 更新系统和服务
+- GET /v1/ports/available 获取宿主机的空闲端口
+- PUT /v1/services/{serviceName}/instances/{instanceName}/start 动态启动某个服务的一个实例
+- PUT /v1/services/{serviceName}/instances/{instanceName}/stop 动态停止某个服务的某个实例
+- PUT /v1/services/{serviceName}/instances/{instanceName}/report 报告服务实例的自定义状态信息
 
-#### /system/inspect
+#### System Inspect
 
 该接口用于获取如下信息和状态：
 
@@ -179,6 +179,8 @@ type Software struct {
     Arch        string `json:"arch,omitempty"`
     // OpenEdge 服务运行模式
     Mode        string `json:"mode,omitempty"`
+    // OpenEdge 工作路径
+	PWD string `json:"pwd,omitempty"`
     // OpenEdge 编译的 Golang 版本
     GoVersion   string `json:"go_version,omitempty"`
     // OpenEdge 发布版本
@@ -200,7 +202,7 @@ type Hardware struct {
 }
 ```
 
-#### /system/update
+#### System Update
 
 该接口用于更新系统中的应用，我们称之为应用 OTA，后续还会实现主程序 OTA（即 OpenEdge 主程序的自升级）。应用 OTA 会先停止所有老服务再启动所有新服务，所以有停服时间。我们后续会继续优化，避免重启未更新的服务。
 
@@ -210,13 +212,13 @@ type Hardware struct {
 
 _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有老服务再启动所有新服务，因此服务会中断。_
 
-#### /services/{}/instances/{}/start|stop
+#### Instance Start&Stop
 
 该接口用于动态启停某个服务的实例，需要指定服务名和实例名，如果重复启动同一个服务的相同名称的实例，会先把之前启动的实例停止，然后启动新的实例。
 
 该接口支持服务的动态配置，用于覆盖存储卷中的静态配置，覆盖逻辑采用环境变量的方式，实例启动时可以加载环境变量来覆盖存储卷中的配置，来避免资源冲突。比如进程模式下，函数计算的管理服务启动函数实例时会预先分配空闲的端口，来使函数实例监听于不同的端口。
 
-#### /services/{}/instances/{}/report
+#### Instance Report
 
 该接口用于定时向主程序报告服务实例的自定义状态信息。上报内容放入请求的 Body，采用 JSON 格式，JSON 的第一层字段作为 Key, 多次上报相同的 Key 的值会覆盖。举个例子：
 
