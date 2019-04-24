@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -21,10 +20,10 @@ var stopCmd = &cobra.Command{
 	Run:   stop,
 }
 
-var timeout string
+var timeout int32
 
 func init() {
-	stopCmd.Flags().StringVarP(&timeout, "timeout", "t", "", "set the timeout in second for the stop command")
+	stopCmd.Flags().Int32VarP(&timeout, "timeout", "t", 0, "set the timeout in second for the stop command")
 	rootCmd.AddCommand(stopCmd)
 }
 
@@ -54,13 +53,6 @@ func stopInternal() error {
 		return fmt.Errorf("failed to stop openedge: %s", err.Error())
 	}
 	fmt.Fprintln(os.Stdout, "openedge stopping...")
-	if timeout == "" {
-		timeout = "0"
-	}
-	timeout, err := strconv.Atoi(timeout)
-	if err != nil {
-		return fmt.Errorf("timeout should be an integer: %s", err.Error())
-	}
 	if timeout <= 0 {
 		timeout = math.MaxInt32
 	}
