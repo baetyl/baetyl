@@ -50,7 +50,7 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install python2.7
 sudo apt-get install python-pip
-sudo pip install protobuf grpcio
+sudo pip install pyyaml protobuf grpcio
 ```
 
 Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
