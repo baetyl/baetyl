@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -19,7 +20,10 @@ var stopCmd = &cobra.Command{
 	Run:   stop,
 }
 
+var timeout string
+
 func init() {
+	stopCmd.Flags().StringVarP(&timeout, "timeout", "t", "", "set the timeout for the stop command, unit: s")
 	rootCmd.AddCommand(stopCmd)
 }
 
@@ -49,23 +53,27 @@ func stopInternal() error {
 		return fmt.Errorf("failed to stop openedge: %s", err.Error())
 	}
 	fmt.Fprintln(os.Stdout, "openedge stopping...")
-	timeout := time.After(time.Second * 10)
-	finish := make(chan bool)
-	go func() {
-		for {
-			select {
-			case <-timeout:
-				syscall.Kill(pid, syscall.SIGKILL)
-				finish <- true
-			default:
-				_, err := process.Status()
-				if err != nil {
-					finish <- true
-				}
+	if timeout == "" {
+		timeout = "10"
+	}
+	val, err := strconv.Atoi(timeout)
+	if err != nil {
+		val = 10
+	}
+	timeout := time.After(time.Second * time.Duration(val))
+	for {
+		time.Sleep(200 * time.Millisecond)
+		select {
+		case <-timeout:
+			syscall.Kill(pid, syscall.SIGKILL)
+			fmt.Fprintln(os.Stdout, "openedge stopped")
+			return nil
+		default:
+			_, err := process.Status()
+			if err != nil {
+				fmt.Fprintln(os.Stdout, "openedge stopped")
+				return nil
 			}
 		}
-	}()
-	<-finish
-	fmt.Fprintln(os.Stdout, "openedge stopped")
-	return nil
+	}
 }

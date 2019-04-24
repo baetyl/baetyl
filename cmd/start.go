@@ -98,7 +98,7 @@ func startInternal() error {
 	if utils.FileExists(openedge.DefaultPidFile) && !daemon.WasReborn() {
 		pid, err := daemon.ReadPidFile(openedge.DefaultPidFile)
 		if err != nil {
-			err = fmt.Errorf("Failed to read existed pid file: %s", err.Error())
+			err = fmt.Errorf("failed to read existed pid file: %s", err.Error())
 			return err
 		}
 		process := &process.Process{Pid: int32(pid)}
@@ -111,7 +111,7 @@ func startInternal() error {
 	d, err := ctx.Reborn()
 	if err != nil {
 		if err == daemon.ErrWouldBlock {
-			err = fmt.Errorf("OpenEdge has been started, please do not start again")
+			err = fmt.Errorf("openedge has been started, please do not start again")
 		}
 		return err
 	}
@@ -138,7 +138,6 @@ func startInternal() error {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	signal.Ignore(syscall.SIGPIPE)
-	fmt.Fprintln(os.Stdout, "OpenEdge started")
 	<-sig
 	return nil
 }
