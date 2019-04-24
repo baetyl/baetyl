@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"syscall"
@@ -23,7 +24,7 @@ var stopCmd = &cobra.Command{
 var timeout string
 
 func init() {
-	stopCmd.Flags().StringVarP(&timeout, "timeout", "t", "", "set the timeout for the stop command, unit: s")
+	stopCmd.Flags().StringVarP(&timeout, "timeout", "t", "", "set the timeout in second for the stop command")
 	rootCmd.AddCommand(stopCmd)
 }
 
@@ -56,18 +57,24 @@ func stopInternal() error {
 	if timeout == "" {
 		timeout = "0"
 	}
-	val, err := strconv.Atoi(timeout)
+	timeout, err := strconv.Atoi(timeout)
 	if err != nil {
 		return fmt.Errorf("timeout should be an integer: %s", err.Error())
 	}
-	timeout := time.After(time.Second * time.Duration(val))
+	if timeout <= 0 {
+		timeout = math.MaxInt32
+	}
+	loopTicker := time.NewTicker(200 * time.Millisecond)
+	defer loopTicker.Stop()
+	timeoutTimer := time.NewTimer(time.Duration(timeout) * time.Second)
+	defer timeoutTimer.Stop()
 	for {
 		select {
-		case <-timeout:
+		case <-timeoutTimer.C:
 			syscall.Kill(pid, syscall.SIGKILL)
 			fmt.Fprintln(os.Stdout, "openedge killed since timeout")
 			return nil
-		case <-time.After(200 * time.Millisecond):
+		case <-loopTicker.C:
 			_, err := process.Status()
 			if err != nil {
 				fmt.Fprintln(os.Stdout, "openedge stopped")
