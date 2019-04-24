@@ -65,15 +65,14 @@ func stopInternal() error {
 		select {
 		case <-timeout:
 			syscall.Kill(pid, syscall.SIGKILL)
-			fmt.Fprintln(os.Stdout, "openedge stopped")
+			fmt.Fprintln(os.Stdout, "openedge killed since timeout")
 			return nil
-		default:
+		case <-time.After(200 * time.Millisecond):
 			_, err := process.Status()
 			if err != nil {
 				fmt.Fprintln(os.Stdout, "openedge stopped")
 				return nil
 			}
 		}
-		time.Sleep(200 * time.Millisecond)
 	}
 }
