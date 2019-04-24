@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+	"time"
 
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/fsnotify/fsnotify"
 	daemon "github.com/sevlyar/go-daemon"
+	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +31,12 @@ func stop(cmd *cobra.Command, args []string) {
 }
 
 func stopInternal() error {
+	pid, err := daemon.ReadPidFile(openedge.DefaultPidFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read existed pid file: %s", err.Error())
+		return err
+	}
+	process := &process.Process{Pid: int32(pid)}
 	cntxt := &daemon.Context{
 		PidFileName: openedge.DefaultPidFile,
 	}
@@ -42,36 +49,23 @@ func stopInternal() error {
 		return fmt.Errorf("failed to stop openedge: %s", err.Error())
 	}
 	fmt.Fprintln(os.Stdout, "openedge stopping...")
-	watcher()
-	fmt.Fprintln(os.Stdout, "openedge stopped")
-	return nil
-}
-
-func watcher() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		fmt.Errorf("error: %s", err.Error())
-	}
-	defer watcher.Close()
-
-	done := make(chan bool)
+	timeout := time.After(time.Second * 10)
+	finish := make(chan bool)
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
-				if event.Op&fsnotify.Remove == fsnotify.Remove {
-					done <- true
-					break
+			case <-timeout:
+				syscall.Kill(pid, syscall.SIGKILL)
+				finish <- true
+			default:
+				_, err := process.Status()
+				if err != nil {
+					finish <- true
 				}
-			case err := <-watcher.Errors:
-				fmt.Errorf("error: %s", err.Error())
 			}
 		}
 	}()
-
-	err = watcher.Add(openedge.DefaultPidFile)
-	if err != nil {
-		fmt.Errorf("error: %s", err.Error())
-	}
-	<-done
+	<-finish
+	fmt.Fprintln(os.Stdout, "openedge stopped")
+	return nil
 }

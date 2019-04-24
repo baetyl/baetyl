@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	daemon "github.com/sevlyar/go-daemon"
+	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/cobra"
 )
 
@@ -16,8 +19,25 @@ var restartCmd = &cobra.Command{
 }
 
 func restart(cmd *cobra.Command, args []string) {
+	err := restartInternal()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+}
+
+func restartInternal() error {
+	pid, err := daemon.ReadPidFile(openedge.DefaultPidFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read existed pid file: %s", err.Error())
+		return err
+	}
+	process := &process.Process{Pid: int32(pid)}
+	_, err = process.Status()
+	if err != nil {
+		return fmt.Errorf("openedge didn't start, please start openedge first: %s", err.Error())
+	}
 	fmt.Fprintln(os.Stdout, "restart openedge")
-	err := stopInternal()
+	err = stopInternal()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
@@ -27,6 +47,7 @@ func restart(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, err)
 	}
 	fmt.Fprintln(os.Stdout, "openedge restarted")
+	return nil
 }
 
 func init() {

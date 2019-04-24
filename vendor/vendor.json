@@ -286,12 +286,6 @@
 			"revisionTime": "2018-09-12T20:56:54Z"
 		},
 		{
-			"checksumSHA1": "YImPVNZRCKOaaReWnFEH+AaP8NM=",
-			"path": "github.com/fsnotify/fsnotify",
-			"revision": "1485a34d5d5723fea214f5710708e19a831720e4",
-			"revisionTime": "2019-03-12T18:14:46Z"
-		},
-		{
 			"checksumSHA1": "vTmc/uvCPpTs51Rl9bVomPZMZIM=",
 			"path": "github.com/go-ole/go-ole",
 			"revision": "97b6244175ae18ea6eef668034fd6565847501c9",

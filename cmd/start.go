@@ -12,6 +12,7 @@ import (
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	daemon "github.com/sevlyar/go-daemon"
+	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/cobra"
 )
 
@@ -88,10 +89,23 @@ func startInternal() error {
 		Args:        args,
 	}
 	if cfg.Logger.Path != "" {
-		os.MkdirAll(path.Dir(cfg.Logger.Path), 0755)
+		os.MkdirAll(path.Dir(cfg.Logger.Path), 0644)
 		ctx.LogFileName = cfg.Logger.Path + ".console"
 	} else {
 		ctx.LogFileName = "openedge.log.console"
+	}
+
+	if utils.FileExists(openedge.DefaultPidFile) && !daemon.WasReborn() {
+		pid, err := daemon.ReadPidFile(openedge.DefaultPidFile)
+		if err != nil {
+			err = fmt.Errorf("Failed to read existed pid file: %s", err.Error())
+			return err
+		}
+		process := &process.Process{Pid: int32(pid)}
+		_, err = process.Status()
+		if err != nil {
+			os.Remove(openedge.DefaultPidFile)
+		}
 	}
 
 	d, err := ctx.Reborn()
@@ -124,6 +138,7 @@ func startInternal() error {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
 	signal.Ignore(syscall.SIGPIPE)
+	fmt.Fprintln(os.Stdout, "OpenEdge started")
 	<-sig
 	return nil
 }
