@@ -39,12 +39,12 @@ func restartInternal() error {
 	fmt.Fprintln(os.Stdout, "restart openedge")
 	err = stopInternal()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		return fmt.Errorf("failed to stop openedge: %s", err.Error())
 	}
 	fmt.Fprintln(os.Stdout, "openedge restarting...")
 	err = startInternal()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		return fmt.Errorf("failed to start openedge: %s", err.Error())
 	}
 	fmt.Fprintln(os.Stdout, "openedge restarted")
 	return nil
