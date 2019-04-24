@@ -54,15 +54,14 @@ func stopInternal() error {
 	}
 	fmt.Fprintln(os.Stdout, "openedge stopping...")
 	if timeout == "" {
-		timeout = "10"
+		timeout = "0"
 	}
 	val, err := strconv.Atoi(timeout)
 	if err != nil {
-		val = 10
+		return fmt.Errorf("timeout should be an integer: %s", err.Error())
 	}
 	timeout := time.After(time.Second * time.Duration(val))
 	for {
-		time.Sleep(200 * time.Millisecond)
 		select {
 		case <-timeout:
 			syscall.Kill(pid, syscall.SIGKILL)
@@ -75,5 +74,6 @@ func stopInternal() error {
 				return nil
 			}
 		}
+		time.Sleep(200 * time.Millisecond)
 	}
 }
