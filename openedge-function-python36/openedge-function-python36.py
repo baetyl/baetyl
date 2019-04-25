@@ -24,7 +24,7 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 class mo(function_pb2_grpc.FunctionServicer):
     """
-    grpc server module for python2.7 function
+    grpc server module for python3.6 function
     """
 
     def Load(self, conf):
