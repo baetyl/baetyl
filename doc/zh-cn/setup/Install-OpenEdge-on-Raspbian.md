@@ -34,7 +34,7 @@ sudo apt update
 sudo apt upgrade
 sudo apt install python2.7
 sudo apt install python-pip
-sudo pip install protobuf grpcio
+sudo pip install pyyaml protobuf grpcio
 ```
 
 输入命令 `python -V` 查看 Python 版本为 2.7.* 后为安装正确。

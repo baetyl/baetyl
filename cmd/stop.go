@@ -2,11 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"syscall"
+	"time"
 
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	daemon "github.com/sevlyar/go-daemon"
+	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +20,10 @@ var stopCmd = &cobra.Command{
 	Run:   stop,
 }
 
+var timeout int32
+
 func init() {
+	stopCmd.Flags().Int32VarP(&timeout, "timeout", "t", 0, "set the timeout in second for the stop command")
 	rootCmd.AddCommand(stopCmd)
 }
 
@@ -29,6 +35,12 @@ func stop(cmd *cobra.Command, args []string) {
 }
 
 func stopInternal() error {
+	pid, err := daemon.ReadPidFile(openedge.DefaultPidFile)
+	if err != nil {
+		err = fmt.Errorf("failed to read existed pid file: %s", err.Error())
+		return err
+	}
+	process := &process.Process{Pid: int32(pid)}
 	cntxt := &daemon.Context{
 		PidFileName: openedge.DefaultPidFile,
 	}
@@ -40,5 +52,26 @@ func stopInternal() error {
 	if err != nil {
 		return fmt.Errorf("failed to stop openedge: %s", err.Error())
 	}
-	return nil
+	fmt.Fprintln(os.Stdout, "openedge stopping...")
+	if timeout <= 0 {
+		timeout = math.MaxInt32
+	}
+	loopTicker := time.NewTicker(200 * time.Millisecond)
+	defer loopTicker.Stop()
+	timeoutTimer := time.NewTimer(time.Duration(timeout) * time.Second)
+	defer timeoutTimer.Stop()
+	for {
+		select {
+		case <-timeoutTimer.C:
+			syscall.Kill(pid, syscall.SIGKILL)
+			fmt.Fprintln(os.Stdout, "openedge killed since timeout")
+			return nil
+		case <-loopTicker.C:
+			_, err := process.Status()
+			if err != nil {
+				fmt.Fprintln(os.Stdout, "openedge stopped")
+				return nil
+			}
+		}
+	}
 }

@@ -123,3 +123,12 @@ source ~/.bash_profile
 **问题 16**：OpenEdge 如何使用 [Remote](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) 功能连接 [百度云 IoT Hub 设备型项目](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B) ？
 
 **参考方案**：OpenEdge 端云协同强制使用证书认证，目前物接入设备型项目还不支持证书认证，作为临时方案可以在本地手动配置用户名密码和物接入设备型项目交互。
+
+**问题 17**：如果要保证消息不丢，所有消息都能被同步到云端，该怎么做？
+
+**参考方案**：
+
+需要满足下如下两个条件:
+
+- 发送给本地 Hub 的消息的 QoS 必须是 1，保证消息在本地持久化。
+- Remote 向本地 Hub 订阅消息的 QoS 和向云端 Hub 发布消息的 QoS 也必须都为1，保证消息成功上云。请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。

@@ -205,8 +205,8 @@ type GPUInfo struct {
 type PerGPUInfo struct {
 	Index          string  `json:"index,omitempty"`
 	Model          string  `json:"model,omitempty"`
-	MemTotal       int64   `json:"mem_total,omitempty"`
-	MemFree        int64   `json:"mem_free,omitempty"`
+	MemTotal       uint64  `json:"mem_total,omitempty"`
+	MemFree        uint64  `json:"mem_free,omitempty"`
 	MemUsedPercent float64 `json:"mem_used_percent,omitempty"`
 	GPUUsedPercent float64 `json:"gpu_used_percent,omitempty"`
 }
@@ -252,11 +252,11 @@ func parseGPUInfo(in string) []PerGPUInfo {
 		}
 		g.Index = strings.TrimSpace(parts[0])
 		g.Model = strings.TrimSpace(parts[1])
-		g.MemTotal, err = strconv.ParseInt(strings.TrimSpace(parts[2]), 10, 64)
+		g.MemTotal, err = strconv.ParseUint(strings.TrimSpace(parts[2]), 10, 64)
 		if err != nil {
 			continue
 		}
-		g.MemFree, err = strconv.ParseInt(strings.TrimSpace(parts[3]), 10, 64)
+		g.MemFree, err = strconv.ParseUint(strings.TrimSpace(parts[3]), 10, 64)
 		if err != nil {
 			continue
 		}

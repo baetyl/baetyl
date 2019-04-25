@@ -37,7 +37,7 @@ Install by using HomeBrew(Recommended):
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // Install HomeBrew
 brew install python@2
-pip install protobuf grpcio
+pip install pyyaml protobuf grpcio
 ```
 
 **NOTE**: Execute the following command to check the installed version of Python:

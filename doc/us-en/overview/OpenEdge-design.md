@@ -7,9 +7,10 @@
   - [Docker Engine](#docker-engine)
     - [Native Engine](#native-engine)
   - [RESTful API](#restful-api)
-    - [/system/inspect](#systeminspect)
-    - [/system/update](#systemupdate)
-    - [/services/{}/instances/{}/start|stop](#servicesinstancesstartstop)
+    - [System Inspect](#system-inspect)
+    - [System Update](#system-update)
+    - [Instance Start&Stop](#instance-startstop)
+    - [Instance Report](#instance-report)
   - [Environment Variable](#environment-variable)
 - [Official Modules](#official-modules)
   - [openedge-agent](#openedge-agent)
@@ -133,7 +134,9 @@ At present, the above two modes basically achieve unified configuration, leaving
 
 ### RESTful API
 
-The OpenEdge Master exposes a set of RESTful APIs. By default, Unix Domain Socket is used on Linux systems, and the fixed address is `/var/run/openedge.sock`. Other environments use TCP. The default address is `tcp://127.0.0.1:50050`. At present, the authentication mode of the interface adopts a simple dynamic token. When the Master starts the services, it will dynamically generate a Token for each service, and the service name and Token are transmitted to the service instance as environment variables which can be read by instance and sent to the Master in request header. It should be noted that the dynamically launched instance cannot obtain the Token, so the dynamic instance cannot dynamically start other instances.
+The OpenEdge Master exposes a set of RESTful APIs, adopts HTTP/1. By default, Unix Domain Socket is used on Linux systems, and the fixed address is `/var/run/openedge.sock`. Other environments use TCP. The default address is `tcp://127.0.0.1:50050`. At present, the authentication mode of the interface adopts a simple dynamic token. When the Master starts the services, it will dynamically generate a Token for each service, and the service name and Token are transmitted to the service instance as environment variables which can be read by instance and sent to the Master in request header. It should be noted that the dynamically launched instance cannot obtain the Token, so the dynamic instance cannot dynamically start other instances.
+
+For the service instance, after the instance is started, you can get the API Server address of the OpenEdge Master, the name and Token of the service, and the name of the instance from the environment variable. For details, see [Environment Variable](#environment-variable).
 
 The Header key is as follows：
 
@@ -142,13 +145,14 @@ The Header key is as follows：
 
 The following are the currently available interfaces:
 
-- GET /system/inspect gets system information and status
-- PUT /system/update updates system and services
-- GET /ports/available gets available port on host
-- PUT /services/{serviceName}/instances/{instanceName}/start starts an instance of a service dynamically
-- PUT /services/{serviceName}/instances/{instanceName}/stop stops an instance of a service dynamically
+- GET /v1/system/inspect gets system information and status
+- PUT /v1/system/update updates system and services
+- GET /v1/ports/available gets available port on host
+- PUT /v1/services/{serviceName}/instances/{instanceName}/start starts an instance of a service dynamically
+- PUT /v1/services/{serviceName}/instances/{instanceName}/stop stops an instance of a service dynamically
+- PUT /v1/services/{serviceName}/instances/{instanceName}/report reports the custom info or stats of the instance of the service
 
-#### /system/inspect
+#### System Inspect
 
 This interface is used to obtain the following information and status:
 
@@ -176,7 +180,9 @@ type Software struct {
 	// CPU information of host
 	Arch        string `json:"arch,omitempty"`
 	// OpenEdge running mode of application services
-	Mode        string `json:"mode,omitempty"`
+    Mode        string `json:"mode,omitempty"`
+    // OpenEdge work directory
+	PWD string `json:"pwd,omitempty"`
     // OpenEdge compiled Golang version
 	GoVersion   string `json:"go_version,omitempty"`
 	// OpenEdge release version
@@ -199,7 +205,7 @@ type Hardware struct {
 
 ```
 
-#### /system/update
+#### System Update
 
 This interface is used to update the application in the system. We call it the application OTA, and the Master OTA (that is, the self-upgrade of the OpenEdge Master) will be implemented later. Application OTA will stop all old services and then start all new services, so there will be a downtime. We will continue to optimize to avoid restarting the services which configuration is not changed.
 
@@ -209,11 +215,105 @@ This interface is used to update the application in the system. We call it the a
 
 _**NOTE**: At present, the application OTA adopts the full update method, that is, all the old services are stopped and all new services are started, so the service will be interrupted._
 
-#### /services/{}/instances/{}/start|stop
+#### Instance Start&Stop
 
 This interface is used to dynamically start and stop an instance of a service. You need to specify the service name and instance name. If you repeatedly launch an instance of the same name with the same service, the previously started instance will be stopped first, and then the new instance will be started.
 
 This interface supports the dynamic configuration of the service to cover the static configuration in the storage volume. The overlay logic adopts the environment variable. When the instance starts, the environment variable can be loaded to overwrite the configuration in the storage volume to avoid resource conflicts. For example, in the native process mode, when the function manager service starts the function runtime instance, the free ports are allocated in advance, so that the function runtime instances can listen to different ports.
+
+#### Instance Report
+
+This interface is used to periodically report the custom status information of the service instance to the OpenEdge Master. The content of the report is placed in the body of the request, and JSON format is used. The first layer of the JSON field is used as the key and its value will be overwritten if it is reported multiple times. For example:
+
+If the instance of the service `infer` reports the following information for the first time, including `info` and `stats`:
+
+```json
+{
+    "info": {
+        "company": "baidu",
+        "scope": "ai"
+    },
+    "stats": {
+        "msg_count": 124,
+        "infer_count": 120
+    }
+}
+```
+
+The subsequent JSON that `openedge-agent` reports to the cloud is as follows:
+
+```json
+{
+    ...
+    "time": "0001-01-01T00:00:00Z",
+    "services": [
+        {
+            "name": "infer",
+            "instances": [
+                {
+                    "name": "infer",
+                    "start_time": "2019-04-18T16:04:45.920152Z",
+                    "status": "running",
+                    ...
+
+                    "info": {
+                        "company": "baidu",
+                        "scope": "ai"
+                    },
+                    "stats": {
+                        "msg_count": 124,
+                        "infer_count": 120
+                    }
+                }
+            ]
+        },
+    ]
+    ...
+}
+```
+
+If the instance of the service `infer` reports the following information for the second time, containing only `stats`, the old `stats` will be overwritten:
+
+```json
+{
+    "stats": {
+        "msg_count": 344,
+        "infer_count": 320
+    }
+}
+```
+
+The subsequent JSON that `openedge-agent` reports to the cloud is as follows, the old `info` is kept and the old `stats` is overwritten:
+
+```json
+{
+    ...
+    "time": "0001-01-01T00:00:00Z",
+    "services": [
+        {
+            "name": "infer",
+            "instances": [
+                {
+                    "name": "infer",
+                    "start_time": "2019-04-18T16:04:46.920152Z",
+                    "status": "running",
+                    ...
+
+                    "info": {
+                        "company": "baidu",
+                        "scope": "ai"
+                    },
+                    "stats": {
+                        "msg_count": 344,
+                        "infer_count": 320
+                    }
+                }
+            ]
+        },
+    ]
+    ...
+}
+```
 
 ### Environment Variable
 
@@ -222,8 +322,10 @@ OpenEdge currently sets the following system environment variables for the servi
 - OPENEDGE_HOST_OS: Operating system of the device (host) where OpenEdge is located
 - OPENEDGE_MASTER_API: API Server address of the OpenEdge Master
 - OPENEDGE_RUNNING_MODE: Service running mode adopted by the OpenEdge Master
-- OPENEDGE_SERVICE_NAME: The name of the service being started
+- OPENEDGE_SERVICE_NAME: The name of the service
 - OPENEDGE_SERVICE_TOKEN: Dynamically assigned Token
+- OPENEDGE_SERVICE_INSTANCE_NAME：The name of the instance of the service
+- OPENEDGE_SERVICE_INSTANCE_ADDRESS：The address of the instance of the service
 
 The official function manager service is to connect to the OpenEdge Master by reading `OPENEDGE_MASTER_API`. For example, the `OPENEDGE_MASTER_API` under Linux system is `unix:///var/run/openedge.sock`; In the container mode under other systems, the default value of `OPENEDGE_MASTER_API` is `tcp://host.docker.internal:50050`; In the process mode under other systems, the default value of `OPENEDGE_MASTER_API` is `tcp://127.0.0.1:50050`.
 
@@ -328,7 +430,7 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages protobuf3 and grpcio (pip installation can be used, `pip install grpcio protobuf`). _
+_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages protobuf3 and grpcio (pip installation can be used, `pip install pyyaml protobuf grpcio`). _
 
 ### openedge-remote-mqtt
 

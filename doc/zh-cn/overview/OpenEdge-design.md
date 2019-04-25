@@ -7,9 +7,10 @@
     - [Docker 引擎](#docker-引擎)
     - [Native 引擎](#native-引擎)
   - [RESTful API](#restful-api)
-    - [/system/inspect](#systeminspect)
-    - [/system/update](#systemupdate)
-    - [/services/{}/instances/{}/start|stop](#servicesinstancesstartstop)
+    - [System Inspect](#system-inspect)
+    - [System Update](#system-update)
+    - [Instance Start&Stop](#instance-startstop)
+    - [Instance Report](#instance-report)
   - [环境变量](#环境变量)
 - [官方模块](#官方模块)
   - [openedge-agent](#openedge-agent)
@@ -131,22 +132,25 @@ _**注意**：进程模式不支持资源的限制，无需暴露端口、映射
 
 ### RESTful API
 
-OpenEdge 主程序会暴露一组 RESTful API，在 Linux 系统下默认采用 Unix Domain Socket，固定地址为 `/var/run/openedge.sock`；其他环境采用TCP，默认地址为 `tcp://127.0.0.1:50050`。目前接口的认证方式采用简单的动态 Token 的方式，主程序在启动服务时会为每个服务动态生成一个 Token，将服务名和 Token 以环境变量的方式传入服务的实例，实例读取后放入请求的 Header 中发给主程序即可。需要注意的是动态启动的实例是无法获取到 Token 的，因此动态实例无法动态启动其他实例。
+OpenEdge 主程序会暴露一组 RESTful API，采用 HTTP/1。在 Linux 系统下默认采用 Unix Domain Socket，固定地址为 `/var/run/openedge.sock`；其他环境采用TCP，默认地址为 `tcp://127.0.0.1:50050`。目前接口的认证方式采用简单的动态 Token 的方式，主程序在启动服务时会为每个服务动态生成一个 Token，将服务名和 Token 以环境变量的方式传入服务的实例，实例读取后放入请求的 Header 中发给主程序即可。需要注意的是动态启动的实例是无法获取到 Token 的，因此动态实例无法动态启动其他实例。
+
+对服务实例而言，实例启动后可以从环境变量中获取主程序的 API Server 地址，服务的名称和 Token，以及实例的名称，详见下一节[环境变量](#环境变量)。
 
 Header 名称如下：
 
-- x-iot-edge-username：账号名称，即服务名
+- x-iot-edge-username：账号名称，即服务名称
 - x-iot-edge-password：账号密码，即动态 Token
 
 下面是目前提供的接口：
 
-- GET /system/inspect 获取系统信息和状态
-- PUT /system/update 更新系统和服务
-- GET /ports/available 获取宿主机的空闲端口
-- PUT /services/{serviceName}/instances/{instanceName}/start 动态启动某个服务的一个实例
-- PUT /services/{serviceName}/instances/{instanceName}/stop 动态停止某个服务的某个实例
+- GET /v1/system/inspect 获取系统信息和状态
+- PUT /v1/system/update 更新系统和服务
+- GET /v1/ports/available 获取宿主机的空闲端口
+- PUT /v1/services/{serviceName}/instances/{instanceName}/start 动态启动某个服务的一个实例
+- PUT /v1/services/{serviceName}/instances/{instanceName}/stop 动态停止某个服务的某个实例
+- PUT /v1/services/{serviceName}/instances/{instanceName}/report 报告服务实例的自定义状态信息
 
-#### /system/inspect
+#### System Inspect
 
 该接口用于获取如下信息和状态：
 
@@ -175,6 +179,8 @@ type Software struct {
     Arch        string `json:"arch,omitempty"`
     // OpenEdge 服务运行模式
     Mode        string `json:"mode,omitempty"`
+    // OpenEdge 工作路径
+	PWD string `json:"pwd,omitempty"`
     // OpenEdge 编译的 Golang 版本
     GoVersion   string `json:"go_version,omitempty"`
     // OpenEdge 发布版本
@@ -196,7 +202,7 @@ type Hardware struct {
 }
 ```
 
-#### /system/update
+#### System Update
 
 该接口用于更新系统中的应用，我们称之为应用 OTA，后续还会实现主程序 OTA（即 OpenEdge 主程序的自升级）。应用 OTA 会先停止所有老服务再启动所有新服务，所以有停服时间。我们后续会继续优化，避免重启未更新的服务。
 
@@ -206,11 +212,105 @@ type Hardware struct {
 
 _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有老服务再启动所有新服务，因此服务会中断。_
 
-#### /services/{}/instances/{}/start|stop
+#### Instance Start&Stop
 
 该接口用于动态启停某个服务的实例，需要指定服务名和实例名，如果重复启动同一个服务的相同名称的实例，会先把之前启动的实例停止，然后启动新的实例。
 
 该接口支持服务的动态配置，用于覆盖存储卷中的静态配置，覆盖逻辑采用环境变量的方式，实例启动时可以加载环境变量来覆盖存储卷中的配置，来避免资源冲突。比如进程模式下，函数计算的管理服务启动函数实例时会预先分配空闲的端口，来使函数实例监听于不同的端口。
+
+#### Instance Report
+
+该接口用于定时向主程序报告服务实例的自定义状态信息。上报内容放入请求的 Body，采用 JSON 格式，JSON 的第一层字段作为 Key, 多次上报相同的 Key 的值会覆盖。举个例子：
+
+如果服务 infer 的实例 infer 第一次报告如下状态信息，包含 info 和 stats：
+
+```json
+{
+    "info": {
+        "company": "baidu",
+        "scope": "ai"
+    },
+    "stats": {
+        "msg_count": 124,
+        "infer_count": 120
+    }
+}
+```
+
+则 OpenEdge 的 Agent 模块后续上报到云端的 JSON 如下：
+
+```json
+{
+    ...
+    "time": "0001-01-01T00:00:00Z",
+    "services": [
+        {
+            "name": "infer",
+            "instances": [
+                {
+                    "name": "infer",
+                    "start_time": "2019-04-18T16:04:45.920152Z",
+                    "status": "running",
+                    ...
+
+                    "info": {
+                        "company": "baidu",
+                        "scope": "ai"
+                    },
+                    "stats": {
+                        "msg_count": 124,
+                        "infer_count": 120
+                    }
+                }
+            ]
+        },
+    ]
+    ...
+}
+```
+
+如果服务 infer 的实例 infer 第二次报告如下状态信息，只包含 stats，旧 stats 将被覆盖：
+
+```json
+{
+    "stats": {
+        "msg_count": 344,
+        "infer_count": 320
+    }
+}
+```
+
+则 OpenEdge 的 Agent 模块后续上报到云端的 JSON 如下, 旧 info 被保持，旧 stats 被覆盖：
+
+```json
+{
+    ...
+    "time": "0001-01-01T00:00:00Z",
+    "services": [
+        {
+            "name": "infer",
+            "instances": [
+                {
+                    "name": "infer",
+                    "start_time": "2019-04-18T16:04:46.920152Z",
+                    "status": "running",
+                    ...
+
+                    "info": {
+                        "company": "baidu",
+                        "scope": "ai"
+                    },
+                    "stats": {
+                        "msg_count": 344,
+                        "infer_count": 320
+                    }
+                }
+            ]
+        },
+    ]
+    ...
+}
+```
 
 ### 环境变量
 
@@ -219,8 +319,10 @@ OpenEdge 目前会给服务实例设置如下几个系统环境变量：
 - OPENEDGE_HOST_OS：OpenEdge 所在设备（宿主机）的系统类型
 - OPENEDGE_MASTER_API：OpenEdge 主程序的 API Server 地址
 - OPENEDGE_RUNNING_MODE：OpenEdge 主程序采用的服务运行模式
-- OPENEDGE_SERVICE_NAME：被启动服务的名称
+- OPENEDGE_SERVICE_NAME：服务的名称
 - OPENEDGE_SERVICE_TOKEN：动态分配的 Token
+- OPENEDGE_SERVICE_INSTANCE_NAME：服务实例的名称，用于动态指定
+- OPENEDGE_SERVICE_INSTANCE_ADDRESS：服务实例的地址，用于动态指定
 
 官方提供的函数计算管理服务就是通过读取 `OPENEDGE_MASTER_API` 来连接 OpenEdge 主程序的，比如 Linux 系统下 `OPENEDGE_MASTER_API` 默认是 `unix:///var/run/openedge.sock`；其他系统的容器模式下 `OPENEDGE_MASTER_API` 默认是 `tcp://host.docker.internal:50050`；其他系统的进程模式下 `OPENEDGE_MASTER_API` 默认是 `tcp://127.0.0.1:50050`。
 
@@ -325,7 +427,7 @@ def handler(event, context):
     return event
 ```
 
-_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio (采用 pip 安装即可，`pip install grpcio protobuf`)。_
+_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio (采用 pip 安装即可，`pip install pyyaml protobuf grpcio`)。_
 
 ### openedge-remote-mqtt
 

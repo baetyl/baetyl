@@ -66,7 +66,7 @@ tar xzf Python-2.7.15.tgz
 make install
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
 python2.7 get-pip.py
-pip install protobuf grpcio
+pip install pyyaml protobuf grpcio
 ```
 
 输入命令 `python -V` 查看 Python 版本为 2.7.* 后为安装正确。
