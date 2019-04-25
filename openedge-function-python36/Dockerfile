@@ -8,9 +8,7 @@ RUN apt-get update \
 	&& ln -s /usr/bin/python3.6 /usr/bin/python
 
 FROM base as builder
-RUN apt-get install -y --no-install-recommends gcc g++ python3.6-dev python3-setuptools
-
-RUN apt-get install -y python3-pip --no-install-recommends \
+RUN apt-get install -y gcc g++ python3.6-dev python3-setuptools python3-pip --no-install-recommends \
     && ln -s /usr/bin/pip3 /usr/bin/pip \
     && python -m pip install --upgrade pip \
 	&& pip install --install-option="--prefix=/install" pyyaml protobuf grpcio
