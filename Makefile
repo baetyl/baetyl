@@ -73,7 +73,7 @@ install-native: openedge package
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-manager
 	unzip -o openedge-function-manager/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-manager
 
-	install -d -m 0755 ${PREFIX}/var/db/opmakenedge/openedge-function-python27
+	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
 	unzip -o openedge-function-python/package27.zip -d ${PREFIX}/var/db/openedge/openedge-function-python27
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python36
