@@ -33,9 +33,6 @@ openedge-function-manager/package.zip:
 openedge-function-python/package27.zip:
 	make -C openedge-function-python
 
-openedge-function-python36/package.zip:
-	make -C openedge-function-python36
-
 openedge-timer/package.zip:
 	make -C openedge-timer
 
