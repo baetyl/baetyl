@@ -9,7 +9,7 @@ package: \
 	openedge-agent/package.zip \
 	openedge-remote-mqtt/package.zip \
 	openedge-function-manager/package.zip \
-	openedge-function-python/package27.zip \
+	openedge-function-python/package.zip \
 	openedge-timer/package.zip
 
 SRC=$(wildcard *.go) $(shell find cmd master logger sdk protocol utils -type f -name '*.go')
@@ -30,7 +30,7 @@ openedge-remote-mqtt/package.zip:
 openedge-function-manager/package.zip:
 	make -C openedge-function-manager
 
-openedge-function-python/package27.zip:
+openedge-function-python/package.zip:
 	make -C openedge-function-python
 
 openedge-timer/package.zip:
