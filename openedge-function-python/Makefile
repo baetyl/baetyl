@@ -22,7 +22,9 @@ package36.zip: $(PYSRC36)
 
 image:
 	@echo "IMAGE openedge-function-python27"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python27$(IMAGE_SUFFIX):$(TAG) .
+	docker build -t $(IMAGE_PREFIX)openedge-function-python27$(IMAGE_SUFFIX):$(TAG) -f Dockerfile27 .
+	@echo "IMAGE openedge-function-python36"
+	docker build -t $(IMAGE_PREFIX)openedge-function-python36$(IMAGE_SUFFIX):$(TAG) -f Dockerfile36 .
 
 .PHONY: clean
 clean:

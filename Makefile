@@ -73,7 +73,7 @@ install-native: openedge package
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-manager
 	unzip -o openedge-function-manager/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-manager
 
-	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
+	install -d -m 0755 ${PREFIX}/var/db/opmakenedge/openedge-function-python27
 	unzip -o openedge-function-python/package27.zip -d ${PREFIX}/var/db/openedge/openedge-function-python27
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python36
@@ -114,8 +114,7 @@ image:
 	make -C openedge-agent image
 	make -C openedge-remote-mqtt image
 	make -C openedge-function-manager image
-	make -C openedge-function-python27 image
-	make -C openedge-function-python36 image
+	make -C openedge-function-python image
 	make -C openedge-timer image
 
 release: release-image
@@ -185,10 +184,10 @@ release-manifest:
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-manager/manifest.yml.template > tmp/manifest-function-manager.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-manager.yml
 	# Push openedge-function-python27 manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python27/manifest.yml.template > tmp/manifest-function-python27.yml
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest27.yml.template > tmp/manifest-function-python27.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27.yml
 	# Push openedge-function-python36 manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python36/manifest.yml.template > tmp/manifest-function-python36.yml
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest36.yml.template > tmp/manifest-function-python36.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python36.yml
 	# Push openedge-remote-mqtt manifest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt.yml
@@ -206,8 +205,8 @@ release-package:
 	mv openedge-hub/package.zip ./openedge-hub-linux-arm-$(VERSION).zip
 	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm-$(VERSION).zip
 	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm-$(VERSION).zip
-	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-arm-$(VERSION).zip
-	mv openedge-function-python36/package.zip ./openedge-function-python36-linux-arm-$(VERSION).zip
+	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-arm-$(VERSION).zip
+	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-arm-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-arm-$(VERSION).zip
 	# Release modules' package -- linux amd64
 	env GOOS=linux GOARCH=amd64 make package
@@ -215,8 +214,8 @@ release-package:
 	mv openedge-hub/package.zip ./openedge-hub-linux-amd64-$(VERSION).zip
 	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-amd64-$(VERSION).zip
 	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-amd64-$(VERSION).zip
-	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-amd64-$(VERSION).zip
-	mv openedge-function-python36/package.zip ./openedge-function-python36-linux-amd64-$(VERSION).zip
+	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-amd64-$(VERSION).zip
+	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-amd64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-amd64-$(VERSION).zip
 	# Release modules' package -- linux arm64
 	env GOOS=linux GOARCH=arm64 make package
@@ -224,8 +223,8 @@ release-package:
 	mv openedge-hub/package.zip ./openedge-hub-linux-arm64-$(VERSION).zip
 	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm64-$(VERSION).zip
 	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm64-$(VERSION).zip
-	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-arm64-$(VERSION).zip
-	mv openedge-function-python36/package.zip ./openedge-function-python36-linux-arm64-$(VERSION).zip
+	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-arm64-$(VERSION).zip
+	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-arm64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-arm64-$(VERSION).zip
 	# Release modules' package -- linux 386
 	env GOOS=linux GOARCH=386 make package
@@ -233,8 +232,8 @@ release-package:
 	mv openedge-hub/package.zip ./openedge-hub-linux-386-$(VERSION).zip
 	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-386-$(VERSION).zip
 	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-386-$(VERSION).zip
-	mv openedge-function-python27/package.zip ./openedge-function-python27-linux-386-$(VERSION).zip
-	mv openedge-function-python36/package.zip ./openedge-function-python36-linux-386-$(VERSION).zip
+	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-386-$(VERSION).zip
+	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-386-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-386-$(VERSION).zip
 	# Release modules' package -- darwin amd64
 	env GOOS=darwin GOARCH=amd64 make package
@@ -242,6 +241,6 @@ release-package:
 	mv openedge-hub/package.zip ./openedge-hub-darwin-amd64-$(VERSION).zip
 	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-darwin-amd64-$(VERSION).zip
 	mv openedge-function-manager/package.zip ./openedge-function-manager-darwin-amd64-$(VERSION).zip
-	mv openedge-function-python27/package.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip
-	mv openedge-function-python36/package.zip ./openedge-function-python36-darwin-amd64-$(VERSION).zip
+	mv openedge-function-python/package27.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip
+	mv openedge-function-python/package36.zip ./openedge-function-python36-darwin-amd64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-darwin-amd64-$(VERSION).zip
