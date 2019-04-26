@@ -32,10 +32,10 @@ openedge-function-manager/package.zip:
 	make -C openedge-function-manager
 
 openedge-function-python/package27.zip:
-	make -C openedge-function-python make27
+	make -C openedge-function-python package27.zip
 
 openedge-function-python/package36.zip:
-	make -C openedge-function-python make36
+	make -C openedge-function-python package36.zip
 
 openedge-timer/package.zip:
 	make -C openedge-timer

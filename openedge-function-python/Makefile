@@ -2,10 +2,6 @@ TAG?=latest
 PYSRC27=$(shell find . -type f -name '*.py' -not -name '*36*')
 PYSRC36=$(shell find . -type f -name '*.py' -not -name '*27*')
 
-make27: package27.zip 
-
-make36: package36.zip
-
 package27.zip: $(PYSRC27)
 	install -d -m 0755 __package/bin
 	cp $^ __package/bin
