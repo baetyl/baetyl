@@ -185,7 +185,7 @@ docker images
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make install # docker 容器模式安装并使用示例配置
-make install-native # native 运行模式安装并使用示例配置
+make install-native # native 进程模式安装并使用示例配置
 ```
 
 指定安装路径，比如安装到 output 目录中。
@@ -226,8 +226,8 @@ sudo ./output/bin/openedge start
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
-make uninstall # 卸载docker容器模式的安装
-make uninstall-native # 卸载native运行模式的安装
+make uninstall # 卸载 docker 容器模式的安装
+make uninstall-native # 卸载 native 进程模式的安装
 ```
 
 如果是指定了安装路径，比如安装到 output 目录中。
@@ -236,5 +236,5 @@ make uninstall-native # 卸载native运行模式的安装
 cd $GOPATH/src/github.com/baidu/openedge
 make clean # 可用于清除编译生成的可执行文件
 make uninstall PREFIX=output # 卸载 docker 容器模式的安装
-make uninstall-native PREFIX=output # 卸载 native 运行模式的安装
+make uninstall-native PREFIX=output # 卸载 native 进程模式的安装
 ```
