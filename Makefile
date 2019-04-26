@@ -9,8 +9,7 @@ package: \
 	openedge-agent/package.zip \
 	openedge-remote-mqtt/package.zip \
 	openedge-function-manager/package.zip \
-	openedge-function-python27/package.zip \
-	openedge-function-python36/package.zip \
+	openedge-function-python/package27.zip \
 	openedge-timer/package.zip
 
 SRC=$(wildcard *.go) $(shell find cmd master logger sdk protocol utils -type f -name '*.go')
@@ -31,8 +30,8 @@ openedge-remote-mqtt/package.zip:
 openedge-function-manager/package.zip:
 	make -C openedge-function-manager
 
-openedge-function-python27/package.zip:
-	make -C openedge-function-python27
+openedge-function-python/package27.zip:
+	make -C openedge-function-python
 
 openedge-function-python36/package.zip:
 	make -C openedge-function-python36
@@ -75,10 +74,10 @@ install-native: openedge package
 	unzip -o openedge-function-manager/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-manager
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python27
-	unzip -o openedge-function-python27/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-python27
+	unzip -o openedge-function-python/package27.zip -d ${PREFIX}/var/db/openedge/openedge-function-python27
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python36
-	unzip -o openedge-function-python36/package.zip -d ${PREFIX}/var/db/openedge/openedge-function-python36
+	unzip -o openedge-function-python/package36.zip -d ${PREFIX}/var/db/openedge/openedge-function-python36
 	
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-timer
 	unzip -o openedge-timer/package.zip -d ${PREFIX}/var/db/openedge/openedge-timer
@@ -102,8 +101,7 @@ clean:
 	make -C openedge-agent clean
 	make -C openedge-remote-mqtt clean
 	make -C openedge-function-manager clean
-	make -C openedge-function-python27 clean
-	make -C openedge-function-python36 clean
+	make -C openedge-function-python clean
 	make -C openedge-timer clean
 
 rebuild: clean all
