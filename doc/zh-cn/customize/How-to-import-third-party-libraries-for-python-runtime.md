@@ -67,8 +67,8 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi
-    image: openedge-function-python27
+  - name: function-sayhi3
+    image: openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -103,7 +103,7 @@ volumes:
 
 假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-- 步骤 1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python的版本 
+- 步骤 1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本 
 - 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
 - 步骤 3: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
 - 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
@@ -155,14 +155,6 @@ functions:
 ![获取OpenEdge官网headers信息](../../images/customize/write-python-script-third-lib-requests.png)
 
 ## 引用 Pytorch 第三方包
-
-```yaml
-# python function 配置
-functions:
-  - name: 'sayhi3'
-    handler: 'calc.handler'
-    codedir: 'var/db/openedge/function-sayhi'
-```
 
 Pytorch 机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/)。如何引入，具体如下所示：
 
