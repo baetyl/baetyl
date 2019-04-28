@@ -53,7 +53,7 @@ sudo apt-get install python3-pip
 sudo pip3 install pyyaml protobuf grpcio
 ```
 
-Execute the command `python -V` to see that the version of Python is 3.*.* and the installation is correct.
+Execute the command `python -V` to see that the version of Python is 3.* and the installation is correct.
 
 ### Specify The Default Version Of Python
 

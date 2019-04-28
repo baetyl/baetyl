@@ -51,12 +51,13 @@ python -V
 If the result is not installed, you can install it using the following command:
 
 ```shell
+# we choose python36 for example
 yum install python36
 yum install python36-pip
 pip3 install grpcio protobuf pyyaml
 ```
 
-**NOTE**: Execute the command `python -V` to see that the version of Python is 3.*.* and the installation is correct.
+**NOTE**: Execute the command `python -V` to see that the version of Python is 3.* and the installation is correct.
 
 ### Specify The Default Version Of Python
 
