@@ -30,12 +30,12 @@ rules:
     subscribe:
       topic: py
     function:
-      name: sayhi
+      name: sayhi3
     publish:
       topic: py/hi
 functions:
-  - name: sayhi
-    service: function-sayhi
+  - name: sayhi3
+    service: function-sayhi3
     instance:
       min: 0
       max: 10
@@ -43,7 +43,7 @@ functions:
 
 # python function 配置
 functions:
-  - name: 'sayhi'
+  - name: 'sayhi3'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
 
@@ -72,8 +72,8 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi
-    image: openedge-function-python27
+  - name: function-sayhi3
+    image: openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -110,7 +110,7 @@ Python 脚本的名称可以参照 Python 的通用命名规范，OpenEdge 并�
 
 ```yaml
 functions:
-  - name: 'sayhi'
+  - name: 'sayhi3'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
 ```
@@ -152,7 +152,7 @@ _**提示**：在云端 CFC 测试时，请注意不要直接使用 OpenEdge 定
 下面我们实现一个简单的 Python 函数，目标是为每一条流经需要用该 Python 脚本进行处理的 MQTT 消息附加一条 `hello world` 信息。对于字典类消息，将其直接返回即可，对于非字典类消息，则将之转换为字符串后返回。
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python36
 # -*- coding: utf-8 -*-
 
 def handler(event, context):
