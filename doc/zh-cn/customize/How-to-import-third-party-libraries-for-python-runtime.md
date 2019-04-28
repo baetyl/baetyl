@@ -97,7 +97,7 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-通常情况下，系统自带的 Python 环境很可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出两个示例。
+系统自带的 Python 环境有可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出两个示例。
 
 ## 引用 requests 第三方包
 

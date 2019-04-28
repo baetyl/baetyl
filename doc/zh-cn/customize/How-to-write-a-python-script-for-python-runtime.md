@@ -133,7 +133,7 @@ def handler(event, context):
     return event
 ```
 
-OpenEdge 官方提供的 Python 运行时支持2个参数: event 和 context，下面将分别介绍其用法。
+OpenEdge 官方提供的 Python 运行时支持 2 个参数: event 和 context，下面将分别介绍其用法。
 
 - **event**：根据 MQTT 报文中的 Payload 传入不同参数
     - 若原始 Payload 为一个 Json 数据，则传入经过 json.loads(Payload) 处理后的数据;

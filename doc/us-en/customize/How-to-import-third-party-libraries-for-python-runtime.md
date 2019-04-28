@@ -1,15 +1,14 @@
-# 如何针对 Python 运行时引入第三方包
+# How to import third party libraries for python runtime
 
-**声明**：
+**Statement**
 
-- 本文测试所用设备系统为 Darwin
-- 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
-- python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
-- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
-- 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
+- The operating system as mentioned in this document is Darwin.
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts 
+- The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
+- In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
 
 ```yaml
-# 本地 Hub 配置
+# The configuration of Local Hub service
 listen:
   - tcp://:1883
 principals:
@@ -21,7 +20,7 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# 本地 openedge-function-manager 配置
+# The configuration of Local Function Manager service
 hub:
   address: tcp://localhub:1883
   username: test
@@ -42,7 +41,7 @@ functions:
       max: 10
       idletime: 1m
 
-# application.yml配置
+# The configuration of application.yml
 version: v0
 services:
   - name: localhub
@@ -97,24 +96,24 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-通常情况下，系统自带的 Python 环境很可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出两个示例。
+Generally, using the standard library of the system python environment may not meet our needs. In actual practice, it is often necessary to import some third-party libraries. Two example are given below.
 
-## 引用 requests 第三方包
+## Import `requests` Third-Party Libraries
 
-假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
+Suppose we want to crawl a website and get the response. Here, we can import a third-party library [requests](https://pypi.org/project/requests). How to import it, as shown below:
 
-- 步骤 1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本 
-- 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
-- 步骤 3: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
-- 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
-- 步骤 5: `import requests` // 引入第三方库 requests，然后编写具体执行脚本
-- 步骤 6: `python your_script.py` // 执行脚本
+- Step 1: `pip download requests` // download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
+- Step 2: `unzip` command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+- Step 3: `cp requests-package /directory/to/Python/script` // copy `requests` package and its dependency package to the directory of the Python script
+- Step 4: `touch __init__.py` // make the directory of the Python script as a package
+- Step 5: `import requests` // import the third-party library `requests`, and write the Python script
+- Step 6: `python your_script.py` # execute your Python script
 
-如上述操作正常，则形成的脚本目录结构如下图所示。
+If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 
-![Python requests 第三方库脚本目录](../../images/customize/python-third-lib-dir-requests.png)
+![the directory of the Python script](../../images/customize/python-third-lib-dir.png)
 
-下面，我们编写脚本 `get.py` 来获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息，假定触发条件为 Python 运行时接收到来自 Hub 的 `A` 指令，具体如下：
+Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python36 runtime receives the "A" command from the Local Hub Service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -123,53 +122,54 @@ volumes:
 import requests
 
 def handler(event, context):
-  """
-  data: {"action": "A"}
-  """
-  if 'action' in event:
-    if event['action'] == 'A':
-      r = requests.get('https://openedge.tech')
-      if str(r.status_code) == '200':
-        event['info'] = dict(r.headers)
-      else:
-        event['info'] = 'exception found'
-    else:      event['info'] = 'action error'
-  else:
-    event['error'] = 'action not found'
-    
-  return event
+    """
+    data: {"action": "A"}
+    """
+    if 'action' in event:
+        if event['action'] == 'A':
+            r = requests.get('https://openedge.tech')
+            if str(r.status_code) == '200':
+                event['info'] = dict(r.headers)
+            else:
+                event['info'] = 'exception found'
+        else:
+            event['info'] = 'action error'
+    else:
+        event['error'] = 'action not found'
+
+return event
 ```
 
-函数运行时服务的配置如下:
+The configuration of Local Function Manager service is as below:
 
 ```yaml
-# python function 配置
+# The configuration of python function runtime
 functions:
   - name: 'sayhi3'
     handler: 'get.handler'
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息。
+As above, after receiving the message publish to the topic `py`, the Local Hub will call the `get.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "A"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, the headers information of [https://openedge.tech](https://openedge.tech) can be obtained normally.
 
-![获取OpenEdge官网headers信息](../../images/customize/write-python-script-third-lib-requests.png)
+![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib.png)
 
-## 引用 Pytorch 第三方包
+## Import `Pytorch` Third-Party Libraries
 
-Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/)使用它的功能。如何引入，具体如下所示：
+Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions。How to import it, as shown below:
 
-- 步骤 1: `pip download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
-- 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
-- 步骤 3: `cp torch-package /directory/to/Python/script` // 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
-- 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
-- 步骤 5: `import torch` // 引入第三方库 torch，然后编写具体执行脚本
-- 步骤 6: `python your_script.py` // 执行脚本
+- Step 1: `pip download torch torchvision` // download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
+- Step 2: `unzip` command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+- Step 3: `cp torch-package /directory/to/Python/script` // copy `torch` package and its dependency package to the directory of the Python script
+- Step 4: `touch __init__.py` // make the directory of the Python script as a package
+- Step 5: `import torch` // import the third-party library `torch`, and write the Python script
+- Step 6: `python your_script.py` // execute your Python script
 
-如上述操作正常，则形成的脚本目录结构如下图所示。
+If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 
-![Python torch 第三方库脚本目录](../../images/customize/python-third-lib-dir-torch.png)
+![the directory of the Python script](../../images/customize/python-third-lib-dir-torch.png)
 
-下面，我们编写脚本 `calc.py` 来使用 torch 中的函数生成随机张量，假定触发条件为 Python 运行时接收到来自 Hub 的 `B` 指令，具体如下：
+Now we write the Python script `calc.py` to use functions provided by torch for generating a random tensor, assuming that the trigger condition is that Python36 runtime receives the "B" command from the Local Hub Service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -193,16 +193,16 @@ def handler(event, context):
   return event
 ```
 
-函数运行时服务的配置如下:
+The configuration of Local Function Manager service is as below:
 
 ```yaml
-# python function 配置
+# The configuration of python function runtime
 functions:
   - name: 'sayhi3'
     handler: 'calc.handler'
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `calc.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "B"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常生成随机张量。
+As above, after receiving the message publish to the topic `py`, the Local Hub will call the `calc.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "B"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, we can get a random tensor.
 
-![生成随机张量](../../images/customize/write-python-script-third-lib-torch.png)
+![generate a random tensor](../../images/customize/write-python-script-third-lib-torch.png)
