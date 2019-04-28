@@ -4,7 +4,7 @@
 
 - 本文测试所用设备系统为 Darwin
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
-- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端)
+- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
