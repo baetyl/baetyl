@@ -36,7 +36,7 @@ OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3 版本�
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // 安装 HomeBrew
 brew install --ignore-dependencies https://raw.githubusercontent.com/Homebrew/homebrew-core/f2a764ef944b1080be64bd88dca9a1d80130c558/Formula/python.rb  // 安装 Python3，并注意添加参数 --ignore-dependencies
-pip install pyyaml protobuf grpcio
+pip3 install pyyaml protobuf grpcio
 ```
 
 **注意**：安装完成后可通过以下命令查看所安装版本：

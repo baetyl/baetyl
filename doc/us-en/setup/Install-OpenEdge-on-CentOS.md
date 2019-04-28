@@ -38,9 +38,9 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python2.7 and Python runtime dependency package
+### Install Python and Python runtime dependency package
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in **docker container mode**, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python3 and the package actually use. But, If you plan to start in **docker container mode**, you do not need to perform the following steps.
 
 Execute the following command to check the installed version of Python:
 
@@ -51,31 +51,19 @@ python -V
 If the result is not installed, you can install it using the following command:
 
 ```shell
-yum install python
-yum install python-pip
-yum install protobuf grpcio
+yum install python36
+yum install python36-pip
+pip3 install grpcio protobuf pyyaml
 ```
 
-Or install from source code:
-
-```shell
-yum install gcc openssl-devel bzip2-devel
-wget https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tgz
-tar xzf Python-2.7.15.tgz
-make install
-curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-python2.7 get-pip.py
-pip install pyyaml protobuf grpcio
-```
-
-**NOTE**: Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
+**NOTE**: Execute the command `python -V` to see that the version of Python is 3.*.* and the installation is correct.
 
 ### Specify The Default Version Of Python
 
 In some cases, you need to specify the default version of Python for the above installed version. Complete with the following command (Valid after reboot):
 
 ```shell
-alias python=/yourpath/python2.7
+alias python=/yourpath/python3
 ```
 
 ## Deploy OpenEdge

@@ -17,6 +17,7 @@
   - [openedge-hub](#openedge-hub)
   - [openedge-function-manager](#openedge-function-manager)
   - [openedge-function-python27](#openedge-function-python27)
+  - [openedge-function-python36](#openedge-function-python36)
   - [openedge-remote-mqtt](#openedge-remote-mqtt)
 
 ## 概念
@@ -39,8 +40,8 @@
 - [openedge-hub](#openedge-hub)：提供基于 MQTT 的消息路由服务。
 - [openedge-remote-mqtt](#openedge-remote-mqtt)：提供 Hub 和远程 MQTT 服务进行消息同步的服务。
 - [openedge-function-manager](#openedge-function-manager)：提供函数计算服务，进行函数实例管理和消息触发的函数调用。
-- [openedge-function-python27](#openedge-function-python27)：提供加载基于 Python27 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
-- [openedge-function-python36](#openedge-function-python36)：提供加载基于 Python36 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
+- [openedge-function-python27](#openedge-function-python27)：提供加载基于 python27 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
+- [openedge-function-python36](#openedge-function-python36)：提供加载基于 python3 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
 
 架构图:
 
@@ -432,7 +433,7 @@ _**提示**：Native 进程模式下，若要运行本代码库 example 中提�
 
 ### openedge-function-python36
 
-`openedge-function-python36` 模块的设计思想与 `openedge-function-python27` 模块相同，但是两者的函数运行时不同。`openedge-function-python36` 所使用的函数运行时基于 python36 版本，并提供基于 python3.6 的 protobuf3、grpcio。
+`openedge-function-python36` 模块的设计思想与 `openedge-function-python27` 模块相同，但是两者的函数运行时不同。`openedge-function-python36` 所使用的函数运行时基于 python3.x 版本，并提供基于 python3.x 的 protobuf3、grpcio。
 
 ### openedge-remote-mqtt
 

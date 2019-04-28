@@ -6,7 +6,7 @@
 - [openedge-agent Configuration](#openedge-agent-configuration)
 - [openedge-hub Configuration](#openedge-hub-configuration)
 - [openedge-function-manager Configuration](#openedge-function-manager-configuration)
-- [openedge-function-python27 Configuration](#openedge-function-python27-configuration)
+- [openedge-function-python27、openedge-function-python36 Configuration](#openedge-function-python27-configuration-openedge-function-python36-configuration)
 - [openedge-remote-mqtt Configuration](#openedge-remote-mqtt-configuration)
 
 ## Statement
@@ -240,9 +240,10 @@ functions:
     timeout: The default value is `30s`, Client connection function instance timeout
 ```
 
-## openedge-function-python27 Configuration
+## openedge-function-python27、openedge-function-python36 Configuration
 
 ```yaml
+# the configurations of the two modules are the same, so we can follow this sample below
 server: GRPC Server configuration; Do not configure if the instances of this service are managed by openedge-function-manager
   address: GRPC Server address, <host>:<port>
   workers:

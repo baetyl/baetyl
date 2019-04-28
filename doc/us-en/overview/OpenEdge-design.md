@@ -17,6 +17,7 @@
   - [openedge-hub](#openedge-hub)
   - [openedge-function-manager](#openedge-function-manager)
   - [openedge-function-python27](#openedge-function-python27)
+  - [openedge-function-python36](#openedge-function-python36)
   - [openedge-remote-mqtt](#openedge-remote-mqtt)
 
 ## Concepts
@@ -41,7 +42,7 @@ At present, OpenEdge has the following official modules:
 - [openedge-remote-mqtt](#openedge-remote-mqtt): Provides a bridge services for synchronizing messages between Hub and remote MQTT services.
 - [openedge-function-manager](#openedge-function-manager): Provides function services for function instance management and message-triggered function calls.
 - [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts based on python2.7 runtime that can be managed by openedge-function-manager as a function instance provider.
-- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on python3.6 runtime that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on python3.x runtime that can be managed by openedge-function-manager as a function instance provider.
 
 Structure Diagram:
 
@@ -435,7 +436,7 @@ _**Tips**: In the native process mode, to run sayhi.py provided in the example o
 
 ### openedge-function-python36
 
-The design motion of module `openedge-function-python36` is the same as the module `openedge-function-python27` ，but their python runtime are different. The module `openedge-function-python36` is based on python3.6 runtime，and provide the libs protobuf3、grpcio based on python3.6.
+The design motion of module `openedge-function-python36` is the same as the module `openedge-function-python27` ，but their python runtime are different. The module `openedge-function-python36` is based on python3.x runtime，and provide the libs protobuf3、grpcio based on python3.x.
 
 ### openedge-remote-mqtt
 

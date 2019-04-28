@@ -28,16 +28,16 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python2.7 and Python runtime dependency package
+### Install Python and Python runtime dependency package
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python3 and the package actually use. But, If you plan to start in ***docker container mode***, you do not need to perform the following steps.
 
 Install by using HomeBrew(Recommended):
 
 ```shell
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // Install HomeBrew
-brew install python@2
-pip install pyyaml protobuf grpcio
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // install HomeBrew
+brew install --ignore-dependencies https://raw.githubusercontent.com/Homebrew/homebrew-core/f2a764ef944b1080be64bd88dca9a1d80130c558/Formula/python.rb  // install Python3，meantimes add arguments --ignore-dependencies
+pip3 install pyyaml protobuf grpcio
 ```
 
 **NOTE**: Execute the following command to check the installed version of Python:
@@ -49,7 +49,7 @@ python -V
 Specify the default version of Python with following command:
 
 ```shell
-alias python=/yourpath/python2.7
+alias python=/yourpath/python3
 ```
 
 ## Deploy OpenEdge

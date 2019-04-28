@@ -24,28 +24,28 @@ curl -sSL https://get.docker.com | sh
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python2.7 and Python runtime dependency package
+### Install Python and Python runtime dependency package
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native** process mode, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in **docker** container mode, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3. If you run OpenEdge in **native** process mode, you **MUST** firstly install Python3 and the package actually use. But, If you plan to start in **docker** container mode, you do not need to perform the following steps.
 
 Commands:
 
 ```shell
 sudo apt update
 sudo apt upgrade
-sudo apt install python2.7
-sudo apt install python-pip
-sudo pip install pyyaml protobuf grpcio
+sudo apt install python3
+sudo apt install python3-pip
+sudo pip3 install pyyaml protobuf grpcio
 ```
 
-Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
+Execute the command `python -V` to see that the version of Python is 3.*.* and the installation is correct.
 
 ### Specify The Default Version Of Python
 
 In some cases, you need to specify the default version of Python for the above installed version. Complete with the following command (Valid after reboot):
 
 ```shell
-alias python=/yourpath/python2.7
+alias python=/yourpath/python3
 ```
 
 ## Deploy OpenEdge
