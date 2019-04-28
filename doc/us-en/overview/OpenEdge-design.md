@@ -40,7 +40,8 @@ At present, OpenEdge has the following official modules:
 - [openedge-hub](#openedge-hub): Provides an MQTT-based message routing service.
 - [openedge-remote-mqtt](#openedge-remote-mqtt): Provides a bridge services for synchronizing messages between Hub and remote MQTT services.
 - [openedge-function-manager](#openedge-function-manager): Provides function services for function instance management and message-triggered function calls.
-- [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts based on python2.7 runtime that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on python3.6 runtime that can be managed by openedge-function-manager as a function instance provider.
 
 Structure Diagram:
 
@@ -431,6 +432,10 @@ def handler(event, context):
 ```
 
 _**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages protobuf3 and grpcio (pip installation can be used, `pip install pyyaml protobuf grpcio`). _
+
+### openedge-function-python36
+
+The design motion of module `openedge-function-python36` is the same as the module `openedge-function-python27` ，but their python runtime are different. The module `openedge-function-python36` is based on python3.6 runtime，and provide the libs protobuf3、grpcio based on python3.6.
 
 ### openedge-remote-mqtt
 

@@ -40,28 +40,28 @@ docker version
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-### Python2.7 及其运行时依赖包安装
+### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本的运行，如计划使用 **native** 进程模式启动，需要安装 Python2.7 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3 版本的运行。以 Python3 版本为例，如计划使用 **native** 进程模式启动，需要安装 Python3 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
-使用如下命令安装 Python2.7:
+使用如下命令安装 Python3:
 
 ```shell
 sudo apt-get update
 sudo apt-get upgrade
-sudo apt-get install python2.7
-sudo apt-get install python-pip
-sudo pip install pyyaml protobuf grpcio
+sudo apt-get install python3
+sudo apt-get install python3-pip
+sudo pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python -V` 查看 Python 版本为 2.7.* 后为安装正确。
+输入命令 `python -V` 查看 Python 版本为 3.*.* 后为安装正确。
 
 ### 指定默认 Python 版本
 
 某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成（重启有效）：
 
 ```shell
-alias python=/yourpath/python2.7
+alias python=/yourpath/python3
 ```
 
 ## OpenEdge 部署

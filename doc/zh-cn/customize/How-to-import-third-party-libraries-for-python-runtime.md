@@ -159,7 +159,7 @@ functions:
 Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/)使用它的功能。如何引入，具体如下所示：
 
 - 步骤 1: `pip download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
-- 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
+- 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
 - 步骤 3: `cp torch-package /directory/to/Python/script` // 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
 - 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
 - 步骤 5: `import torch` // 引入第三方库 torch，然后编写具体执行脚本

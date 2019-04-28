@@ -27,15 +27,15 @@ docker version
 
 **更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
 
-### Python2.7 及其运行时依赖包安装
+### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本的运行，如计划使用 **native** 进程模式启动，需要安装 Python2.7 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3 版本的运行。以 Python3 版本为例，如计划使用 **native** 进程模式启动，需要安装 Python3 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
 推荐使用 HomeBrew 安装。
 
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // 安装 HomeBrew
-brew install python@2
+brew install --ignore-dependencies https://raw.githubusercontent.com/Homebrew/homebrew-core/f2a764ef944b1080be64bd88dca9a1d80130c558/Formula/python.rb  // 安装 Python3，并注意添加参数 --ignore-dependencies
 pip install pyyaml protobuf grpcio
 ```
 
@@ -48,7 +48,7 @@ python -V
 通过以下命令设置默认 Python 命令指定上述安装的版本。例如：
 
 ```shell
-alias python=/yourpath/python2.7
+alias python=/yourpath/python3
 ```
 
 ## OpenEdge 部署
