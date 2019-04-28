@@ -3,7 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts 
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except for the language difference when coding the scripts 
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
 
@@ -156,7 +156,7 @@ As above, after receiving the message publish to the topic `py`, the Local Hub w
 
 ## Import `Pytorch` Third-Party Libraries
 
-Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions。How to import it, as shown below:
+Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
 - Step 1: `pip download torch torchvision` // download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
 - Step 2: `unzip` command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
