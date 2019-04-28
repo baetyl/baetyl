@@ -26,6 +26,7 @@ As an edge computing platform, **OpenEdge** not only provides features such as u
 - The official module [openedge-remote-mqtt](./doc/us-en/overview/OpenEdge-design.md#openedge-remote-mqtt) is used to bridge two MQTT Servers for message synchronization and supports configuration of multiple message route rules. ;
 - The official module [openedge-function-manager](./doc/us-en/overview/OpenEdge-design.md#openedge-function-manager) provides computing power based on MQTT message mechanism, flexible, high availability, good scalability, and fast response;
 - The official module [openedge-function-python27](./doc/us-en/overview/OpenEdge-design.md#openedge-function-python27) provides the Python27 function runtime, which can be dynamically started by `openedge-function-manager`;
+- The official module [openedge-function-python36](./doc/us-en/overview/OpenEdge-design.md#openedge-function-python36) provides the Python3.x function runtime, which can be dynamically started by `openedge-function-manager`;
 - SDK (Golang) can be used to develop custom modules.
 
 ### Architecture
@@ -46,6 +47,7 @@ As an edge computing platform, **OpenEdge** not only provides features such as u
 - [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
 - [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
 - [How to write a python script for python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
+- [How to import third party libraries for python runtime](./doc/us-en/customize/How-to-import-third-party-libraries-for-python-runtime.md)
 - [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
 - [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 
