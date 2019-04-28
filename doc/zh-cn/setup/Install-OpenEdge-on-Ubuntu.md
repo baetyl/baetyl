@@ -54,7 +54,7 @@ sudo apt-get install python3-pip
 sudo pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python -V` 查看 Python 版本为 3.*.* 后为安装正确。
+输入命令 `python -V` 查看 Python 版本是否为 3.*。
 
 ### 指定默认 Python 版本
 
