@@ -177,4 +177,4 @@ def handler(event, context):
 
 ![发送非字典类数据](../../images/customize/write-python-script-none-dict.png)
 
-如上，对于一些常规的需求，我们通过系统 Python 环境的标准库就可以完成。但是，对于一些较为复杂的需求，往往需要引入第三方库来完成。如何解决这个问题？我们将在 [如何针对 Python 运行时引入第三方包](./How-to-import-third-party-libraries-for-python-runtime.md) 详述。
+如上，对于一些常规的需求，我们通过系统 Python 环境的标准库就可以完成。但是，对于一些较为复杂的需求，往往需要引入第三方库来完成。如何解决这个问题？我们将在 [如何针对 Python 运行时引入第三方包](./How-to-import-third-party-libraries-for-python-runtime.md) 小节详述。

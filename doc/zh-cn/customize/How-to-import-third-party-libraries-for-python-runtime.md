@@ -5,7 +5,7 @@
 - 本文测试所用设备系统为 Darwin
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
-- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端)
+- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
@@ -156,7 +156,7 @@ functions:
 
 ## 引用 Pytorch 第三方包
 
-Pytorch 机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/)。如何引入，具体如下所示：
+Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/)使用它的功能。如何引入，具体如下所示：
 
 - 步骤 1: `pip download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
 - 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
