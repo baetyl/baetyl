@@ -52,6 +52,7 @@ python -V
 如果显示未安装，可使用以下命令进行安装：
 
 ```shell
+# 这里以 python36 版本为例
 yum install python36
 yum install python36-pip
 pip3 install grpcio protobuf pyyaml

@@ -411,7 +411,7 @@ Python 函数支持读取上下文，比如 context['functionName']。
 Python 函数实现举例：
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python27
 #-*- coding:utf-8 -*-
 """
 module to say hi

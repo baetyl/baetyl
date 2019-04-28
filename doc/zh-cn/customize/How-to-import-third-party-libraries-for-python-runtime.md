@@ -156,7 +156,7 @@ functions:
 
 ## 引用 Pytorch 第三方包
 
-Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/)使用它的功能。如何引入，具体如下所示：
+Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
 - 步骤 1: `pip download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
 - 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
