@@ -107,11 +107,11 @@ Suppose we want to crawl a website and get the response. Here, we can import a t
 - Step 3: `cp requests-package /directory/to/Python/script` // copy `requests` package and its dependency package to the directory of the Python script
 - Step 4: `touch __init__.py` // make the directory of the Python script as a package
 - Step 5: `import requests` // import the third-party library `requests`, and write the Python script
-- Step 6: `python your_script.py` # execute your Python script
+- Step 6: `python your_script.py` // execute your Python script
 
 If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 
-![the directory of the Python script](../../images/customize/python-third-lib-dir.png)
+![the directory of the Python script](../../images/customize/python-third-lib-dir-requests.png)
 
 Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python36 runtime receives the "A" command from the Local Hub Service. More detailed contents are as follows:
 
@@ -140,10 +140,10 @@ def handler(event, context):
 return event
 ```
 
-The configuration of Local Function Manager service is as below:
+The configuration of Python function runtime is as below:
 
 ```yaml
-# The configuration of python function runtime
+# The configuration of Python function runtime
 functions:
   - name: 'sayhi3'
     handler: 'get.handler'
@@ -152,7 +152,7 @@ functions:
 
 As above, after receiving the message publish to the topic `py`, the Local Hub will call the `get.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "A"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, the headers information of [https://openedge.tech](https://openedge.tech) can be obtained normally.
 
-![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib.png)
+![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib-requests.png)
 
 ## Import `Pytorch` Third-Party Libraries
 
@@ -193,10 +193,10 @@ def handler(event, context):
   return event
 ```
 
-The configuration of Local Function Manager service is as below:
+The configuration of Python function runtime is as below:
 
 ```yaml
-# The configuration of python function runtime
+# The configuration of Python function runtime
 functions:
   - name: 'sayhi3'
     handler: 'calc.handler'
