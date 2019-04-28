@@ -3,7 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts 
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
 

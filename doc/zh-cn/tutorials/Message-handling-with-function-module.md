@@ -3,6 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
+- python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 - 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
@@ -92,7 +93,7 @@ services:
       - name: function-manager-log
         path: var/log/openedge
   - name: function-sayhi
-    image: openedge-function-python27
+    image: openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -167,7 +168,7 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 根据上文所述，这里我们利用 Python 函数 `sayhi` 对主题 `t` 的消息进行处理，并将结果反馈给主题 `t/hi` 。那么，首先，需要获悉的就是处理函数 `sayhi` 的具体信息，具体如下示：
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python36
 #-*- coding:utf-8 -*-
 """
 module to say hi

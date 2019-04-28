@@ -3,6 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
 
@@ -60,7 +61,7 @@ functions:
       max: 10
       idletime: 1m
 
-# The configuration of python2.7 runtime
+# The configuration of python3.6 runtime
 functions:
   - name: 'sayhi'
     handler: 'sayhi.handler'
@@ -92,7 +93,7 @@ services:
       - name: function-manager-log
         path: var/log/openedge
   - name: function-sayhi
-    image: openedge-function-python27
+    image: openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -168,7 +169,7 @@ The figure above shows that MQTTBOX has successfully subscribed the topic `t/hi`
 Based on the above, here we use the Python function `sayhi` to handle the message of the topic `t` and publish the result back to the topic `t/hi`. More detailed contents of function `sayhi` are as shown below.
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python36
 #-*- coding:utf-8 -*-
 """
 service to say hi
