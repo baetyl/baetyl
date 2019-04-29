@@ -6,12 +6,13 @@
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
+- 本文选取 request 和 torch 两种第三方包进行演示说明
 - 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
 # 本地 Hub 配置
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'
@@ -103,8 +104,8 @@ volumes:
 
 假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-- 步骤 1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本 
-- 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
+- 步骤 1: `pip3 download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
+- 步骤 2: `unzip -d . *.whl` // 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
 - 步骤 3: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
 - 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
 - 步骤 5: `import requests` // 引入第三方库 requests，然后编写具体执行脚本
@@ -136,7 +137,7 @@ def handler(event, context):
     else:      event['info'] = 'action error'
   else:
     event['error'] = 'action not found'
-    
+
   return event
 ```
 
@@ -158,8 +159,8 @@ functions:
 
 Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1: `pip download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
-- 步骤 2: `unzip` 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
+- 步骤 1: `pip3 download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
+- 步骤 2: `unzip -d . *.whl` // 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
 - 步骤 3: `cp torch-package /directory/to/Python/script` // 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
 - 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
 - 步骤 5: `import torch` // 引入第三方库 torch，然后编写具体执行脚本

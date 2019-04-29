@@ -414,7 +414,7 @@ Python functions support reading contexts such as context['functionName'].
 An example of a Python function implementation:
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python27
 #-*- coding:utf-8 -*-
 """
 module to say hi
@@ -432,11 +432,11 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages protobuf3 and grpcio (pip installation can be used, `pip install pyyaml protobuf grpcio`). _
+_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages pyyaml, protobuf3 and grpcio (pip installation can be used, `pip install pyyaml protobuf grpcio`). _
 
 ### openedge-function-python36
 
-The design motion of module `openedge-function-python36` is the same as the module `openedge-function-python27` ，but their python runtime are different. The module `openedge-function-python36` is based on python3.x runtime，and provide the libs protobuf3、grpcio based on python3.x.
+The design motion of module `openedge-function-python36` is the same as the module `openedge-function-python27` ，but their python runtime are different. The module `openedge-function-python36` is based on python3.6 runtime，and provide the libs protobuf3、grpcio based on python3.6.
 
 ### openedge-remote-mqtt
 

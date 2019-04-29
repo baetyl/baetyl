@@ -40,7 +40,7 @@ docker version
 
 ### Install Python and Python runtime dependency package
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3. If you run OpenEdge in **native process mode**, you **MUST** firstly install Python3 and the package actually use. But, If you plan to start in **docker container mode**, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3. If you run OpenEdge in **native** process mode, you **MUST** firstly install Python3 and the package actually use. But, If you plan to start in **docker** container mode, you do not need to perform the following steps.
 
 Execute the following command to check the installed version of Python:
 

@@ -433,7 +433,7 @@ _**提示**：Native 进程模式下，若要运行本代码库 example 中提�
 
 ### openedge-function-python36
 
-`openedge-function-python36` 模块的设计思想与 `openedge-function-python27` 模块相同，但是两者的函数运行时不同。`openedge-function-python36` 所使用的函数运行时基于 python3.x 版本，并提供基于 python3.x 的 protobuf3、grpcio。
+`openedge-function-python36` 模块的设计思想与 `openedge-function-python27` 模块相同，但是两者的函数运行时不同。`openedge-function-python36` 所使用的函数运行时基于 python3.x 版本，并提供基于 python3.x 的 pyyaml、protobuf3、grpcio。
 
 ### openedge-remote-mqtt
 

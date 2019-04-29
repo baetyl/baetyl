@@ -3,14 +3,15 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python3.6, and for Python2.7, configuration is the same except for the language difference when coding the scripts 
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except for the language difference when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
+- In this document, the third party libraries we'll import are requests and torch.
 - In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
 
 ```yaml
 # The configuration of Local Hub service
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'
@@ -102,8 +103,8 @@ Generally, using the standard library of the system python environment may not m
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [requests](https://pypi.org/project/requests). How to import it, as shown below:
 
-- Step 1: `pip download requests` // download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
-- Step 2: `unzip` command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+- Step 1: `pip3 download requests` // download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
+- Step 2: `unzip -d . *.whl` //command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
 - Step 3: `cp requests-package /directory/to/Python/script` // copy `requests` package and its dependency package to the directory of the Python script
 - Step 4: `touch __init__.py` // make the directory of the Python script as a package
 - Step 5: `import requests` // import the third-party library `requests`, and write the Python script
@@ -158,8 +159,8 @@ As above, after receiving the message publish to the topic `py`, the Local Hub w
 
 Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: `pip download torch torchvision` // download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
-- Step 2: `unzip` command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+- Step 1: `pip3 download torch torchvision` // download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
+- Step 2: `unzip -d . *.whl` // command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
 - Step 3: `cp torch-package /directory/to/Python/script` // copy `torch` package and its dependency package to the directory of the Python script
 - Step 4: `touch __init__.py` // make the directory of the Python script as a package
 - Step 5: `import torch` // import the third-party library `torch`, and write the Python script
