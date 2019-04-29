@@ -104,12 +104,32 @@ volumes:
 
 假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-- 步骤 1: `pip3 download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
-- 步骤 2: `unzip -d . *.whl` // 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
-- 步骤 3: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
-- 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
-- 步骤 5: `import requests` // 引入第三方库 requests，然后编写具体执行脚本
-- 步骤 6: `python your_script.py` // 执行脚本
+- 步骤 1: 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
+
+```shell
+pip3 download requests
+```
+
+- 步骤 2: 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
+
+`unzip -d . *.whl
+rm -rf *.whl *.dist-info`
+
+- 步骤 3: 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
+
+`cp requests-package /directory/to/Python/script`
+
+- 步骤 4: 使执行脚本所在目录成为一个 package
+
+`touch __init__.py`
+
+- 步骤 5: 引入第三方库 requests，然后编写具体执行脚本
+
+`import requests`
+
+- 步骤 6: 执行脚本
+
+`python your_script.py`
 
 如上述操作正常，则形成的脚本目录结构如下图所示。
 
@@ -159,8 +179,14 @@ functions:
 
 Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1: `pip3 download torch torchvision` // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
-- 步骤 2: `unzip -d . *.whl` // 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
+- 步骤 1:  // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
+
+`pip3 download torch torchvision`
+
+- 步骤 2:  // 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
+
+`unzip -d . *.whl`
+
 - 步骤 3: `cp torch-package /directory/to/Python/script` // 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
 - 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
 - 步骤 5: `import torch` // 引入第三方库 torch，然后编写具体执行脚本
