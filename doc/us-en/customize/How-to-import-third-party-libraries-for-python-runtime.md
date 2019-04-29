@@ -1,9 +1,9 @@
-# How to import third party libraries for python runtime
+# How to import third party libraries for Python runtime
 
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python3.6, and for Python2.7, configuration is the same except for the language difference when coding the scripts.
+- The version of runtime is Python36, and for Python27, configuration is the same except for the language difference when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this document, the third party libraries we'll import are requests and torch.
 - In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
@@ -189,7 +189,7 @@ As above, after receiving the message publish to the topic `py`, the Local Hub w
 
 Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
+- Step 1: download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torchvision)
 
 ```shell
 pip3 download torch torchvision

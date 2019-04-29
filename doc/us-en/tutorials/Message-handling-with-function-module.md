@@ -7,7 +7,7 @@
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
 
-Different from the Local Hub service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Local Hub service and Python27 runtime service). In the document, Local Hub service is used to establish connection between OpenEdge and mqtt client, Python27 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine Local Hub service with Python27 runtime service with message context.
+Different from the Local Hub service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Local Hub service and Python36 runtime service). In the document, Local Hub service is used to establish connection between OpenEdge and mqtt client, Python36 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine Local Hub service with Python36 runtime service with message context.
 
 This document will take the TCP connection method as an example to show the message handling, calculation and forwarding with Local Function Manager service.
 
