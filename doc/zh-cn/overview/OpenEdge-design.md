@@ -400,7 +400,7 @@ Hub 支持简单的主题路由，比如订阅主题为 `t` 的消息并以新�
 
 ### openedge-function-python27
 
-`openedge-function-python27` 模块的设计思想与 `openedge-function-python36` 模块相同，但是两者的函数运行时不同。`openedge-function-python27` 所使用的函数运行时基于 python2.7 版本，并提供基于 python2.7 的 pyyaml、protobuf3、grpcio。
+`openedge-function-python27` 模块的设计思想与 `openedge-function-python36` 模块相同，但是两者的函数运行时不同。`openedge-function-python27` 所使用的函数运行时基于 python27 版本，并提供基于 python2.7 的 pyyaml、protobuf3、grpcio。
 
 ### openedge-function-python36
 

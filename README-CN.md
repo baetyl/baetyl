@@ -26,7 +26,7 @@ OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力�
 - 官方模块 [openedge-remote-mqtt](./doc/zh-cn/overview/OpenEdge-design.md#openedge-remote-mqtt) 用于桥接两个 MQTT Server 进行消息同步，支持配置多路消息转发；
 - 官方模块 [openedge-function-manager](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-manager) 提供基于 MQTT 消息机制，弹性、高可用、扩展性好、响应快的计算能力；
 - 官方模块 [openedge-function-python27](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-python27) 提供 Python27 函数运行时，可由 `openedge-function-manager` 动态启动实例；
-- 官方模块 [openedge-function-python36](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-python36) 提供 Python3.6 函数运行时，可由`openedge-function-manager` 动态启动实例；
+- 官方模块 [openedge-function-python36](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-python36) 提供 Python36 函数运行时，可由`openedge-function-manager` 动态启动实例；
 - SDK (Golang) 可用于开发自定义模块。
 
 ### 架构图
