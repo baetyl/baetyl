@@ -189,18 +189,42 @@ functions:
 
 Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1:  // 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
+- 步骤 1: 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torch、torchvision）
 
-`pip3 download torch torchvision`
+```shell
+pip3 download torch torchvision
+```
 
-- 步骤 2:  // 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
+- 步骤 2: 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
 
-`unzip -d . *.whl`
+```shell
+unzip -d . *.whl
+rm -rf *.whl *.dist-info
+```
 
-- 步骤 3: `cp torch-package /directory/to/Python/script` // 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
-- 步骤 4: `touch __init__.py` // 使执行脚本所在目录成为一个 package
-- 步骤 5: `import torch` // 引入第三方库 torch，然后编写具体执行脚本
-- 步骤 6: `python your_script.py` // 执行脚本
+- 步骤 3: 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
+
+```shell
+cp torch-package /directory/to/Python/script
+```
+
+- 步骤 4: 使执行脚本所在目录成为一个 package
+
+```shell
+touch __init__.py
+```
+
+- 步骤 5: 引入第三方库 torch，然后编写具体执行脚本
+
+```shell
+import torch
+```
+
+- 步骤 6: 执行脚本
+
+```shell
+python your_script.py
+```
 
 如上述操作正常，则形成的脚本目录结构如下图所示。
 
