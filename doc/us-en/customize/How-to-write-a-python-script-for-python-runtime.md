@@ -1,4 +1,4 @@
-# How to write a python script for python runtime
+# How to write a python script for Python runtime
 
 **Statement**
 
@@ -177,4 +177,4 @@ def handler(event, context):
 
 ![Publish an non-dict format message](../../images/customize/write-python-script-none-dict.png)
 
-As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution in [How to import third party libraries for python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).
+As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution in [How to import third party libraries for Python runtime](./How-to-import-third-party-libraries-for-Python-runtime.md).

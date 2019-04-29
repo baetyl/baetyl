@@ -1,4 +1,4 @@
-# How to import third party libraries for python runtime
+# How to import third party libraries for Python runtime
 
 **Statement**
 
