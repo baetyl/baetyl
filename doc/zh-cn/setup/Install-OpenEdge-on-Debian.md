@@ -25,26 +25,32 @@ curl -sSL https://get.docker.com | sh
 
 ### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3 版本的运行。以 Python3 版本为例，如计划使用 **native** 进程模式启动，需要安装 Python3 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本可以选择卸载后重装 Python3.6，也可以保留不一致的版本但用户需要自行保证代码兼容。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
-使用如下命令安装 Python 3:
+Debian 包管理库未直接提供 Python3.6 版本，这里使用源码安装:
 
 ```shell
-sudo apt update
-sudo apt upgrade
-sudo apt install python3
-sudo apt install python3-pip
-sudo pip3 install pyyaml protobuf grpcio
+apt-get update
+apt-get upgrade
+apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev
+wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
+tar -xvf Python-3.6.5.tgz
+chmod -R +x Python-3.6.5
+cd Python-3.6.5/
+./configure
+make
+make install
+pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python -V` 查看 Python 版本是否为 3.*。
+输入命令 `python -V` 查看 Python 版本是否为 3.6.*。
 
 ### 指定默认 Python 版本
 
-某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
+某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成（重启有效）：
 
 ```shell
-alias python=/yourpath/python3
+alias python=/yourpath/python3.6
 ```
 
 ## OpenEdge 部署

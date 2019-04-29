@@ -47,21 +47,21 @@ OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3 版本�
 使用如下命令安装 Python3:
 
 ```shell
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install python3
-sudo apt-get install python3-pip
-sudo pip3 install pyyaml protobuf grpcio
+add-apt-repository ppa:jonathonf/python-3.6
+apt-get update
+apt-get install python3.6
+apt-get install python3-pip
+pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python -V` 查看 Python 版本是否为 3.*。
+输入命令 `python -V` 查看 Python 版本是否为 3.6.*。
 
 ### 指定默认 Python 版本
 
 某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成（重启有效）：
 
 ```shell
-alias python=/yourpath/python3
+alias python=/yourpath/python3.6
 ```
 
 ## OpenEdge 部署
