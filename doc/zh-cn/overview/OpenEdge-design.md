@@ -41,7 +41,7 @@
 - [openedge-remote-mqtt](#openedge-remote-mqtt)：提供 Hub 和远程 MQTT 服务进行消息同步的服务。
 - [openedge-function-manager](#openedge-function-manager)：提供函数计算服务，进行函数实例管理和消息触发的函数调用。
 - [openedge-function-python27](#openedge-function-python27)：提供加载基于 python27 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
-- [openedge-function-python36](#openedge-function-python36)：提供加载基于 python3 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
+- [openedge-function-python36](#openedge-function-python36)：提供加载基于 python36 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
 
 架构图:
 
@@ -400,7 +400,11 @@ Hub 支持简单的主题路由，比如订阅主题为 `t` 的消息并以新�
 
 ### openedge-function-python27
 
-`openedge-function-python27` 提供 Python 函数与 [百度云-函数计算 CFC](https://cloud.baidu.com/product/cfc.html) 类似，用户通过编写的自己的函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。该模块可作为 GRPC 服务单独启动，也可以为函数管理模块提供函数运行实例。所使用的函数运行时基于 python27 版本。
+`openedge-function-python27` 模块的设计思想与 `openedge-function-python36` 模块相同，但是两者的函数运行时不同。`openedge-function-python27` 所使用的函数运行时基于 python2.7 版本，并提供基于 python2.7 的 pyyaml、protobuf3、grpcio。
+
+### openedge-function-python36
+
+`openedge-function-python36` 提供 Python 函数与 [百度云-函数计算 CFC](https://cloud.baidu.com/product/cfc.html) 类似，用户通过编写的自己的函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。该模块可作为 GRPC 服务单独启动，也可以为函数管理模块提供函数运行实例。所使用的函数运行时基于 python36 版本。
 
 Python 函数的输入输出可以是 JSON 格式也可以是二进制形式。消息 Payload 在作为参数传给函数前会尝试一次 JSON 解码（`json.loads(payload)`），如果成功则传入字典（dict）类型，失败则传入原二进制数据。
 
@@ -411,7 +415,7 @@ Python 函数支持读取上下文，比如 context['functionName']。
 Python 函数实现举例：
 
 ```python
-#!/usr/bin/env python27
+#!/usr/bin/env python36
 #-*- coding:utf-8 -*-
 """
 module to say hi
@@ -429,11 +433,7 @@ def handler(event, context):
     return event
 ```
 
-_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 python2.7，且需要基于 python2.7 安装 protobuf3、grpcio (采用 pip 安装即可，`pip install pyyaml protobuf grpcio`)。_
-
-### openedge-function-python36
-
-`openedge-function-python36` 模块的设计思想与 `openedge-function-python27` 模块相同，但是两者的函数运行时不同。`openedge-function-python36` 所使用的函数运行时基于 python3.x 版本，并提供基于 python3.x 的 pyyaml、protobuf3、grpcio。
+_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 python3.6，且需要基于 python3.6 安装 protobuf3、grpcio (采用 pip 安装即可，`pip3 install pyyaml protobuf grpcio`)。_
 
 ### openedge-remote-mqtt
 

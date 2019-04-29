@@ -42,7 +42,7 @@ At present, OpenEdge has the following official modules:
 - [openedge-remote-mqtt](#openedge-remote-mqtt): Provides a bridge services for synchronizing messages between Hub and remote MQTT services.
 - [openedge-function-manager](#openedge-function-manager): Provides function services for function instance management and message-triggered function calls.
 - [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts based on python2.7 runtime that can be managed by openedge-function-manager as a function instance provider.
-- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on python3.x runtime that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on python3.6 runtime that can be managed by openedge-function-manager as a function instance provider.
 
 Structure Diagram:
 
@@ -403,7 +403,11 @@ If the function executes incorrectly, the function server returns a message in t
 
 ### openedge-function-python27
 
-`openedge-function-python27` provides Python functions similar to [Baidu CFC](https://cloud.baidu.com/product/cfc.html), where users can handle messages by writing their own functions. It is very flexible to use for filtering, converting and forwarding messages. This module can be started separately as a GRPC service or as a function instance provider for the function manager module.
+The design motion of module `openedge-function-python27` is the same as the module `openedge-function-python36` ，but their python runtime are different. The module `openedge-function-python27` is based on python2.7 runtime，and provide the libs protobuf3、grpcio based on python2.7.
+
+### openedge-function-python36
+
+`openedge-function-python36` provides Python functions similar to [Baidu CFC](https://cloud.baidu.com/product/cfc.html), where users can handle messages by writing their own functions. It is very flexible to use for filtering, converting and forwarding messages. This module can be started separately as a GRPC service or as a function instance provider for the function manager module.
 
 The input and output of a Python function can be either JSON or binary. The message Payload will try a JSON decoding (`json.loads(payload)`) before passing it as a parameter. If it succeeds, it will pass the dictionary type. If it fails, it will pass the original binary data.
 
@@ -414,7 +418,7 @@ Python functions support reading contexts such as context['functionName'].
 An example of a Python function implementation:
 
 ```python
-#!/usr/bin/env python27
+#!/usr/bin/env python36
 #-*- coding:utf-8 -*-
 """
 module to say hi
@@ -432,11 +436,7 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python2.7 and its packages pyyaml, protobuf3 and grpcio (pip installation can be used, `pip install pyyaml protobuf grpcio`). _
-
-### openedge-function-python36
-
-The design motion of module `openedge-function-python36` is the same as the module `openedge-function-python27` ，but their python runtime are different. The module `openedge-function-python36` is based on python3.6 runtime，and provide the libs protobuf3、grpcio based on python3.6.
+_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python3.6 and its packages pyyaml, protobuf3 and grpcio (pip installation can be used, `pip3 install pyyaml protobuf grpcio`). _
 
 ### openedge-remote-mqtt
 
