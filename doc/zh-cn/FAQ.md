@@ -71,7 +71,7 @@ source ~/.bash_profile
 
 **问题 8**: OpenEdge 支持数据计算后将计算结果推送 Kafka 吗？
 
-**参考方案**：支持，您可以参考 [如何针对 Python 运行时编写 Python 脚本](https://github.com/baidu/openedge/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md) 一文，向 Hub 订阅消息，并将消息逐个写入 Kafka。您也可以参考 [如何开发一个 OpenEdge 自定义模块](customize/How-to-develop-a-customize-module-for-OpenEdge.md)，该模块用于向 Hub 订阅消息，然后批量写入 Kafka。
+**参考方案**：支持，您可以参考 [如何针对 Python 运行时编写 Python 脚本](https://github.com/baidu/openedge/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-Python-runtime.md) 一文，向 Hub 订阅消息，并将消息逐个写入 Kafka。您也可以参考 [如何开发一个 OpenEdge 自定义模块](customize/How-to-develop-a-customize-module-for-OpenEdge.md)，该模块用于向 Hub 订阅消息，然后批量写入 Kafka。
 
 **问题 9**: OpenEdge 配置更改的方式有哪些？只能通过 [云端管理套件](https://cloud.baidu.com/product/bie.html) 进行配置更改吗？
 
