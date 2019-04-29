@@ -47,6 +47,8 @@ type ServiceInfo struct {
 	Restart RestartPolicyInfo `yaml:"restart" json:"restart"`
 	// specifies resource limits for a single instance of the service,  only for Docker container mode
 	Resources Resources `yaml:"resources" json:"resources"`
+	// specifies runtime to use, only for Docker container mode
+	Runtime string `yaml:"runtime" json:"runtime"`
 }
 
 // VolumeInfo storage volume configuration
