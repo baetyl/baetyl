@@ -112,24 +112,34 @@ pip3 download requests
 
 - 步骤 2: 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
 
-`unzip -d . *.whl
-rm -rf *.whl *.dist-info`
+```shell
+unzip -d . *.whl
+rm -rf *.whl *.dist-info
+```
 
 - 步骤 3: 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
 
-`cp requests-package /directory/to/Python/script`
+```shell
+cp requests-package /directory/to/Python/script
+```
 
 - 步骤 4: 使执行脚本所在目录成为一个 package
 
-`touch __init__.py`
+```shell
+touch __init__.py
+```
 
 - 步骤 5: 引入第三方库 requests，然后编写具体执行脚本
 
-`import requests`
+```shell
+import requests
+```
 
 - 步骤 6: 执行脚本
 
-`python your_script.py`
+```shell
+python your_script.py
+```
 
 如上述操作正常，则形成的脚本目录结构如下图所示。
 
