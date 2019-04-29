@@ -43,11 +43,11 @@ make install
 pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python -V` 查看 Python 版本是否为 3.6.*。
+输入命令 `python3.6` 查看 Python3.6 是否安装成功。
 
 ### 指定默认 Python 版本
 
-某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成（重启有效）：
+某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
 
 ```shell
 alias python=/yourpath/python3.6

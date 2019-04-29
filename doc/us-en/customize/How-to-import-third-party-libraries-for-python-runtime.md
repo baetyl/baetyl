@@ -103,12 +103,42 @@ Generally, using the standard library of the system python environment may not m
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [requests](https://pypi.org/project/requests). How to import it, as shown below:
 
-- Step 1: `pip3 download requests` // download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
-- Step 2: `unzip -d . *.whl` //command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
-- Step 3: `cp requests-package /directory/to/Python/script` // copy `requests` package and its dependency package to the directory of the Python script
-- Step 4: `touch __init__.py` // make the directory of the Python script as a package
-- Step 5: `import requests` // import the third-party library `requests`, and write the Python script
-- Step 6: `python your_script.py` // execute your Python script
+- Step 1: download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
+
+```shell
+pip3 download requests
+```
+
+- Step 2: command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+
+```shell
+unzip -d . *.whl
+rm -rf *.whl *.dist-info
+```
+
+- Step 3: copy `requests` package and its dependency package to the directory of the Python script
+
+```shell
+cp requests-package /directory/to/Python/script
+```
+
+- Step 4: make the directory of the Python script as a package
+
+```shell
+touch __init__.py
+```
+
+- Step 5: import the third-party library `requests`, and write the Python script
+
+```shell
+import requests
+```
+
+- Step 6: execute your Python script
+
+```shell
+python your_script.py
+```
 
 If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 
@@ -159,12 +189,42 @@ As above, after receiving the message publish to the topic `py`, the Local Hub w
 
 Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: `pip3 download torch torchvision` // download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
-- Step 2: `unzip -d . *.whl` // command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
-- Step 3: `cp torch-package /directory/to/Python/script` // copy `torch` package and its dependency package to the directory of the Python script
-- Step 4: `touch __init__.py` // make the directory of the Python script as a package
-- Step 5: `import torch` // import the third-party library `torch`, and write the Python script
-- Step 6: `python your_script.py` // execute your Python script
+- Step 1: download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torch、torchvision)
+
+```shell
+pip3 download torch torchvision
+```
+
+- Step 2: command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+
+```shell
+unzip -d . *.whl
+rm -rf *.whl *.dist-info
+```
+
+- Step 3: copy `torch` package and its dependency package to the directory of the Python script
+
+```shell
+cp torch-package /directory/to/Python/script
+```
+
+- Step 4: make the directory of the Python script as a package
+
+```shell
+touch __init__.py
+```
+
+- Step 5: import the third-party library `torch`, and write the Python script
+
+```shell
+import torch
+```
+
+- Step 6: execute your Python script
+
+```shell
+python your_script.py
+```
 
 If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 

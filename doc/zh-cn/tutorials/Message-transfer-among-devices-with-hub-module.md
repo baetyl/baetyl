@@ -24,7 +24,7 @@
 ```yaml
 # 本地 Hub 服务配置
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'

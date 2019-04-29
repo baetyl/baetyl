@@ -44,7 +44,7 @@ docker version
 
 OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3 版本的运行。以 Python3 版本为例，如计划使用 **native** 进程模式启动，需要安装 Python3 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
-使用如下命令安装 Python3:
+使用如下命令安装 Python3.6:
 
 ```shell
 add-apt-repository ppa:jonathonf/python-3.6
@@ -54,11 +54,11 @@ apt-get install python3-pip
 pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python -V` 查看 Python 版本是否为 3.6.*。
+输入命令 `python3.6` 查看 Python3.6 是否安装成功。
 
 ### 指定默认 Python 版本
 
-某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成（重启有效）：
+某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
 
 ```shell
 alias python=/yourpath/python3.6

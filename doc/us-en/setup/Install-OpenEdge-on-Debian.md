@@ -34,29 +34,32 @@ docker version
 
 ### Install Python and Python runtime dependency package
 
-- OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3. If you run OpenEdge in **native** process mode, you **MUST** firstly install Python3 and the package actually use. But, If you plan to start in **docker** container mode, you do not need to perform the following steps.
-- The Debian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of Debian.
+penEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install Python 3.6 locally and run the package it depends on. If you already have other versions of Python3, you can choose to reinstall Python 3.6 after uninstalling, or you can keep the inconsistent version, but users need to ensure that the code is compatible. If you plan to start in **docker** container mode, you do not need to perform the following steps.
 
-![centos kernel detail](../../images/setup/os-debian.png)
-
-Commands:
+The Debian package management library doesn't provide Python 3.6 directly, so we install Python3.6 by source code:
 
 ```shell
-sudo apt update
-sudo apt upgrade
-sudo apt install python3
-sudo apt install python3-pip
-sudo pip3 install pyyaml protobuf grpcio
+apt-get update
+apt-get upgrade
+apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev
+wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
+tar -xvf Python-3.6.5.tgz
+chmod -R +x Python-3.6.5
+cd Python-3.6.5/
+./configure
+make
+make install
+pip3 install pyyaml protobuf grpcio
 ```
 
-Execute the command `python -V` to see that the version of Python is 3.* and the installation is correct.
+Execute the command `python3.6` to see whether Python3.6 installed successfully.
 
 ### Specify The Default Version Of Python
 
 In some cases, you need to specify the default version of Python for the above installed version. Complete with the following command (Valid after reboot):
 
 ```shell
-alias python=/yourpath/python3
+alias python=/yourpath/python3.6
 ```
 
 ## Deploy OpenEdge

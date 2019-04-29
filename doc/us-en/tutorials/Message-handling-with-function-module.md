@@ -30,7 +30,7 @@ The configuration of the Local Hub Service and the Local Function Manager Servic
 ```yaml
 # The configuration of Local Hub service
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'

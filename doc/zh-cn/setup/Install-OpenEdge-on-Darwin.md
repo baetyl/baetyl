@@ -39,13 +39,11 @@ brew install --ignore-dependencies https://raw.githubusercontent.com/Homebrew/ho
 pip3 install pyyaml protobuf grpcio
 ```
 
-**注意**：安装完成后可通过以下命令查看所安装版本：
+输入命令 `python3.6` 查看 Python3.6 是否安装成功。
 
-```shell
-python -V
-```
+### 指定默认 Python 版本
 
-通过以下命令设置默认 Python 命令指定上述安装的版本。例如：
+某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
 
 ```shell
 alias python=/yourpath/python3.6

@@ -10,7 +10,7 @@
 ```yaml
 # The configuration of Local Hub service
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'
