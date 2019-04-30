@@ -147,6 +147,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	}
 	params.hostConfig = container.HostConfig{
 		Binds:        volumes,
+		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
 		// container is supervised by openedge,
 		RestartPolicy: container.RestartPolicy{Name: "no"},
