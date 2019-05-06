@@ -6,14 +6,14 @@
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service.
 
-Different from [Device-connect-to-OpenEdge-with-hub-service](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
+Different from [Device-connect-to-OpenEdge-with-hub-module](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
 
 This document uses the TCP connection method as an example to test the message routing and forwarding capabilities of the `localhub` service.
 
 ## Workflow
 
 - Step 1：Startup OpenEdge in docker container mode.
-- Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Service](./Device-connect-to-OpenEdge-with-hub-module.md).
+- Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device-connect-to-OpenEdge-with-hub-module](./Device-connect-to-OpenEdge-with-hub-module.md).
     - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service.
     - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
 - Step 3：Check the publishing and receiving messages via MQTTBOX.

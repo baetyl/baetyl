@@ -60,7 +60,7 @@ pip3 install pyyaml protobuf grpcio
 
 After finishing the upper commands, execute the command `python3.6` to see whether Python3.6 installed successfully.
 
-### Specify The Default Version Of Python
+### Specify The Default Version of Python
 
 If the user's system have multiple versions of Python, you need to set the default version to Python3.6. If not, the user must ensure the code written is compatible with Python3.6.
 

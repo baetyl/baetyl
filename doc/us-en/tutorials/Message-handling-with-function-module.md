@@ -8,7 +8,7 @@
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
 - In this article, the service created based on the Hub module is called `localhub` service.
 
-Different from the `localhub` service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Local Hub service and Python3.6 runtime service). In the document, Local Hub service is used to establish connection between OpenEdge and mqtt client, Python3.6 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine `localhub` service with Python3.6 runtime service with message context.
+Different from the `localhub` service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include `localhub` service and Python3.6 runtime service). In the document, `localhub` service is used to establish connection between OpenEdge and mqtt client, Python3.6 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine `localhub` service with Python3.6 runtime service with message context.
 
 This document will take the TCP connection method as an example to show the message handling, calculation and forwarding with Local Function Manager service.
 
