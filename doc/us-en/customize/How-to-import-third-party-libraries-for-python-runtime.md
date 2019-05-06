@@ -9,7 +9,7 @@
 - The service created based on the Hub module are called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
-# The configuration of Local Hub service
+# The configuration of localhub service
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -110,7 +110,7 @@ cd /directory/to/Python/script
 pip3 download requests
 ```
 
-- Step 2: inflate the downloaded `.whl` files for getting the source package, then remove useless `.whl` files and package-description files
+- Step 2: inflate the downloaded `.whl` files for getting the source packages, then remove useless `.whl` files and package-description files
 
 ```shell
 unzip -d . *.whl
@@ -125,7 +125,7 @@ touch __init__.py
 
 - Step 4: import the third-party library `requests` in the Python script as shown below:
 
-```shell
+```python
 import requests
 ```
 
@@ -139,7 +139,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-requests.png)
 
-Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python36 runtime receives the "A" command from the Local Hub Service. More detailed contents are as follows:
+Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python36 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -176,7 +176,7 @@ functions:
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-As above, after receiving the message publish to the topic `py`, the Local Hub will call the `get.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "A"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, the headers information of [https://openedge.tech](https://openedge.tech) can be obtained normally.
+As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `get.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "A"}` to the `localhub` service by the topic `py`, and observe the received message of the topic `py/hi`, as normal, the headers information of [https://openedge.tech](https://openedge.tech) can be obtained normally.
 
 ![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib-requests.png)
 
@@ -191,7 +191,7 @@ cd /directory/to/Python/script
 pip3 download torch torchvision
 ```
 
-- Step 2: inflate the downloaded `.whl` files for getting the source package, then remove useless `.whl` files and package-description files
+- Step 2: inflate the downloaded `.whl` files for getting the source packages, then remove useless `.whl` files and package-description files
 
 ```shell
 unzip -d . *.whl
@@ -206,7 +206,7 @@ touch __init__.py
 
 - Step 4: import the third-party library `Pytorch` in the Python script as shown below:
 
-```shell
+```python
 import torch
 ```
 
@@ -220,7 +220,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-Pytorch.png)
 
-Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming that the trigger condition is that Python36 runtime receives the "B" command from the Local Hub Service. More detailed contents are as follows:
+Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming that the trigger condition is that Python36 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -254,6 +254,6 @@ functions:
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-As above, after receiving the message publish to the topic `py`, the Local Hub will call the `calc.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "B"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, we can get a random tensor.
+As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `calc.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "B"}` to the `localhub` service by the topic `py`, and observe the received message of the topic `py/hi`, as normal, we can get a random tensor.
 
 ![generate a random tensor](../../images/customize/write-python-script-third-lib-Pytorch.png)

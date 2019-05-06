@@ -126,7 +126,7 @@ touch __init__.py
 
 - 步骤 4: 在具体执行脚本中引入第三方库 `requests`，如下所示：
 
-```shell
+```python
 import requests
 ```
 
@@ -200,7 +200,7 @@ rm -rf *.whl *.dist-info
 
 - 步骤 3: 使当前目录成为一个 package
 
-```shell
+```python
 touch __init__.py
 ```
 
