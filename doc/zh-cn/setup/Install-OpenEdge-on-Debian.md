@@ -49,7 +49,7 @@ make install
 pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python3.6` 查看 Python3.6 是否安装成功。
+等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。
 
 ### 指定系统默认 Python 版本
 

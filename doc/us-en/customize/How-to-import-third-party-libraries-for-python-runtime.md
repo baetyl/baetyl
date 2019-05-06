@@ -3,10 +3,10 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python36, and for Python27, configurations are the same except for the language differences when coding the scripts.
+- The version of runtime is Python3.6, and for Python2.7, configurations are the same except for the language differences when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this document, the third-party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
-- The service created based on the Hub module are called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
+- The service created based on the Hub module is called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
 # The configuration of localhub service
@@ -139,7 +139,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-requests.png)
 
-Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming the trigger condition is that Python36 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
+Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming the trigger condition is that Python3.6 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -220,7 +220,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-Pytorch.png)
 
-Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming the trigger condition is that Python36 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
+Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming the trigger condition is that Python3.6 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36

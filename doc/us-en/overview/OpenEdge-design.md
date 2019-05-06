@@ -41,8 +41,8 @@ At present, OpenEdge has the following official modules:
 - [openedge-hub](#openedge-hub): Provides an MQTT-based message routing service.
 - [openedge-remote-mqtt](#openedge-remote-mqtt): Provides a bridge services for synchronizing messages between Hub and remote MQTT services.
 - [openedge-function-manager](#openedge-function-manager): Provides function services for function instance management and message-triggered function calls.
-- [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts based on python27 runtime that can be managed by openedge-function-manager as a function instance provider.
-- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on python36 runtime that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts based on Python2.7 runtime that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on Python3.6 runtime that can be managed by openedge-function-manager as a function instance provider.
 
 Structure Diagram:
 
@@ -403,7 +403,7 @@ If the function executes incorrectly, the function server returns a message in t
 
 ### openedge-function-python27
 
-The design motion of module `openedge-function-python27` is the same as the module `openedge-function-python36` ，but their python runtime are different. The module `openedge-function-python27` is based on python27 runtime，and provide the libs protobuf3、grpcio based on python2.7.
+The design motion of module `openedge-function-python27` is the same as the module `openedge-function-python36` ，but their python runtime are different. The module `openedge-function-python27` is based on python27 runtime，and provide the libs protobuf3、grpcio based on Python2.7.
 
 ### openedge-function-python36
 
@@ -436,7 +436,7 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install python3.6 and its packages pyyaml, protobuf3 and grpcio (pip installation can be used, `pip3 install pyyaml protobuf grpcio`). _
+_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install Python3.6 and its packages pyyaml, protobuf3 and grpcio (pip installation can be used, `pip3 install pyyaml protobuf grpcio`). _
 
 ### openedge-remote-mqtt
 

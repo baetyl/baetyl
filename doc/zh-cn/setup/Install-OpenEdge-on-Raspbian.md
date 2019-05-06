@@ -51,9 +51,11 @@ pip3 install pyyaml protobuf grpcio
 
 等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。
 
-### 指定默认 Python 版本
+### 指定系统默认 Python 版本
 
-某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
+用户系统可能存在 Python 的多个版本，所以这里需要指定默认版本为 Python3.6。如不指定，用户需要自行保证编写的代码兼容 Python3.6。
+
+通过以下命令完成(重启有效)：
 
 ```shell
 alias python=/yourpath/python3.6

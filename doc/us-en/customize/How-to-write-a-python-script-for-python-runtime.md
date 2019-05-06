@@ -3,9 +3,9 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python36, and for Python27, configuration is the same except for the language difference when coding the scripts
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except for the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-- The service created based on the Hub module are called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
+- The service created based on the Hub module is called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
 # The configuration of Local Hub service
@@ -106,7 +106,7 @@ OpenEdge officially provides the Python runtime to load python scripts written b
 
 ## Function Name Convention
 
-The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of the python3.6 runtime service is as follows:
+The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of the Python3.6 runtime service is as follows:
 
 ```yaml
 functions:
