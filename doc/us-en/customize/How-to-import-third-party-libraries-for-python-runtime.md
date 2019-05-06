@@ -176,7 +176,7 @@ functions:
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `get.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "A"}` to the `localhub` service by the topic `py`, and observe the received message of the topic `py/hi`, as normal, the headers information of [https://openedge.tech](https://openedge.tech) can be obtained normally.
+As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `get.py` script to handle, and following it publish the result to the topic `py/hi`. So in the test case, we use MQTTBOX to subscribe the topic `py/hi` and publish the message `{"action": "A"}` to the `localhub` service by the topic `py`. If everything works correctly, MQTTBOX can receive the message of the topic `py/hi` which contains the headers information of [https://openedge.tech](https://openedge.tech) as shown below.
 
 ![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib-requests.png)
 
@@ -254,6 +254,6 @@ functions:
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `calc.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "B"}` to the `localhub` service by the topic `py`, and observe the received message of the topic `py/hi`, as normal, we can get a random tensor.
+As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `calc.py` script to handle, and following it publish the result to the topic `py/hi`. So in the test case, we use MQTTBOX to subscribe the topic `py/hi` and publish the message `{"action": "B"}` to the `localhub` service by the topic `py`. If everything works correctly, MQTTBOX can receive the message of the topic `py/hi` in which we can get a random tensor as shown below.
 
 ![generate a random tensor](../../images/customize/write-python-script-third-lib-Pytorch.png)
