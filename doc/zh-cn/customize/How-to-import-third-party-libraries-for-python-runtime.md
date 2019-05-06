@@ -111,7 +111,7 @@ cd /directory/to/Python/script
 pip3 download requests
 ```
 
-- 步骤 2: 命令解压 `.whl` 文件，得到源码包，然后删除 `.whl` 文件和包描述文件，只保留源码包
+- 步骤 2: 解压 `.whl` 文件，得到源码包，然后删除 `.whl` 文件和包描述文件，只保留源码包
 
 ```shell
 unzip -d . *.whl
@@ -191,7 +191,7 @@ cd /directory/to/Python/script
 pip3 download torch torchvision
 ```
 
-- 步骤 2: 命令解压 `.whl` 文件，得到源码包，然后删除 whl 文件和包描述文件
+- 步骤 2: 解压 `.whl` 文件，得到源码包，然后删除 whl 文件和包描述文件
 
 ```shell
 unzip -d . *.whl
