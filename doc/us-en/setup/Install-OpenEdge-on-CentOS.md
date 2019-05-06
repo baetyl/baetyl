@@ -48,7 +48,7 @@ First check whether Python3.6 is installed:
 which python3.6
 ```
 
-If terminal displays the path of Python3.6, it means Python3.6 is installed. Instead, execute the following commands to install:   
+If terminal displays the path of Python3.6, it means Python3.6 is installed. Instead, execute the following commands to install:
 
 ```shell
 yum install python36

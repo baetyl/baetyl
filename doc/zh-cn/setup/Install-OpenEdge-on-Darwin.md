@@ -29,9 +29,15 @@ docker version
 
 ### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本可以选择卸载后重装 Python3.6，也可以保留不一致的版本但用户需要自行保证代码兼容。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 Python3.6， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
-推荐使用 HomeBrew 安装。
+首先查看 Python3.6 是否已经安装：
+
+```shell
+which python3.6
+```
+
+如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则进行下面的安装步骤：
 
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  // 安装 HomeBrew
@@ -39,11 +45,13 @@ brew install --ignore-dependencies https://raw.githubusercontent.com/Homebrew/ho
 pip3 install pyyaml protobuf grpcio
 ```
 
-输入命令 `python3.6` 查看 Python3.6 是否安装成功。
+等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。
 
-### 指定默认 Python 版本
+### 指定系统默认 Python 版本
 
-某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
+用户系统可能存在 Python 的多个版本，所以这里需要指定默认版本为 Python3.6。如不指定，用户需要自行保证编写的代码兼容 Python3.6。
+
+通过以下命令完成(重启有效)：
 
 ```shell
 alias python=/yourpath/python3.6

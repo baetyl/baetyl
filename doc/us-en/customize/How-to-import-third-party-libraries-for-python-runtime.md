@@ -139,7 +139,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-requests.png)
 
-Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming that the trigger condition is that Python36 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
+Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming the trigger condition is that Python36 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -220,7 +220,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-Pytorch.png)
 
-Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming that the trigger condition is that Python36 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
+Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming the trigger condition is that Python36 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
