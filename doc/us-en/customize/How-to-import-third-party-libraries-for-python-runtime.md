@@ -103,9 +103,10 @@ Generally, using the standard library of the system python environment may not m
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [`requests`](https://pypi.org/project/requests). How to import it, as shown below:
 
-- Step 1: download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
+- Step 1: change directory to the directory of the Python script, then download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
 
 ```shell
+cd /directory/to/Python/script
 pip3 download requests
 ```
 
@@ -116,25 +117,19 @@ unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- Step 3: copy `requests` package and its dependency package to the directory of the Python script
-
-```shell
-cp requests-package /directory/to/Python/script
-```
-
-- Step 4: make the directory of the Python script as a package
+- Step 3: make the current directory be a package
 
 ```shell
 touch __init__.py
 ```
 
-- Step 5: import the third-party library `requests` in the Python script as shown below:
+- Step 4: import the third-party library `requests` in the Python script as shown below:
 
 ```shell
 import requests
 ```
 
-- Step 6: execute your Python script
+- Step 5: execute your Python script
 
 ```shell
 python your_script.py

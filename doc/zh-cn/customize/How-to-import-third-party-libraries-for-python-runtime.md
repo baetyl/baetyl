@@ -104,9 +104,10 @@ volumes:
 
 假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [`requests`](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-- 步骤 1: 下载 `requests` 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
+- 步骤 1: 进入Python 脚本目录，然后下载 `requests` 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
 
 ```shell
+cd /directory/to/Python/script
 pip3 download requests
 ```
 
@@ -117,25 +118,19 @@ unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- 步骤 3: 将下载的 `requests` 及其依赖的源码包拷贝到该 Python 脚本目录
-
-```shell
-cp requests-package /directory/to/Python/script
-```
-
-- 步骤 4: 使执行脚本所在目录成为一个 package
+- 步骤 3: 使当前目录成为一个 package
 
 ```shell
 touch __init__.py
 ```
 
-- 步骤 5: 在具体执行脚本中引入第三方库 `requests`，如下所示：
+- 步骤 4: 在具体执行脚本中引入第三方库 `requests`，如下所示：
 
 ```shell
 import requests
 ```
 
-- 步骤 6: 执行脚本
+- 步骤 5: 执行脚本
 
 ```shell
 python your_script.py
@@ -189,9 +184,10 @@ functions:
 
 `Pytorch` 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [`Pytorch`](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1: 下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
+- 步骤 1: 进入Python 脚本目录，然后下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
 
 ```shell
+cd /directory/to/Python/script
 pip3 download torch torchvision
 ```
 
@@ -202,25 +198,19 @@ unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- 步骤 3: 将下载的 `Pytorch` 及其依赖的源码包拷贝到该 Python 脚本目录
-
-```shell
-cp Pytorch-package /directory/to/Python/script
-```
-
-- 步骤 4: 使执行脚本所在目录成为一个 package
+- 步骤 3: 使当前目录成为一个 package
 
 ```shell
 touch __init__.py
 ```
 
-- 步骤 5: 在具体执行脚本中引入第三方库 `Pytorch`，如下所示：
+- 步骤 4: 在具体执行脚本中引入第三方库 `Pytorch`，如下所示：
 
 ```shell
 import torch
 ```
 
-- 步骤 6: 执行脚本
+- 步骤 5: 执行脚本
 
 ```shell
 python your_script.py
