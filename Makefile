@@ -118,7 +118,7 @@ image:
 	make -C openedge-function-python image
 	make -C openedge-timer image
 
-release: release-image push-image release-manifest
+release: release-image push-image release-manifest release-package
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
