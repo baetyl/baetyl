@@ -15,7 +15,7 @@ This document will take the TCP connection method as an example to show the mess
 ## Workflow
 
 - Step 1：Startup OpenEdge in docker container mode.
-- Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Hub Module](./Device-connect-to-OpenEdge-with-hub-module.md)
+- Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md)
     - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service, and observe the log of OpenEdge.
         - If the OpenEdge's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
         - If the OpenEdge's log shows that the Python Runtime Service has not been started, then retry it until the Python Runtime Service has been started.
