@@ -5,7 +5,7 @@
 - The operating system as mentioned in this document is Darwin.
 - The version of runtime is Python36, and for Python27, configuration is the same except for the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-- In the test case mentioned in this article, the service name created based on the Hub module called localhub service, and the corresponding `localhub` service, function calculation service, and other services are configured as follows:
+- The service created based on the Hub module are called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
 # The configuration of Local Hub service
@@ -177,4 +177,4 @@ def handler(event, context):
 
 ![Publish an non-dict format message](../../images/customize/write-python-script-none-dict.png)
 
-As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution in [How to import third party libraries for Python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).
+As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution in [How to import third-party libraries for Python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).

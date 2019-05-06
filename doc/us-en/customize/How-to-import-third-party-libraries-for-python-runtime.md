@@ -103,7 +103,7 @@ Generally, using the standard libraries of the system python environment may not
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [`requests`](https://pypi.org/project/requests). How to import it, as shown below:
 
-- Step 1: change directory to the directory of the Python script, then download `requests` package and its dependency packages(idna、urllib3、chardet、certifi)
+- Step 1: change directory to where the Python scripts are going to write, then download `requests` package and its dependency packages(idna、urllib3、chardet、certifi)
 
 ```shell
 cd /directory/to/Python/script
@@ -184,7 +184,7 @@ As above, after receiving the message publish to the topic `py`, the `localhub` 
 
 `Pytorch` is a widely used deep learning framework for machine learning. We can import a third-party library [`Pytorch`](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: change directory to the directory of the Python script, then download `Pytorch` package and its dependency packages(PIL、caffee2、numpy、six.py、torchvision)
+- Step 1: change directory to where the Python scripts are going to write, then download `Pytorch` package and its dependency packages(PIL、caffee2、numpy、six.py、torchvision)
 
 ```shell
 cd /directory/to/Python/script

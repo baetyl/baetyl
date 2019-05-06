@@ -7,7 +7,7 @@
 - Python 版本为 3.6，2.7 版本配置流程相同，但需要在 Python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文选取 [`requests`](https://pypi.org/project/requests) 和 [`Pytorch`](https://pytorch.org/) 两种第三方包进行演示说明
-- 基于 Hub 模块创建的服务名称为 localhub 服务。并且在本文所提到的测试案例中，对应的 localhub 服务、函数计算服务以及其他服务的配置统一如下：
+- 基于 Hub 模块创建的服务名称为 `localhub` 服务。并且在本文所提到的测试案例中，对应的 `localhub` 服务、函数计算服务以及其他服务的配置统一如下：
 
 ```yaml
 # localhub 配置
@@ -104,7 +104,7 @@ volumes:
 
 假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [`requests`](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-- 步骤 1: 进入Python 脚本目录，然后下载 `requests` 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
+- 步骤 1: 进入 Python 脚本所在目录，然后下载 `requests` 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 Python 的版本
 
 ```shell
 cd /directory/to/Python/script
@@ -176,7 +176,7 @@ functions:
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息。
+如上，`localhub` 服务接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息。
 
 ![获取OpenEdge官网headers信息](../../images/customize/write-python-script-third-lib-requests.png)
 
@@ -184,7 +184,7 @@ functions:
 
 `Pytorch` 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [`Pytorch`](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1: 进入Python 脚本目录，然后下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
+- 步骤 1: 进入 Python 脚本目录，然后下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
 
 ```shell
 cd /directory/to/Python/script
@@ -254,6 +254,6 @@ functions:
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `calc.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "B"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常生成随机张量。
+如上，`localhub` 服务接收到发送到主题 `py` 的消息后，会调用 `calc.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "B"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常生成随机张量。
 
 ![生成随机张量](../../images/customize/write-python-script-third-lib-Pytorch.png)

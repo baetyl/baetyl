@@ -47,7 +47,7 @@ As an edge computing platform, **OpenEdge** not only provides features such as u
 - [OpenEdge design](./doc/us-en/overview/OpenEdge-design.md)
 - [OpenEdge config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
 - [How to write a python script for python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
-- [How to import third party libraries for Python runtime](./doc/us-en/customize/How-to-import-third-party-libraries-for-python-runtime.md)
+- [How to import third-party libraries for Python runtime](./doc/us-en/customize/How-to-import-third-party-libraries-for-python-runtime.md)
 - [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
 - [How to develop a customize module for OpenEdge](./doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 
