@@ -3,9 +3,9 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python36, and for Python27, configuration is the same except for the language difference when coding the scripts.
+- The version of runtime is Python36, and for Python27, configurations are the same except for the language differences when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-- In this document, the third party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
+- In this document, the third-party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
 - The service created based on the Hub module are called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
