@@ -6,7 +6,7 @@
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
-- 本文选取 request 和 torch 两种第三方包进行演示说明
+- 本文选取 [requests](https://pypi.org/project/requests) 和 [Pytorch](https://pytorch.org/) 两种第三方包进行演示说明
 - 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
 
 ```yaml
