@@ -5,8 +5,8 @@
 - The operating system as mentioned in this document is Darwin.
 - The version of runtime is Python36, and for Python27, configuration is the same except for the language difference when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-- In this document, the third party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [Pytorch](https://pytorch.org/).
-- In the test case mentioned in this document, the configuration of the Local Hub Service and Local Function Manager Service is as follows:
+- In this document, the third party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
+- In the test case mentioned in this article, the service name created based on the Hub module called `localhub` service, and the corresponding `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
 # The configuration of Local Hub service
@@ -97,11 +97,11 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-Generally, using the standard library of the system python environment may not meet our needs. In actual practice, it is often necessary to import some third-party libraries. Two example are given below.
+Generally, using the standard library of the system python environment may not meet our needs. In fact, it is often necessary to import some third-party libraries. Two examples are given below.
 
-## Import `requests` Third-Party Libraries
+## Import `requests` third-Party Libraries
 
-Suppose we want to crawl a website and get the response. Here, we can import a third-party library [requests](https://pypi.org/project/requests). How to import it, as shown below:
+Suppose we want to crawl a website and get the response. Here, we can import a third-party library [`requests`](https://pypi.org/project/requests). How to import it, as shown below:
 
 - Step 1: download `requests` package and its dependency package(idna、urllib3、chardet、certifi)
 
@@ -109,7 +109,7 @@ Suppose we want to crawl a website and get the response. Here, we can import a t
 pip3 download requests
 ```
 
-- Step 2: command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+- Step 2: command to inflate the downloaded `.whl` files for getting the source package, then remove useless `.whl` files and package-description files
 
 ```shell
 unzip -d . *.whl
@@ -128,7 +128,7 @@ cp requests-package /directory/to/Python/script
 touch __init__.py
 ```
 
-- Step 5: import the third-party library `requests`, and write the Python script
+- Step 5: import the third-party library `requests` in the Python script as shown below:
 
 ```shell
 import requests
@@ -185,27 +185,27 @@ As above, after receiving the message publish to the topic `py`, the Local Hub w
 
 ![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib-requests.png)
 
-## Import `Pytorch` Third-Party Libraries
+## Import `Pytorch` third-Party Libraries
 
-Pytorch is a widely used deep learning framework for machine learning. We can import a third-party library [Pytorch](https://pytorch.org/) to use its functions. How to import it, as shown below:
+`Pytorch` is a widely used deep learning framework for machine learning. We can import a third-party library [`Pytorch`](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: download `torch` package and its dependency package(PIL、caffee2、numpy、six.py、torchvision)
+- Step 1: download `Pytorch` package and its dependency package(PIL、caffee2、numpy、six.py、torchvision)
 
 ```shell
 pip3 download torch torchvision
 ```
 
-- Step 2: command to inflate the downloaded whl files for getting the source package, then remove useless whl files and package-description files
+- Step 2: command to inflate the downloaded `.whl` files for getting the source package, then remove useless `.whl` files and package-description files
 
 ```shell
 unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- Step 3: copy `torch` package and its dependency package to the directory of the Python script
+- Step 3: copy `Pytorch` package and its dependency package to the directory of the Python script
 
 ```shell
-cp torch-package /directory/to/Python/script
+cp Pytorch-package /directory/to/Python/script
 ```
 
 - Step 4: make the directory of the Python script as a package
@@ -214,7 +214,7 @@ cp torch-package /directory/to/Python/script
 touch __init__.py
 ```
 
-- Step 5: import the third-party library `torch`, and write the Python script
+- Step 5: import the third-party library `Pytorch` in the Python script as shown below:
 
 ```shell
 import torch
@@ -228,9 +228,9 @@ python your_script.py
 
 If the above operation is normal, the resulting script directory structure is as shown in the following figure.
 
-![the directory of the Python script](../../images/customize/python-third-lib-dir-torch.png)
+![the directory of the Python script](../../images/customize/python-third-lib-dir-Pytorch.png)
 
-Now we write the Python script `calc.py` to use functions provided by torch for generating a random tensor, assuming that the trigger condition is that Python36 runtime receives the "B" command from the Local Hub Service. More detailed contents are as follows:
+Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming that the trigger condition is that Python36 runtime receives the "B" command from the Local Hub Service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python36
@@ -266,4 +266,4 @@ functions:
 
 As above, after receiving the message publish to the topic `py`, the Local Hub will call the `calc.py` script to handle, and then publish the result to the topic `py/hi`. Here, we subscribe the topic `py/hi` via MQTTBOX and publish the message `{"action": "B"}` to the Local Hub by the topic `py`, and observe the received message of the topic `py/hi`, as normal, we can get a random tensor.
 
-![generate a random tensor](../../images/customize/write-python-script-third-lib-torch.png)
+![generate a random tensor](../../images/customize/write-python-script-third-lib-Pytorch.png)

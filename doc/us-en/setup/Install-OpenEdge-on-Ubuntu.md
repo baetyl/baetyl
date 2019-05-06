@@ -41,7 +41,7 @@ docker version
 
 ### Install Python and Python runtime dependency package
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install Python 3.6 locally and run the package it depends on. If you already have other versions of Python3, you can choose to reinstall Python 3.6 after uninstalling, or you can keep the inconsistent version, but users need to ensure that the code is compatible. If you plan to start in **docker** container mode, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install Python3.6 locally and run the package it depends on. If you already have other versions of Python3, you can choose to reinstall Python3.6 after uninstalling, or you can keep the inconsistent version, but users need to ensure that the code is compatible. If you plan to start in **docker** container mode, you do not need to perform the following steps.
 
 Commands:
 

@@ -6,11 +6,11 @@
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
-- 本文选取 [requests](https://pypi.org/project/requests) 和 [Pytorch](https://pytorch.org/) 两种第三方包进行演示说明
-- 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
+- 本文选取 [`requests`](https://pypi.org/project/requests) 和 [`Pytorch`](https://pytorch.org/) 两种第三方包进行演示说明
+- 本文所提到的测试案例中，基于 Hub 模块创建的服务名称为 localhub，相应的 localhub 服务、函数计算服务以及其他服务的配置统一如下：
 
 ```yaml
-# 本地 Hub 配置
+# localhub 配置
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -100,24 +100,24 @@ volumes:
 
 系统自带的 Python 环境有可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出两个示例。
 
-## 引用 requests 第三方包
+## 引用 `requests` 第三方包
 
-假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
+假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [`requests`](https://pypi.org/project/requests)。如何引入，具体如下所示：
 
-- 步骤 1: 下载 requests 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
+- 步骤 1: 下载 `requests` 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 python 的版本
 
 ```shell
 pip3 download requests
 ```
 
-- 步骤 2: 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件，只保留源码包
+- 步骤 2: 命令解压 `.whl` 文件，得到源码包，然后删除 `.whl` 文件和包描述文件，只保留源码包
 
 ```shell
 unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- 步骤 3: 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
+- 步骤 3: 将下载的 `requests` 及其依赖的源码包拷贝到该 Python 脚本目录
 
 ```shell
 cp requests-package /directory/to/Python/script
@@ -129,7 +129,7 @@ cp requests-package /directory/to/Python/script
 touch __init__.py
 ```
 
-- 步骤 5: 引入第三方库 requests，然后编写具体执行脚本
+- 步骤 5: 在具体执行脚本中引入第三方库 `requests`，如下所示：
 
 ```shell
 import requests
@@ -185,27 +185,27 @@ functions:
 
 ![获取OpenEdge官网headers信息](../../images/customize/write-python-script-third-lib-requests.png)
 
-## 引用 Pytorch 第三方包
+## 引用 `Pytorch` 第三方包
 
-Pytorch 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [Pytorch](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
+`Pytorch` 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [`Pytorch`](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1: 下载 torch 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
+- 步骤 1: 下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
 
 ```shell
 pip3 download torch torchvision
 ```
 
-- 步骤 2: 命令解压 whl 文件，得到源码包，然后删除 whl 文件和包描述文件
+- 步骤 2: 命令解压 `.whl` 文件，得到源码包，然后删除 whl 文件和包描述文件
 
 ```shell
 unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- 步骤 3: 将下载的 torch 及其依赖的源码包拷贝到该 Python 脚本目录
+- 步骤 3: 将下载的 `Pytorch` 及其依赖的源码包拷贝到该 Python 脚本目录
 
 ```shell
-cp torch-package /directory/to/Python/script
+cp Pytorch-package /directory/to/Python/script
 ```
 
 - 步骤 4: 使执行脚本所在目录成为一个 package
@@ -214,7 +214,7 @@ cp torch-package /directory/to/Python/script
 touch __init__.py
 ```
 
-- 步骤 5: 引入第三方库 torch，然后编写具体执行脚本
+- 步骤 5: 在具体执行脚本中引入第三方库 `Pytorch`，如下所示：
 
 ```shell
 import torch
@@ -228,9 +228,9 @@ python your_script.py
 
 如上述操作正常，则形成的脚本目录结构如下图所示。
 
-![Python torch 第三方库脚本目录](../../images/customize/python-third-lib-dir-torch.png)
+![Python Pytorch 第三方库脚本目录](../../images/customize/python-third-lib-dir-Pytorch.png)
 
-下面，我们编写脚本 `calc.py` 来使用 torch 中的函数生成随机张量，假定触发条件为 Python 运行时接收到来自 Hub 的 `B` 指令，具体如下：
+下面，我们编写脚本 `calc.py` 来使用 `Pytorch` 中的函数生成随机张量，假定触发条件为 Python 运行时接收到来自 Hub 的 `B` 指令，具体如下：
 
 ```python
 #!/usr/bin/env python36
@@ -266,4 +266,4 @@ functions:
 
 如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `calc.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "B"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常生成随机张量。
 
-![生成随机张量](../../images/customize/write-python-script-third-lib-torch.png)
+![生成随机张量](../../images/customize/write-python-script-third-lib-Pytorch.png)
