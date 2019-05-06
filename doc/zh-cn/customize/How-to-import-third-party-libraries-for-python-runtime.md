@@ -4,7 +4,7 @@
 
 - 本文测试所用设备系统为 Darwin
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
-- python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
+- Python 版本为 3.6，2.7 版本配置流程相同，但需要在 Python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文选取 [`requests`](https://pypi.org/project/requests) 和 [`Pytorch`](https://pytorch.org/) 两种第三方包进行演示说明
 - 本文所提到的测试案例中，基于 Hub 模块创建的服务名称为 localhub，相应的 localhub 服务、函数计算服务以及其他服务的配置统一如下：
