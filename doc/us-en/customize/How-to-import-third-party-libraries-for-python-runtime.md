@@ -6,7 +6,7 @@
 - The version of runtime is Python3.6, and for Python2.7, configurations are the same except for the language differences when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this document, the third-party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
-- The service created based on the Hub module is called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
+- In this article, the service created based on the Hub module is called `localhub` service. And for the test case mentioned here, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
 # The configuration of localhub service
