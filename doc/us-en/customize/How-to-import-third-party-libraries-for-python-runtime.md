@@ -6,7 +6,7 @@
 - The version of runtime is Python36, and for Python27, configuration is the same except for the language difference when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this document, the third party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
-- In the test case mentioned in this article, the service name created based on the Hub module called `localhub` service, and the corresponding `localhub` service, function calculation service, and other services are configured as follows:
+- The service created based on the Hub module are called `localhub` service. And in the test case mentioned in this article, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
 # The configuration of Local Hub service
@@ -97,9 +97,9 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-Generally, using the standard library of the system python environment may not meet our needs. In fact, it is often necessary to import some third-party libraries. Two examples are given below.
+Generally, using the standard libraries of the system python environment may not meet our needs. In fact, it is often necessary to import some third-party libraries. Two examples are given below.
 
-## Import `requests` third-Party Libraries
+## Import `requests` third-party libraries
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [`requests`](https://pypi.org/project/requests). How to import it, as shown below:
 
@@ -135,7 +135,7 @@ import requests
 python your_script.py
 ```
 
-If the above operation is normal, the resulting script directory structure is as shown in the following figure.
+If the above operations are normal, the resulting script directory structure is as shown in the following figure.
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-requests.png)
 
@@ -180,13 +180,14 @@ As above, after receiving the message publish to the topic `py`, the Local Hub w
 
 ![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib-requests.png)
 
-## Import `Pytorch` third-Party Libraries
+## Import `Pytorch` third-party libraries
 
 `Pytorch` is a widely used deep learning framework for machine learning. We can import a third-party library [`Pytorch`](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: download `Pytorch` package and its dependency package(PIL、caffee2、numpy、six.py、torchvision)
+- Step 1: change directory to the directory of the Python script, then download `Pytorch` package and its dependency package(PIL、caffee2、numpy、six.py、torchvision)
 
 ```shell
+cd /directory/to/Python/script
 pip3 download torch torchvision
 ```
 
@@ -197,31 +198,25 @@ unzip -d . *.whl
 rm -rf *.whl *.dist-info
 ```
 
-- Step 3: copy `Pytorch` package and its dependency package to the directory of the Python script
-
-```shell
-cp Pytorch-package /directory/to/Python/script
-```
-
-- Step 4: make the directory of the Python script as a package
+- Step 3: make the current directory be a package
 
 ```shell
 touch __init__.py
 ```
 
-- Step 5: import the third-party library `Pytorch` in the Python script as shown below:
+- Step 4: import the third-party library `Pytorch` in the Python script as shown below:
 
 ```shell
 import torch
 ```
 
-- Step 6: execute your Python script
+- Step 5: execute your Python script
 
 ```shell
 python your_script.py
 ```
 
-If the above operation is normal, the resulting script directory structure is as shown in the following figure.
+If the above operations are normal, the resulting script directory structure is as shown in the following figure.
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-Pytorch.png)
 
