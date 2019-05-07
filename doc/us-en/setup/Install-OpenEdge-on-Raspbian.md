@@ -1,20 +1,28 @@
 # Install OpenEdge on Raspbian
 
-OpenEdge is mainly developed in Go programming language and supports two startup modes: **docker** container mode and **native process mode.
+OpenEdge is mainly developed in Go programming language and supports two startup modes: **docker** container mode and **native** process mode.
 
-This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
+This document focuses on the installation of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
+
+**Statement**
+
+- The test system for this article is based on `Raspbian`. The kernel and CPU architecture information are viewed by executing the `uname -ar` command as follows:
+![raspbian kernel detail](../../images/setup/os-raspbian.png)
+- In the OpenEdge deployment section, the deployment process is demonstrated using the **docker** container mode.
 
 ## Environment Configuration
 
+OpenEdge provides **docker** container mode and **native** process mode. If you are running in **docker** container mode, you need to install the Docker environment; if you are running in **native** process mode, you need to install Python and its runtime dependencies.
+
 ### Install Docker
 
-OpenEdge offers two startup modes. To start using **docker** container mode (recommended), you need to complete the docker installation first.
+To start using **docker** container mode (recommended), you need to complete the docker installation first.
 
 **NOTE**:
 
-- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-- The production environment can run the image using a lower version of docker, which is currently tested to a minimum usable version of 12.0.
-- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
+- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of `Docker` you installed should be above 17.05.
+- The production environment can run the image using a lower version of `Docker`, which is currently tested to a minimum usable version of 12.0.
+- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of `Docker` lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -37,17 +45,17 @@ which python3.6
 If terminal displays the path of Python3.6, it means Python3.6 is installed. Instead, execute the following commands to install:
 
 ```shell
-apt-get update
-apt-get upgrade
-apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev
 wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
 tar -xvf Python-3.6.5.tgz
-chmod -R +x Python-3.6.5
+sudo chmod -R +x Python-3.6.5
 cd Python-3.6.5/
 ./configure
 make
-make install
-pip3 install pyyaml protobuf grpcio
+sudo make install
+sudo pip3 install pyyaml protobuf grpcio
 ```
 
 After finishing the upper commands, execute the command `python3.6` to see whether Python3.6 installed successfully.
@@ -66,23 +74,17 @@ alias python=/yourpath/python3.6
 
 ### Preparation Before Deployment
 
-**Statement**:
-
-- The following is an example of the deployment and startup of OpenEdge on Raspbian system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-- The Raspbian system mentioned in this document is based on the following kernel version and CPU architecture. Then execute the command `uname -ar` to display the system information of Raspbian.
-
-![centos kernel detail](../../images/setup/os-raspbian.png)
-
-Starting OpenEdge containerization mode requires the running device to complete the installation and operation of docker. You can install it by referring to [Steps above](#Install-Docker).
-
 ### Deployment Process
 
-- Step 1: [Download](../Resources-download.md) OpenEdge;
-- Step 2: Open the terminal and enter the OpenEdge directory for decompression:
-	- Execute the command `tar -zxvf openedge-xxx.tar.gz`;
-- Step 3: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `sudo openedge start`, respectively. Observe the contents displayed by the two terminals;
-- Step 4: If the results are consistent, it means that OpenEdge has started normally.
+- Step1: Download [OpenEdge](../Resources-download.md);
+- Step2: Open the terminal and enter the OpenEdge directory for decompression:
 
+```shell
+tar -zxvf openedge-xxx.tar.gz
+```
+
+- Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
+- Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
 **NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md).
 
 ### Start Deployment

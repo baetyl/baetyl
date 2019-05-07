@@ -6,7 +6,7 @@ This document focuses on the installation of the environment required for OpenEd
 
 **Statement**
 
-- The test system for this article is based on the CentOS7.5 x86_64 version. The kernel and CPU architecture information are viewed by executing the `uname -ar` command as follows:
+- The test system for this article is based on `CentOS7.5 x86_64`. The kernel and CPU architecture information are viewed by executing the `uname -ar` command as follows:
 ![centos kernel detail](../../images/setup/os-centos.png)
 - In the OpenEdge deployment section, the deployment process is demonstrated using the **docker** container mode.
 
@@ -20,9 +20,9 @@ To start using **docker** container mode (recommended), you need to complete the
 
 **NOTE**:
 
-- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-- The production environment can run the image using a lower version of docker, which is currently tested to a minimum usable version of 12.0.
-- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
+- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of `Docker` you installed should be above 17.05.
+- The production environment can run the image using a lower version of `Docker`, which is currently tested to a minimum usable version of 12.0.
+- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of `Docker` lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -38,7 +38,7 @@ sudo yum install docker
 
 **NOTE**:
 
-- After the docker installation is complete, use the following command to view the installed version of docker.
+- After `Docker` installation is complete, use the following command to view the installed version of `Docker`.
 
 ```shell
 docker version
@@ -91,7 +91,7 @@ tar -zxvf openedge-xxx.tar.gz
 
 - Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
 - Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
-**NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)
+**NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md).
 
 ### Start Deployment
 

@@ -36,7 +36,7 @@ sudo snap install docker # Ubuntu16.04 after
 sudo apt-get install docker.io # Ubuntu 16.04 before
 ```
 
-即可完成 docker 安装。
+即可完成 Docker 安装。
 
 **注意**：
 
