@@ -118,7 +118,7 @@ image:
 	make -C openedge-function-python image
 	make -C openedge-timer image
 
-release: release-image
+release: release-image push-image release-manifest release-package
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
@@ -245,3 +245,41 @@ release-package:
 	mv openedge-function-python/package27.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-darwin-amd64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-darwin-amd64-$(VERSION).zip
+
+push-image:
+	# Push hub images
+	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-amd64:latest $(IMAGE_PREFIX)/openedge-hub-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-arm64:latest $(IMAGE_PREFIX)/openedge-hub-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-arm:latest $(IMAGE_PREFIX)/openedge-hub-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-386:latest $(IMAGE_PREFIX)/openedge-hub-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)/openedge-hub-linux-amd64
+	docker push $(IMAGE_PREFIX)/openedge-hub-linux-arm64
+	docker push $(IMAGE_PREFIX)/openedge-hub-linux-arm
+	docker push $(IMAGE_PREFIX)/openedge-hub-linux-386
+	# Push agent images
+	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-amd64:latest $(IMAGE_PREFIX)/openedge-agent-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-arm64:latest $(IMAGE_PREFIX)/openedge-agent-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-arm:latest $(IMAGE_PREFIX)/openedge-agent-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-386:latest $(IMAGE_PREFIX)/openedge-agent-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)/openedge-agent-linux-amd64
+	docker push $(IMAGE_PREFIX)/openedge-agent-linux-arm64
+	docker push $(IMAGE_PREFIX)/openedge-agent-linux-arm
+	docker push $(IMAGE_PREFIX)/openedge-agent-linux-386
+	# Push function manager images
+	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-amd64:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-arm64:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-arm:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-386:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-amd64
+	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-arm64
+	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-arm
+	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-386
+	# Push remote mqtt images
+	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-amd64:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm64:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-386:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-amd64
+	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm64
+	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm
+	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-386
