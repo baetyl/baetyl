@@ -170,7 +170,7 @@ The figure above shows that MQTTBOX has successfully subscribed the topic `t/hi`
 Based on the above, here we use the Python function `sayhi` to handle the message of the topic `t` and publish the result back to the topic `t/hi`. More detailed contents of function `sayhi` are as shown below.
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 #-*- coding:utf-8 -*-
 """
 service to say hi

@@ -169,7 +169,7 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 根据上文所述，这里我们利用 Python 函数 `sayhi` 对主题 `t` 的消息进行处理，并将结果反馈给主题 `t/hi` 。那么，首先，需要获悉的就是处理函数 `sayhi` 的具体信息，具体如下示：
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 #-*- coding:utf-8 -*-
 """
 module to say hi

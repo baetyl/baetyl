@@ -152,7 +152,7 @@ _**提示**：在云端 CFC 测试时，请注意不要直接使用 OpenEdge 定
 下面我们实现一个简单的 Python 函数，目标是为每一条流经需要用该 Python 脚本进行处理的 MQTT 消息附加一条 `hello world` 信息。对于字典类消息，将其直接返回即可，对于非字典类消息，则将之转换为字符串后返回。
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
 def handler(event, context):

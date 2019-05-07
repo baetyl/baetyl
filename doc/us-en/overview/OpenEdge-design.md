@@ -418,7 +418,7 @@ Python functions support reading contexts such as context['functionName'].
 An example of a Python function implementation:
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 #-*- coding:utf-8 -*-
 """
 module to say hi
@@ -436,7 +436,7 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install Python3.6 and its packages pyyaml, protobuf3 and grpcio (pip installation can be used, `pip3 install pyyaml protobuf grpcio`). _
+_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install **Python3.6** and its packages **pyyaml**, **protobuf3** and **grpcio** (pip installation can be used, `**pip3** install pyyaml protobuf grpcio`). _
 
 ### openedge-remote-mqtt
 

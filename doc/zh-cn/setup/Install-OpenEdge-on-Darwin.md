@@ -29,7 +29,7 @@ docker version
 
 ### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 Python3.6， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 **Python3.6**， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
 首先查看 Python3.6 是否已经安装：
 

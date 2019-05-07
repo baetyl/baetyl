@@ -103,7 +103,7 @@ Generally, using the standard libraries of the system python environment may not
 
 Suppose we want to crawl a website and get the response. Here, we can import a third-party library [`requests`](https://pypi.org/project/requests). How to import it, as shown below:
 
-- Step 1: change directory to where the Python scripts are going to write, then download `requests` package and its dependency packages(idna、urllib3、chardet、certifi)
+- Step 1: change path to the directory of Python scripts, then download `requests` package and its dependency packages(idna、urllib3、chardet、certifi)
 
 ```shell
 cd /directory/to/Python/script
@@ -142,7 +142,7 @@ If the above operations are normal, the resulting script directory structure is 
 Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming the trigger condition is that Python3.6 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
 import requests
@@ -184,7 +184,7 @@ As above, after receiving the message publish to the topic `py`, the `localhub` 
 
 `Pytorch` is a widely used deep learning framework for machine learning. We can import a third-party library [`Pytorch`](https://pytorch.org/) to use its functions. How to import it, as shown below:
 
-- Step 1: change directory to where the Python scripts are going to write, then download `Pytorch` package and its dependency packages(PIL、caffee2、numpy、six.py、torchvision)
+- Step 1: change path to the directory of Python scripts, then download `Pytorch` package and its dependency packages(PIL、caffee2、numpy、six、torchvision)
 
 ```shell
 cd /directory/to/Python/script
@@ -223,7 +223,7 @@ If the above operations are normal, the resulting script directory structure is 
 Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming the trigger condition is that Python3.6 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
 import torch

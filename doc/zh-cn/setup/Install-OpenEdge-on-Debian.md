@@ -25,7 +25,7 @@ curl -sSL https://get.docker.com | sh
 
 ### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 Python3.6， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 **Python3.6**， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
 
 首先查看 Python3.6 是否已经安装：
 
@@ -36,17 +36,17 @@ which python3.6
 如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则进行下面的安装步骤。Debian 包管理库未直接提供 Python3.6 版本，这里使用源码安装:
 
 ```shell
-apt-get update
-apt-get upgrade
-apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev wget
 wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
 tar -xvf Python-3.6.5.tgz
-chmod -R +x Python-3.6.5
+sudo chmod -R +x Python-3.6.5
 cd Python-3.6.5/
 ./configure
 make
-make install
-pip3 install pyyaml protobuf grpcio
+sudo make install
+sudo pip3 install pyyaml protobuf grpcio
 ```
 
 等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。

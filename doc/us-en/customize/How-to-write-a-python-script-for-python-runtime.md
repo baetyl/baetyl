@@ -152,7 +152,7 @@ _**NOTE**: When testing in the cloud CFC, please don't use the context defined b
 Now we will implement a simple python script with the goal of appending a `hello world` message to each MQTT message. For a dictionary format message, return it directly, and for an none dictionary format message, convert it to string and return.
 
 ```python
-#!/usr/bin/env python36
+#!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
 def handler(event, context):
