@@ -2,13 +2,21 @@
 
 OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **docker** 容器模式和 **native** 进程模式。
 
-本文主要介绍 OpenEdge 运行所需环境的安装与配置以及 OpenEdge 在类 Linux 系统下的快速部署。
+本文主要介绍 OpenEdge 运行所需环境的安装以及 OpenEdge 在类 Linux 系统下的快速部署。
+
+**声明**：
+
+- 本文测试系统基于 CentOS7.5 x86_64 版本, 内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
+![系统架构及内核版本查询](../../images/setup/os-centos.png)
+- 在 OpenEdge 部署小节中，使用 Docker 容器模式演示部署流程。
 
 ## 运行环境配置
 
+OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 **docker** 容器模式运行，需要安装 Docker 环境；如果以 **native** 进程模式运行，需要安装 Python 及其运行时依赖包。
+
 ### Docker 安装
 
-OpenEdge 提供两种运行方式。如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
+如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
 
 **提示**：
 
@@ -29,7 +37,7 @@ yum install docker
 
 即可完成 docker 安装。
 
-***注意*** : 
+***注意*** :
 
 + docker 安装完成后可通过一下命令查看所安装 docker 版本。
 
@@ -41,7 +49,7 @@ docker version
 
 ### Python 及其运行时依赖包安装
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 **Python3.6**， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 **Python3.6**， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。
 
 首先查看 Python3.6 是否已经安装：
 
@@ -49,7 +57,7 @@ OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本
 which python3.6
 ```
 
-如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则进行下面的安装步骤：
+如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则推荐下面的方式进行安装。用户也可以根据自身系统版本采用其他官方介绍的安装方式：
 
 ```shell
 sudo yum update
@@ -72,17 +80,6 @@ alias python=/yourpath/python3.6
 ```
 
 ## OpenEdge 部署
-
-### 部署前准备
-
-**声明**：
-
-- 本文主要介绍在 CentOS 系统下OpenEdge的部署、运行，假定在此之前 OpenEdge [运行所需环境](#运行环境配置)均已配置完毕。
-- 本文所提及的 CentOS 系统基于以下内核版本及CPU架构，执行命令 `uname -ar` 显示内容如下图所示。
-
-![系统架构及内核版本查询](../../images/setup/os-centos.png)
-
-OpenEdge 容器化模式运行要求运行设备已完成 docker 的安装与运行，可参照 [上述步骤](#docker-安装)进行安装。
 
 ### 部署流程
 
