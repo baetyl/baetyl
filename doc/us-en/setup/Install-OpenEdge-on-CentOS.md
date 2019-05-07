@@ -59,8 +59,8 @@ which python3.6
 If terminal displays the path of Python3.6, it means Python3.6 is installed. Instead, execute the following commands to install:
 
 ```shell
+sudo yum -y install epel-release
 sudo yum update
-sudo yum --enablerepo=extras install epel-release
 sudo yum install python36
 sudo yum install python36-pip
 sudo pip3 install grpcio protobuf pyyaml

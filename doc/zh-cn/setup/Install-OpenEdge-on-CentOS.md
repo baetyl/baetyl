@@ -60,8 +60,8 @@ which python3.6
 如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则推荐下面的方式进行安装。用户也可以根据自身系统版本采用其他官方介绍的安装方式：
 
 ```shell
+sudo yum -y install epel-release
 sudo yum update
-sudo yum --enablerepo=extras install epel-release
 sudo yum install python36
 sudo yum install python36-pip
 sudo pip3 install grpcio protobuf pyyaml

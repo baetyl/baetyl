@@ -106,7 +106,7 @@ Suppose we want to crawl a website and get the response. Here, we can import a t
 - Step 1: change path to the directory of Python scripts, then download `requests` package and its dependency packages(idna、urllib3、chardet、certifi)
 
 ```shell
-cd /directory/to/Python/script
+cd /directory/of/Python/script
 pip3 download requests
 ```
 
@@ -187,7 +187,7 @@ As above, after receiving the message publish to the topic `py`, the `localhub` 
 - Step 1: change path to the directory of Python scripts, then download `Pytorch` package and its dependency packages(PIL、caffee2、numpy、six、torchvision)
 
 ```shell
-cd /directory/to/Python/script
+cd /directory/of/Python/script
 pip3 download torch torchvision
 ```
 

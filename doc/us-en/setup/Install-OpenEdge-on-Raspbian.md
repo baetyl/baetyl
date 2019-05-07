@@ -47,7 +47,7 @@ If terminal displays the path of Python3.6, it means Python3.6 is installed. Ins
 ```shell
 sudo apt-get update
 sudo apt-get upgrade
-sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev
+sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev wget
 wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
 tar -xvf Python-3.6.5.tgz
 sudo chmod -R +x Python-3.6.5

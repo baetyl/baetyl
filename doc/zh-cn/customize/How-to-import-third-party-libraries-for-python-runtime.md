@@ -107,7 +107,7 @@ volumes:
 - 步骤 1: 进入 Python 脚本所在目录，然后下载 `requests` 及其依赖（idna、urllib3、chardet、certifi），并注意 pip 命令对应 Python 的版本
 
 ```shell
-cd /directory/to/Python/script
+cd /directory/of/Python/script
 pip3 download requests
 ```
 
@@ -187,7 +187,7 @@ functions:
 - 步骤 1: 进入 Python 脚本目录，然后下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six、torchvision）
 
 ```shell
-cd /directory/to/Python/script
+cd /directory/of/Python/script
 pip3 download torch torchvision
 ```
 
