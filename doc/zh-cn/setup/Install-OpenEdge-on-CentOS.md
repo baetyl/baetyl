@@ -85,7 +85,11 @@ alias python=/yourpath/python3.6
 
 - Step 1：[下载](../Resources-download.md) OpenEdge 压缩包；
 - Step 2：打开终端，进入 OpenEdge 软件包下载目录，进行解压缩操作：
-	- 执行命令 `tar -zxvf openedge-xxx.tar.gz`；
+
+```shell
+tar -zxvf openedge-xxx.tar.gz
+```
+
 - Step 3：完成解压缩操作后，直接进入 OpenEdge 程序包目录，执行命令 `sudo openedge start`，然后分别查看 OpenEdge 启动、加载日志信息，及查看当前正在运行的容器（通过命令 `docker ps`），并对比二者是否一致（假定当前系统中未启动其他 docker 容器）；
 - Step 4：若查看结果一致，则表示 OpenEdge 已正常启动。
 
