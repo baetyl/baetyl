@@ -24,7 +24,7 @@ To start using **docker** container mode (recommended), you need to complete the
 - The production environment can run the image using a lower version of `Docker`, which is currently tested to a minimum usable version of 12.0.
 - According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update `Docker` to 18.09.2 and above.
 
-Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag docker into the application folder.
+Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the `.dmg` file you need. Once done, double-click to open and drag docker into the application folder.
 
 ![Install On Darwin](../../images/setup/docker-install-on-mac.png)
 
@@ -79,6 +79,7 @@ tar -zxvf openedge-xxx.tar.gz
 
 - Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
 - Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
+
 **NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md).
 
 ### Start Deployment

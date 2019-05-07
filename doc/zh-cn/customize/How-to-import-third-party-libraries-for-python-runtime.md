@@ -184,7 +184,7 @@ functions:
 
 `Pytorch` 是机器学习中使用广泛的深度学习框架，我们可以引入第三方库 [`Pytorch`](https://pytorch.org/) 使用它的功能。如何引入，具体如下所示：
 
-- 步骤 1: 进入 Python 脚本目录，然后下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six.py、torchvision）
+- 步骤 1: 进入 Python 脚本目录，然后下载 `Pytorch` 及其依赖（PIL、caffee2、numpy、six、torchvision）
 
 ```shell
 cd /directory/to/Python/script

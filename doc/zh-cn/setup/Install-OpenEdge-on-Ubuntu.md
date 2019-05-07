@@ -6,7 +6,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 **声明**：
 
-- 本文测试系统基于 Ubuntu16.04 amd64 版本，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
+- 本文测试系统基于 Ubuntu16.04 amd64 版本，内核及CPU架构信息通过执行 `uname -ar` 命令查看如下：
 ![系统架构及内核版本查询](../../images/setup/os-ubuntu.png)
 - 在 OpenEdge 部署小节中，使用 **docker** 容器模式演示部署流程。
 

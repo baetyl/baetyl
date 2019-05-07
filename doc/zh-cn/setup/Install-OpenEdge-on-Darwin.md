@@ -6,7 +6,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 **声明**：
 
-- 本文测试系统基于 Darwin High Sierra Version 10.13.6 版本，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
+- 本文测试系统基于 Darwin High Sierra Version 10.13.6 版本，内核及CPU架构信息通过执行 `uname -ar` 命令查看如下：
 ![系统架构及内核版本查询](../../images/setup/os-darwin.png)
 - 在 OpenEdge 部署小节中，使用 **docker** 容器模式演示部署流程。
 
@@ -23,7 +23,7 @@ OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 *
 - 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装 17.05 及以上版本的 Docker 来构建 Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
 - 根据[官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 Docker 版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2 及以上。
 
-前往 [官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac) 下载所需 dmg 文件。完成后双击打开，将 Docker 拖入 `Application` 文件夹即可。
+前往 [官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac) 下载所需 `.dmg` 文件。完成后双击打开，将 Docker 拖入 `Application` 文件夹即可。
 
 ![Install On Darwin](../../images/setup/docker-install-on-mac.png)
 

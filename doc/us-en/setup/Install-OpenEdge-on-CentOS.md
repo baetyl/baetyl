@@ -91,6 +91,7 @@ tar -zxvf openedge-xxx.tar.gz
 
 - Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
 - Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
+
 **NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md).
 
 ### Start Deployment
