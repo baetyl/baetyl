@@ -8,7 +8,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 - 本文测试系统基于 Darwin High Sierra Version 10.13.6 版本，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
 ![系统架构及内核版本查询](../../images/setup/os-darwin.png)
-- 在 OpenEdge 部署小节中，使用 Docker 容器模式演示部署流程。
+- 在 OpenEdge 部署小节中，使用 **docker** 容器模式演示部署流程。
 
 ## 运行环境配置
 

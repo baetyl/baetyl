@@ -8,7 +8,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 - 本文测试系统基于 Debian9.1.0 amd64 版本，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
 ![系统架构及内核版本查询](../../images/setup/os-debian.png)
-- 在 OpenEdge 部署小节中，使用 Docker 容器模式演示部署流程。
+- 在 OpenEdge 部署小节中，使用 **docker** 容器模式演示部署流程。
 
 ## 运行环境配置
 
@@ -91,15 +91,15 @@ tar -zxvf openedge-xxx.tar.gz
 
 ![OpenEdge 可执行程序包目录](../../images/setup/openedge-dir-debian.png)
 
-其中，`bin` 目录存储 openedge 二进制可执行程序，`etc` 目录存储了 openedge 程序启动的配置，`var` 目录存储了模块启动的配置和资源。
+其中，`bin` 目录存储 `openedge` 二进制可执行程序，`etc` 目录存储了程序启动的配置，`var` 目录存储了模块启动的配置和资源。
 
 建议把二进制文件放置到 `/usr/local/bin` 或者其他 `PATH` 环境变量中指定的目录中，然后将 `var` 和 `etc` 两个目录拷贝到 `/usr/local` 目录下，或者其他存放二进制文件目录的上级目录中。当然，你也可以将这两个文件夹保留在你解压的位置。
 
-然后，新打开一个终端，执行命令 `docker stats` 查看当前docker中容器的运行状态，如下图示；
+然后，新打开一个终端，执行命令 `docker stats` 查看当前 docker 中容器的运行状态，如下图示；
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats-before-debian.png)
 
-可以发现，当前系统并未有正在运行的docker容器。
+可以发现，当前系统并未有正在运行的 docker 容器。
 
 接着，进入解压缩后的 OpenEdge 文件夹下，在另一个终端中执行命令 `sudo openedge start`，如果没有放置 `var` 和 `etc` 目录到二进制文件存放目录的上级目录中，需要通过 `-w` 参数指定工作目录，例： `sudo openedge start -w yourpath/to/configuration`。完成后可通过命令 `ps -ef | grep "openedge"` 来查看运行情况：
 

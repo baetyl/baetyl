@@ -22,7 +22,7 @@ To start using **docker** container mode (recommended), you need to complete the
 
 - The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of `Docker` you installed should be above 17.05.
 - The production environment can run the image using a lower version of `Docker`, which is currently tested to a minimum usable version of 12.0.
-- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of `Docker` lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
+- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of `Docker` lower than 18.09.2 has some security implications. It is recommended to install/update `Docker` to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 

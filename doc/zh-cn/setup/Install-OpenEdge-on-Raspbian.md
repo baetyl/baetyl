@@ -8,7 +8,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 - 本文测试系统基于 Raspbian 系统，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
 ![系统架构及内核版本查询](../../images/setup/os-raspbian.png)
-- 在 OpenEdge 部署小节中，使用 Docker 容器模式演示部署流程。
+- 在 OpenEdge 部署小节中，使用 **docker** 容器模式演示部署流程。
 
 ## 运行环境配置
 
@@ -16,7 +16,7 @@ OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 *
 
 ### Docker 安装
 
-如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
+如需使用 **docker** 容器模式启动(推荐)，需要先完成 Docker 安装。
 
 **提示**：
 
