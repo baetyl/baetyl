@@ -6,7 +6,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 **声明**：
 
-- 本文测试系统基于 CentOS7.5 x86_64 版本, 内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
+- 本文测试系统基于 CentOS7.5 x86_64 版本，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
 ![系统架构及内核版本查询](../../images/setup/os-centos.png)
 - 在 OpenEdge 部署小节中，使用 Docker 容器模式演示部署流程。
 
@@ -16,12 +16,12 @@ OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 *
 
 ### Docker 安装
 
-如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
+如需使用 **docker** 容器模式启动(推荐)，需要先完成 Docker 安装。
 
 **提示**：
 
-- 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装 17.05 及以上版本的 docker 来构建 Dockerfile。但生产环境可以使用低版本 docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
-- 根据 [官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 docker 版本具有一些安全隐患，建议安装/更新 docker 版本到 18.09.2 及以上。
+- 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装 17.05 及以上版本的 Docker 来构建 Dockerfile。但生产环境可以使用低版本 docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
+- 根据 [官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 Docker 版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2 及以上。
 
 可通过以下命令进行安装（适用于类 Linux 系统，[支持多种平台](./Support-platforms.md)）：
 
@@ -32,14 +32,14 @@ curl -sSL https://get.docker.com | sh
 或者使用命令
 
 ```shell
-yum install docker
+sudo yum install docker
 ```
 
-即可完成 docker 安装。
+即可完成 Docker 安装。
 
 ***注意*** :
 
-+ docker 安装完成后可通过一下命令查看所安装 docker 版本。
++ Docker 安装完成后可通过一下命令查看所安装 Docker 版本。
 
 ```shell
 docker version
@@ -83,15 +83,15 @@ alias python=/yourpath/python3.6
 
 ### 部署流程
 
-- Step 1：[下载](../Resources-download.md) OpenEdge 压缩包；
+- Step 1：下载 [OpenEdge](../Resources-download.md) 压缩包；
 - Step 2：打开终端，进入 OpenEdge 软件包下载目录，进行解压缩操作：
 
 ```shell
 tar -zxvf openedge-xxx.tar.gz
 ```
 
-- Step 3：完成解压缩操作后，直接进入 OpenEdge 程序包目录，执行命令 `sudo openedge start`，然后分别查看 OpenEdge 启动、加载日志信息，及查看当前正在运行的容器（通过命令 `docker ps`），并对比二者是否一致（假定当前系统中未启动其他 docker 容器）；
-- Step 4：若查看结果一致，则表示 OpenEdge 已正常启动。
+- Step 3：完成解压缩操作后，进入 OpenEdge 程序包目录，执行命令 `sudo openedge start` 启动 OpenEdge。随后查看 OpenEdge 的启动、加载日志，并使用 `docker ps` 命令查看此时正在运行的 docker 容器，分析两者检查 OpenEdge 需要启动的镜像是否全部加载成功；
+- Step 4：如果日志中要启动的镜像全部在 docker 中通过容器加载成功，则表示 OpenEdge 启动成功。
 
 **注意**：官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考 [源码编译](./Build-OpenEdge-from-Source.md) 相关内容。
 
@@ -101,15 +101,15 @@ tar -zxvf openedge-xxx.tar.gz
 
 ![OpenEdge 可执行程序包目录](../../images/setup/openedge-dir-centos.png)
 
-其中，`bin` 目录存储openedge二进制可执行程序，`etc`目录存储了openedge程序启动的配置，`var` 目录存储了模块启动的配置和资源。
+其中，`bin` 目录存储 `openedge` 二进制可执行程序，`etc` 目录存储了程序启动的配置，`var` 目录存储了模块启动的配置和资源。
 
 建议把二进制文件放置到 `/usr/local/bin` 或者其他 `PATH` 环境变量中指定的目录中，然后将 `var` 和 `etc` 两个目录拷贝到 `/usr/local` 目录下，或者其他存放二进制文件目录的上级目录中。当然，你也可以将这两个文件夹保留在你解压的位置。
 
-然后，新打开一个终端，执行命令 `docker stats` 查看当前docker中容器的运行状态，如下图示；
+然后，新打开一个终端，执行命令 `docker stats` 查看当前 docker 中容器的运行状态，如下图示；
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats-before-centos.png)
 
-可以发现，当前系统并未有正在运行的docker容器。
+可以发现，当前系统并未有正在运行的 docker 容器。
 
 接着，进入解压缩后的 OpenEdge 文件夹下，在另一个终端中执行命令 `sudo openedge start`，如果没有放置 `var` 和 `etc` 目录到二进制文件存放目录的上级目录中，需要通过 `-w` 参数指定工作目录，例： `sudo openedge start -w yourpath/to/configuration`。完成后可通过命令 `ps -ef | grep "openedge"` 来查看运行情况：
 
@@ -121,6 +121,6 @@ tar -zxvf openedge-xxx.tar.gz
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats-after-centos.png)
 
-显然，OpenEdge已经成功启动。
+显然，OpenEdge 已经成功启动。
 
 如上所述，若各步骤执行无误，即可完成 OpenEdge 在 CentOS 系统上的快速部署、启动。

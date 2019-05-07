@@ -2,18 +2,26 @@
 
 OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **docker** 容器模式和 **native** 进程模式。
 
-本文主要介绍 OpenEdge 运行所需环境的安装与配置以及 OpenEdge 在类 Linux 系统下的快速部署。
+本文主要介绍 OpenEdge 运行所需环境的安装以及 OpenEdge 在类 Linux 系统下的快速部署。
+
+**声明**：
+
+- 本文测试系统基于 Ubuntu16.04 amd64 版本，内核及CPU架构信息通过执行 `uname -ar`命令查看如下：
+![系统架构及内核版本查询](../../images/setup/os-ubuntu.png)
+- 在 OpenEdge 部署小节中，使用 Docker 容器模式演示部署流程。
 
 ## 运行环境配置
 
+OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 **docker** 容器模式运行，需要安装 Docker 环境；如果以 **native** 进程模式运行，需要安装 Python 及其运行时依赖包。
+
 ### Docker 安装
 
-OpenEdge 提供两种运行方式。如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
+如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
 
 **提示**：
 
-- 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装 17.05 及以上版本的 docker 来构建 Dockerfile。但生产环境可以使用低版本 docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
-- 根据 [官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 docker 版本具有一些安全隐患，建议安装/更新 docker 版本到 18.09.2 及以上。
+- 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装 17.05 及以上版本的 Docker 来构建 Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
+- 根据 [官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 Docker 版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2 及以上。
 
 可通过以下命令进行安装（适用于类 Linux 系统，[支持多种平台](./Support-platforms.md)）：
 
@@ -53,11 +61,11 @@ which python3.6
 如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则进行下面的安装步骤。
 
 ```shell
-add-apt-repository ppa:jonathonf/python-3.6
-apt-get update
-apt-get install python3.6
-apt-get install python3-pip
-pip3 install pyyaml protobuf grpcio
+sudo add-apt-repository ppa:jonathonf/python-3.6
+sudo apt-get update
+sudo apt-get install python3.6
+sudo apt-get install python3-pip
+sudo pip3 install pyyaml protobuf grpcio
 ```
 
 等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。
@@ -74,38 +82,31 @@ alias python=/yourpath/python3.6
 
 ## OpenEdge 部署
 
-### 部署前准备
-
-**声明**：
-
-- 本文主要介绍 Ubuntu 系统下 OpenEdge 的部署、运行，假定在此之前 OpenEdge [运行所需环境](#运行环境配置) 均已配置完毕。
-- 本文所提及的 Ubuntu 系统基于 Linux Ubuntu 4.15.0-29-generic 版本内核，CPU 架构为 amd64。执行命令 `uname -ar` 显示内容如下图所示。
-
-![系统架构及内核版本查询](../../images/setup/os-ubuntu.png)
-
-OpenEdge 容器化模式运行要求运行设备已完成 docker 的安装与运行，可参照 [上述步骤](#docker-安装) 进行安装。
-
 ### 部署流程
 
-- Step 1：[下载](../Resources-download.md) OpenEdge 压缩包；
+- Step 1：下载 [OpenEdge](../Resources-download.md) 压缩包；
 - Step 2：打开终端，进入 OpenEdge 软件包下载目录，进行解压缩操作：
-	- 执行命令 `tar -zxvf openedge-xxx.tar.gz`；
-- Step 3：完成解压缩操作后，直接进入 OpenEdge 程序包目录，执行命令 `sudo openedge start`，然后分别查看 OpenEdge 启动、加载日志信息，及查看当前正在运行的容器（通过命令 `docker ps`），并对比二者是否一致（假定当前系统中未启动其他 docker 容器）；
-- Step 4：若查看结果一致，则表示 OpenEdge 已正常启动。
+
+```shell
+tar -zxvf openedge-xxx.tar.gz
+```
+
+- Step 3：完成解压缩操作后，进入 OpenEdge 程序包目录，执行命令 `sudo openedge start` 启动 OpenEdge。随后查看 OpenEdge 的启动、加载日志，并使用 `docker ps` 命令查看此时正在运行的 docker 容器，分析两者检查 OpenEdge 需要启动的镜像是否全部加载成功；
+- Step 4：如果日志中要启动的镜像全部在 docker 中通过容器加载成功，则表示 OpenEdge 启动成功。
 
 **注意**：官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考 [源码编译](./Build-OpenEdge-from-Source.md) 相关内容。
 
 ### 开始部署
 
-如上所述，首先从 [下载页面](../Resources-download.md) 选择某版本的 OpenEdge 完成下载（也可选择从源码编译，参见 [源码编译](./Build-OpenEdge-from-Source.md)），然后打开终端进入 OpenEdge 程序包下载目录，进行解压缩操作，成功解压缩后，可以发现openedge目录中主要包括bin、etc、var等目录，具体如下图示。
+如上所述，首先从 [下载页面](../Resources-download.md) 选择某版本的 OpenEdge 完成下载（也可选择从源码编译，参见 [源码编译](./Build-OpenEdge-from-Source.md)），然后打开终端进入 OpenEdge 程序包下载目录，进行解压缩操作，成功解压缩后，可以发现 openedge 目录中主要包括 bin、etc、var 等目录，具体如下图示。
 
 ![OpenEdge 可执行程序包目录](../../images/setup/openedge-dir-ubuntu.png)
 
-其中，`bin` 目录存储 openedge 二进制可执行程序，`etc` 目录存储了 openedge 程序启动的配置，`var` 目录存储了模块启动的配置和资源。
+其中，`bin` 目录存储 `openedge` 二进制可执行程序，`etc` 目录存储了程序启动的配置，`var` 目录存储了模块启动的配置和资源。
 
 建议把二进制文件放置到 `/usr/local/bin` 或者其他 `PATH` 环境变量中指定的目录中，然后将 `var` 和 `etc` 两个目录拷贝到 `/usr/local` 目录下，或者其他存放二进制文件目录的上级目录中。当然，你也可以将这两个文件夹保留在你解压的位置。
 
-然后，新打开一个终端，执行命令 `docker stats` 查看当前docker中容器的运行状态，如下图示；
+然后，新打开一个终端，执行命令 `docker stats` 查看当前 docker 中容器的运行状态，如下图示；
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats-before-ubuntu.png)
 
