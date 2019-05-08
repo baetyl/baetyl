@@ -3,18 +3,20 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
+- The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
+- In this article, the service created based on the Hub module is called `localhub` service.
 
-Different from the Local Hub service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Local Hub service and Python27 runtime service). In the document, Local Hub service is used to establish connection between OpenEdge and mqtt client, Python27 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine Local Hub service with Python27 runtime service with message context.
+Different from the `localhub` service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include `localhub` service and Python3.6 runtime service). In the document, `localhub` service is used to establish connection between OpenEdge and mqtt client, Python3.6 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine `localhub` service with Python3.6 runtime service with message context.
 
 This document will take the TCP connection method as an example to show the message handling, calculation and forwarding with Local Function Manager service.
 
 ## Workflow
 
 - Step 1：Startup OpenEdge in docker container mode.
-- Step 2：MQTTBOX connect to Local Hub Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Local Hub Service](./Device-connect-to-OpenEdge-with-hub-module.md)
-    - If connect successfully, then subscribe the MQTT topic due to the configuration of Local Hub Service, and observe the log of OpenEdge.
+- Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md)
+    - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service, and observe the log of OpenEdge.
         - If the OpenEdge's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
         - If the OpenEdge's log shows that the Python Runtime Service has not been started, then retry it until the Python Runtime Service has been started.
     - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully
@@ -24,15 +26,15 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Message Handling Test
 
-The configuration of the Local Hub Service and the Local Function Manager Service used in the test is as follows:
+The configuration of the `localhub` Service and the Local Function Manager Service used in the test is as follows:
 
 ```yaml
-# The configuration of Local Hub service
+# The configuration of localhub service
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
-    password: 'be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912'
+    password: 'hahaha'
     permissions:
       - action: 'pub'
         permit: ['#']
@@ -60,7 +62,7 @@ functions:
       max: 10
       idletime: 1m
 
-# The configuration of python2.7 runtime
+# The configuration of Python3.6 runtime
 functions:
   - name: 'sayhi'
     handler: 'sayhi.handler'
@@ -92,7 +94,7 @@ services:
       - name: function-manager-log
         path: var/log/openedge
   - name: function-sayhi
-    image: openedge-function-python27
+    image: openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -139,7 +141,7 @@ var/
             └── service.yml
 ```
 
-As configured above, if the MQTTBOX has established a connection with OpenEdge via the Local Hub Service, the message published to the topic `t` will be handled by `sayhi` function, and the result will be published to the Local Hub Service with the topic `t/hi`. At the same time, the MQTT client subscribed the topic `t/hi` will receive the result message.
+As configured above, if the MQTTBOX has established a connection with OpenEdge via the `localhub` Service, the message published to the topic `t` will be handled by `sayhi` function, and the result will be published to the `localhub` Service with the topic `t/hi`. At the same time, the MQTT client subscribed the topic `t/hi` will receive the result message.
 
 _**NOTE**: Any function that appears in the `rules` configuration must be configured in the `functions` configuration, otherwise OpenEdge will not be started._
 
@@ -153,7 +155,7 @@ Also, we can execute the command `docker ps` to view the list of docker containe
 
 ![View the list of docker containers currently running](../../images/tutorials/process/openedge-docker-ps-after.png)
 
-After comparison, it is not difficult to find that the two container modules of the Local Hub Service and the Local Function Manager Service have been successfully loaded at the time of OpenEdge startup.
+After comparison, it is not difficult to find that the two container modules of the `localhub` Service and the Local Function Manager Service have been successfully loaded at the time of OpenEdge startup.
 
 ### MQTTBOX Establish a Connection with OpenEdge
 
@@ -168,7 +170,7 @@ The figure above shows that MQTTBOX has successfully subscribed the topic `t/hi`
 Based on the above, here we use the Python function `sayhi` to handle the message of the topic `t` and publish the result back to the topic `t/hi`. More detailed contents of function `sayhi` are as shown below.
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 """
 service to say hi
@@ -217,4 +219,4 @@ In addition, we can observe the OpenEdge's log and execute the command `docker p
 
 ![View the list of docker containers currently running](../../images/tutorials/process/openedge-docker-ps-python-start.png)
 
-As you can see from the above two figures, except the Local Hub Service and the Local Function Manager Service were loaded when OpenEdge started, the Python Runtime Service was also loaded when the MQTT message of topic `t` was handled by function `sayhi`. More detailed designed contents of Python Runtime Service please refer to [OpenEdge design](../overview/OpenEdge-design.md).
+As you can see from the above two figures, except the `localhub` Service and the Local Function Manager Service were loaded when OpenEdge started, the Python Runtime Service was also loaded when the MQTT message of topic `t` was handled by function `sayhi`. More detailed designed contents of Python Runtime Service please refer to [OpenEdge design](../overview/OpenEdge-design.md).

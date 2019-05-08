@@ -2,18 +2,26 @@
 
 OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **docker** 容器模式和 **native** 进程模式。
 
-本文主要介绍 OpenEdge 运行所需环境的安装与配置以及 OpenEdge 在类 Linux 系统下的快速部署。
+本文主要介绍 OpenEdge 运行所需环境的安装以及 OpenEdge 在类 Linux 系统下的快速部署。
+
+**声明**：
+
+- 本文测试系统基于 Raspbian 系统，内核及CPU架构信息通过执行 `uname -ar` 命令查看如下：
+![系统架构及内核版本查询](../../images/setup/os-raspbian.png)
+- 在 OpenEdge 部署小节中，使用 **docker** 容器模式演示部署流程。
 
 ## 运行环境配置
 
-### Docker 安装
+OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 **docker** 容器模式运行，需要安装 Docker 环境；如果以 **native** 进程模式运行，需要安装 Python 及其运行时依赖包。
 
-OpenEdge 提供两种运行方式。如需使用 **docker** 容器模式启动(推荐)，需要先完成 docker 安装。
+### 容器模式下安装 Docker
+
+如需使用 **docker** 容器模式启动(推荐)，需要先完成 Docker 安装。
 
 **提示**：
 
-- 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装 17.05 及以上版本的 docker 来构建 Dockerfile。但生产环境可以使用低版本 docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
-- 根据 [官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 docker 版本具有一些安全隐患，建议安装/更新 docker 版本到 18.09.2 及以上。
+- 官方提供 Dockerfile 为多阶段镜像构建，如后续需自行构建相关镜像，需要安装 17.05 及以上版本的 Docker 来构建 Dockerfile。但生产环境可以使用低版本 Docker 来运行镜像，经目前测试，最低可使用版本为 12.0。
+- 根据 [官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 Docker 版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2 及以上。
 
 可通过以下命令进行安装（适用于类Linux系统，[支持多种平台](./Support-platforms.md)）：
 
@@ -23,50 +31,50 @@ curl -sSL https://get.docker.com | sh
 
 **更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
 
-### Python2.7 及其运行时依赖包安装
+### 进程模式下安装 Python 及其依赖包
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本的运行，如计划使用 **native** 进程模式启动，需要安装 Python2.7 及运行所依赖的包。如计划以 **docker** 容器模式启动，则无需进行以下步骤。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 或以上版本及运行所依赖的包。推荐安装 Python3.6 或以上版本，如果已经存在 Python3.6 以下版本，可以选择卸载后重装 Python3.6，也可以选择保留用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。
 
-使用如下命令安装 Python2.7:
+- Step 1：查看系统 Python3 版本。如果显示版本是 Python3.6 或以上版本，直接执行 Step 3。否则的话，先执行 Step 2。
 
 ```shell
-sudo apt update
-sudo apt upgrade
-sudo apt install python2.7
-sudo apt install python-pip
-sudo pip install pyyaml protobuf grpcio
+which python3
 ```
 
-输入命令 `python -V` 查看 Python 版本为 2.7.* 后为安装正确。
-
-### 指定默认 Python 版本
-
-某些情况下需要指定默认 Python 版本为上述安装版本。通过以下命令完成(重启有效)：
+- Step 2：建议使用以下推荐方式安装 Python3.6:
 
 ```shell
-alias python=/yourpath/python2.7
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev wget
+wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
+tar -xvf Python-3.6.5.tgz
+sudo chmod -R +x Python-3.6.5
+cd Python-3.6.5/
+./configure
+make
+sudo make install
+```
+
+- Step 3：安装 Python3.6 版本对应的 OpenEdge 项目依赖包:
+
+```shell
+sudo pip3 install grpcio protobuf pyyaml
 ```
 
 ## OpenEdge 部署
 
-### 部署前准备
-
-**声明**：
-
-- 本文主要介绍在 Raspbian 系统下 OpenEdge 的部署、运行，假定在此之前 OpenEdge [运行所需环境](#运行环境配置) 均已配置完毕。
-- 本文所提及的 Raspbian 系统基于以下内核版本及CPU架构，执行命令 `uname -ar` 显示内容如下图所示。
-
-![系统架构及内核版本查询](../../images/setup/os-raspbian.png)
-
-OpenEdge 容器化模式运行要求运行设备已完成 docker 的安装与运行，可参照 [上述步骤](#docker-安装) 进行安装。
-
 ### 部署流程
 
-- Step 1：[下载](../Resources-download.md) OpenEdge 压缩包；
+- Step 1：下载 [OpenEdge](../Resources-download.md) 压缩包；
 - Step 2：打开终端，进入 OpenEdge 软件包下载目录，进行解压缩操作：
-	- 执行命令 `tar -zxvf openedge-xxx.tar.gz`；
-- Step 3：完成解压缩操作后，直接进入 OpenEdge 程序包目录，执行命令 `sudo openedge start`，然后分别查看 OpenEdge 启动、加载日志信息，及查看当前正在运行的容器（通过命令 `docker ps`），并对比二者是否一致（假定当前系统中未启动其他 docker 容器）；
-- Step 4：若查看结果一致，则表示 OpenEdge 已正常启动。
+
+```shell
+tar -zxvf openedge-xxx.tar.gz
+```
+
+- Step 3：完成解压缩操作后，进入 OpenEdge 程序包目录，执行命令 `sudo openedge start` 启动 OpenEdge。随后查看 OpenEdge 的启动、加载日志，并使用 `docker ps` 命令查看此时正在运行的 docker 容器，分析两者检查 OpenEdge 需要启动的镜像是否全部加载成功；
+- Step 4：如果日志中要启动的镜像全部在 docker 中通过容器加载成功，则表示 OpenEdge 启动成功。
 
 **注意**：官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考 [源码编译](./Build-OpenEdge-from-Source.md) 相关内容。
 
@@ -76,11 +84,11 @@ OpenEdge 容器化模式运行要求运行设备已完成 docker 的安装与运
 
 ![OpenEdge 可执行程序包目录](../../images/setup/openedge-dir-raspbian.png)
 
-其中，`bin` 目录存储 openedge 二进制可执行程序，`etc` 目录存储了 openedge 程序启动的配置，`var` 目录存储了模块启动的配置和资源。
+其中，`bin` 目录存储 `openedge` 二进制可执行程序，`etc` 目录存储了程序启动的配置，`var` 目录存储了模块启动的配置和资源。
 
 建议把二进制文件放置到 `/usr/local/bin` 或者其他 `PATH` 环境变量中指定的目录中，然后将 `var` 和 `etc` 两个目录拷贝到 `/usr/local` 目录下，或者其他存放二进制文件目录的上级目录中。当然，你也可以将这两个文件夹保留在你解压的位置。
 
-然后，新打开一个终端，执行命令 `docker stats` 查看当前docker中容器的运行状态，如下图示；
+然后，新打开一个终端，执行命令 `docker stats` 查看当前 docker 中容器的运行状态，如下图示；
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats-before-raspbian.png)
 

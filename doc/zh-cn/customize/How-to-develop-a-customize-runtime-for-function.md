@@ -55,4 +55,4 @@ functions:
 
 ## 启动约定
 
-函数运行时服务同其他服务一样，唯一的区别是实例是由其他服务动态启动的。比如为了避免监听端口冲突，可以动态指定端口。函数运行时模块可以从环境变量中读取 `OPENEDGE_SERVICE_ADDRESS` 作为 GRPC Server 监听的地址。另外，动态启动的函数实例没有权限调用主程序的API。最后，模块监听 `SIGTERM` 信号来实现优雅退出。完整的实现可参考 Python2.7 运行时模块（`openedge-function-python27`）。
+函数运行时服务同其他服务一样，唯一的区别是实例是由其他服务动态启动的。比如为了避免监听端口冲突，可以动态指定端口。函数运行时模块可以从环境变量中读取 `OPENEDGE_SERVICE_ADDRESS` 作为 GRPC Server 监听的地址。另外，动态启动的函数实例没有权限调用主程序的 API 。最后，模块监听 `SIGTERM` 信号来实现优雅退出。完整的实现可参考 Python2.7、Python3.6 运行时模块（`openedge-function-python27`、`openedge-function-python36`）。

@@ -4,27 +4,28 @@
 
 - 本文测试所用设备系统为 Darwin
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
+- 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
 
-与 [连接测试](./Device-connect-to-OpenEdge-with-hub-module.md) 不同的是，若需要通过本地 Hub 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考 [Hub 服务配置](./Config-interpretation.md#openedge-hub配置)。
+与 [连接测试](./Device-connect-to-OpenEdge-with-hub-module.md) 不同的是，若需要通过 `localhub` 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考 [Hub 服务配置](./Config-interpretation.md#openedge-hub配置)。
 
-本文以 TCP 连接方式为例，测试本地 Hub 服务的消息路由、转发功能。
+本文以 TCP 连接方式为例，测试 `localhub` 服务的消息路由、转发功能。
 
 ## 操作流程
 
 - Step 1：以 Docker 容器模式启动 OpenEdge 可执行程序；
-- Step 2：通过 MQTTBOX 以 TCP 方式与本地 Hub 服务[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)；
-    - 若成功与本地 Hub 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
-    - 若与本地 Hub 建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与本地 Hub 成功建立连接为止。
+- Step 2：通过 MQTTBOX 以 TCP 方式与 `localhub` 服务[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)；
+    - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
+    - 若与 `localhub` 服务建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 `localhub` 服务成功建立连接为止。
 - Step 3：通过 MQTTBOX 查看消息的收发状态。
 
 ## 消息路由测试
 
-本文测试使用的本地 Hub 服务的相关配置信息如下：
+本文测试使用的 `localhub` 服务的相关配置信息如下：
 
 ```yaml
-# 本地 Hub 服务配置
+# localhub 服务配置
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'
@@ -109,7 +110,7 @@ var
 
 ![设备间消息转发路由流程图](../../images/tutorials/trans/openedge-trans-flow.png)
 
-具体地，如上图所示，**client1**、**client2** 及 **client3** 分别与本地 Hub 服务建立连接关系，**client1** 具备向主题 `t` 发布消息的权限，**client2** 及 **client3** 分别拥有向主题 `t` 及 `t/topic` 订阅消息的权限。
+具体地，如上图所示，**client1**、**client2** 及 **client3** 分别与 `localhub` 服务建立连接关系，**client1** 具备向主题 `t` 发布消息的权限，**client2** 及 **client3** 分别拥有向主题 `t` 及 `t/topic` 订阅消息的权限。
 
 一旦上述三个 client 与本地 Hub 服务的连接关系建立后，依照上文 subscriptions 配置项信息，**client2** 及 **client3** 将会分别得到从 **client1** 向 OpenEdge Hub 服务发布到主题 `t` 的消息。
 
@@ -117,8 +118,8 @@ var
 
 ![设备间消息转发路由 MQTTBOX 配置](../../images/tutorials/trans/mqttbox-tcp-trans-sub-config.png)
 
-如上图示，可以发现在以 TCP 连接方式与本地 Hub 服务建立连接后，MQTTBOX 成功订阅主题 `t` 及 `t/topic` ，然后点击 `Publish` 按钮向主题 `t` 发布消息 `This message is from openedge.`，即会发现在订阅的主题 `t` 及 `t/topic` 中均收到了该消息，详细如下图示。
+如上图示，可以发现在以 TCP 连接方式与 `localhub` 服务建立连接后，MQTTBOX 成功订阅主题 `t` 及 `t/topic` ，然后点击 `Publish` 按钮向主题 `t` 发布消息 `This message is from openedge.`，即会发现在订阅的主题 `t` 及 `t/topic` 中均收到了该消息，详细如下图示。
 
 ![MQTTBOX 成功收到消息](../../images/tutorials/trans/mqttbox-tcp-trans-message-success.png)
 
-综上，即通过 MQTTBOX 完成了基于本地 Hub 服务的设备间消息转发、路由测试。
+综上，即通过 MQTTBOX 完成了基于 `localhub` 服务的设备间消息转发、路由测试。

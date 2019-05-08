@@ -2,19 +2,27 @@
 
 OpenEdge is mainly developed in Go programming language and supports two startup modes: **docker** container mode and **native** process mode.
 
-This document focuses on the installation and configuration of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
+This document focuses on the installation of the environment required for OpenEdge and the rapid deployment of OpenEdge on the Linux-like system.
+
+**Statement**
+
+- The test system for this article is based on `Ubuntu16.04 amd64`. The kernel and CPU architecture information are viewed by executing the `uname -ar` command as follows:
+![ubuntu kernel detail](../../images/setup/os-ubuntu.png)
+- In the OpenEdge deployment section, the deployment process is demonstrated using the **docker** container mode.
 
 ## Environment Configuration
 
-### Install Docker
+OpenEdge provides **docker** container mode and **native** process mode. If you are running in **docker** container mode, you need to install the Docker environment; if you are running in **native** process mode, you need to install Python and its runtime dependencies.
 
-OpenEdge offers two startup modes. To start using **docker** container mode (recommended), you need to complete the docker installation first.
+### Install Docker in **docker** container mode
+
+To start using **docker** container mode (recommended), you need to complete the docker installation first.
 
 **NOTE**:
 
-- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05.
-- The production environment can run the image using a lower version of docker, which is currently tested to a minimum usable version of 12.0.
-- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
+- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of `Docker` you installed should be above 17.05.
+- The production environment can run the image using a lower version of `Docker`, which is currently tested to a minimum usable version of 12.0.
+- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of `Docker` lower than 18.09.2 has some security implications. It is recommended to install/update `Docker` to 18.09.2 and above.
 
 Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
 
@@ -31,7 +39,7 @@ sudo apt-get install docker.io # Ubuntu 16.04 before
 
 **NOTE**:
 
-- After the docker installation is complete, use the following command to view the installed version of docker.
+- After the `Docker` installation is complete, use the following command to view the installed version of `Docker`.
 
 ```shell
 docker version
@@ -39,50 +47,45 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python2.7 and Python runtime dependency package
+### Install Python and runtime dependency package in **native** process mode
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7. If you run OpenEdge in **native** process mode, you **MUST** firstly install Python2.7 and the package actually use. But, If you plan to start in **docker** container mode, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** or higher version locally and run the package it depends on. If you already have other version of Python3 lower than 3.6, it is recommended that you uninstall it first and install Python3.6. Or you can keep the inconsistent version but need to ensure compatibility.
 
-Commands:
+- Step 1：Check the version of Python3. If the version is Python3.6 or higher, jump Step 3. Instead, jump Step 2.
 
 ```shell
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install python2.7
-sudo apt-get install python-pip
-sudo pip install pyyaml protobuf grpcio
+which python3
 ```
 
-Execute the command `python -V` to see that the version of Python is 2.7.* and the installation is correct.
-
-### Specify The Default Version Of Python
-
-In some cases, you need to specify the default version of Python for the above installed version. Complete with the following command (Valid after reboot):
+- Step 2：Use the following commands to install Python3.6.
 
 ```shell
-alias python=/yourpath/python2.7
+sudo add-apt-repository ppa:jonathonf/python-3.6
+sudo apt-get update
+sudo apt-get install python3.6
+sudo apt-get install python3-pip
+sudo pip3 install pyyaml protobuf grpcio
+```
+
+- Step 3：Install the packages need by OpenEdge based on Python3.6.
+
+```shell
+sudo pip3 install grpcio protobuf pyyaml
 ```
 
 ## Deploy OpenEdge
 
-### Preparation Before Deployment
-
-**Statement**:
-
-- The following is an example of the deployment and startup of OpenEdge on Ubuntu system. It is assumed that the environment required for OpenEdge operation has been [configured](#Environment-Configuration).
-- The Ubuntu system mentioned below is based on the version of kernel is 4.15.0-29-generic, and the CPU architecture is x86_64. Then execute the command `uname -ar` and get the result like this:
-
-![ubuntu kernel detail](../../images/setup/os-ubuntu.png)
-
-Starting OpenEdge containerization mode requires the running device to complete the installation and operation of docker. You can install it by referring to [Steps above](#Install-Docker).
-
 ### Deployment Process
 
-- Step 1: [Download](../Resources-download.md) OpenEdge;
-- Step 2: Open the terminal and enter the OpenEdge directory for decompression:
-	- Execute the command `tar -zxvf openedge-xxx.tar.gz`;
-- Step 3: After the decompression operation is completed, enter the OpenEdge package directory in the terminal, open a new terminal at the same time, execute the command `docker stats`, display the running status of the container in the installed docker, and then execute the command `sudo openedge start`, respectively. Observe the contents displayed by the two terminals;
-- Step 4: If the results are consistent, it means that OpenEdge has started normally.
+- Step1: Download [OpenEdge](../Resources-download.md);
+- Step2: Open the terminal and enter the OpenEdge directory for decompression:
+
+```shell
+tar -zxvf openedge-xxx.tar.gz
+```
+
+- Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
+- Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
 
 **NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)
 
