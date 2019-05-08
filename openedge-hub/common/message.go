@@ -117,10 +117,10 @@ func (m *MsgAck) WaitTimeout(bf *backoff.Backoff, republish Publish, cancel <-ch
 				m.callbackSID(m.SequenceID)
 			}
 			return
-		case <-timer.C: // TODO: add timestamp to message
+		case <-timer.C:
+			timer.Reset(bf.Max)
 			if republish != nil {
 				republish(*m.Message)
-				timer.Reset(bf.Max)
 			}
 		}
 	}
