@@ -14,7 +14,7 @@ OpenEdge 主要使用 Go 语言开发，支持两种运行模式，分别是 **d
 
 OpenEdge 提供 **docker** 容器模式和 **native** 进程模式。如果以 **docker** 容器模式运行，需要安装 Docker 环境；如果以 **native** 进程模式运行，需要安装 Python 及其运行时依赖包。
 
-### Docker 安装
+### 容器模式下安装 Docker
 
 如需使用 **docker** 容器模式启动(推荐)，需要先完成 Docker 安装。
 
@@ -47,17 +47,17 @@ docker version
 
 **更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
 
-### Python 及其运行时依赖包安装
+### 进程模式下安装 Python 及其依赖包
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 及运行所依赖的包。如果已经存在 Python3 的其他版本，则可以首先安装 **Python3.6**， 然后使用 `alias` 命令改变系统的默认执行版本为 Python3.6。如果系统的已有程序需要依赖特定的 Python 版本（这里指非 Python3.6），那么用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。
+OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 或以上版本及运行所依赖的包。推荐安装 Python3.6 或以上版本，如果已经存在 Python3.6 以下版本，可以选择卸载后重装 Python3.6，也可以选择保留用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。
 
-首先查看 Python3.6 是否已经安装：
+首先查看系统 Python3 版本：
 
 ```shell
-which python3.6
+which python3
 ```
 
-如果显示路径的话表明 Python3.6 已经安装成功，不需要进行下面的安装步骤，如果不显示的话表明未安装，则推荐下面的方式进行安装。用户也可以根据自身系统版本采用其他官方介绍的安装方式：
+如果显示版本是 Python3.6 或以上版本，不需要进行下面的安装步骤，否则的话，推荐下面的方式进行安装 Python3.6:
 
 ```shell
 sudo yum -y install epel-release
@@ -68,16 +68,6 @@ sudo pip3 install grpcio protobuf pyyaml
 ```
 
 等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。
-
-### 指定系统默认 Python 版本
-
-用户系统可能存在 Python 的多个版本，所以这里需要指定默认版本为 Python3.6。如不指定，用户需要自行保证编写的代码兼容 Python3.6。
-
-通过以下命令完成(重启有效)：
-
-```shell
-alias python=/yourpath/python3.6
-```
 
 ## OpenEdge 部署
 

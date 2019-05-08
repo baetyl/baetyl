@@ -142,7 +142,7 @@ If the above operations are normal, the resulting script directory structure is 
 Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming the trigger condition is that Python3.6 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import requests
@@ -223,7 +223,7 @@ If the above operations are normal, the resulting script directory structure is 
 Now we write the Python script `calc.py` to use functions provided by `Pytorch` for generating a random tensor, assuming the trigger condition is that Python3.6 runtime receives the "B" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import torch

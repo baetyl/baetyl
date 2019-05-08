@@ -14,7 +14,7 @@ This document focuses on the installation of the environment required for OpenEd
 
 OpenEdge provides **docker** container mode and **native** process mode. If you are running in **docker** container mode, you need to install the Docker environment; if you are running in **native** process mode, you need to install Python and its runtime dependencies.
 
-### Install Docker
+### Install Docker in **docker** container mode
 
 To start using **docker** container mode (recommended), you need to complete the docker installation first.
 
@@ -46,17 +46,17 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python and Python runtime dependency package
+### Install Python and runtime dependency package in **native** process mode
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** locally and run the package it depends on. If you already have other versions of Python3, you can install Python3.6 first, then use `alias` command to change the system's default Python execution version to Python3.6. If your system  exists some programs which need to rely on a specific Python version (herein referred to non-Python3.6), users need to write codes which are compatible with Python3.6 to ensure the function computing service can be used normally. If you plan to start in **docker** container mode, you do not need to perform the following steps.
+OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** or higher version locally and run the package it depends on. If you already have other version of Python3 lower than 3.6, it is recommended that you uninstall it first and install Python3.6.
 
-First check whether Python3.6 is installed:
+First check the version of Python3:
 
 ```shell
-which python3.6
+which python3
 ```
 
-If terminal displays the path of Python3.6, it means Python3.6 is installed. Instead, execute the following commands to install:
+If the version is Python3.6 or higher, it's no need to do the following commands. Instead, execute the following commands to install Python3.6:
 
 ```shell
 sudo yum -y install epel-release
@@ -67,16 +67,6 @@ sudo pip3 install grpcio protobuf pyyaml
 ```
 
 After finishing the upper commands, execute the command `python3.6` to see whether Python3.6 installed successfully.
-
-### Specify The Default Version of Python
-
-If the user's system have multiple versions of Python, you need to set the default version to Python3.6. If not, the user must ensure the code written is compatible with Python3.6.
-
-Complete with the following command (Valid after reboot):
-
-```shell
-alias python=/yourpath/python3.6
-```
 
 ## Deploy OpenEdge
 

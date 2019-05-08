@@ -143,7 +143,7 @@ python your_script.py
 下面，我们编写脚本 `get.py` 来获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息，假定触发条件为 Python 运行时接收到来自 `localhub` 服务的 `A` 指令，具体如下：
 
 ```python
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import requests
@@ -223,7 +223,7 @@ python your_script.py
 下面，我们编写脚本 `calc.py` 来使用 `Pytorch` 中的函数生成随机张量，假定触发条件为 Python 运行时接收到来自 `localhub` 服务的 `B` 指令，具体如下：
 
 ```python
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import torch

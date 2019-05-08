@@ -418,7 +418,7 @@ Python functions support reading contexts such as context['functionName'].
 An example of a Python function implementation:
 
 ```python
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 """
 module to say hi

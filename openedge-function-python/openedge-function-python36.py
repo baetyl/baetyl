@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 """
 grpc server for python3.6 function
