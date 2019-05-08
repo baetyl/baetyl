@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/baidu/openedge/protocol/http"
 )
@@ -11,12 +12,13 @@ import (
 // Client client of api server
 type Client struct {
 	cli *http.Client
+	ver string
 }
 
 // NewEnvClient creates a new client by env
 func NewEnvClient() (*Client, error) {
-	addr, ok := os.LookupEnv(EnvMasterAPIKey)
-	if !ok || len(addr) == 0 {
+	addr := os.Getenv(EnvMasterAPIKey)
+	if len(addr) == 0 {
 		return nil, fmt.Errorf("Env (%s) not found", EnvMasterAPIKey)
 	}
 	c := http.ClientInfo{
@@ -24,23 +26,27 @@ func NewEnvClient() (*Client, error) {
 		Username: os.Getenv(EnvServiceNameKey),
 		Password: os.Getenv(EnvServiceTokenKey),
 	}
-	return NewClient(c)
+	return NewClient(c, os.Getenv(EnvMasterAPIVersionKey))
 }
 
 // NewClient creates a new client
-func NewClient(c http.ClientInfo) (*Client, error) {
+func NewClient(c http.ClientInfo, ver string) (*Client, error) {
 	cli, err := http.NewClient(c)
 	if err != nil {
 		return nil, err
 	}
+	if ver != "" && !strings.HasPrefix(ver, "/") {
+		ver = "/" + ver
+	}
 	return &Client{
 		cli: cli,
+		ver: ver,
 	}, nil
 }
 
 // InspectSystem inspect all stats
 func (c *Client) InspectSystem() (*Inspect, error) {
-	body, err := c.cli.Get("/v1/system/inspect")
+	body, err := c.cli.Get(c.ver + "/system/inspect")
 	if err != nil {
 		return nil, err
 	}
@@ -58,13 +64,13 @@ func (c *Client) UpdateSystem(file string, clean bool) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.cli.Put(data, "/v1/system/update")
+	_, err = c.cli.Put(data, c.ver+"/system/update")
 	return err
 }
 
 // GetAvailablePort gets available port
 func (c *Client) GetAvailablePort() (string, error) {
-	res, err := c.cli.Get("/v1/ports/available")
+	res, err := c.cli.Get(c.ver + "/ports/available")
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +92,7 @@ func (c *Client) ReportInstance(serviceName, instanceName string, stats map[stri
 	if err != nil {
 		return err
 	}
-	_, err = c.cli.Put(data, "/v1/services/%s/instances/%s/report", serviceName, instanceName)
+	_, err = c.cli.Put(data, c.ver+"/services/%s/instances/%s/report", serviceName, instanceName)
 	return err
 }
 
@@ -96,12 +102,12 @@ func (c *Client) StartInstance(serviceName, instanceName string, dynamicConfig m
 	if err != nil {
 		return err
 	}
-	_, err = c.cli.Put(data, "/v1/services/%s/instances/%s/start", serviceName, instanceName)
+	_, err = c.cli.Put(data, c.ver+"/services/%s/instances/%s/start", serviceName, instanceName)
 	return err
 }
 
 // StopInstance stops a service instance
 func (c *Client) StopInstance(serviceName, instanceName string) error {
-	_, err := c.cli.Put(nil, "/v1/services/%s/instances/%s/stop", serviceName, instanceName)
+	_, err := c.cli.Put(nil, c.ver+"/services/%s/instances/%s/stop", serviceName, instanceName)
 	return err
 }

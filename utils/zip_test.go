@@ -9,7 +9,7 @@ import (
 )
 
 func TestZip(t *testing.T) {
-	os.MkdirAll("var", 0777)
+	os.MkdirAll("var", 0755)
 	defer os.RemoveAll("var")
 	err := archiver.Zip.Make("var/tmp.zip", []string{"tomb.go"})
 	assert.NoError(t, err)

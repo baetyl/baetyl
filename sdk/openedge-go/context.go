@@ -15,6 +15,7 @@ import (
 const (
 	EnvHostOSKey                 = "OPENEDGE_HOST_OS"
 	EnvMasterAPIKey              = "OPENEDGE_MASTER_API"
+	EnvMasterAPIVersionKey       = "OPENEDGE_MASTER_API_VERSION"
 	EnvRunningModeKey            = "OPENEDGE_RUNNING_MODE"
 	EnvServiceNameKey            = "OPENEDGE_SERVICE_NAME"
 	EnvServiceTokenKey           = "OPENEDGE_SERVICE_TOKEN"

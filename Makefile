@@ -79,7 +79,7 @@ install-native: openedge package
 
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-function-python36
 	unzip -o openedge-function-python/package36.zip -d ${PREFIX}/var/db/openedge/openedge-function-python36
-	
+
 	install -d -m 0755 ${PREFIX}/var/db/openedge/openedge-timer
 	unzip -o openedge-timer/package.zip -d ${PREFIX}/var/db/openedge/openedge-timer
 
