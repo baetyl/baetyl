@@ -52,23 +52,26 @@ docker version
 
 OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 或以上版本及运行所依赖的包。推荐安装 Python3.6 或以上版本，如果已经存在 Python3.6 以下版本，可以选择卸载后重装 Python3.6，也可以选择保留用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。
 
-首先查看系统 Python3 版本：
+- Step 1：查看系统 Python3 版本。如果显示版本是 Python3.6 或以上版本，直接执行 Step 3。否则的话，先执行 Step 2。
 
 ```shell
 which python3
 ```
 
-如果显示版本是 Python3.6 或以上版本，不需要进行下面的安装步骤，否则的话，推荐下面的方式进行安装 Python3.6:
+- Step 2：建议使用以下推荐方式安装 Python3.6:
 
 ```shell
 sudo add-apt-repository ppa:jonathonf/python-3.6
 sudo apt-get update
 sudo apt-get install python3.6
 sudo apt-get install python3-pip
-sudo pip3 install pyyaml protobuf grpcio
 ```
 
-等以上命令执行完后输入命令 `python3.6` 确保 Python3.6 安装成功。
+- Step 3：安装 Python3.6 版本对应的 OpenEdge 项目依赖包:
+
+```shell
+sudo pip3 install grpcio protobuf pyyaml
+```
 
 ## OpenEdge 部署
 
