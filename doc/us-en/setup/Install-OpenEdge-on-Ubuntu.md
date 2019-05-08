@@ -51,13 +51,13 @@ docker version
 
 OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** or higher version locally and run the package it depends on. If you already have other version of Python3 lower than 3.6, it is recommended that you uninstall it first and install Python3.6. Or you can keep the inconsistent version but need to ensure compatibility.
 
-First check the version of Python3:
+- Step 1：Check the version of Python3. If the version is Python3.6 or higher, jump Step 3. Instead, jump Step 2.
 
 ```shell
 which python3
 ```
 
-If the version is Python3.6 or higher, it's no need to do the following commands. Instead, execute the following commands to install Python3.6:
+- Step 2：Use the following commands to install Python3.6.
 
 ```shell
 sudo add-apt-repository ppa:jonathonf/python-3.6
@@ -67,7 +67,11 @@ sudo apt-get install python3-pip
 sudo pip3 install pyyaml protobuf grpcio
 ```
 
-After finishing the upper commands, execute the command `python3.6` to see whether Python3.6 installed successfully.
+- Step 3：Install the packages need by OpenEdge based on Python3.6.
+
+```shell
+sudo pip3 install grpcio protobuf pyyaml
+```
 
 ## Deploy OpenEdge
 
