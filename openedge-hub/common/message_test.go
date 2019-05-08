@@ -64,10 +64,10 @@ func TestMessageAckWait(t *testing.T) {
 	count := uint64(0)
 	callback := func(sid uint64) { atomic.StoreUint64(&last, sid) }
 	redo := func(Message) { atomic.AddUint64(&count, 1) }
-	acks := [3]*Message{
-		&Message{SequenceID: 1},
-		&Message{SequenceID: 2},
-		&Message{SequenceID: 3},
+	acks := [3]*MsgAck{
+		&MsgAck{Message: &Message{SequenceID: 1}, FST: time.Now()},
+		&MsgAck{Message: &Message{SequenceID: 2}, FST: time.Now()},
+		&MsgAck{Message: &Message{SequenceID: 3}, FST: time.Now()},
 	}
 	acks[0].SetCallbackSID(callback)
 	acks[1].SetCallbackSID(callback)
@@ -106,7 +106,7 @@ func TestMessageAckWait(t *testing.T) {
 func TestMessageAckRedoClose(t *testing.T) {
 	actual := uint64(0)
 	c := make(chan struct{})
-	ack := &Message{SequenceID: 10}
+	ack := &MsgAck{Message: &Message{SequenceID: 10}, FST: time.Now()}
 	ack.SetCallbackSID(func(sid uint64) { atomic.StoreUint64(&actual, sid) })
 	ack.SetAcknowledge()
 	var wg sync.WaitGroup

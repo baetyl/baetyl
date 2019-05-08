@@ -20,7 +20,7 @@ var errMsgDiscarded = fmt.Errorf("message discarded since channel is full")
 type msgchan struct {
 	msgq0            chan *common.Message
 	msgq1            chan *common.Message
-	msgack           chan *common.Message // TODO: move to sink?
+	msgack           chan *common.MsgAck // TODO: move to sink?
 	persist          func(uint64)
 	msgtomb          utils.Tomb
 	acktomb          utils.Tomb
@@ -41,7 +41,7 @@ func newMsgChan(l0, l1 int, publish, republish common.Publish, republishTimeout 
 	return &msgchan{
 		msgq0:            make(chan *common.Message, l0),
 		msgq1:            make(chan *common.Message, l1),
-		msgack:           make(chan *common.Message, l1),
+		msgack:           make(chan *common.MsgAck, l1),
 		publish:          publish,
 		republish:        republish,
 		republishBackoff: backoff,
@@ -205,7 +205,7 @@ func (c *msgchan) process(msg *common.Message) {
 		c.publish(*msg)
 	}
 	select {
-	case c.msgack <- msg:
+	case c.msgack <- &common.MsgAck{Message: msg, FST: time.Now()}:
 	case <-c.acktomb.Dying():
 		return
 	}
@@ -218,7 +218,7 @@ func (c *msgchan) discard(msg *common.Message) {
 	}
 	msg.SetCallbackSID(c.persist)
 	select {
-	case c.msgack <- msg:
+	case c.msgack <- &common.MsgAck{Message: msg, FST: time.Now()}:
 	case <-c.acktomb.Dying():
 		return
 	}
