@@ -1,5 +1,5 @@
 hub:
-  address: tcp://:1883
+  address: tcp://0.0.0.0:1883
   username: test
   password: hahaha
 rules:

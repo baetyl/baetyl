@@ -8,6 +8,8 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -160,6 +162,14 @@ func (c *functionClient) Call(ctx context.Context, in *FunctionMessage, opts ...
 // FunctionServer is the server API for Function service.
 type FunctionServer interface {
 	Call(context.Context, *FunctionMessage) (*FunctionMessage, error)
+}
+
+// UnimplementedFunctionServer can be embedded to have forward compatible implementations.
+type UnimplementedFunctionServer struct {
+}
+
+func (*UnimplementedFunctionServer) Call(ctx context.Context, req *FunctionMessage) (*FunctionMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Call not implemented")
 }
 
 func RegisterFunctionServer(s *grpc.Server, srv FunctionServer) {

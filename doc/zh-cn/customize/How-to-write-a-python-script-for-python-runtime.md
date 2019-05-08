@@ -3,13 +3,14 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
-- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载 MQTTBOX 客户端)
-- 本文所提到的测试案例中，对应本地 Hub 服务和函数计算服务的配置统一配置如下
+- python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
+- 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
+- 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务。并且针对本文的测试案例中，对应的 `localhub` 服务、函数计算服务以及其他服务的配置统一如下：
 
 ```yaml
 # 本地 Hub 配置
 listen:
-  - tcp://:1883
+  - tcp://0.0.0.0:1883
 principals:
   - username: 'test'
     password: 'hahaha'
@@ -27,14 +28,14 @@ hub:
 rules:
   - clientid: localfunc-1
     subscribe:
-      topic: t
+      topic: py
     function:
-      name: sayhi
+      name: sayhi3
     publish:
-      topic: t/hi
+      topic: py/hi
 functions:
-  - name: sayhi
-    service: function-sayhi
+  - name: sayhi3
+    service: function-sayhi3
     instance:
       min: 0
       max: 10
@@ -42,7 +43,7 @@ functions:
 
 # python function 配置
 functions:
-  - name: 'sayhi'
+  - name: 'sayhi3'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
 
@@ -71,8 +72,8 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi
-    image: openedge-function-python27
+  - name: function-sayhi3
+    image: openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -109,7 +110,7 @@ Python 脚本的名称可以参照 Python 的通用命名规范，OpenEdge 并�
 
 ```yaml
 functions:
-  - name: 'sayhi'
+  - name: 'sayhi3'
     handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
 ```
@@ -132,7 +133,7 @@ def handler(event, context):
     return event
 ```
 
-OpenEdge 官方提供的 Python 运行时支持2个参数: event 和 context，下面将分别介绍其用法。
+OpenEdge 官方提供的 Python 运行时支持 2 个参数: event 和 context，下面将分别介绍其用法。
 
 - **event**：根据 MQTT 报文中的 Payload 传入不同参数
     - 若原始 Payload 为一个 Json 数据，则传入经过 json.loads(Payload) 处理后的数据;
@@ -151,7 +152,7 @@ _**提示**：在云端 CFC 测试时，请注意不要直接使用 OpenEdge 定
 下面我们实现一个简单的 Python 函数，目标是为每一条流经需要用该 Python 脚本进行处理的 MQTT 消息附加一条 `hello world` 信息。对于字典类消息，将其直接返回即可，对于非字典类消息，则将之转换为字符串后返回。
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 def handler(event, context):
@@ -176,51 +177,4 @@ def handler(event, context):
 
 ![发送非字典类数据](../../images/customize/write-python-script-none-dict.png)
 
-如上，对于一些常规的需求，我们通过系统 Python 环境的标准库就可以完成。但是，对于一些较为复杂的需求，往往需要引入第三方库来完成。如何解决这个问题？我们将在下文详述。
-
-## 如何引用第三方包
-
-通常情况下，系统自带的 Python 环境很可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出一个示例。
-
-假定我们想要对一个网站进行爬虫，获取相应的信息。这里，我们可以引入第三方库 [requests](https://pypi.org/project/requests)。如何引入，具体如下所示：
-
-- 步骤 1: `pip download requests` // 下载 requests 及其依赖（idna、urllib3、chardet、certifi）
-- 步骤 2: `cp requests-package /directory/to/Python/script` // 将下载的 requests 及其依赖的源码包拷贝到该 Python 脚本目录
-- 步骤 3: `touch __init__.py` // 使执行脚本所在目录成为一个 package
-- 步骤 4: `import requests` // 引入第三方库 requests，然后编写具体执行脚本
-- 步骤 5: `python your_script.py` // 执行脚本
-
-如上述操作正常，则形成的脚本目录结构如下图所示。
-
-![Python 第三方库脚本目录](../../images/customize/python-third-lib-dir.png)
-
-下面，我们编写脚本 `get.py` 来获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息，假定触发条件为 Python 运行时接收到来自 Hub 的 `A` 指令，具体如下：
-
-```python
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import requests
-
-def handler(event, context):
-  """
-  data: {"action": "A"}
-  """
-  if 'action' in event:
-    if event['action'] == 'A':
-      r = requests.get('https://openedge.tech')
-      if str(r.status_code) == '200':
-        event['info'] = r.headers
-      else:
-        event['info'] = 'exception found'
-    else:
-      event['info'] = 'action error'
-  else:
-    event['error'] = 'action not found'
-    
-  return event
-```
-
-如上，Hub 接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况，如正常，则可正常获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息。
-
-![获取OpenEdge官网headers信息](../../images/customize/write-python-script-third-lib.png)
+如上，对于一些常规的需求，我们通过系统 Python 环境的标准库就可以完成。但是，对于一些较为复杂的需求，往往需要引入第三方库来完成。如何解决这个问题？我们将在 [如何针对 Python 运行时引入第三方包](./How-to-import-third-party-libraries-for-python-runtime.md) 小节详述。

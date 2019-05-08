@@ -119,7 +119,7 @@ func TestPrincipalsValidate(t *testing.T) {
 	// round 1: regular principals config validate
 	principals := []Principal{{
 		Username: "test",
-		Password: "be178c0543eb17f5f3043021c9e5fcf30285e557a4fc309cce97ff9ca6182912",
+		Password: "hahaha",
 		Permissions: []Permission{
 			{"pub", []string{"test", "benchmark", "#", "+", "test/+", "test/#"}},
 			{"sub", []string{"test", "benchmark", "#", "+", "test/+", "test/#"}},

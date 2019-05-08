@@ -5,7 +5,8 @@ RUN apt-get update \
 	&& ln -s /usr/bin/python2.7 /usr/bin/python 
 
 FROM base as builder
-RUN apt-get install -y python-pip \
+RUN apt-get update \
+	&& apt-get install -y python-pip \
 	&& pip install --install-option="--prefix=/install" pyyaml protobuf grpcio 
 
 FROM base

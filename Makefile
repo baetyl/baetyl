@@ -175,26 +175,47 @@ release-image:
 # Need push built images first
 release-manifest:
 	mkdir tmp
-	# Push openedge-agent manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-agent.yml
-	# Push openedge-hub manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-hub/manifest.yml.template > tmp/manifest-hub.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-hub.yml
-	# Push openedge-function-manager manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-manager/manifest.yml.template > tmp/manifest-function-manager.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-manager.yml
-	# Push openedge-function-python27 manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest27.yml.template > tmp/manifest-function-python27.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27.yml
-	# Push openedge-function-python36 manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest36.yml.template > tmp/manifest-function-python36.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python36.yml
-	# Push openedge-remote-mqtt manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt.yml
+	# Push openedge-agent manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-agent-$(VERSION).yml
+	# Push openedge-agent manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent-latest.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-agent-latest.yml
+	# Push openedge-hub manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-hub/manifest.yml.template > tmp/manifest-hub-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-hub-$(VERSION).yml
+	# Push openedge-hub manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-hub/manifest.yml.template > tmp/manifest-hub-latest.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-hub-latest.yml
+	# Push openedge-function-manager manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-manager/manifest.yml.template > tmp/manifest-function-manager-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-manager-$(VERSION).yml
+	# Push openedge-function-manager manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-manager/manifest.yml.template > tmp/manifest-function-manager-latest.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-manager-latest.yml
+	# Push openedge-function-python27 manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest27.yml.template > tmp/manifest-function-python27-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27-$(VERSION).yml
+	# Push openedge-function-python27 manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest27.yml.template > tmp/manifest-function-python27-latest.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27-latest.yml
+	# Push openedge-function-python36 manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest36.yml.template > tmp/manifest-function-python36-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python36-$(VERSION).yml
+	# Push openedge-function-python36 manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest36.yml.template > tmp/manifest-function-python36-latest.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python36-latest.yml
+	# Push openedge-remote-mqtt manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt-$(VERSION).yml
+	# Push openedge-remote-mqtt manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt-latest.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt.yml
-	# Push openedge-timer manifest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer.yml
+	# Push openedge-timer manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer-$(VERSION).yml
+	# Push openedge-timer manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer-latest.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer.yml
 
 	rm -rf tmp
@@ -248,38 +269,38 @@ release-package:
 
 push-image:
 	# Push hub images
-	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-amd64:latest $(IMAGE_PREFIX)/openedge-hub-linux-amd64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-arm64:latest $(IMAGE_PREFIX)/openedge-hub-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-arm:latest $(IMAGE_PREFIX)/openedge-hub-linux-arm:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-hub-linux-386:latest $(IMAGE_PREFIX)/openedge-hub-linux-386:$(VERSION)
-	docker push $(IMAGE_PREFIX)/openedge-hub-linux-amd64
-	docker push $(IMAGE_PREFIX)/openedge-hub-linux-arm64
-	docker push $(IMAGE_PREFIX)/openedge-hub-linux-arm
-	docker push $(IMAGE_PREFIX)/openedge-hub-linux-386
+	docker tag $(IMAGE_PREFIX)openedge-hub-linux-amd64:latest $(IMAGE_PREFIX)openedge-hub-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-hub-linux-arm64:latest $(IMAGE_PREFIX)openedge-hub-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-hub-linux-arm:latest $(IMAGE_PREFIX)openedge-hub-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-hub-linux-386:latest $(IMAGE_PREFIX)openedge-hub-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-hub-linux-amd64
+	docker push $(IMAGE_PREFIX)openedge-hub-linux-arm64
+	docker push $(IMAGE_PREFIX)openedge-hub-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-hub-linux-386
 	# Push agent images
-	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-amd64:latest $(IMAGE_PREFIX)/openedge-agent-linux-amd64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-arm64:latest $(IMAGE_PREFIX)/openedge-agent-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-arm:latest $(IMAGE_PREFIX)/openedge-agent-linux-arm:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-agent-linux-386:latest $(IMAGE_PREFIX)/openedge-agent-linux-386:$(VERSION)
-	docker push $(IMAGE_PREFIX)/openedge-agent-linux-amd64
-	docker push $(IMAGE_PREFIX)/openedge-agent-linux-arm64
-	docker push $(IMAGE_PREFIX)/openedge-agent-linux-arm
-	docker push $(IMAGE_PREFIX)/openedge-agent-linux-386
+	docker tag $(IMAGE_PREFIX)openedge-agent-linux-amd64:latest $(IMAGE_PREFIX)openedge-agent-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-agent-linux-arm64:latest $(IMAGE_PREFIX)openedge-agent-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-agent-linux-arm:latest $(IMAGE_PREFIX)openedge-agent-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-agent-linux-386:latest $(IMAGE_PREFIX)openedge-agent-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-agent-linux-amd64
+	docker push $(IMAGE_PREFIX)openedge-agent-linux-arm64
+	docker push $(IMAGE_PREFIX)openedge-agent-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-agent-linux-386
 	# Push function manager images
-	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-amd64:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-amd64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-arm64:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-arm:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-arm:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-function-manager-linux-386:latest $(IMAGE_PREFIX)/openedge-function-manager-linux-386:$(VERSION)
-	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-amd64
-	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-arm64
-	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-arm
-	docker push $(IMAGE_PREFIX)/openedge-function-manager-linux-386
+	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-amd64:latest $(IMAGE_PREFIX)openedge-function-manager-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-arm64:latest $(IMAGE_PREFIX)openedge-function-manager-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-arm:latest $(IMAGE_PREFIX)openedge-function-manager-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-386:latest $(IMAGE_PREFIX)openedge-function-manager-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-amd64
+	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-arm64
+	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-386
 	# Push remote mqtt images
-	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-amd64:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-amd64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm64:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm:$(VERSION)
-	docker tag $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-386:latest $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-386:$(VERSION)
-	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-amd64
-	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm64
-	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-arm
-	docker push $(IMAGE_PREFIX)/openedge-remote-mqtt-linux-386
+	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-amd64:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-amd64
+	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64
+	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386

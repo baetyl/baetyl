@@ -6,7 +6,7 @@
 - [openedge-agent 配置](#openedge-agent-配置)
 - [openedge-hub 配置](#openedge-hub-配置)
 - [openedge-function-manager 配置](#openedge-function-manager-配置)
-- [openedge-function-python27 配置](#openedge-function-python27-配置)
+- [openedge-function-python27、openedge-function-python36 配置](#openedge-function-python27-配置-openedge-function-python36-配置)
 - [openedge-remote-mqtt 配置](#openedge-remote-mqtt-配置)
 
 ## 说在前头
@@ -242,9 +242,10 @@ functions: 函数列表
     timeout: 默认值：30s，Client 连接函数实例超时时间
 ```
 
-## openedge-function-python27 配置
+## openedge-function-python27、openedge-function-python36 配置
 
 ```yaml
+# 两个模块的配置方式相同，可参考下面一份配置
 server: 作为 GRPC Server 独立启动时配置；托管给 openedge-function-manager 无需配置
   address: GRPC Server 监听的地址，<host>:<port>
   workers:
