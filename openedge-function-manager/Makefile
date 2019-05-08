@@ -5,7 +5,7 @@ all: openedge-function-manager package.zip
 
 openedge-function-manager: $(SRC)
 	@echo "BUILD $@"
-	@go build ${GOFLAG} .
+	@CGO_ENABLED=0 go build ${GOFLAG} .
 
 package.zip: openedge-function-manager
 	install -d -m 0755 __package/bin

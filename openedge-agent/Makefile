@@ -5,7 +5,7 @@ all: openedge-agent package.zip
 
 openedge-agent: $(SRC)
 	@echo "BUILD $@"
-	@go build ${GOFLAG} .
+	@CGO_ENABLED=0 go build ${GOFLAG} .
 
 package.zip: openedge-agent
 	install -d -m 0755 __package/bin

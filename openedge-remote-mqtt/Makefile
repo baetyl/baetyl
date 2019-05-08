@@ -5,7 +5,7 @@ all: openedge-remote-mqtt package.zip
 
 openedge-remote-mqtt: $(SRC)
 	@echo "BUILD $@"
-	@go build ${GOFLAG} .
+	@CGO_ENABLED=0 go build ${GOFLAG} .
 
 package.zip: openedge-remote-mqtt
 	install -d -m 0755 __package/bin
