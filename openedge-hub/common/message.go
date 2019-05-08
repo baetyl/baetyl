@@ -92,14 +92,22 @@ func (m *Message) Ack() {
 	}
 }
 
+// MsgAck MQTT message with first send time
+type MsgAck struct {
+	*Message
+	FST time.Time // first send time
+}
+
 // WaitTimeout waits until finish
-func (m *Message) WaitTimeout(bf *backoff.Backoff, republish Publish, cancel <-chan struct{}) {
+func (m *MsgAck) WaitTimeout(bf *backoff.Backoff, republish Publish, cancel <-chan struct{}) {
 	if m.acknowledge == nil {
 		if m.callbackSID != nil {
 			m.callbackSID(m.SequenceID)
 		}
 		return
 	}
+	timer := time.NewTimer(bf.Max - time.Now().Sub(m.FST))
+	defer timer.Stop()
 	for {
 		select {
 		case <-cancel:
@@ -109,9 +117,10 @@ func (m *Message) WaitTimeout(bf *backoff.Backoff, republish Publish, cancel <-c
 				m.callbackSID(m.SequenceID)
 			}
 			return
-		case <-time.After(bf.Max): // TODO: add timestamp to message
+		case <-timer.C: // TODO: add timestamp to message
 			if republish != nil {
-				republish(*m)
+				republish(*m.Message)
+				timer.Reset(bf.Max)
 			}
 		}
 	}
