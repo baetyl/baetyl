@@ -115,8 +115,11 @@ image:
 	make -C openedge-agent image
 	make -C openedge-remote-mqtt image
 	make -C openedge-function-manager image
-	make -C openedge-function-python image
 	make -C openedge-timer image
+	make function-python-image
+
+function-python-image:
+	make -C openedge-function-python image
 
 release: release-image push-image release-manifest release-package
 	# release linux 386
@@ -171,6 +174,7 @@ release-image:
 	# linux-arm64 images release
 	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
 	make clean
+	make function-python-image
 
 # Need push built images first
 release-manifest:
@@ -304,3 +308,9 @@ push-image:
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386
+	# Push function python27 images
+	docker tag $(IMAGE_PREFIX)openedge-function-python27:latest $(IMAGE_PREFIX)openedge-function-python27:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-function-python27
+	# Push function python36 images
+	docker tag $(IMAGE_PREFIX)openedge-function-python36:latest $(IMAGE_PREFIX)openedge-function-python36:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-function-python36
