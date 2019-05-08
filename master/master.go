@@ -109,6 +109,7 @@ func defaults(c *Config) error {
 		}
 		utils.SetEnv(openedge.EnvMasterAPIKey, addr)
 	}
+	utils.SetEnv(openedge.EnvMasterAPIVersionKey, "v1")
 	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
 	utils.SetEnv(openedge.EnvRunningModeKey, c.Mode)
 	return nil

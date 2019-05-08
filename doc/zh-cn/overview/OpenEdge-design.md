@@ -138,8 +138,8 @@ OpenEdge 主程序会暴露一组 RESTful API，采用 HTTP/1。在 Linux 系统
 
 Header 名称如下：
 
-- x-iot-edge-username：账号名称，即服务名称
-- x-iot-edge-password：账号密码，即动态 Token
+- x-openedge-username：账号名称，即服务名称
+- x-openedge-password：账号密码，即动态 Token
 
 下面是目前提供的接口：
 

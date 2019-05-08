@@ -140,8 +140,8 @@ For the service instance, after the instance is started, you can get the API Ser
 
 The Header key is as follows：
 
-- x-iot-edge-username：service name as username
-- x-iot-edge-password：dynamic token as password
+- x-openedge-username：service name as username
+- x-openedge-password：dynamic token as password
 
 The following are the currently available interfaces:
 
