@@ -5,7 +5,7 @@ all: openedge-hub package.zip
 
 openedge-hub: $(SRC)
 	@echo "BUILD $@"
-	@go build ${GOFLAG} .
+	@CGO_ENABLED=0 go build ${GOFLAG} .
 
 package.zip: openedge-hub
 	install -d -m 0755 __package/bin
