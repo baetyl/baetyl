@@ -202,13 +202,32 @@ release-manifest:
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt-$(VERSION).yml
 	# Push openedge-remote-mqtt manifest latest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt-latest.yml
 	# Push openedge-timer manifest version
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer-$(VERSION).yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer-$(VERSION).yml
 	# Push openedge-timer manifest latest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer-latest.yml
+
+	rm -rf tmp
+
+# You need build the function-builder image at different platforms and push them to the hub first
+release-builder-manifest:
+	mkdir tmp
+
+	# Push openedge-python27-builder manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest-python27-builder.yml.template > tmp/manifest-python27-builder-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python27-builder-$(VERSION).yml
+	# Push openedge-python27-builder manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-latest.yml
+	# Push openedge-python36-builder manifest version
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-$(VERSION).yml
+	# Push openedge-python36-builder manifest latest
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-latest.yml
 
 	rm -rf tmp
 
