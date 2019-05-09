@@ -121,9 +121,6 @@ image:
 function-python-image:
 	make -C openedge-function-python image
 
-builder-image:
-	make -C openedge-function-python builder-image
-
 release: release-image push-image release-manifest release-package
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
@@ -205,13 +202,13 @@ release-manifest:
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt-$(VERSION).yml
 	# Push openedge-remote-mqtt manifest latest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt-latest.yml
 	# Push openedge-timer manifest version
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer-$(VERSION).yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer-$(VERSION).yml
 	# Push openedge-timer manifest latest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-timer/manifest.yml.template > tmp/manifest-timer-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-timer-latest.yml
 
 	rm -rf tmp
 

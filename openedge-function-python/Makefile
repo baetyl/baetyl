@@ -24,7 +24,7 @@ image:
 	@echo "IMAGE openedge-function-python36"
 	docker build -t $(IMAGE_PREFIX)openedge-function-python36$(IMAGE_SUFFIX):$(TAG) -f Dockerfile36 .
 
-builder-image:
+function-builder-image:
 	@echo "IMAGE openedge-function-python27 builder"
 	docker build -t $(IMAGE_PREFIX)openedge-function-python27-builder$(IMAGE_SUFFIX):$(TAG) -f Dockerfile27-builder .
 	@echo "IMAGE openedge-function-python36 builder"
