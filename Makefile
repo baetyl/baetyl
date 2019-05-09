@@ -178,6 +178,7 @@ release-image:
 
 # Need push built images first
 release-manifest:
+	rm -rf tmp
 	mkdir tmp
 	# Push openedge-agent manifest version
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent-$(VERSION).yml
@@ -315,6 +316,15 @@ push-image:
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386
+	# Push timer images
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-amd64:latest $(IMAGE_PREFIX)openedge-timer-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-arm64:latest $(IMAGE_PREFIX)openedge-timer-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-arm:latest $(IMAGE_PREFIX)openedge-timer-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-386:latest $(IMAGE_PREFIX)openedge-timer-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-amd64
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-arm64
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-386
 	# Push function python27 images
 	docker tag $(IMAGE_PREFIX)openedge-function-python27:latest $(IMAGE_PREFIX)openedge-function-python27:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-function-python27
