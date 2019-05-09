@@ -115,8 +115,11 @@ image:
 	make -C openedge-agent image
 	make -C openedge-remote-mqtt image
 	make -C openedge-function-manager image
-	make -C openedge-function-python image
 	make -C openedge-timer image
+	make function-python-image
+
+function-python-image:
+	make -C openedge-function-python image
 
 release: release-image push-image release-manifest release-package
 	# release linux 386
@@ -171,6 +174,7 @@ release-image:
 	# linux-arm64 images release
 	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
 	make clean
+	make function-python-image
 
 # Need push built images first
 release-manifest:
@@ -193,18 +197,6 @@ release-manifest:
 	# Push openedge-function-manager manifest latest
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-manager/manifest.yml.template > tmp/manifest-function-manager-latest.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-manager-latest.yml
-	# Push openedge-function-python27 manifest version
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest27.yml.template > tmp/manifest-function-python27-$(VERSION).yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27-$(VERSION).yml
-	# Push openedge-function-python27 manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest27.yml.template > tmp/manifest-function-python27-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python27-latest.yml
-	# Push openedge-function-python36 manifest version
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest36.yml.template > tmp/manifest-function-python36-$(VERSION).yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python36-$(VERSION).yml
-	# Push openedge-function-python36 manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest36.yml.template > tmp/manifest-function-python36-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-function-python36-latest.yml
 	# Push openedge-remote-mqtt manifest version
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-remote-mqtt/manifest.yml.template > tmp/manifest-remote-mqtt-$(VERSION).yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-remote-mqtt-$(VERSION).yml
@@ -304,3 +296,9 @@ push-image:
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386
+	# Push function python27 images
+	docker tag $(IMAGE_PREFIX)openedge-function-python27:latest $(IMAGE_PREFIX)openedge-function-python27:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-function-python27
+	# Push function python36 images
+	docker tag $(IMAGE_PREFIX)openedge-function-python36:latest $(IMAGE_PREFIX)openedge-function-python36:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-function-python36
