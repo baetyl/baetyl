@@ -31,7 +31,7 @@ class mo(function_pb2_grpc.FunctionServicer):
         """
         load config and init module
         """
-        self.config = yaml.load(open(conf, 'r').read())
+        self.config = yaml.load(open(conf, 'r').read(), Loader=yaml.FullLoader)
 
         # overwrite config from env
         if 'OPENEDGE_SERVICE_INSTANCE_NAME' in os.environ:
