@@ -104,12 +104,10 @@ func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		os.RemoveAll(spwd)
 		return nil, err
 	}
-	argv := make([]string, 0)
-	argv = append(argv, cfg.Args...)
 	params := processConfigs{
 		exec: path.Join(pkgDir, pkg.Entry),
-		argv: argv,
 		env:  utils.AppendEnv(cfg.Env, true),
+		argv: cfg.Args,
 		pwd:  spwd,
 	}
 	s := &nativeService{
