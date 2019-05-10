@@ -134,12 +134,12 @@ release: release-image push-image release-manifest release-package
 	tar cjf openedge-linux-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
 	cd __release_build/openedge-linux-amd64-$(VERSION) && zip -q -r ../../openedge-linux-amd64-$(VERSION).zip bin/
 	make uninstall clean PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
-	# release linux arm
-	env GOOS=linux GOARCH=arm make install PREFIX=__release_build/openedge-linux-arm-$(VERSION)
-	tar czf openedge-linux-arm-$(VERSION).tar.gz -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
-	tar cjf openedge-linux-arm-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm-$(VERSION) bin etc var
-	cd __release_build/openedge-linux-arm-$(VERSION) && zip -q -r ../../openedge-linux-arm-$(VERSION).zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-linux-arm-$(VERSION)
+	# release linux arm v7
+	env GOOS=linux GOARCH=arm GOARM=7 make install PREFIX=__release_build/openedge-linux-armv7-$(VERSION)
+	tar czf openedge-linux-armv7-$(VERSION).tar.gz -C __release_build/openedge-linux-armv7-$(VERSION) bin etc var
+	tar cjf openedge-linux-armv7-$(VERSION).tar.bz2 -C __release_build/openedge-linux-armv7-$(VERSION) bin etc var
+	cd __release_build/openedge-linux-armv7-$(VERSION) && zip -q -r ../../openedge-linux-armv7-$(VERSION).zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-linux-armv7-$(VERSION)
 	# release linux arm64
 	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
 	tar czf openedge-linux-arm64-$(VERSION).tar.gz -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
@@ -169,7 +169,7 @@ release-image:
 	env GOOS=linux GOARCH=386 make image IMAGE_SUFFIX="-linux-386"
 	make clean
 	# linux-arm images release
-	env GOOS=linux GOARCH=arm make image IMAGE_SUFFIX="-linux-arm"
+	env GOOS=linux GOARCH=arm GOARM=7 make image IMAGE_SUFFIX="-linux-armv7"
 	make clean
 	# linux-arm64 images release
 	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
@@ -178,6 +178,7 @@ release-image:
 
 # Need push built images first
 release-manifest:
+	rm -rf tmp
 	mkdir tmp
 	# Push openedge-agent manifest version
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-agent/manifest.yml.template > tmp/manifest-agent-$(VERSION).yml
@@ -220,27 +221,27 @@ release-builder-manifest:
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest-python27-builder.yml.template > tmp/manifest-python27-builder-$(VERSION).yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python27-builder-$(VERSION).yml
 	# Push openedge-python27-builder manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-latest.yml
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python27-builder.yml.template > tmp/manifest-python27-builder-latest.yml
+	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python27-builder-latest.yml
 	# Push openedge-python36-builder manifest version
 	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-$(VERSION).yml
 	# Push openedge-python36-builder manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
+	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-latest.yml
 	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-latest.yml
 
 	rm -rf tmp
 
 release-package:
 	# Release modules' package -- linux arm
-	env GOOS=linux GOARCH=arm make package
-	mv openedge-agent/package.zip ./openedge-agent-linux-arm-$(VERSION).zip
-	mv openedge-hub/package.zip ./openedge-hub-linux-arm-$(VERSION).zip
-	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-arm-$(VERSION).zip
-	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm-$(VERSION).zip
-	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-arm-$(VERSION).zip
-	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-arm-$(VERSION).zip
-	mv openedge-timer/package.zip ./openedge-timer-linux-arm-$(VERSION).zip
+	env GOOS=linux GOARCH=arm GOARM=7 make package
+	mv openedge-agent/package.zip ./openedge-agent-linux-armv7-$(VERSION).zip
+	mv openedge-hub/package.zip ./openedge-hub-linux-armv7-$(VERSION).zip
+	mv openedge-remote-mqtt/package.zip ./openedge-remote-mqtt-linux-armv7-$(VERSION).zip
+	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-armv7-$(VERSION).zip
+	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-armv7-$(VERSION).zip
+	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-armv7-$(VERSION).zip
+	mv openedge-timer/package.zip ./openedge-timer-linux-armv7-$(VERSION).zip
 	# Release modules' package -- linux amd64
 	env GOOS=linux GOARCH=amd64 make package
 	mv openedge-agent/package.zip ./openedge-agent-linux-amd64-$(VERSION).zip
@@ -315,6 +316,15 @@ push-image:
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386
+	# Push timer images
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-amd64:latest $(IMAGE_PREFIX)openedge-timer-linux-amd64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-arm64:latest $(IMAGE_PREFIX)openedge-timer-linux-arm64:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-arm:latest $(IMAGE_PREFIX)openedge-timer-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-386:latest $(IMAGE_PREFIX)openedge-timer-linux-386:$(VERSION)
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-amd64
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-arm64
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-386
 	# Push function python27 images
 	docker tag $(IMAGE_PREFIX)openedge-function-python27:latest $(IMAGE_PREFIX)openedge-function-python27:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-function-python27

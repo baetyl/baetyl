@@ -11,10 +11,11 @@ manifests:
       architecture: amd64
       os: darwin
   -
-    image: __REGISTRY__/__NAMESPACE__/openedge-hub-linux-arm:__VERSION__
+    image: __REGISTRY__/__NAMESPACE__/openedge-hub-linux-armv7:__VERSION__
     platform:
       architecture: arm
       os: linux
+      variant: v7
   -
     image: __REGISTRY__/__NAMESPACE__/openedge-hub-linux-arm64:__VERSION__
     platform:
