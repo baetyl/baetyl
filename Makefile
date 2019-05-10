@@ -242,6 +242,7 @@ release-package:
 	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-armv7-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-armv7-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-armv7-$(VERSION).zip
+	make clean
 	# Release modules' package -- linux amd64
 	env GOOS=linux GOARCH=amd64 make package
 	mv openedge-agent/package.zip ./openedge-agent-linux-amd64-$(VERSION).zip
@@ -251,6 +252,7 @@ release-package:
 	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-amd64-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-amd64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-amd64-$(VERSION).zip
+	make clean
 	# Release modules' package -- linux arm64
 	env GOOS=linux GOARCH=arm64 make package
 	mv openedge-agent/package.zip ./openedge-agent-linux-arm64-$(VERSION).zip
@@ -260,6 +262,7 @@ release-package:
 	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-arm64-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-arm64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-arm64-$(VERSION).zip
+	make clean
 	# Release modules' package -- linux 386
 	env GOOS=linux GOARCH=386 make package
 	mv openedge-agent/package.zip ./openedge-agent-linux-386-$(VERSION).zip
@@ -269,6 +272,7 @@ release-package:
 	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-386-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-386-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-386-$(VERSION).zip
+	make clean
 	# Release modules' package -- darwin amd64
 	env GOOS=darwin GOARCH=amd64 make package
 	mv openedge-agent/package.zip ./openedge-agent-darwin-amd64-$(VERSION).zip
@@ -278,6 +282,7 @@ release-package:
 	mv openedge-function-python/package27.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-darwin-amd64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-darwin-amd64-$(VERSION).zip
+	make clean
 
 push-image:
 	# Push hub images
