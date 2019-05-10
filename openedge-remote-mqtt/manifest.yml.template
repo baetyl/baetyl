@@ -11,7 +11,7 @@ manifests:
       architecture: amd64
       os: darwin
   -
-    image: __REGISTRY__/__NAMESPACE__/openedge-remote-mqtt-linux-arm:__VERSION__
+    image: __REGISTRY__/__NAMESPACE__/openedge-remote-mqtt-linux-armv7:__VERSION__
     platform:
       architecture: arm
       os: linux
