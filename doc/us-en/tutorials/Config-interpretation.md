@@ -112,7 +112,7 @@ remote:
   report: Agent report configuration.
     url: The report URL. No configuration required
     topic: The template of report topic. No configuration required
-    interval: The default value is `1m`, interval of reporting.
+    interval: The default value is `20s`, interval of reporting.
   desire: Agent desire configuration.
     topic: The template of desire topic. No configuration required
 ```

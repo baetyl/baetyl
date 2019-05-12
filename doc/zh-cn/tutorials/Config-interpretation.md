@@ -112,7 +112,7 @@ remote: Agent 模块对接 BIE 云端管理套件的配置项
   report: Agent 上报云端配置
     url: 上报的URL，无需配置
     topic: 上报主题模板，无需配置
-    interval: 默认值：1m，上报间隔时间
+    interval: 默认值：20s，上报间隔时间
   desire: Agent 接收云端下发配置
     topic: 下发主题模板，无需配置
 ```
