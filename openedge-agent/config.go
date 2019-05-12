@@ -15,7 +15,7 @@ type Config struct {
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v3/edge/info"`
 			Topic    string        `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/forward"`
-			Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
+			Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 		} `yaml:"report" json:"report"`
 		Desire struct {
 			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
