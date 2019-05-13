@@ -142,6 +142,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	params.config = container.Config{
 		Image:        strings.TrimSpace(cfg.Image),
 		Env:          utils.AppendEnv(cfg.Env, false),
+		Cmd:          cfg.Args,
 		ExposedPorts: exposedPorts,
 		Labels:       map[string]string{"openedge": "openedge", "service": cfg.Name},
 	}
