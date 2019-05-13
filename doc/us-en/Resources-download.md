@@ -6,11 +6,11 @@
 
 | OS         |  CPU  | SHA256                                                       | Download link                                                                       |
 | ------------ | ------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Linux | 386 | 7adc0b08f735325bc14d382ac5979e45435bddabcd3366b8c91027a541ad0f52 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-386-0.1.2.tar.gz) |
-| Linux | amd64 | b1b979fdffdc0b5e39faa324fda61aba118f4c5644e31eee8bfa90a1c3bdccfb | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-amd64-0.1.2.tar.gz) |
-| Linux | armv7 | 2e1a95606ee3d5dc277b65899508aadc4f95cde6fba784e6ebce61da805deb23 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-armv7-0.1.2.tar.gz) |
-| Linux | arm64 | b91623a61adceb6b6589c07a33cdb7af117e287097104a212f4cbbecbe45a7e6 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-linux-arm64-0.1.2.tar.gz) |
-| Darwin | amd64 | cc0aa24ea7965a7e31102c24ab3f21578dd9fcd4d77d32347d8e8b2ffaa1d29f | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.2/github/openedge-darwin-amd64-0.1.2.tar.gz) |
+| Linux | 386 | 7adc0b08f735325bc14d382ac5979e45435bddabcd3366b8c91027a541ad0f52 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-386-0.1.3.tar.gz) |
+| Linux | amd64 | b1b979fdffdc0b5e39faa324fda61aba118f4c5644e31eee8bfa90a1c3bdccfb | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-amd64-0.1.3.tar.gz) |
+| Linux | armv7 | 2e1a95606ee3d5dc277b65899508aadc4f95cde6fba784e6ebce61da805deb23 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-arm-0.1.3.tar.gz) |
+| Linux | arm64 | b91623a61adceb6b6589c07a33cdb7af117e287097104a212f4cbbecbe45a7e6 | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-arm64-0.1.3.tar.gz) |
+| Darwin | amd64 | cc0aa24ea7965a7e31102c24ab3f21578dd9fcd4d77d32347d8e8b2ffaa1d29f | [点击下载](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-darwin-amd64-0.1.3.tar.gz) |
 
 ## Golang download
 
