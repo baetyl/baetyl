@@ -132,3 +132,7 @@ source ~/.bash_profile
 
 - 发送给本地 Hub 的消息的 QoS 必须是 1，保证消息在本地持久化。
 - Remote 向本地 Hub 订阅消息的 QoS 和向云端 Hub 发布消息的 QoS 也必须都为1，保证消息成功上云。请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
+
+**问题 18**：从云端下发配置到边缘后，默认都是 `docker` 模式启动，修改 `mode: native` 之后，启动报错类似下述内容： `failed to update system: open /Users/xxx/openedge_native/var/run/openedge/services/agent/lib/openedge/hub.baidubce.com/openedge/openedge-agent:0.1.2/package.yml: no such file or directory`。
+
+**参考方案**： 目前我们的云管理不支持进程模式，如果需要在本地以进程模式启动 `OpenEdge` 请参考 `example/native` 中的配置内容，执行命令 `make install-native` 来进行安装，并通过命令 `sudo openedge start` 以进程方式来启动。
