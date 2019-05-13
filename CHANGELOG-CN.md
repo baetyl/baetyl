@@ -1,19 +1,41 @@
+# Pre-release 0.1.3(2019-05-10)
+
+## 功能
+
+- [#199](https://github.com/baidu/openedge/issues/199) 支持上报服务实例的自定义状态信息，同时采集更多系统状态信息，具体参考 [OpenEdge 系统信息采集](./doc/zh-cn/overview/OpenEdge-design.md#system-inspect)
+- [#209](https://github.com/baidu/openedge/issues/209) 当 openedge 启动时，会清理旧实例（残留实例一般由于 openedge 异常退出造成）
+- [#211](https://github.com/baidu/openedge/issues/211) 增加了 Python3.6 版本的函数运行时，使用 Ubuntu16.04 作为基础镜像
+- [#222](https://github.com/baidu/openedge/issues/222) Docker 容器模式支持 runtime 和 args 配置
+- 添加了一个简单的定时器模块 openedge-timer
+
+## Bug 修复
+
+- [#201](https://github.com/baidu/openedge/issues/201) 函数实例池销毁函数实例时，确保停止函数实例
+- [#208](https://github.com/baidu/openedge/issues/208) openedge stop 命令等待 openedge 停止运行后退出，确保清理pid文件
+- [#234](https://github.com/baidu/openedge/issues/234) hub 模块发布消息等待 ack 超时，快速重发消息
+- 解决当 atomic.addUint64() 的参数未按照 64 位对齐导致退出异常的问题。参考：https://github.com/golang/go/issues/23345
+
+## 其他
+
+- [#230](https://github.com/baidu/openedge/issues/230) 发布 OpenEdge 2019 Roadmap
+- [#228](https://github.com/baidu/openedge/issues/228) 发布 OpenEdge 社区参与者公约
+
 # Pre-release 0.1.2(2019-04-04)
 
-## Features
+## 功能
 
-- 从主程序分离 Agent 模块，定时上报（核心）设备状态信息
-- 针对资源配置引入存储卷（volume）概念，灵活配置，支持第三方已有的镜像，比如 `hub.docker.com` 中的 mosquitto
-- 支持命令行启动（后台以服务方式运行）、停止 OpenEdge 服务
+- [#20](https://github.com/baidu/openedge/issues/20) 从主程序分离 Agent 模块，定时上报（核心）设备状态信息
+- [#120](https://github.com/baidu/openedge/issues/120) 针对资源配置引入存储卷（volume）概念，灵活配置，支持第三方已有的镜像，比如 `hub.docker.com` 中的 mosquitto
+- [#122](https://github.com/baidu/openedge/issues/122) 支持命令行启动（后台以服务方式运行）、停止 OpenEdge 服务
 - 统一两种模式（Docker 容器模式 和 Native 进程模式）配置，例如为本机 Native 进程模式中的每个服务创建单独的工作目录
-- 引入服务概念，代替模块，用于支持启动多实例
-- 针对 Docker 容器模式支持设备映射
+- [#123](https://github.com/baidu/openedge/issues/123) 引入服务概念，代替模块，用于支持启动多实例
+- [#142](https://github.com/baidu/openedge/issues/142) 针对 Docker 容器模式支持设备映射
 
-## Bug fixes
+## Bug 修复
 
-- 支持 `openedge.sock` 清理逻辑
-- 升级 Hub 模块的连接鉴权、认证逻辑，如 TCP 连接采用明文存储密码
-- 升级函数计算模块，支持重试逻辑，去除保序逻辑
+- [#92](https://github.com/baidu/openedge/issues/92) [#81](https://github.com/baidu/openedge/issues/81) 支持 `openedge.sock` 清理逻辑
+- [#135](https://github.com/baidu/openedge/issues/135) [#88](https://github.com/baidu/openedge/issues/88) 升级 Hub 模块的连接鉴权、认证逻辑，如 TCP 连接采用明文存储密码
+- [#127](https://github.com/baidu/openedge/issues/127) 升级函数计算模块，支持重试逻辑，去除保序逻辑
 
 ## Others(include release engineering)
 

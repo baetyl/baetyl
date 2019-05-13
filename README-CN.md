@@ -60,6 +60,7 @@ OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力�
 OpenEdge 作为中国首发的开源边缘计算框架，我们旨在打造一个**轻量、安全、可靠、可扩展性强**的边缘计算社区，为中国边缘计算技术的发展和不断推进营造一个良好的生态环境。籍此，我们提供如下几种方式供您选择：
 
 - 如果您想参与 OpenEdge 的日常开发交流，欢迎您加入 [OpenEdge 开发交流群](https://openedge.bj.bcebos.com/Wechat/Wechat-OpenEdge.png)
+    - 当 OpenEdge 开发者交流群中的成员人数达到 100 人时（不能自动扫码加入），您可以通过被邀请的方式加入，搜索 && 添加 `kuailehaibin2010` 为好友
 - 如果您有更多关于 OpenEdge 的功能需求或 Bug 反馈，欢迎您直接[提交 Issue](https://github.com/baidu/openedge/issues)
 - 如果您想了解更多关于 OpenEdge 与百度云其他服务的相关内容，欢迎您加入[百度云开发者论坛](https://cloud.baidu.com/forum/bce)
 - 如果您有更好的关于 OpenEdge 的发展建议，欢迎您通过电子邮件方式与我们联系：<contact@openedge.tech>
