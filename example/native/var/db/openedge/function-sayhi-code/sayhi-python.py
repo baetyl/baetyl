@@ -53,7 +53,7 @@ def handler(event, context):
         event['messageQOS'] = context['messageQOS']
     if 'messageTopic' in context:
         event['messageTopic'] = context['messageTopic']
-    event['py'] = '你好，世界！'
+    event['py'] = 'hello world'
 
     return event
 

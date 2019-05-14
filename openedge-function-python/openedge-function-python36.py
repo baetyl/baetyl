@@ -231,7 +231,7 @@ if __name__ == '__main__':
         description='grpc server for python3.6 function')
     parser.add_argument('-c',
                         type=str,
-                        default=os.path.join("etc", "openedge", "service.yml"),
+                        default=os.path.join("etc", "openedge", "service-python.yml"),
                         help='config file path (default: etc/openedge/service.yml)')
     args = parser.parse_args()
     m = mo()

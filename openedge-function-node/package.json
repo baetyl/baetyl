@@ -1,0 +1,18 @@
+{
+    "name": "openedge-function-node85",
+    "description": "An Openedge Function Runtime",
+    "version": "0.1.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/baidu/openedge.git"
+    },
+    "author": "xxxx",
+    "dependencies": {
+        "google-protobuf": "^3.6.1",
+        "grpc": "^1.16.1",
+        "log4js": "3.0.6",
+        "moment": "2.22.2",
+        "yaml": "1.5.0",
+        "yargs": "12.0.5"
+    }
+}

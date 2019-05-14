@@ -1,0 +1,8 @@
+functions:
+  - name: 'pythonsayhi'
+    handler: 'sayhi-python.handler'
+    codedir: 'var/db/openedge/function-sayhi'
+  - name: 'pythonsayhi3'
+    handler: 'sayhi-python.handler'
+    codedir: 'var/db/openedge/function-sayhi'
+  

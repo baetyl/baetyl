@@ -57,6 +57,7 @@ class mo(function_pb2_grpc.FunctionServicer):
         if 'functions' not in self.config:
             raise Exception, 'config invalid, missing functions'
 
+        print()
         self.log = get_logger(self.config)
         self.functions = get_functions(self.config['functions'])
         self.server = get_grpc_server(self.config['server'])
@@ -231,7 +232,7 @@ if __name__ == '__main__':
         description='grpc server for python2.7 function')
     parser.add_argument('-c',
                         type=str,
-                        default=os.path.join("etc", "openedge", "service.yml"),
+                        default=os.path.join("etc", "openedge", "service-python.yml"),
                         help='config file path (default: etc/openedge/service.yml)')
     args = parser.parse_args()
     m = mo()

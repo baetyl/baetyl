@@ -52,7 +52,7 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi
+  - name: function-pythonsayhi
     image: openedge-function-python27
     replica: 0
     mounts:
@@ -62,8 +62,18 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-sayhi3
+  - name: function-pythonsayhi3
     image: openedge-function-python36
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
+  - name: function-nodesayhi
+    image: openedge-function-node85
     replica: 0
     mounts:
       - name: function-sayhi-conf

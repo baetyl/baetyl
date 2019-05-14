@@ -1,0 +1,4 @@
+functions:
+  - name: 'nodesayhi'
+    handler: 'sayhi-node.handler'
+    codedir: 'var/db/openedge/function-sayhi'
