@@ -129,10 +129,11 @@ func (m *mo) processEvent(payload []byte) error {
 		return fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
 	}
 	volumeHostDir, err := m.prepare(updateEvent.Config)
+	updateServices := getUpdatedServices()
 	if err != nil {
 		return fmt.Errorf("update event invalid: %s", err.Error())
 	}
-	err = m.ctx.UpdateSystem(volumeHostDir, updateEvent.Clean)
+	err = m.ctx.UpdateSystem(volumeHostDir, *updateServices, updateEvent.Clean)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}
@@ -226,6 +227,19 @@ func (m *mo) encryptData(data []byte) ([]byte, string, error) {
 	// encode body using BASE64
 	body = []byte(base64.StdEncoding.EncodeToString(body))
 	return body, key, nil
+}
+
+func getUpdatedServices() *utils.Set {
+	updatedServices := utils.NewSet()
+	for _, service := range cfg.Services {
+		for _, mount := range service.Mounts {
+			if volumeName.Has(mount.Name) {
+				updatedServices.Add(service.Name)
+				break
+			}
+		}
+	}
+	return updatedServices
 }
 
 func defaults(c *Config) error {

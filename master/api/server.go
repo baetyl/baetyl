@@ -19,7 +19,7 @@ type Master interface {
 
 	// for system
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(string, bool) error
+	UpdateSystem(string, *utils.Set, bool) error
 
 	// for instance
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
@@ -82,7 +82,11 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if s, ok := args["clean"]; ok && strings.ToLower(s) == "true" {
 		clean = true
 	}
-	go s.m.UpdateSystem(args["file"], clean)
+	set := utils.NewSet()
+	if updatedServices, ok := args["updatedServices"]; ok {
+		json.Unmarshal([]byte(updatedServices), &set)
+	}
+	go s.m.UpdateSystem(args["file"], set, clean)
 	return nil, nil
 }
 

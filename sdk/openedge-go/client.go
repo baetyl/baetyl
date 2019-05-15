@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/baidu/openedge/protocol/http"
+	"github.com/baidu/openedge/utils"
 )
 
 // Client client of api server
@@ -56,10 +57,11 @@ func (c *Client) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *Client) UpdateSystem(file string, clean bool) error {
+func (c *Client) UpdateSystem(file string, updatedServices utils.Set, clean bool) error {
 	data, err := json.Marshal(map[string]string{
-		"file":  file,
-		"clean": fmt.Sprintf("%t", clean),
+		"file":            file,
+		"updatedServices": fmt.Sprintf("%v", updatedServices),
+		"clean":           fmt.Sprintf("%t", clean),
 	})
 	if err != nil {
 		return err

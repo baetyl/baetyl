@@ -15,8 +15,8 @@ var appConfigFile = path.Join(appDir, "application.yml")
 var appBackupFile = path.Join(appDir, "application.yml.old")
 
 // UpdateSystem updates system
-func (m *Master) UpdateSystem(dir string, clean bool) error {
-	err := m.update(dir, clean)
+func (m *Master) UpdateSystem(dir string, updatedServices *utils.Set, clean bool) error {
+	err := m.update(dir, updatedServices, clean)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
@@ -25,7 +25,7 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 	return err
 }
 
-func (m *Master) update(dir string, clean bool) error {
+func (m *Master) update(dir string, updatedServices *utils.Set, clean bool) error {
 	m.log.Infof("system is updating")
 
 	// backup application.yml
@@ -50,9 +50,9 @@ func (m *Master) update(dir string, clean bool) error {
 	}
 
 	// stop all old services
-	m.stopAllServices()
+	m.stopUpdatedServices(updatedServices)
 	// start all new services
-	err = m.startAllServices()
+	err = m.startUpdatedServices(updatedServices)
 	if err != nil {
 		m.log.Infof("failed to start all new services, to rollback")
 		err1 := m.rollback()
@@ -60,9 +60,9 @@ func (m *Master) update(dir string, clean bool) error {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
 		// stop all new services
-		m.stopAllServices()
+		m.stopUpdatedServices(updatedServices)
 		// start all old services
-		err1 = m.startAllServices()
+		err1 = m.startUpdatedServices(updatedServices)
 		if err1 != nil {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}

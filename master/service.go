@@ -6,6 +6,7 @@ import (
 
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baidu/openedge/utils"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -58,6 +59,36 @@ func (m *Master) startAllServices() error {
 	return nil
 }
 
+func (m *Master) startUpdatedServices(updatedServices *utils.Set) error {
+	if err := m.load(); err != nil {
+		return err
+	}
+	vs := make(map[string]openedge.VolumeInfo)
+	for _, v := range m.appcfg.Volumes {
+		vs[v.Name] = v
+	}
+	for _, s := range m.appcfg.Services {
+		if updatedServices.Has(s.Name) {
+			cur, ok := m.services.Get(s.Name)
+			if ok {
+				cur.(engine.Service).Stop()
+			}
+			token := uuid.Generate().String()
+			m.accounts.Set(s.Name, token)
+			s.Env[openedge.EnvServiceNameKey] = s.Name
+			s.Env[openedge.EnvServiceTokenKey] = token
+			nxt, err := m.engine.Run(s, vs)
+			if err != nil {
+				m.log.Infof("failed to start service (%s)", s.Name)
+				return err
+			}
+			m.services.Set(s.Name, nxt)
+			m.log.Infof("service (%s) started", s.Name)
+		}
+	}
+	return nil
+}
+
 func (m *Master) stopAllServices() {
 	var wg sync.WaitGroup
 	for _, s := range m.services.Items() {
@@ -68,6 +99,23 @@ func (m *Master) stopAllServices() {
 			m.services.Remove(s.Name())
 			m.accounts.Remove(s.Name())
 			m.log.Infof("service (%s) stopped", s.Name())
+		}(s.(engine.Service))
+	}
+	wg.Wait()
+}
+
+func (m *Master) stopUpdatedServices(updatedServices *utils.Set) {
+	var wg sync.WaitGroup
+	for _, s := range m.services.Items() {
+		wg.Add(1)
+		go func(s engine.Service) {
+			defer wg.Done()
+			if updatedServices.Has(s.Name()) {
+				s.Stop()
+				m.services.Remove(s.Name())
+				m.accounts.Remove(s.Name())
+				m.log.Infof("service (%s) stopped", s.Name())
+			}
 		}(s.(engine.Service))
 	}
 	wg.Wait()
