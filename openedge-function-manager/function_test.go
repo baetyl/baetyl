@@ -146,7 +146,7 @@ type mockContext struct {
 func (c *mockContext) Config() *openedge.ServiceConfig {
 	return nil
 }
-func (c *mockContext) UpdateSystem(file string, updatedSystem utils.Set, clean bool) error {
+func (c *mockContext) UpdateSystem(file string, clean bool) error {
 	return nil
 }
 func (c *mockContext) InspectSystem() (*openedge.Inspect, error) {
