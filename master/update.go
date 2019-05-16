@@ -30,7 +30,7 @@ func (m *Master) update(dir string, clean bool) error {
 	m.log.Infof("system is updating")
 
 	// backup application.yml
-	err = m.backup()
+	err := m.backup()
 	if err != nil {
 		return err
 	}
