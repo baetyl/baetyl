@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"reflect"
 
 	"github.com/baidu/openedge/logger"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
@@ -44,18 +43,16 @@ func (m *Master) update(dir string, clean bool) error {
 	}
 
 	// prepare services
-	rvs, err := m.prepareServices()
+	rvs, updatedServices, err := m.prepareServices()
 	if err != nil {
 		m.rollback()
 		return err
 	}
 
-	updatedServices, removedServices, err := getUpdatedServices()
-
 	// stop all removed services and updated services
-	m.stopUpdatedServices(removedServices)
+	m.stopAllServices(updatedServices)
 	// start all updated services and new services
-	err = m.startUpdatedServices(updatedServices)
+	err = m.startAllServices(updatedServices)
 	if err != nil {
 		m.log.Infof("failed to start all new services, to rollback")
 		err1 := m.rollback()
@@ -63,9 +60,9 @@ func (m *Master) update(dir string, clean bool) error {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
 		// stop all updated services and new services
-		m.stopUpdatedServices(updatedServices)
+		m.stopAllServices(updatedServices)
 		// start all removed services and updated service
-		err1 = m.startUpdatedServices(removedServices)
+		err1 = m.startAllServices(updatedServices)
 		if err1 != nil {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
@@ -125,50 +122,4 @@ func (m *Master) clean() {
 	if err != nil {
 		logger.WithError(err).Errorf("failed to remove backup file")
 	}
-}
-
-func getUpdatedServices() (*utils.Set, *utils.Set, error) {
-	var oldCfg openedge.AppConfig
-	err := utils.LoadYAML(appBackupFile, &oldCfg)
-	if err != nil {
-		return nil, nil, err
-	}
-	var newCfg openedge.AppConfig
-	err = utils.LoadYAML(appConfigFile, &newCfg)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	oldServicesInfo := make(map[string]openedge.ServiceInfo)
-	newServicesInfo := make(map[string]openedge.ServiceInfo)
-
-	var newServices = utils.NewSet()
-	for _, service := range newCfg.Services {
-		newServices.Add(service.Image)
-		newServicesInfo[service.Image] = service
-	}
-
-	var removedServices *utils.Set
-	var updatedServices *utils.Set
-
-	for _, service := range oldCfg.Services {
-		if !newServices.Has(service.Image) {
-			removedServices.Add(service.Name)
-		}
-		oldServicesInfo[service.Image] = service
-	}
-
-	for imageName, service := range newServicesInfo {
-		oldService, ok := oldServicesInfo[imageName]
-		if ok {
-			if !reflect.DeepEqual(service, oldService) {
-				removedServices.Add(oldService.Name)
-				updatedServices.Add(service.Name)
-			}
-		} else {
-			updatedServices.Add(service.Name)
-		}
-	}
-
-	return updatedServices, removedServices, nil
 }
