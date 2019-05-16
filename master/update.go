@@ -29,12 +29,6 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 func (m *Master) update(dir string, clean bool) error {
 	m.log.Infof("system is updating")
 
-	var oldCfg openedge.AppConfig
-	err := utils.LoadYAML(appConfigFile, &oldCfg)
-	if err != nil {
-		return err
-	}
-
 	// backup application.yml
 	err = m.backup()
 	if err != nil {
