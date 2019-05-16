@@ -18,4 +18,6 @@ func TestSet(t *testing.T) {
 	assert.False(t, set.Has(3))
 	assert.True(t, set.Has("Hello"))
 	assert.False(t, set.Has("World"))
+	set.Remove("Hello")
+	assert.False(t, set.Has("Hello"))
 }

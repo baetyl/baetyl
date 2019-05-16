@@ -12,14 +12,12 @@ import (
 	"github.com/mholt/archiver"
 )
 
-var volumeName utils.Set
-var cfg openedge.AppConfig
-
 func (m *mo) prepare(cfgVol openedge.VolumeInfo) (string, error) {
 	volumeHostDir, volumeContainerDir, err := m.download(cfgVol)
 	if err != nil {
 		return "", err
 	}
+	var cfg openedge.AppConfig
 	cfgFile := path.Join(volumeContainerDir, openedge.AppConfFileName)
 	err = utils.LoadYAML(cfgFile, &cfg)
 	if err != nil {
@@ -92,6 +90,5 @@ func (m *mo) download(v openedge.VolumeInfo) (string, string, error) {
 		os.RemoveAll(volumeContainerDir)
 		return "", "", fmt.Errorf("failed to unzip volume (%s): %s", v.Name, err.Error())
 	}
-	volumeName.Add(v.Name)
 	return volumeHostDir, volumeContainerDir, nil
 }

@@ -62,7 +62,7 @@ type Context interface {
 	// Master RESTful API
 
 	// updates system and
-	UpdateSystem(string, utils.Set, bool) error
+	UpdateSystem(string, bool) error
 	// inspects system stats
 	InspectSystem() (*Inspect, error)
 	// gets an available port of the host
@@ -149,8 +149,8 @@ func (c *ctx) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *ctx) UpdateSystem(file string, updatedServices utils.Set, clean bool) error {
-	return c.cli.UpdateSystem(file, updatedServices, clean)
+func (c *ctx) UpdateSystem(file string, clean bool) error {
+	return c.cli.UpdateSystem(file, clean)
 }
 
 // GetAvailablePort gets available port
