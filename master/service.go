@@ -141,6 +141,10 @@ func (m *Master) getUpdatedServices() (map[string][]openedge.ServiceInfo, error)
 		return nil, err
 	}
 
+	if reflect.DeepEqual(oldCfg, newCfg) {
+		return nil, nil
+	}
+
 	oldVolumes := oldCfg.Volumes
 	newVolumes := newCfg.Volumes
 
