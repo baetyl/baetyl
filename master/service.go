@@ -23,17 +23,17 @@ func (m *Master) Auth(username, password string) bool {
 }
 
 func (m *Master) prepareServices() ([]openedge.VolumeInfo, map[string][]openedge.ServiceInfo, error) {
+	updatedServices, err := m.getUpdatedServices()
+	if err != nil {
+		return nil, nil, err
+	}
 	ovs := m.appcfg.Volumes
-	err := m.load()
+	err = m.load()
 	if err != nil {
 		return nil, nil, err
 	}
 	m.engine.Prepare(m.appcfg.Services)
 	nvs := m.appcfg.Volumes
-	updatedServices, err := m.getUpdatedServices()
-	if err != nil {
-		return nil, nil, err
-	}
 	return openedge.GetRemovedVolumes(ovs, nvs), updatedServices, nil
 }
 
@@ -49,7 +49,6 @@ func (m *Master) startAllServices(updatedServices map[string][]openedge.ServiceI
 		}
 	}
 	vs := make(map[string]openedge.VolumeInfo)
-	// TODO
 	for _, v := range m.appcfg.Volumes {
 		vs[v.Name] = v
 	}
@@ -134,7 +133,6 @@ func (m *Master) StopInstance(service, instance string) error {
 	return s.(engine.Service).StopInstance(instance)
 }
 
-// TODO: compare volume
 func (m *Master) getUpdatedServices() (map[string][]openedge.ServiceInfo, error) {
 	oldCfg := m.appcfg
 	var newCfg openedge.AppConfig
@@ -143,10 +141,33 @@ func (m *Master) getUpdatedServices() (map[string][]openedge.ServiceInfo, error)
 		return nil, err
 	}
 
+	oldVolumes := oldCfg.Volumes
+	newVolumes := newCfg.Volumes
+
+	oldVolumesInfo := make(map[string]string)
+	newVolumesInfo := make(map[string]string)
+
+	updatedVolumesInfo := make(map[string]bool)
+
+	for _, volume := range oldVolumes {
+		newVolumesInfo[volume.Path] = volume.Name
+	}
+
+	for _, volume := range newVolumes {
+		_, ok := oldVolumesInfo[volume.Path]
+		if ok {
+			if oldVolumesInfo[volume.Path] != volume.Name {
+				updatedVolumesInfo[volume.Name] = true
+			}
+		} else {
+			updatedVolumesInfo[volume.Name] = true
+		}
+	}
+
 	oldServicesInfo := make(map[string]openedge.ServiceInfo)
 	newServicesInfo := make(map[string]openedge.ServiceInfo)
-	removed := make([]openedge.ServiceInfo, 5)
-	updated := make([]openedge.ServiceInfo, 5)
+	removed := make([]openedge.ServiceInfo, 0)
+	updated := make([]openedge.ServiceInfo, 0)
 
 	// new services info
 	for _, service := range newCfg.Services {
@@ -163,8 +184,23 @@ func (m *Master) getUpdatedServices() (map[string][]openedge.ServiceInfo, error)
 	}
 
 	// new services and updated services
+	var flag bool
 	for imageName, service := range newServicesInfo {
+		flag = false
 		oldService, ok := oldServicesInfo[imageName]
+		for _, mountInfo := range service.Mounts {
+			if updatedVolumesInfo[mountInfo.Name] {
+				updated = append(updated, service)
+				if ok {
+					removed = append(removed, oldService)
+				}
+				flag = true
+				break
+			}
+		}
+		if flag {
+			break
+		}
 		if ok {
 			if !reflect.DeepEqual(service, oldService) {
 				removed = append(removed, oldService)
