@@ -50,9 +50,9 @@ func (m *Master) update(dir string, clean bool) error {
 	}
 
 	// stop all removed services and updated services
-	m.stopAllServices(updatedServices)
+	m.stopAllServices(updatedServices["removed"])
 	// start all updated services and new services
-	err = m.startAllServices(updatedServices)
+	err = m.startAllServices(updatedServices["updated"])
 	if err != nil {
 		m.log.Infof("failed to start all new services, to rollback")
 		err1 := m.rollback()
@@ -60,9 +60,9 @@ func (m *Master) update(dir string, clean bool) error {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
 		// stop all updated services and new services
-		m.stopAllServices(updatedServices)
+		m.stopAllServices(updatedServices["updated"])
 		// start all removed services and updated service
-		err1 = m.startAllServices(updatedServices)
+		err1 = m.startAllServices(updatedServices["removed"])
 		if err1 != nil {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}

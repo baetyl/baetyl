@@ -37,15 +37,14 @@ func (m *Master) prepareServices() ([]openedge.VolumeInfo, map[string][]openedge
 	return openedge.GetRemovedVolumes(ovs, nvs), updatedServices, nil
 }
 
-func (m *Master) startAllServices(updatedServices map[string][]openedge.ServiceInfo) error {
+func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error {
 	if err := m.load(); err != nil {
 		return err
 	}
 	services := m.appcfg.Services
 	if updatedServices != nil {
-		updated, ok := updatedServices["updated"]
-		if ok && len(updated) != 0 {
-			services = updated
+		if len(updatedServices) != 0 {
+			services = updatedServices
 		}
 	}
 	vs := make(map[string]openedge.VolumeInfo)
@@ -72,14 +71,13 @@ func (m *Master) startAllServices(updatedServices map[string][]openedge.ServiceI
 	return nil
 }
 
-func (m *Master) stopAllServices(updatedServices map[string][]openedge.ServiceInfo) {
+func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
 	target := m.services
 	if updatedServices != nil {
-		removed, ok := updatedServices["removed"]
-		if ok && len(removed) != 0 {
+		if len(updatedServices) != 0 {
 			target = cmap.New()
 			var serviceName string
-			for _, removedService := range removed {
+			for _, removedService := range updatedServices {
 				serviceName = removedService.Name
 				if m.services.Has(serviceName) {
 					service, ok := m.services.Get(serviceName)
