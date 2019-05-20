@@ -1,6 +1,7 @@
 package openedge
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -197,4 +198,88 @@ func GetRemovedVolumes(olds, news []VolumeInfo) []VolumeInfo {
 		}
 	}
 	return rv
+}
+
+// DiffVolumes return the removed volume and updated volume
+func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
+
+	oldVolumesInfo := make(map[string]string)
+
+	updatedVolumes := make(map[string]bool)
+	removedVolumes := GetRemovedVolumes(olds, news)
+
+	// add removed volumes
+	for _, volume := range removedVolumes {
+		updatedVolumes[volume.Name] = true
+	}
+
+	for _, volume := range olds {
+		oldVolumesInfo[volume.Path] = volume.Name
+	}
+
+	// new volumes & updated volumes
+	for _, volume := range news {
+		_, ok := oldVolumesInfo[volume.Path]
+		if ok {
+			if oldVolumesInfo[volume.Path] != volume.Name {
+				updatedVolumes[volume.Name] = true
+			}
+		} else {
+			updatedVolumes[volume.Name] = true
+		}
+	}
+
+	return updatedVolumes, removedVolumes
+}
+
+// DiffServices return the removed services and updated services
+func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]ServiceInfo, []ServiceInfo) {
+	oldServicesInfo := make(map[string]ServiceInfo)
+	newServicesInfo := make(map[string]ServiceInfo)
+	removed := []ServiceInfo{}
+	updated := []ServiceInfo{}
+
+	// new services info
+	for _, service := range news {
+		newServicesInfo[service.Image] = service
+	}
+
+	// old services info and removed services
+	for _, service := range olds {
+		oldServicesInfo[service.Image] = service
+		_, ok := newServicesInfo[service.Image]
+		if !ok {
+			removed = append(removed, service)
+		}
+	}
+
+	// new services and updated services
+	var flag bool
+	for imageName, service := range newServicesInfo {
+		flag = false
+		oldService, ok := oldServicesInfo[imageName]
+		for _, mountInfo := range service.Mounts {
+			if updatedVolumes[mountInfo.Name] {
+				updated = append(updated, service)
+				if ok {
+					removed = append(removed, oldService)
+				}
+				flag = true
+				break
+			}
+		}
+		if flag {
+			break
+		}
+		if ok {
+			if !reflect.DeepEqual(service, oldService) {
+				removed = append(removed, oldService)
+				updated = append(updated, service)
+			}
+		} else {
+			updated = append(updated, service)
+		}
+	}
+
+	return updated, removed
 }

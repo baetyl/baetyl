@@ -2,12 +2,10 @@ package master
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
 	"github.com/docker/distribution/uuid"
 	cmap "github.com/orcaman/concurrent-map"
 )
@@ -22,25 +20,26 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) prepareServices() ([]openedge.VolumeInfo, map[string][]openedge.ServiceInfo, error) {
-	updatedServices, err := m.getUpdatedServices()
+func (m *Master) prepareServices() ([]openedge.VolumeInfo, []openedge.ServiceInfo, []openedge.ServiceInfo, error) {
+	oldVolumes := m.appcfg.Volumes
+	oldServices := m.appcfg.Services
+
+	err := m.load()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	ovs := m.appcfg.Volumes
-	err = m.load()
-	if err != nil {
-		return nil, nil, err
-	}
+
+	newVolumes := m.appcfg.Volumes
+	newServices := m.appcfg.Services
+
+	updatedVolumes, removedVolumes := openedge.DiffVolumes(oldVolumes, newVolumes)
+	updatedServices, removedServices := openedge.DiffServices(oldServices, newServices, updatedVolumes)
+
 	m.engine.Prepare(m.appcfg.Services)
-	nvs := m.appcfg.Volumes
-	return openedge.GetRemovedVolumes(ovs, nvs), updatedServices, nil
+	return removedVolumes, updatedServices, removedServices, nil
 }
 
 func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error {
-	if err := m.load(); err != nil {
-		return err
-	}
 	services := m.appcfg.Services
 	if updatedServices != nil {
 		if len(updatedServices) != 0 {
@@ -72,6 +71,23 @@ func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error 
 }
 
 func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
+	target := m.getStopTarget(updatedServices)
+
+	var wg sync.WaitGroup
+	for _, s := range target.Items() {
+		wg.Add(1)
+		go func(s engine.Service) {
+			defer wg.Done()
+			s.Stop()
+			m.services.Remove(s.Name())
+			m.accounts.Remove(s.Name())
+			m.log.Infof("service (%s) stopped", s.Name())
+		}(s.(engine.Service))
+	}
+	wg.Wait()
+}
+
+func (m *Master) getStopTarget(updatedServices []openedge.ServiceInfo) cmap.ConcurrentMap {
 	target := m.services
 	if updatedServices != nil {
 		if len(updatedServices) != 0 {
@@ -88,19 +104,7 @@ func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
 			}
 		}
 	}
-
-	var wg sync.WaitGroup
-	for _, s := range target.Items() {
-		wg.Add(1)
-		go func(s engine.Service) {
-			defer wg.Done()
-			s.Stop()
-			m.services.Remove(s.Name())
-			m.accounts.Remove(s.Name())
-			m.log.Infof("service (%s) stopped", s.Name())
-		}(s.(engine.Service))
-	}
-	wg.Wait()
+	return target
 }
 
 // ReportInstance reports the stats of the instance of the service
@@ -129,94 +133,4 @@ func (m *Master) StopInstance(service, instance string) error {
 		return fmt.Errorf("service (%s) not found", service)
 	}
 	return s.(engine.Service).StopInstance(instance)
-}
-
-func (m *Master) getUpdatedServices() (map[string][]openedge.ServiceInfo, error) {
-	oldCfg := m.appcfg
-	var newCfg openedge.AppConfig
-	err := utils.LoadYAML(appConfigFile, &newCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	if reflect.DeepEqual(oldCfg, newCfg) {
-		return nil, nil
-	}
-
-	oldVolumes := oldCfg.Volumes
-	newVolumes := newCfg.Volumes
-
-	oldVolumesInfo := make(map[string]string)
-	newVolumesInfo := make(map[string]string)
-
-	updatedVolumesInfo := make(map[string]bool)
-
-	for _, volume := range oldVolumes {
-		newVolumesInfo[volume.Path] = volume.Name
-	}
-
-	for _, volume := range newVolumes {
-		_, ok := oldVolumesInfo[volume.Path]
-		if ok {
-			if oldVolumesInfo[volume.Path] != volume.Name {
-				updatedVolumesInfo[volume.Name] = true
-			}
-		} else {
-			updatedVolumesInfo[volume.Name] = true
-		}
-	}
-
-	oldServicesInfo := make(map[string]openedge.ServiceInfo)
-	newServicesInfo := make(map[string]openedge.ServiceInfo)
-	removed := make([]openedge.ServiceInfo, 0)
-	updated := make([]openedge.ServiceInfo, 0)
-
-	// new services info
-	for _, service := range newCfg.Services {
-		newServicesInfo[service.Image] = service
-	}
-
-	// old services info and removed services
-	for _, service := range oldCfg.Services {
-		oldServicesInfo[service.Image] = service
-		_, ok := newServicesInfo[service.Image]
-		if !ok {
-			removed = append(removed, service)
-		}
-	}
-
-	// new services and updated services
-	var flag bool
-	for imageName, service := range newServicesInfo {
-		flag = false
-		oldService, ok := oldServicesInfo[imageName]
-		for _, mountInfo := range service.Mounts {
-			if updatedVolumesInfo[mountInfo.Name] {
-				updated = append(updated, service)
-				if ok {
-					removed = append(removed, oldService)
-				}
-				flag = true
-				break
-			}
-		}
-		if flag {
-			break
-		}
-		if ok {
-			if !reflect.DeepEqual(service, oldService) {
-				removed = append(removed, oldService)
-				updated = append(updated, service)
-			}
-		} else {
-			updated = append(updated, service)
-		}
-	}
-
-	updatedServices := map[string][]openedge.ServiceInfo{
-		"updated": updated,
-		"removed": removed,
-	}
-
-	return updatedServices, nil
 }
