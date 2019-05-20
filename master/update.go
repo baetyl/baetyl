@@ -49,7 +49,7 @@ func (m *Master) update(dir string, clean bool) error {
 		return err
 	}
 
-	if len(updatedServices) != 0 && len(removedServices) != 0 {
+	if len(updatedServices) != 0 || len(removedServices) != 0 {
 		// stop all removed services and updated services
 		m.stopAllServices(removedServices)
 		// start all updated services and new services
@@ -60,9 +60,9 @@ func (m *Master) update(dir string, clean bool) error {
 			if err1 != nil {
 				return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 			}
-			_, _, _, err = m.prepareServices()
-			if err != nil {
-				return fmt.Errorf("%s; failed to rollback, cannot reset configuration.", err.Error())
+			_, _, _, err2 := m.prepareServices()
+			if err2 != nil {
+				return fmt.Errorf("%s; failed to rollback, cannot reset configuration.", err2.Error())
 			}
 			// stop all updated services and new services
 			m.stopAllServices(updatedServices)
