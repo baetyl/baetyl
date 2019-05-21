@@ -267,11 +267,12 @@ func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]S
 				if !reflect.DeepEqual(newService, oldService) {
 					updated = append(updated, newService)
 					removed = append(removed, oldService)
-				}
-				for _, mountInfo := range oldService.Mounts {
-					if updatedVolumes[mountInfo.Name] {
-						updated = append(updated, newService)
-						removed = append(removed, oldService)
+				} else {
+					for _, mountInfo := range oldService.Mounts {
+						if updatedVolumes[mountInfo.Name] {
+							updated = append(updated, newService)
+							removed = append(removed, oldService)
+						}
 					}
 				}
 			}
