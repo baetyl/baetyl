@@ -135,8 +135,8 @@ func TestGetRemovedVolumes(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetRemovedVolumes(tt.args.olds, tt.args.news); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetRemovedVolumes() = %v, want %v", got, tt.want)
+			if _, got := DiffVolumes(tt.args.olds, tt.args.news); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("DiffVolumes() = %v, want %v", got, tt.want)
 			}
 		})
 	}

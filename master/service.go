@@ -7,7 +7,6 @@ import (
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/docker/distribution/uuid"
-	cmap "github.com/orcaman/concurrent-map"
 )
 
 // Auth auth api request from services
@@ -35,17 +34,18 @@ func (m *Master) prepareServices() ([]openedge.VolumeInfo, []openedge.ServiceInf
 	updatedVolumes, removedVolumes := openedge.DiffVolumes(oldVolumes, newVolumes)
 	updatedServices, removedServices := openedge.DiffServices(oldServices, newServices, updatedVolumes)
 
-	m.engine.Prepare(m.appcfg.Services)
+	m.engine.Prepare(updatedServices)
 	return removedVolumes, updatedServices, removedServices, nil
 }
 
 func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error {
-	services := m.appcfg.Services
-	if updatedServices != nil {
-		if len(updatedServices) != 0 {
-			services = updatedServices
-		}
+	services := updatedServices
+	if updatedServices == nil {
+		services = m.appcfg.Services
+	} else if len(services) == 0 {
+		return nil
 	}
+
 	vs := make(map[string]openedge.VolumeInfo)
 	for _, v := range m.appcfg.Volumes {
 		vs[v.Name] = v
@@ -71,40 +71,29 @@ func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error 
 }
 
 func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
-	target := m.getStopTarget(updatedServices)
+	services := updatedServices
+	if updatedServices == nil {
+		services = m.appcfg.Services
+	} else if len(services) == 0 {
+		return
+	}
 
 	var wg sync.WaitGroup
-	for _, s := range target.Items() {
-		wg.Add(1)
-		go func(s engine.Service) {
-			defer wg.Done()
-			s.Stop()
-			m.services.Remove(s.Name())
-			m.accounts.Remove(s.Name())
-			m.log.Infof("service (%s) stopped", s.Name())
-		}(s.(engine.Service))
-	}
-	wg.Wait()
-}
-
-func (m *Master) getStopTarget(updatedServices []openedge.ServiceInfo) cmap.ConcurrentMap {
-	target := m.services
-	if updatedServices != nil {
-		if len(updatedServices) != 0 {
-			target = cmap.New()
-			var serviceName string
-			for _, removedService := range updatedServices {
-				serviceName = removedService.Name
-				if m.services.Has(serviceName) {
-					service, ok := m.services.Get(serviceName)
-					if ok {
-						target.Set(serviceName, service)
-					}
-				}
-			}
+	for _, s := range services {
+		service, ok := m.services.Get(s.Name)
+		if ok {
+			wg.Add(1)
+			go func(s engine.Service) {
+				defer wg.Done()
+				s.Stop()
+				m.services.Remove(s.Name())
+				m.accounts.Remove(s.Name())
+				m.log.Infof("service (%s) stopped", s.Name())
+			}(service.(engine.Service))
 		}
 	}
-	return target
+
+	wg.Wait()
 }
 
 // ReportInstance reports the stats of the instance of the service

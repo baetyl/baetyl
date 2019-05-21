@@ -202,30 +202,40 @@ func GetRemovedVolumes(olds, news []VolumeInfo) []VolumeInfo {
 
 // DiffVolumes return the removed volume and updated volume
 func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
-
+	removedVolumes := []VolumeInfo{}
+	updatedVolumes := make(map[string]bool)
 	oldVolumesInfo := make(map[string]string)
 
-	updatedVolumes := make(map[string]bool)
-	removedVolumes := GetRemovedVolumes(olds, news)
+	np := map[string]struct{}{}
 
-	// add removed volumes
-	for _, volume := range removedVolumes {
-		updatedVolumes[volume.Name] = true
+	if news != nil {
+		for _, nv := range news {
+			np[nv.Path] = struct{}{}
+		}
 	}
 
-	for _, volume := range olds {
-		oldVolumesInfo[volume.Path] = volume.Name
+	if olds != nil {
+		for _, ov := range olds {
+			oldVolumesInfo[ov.Path] = ov.Name
+			if _, ok := np[ov.Path]; !ok {
+				removedVolumes = append(removedVolumes, ov)
+				// add removed volumes
+				updatedVolumes[ov.Name] = true
+			}
+		}
 	}
 
 	// new volumes & updated volumes
-	for _, volume := range news {
-		_, ok := oldVolumesInfo[volume.Path]
-		if ok {
-			if oldVolumesInfo[volume.Path] != volume.Name {
+	if news != nil {
+		for _, volume := range news {
+			_, ok := oldVolumesInfo[volume.Path]
+			if ok {
+				if oldVolumesInfo[volume.Path] != volume.Name {
+					updatedVolumes[volume.Name] = true
+				}
+			} else {
 				updatedVolumes[volume.Name] = true
 			}
-		} else {
-			updatedVolumes[volume.Name] = true
 		}
 	}
 
@@ -239,45 +249,42 @@ func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]S
 	removed := []ServiceInfo{}
 	updated := []ServiceInfo{}
 
-	// new services info
-	for _, service := range news {
-		newServicesInfo[service.Image] = service
-	}
-
-	// old services info and removed services
-	for _, service := range olds {
-		oldServicesInfo[service.Image] = service
-		_, ok := newServicesInfo[service.Image]
-		if !ok {
-			removed = append(removed, service)
+	// old services info
+	if olds != nil {
+		for _, service := range olds {
+			oldServicesInfo[service.Name] = service
 		}
 	}
 
-	// new services and updated services
-	var flag bool
-	for imageName, service := range newServicesInfo {
-		flag = false
-		oldService, ok := oldServicesInfo[imageName]
-		for _, mountInfo := range service.Mounts {
-			if updatedVolumes[mountInfo.Name] {
-				updated = append(updated, service)
-				if ok {
+	// new services & updated services & services need to stop
+	if news != nil {
+		for _, newService := range news {
+			newServicesInfo[newService.Name] = newService
+			oldService, ok := oldServicesInfo[newService.Image]
+			if !ok {
+				updated = append(updated, newService)
+			} else {
+				if !reflect.DeepEqual(newService, oldService) {
+					updated = append(updated, newService)
 					removed = append(removed, oldService)
 				}
-				flag = true
-				break
+				for _, mountInfo := range oldService.Mounts {
+					if updatedVolumes[mountInfo.Name] {
+						updated = append(updated, newService)
+						removed = append(removed, oldService)
+					}
+				}
 			}
 		}
-		if flag {
-			break
-		}
-		if ok {
-			if !reflect.DeepEqual(service, oldService) {
-				removed = append(removed, oldService)
-				updated = append(updated, service)
+	}
+
+	// removed service
+	if olds != nil {
+		for _, service := range olds {
+			_, ok := newServicesInfo[service.Name]
+			if !ok {
+				removed = append(removed, service)
 			}
-		} else {
-			updated = append(updated, service)
 		}
 	}
 
