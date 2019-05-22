@@ -181,25 +181,6 @@ type FunctionServerConfig struct {
 	utils.Certificate `yaml:",inline" json:",inline"`
 }
 
-// GetRemovedVolumes returns the volumes which are removed
-func GetRemovedVolumes(olds, news []VolumeInfo) []VolumeInfo {
-	rv := []VolumeInfo{}
-	np := map[string]struct{}{}
-	if news != nil {
-		for _, nv := range news {
-			np[nv.Path] = struct{}{}
-		}
-	}
-	if olds != nil {
-		for _, ov := range olds {
-			if _, ok := np[ov.Path]; !ok {
-				rv = append(rv, ov)
-			}
-		}
-	}
-	return rv
-}
-
 // DiffVolumes return the removed volume and updated volume
 func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
 	removedVolumes := []VolumeInfo{}
