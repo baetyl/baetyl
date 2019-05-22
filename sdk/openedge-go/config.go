@@ -205,36 +205,33 @@ func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
 	removedVolumes := []VolumeInfo{}
 	updatedVolumes := make(map[string]bool)
 	oldVolumesInfo := make(map[string]string)
-
-	np := map[string]struct{}{}
-
-	if news != nil {
-		for _, nv := range news {
-			np[nv.Path] = struct{}{}
-		}
-	}
+	newVolumesInfo := make(map[string]string)
 
 	if olds != nil {
-		for _, ov := range olds {
-			oldVolumesInfo[ov.Path] = ov.Name
-			if _, ok := np[ov.Path]; !ok {
-				removedVolumes = append(removedVolumes, ov)
-				// add removed volumes
-				updatedVolumes[ov.Name] = true
-			}
+		for _, volume := range olds {
+			oldVolumesInfo[volume.Path] = volume.Name
 		}
 	}
 
 	// new volumes & updated volumes
 	if news != nil {
 		for _, volume := range news {
+			newVolumesInfo[volume.Path] = volume.Name
 			_, ok := oldVolumesInfo[volume.Path]
-			if ok {
-				if oldVolumesInfo[volume.Path] != volume.Name {
-					updatedVolumes[volume.Name] = true
-				}
-			} else {
+			if !ok {
 				updatedVolumes[volume.Name] = true
+				continue
+			}
+			if oldVolumesInfo[volume.Path] != volume.Name {
+				updatedVolumes[volume.Name] = true
+			}
+		}
+	}
+
+	if olds != nil {
+		for _, oldVolume := range olds {
+			if _, ok := newVolumesInfo[oldVolume.Path]; !ok {
+				removedVolumes = append(removedVolumes, oldVolume)
 			}
 		}
 	}
@@ -263,17 +260,18 @@ func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]S
 			oldService, ok := oldServicesInfo[newService.Image]
 			if !ok {
 				updated = append(updated, newService)
-			} else {
-				if !reflect.DeepEqual(newService, oldService) {
+				continue
+			}
+			if !reflect.DeepEqual(newService, oldService) {
+				updated = append(updated, newService)
+				removed = append(removed, oldService)
+				continue
+			}
+			for _, mountInfo := range oldService.Mounts {
+				if updatedVolumes[mountInfo.Name] {
 					updated = append(updated, newService)
 					removed = append(removed, oldService)
-				} else {
-					for _, mountInfo := range oldService.Mounts {
-						if updatedVolumes[mountInfo.Name] {
-							updated = append(updated, newService)
-							removed = append(removed, oldService)
-						}
-					}
+					break
 				}
 			}
 		}

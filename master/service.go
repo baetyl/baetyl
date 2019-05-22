@@ -81,16 +81,17 @@ func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
 	var wg sync.WaitGroup
 	for _, s := range services {
 		service, ok := m.services.Get(s.Name)
-		if ok {
-			wg.Add(1)
-			go func(s engine.Service) {
-				defer wg.Done()
-				s.Stop()
-				m.services.Remove(s.Name())
-				m.accounts.Remove(s.Name())
-				m.log.Infof("service (%s) stopped", s.Name())
-			}(service.(engine.Service))
+		if !ok {
+			continue
 		}
+		wg.Add(1)
+		go func(s engine.Service) {
+			defer wg.Done()
+			s.Stop()
+			m.services.Remove(s.Name())
+			m.accounts.Remove(s.Name())
+			m.log.Infof("service (%s) stopped", s.Name())
+		}(service.(engine.Service))
 	}
 
 	wg.Wait()

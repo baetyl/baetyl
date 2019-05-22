@@ -49,32 +49,30 @@ func (m *Master) update(dir string, clean bool) error {
 		return err
 	}
 
-	if len(updatedServices) != 0 || len(removedServices) != 0 {
-		// stop all removed services and updated services
-		m.stopAllServices(removedServices)
-		// start all updated services and new services
-		err = m.startAllServices(updatedServices)
-		if err != nil {
-			m.log.Infof("failed to start all new services, to rollback")
-			err1 := m.rollback()
-			if err1 != nil {
-				return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
-			}
-			_, _, _, err2 := m.prepareServices()
-			if err2 != nil {
-				return fmt.Errorf("%s; failed to rollback, cannot reset configuration.", err2.Error())
-			}
-			// stop all updated services and new services
-			m.stopAllServices(updatedServices)
-			// start all removed services and updated service
-			err1 = m.startAllServices(removedServices)
-			if err1 != nil {
-				return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
-			}
-			return err
+	// stop all removed services and updated services
+	m.stopAllServices(removedServices)
+	// start all updated services and new services
+	err = m.startAllServices(updatedServices)
+	if err != nil {
+		m.log.Infof("failed to start all new services, to rollback")
+		err1 := m.rollback()
+		if err1 != nil {
+			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
-		m.log.Infof("system is updated")
+		_, _, _, err2 := m.prepareServices()
+		if err2 != nil {
+			return fmt.Errorf("%s; failed to rollback, cannot reset configuration.", err2.Error())
+		}
+		// stop all updated services and new services
+		m.stopAllServices(updatedServices)
+		// start all removed services and updated service
+		err1 = m.startAllServices(removedServices)
+		if err1 != nil {
+			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
+		}
+		return err
 	}
+	m.log.Infof("system is updated")
 	if clean {
 		if os.RemoveAll(dir) != nil {
 			m.log.Warnf("failed to remove app config dir (%s)", dir)
