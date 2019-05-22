@@ -249,14 +249,14 @@ func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]S
 	// old services info
 	if olds != nil {
 		for _, service := range olds {
-			oldServicesInfo[service.Name] = service
+			oldServicesInfo[service.Image] = service
 		}
 	}
 
 	// new services & updated services & services need to stop
 	if news != nil {
 		for _, newService := range news {
-			newServicesInfo[newService.Name] = newService
+			newServicesInfo[newService.Image] = newService
 			oldService, ok := oldServicesInfo[newService.Image]
 			if !ok {
 				updated = append(updated, newService)
@@ -280,7 +280,7 @@ func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]S
 	// removed service
 	if olds != nil {
 		for _, service := range olds {
-			_, ok := newServicesInfo[service.Name]
+			_, ok := newServicesInfo[service.Image]
 			if !ok {
 				removed = append(removed, service)
 			}
