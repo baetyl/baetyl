@@ -16,7 +16,7 @@ var appBackupFile = path.Join(appDir, "application.yml.old")
 
 // UpdateSystem updates system
 func (m *Master) UpdateSystem(dir string, clean bool) error {
-	err := m.update(dir, clean)
+	err := m.initServices(dir, clean, true)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
@@ -25,21 +25,23 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 	return err
 }
 
-func (m *Master) update(dir string, clean bool) error {
+func (m *Master) initServices(dir string, clean, reload bool) error {
 	m.log.Infof("system is updating")
 
-	// backup application.yml
-	err := m.backup()
-	if err != nil {
-		return err
-	}
-	defer m.clean()
+	if reload {
+		// backup application.yml
+		err := m.backup()
+		if err != nil {
+			return err
+		}
+		defer m.clean()
 
-	// copy new config into application.yml
-	err = m.copy(dir)
-	if err != nil {
-		m.rollback()
-		return err
+		// copy new config into application.yml
+		err = m.copy(dir)
+		if err != nil {
+			m.rollback()
+			return err
+		}
 	}
 
 	// prepare services
@@ -49,10 +51,13 @@ func (m *Master) update(dir string, clean bool) error {
 		return err
 	}
 
-	// stop all removed services and updated services
-	m.stopAllServices(removedServices)
+	// stop all removed services and updated services if it's reload
+	if reload {
+		m.stopAllServices(removedServices)
+	}
 	// start all updated services and new services
 	err = m.startAllServices(updatedServices)
+
 	if err != nil {
 		m.log.Infof("failed to start all new services, to rollback")
 		err1 := m.rollback()
@@ -72,7 +77,6 @@ func (m *Master) update(dir string, clean bool) error {
 		}
 		return err
 	}
-	m.log.Infof("system is updated")
 	if clean {
 		if os.RemoveAll(dir) != nil {
 			m.log.Warnf("failed to remove app config dir (%s)", dir)

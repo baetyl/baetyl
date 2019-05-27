@@ -185,35 +185,34 @@ type FunctionServerConfig struct {
 func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
 	removedVolumes := []VolumeInfo{}
 	updatedVolumes := make(map[string]bool)
+
+	if olds == nil && news == nil {
+		return updatedVolumes, removedVolumes
+	}
+
 	oldVolumesInfo := make(map[string]string)
 	newVolumesInfo := make(map[string]string)
 
-	if olds != nil {
-		for _, volume := range olds {
-			oldVolumesInfo[volume.Path] = volume.Name
-		}
+	for _, volume := range olds {
+		oldVolumesInfo[volume.Path] = volume.Name
 	}
 
 	// new volumes & updated volumes
-	if news != nil {
-		for _, volume := range news {
-			newVolumesInfo[volume.Path] = volume.Name
-			_, ok := oldVolumesInfo[volume.Path]
-			if !ok {
-				updatedVolumes[volume.Name] = true
-				continue
-			}
-			if oldVolumesInfo[volume.Path] != volume.Name {
-				updatedVolumes[volume.Name] = true
-			}
+	for _, volume := range news {
+		newVolumesInfo[volume.Path] = volume.Name
+		_, ok := oldVolumesInfo[volume.Path]
+		if !ok {
+			updatedVolumes[volume.Name] = true
+			continue
+		}
+		if oldVolumesInfo[volume.Path] != volume.Name {
+			updatedVolumes[volume.Name] = true
 		}
 	}
 
-	if olds != nil {
-		for _, oldVolume := range olds {
-			if _, ok := newVolumesInfo[oldVolume.Path]; !ok {
-				removedVolumes = append(removedVolumes, oldVolume)
-			}
+	for _, oldVolume := range olds {
+		if _, ok := newVolumesInfo[oldVolume.Path]; !ok {
+			removedVolumes = append(removedVolumes, oldVolume)
 		}
 	}
 
@@ -222,49 +221,49 @@ func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
 
 // DiffServices return the removed services and updated services
 func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]ServiceInfo, []ServiceInfo) {
-	oldServicesInfo := make(map[string]ServiceInfo)
-	newServicesInfo := make(map[string]ServiceInfo)
+
 	removed := []ServiceInfo{}
 	updated := []ServiceInfo{}
 
+	if olds == nil && news == nil {
+		return updated, removed
+	}
+
+	oldServicesInfo := make(map[string]ServiceInfo)
+	newServicesInfo := make(map[string]ServiceInfo)
+
 	// old services info
-	if olds != nil {
-		for _, service := range olds {
-			oldServicesInfo[service.Name] = service
-		}
+	for _, service := range olds {
+		oldServicesInfo[service.Name] = service
 	}
 
 	// new services & updated services & services need to stop
-	if news != nil {
-		for _, newService := range news {
-			newServicesInfo[newService.Name] = newService
-			oldService, ok := oldServicesInfo[newService.Name]
-			if !ok {
-				updated = append(updated, newService)
-				continue
-			}
-			if !reflect.DeepEqual(newService, oldService) {
+	for _, newService := range news {
+		newServicesInfo[newService.Name] = newService
+		oldService, ok := oldServicesInfo[newService.Name]
+		if !ok {
+			updated = append(updated, newService)
+			continue
+		}
+		if !reflect.DeepEqual(newService, oldService) {
+			updated = append(updated, newService)
+			removed = append(removed, oldService)
+			continue
+		}
+		for _, mountInfo := range oldService.Mounts {
+			if updatedVolumes[mountInfo.Name] {
 				updated = append(updated, newService)
 				removed = append(removed, oldService)
-				continue
-			}
-			for _, mountInfo := range oldService.Mounts {
-				if updatedVolumes[mountInfo.Name] {
-					updated = append(updated, newService)
-					removed = append(removed, oldService)
-					break
-				}
+				break
 			}
 		}
 	}
 
 	// removed service
-	if olds != nil {
-		for _, service := range olds {
-			_, ok := newServicesInfo[service.Name]
-			if !ok {
-				removed = append(removed, service)
-			}
+	for _, service := range olds {
+		_, ok := newServicesInfo[service.Name]
+		if !ok {
+			removed = append(removed, service)
 		}
 	}
 

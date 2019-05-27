@@ -13,7 +13,6 @@ import (
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
-	"github.com/baidubce/bce-sdk-go/util/log"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -60,22 +59,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
-	m, err = m.startServices()
-	if err != nil && utils.FileExists(appBackupFile) {
-		if err = m.rollback(); err != nil {
-			m, err = m.startServices()
-		}
-	}
-	return m, err
-}
-
-func (m *Master) startServices() (*Master, error) {
-	_, _, _, err := m.prepareServices()
-	if err != nil {
-		m.Close()
-		return nil, err
-	}
-	err = m.startAllServices(nil)
+	err = m.initServices("", false, false)
 	if err != nil {
 		m.Close()
 		return nil, err
