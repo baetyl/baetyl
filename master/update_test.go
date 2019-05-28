@@ -81,6 +81,7 @@ func TestUpdate(t *testing.T) {
 	assert.Equal(t, "v1", m.appcfg.Version)
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
+	m.Close()
 }
 
 func TestUpdateSystem(t *testing.T) {
