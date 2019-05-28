@@ -374,6 +374,32 @@ func TestDiffVolumes(t *testing.T) {
 				"b": true,
 			},
 		},
+		{
+			name: "aa->ab",
+			args: args{
+				olds: []VolumeInfo{
+					VolumeInfo{
+						Name: "a",
+						Path: "a",
+					},
+				},
+				news: []VolumeInfo{
+					VolumeInfo{
+						Name: "a",
+						Path: "b",
+					},
+				},
+			},
+			removed: []VolumeInfo{
+				VolumeInfo{
+					Name: "a",
+					Path: "a",
+				},
+			},
+			updated: map[string]bool{
+				"a": true,
+			},
+		},
 	}
 
 	for _, tt := range tests {
