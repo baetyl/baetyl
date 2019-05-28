@@ -16,7 +16,7 @@ var appBackupFile = path.Join(appDir, openedge.AppBackupFileName)
 
 // UpdateSystem updates system
 func (m *Master) UpdateSystem(dir string, clean bool) error {
-	err := m.initServices(dir, clean, true)
+	err := m.update(dir, clean, true)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
@@ -25,7 +25,7 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 	return err
 }
 
-func (m *Master) initServices(dir string, clean, reload bool) error {
+func (m *Master) update(dir string, clean, reload bool) error {
 	m.log.Infof("system is updating")
 
 	if reload {

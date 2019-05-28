@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInitServices(t *testing.T) {
+func TestUpdate(t *testing.T) {
 	err := os.Chdir("testdata")
 	assert.NoError(t, err)
 	os.RemoveAll(appConfigFile)
@@ -43,7 +43,7 @@ func TestInitServices(t *testing.T) {
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	err = m.initServices("", false, false)
+	err = m.update("", false, false)
 	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
 	m.Close()
 
@@ -54,7 +54,7 @@ func TestInitServices(t *testing.T) {
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	err = m.initServices("", false, false)
+	err = m.update("", false, false)
 	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory; failed to rollback: open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
 	m.Close()
 

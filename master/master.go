@@ -59,7 +59,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
-	err = m.initServices("", false, false)
+	err = m.update("", false, false)
 	if err != nil {
 		m.Close()
 		return nil, err
