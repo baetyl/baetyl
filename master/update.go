@@ -34,7 +34,6 @@ func (m *Master) update(dir string, clean, reload bool) error {
 		if err != nil {
 			return err
 		}
-		defer m.clean()
 
 		// copy new config into application.yml
 		err = m.copy(dir)
@@ -43,6 +42,8 @@ func (m *Master) update(dir string, clean, reload bool) error {
 			return err
 		}
 	}
+
+	defer m.clean()
 
 	// prepare services
 	rvs, updatedServices, removedServices, err := m.prepareServices()

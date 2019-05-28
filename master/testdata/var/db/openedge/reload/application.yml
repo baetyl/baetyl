@@ -1,4 +1,4 @@
-version: v1
+version: v2
 services:
   - name: wait_exit_1
     image: cmd
