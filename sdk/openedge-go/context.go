@@ -27,6 +27,8 @@ const (
 const (
 	// AppConfFileName application config file name
 	AppConfFileName = "application.yml"
+	// AppBackupFileName application backup configuration file
+	AppBackupFileName = "application.yml.old"
 	// AppStatsFileName application stats file name
 	AppStatsFileName = "application.stats"
 	// DefaultSockFile sock file of openedge by default

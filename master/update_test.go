@@ -12,14 +12,55 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	_ "github.com/baidu/openedge/master/engine/native"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUpdateSystem(t *testing.T) {
+func TestInitServices(t *testing.T) {
 	err := os.Chdir("testdata")
 	assert.NoError(t, err)
+	os.RemoveAll(appConfigFile)
+	os.RemoveAll(appBackupFile)
+	targetPath := path.Join("var", "db", "openedge", "reload")
+	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appConfigFile)
+	utils.CopyFile(path.Join(targetPath, openedge.AppBackupFileName), appBackupFile)
+	os.RemoveAll("var/run")
+	defer os.RemoveAll(appConfigFile)
+	defer os.RemoveAll(appBackupFile)
+	defer os.RemoveAll("var/run")
+
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	m := &Master{
+		accounts:  cmap.New(),
+		services:  cmap.New(),
+		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
+		log:       logger.WithField("openedge", "master"),
+	}
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	assert.NoError(t, err)
+
+	err = m.initServices("", false, false)
+	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
+	m.Close()
+
+	os.RemoveAll(appConfigFile)
+	os.RemoveAll(appBackupFile)
+	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appConfigFile)
+	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appBackupFile)
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	assert.NoError(t, err)
+
+	err = m.initServices("", false, false)
+	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory; failed to rollback: open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
+	m.Close()
+
+}
+
+func TestUpdateSystem(t *testing.T) {
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
 	os.RemoveAll("var/run")

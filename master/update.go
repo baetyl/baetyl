@@ -11,8 +11,8 @@ import (
 )
 
 var appDir = path.Join("var", "db", "openedge")
-var appConfigFile = path.Join(appDir, "application.yml")
-var appBackupFile = path.Join(appDir, "application.yml.old")
+var appConfigFile = path.Join(appDir, openedge.AppConfFileName)
+var appBackupFile = path.Join(appDir, openedge.AppBackupFileName)
 
 // UpdateSystem updates system
 func (m *Master) UpdateSystem(dir string, clean bool) error {
