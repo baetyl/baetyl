@@ -245,8 +245,12 @@ func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]S
 			updated = append(updated, newService)
 			continue
 		}
-		newService.Env[EnvServiceNameKey] = oldService.Env[EnvServiceNameKey]
-		newService.Env[EnvServiceTokenKey] = oldService.Env[EnvServiceTokenKey]
+		if _, ok := oldService.Env[EnvServiceNameKey]; ok {
+			newService.Env[EnvServiceNameKey] = oldService.Env[EnvServiceNameKey]
+		}
+		if _, ok := oldService.Env[EnvServiceTokenKey]; ok {
+			newService.Env[EnvServiceTokenKey] = oldService.Env[EnvServiceTokenKey]
+		}
 		if !reflect.DeepEqual(newService, oldService) {
 			updated = append(updated, newService)
 			removed = append(removed, oldService)
