@@ -1,6 +1,7 @@
 package openedge
 
 import (
+	"reflect"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -180,21 +181,93 @@ type FunctionServerConfig struct {
 	utils.Certificate `yaml:",inline" json:",inline"`
 }
 
-// GetRemovedVolumes returns the volumes which are removed
-func GetRemovedVolumes(olds, news []VolumeInfo) []VolumeInfo {
-	rv := []VolumeInfo{}
-	np := map[string]struct{}{}
-	if news != nil {
-		for _, nv := range news {
-			np[nv.Path] = struct{}{}
+// DiffVolumes return the removed volume and updated volume
+func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
+	removedVolumes := []VolumeInfo{}
+	updatedVolumes := make(map[string]bool)
+
+	if olds == nil && news == nil {
+		return updatedVolumes, removedVolumes
+	}
+
+	oldVolumesInfo := make(map[string]string)
+	newVolumesInfo := make(map[string]string)
+
+	for _, volume := range olds {
+		oldVolumesInfo[volume.Path] = volume.Name
+	}
+
+	// new volumes & updated volumes
+	for _, volume := range news {
+		newVolumesInfo[volume.Path] = volume.Name
+		_, ok := oldVolumesInfo[volume.Path]
+		if !ok {
+			updatedVolumes[volume.Name] = true
+			continue
+		}
+		if oldVolumesInfo[volume.Path] != volume.Name {
+			updatedVolumes[volume.Name] = true
 		}
 	}
-	if olds != nil {
-		for _, ov := range olds {
-			if _, ok := np[ov.Path]; !ok {
-				rv = append(rv, ov)
+
+	for _, oldVolume := range olds {
+		if _, ok := newVolumesInfo[oldVolume.Path]; !ok {
+			removedVolumes = append(removedVolumes, oldVolume)
+		}
+	}
+
+	return updatedVolumes, removedVolumes
+}
+
+// DiffServices return the removed services and updated services
+func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]ServiceInfo, []ServiceInfo) {
+
+	removed := []ServiceInfo{}
+	updated := []ServiceInfo{}
+
+	if olds == nil && news == nil {
+		return updated, removed
+	}
+
+	oldServicesInfo := make(map[string]ServiceInfo)
+	newServicesInfo := make(map[string]ServiceInfo)
+
+	// old services info
+	for _, service := range olds {
+		oldServicesInfo[service.Name] = service
+	}
+
+	// new services & updated services & services need to stop
+	for _, newService := range news {
+		newServicesInfo[newService.Name] = newService
+		oldService, ok := oldServicesInfo[newService.Name]
+		if !ok {
+			updated = append(updated, newService)
+			continue
+		}
+		newService.Env[EnvServiceNameKey] = oldService.Env[EnvServiceNameKey]
+		newService.Env[EnvServiceTokenKey] = oldService.Env[EnvServiceTokenKey]
+		if !reflect.DeepEqual(newService, oldService) {
+			updated = append(updated, newService)
+			removed = append(removed, oldService)
+			continue
+		}
+		for _, mountInfo := range oldService.Mounts {
+			if updatedVolumes[mountInfo.Name] {
+				updated = append(updated, newService)
+				removed = append(removed, oldService)
+				break
 			}
 		}
 	}
-	return rv
+
+	// removed service
+	for _, service := range olds {
+		_, ok := newServicesInfo[service.Name]
+		if !ok {
+			removed = append(removed, service)
+		}
+	}
+
+	return updated, removed
 }
