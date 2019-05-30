@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
@@ -25,7 +24,6 @@ type mo struct {
 	mqtt *mqtt.Dispatcher
 	http *http.Client
 	tomb utils.Tomb
-	lock sync.RWMutex
 
 	certSN  string
 	certKey []byte
@@ -159,13 +157,9 @@ func (m *mo) report(overwrite bool, errors ...string) {
 	defer utils.Trace("report", logger.Debugf)()
 
 	if overwrite {
-		m.lock.Lock()
 		m.errs = errors
-		m.lock.Unlock()
 	} else {
-		m.lock.RLock()
 		errors = append(m.errs, errors...)
-		m.lock.RUnlock()
 	}
 
 	i, err := m.ctx.InspectSystem()
