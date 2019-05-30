@@ -39,15 +39,6 @@ func NewDispatcher(cc ClientInfo, log logger.Logger) *Dispatcher {
 	}
 }
 
-// Publish sends a publish packet
-func (d *Dispatcher) Publish(t TopicInfo, p []byte) error {
-	pkt := packet.NewPublish()
-	pkt.Message.Topic = t.Topic
-	pkt.Message.QOS = packet.QOS(t.QOS)
-	pkt.Message.Payload = p
-	return d.Send(pkt)
-}
-
 // Send sends a generic packet
 func (d *Dispatcher) Send(pkt packet.Generic) error {
 	select {
