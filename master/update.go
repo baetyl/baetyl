@@ -122,7 +122,6 @@ func (m *Master) load() error {
 		return err
 	}
 	m.appcfg = cfg
-	// m.infostats.refreshAppInfo(m.appcfg)
 	return nil
 }
 
