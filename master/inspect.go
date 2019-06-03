@@ -94,17 +94,6 @@ func (is *infoStats) getError() string {
 	return is.raw.Error
 }
 
-func (is *infoStats) refreshAppInfo(cfg openedge.AppConfig) {
-	is.Lock()
-	is.raw.Software.ConfVersion = cfg.Version
-	is.sss = engine.ServicesStats{}
-	for _, item := range cfg.Services {
-		is.sss[item.Name] = engine.InstancesStats{}
-	}
-	is.raw.Volumes = genVolumesStats(cfg.Volumes)
-	is.Unlock()
-}
-
 func genVolumesStats(cfg []openedge.VolumeInfo) openedge.Volumes {
 	volumes := openedge.Volumes{}
 	for _, item := range cfg {
