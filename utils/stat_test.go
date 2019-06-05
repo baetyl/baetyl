@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_parseGPUInfo(t *testing.T) {
@@ -73,6 +77,25 @@ func Test_parseGPUInfo(t *testing.T) {
 			if !reflect.DeepEqual(gotGpus, tt.wantGpus) {
 				t.Errorf("parseGPUInfo() = %v, want %v", gotGpus, tt.wantGpus)
 			}
+		})
+	}
+}
+
+func TestGetNetInfo(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr string
+	}{
+		{
+			name: "local",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetNetInfo()
+			assert.Equal(t, got.Error, tt.wantErr)
+			data, _ := json.Marshal(got)
+			fmt.Println(string(data))
 		})
 	}
 }

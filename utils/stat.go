@@ -139,6 +139,14 @@ type Interface struct {
 	Index int    `json:"index,omitempty"`
 	Name  string `json:"name,omitempty"`
 	MAC   string `json:"mac,omitempty"`
+	Addrs []Addr `json:"addrs,omitempty"`
+	Error string `json:"error,omitempty"`
+}
+
+// Addr network ip address
+type Addr struct {
+	Network string `json:"network,omitempty"`
+	Address string `json:"address,omitempty"`
 }
 
 // GetNetInfo returns host information
@@ -150,11 +158,20 @@ func GetNetInfo() *NetInfo {
 		return ni
 	}
 	for _, v := range raw {
-		ni.Interfaces = append(ni.Interfaces, Interface{
+		i := Interface{
 			Index: v.Index,
 			Name:  v.Name,
 			MAC:   v.HardwareAddr.String(),
-		})
+			Addrs: []Addr{},
+		}
+		va, err := v.Addrs()
+		if err != nil {
+			i.Error = err.Error()
+		}
+		for _, vaa := range va {
+			i.Addrs = append(i.Addrs, Addr{Network: vaa.Network(), Address: vaa.String()})
+		}
+		ni.Interfaces = append(ni.Interfaces, i)
 	}
 	return ni
 }
