@@ -12,6 +12,33 @@ import (
 	"golang.org/x/net/context"
 )
 
+func TestFunctionClient(t *testing.T) {
+	t.Skip("local test")
+	cc := FunctionClientConfig{
+		Address: "127.0.0.1:50051",
+	}
+	err := utils.UnmarshalJSON([]byte("{\"address\":\"127.0.0.1:50051\"}"), &cc)
+	assert.NoError(t, err)
+	cli, err := NewFClient(cc)
+	assert.NoError(t, err)
+
+	msg := &FunctionMessage{
+		Payload:          []byte("{}"),
+		FunctionName:     "sayhi3",
+		FunctionInvokeID: "invokeid",
+	}
+	start := time.Now()
+	out, err := cli.Call(msg)
+	fmt.Printf("%s elapsed time: %v\n", t.Name(), time.Since(start))
+	assert.NoError(t, err)
+	res := make(map[string]interface{})
+	err = json.Unmarshal(out.Payload, &res)
+	assert.NoError(t, err)
+	assert.Equal(t, "你好，世界！", res["py"])
+	assert.Equal(t, "sayhi3", res["functionName"])
+	assert.Equal(t, "invokeid", res["functionInvokeID"])
+}
+
 func TestFunctionCall(t *testing.T) {
 	msg := &FunctionMessage{FunctionName: "happy", QOS: 1, Topic: "t", Payload: []byte(`{"v":"a"}`), FunctionInvokeID: "x"}
 	msg4k := &FunctionMessage{FunctionName: "test", Payload: []byte(strings.Repeat("a", 4*1024))}
