@@ -11,7 +11,13 @@ import (
 	"github.com/baidu/openedge/utils"
 )
 
-// Env variable keys
+// Mode keys
+const (
+	ModeNative = "native"
+	ModeDocker = "docker"
+)
+
+// Env keys
 const (
 	EnvHostOSKey                 = "OPENEDGE_HOST_OS"
 	EnvMasterAPIKey              = "OPENEDGE_MASTER_API"
@@ -24,6 +30,7 @@ const (
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 )
 
+// Path keys
 const (
 	// AppConfFileName application config file name
 	AppConfFileName = "application.yml"
@@ -56,11 +63,13 @@ type Context interface {
 	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
 	// returns logger interface
 	Log() logger.Logger
+	// check running mode
+	IsNative() bool
 	// waiting to exit, receiving SIGTERM and SIGINT signals
 	Wait()
 	// returns wait channel
 	WaitChan() <-chan os.Signal
-
+	
 	// Master RESTful API
 
 	// updates system and
@@ -80,6 +89,7 @@ type Context interface {
 type ctx struct {
 	sn  string // service name
 	in  string // instance name
+	md  string // running mode
 	cli *Client
 	cfg ServiceConfig
 	log logger.Logger
@@ -89,6 +99,7 @@ func newContext() (*ctx, error) {
 	var cfg ServiceConfig
 	sn := os.Getenv(EnvServiceNameKey)
 	in := os.Getenv(EnvServiceInstanceNameKey)
+	md := os.Getenv(EnvRunningModeKey)
 	err := utils.LoadYAML(DefaultConfFile, &cfg)
 	if err != nil && !os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "[%s][%s] failed to load config: %s\n", sn, in, err.Error())
@@ -102,6 +113,7 @@ func newContext() (*ctx, error) {
 	return &ctx{
 		sn:  sn,
 		in:  in,
+		md:  md,
 		cfg: cfg,
 		cli: cli,
 		log: log,
@@ -136,6 +148,10 @@ func (c *ctx) Log() logger.Logger {
 
 func (c *ctx) Wait() {
 	<-c.WaitChan()
+}
+
+func (c *ctx) IsNative() bool {
+	return c.md == ModeNative
 }
 
 func (c *ctx) WaitChan() <-chan os.Signal {
