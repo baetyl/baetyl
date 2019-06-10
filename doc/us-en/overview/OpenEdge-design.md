@@ -1,4 +1,4 @@
-# OpenEdge
+# OpenEdge Design
 
 - [Concepts](#concepts)
 - [Components](#components)
@@ -348,7 +348,7 @@ The cloud agent do two things at the moment:
 
 After receiving the application OTA command from the BIE Cloud Management Suite, the cloud agent first downloads the storage volume data packets used in all configurations and decompresses them to the specified location. If the storage volume data packets already exist and the MD5 is the same, the download will be skipped. After all storage volumes are ready, the cloud agent module will call the Master's `/update/system` interface to trigger the Master to update the system.
 
-_**Tip **: If the device cannot connect to the external network or needs to leave the cloud management suite, you can remove the Agent module from the application configuration and run offline. _
+_**NOTE**: If the device cannot connect to the external network or needs to leave the cloud management suite, you can remove the Agent module from the application configuration and run offline. _
 
 ### openedge-hub
 
@@ -436,7 +436,7 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install **Python3.6** and its packages **pyyaml**, **protobuf3** and **grpcio** (pip installation can be used, `**pip3** install pyyaml protobuf grpcio`). _
+_**NOTE**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install **Python3.6** and its packages **pyyaml**, **protobuf3** and **grpcio** (pip installation can be used, `**pip3** install pyyaml protobuf grpcio`). _
 
 ### openedge-remote-mqtt
 

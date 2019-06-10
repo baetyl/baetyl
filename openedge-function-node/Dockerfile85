@@ -1,14 +1,5 @@
-FROM ubuntu:16.04 as base
+FROM openedge-function-node85-builder:0.1.4
 
-FROM base as builder
-RUN apt-get update \
-        && apt-get install -y build-essential wget \
-        && wget https://nodejs.org/dist/v8.5.0/node-v8.5.0-linux-x64.tar.gz \
-        && tar vxzf node-v8.5.0-linux-x64.tar.gz
-
-FROM base
-COPY --from=builder node-v8.5.0-linux-x64 /usr/local
-RUN rm -rf /var/lib/apt/lists/*
 WORKDIR /
 COPY function_grpc_pb.js function_pb.js openedge-function-node85.js package.json /bin/
 RUN cd /bin && npm install

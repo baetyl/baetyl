@@ -7,7 +7,7 @@ rules:
     subscribe:
       topic: t
     function:
-      name: pythonsayhi
+      name: python27-sayhi
     publish:
       topic: t/python2
   # - clientid: localfunc-2
@@ -23,19 +23,19 @@ rules:
     subscribe:
       topic: t
     function:
-      name: pythonsayhi3
+      name: python36-sayhi
     publish:
       topic: t/python3
   - clientid: localfunc-4
     subscribe:
       topic: t
     function:
-      name: nodesayhi
+      name: node85-sayhi
     publish:
       topic: t/node8
 functions:
-  - name: pythonsayhi
-    service: function-pythonsayhi
+  - name: python27-sayhi
+    service: function-python27-sayhi
     instance:
       min: 0
       max: 10
@@ -45,14 +45,14 @@ functions:
   #   instance:
   #     min: 1
   #     max: 10
-  - name: pythonsayhi3
-    service: function-pythonsayhi3
+  - name: python36-sayhi
+    service: function-python36-sayhi
     instance:
       min: 0
       max: 10
       idletime: 1m
-  - name: nodesayhi
-    service: function-nodesayhi
+  - name: node85-sayhi
+    service: function-node85-sayhi
     instance:
       min: 0
       max: 10

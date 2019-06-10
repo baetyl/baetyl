@@ -331,3 +331,22 @@ logger: Logger configuration
   backup:
     max: The default value is `15`, the maximum number of log files to keep.
 ```
+
+## openedge-timer Configuration
+
+```yaml
+hub: Hub configuration
+  address: The address for the client to connect with the Hub.
+  username: The username for the client to connect with the Hub.
+  password: The password for the client to connect with the Hub.
+  clientid: The client id for the client to connect with the Hub.
+timer: timer configuration
+  interval: Timing interval
+publish:
+  topic: The message topic published to the Hub.
+  payload: The payload data, for example
+    id: 1
+logger: Logger configuration
+  path: The default is `empty` (none configuration), that is, it does not write to the file. If the path is specified, it writes to the file.
+  level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
+```

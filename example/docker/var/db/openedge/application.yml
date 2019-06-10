@@ -52,34 +52,34 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-pythonsayhi
+  - name: function-python27-sayhi
     image: openedge-function-python27
     replica: 0
     mounts:
-      - name: function-sayhi-conf
+      - name: function-python-sayhi-conf
         path: etc/openedge
         readonly: true
-      - name: function-sayhi-code
+      - name: function-python-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-pythonsayhi3
+  - name: function-python36-sayhi
     image: openedge-function-python36
     replica: 0
     mounts:
-      - name: function-sayhi-conf
+      - name: function-python-sayhi-conf
         path: etc/openedge
         readonly: true
-      - name: function-sayhi-code
+      - name: function-python-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-nodesayhi
+  - name: function-node85-sayhi
     image: openedge-function-node85
     replica: 0
     mounts:
-      - name: function-sayhi-conf
+      - name: function-node-sayhi-conf
         path: etc/openedge
         readonly: true
-      - name: function-sayhi-code
+      - name: function-node-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
   - name: function-filter
@@ -140,10 +140,14 @@ volumes:
     path: var/db/openedge/function-manager-conf
   - name: function-manager-log
     path: var/db/openedge/function-manager-log
-  - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
-  - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+  - name: function-python-sayhi-conf
+    path: var/db/openedge/function-python-sayhi-conf
+  - name: function-python-sayhi-code
+    path: var/db/openedge/function-python-sayhi-code
+  - name: function-node-sayhi-conf
+    path: var/db/openedge/function-node-sayhi-conf
+  - name: function-node-sayhi-code
+    path: var/db/openedge/function-node-sayhi-code
   - name: function-filter-conf
     path: var/db/openedge/function-filter-conf
   # mosquitto

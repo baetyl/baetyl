@@ -10,14 +10,10 @@ const argv = require('yargs')
     .option('c', {
         alias: 'conf',
         demand: false,
-        default: path.join('etc', 'openedge', 'service-node.yml'),
+        default: path.join('etc', 'openedge', 'service.yml'),
         describe: 'config file path',
         type: 'string'
     })
-    .usage('Usage: node openedge-function-node85.js [options]')
-    .help('h')
-    .alias('h', 'help')
-    .epilog('copyright 2018')
     .argv;
 
 const hasAttr = (obj, attr) => {
@@ -98,7 +94,7 @@ const getGrpcServer = config => {
     if (hasAttr(config['server'], 'message')
         && hasAttr(config['server']['message'], 'length')
         && hasAttr(config['server']['message']['length'], 'max')) {
-        maxMessageSize = config['server']['message']['max'];
+        maxMessageSize = config['server']['message']['length']['max'];
     }
     let server = new grpc.Server({
         'grpc.max_send_message_length': maxMessageSize,
@@ -241,7 +237,7 @@ class NodeRuntimeModule {
     runtimeModule.Load(argv.c);
     runtimeModule.Start();
     function closeServer() {
-        runtmeModule.Close(() => log4js.shutdown(() => process.exit(0)));
+        runtimeModule.Close(() => log4js.shutdown(() => process.exit(0)));
     }
     process.on('SIGINT', () => {
         closeServer();
