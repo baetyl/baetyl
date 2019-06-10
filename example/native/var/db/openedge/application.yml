@@ -69,10 +69,10 @@ services:
     image: openedge-function-python27
     replica: 0
     mounts:
-      - name: function-python-sayhi-conf
+      - name: function-sayhi-conf
         path: etc/openedge
         readonly: true
-      - name: function-python-sayhi-code
+      - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
       # native process mode only
@@ -83,10 +83,10 @@ services:
     image: openedge-function-python36
     replica: 0
     mounts:
-      - name: function-python-sayhi-conf
+      - name: function-sayhi-conf
         path: etc/openedge
         readonly: true
-      - name: function-python-sayhi-code
+      - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
       # native process mode only
@@ -97,10 +97,10 @@ services:
     image: openedge-function-node85
     replica: 0
     mounts:
-      - name: function-node-sayhi-conf
+      - name: function-sayjs-conf
         path: etc/openedge
         readonly: true
-      - name: function-node-sayhi-code
+      - name: function-sayjs-code
         path: var/db/openedge/function-sayhi
         readonly: true
       # native process mode only
@@ -160,14 +160,14 @@ volumes:
     path: var/db/openedge/function-manager-conf
   - name: function-manager-log
     path: var/db/openedge/function-manager-log
-  - name: function-python-sayhi-conf
-    path: var/db/openedge/function-python-sayhi-conf
-  - name: function-python-sayhi-code
-    path: var/db/openedge/function-python-sayhi-code
-  - name: function-node-sayhi-conf
-    path: var/db/openedge/function-node-sayhi-conf
-  - name: function-node-sayhi-code
-    path: var/db/openedge/function-node-sayhi-code
+  - name: function-sayhi-conf
+    path: var/db/openedge/function-sayhi-conf
+  - name: function-sayhi-code
+    path: var/db/openedge/function-sayhi-code
+  - name: function-sayjs-conf
+    path: var/db/openedge/function-sayjs-conf
+  - name: function-sayjs-code
+    path: var/db/openedge/function-sayjs-code
   - name: function-filter-conf
     path: var/db/openedge/function-filter-conf
   # timer

@@ -11,12 +11,12 @@ import (
 )
 
 var appDir = path.Join("var", "db", "openedge")
-var appConfigFile = path.Join(appDir, "application.yml")
-var appBackupFile = path.Join(appDir, "application.yml.old")
+var appConfigFile = path.Join(appDir, openedge.AppConfFileName)
+var appBackupFile = path.Join(appDir, openedge.AppBackupFileName)
 
 // UpdateSystem updates system
 func (m *Master) UpdateSystem(dir string, clean bool) error {
-	err := m.update(dir, clean)
+	err := m.update(dir, clean, true)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
@@ -25,50 +25,59 @@ func (m *Master) UpdateSystem(dir string, clean bool) error {
 	return err
 }
 
-func (m *Master) update(dir string, clean bool) error {
+func (m *Master) update(dir string, clean, reload bool) error {
 	m.log.Infof("system is updating")
 
-	// backup application.yml
-	err := m.backup()
-	if err != nil {
-		return err
+	if reload {
+		// backup application.yml
+		err := m.backup()
+		if err != nil {
+			return err
+		}
+
+		// copy new config into application.yml
+		err = m.copy(dir)
+		if err != nil {
+			m.rollback()
+			return err
+		}
 	}
+
 	defer m.clean()
 
-	// copy new config into application.yml
-	err = m.copy(dir)
-	if err != nil {
-		m.rollback()
-		return err
-	}
-
 	// prepare services
-	rvs, err := m.prepareServices()
+	rvs, updatedServices, removedServices, err := m.prepareServices()
 	if err != nil {
 		m.rollback()
 		return err
 	}
 
-	// stop all old services
-	m.stopAllServices()
-	// start all new services
-	err = m.startAllServices()
+	// stop all removed services and updated services if it's reload
+	if reload {
+		m.stopAllServices(removedServices)
+	}
+	// start all updated services and new services
+	err = m.startAllServices(updatedServices)
+
 	if err != nil {
 		m.log.Infof("failed to start all new services, to rollback")
 		err1 := m.rollback()
 		if err1 != nil {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
-		// stop all new services
-		m.stopAllServices()
-		// start all old services
-		err1 = m.startAllServices()
+		_, _, _, err2 := m.prepareServices()
+		if err2 != nil {
+			return fmt.Errorf("%s; failed to rollback, cannot reset configuration.", err2.Error())
+		}
+		// stop all updated services and new services
+		m.stopAllServices(updatedServices)
+		// start all removed services and updated service
+		err1 = m.startAllServices(removedServices)
 		if err1 != nil {
 			return fmt.Errorf("%s; failed to rollback: %s", err.Error(), err1.Error())
 		}
 		return err
 	}
-	m.log.Infof("system is updated")
 	if clean {
 		if os.RemoveAll(dir) != nil {
 			m.log.Warnf("failed to remove app config dir (%s)", dir)
@@ -113,7 +122,6 @@ func (m *Master) load() error {
 		return err
 	}
 	m.appcfg = cfg
-	m.infostats.refreshAppInfo(m.appcfg)
 	return nil
 }
 

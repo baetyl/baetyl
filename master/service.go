@@ -19,26 +19,38 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) prepareServices() ([]openedge.VolumeInfo, error) {
-	ovs := m.appcfg.Volumes
+func (m *Master) prepareServices() ([]openedge.VolumeInfo, []openedge.ServiceInfo, []openedge.ServiceInfo, error) {
+	oldVolumes := m.appcfg.Volumes
+	oldServices := m.appcfg.Services
+
 	err := m.load()
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
-	m.engine.Prepare(m.appcfg.Services)
-	nvs := m.appcfg.Volumes
-	return openedge.GetRemovedVolumes(ovs, nvs), nil
+
+	newVolumes := m.appcfg.Volumes
+	newServices := m.appcfg.Services
+
+	updatedVolumes, removedVolumes := openedge.DiffVolumes(oldVolumes, newVolumes)
+	updatedServices, removedServices := openedge.DiffServices(oldServices, newServices, updatedVolumes)
+
+	m.engine.Prepare(updatedServices)
+	return removedVolumes, updatedServices, removedServices, nil
 }
 
-func (m *Master) startAllServices() error {
-	if err := m.load(); err != nil {
-		return err
+func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error {
+	services := updatedServices
+	if updatedServices == nil {
+		services = m.appcfg.Services
+	} else if len(services) == 0 {
+		return nil
 	}
+
 	vs := make(map[string]openedge.VolumeInfo)
 	for _, v := range m.appcfg.Volumes {
 		vs[v.Name] = v
 	}
-	for _, s := range m.appcfg.Services {
+	for _, s := range services {
 		cur, ok := m.services.Get(s.Name)
 		if ok {
 			cur.(engine.Service).Stop()
@@ -58,9 +70,20 @@ func (m *Master) startAllServices() error {
 	return nil
 }
 
-func (m *Master) stopAllServices() {
+func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
+	services := updatedServices
+	if updatedServices == nil {
+		services = m.appcfg.Services
+	} else if len(services) == 0 {
+		return
+	}
+
 	var wg sync.WaitGroup
-	for _, s := range m.services.Items() {
+	for _, s := range services {
+		service, ok := m.services.Get(s.Name)
+		if !ok {
+			continue
+		}
 		wg.Add(1)
 		go func(s engine.Service) {
 			defer wg.Done()
@@ -68,8 +91,9 @@ func (m *Master) stopAllServices() {
 			m.services.Remove(s.Name())
 			m.accounts.Remove(s.Name())
 			m.log.Infof("service (%s) stopped", s.Name())
-		}(s.(engine.Service))
+		}(service.(engine.Service))
 	}
+
 	wg.Wait()
 }
 

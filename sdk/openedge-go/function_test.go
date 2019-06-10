@@ -12,6 +12,38 @@ import (
 	"golang.org/x/net/context"
 )
 
+func TestFunctionClient(t *testing.T) {
+	t.Skip("local test")
+
+	cc := FunctionClientConfig{
+		Address: "127.0.0.1:50051",
+	}
+	err := utils.UnmarshalJSON([]byte("{\"address\":\"127.0.0.1:50051\"}"), &cc)
+	assert.NoError(t, err)
+	cli, err := NewFClient(cc)
+	assert.NoError(t, err)
+
+	fn := "sayhi3"
+	msg := &FunctionMessage{
+		// Payload: []byte("{\"bytes\":\"a\"}"),
+		// Payload:          []byte("{\"err\":\"error\"}"),
+		Payload:          []byte("a"),
+		FunctionName:     fn,
+		FunctionInvokeID: "invokeid",
+	}
+	start := time.Now()
+	out, err := cli.Call(msg)
+	fmt.Printf("%s elapsed time: %v\n", t.Name(), time.Since(start))
+	assert.NoError(t, err)
+	res := make(map[string]interface{})
+	err = json.Unmarshal(out.Payload, &res)
+	assert.NoError(t, err)
+	assert.Equal(t, "Hello OpenEdge", res["Say"])
+	assert.Equal(t, "a", res["bytes"])
+	assert.Equal(t, fn, res["functionName"])
+	assert.Equal(t, "invokeid", res["functionInvokeID"])
+}
+
 func TestFunctionCall(t *testing.T) {
 	msg := &FunctionMessage{FunctionName: "happy", QOS: 1, Topic: "t", Payload: []byte(`{"v":"a"}`), FunctionInvokeID: "x"}
 	msg4k := &FunctionMessage{FunctionName: "test", Payload: []byte(strings.Repeat("a", 4*1024))}

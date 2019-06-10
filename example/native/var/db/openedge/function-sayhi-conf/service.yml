@@ -5,4 +5,7 @@ functions:
   - name: 'python36-sayhi'
     handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
-  
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
+

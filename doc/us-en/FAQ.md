@@ -126,9 +126,13 @@ The Device management of Baidu IoT Hub does not support ssl authentication. As a
 
 **Question 17**：If I don't want to lose messages and want to ensure all messages are synchronized to cloud, how can I do?
 
-**Suggested Solution**：
+**Suggested Solution**:
 
 You must meet the following 2 conditions:
 
 - To make sure messages will be persist in local disk which are sent to local hub, the topic's QoS must be set to 1.
 - To make sure messages will be sent to cloud successful, the QoS of `rules` configuration of Remote module must be set to 1, which includes remote sub's QoS and the pub's QoS. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
+
+**Question 18**: After the configuration is sent from the cloud to the edge, the default startup mode is `docker` container mode. After modifying `mode: native` in `etc/openedge/openedge.yml` the startup error is similar to the following: `failed to update system: open /Users/ Xxx/openedge_native/var/run/openedge/services/agent/lib/openedge/hub.baidubce.com/openedge/openedge-agent:0.1.2/package.yml: no such file or directory`.
+
+**Suggested Solution**: At present, our cloud management does not support the process mode. If you need to start `OpenEdge` in process mode locally, please refer to the configuration content in `example/native` and execute the command `make install-native`. Install and start by process with the command `sudo openedge start`.

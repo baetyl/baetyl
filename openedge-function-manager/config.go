@@ -4,13 +4,15 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/protocol/mqtt"
+	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 )
 
 // Config function service config
 type Config struct {
-	Rules     []RuleInfo     `yaml:"rules" json:"rules" default:"[]"`
-	Functions []FunctionInfo `yaml:"functions" json:"functions" default:"[]"`
+	Server    openedge.FunctionServerConfig `yaml:"server" json:"server"`
+	Rules     []RuleInfo                    `yaml:"rules" json:"rules" default:"[]"`
+	Functions []FunctionInfo                `yaml:"functions" json:"functions" default:"[]"`
 }
 
 // RuleInfo function rule config

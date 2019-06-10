@@ -1,8 +1,7 @@
 functions:
   - name: 'python27-sayhi'
-    handler: 'index.handler'
+    handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
   - name: 'python36-sayhi'
-    handler: 'index.handler'
+    handler: 'sayhi.handler'
     codedir: 'var/db/openedge/function-sayhi'
-  
