@@ -1,7 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python2.7
 #-*- coding:utf-8 -*-
 """
-grpc server for python2 function
+grpc server for python2.7 function
 """
 
 import argparse
@@ -24,7 +24,7 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 class mo(function_pb2_grpc.FunctionServicer):
     """
-    grpc server module for python2 function
+    grpc server module for python2.7 function
     """
 
     def Load(self, conf):
@@ -90,6 +90,7 @@ class mo(function_pb2_grpc.FunctionServicer):
         ctx = {}
         ctx['messageQOS'] = request.QOS
         ctx['messageTopic'] = request.Topic
+        ctx['messageTimestamp'] = request.Timestamp
         ctx['functionName'] = request.FunctionName
         ctx['functionInvokeID'] = request.FunctionInvokeID
         ctx['invokeid'] = request.FunctionInvokeID
@@ -243,7 +244,7 @@ def get_logger(c):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='grpc server for python2 function')
+        description='grpc server for python2.7 function')
     parser.add_argument('-c',
                         type=str,
                         default=os.path.join("etc", "openedge", "service.yml"),

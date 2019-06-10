@@ -53,7 +53,6 @@ func (rr *ruler) ProcessError(err error) {
 
 func (rr *ruler) close() {
 	rr.hub.Close()
-	rr.fun.Close()
 }
 
 func (rr *ruler) callback(in, out *openedge.FunctionMessage, err error) {
