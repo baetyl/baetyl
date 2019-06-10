@@ -18,16 +18,12 @@ type ruler struct {
 	log logger.Logger
 }
 
-func create(ctx openedge.Context, ri RuleInfo, fi FunctionInfo) *ruler {
-	hub := ctx.Config().Hub
-	hub.ClientID = ri.ClientID
-	hub.Subscriptions = []mqtt.TopicInfo{ri.Subscribe}
-	log := logger.WithField("rule", ri.ClientID)
+func newRuler(ri RuleInfo, c *mqtt.Dispatcher, f *Function) *ruler {
 	return &ruler{
 		cfg: ri,
-		hub: mqtt.NewDispatcher(hub, log),
-		fun: NewFunction(fi, newProducer(ctx, fi)),
-		log: log,
+		hub: c,
+		fun: f,
+		log: logger.WithField("rule", ri.ClientID),
 	}
 }
 
@@ -57,7 +53,6 @@ func (rr *ruler) ProcessError(err error) {
 
 func (rr *ruler) close() {
 	rr.hub.Close()
-	rr.fun.Close()
 }
 
 func (rr *ruler) callback(in, out *openedge.FunctionMessage, err error) {

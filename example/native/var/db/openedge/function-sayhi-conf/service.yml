@@ -1,7 +1,10 @@
 functions:
   - name: 'sayhi'
-    handler: 'sayhi.handler'
+    handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
   - name: 'sayhi3'
-    handler: 'sayhi.handler'
+    handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"

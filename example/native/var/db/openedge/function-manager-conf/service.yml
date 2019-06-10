@@ -1,3 +1,33 @@
+#### server
+## 如果要开放 GRPC 服务给客户端直接访问，需配置服务地址，如果不配置则不启动 GRPC 服务。
+## If you want to open the GRPC service to the client for direct access,
+## you need to configure the service address.
+## If not configured, the GRPC service will not be started.
+####
+server: 
+
+  ## GRPC 服务地址，建议不对外暴露（举例：127.0.0.1:50051），如需暴露请开启证书认证（举例：0.0.0.0:50051）。
+  ## The GRPC service address is not recommended for external exposure (e.g. 127.0.0.1:50051).
+  ## If you need to expose it, please open the certificate (e.g. 0.0.0.0:50051).
+  address: 127.0.0.1:50051
+
+  ## 最大并发连接数，默认不限制。
+  ## Maximum number of concurrent connections, no limit by default.
+  #concurrent:
+  #  max: 0
+
+  ## 最大消息长度，默认 4m。
+  ## Maximum number of message length, 4m by default.
+  #message:
+  #  length:
+  #    max: 4m
+
+  ## 服务端证书，包括 CA 证书、私钥和公钥的路径。
+  ## Server certificate, including the path to the CA certificate, private key and public key.
+  #ca: var/db/openedge/cert/ca.pem
+  #key: var/db/openedge/cert/server.pem
+  #cert: var/db/openedge/cert/server.key
+
 hub:
   address: tcp://0.0.0.0:1883
   username: test

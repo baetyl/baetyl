@@ -49,13 +49,13 @@ class mo(function_pb2_grpc.FunctionServicer):
             self.config['server']['address'] = os.environ['OPENEDGE_SERVICE_ADDRESS']
 
         if 'name' not in self.config:
-            raise Exception, 'config invalid, missing name'
+            raise Exception('config invalid, missing name')
         if 'server' not in self.config:
-            raise Exception, 'config invalid, missing server'
+            raise Exception('config invalid, missing server')
         if 'address' not in self.config['server']:
-            raise Exception, 'config invalid, missing server address'
+            raise Exception('config invalid, missing server address')
         if 'functions' not in self.config:
-            raise Exception, 'config invalid, missing functions'
+            raise Exception('config invalid, missing functions')
 
         self.log = get_logger(self.config)
         self.functions = get_functions(self.config['functions'])
@@ -85,11 +85,12 @@ class mo(function_pb2_grpc.FunctionServicer):
         """
 
         if request.FunctionName not in self.functions:
-            raise Exception, 'function not found'
+            raise Exception('function not found')
 
         ctx = {}
         ctx['messageQOS'] = request.QOS
         ctx['messageTopic'] = request.Topic
+        ctx['messageTimestamp'] = request.Timestamp
         ctx['functionName'] = request.FunctionName
         ctx['functionInvokeID'] = request.FunctionInvokeID
         ctx['invokeid'] = request.FunctionInvokeID
@@ -98,14 +99,25 @@ class mo(function_pb2_grpc.FunctionServicer):
         if request.Payload:
             try:
                 msg = json.loads(request.Payload)
-            except ValueError:
+            except BaseException:
                 msg = request.Payload  # raw data, not json format
 
-        msg = self.functions[request.FunctionName](msg, ctx)
+        try:
+            msg = self.functions[request.FunctionName](msg, ctx)
+        except BaseException as err:
+            self.log.error(err, exc_info=True)
+            raise Exception("[UserCodeInvoke] ", err)
+
         if msg is None:
             request.Payload = b''
+        elif isinstance(msg, bytes):
+            request.Payload = msg
         else:
-            request.Payload = json.dumps(msg)
+            try:
+                request.Payload = json.dumps(msg)
+            except BaseException as err:
+                self.log.error(err, exc_info=True)
+                raise Exception("[UserCodeReturn] ", err)
         return request
 
     def Talk(self, request_iterator, context):
@@ -122,7 +134,7 @@ def get_functions(c):
     fs = {}
     for fc in c:
         if 'name' not in fc or 'handler' not in fc or 'codedir' not in fc:
-            raise Exception, 'config invalid, missing function name, handler or codedir'
+            raise Exception('config invalid, missing function name, handler or codedir')
         sys.path.append(fc['codedir'])
         module_handler = fc['handler'].split('.')
         handler_name = module_handler.pop()
@@ -187,9 +199,10 @@ def get_logger(c):
     if 'path' not in c['logger']:
         return logger
 
+    filename = os.path.abspath(c['logger']['path'])
     try:
-        os.mkdir(os.path.dirname(c['logger']['path']))
-    except OSError:
+        os.makedirs(os.path.dirname(filename))
+    except BaseException:
         pass
 
     level = logging.INFO
@@ -213,7 +226,10 @@ def get_logger(c):
 
     # create a file handler
     handler = logging.handlers.TimedRotatingFileHandler(
-        c['logger']['path'], when='h', interval=interval, backupCount=backupCount)
+        filename=filename,
+        when='h',
+        interval=interval,
+        backupCount=backupCount)
     handler.setLevel(level)
 
     # create a logging format
@@ -247,7 +263,7 @@ if __name__ == '__main__':
     try:
         while True:
             time.sleep(_ONE_DAY_IN_SECONDS)
-    except BaseException as ex:
-        m.log.debug(ex)
+    except BaseException as err:
+        m.log.debug(err)
     finally:
         m.Close()

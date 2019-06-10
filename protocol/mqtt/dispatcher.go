@@ -39,6 +39,18 @@ func NewDispatcher(cc ClientInfo, log logger.Logger) *Dispatcher {
 	}
 }
 
+// Publish sends a publish packet
+func (d *Dispatcher) Publish(pid uint16, qos uint32, topic string, payload []byte, retain bool, duplicate bool) error {
+	pkt := packet.NewPublish()
+	pkt.ID = packet.ID(pid)
+	pkt.Dup = duplicate
+	pkt.Message.QOS = packet.QOS(qos)
+	pkt.Message.Topic = topic
+	pkt.Message.Payload = payload
+	pkt.Message.Retain = retain
+	return d.Send(pkt)
+}
+
 // Send sends a generic packet
 func (d *Dispatcher) Send(pkt packet.Generic) error {
 	select {
