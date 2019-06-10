@@ -15,6 +15,7 @@ message FunctionMessage {
   string Topic              = 3;
   bytes  Payload            = 4;
 
+  sint64  Timestamp         = 10;
   string  FunctionName      = 11;
   string  FunctionInvokeID  = 12;
 }

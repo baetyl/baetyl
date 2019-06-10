@@ -90,6 +90,7 @@ class mo(function_pb2_grpc.FunctionServicer):
         ctx = {}
         ctx['messageQOS'] = request.QOS
         ctx['messageTopic'] = request.Topic
+        ctx['messageTimestamp'] = request.Timestamp
         ctx['functionName'] = request.FunctionName
         ctx['functionInvokeID'] = request.FunctionInvokeID
         ctx['invokeid'] = request.FunctionInvokeID
