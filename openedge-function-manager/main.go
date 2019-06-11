@@ -19,6 +19,11 @@ func main() {
 		for _, fi := range cfg.Functions {
 			functions[fi.Name] = NewFunction(fi, newProducer(ctx, fi))
 		}
+		defer func() {
+			for _, f := range functions {
+				f.Close()
+			}
+		}()
 		rulers := make([]*ruler, 0)
 		defer func() {
 			for _, ruler := range rulers {
