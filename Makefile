@@ -277,7 +277,7 @@ release-package:
 	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-arm64-$(VERSION).zip
 	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-arm64-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-arm64-$(VERSION).zip
-	mv openedge-function-node/package85.zip ./openedge-function-node85-linux-armv7-$(VERSION).zip
+	mv openedge-function-node/package85.zip ./openedge-function-node85-linux-arm64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-arm64-$(VERSION).zip
 	make clean
 	# Release modules' package -- linux 386
@@ -288,7 +288,7 @@ release-package:
 	mv openedge-function-manager/package.zip ./openedge-function-manager-linux-386-$(VERSION).zip
 	mv openedge-function-python/package27.zip ./openedge-function-python27-linux-386-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-linux-386-$(VERSION).zip
-	mv openedge-function-node/package85.zip ./openedge-function-node85-linux-armv7-$(VERSION).zip
+	mv openedge-function-node/package85.zip ./openedge-function-node85-linux-386-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-linux-386-$(VERSION).zip
 	make clean
 	# Release modules' package -- darwin amd64
@@ -299,7 +299,7 @@ release-package:
 	mv openedge-function-manager/package.zip ./openedge-function-manager-darwin-amd64-$(VERSION).zip
 	mv openedge-function-python/package27.zip ./openedge-function-python27-darwin-amd64-$(VERSION).zip
 	mv openedge-function-python/package36.zip ./openedge-function-python36-darwin-amd64-$(VERSION).zip
-	mv openedge-function-node/package85.zip ./openedge-function-node85-linux-armv7-$(VERSION).zip
+	mv openedge-function-node/package85.zip ./openedge-function-node85-darwin-amd64-$(VERSION).zip
 	mv openedge-timer/package.zip ./openedge-timer-darwin-amd64-$(VERSION).zip
 	make clean
 
