@@ -187,6 +187,7 @@ class NodeRuntimeModule {
         ctx.messageQOS = call.request.getQos();
         ctx.messageTopic = call.request.getTopic();
         ctx.functionName = call.request.getFunctionname();
+        ctx.messageTimestamp = call.request.getTimestamp();
         ctx.functionInvokeID = call.request.getFunctioninvokeid();
         ctx.invokeid = call.request.getFunctioninvokeid();
 

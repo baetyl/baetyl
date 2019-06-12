@@ -63,6 +63,7 @@ proto.openedge.FunctionMessage.toObject = function(includeInstance, msg) {
     qos: jspb.Message.getFieldWithDefault(msg, 2, 0),
     topic: jspb.Message.getFieldWithDefault(msg, 3, ""),
     payload: msg.getPayload_asB64(),
+    timestamp: jspb.Message.getFieldWithDefault(msg, 10, 0),
     functionname: jspb.Message.getFieldWithDefault(msg, 11, ""),
     functioninvokeid: jspb.Message.getFieldWithDefault(msg, 12, "")
   };
@@ -116,6 +117,10 @@ proto.openedge.FunctionMessage.deserializeBinaryFromReader = function(msg, reade
     case 4:
       var value = /** @type {!Uint8Array} */ (reader.readBytes());
       msg.setPayload(value);
+      break;
+    case 10:
+      var value = /** @type {number} */ (reader.readSint64());
+      msg.setTimestamp(value);
       break;
     case 11:
       var value = /** @type {string} */ (reader.readString());
@@ -179,6 +184,13 @@ proto.openedge.FunctionMessage.serializeBinaryToWriter = function(message, write
   if (f.length > 0) {
     writer.writeBytes(
       4,
+      f
+    );
+  }
+  f = message.getTimestamp();
+  if (f !== 0) {
+    writer.writeSint64(
+      10,
       f
     );
   }
@@ -280,6 +292,21 @@ proto.openedge.FunctionMessage.prototype.getPayload_asU8 = function() {
 /** @param {!(string|Uint8Array)} value */
 proto.openedge.FunctionMessage.prototype.setPayload = function(value) {
   jspb.Message.setProto3BytesField(this, 4, value);
+};
+
+
+/**
+ * optional sint64 Timestamp = 10;
+ * @return {number}
+ */
+proto.openedge.FunctionMessage.prototype.getTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 10, 0));
+};
+
+
+/** @param {number} value */
+proto.openedge.FunctionMessage.prototype.setTimestamp = function(value) {
+  jspb.Message.setProto3IntField(this, 10, value);
 };
 
 
