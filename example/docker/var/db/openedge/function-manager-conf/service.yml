@@ -33,14 +33,14 @@ hub:
   username: test
   password: hahaha
 rules:
-  - clientid: localfunc-1
+  - clientid: func-python27-sayhi-1
     subscribe:
       topic: t
     function:
       name: python27-sayhi
     publish:
       topic: t/python2
-  - clientid: localfunc-2
+  - clientid: func-filter-1
     subscribe:
       topic: t
       qos: 1
@@ -49,14 +49,14 @@ rules:
     publish:
       topic: t/f
       qos: 1
-  - clientid: localfunc-3
+  - clientid: func-python36-sayhi-1
     subscribe:
       topic: t
     function:
       name: python36-sayhi
     publish:
       topic: t/python3
-  - clientid: localfunc-4
+  - clientid: func-node85-sayhi-1
     subscribe:
       topic: t
     function:

@@ -35,11 +35,10 @@ exports.handler = (event, context, callback) => {
         event["bytes"] = message;
     }
     else if("err" in event) {
-        throw new TypeError(event["err"])
+        return callback(new TypeError(event['err']))
     }
 
     passParameters(event, context);
     event['Say'] = 'Hello OpenEdge'
-    // callback result
     callback(null, event);
 };

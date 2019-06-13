@@ -6,6 +6,8 @@ const moment = require('moment');
 const services = require('./function_grpc_pb.js');
 const grpc = require('grpc');
 const YAML = require('yaml');
+const util = require('util');
+const errFormat = 'Exception calling application: %s'
 const argv = require('yargs')
     .option('c', {
         alias: 'conf',
@@ -74,7 +76,7 @@ const getFunctions = functions => {
     functions.forEach(function(ele){
         
         if (ele.name == undefined || ele.handler == undefined || ele.codedir == undefined){
-            throw new ConfigError('config invalid, missing function name, handler or codedir');
+            throw new Error('config invalid, missing function name, handler or codedir');
         }
         
         const codedir = ele.codedir;
@@ -119,13 +121,7 @@ const getGrpcServer = config => {
     server.bind(config['server']['address'], credentials);
     return server;
 }
-    
-class ConfigError {
-    constructor(message) {
-        this.message = message;
-        this.name = 'ConfigError';
-    }
-}
+
 class NodeRuntimeModule {
     Load(confpath) {
         this.config = YAML.parse(fs.readFileSync(confpath).toString()); 
@@ -149,16 +145,16 @@ class NodeRuntimeModule {
         }
 
         if (!hasAttr(this.config, 'name')) {
-            throw new ConfigError('Module config invalid, missing name');
+            throw new Error('Module config invalid, missing name');
         }
         if (!hasAttr(this.config, 'server')) {
-            throw new ConfigError('Module config invalid, missing server');
+            throw new Error('Module config invalid, missing server');
         }
         if (!hasAttr(this.config.server, 'address')) {
-            throw new ConfigError('Module config invalid, missing server address');
+            throw new Error('Module config invalid, missing server address');
         }
         if (!hasAttr(this.config, 'functions')) {
-            throw new ConfigError('Module config invalid, missing functions');
+            throw new Error('Module config invalid, missing functions');
         }
         
         this.logger = getLogger(this.config);
@@ -171,15 +167,20 @@ class NodeRuntimeModule {
     }
     Start() {
         this.server.start();
-        this.logger.info('module starting');
+        this.logger.info('service starting');
     }
     Close(callback) {
-        const timeout = new Number(this.config.server.timeout / 1e6);
-        setTimeout(() => {
+        if (hasAttr(this.config.server, 'timeout')) {
+            const timeout = new Number(this.config.server.timeout / 1e9);
+            setTimeout(() => {
+                this.server.forceShutdown();
+                this.logger.info('service closed');
+                callback();
+            }, timeout);
+        }else{
             this.server.forceShutdown();
-            this.logger.info('module closed');
-            callback();
-        }, timeout);
+            this.logger.info('service closed');
+        }
     }
     Call(functionsHandle, call, callback) {
 
@@ -204,7 +205,7 @@ class NodeRuntimeModule {
         }
 
         if (functionsHandle[ctx.functionName] == undefined){
-            throw new ConfigError('function not found');
+            return callback(new Error(util.format(errFormat, "function not found")));
         }
 
         let functionHandle = functionsHandle[ctx.functionName];
@@ -213,9 +214,13 @@ class NodeRuntimeModule {
             ctx,
             (err, respMsg) => {
                 if (err != null) {
-                    throw new Error(err);
+                    err = util.format('(\'[UserCodeInvoke]\', %s)', err.toString())
+                    return callback(new Error(util.format(errFormat, err)));
                 }
-                if (Buffer.isBuffer(respMsg)) {
+
+                if (respMsg == "" || respMsg == undefined || respMsg == null){
+                    call.request.setPayload("");
+                }else if (Buffer.isBuffer(respMsg)) {
                     call.request.setPayload(respMsg);
                 }
                 else {
@@ -224,7 +229,8 @@ class NodeRuntimeModule {
                         call.request.setPayload(Buffer.from(jsonString));
                     }
                     catch (error) {
-                        call.request.setPayload(Buffer.from(respMsg)); // raw data, not json format
+                        err = util.format('(\'[UserCodeReturn]\', %s)', err.toString())
+                        return callback(new Error(util.format(errFormat, err)));
                     }
                 }
                 callback(null, call.request);

@@ -7,62 +7,42 @@ import (
 	"github.com/baidu/openedge/utils"
 	"github.com/docker/distribution/uuid"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"syscall"
 	"testing"
-	"time"
+	"strings"
 )
 
-type processConfigs struct {
-	exec string
-	pwd  string
-	argv []string
-	env  []string
-}
-
 func TestInstance_Python36(t *testing.T) {
-	tmpPath := "tmp" + uuid.Generate().String()
+	exe, err := exec.LookPath("python3")
+	if err != nil {
+		t.Skip("need python3")
+	}
+
 	instanceName := "function-sayhi"
 	functionName := "python36-sayhi"
-	confTargetPath := path.Join(tmpPath, "etc", "openedge")
-	codeTargetPath := path.Join(tmpPath, "var", "db", "openedge", instanceName)
-	confSourcePath := path.Join("..", "example", "native", "var", "db", "openedge", "function-sayhi-conf")
-	codeSourcePath := path.Join("..", "example", "native", "var", "db", "openedge", "function-sayhi-code")
-	confFileName := "service.yml"
-	codeFileName := "index.py"
+	err = os.Chdir("testinstance/python")
+	assert.NoError(t, err)
+	defer os.Chdir("../..")
 
-	os.MkdirAll(confTargetPath, os.ModePerm)
-	os.MkdirAll(codeTargetPath, os.ModePerm)
-	utils.CopyFile(path.Join(confSourcePath, confFileName), path.Join(confTargetPath, confFileName))
-	utils.CopyFile(path.Join(codeSourcePath, codeFileName), path.Join(codeTargetPath, codeFileName))
-	defer os.RemoveAll(tmpPath)
-
-	env := []string{}
-	env = os.Environ()
 	hostName := "127.0.0.1"
 	port, err := utils.GetAvailablePort(hostName)
 	assert.NoError(t, err)
-
 	address := fmt.Sprintf("%s:%d", hostName, port)
+
+	env := os.Environ()
 	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_ADDRESS", address))
 	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_NAME", instanceName))
-	pwd, err := os.Getwd()
-	assert.NoError(t, err)
+	pyPath := path.Join("..", "..", "..", "openedge-function-python", "openedge-function-python36.py")
 
-	params := processConfigs{
-		exec: path.Join(pwd, "..", "openedge-function-python", "openedge-function-python36.py"),
-		env:  env,
-		pwd: path.Join(pwd, tmpPath),
-	}
-
-	os.Chmod(params.exec, os.ModePerm)
 	p, err := os.StartProcess(
-		params.exec,
-		params.argv,
+		exe,
+		[]string{"python3", pyPath},
 		&os.ProcAttr{
-			Dir: params.pwd,
-			Env: params.env,
+			Env: env,
 			Files: []*os.File{
 				os.Stdin,
 				os.Stdout,
@@ -73,13 +53,12 @@ func TestInstance_Python36(t *testing.T) {
 	assert.NoError(t, err)
 
 	fcc := openedge.FunctionClientConfig{}
-	fcc.Address = address
-	fcc.Message.Length.Max = 4194304
-	fcc.Timeout = 30 * time.Second
-	fcc.Backoff.Max = 30 * time.Second
+	err = utils.UnmarshalJSON([]byte("{\"address\":\""+ address +"\"}"), &fcc)
+	assert.NoError(t, err)
 	cli, err := openedge.NewFClient(fcc)
 	assert.NoError(t, err)
 
+	// round 1: test binary payload
 	var msgId uint64 = 1234
 	var msgQOS uint32 = 0
 	var msgTopic string = "t"
@@ -107,6 +86,7 @@ func TestInstance_Python36(t *testing.T) {
 	assert.Equal(t, dataArr["bytes"], msgPayload)
 	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
+	// round 2: test json payload
 	msgPayload = "{\"Project\":\"OpenEdge\"}"
 	msg = &openedge.FunctionMessage{
 		ID:               msgId,
@@ -129,98 +109,8 @@ func TestInstance_Python36(t *testing.T) {
 	assert.Equal(t, dataArr["Project"], "OpenEdge")
 	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
-	err = p.Signal(syscall.SIGTERM)
-	assert.NoError(t, err)
-}
-
-
-func TestInstance_Python27(t *testing.T) {
-	tmpPath := "tmp" + uuid.Generate().String()
-	instanceName := "function-sayhi"
-	functionName := "python27-sayhi"
-	confTargetPath := path.Join(tmpPath, "etc", "openedge")
-	codeTargetPath := path.Join(tmpPath, "var", "db", "openedge", instanceName)
-	confSourcePath := path.Join("..", "example", "native", "var", "db", "openedge", "function-sayhi-conf")
-	codeSourcePath := path.Join("..", "example", "native", "var", "db", "openedge", "function-sayhi-code")
-	confFileName := "service.yml"
-	codeFileName := "index.py"
-
-	os.MkdirAll(confTargetPath, os.ModePerm)
-	os.MkdirAll(codeTargetPath, os.ModePerm)
-	utils.CopyFile(path.Join(confSourcePath, confFileName), path.Join(confTargetPath, confFileName))
-	utils.CopyFile(path.Join(codeSourcePath, codeFileName), path.Join(codeTargetPath, codeFileName))
-	defer os.RemoveAll(tmpPath)
-
-	env := []string{}
-	env = os.Environ()
-	hostName := "127.0.0.1"
-	port, err := utils.GetAvailablePort(hostName)
-	assert.NoError(t, err)
-
-	address := fmt.Sprintf("%s:%d", hostName, port)
-	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_ADDRESS", address))
-	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_NAME", instanceName))
-	pwd, err := os.Getwd()
-	assert.NoError(t, err)
-
-	params := processConfigs{
-		exec: path.Join(pwd, "..", "openedge-function-python", "openedge-function-python27.py"),
-		env:  env,
-		pwd: path.Join(pwd, tmpPath),
-	}
-
-	os.Chmod(params.exec, os.ModePerm)
-	p, err := os.StartProcess(
-		params.exec,
-		params.argv,
-		&os.ProcAttr{
-			Dir: params.pwd,
-			Env: params.env,
-			Files: []*os.File{
-				os.Stdin,
-				os.Stdout,
-				os.Stderr,
-			},
-		},
-	)
-	assert.NoError(t, err)
-
-	fcc := openedge.FunctionClientConfig{}
-	fcc.Address = address
-	fcc.Message.Length.Max = 4194304
-	fcc.Timeout = 30 * time.Second
-	fcc.Backoff.Max = 30 * time.Second
-	cli, err := openedge.NewFClient(fcc)
-	assert.NoError(t, err)
-
-	var msgId uint64 = 1234
-	var msgQOS uint32 = 0
-	var msgTopic string = "t"
-	var msgPayload string = "OpenEdge Project"
-	var msgFunctionName string = functionName
-	var msgFunctionInvokeID string = uuid.Generate().String()
-	msg := &openedge.FunctionMessage{
-		ID:               msgId,
-		QOS:              msgQOS,
-		Topic:            msgTopic,
-		Payload:          []byte(msgPayload),
-		FunctionName:     msgFunctionName,
-		FunctionInvokeID: msgFunctionInvokeID,
-	}
-
-	out, err := cli.Call(msg)
-	assert.NoError(t, err)
-
-	dataArr := map[string]interface{}{}
-	err = json.Unmarshal([]byte(out.Payload), &dataArr)
-	assert.NoError(t, err)
-	assert.Equal(t, dataArr["messageTopic"], msgTopic)
-	assert.Equal(t, dataArr["functionName"], msgFunctionName)
-	assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
-	assert.Equal(t, dataArr["bytes"], msgPayload)
-	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
-
-	msgPayload = "{\"Project\":\"OpenEdge\"}"
+	// round 3: test error
+	msgPayload = "{\"err\":\"OpenEdge\"}"
 	msg = &openedge.FunctionMessage{
 		ID:               msgId,
 		QOS:              msgQOS,
@@ -231,64 +121,62 @@ func TestInstance_Python27(t *testing.T) {
 	}
 
 	out, err = cli.Call(msg)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
-	dataArr = map[string]interface{}{}
-	err = json.Unmarshal([]byte(out.Payload), &dataArr)
-	assert.NoError(t, err)
-	assert.Equal(t, dataArr["messageTopic"], msgTopic)
-	assert.Equal(t, dataArr["functionName"], msgFunctionName)
-	assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
-	assert.Equal(t, dataArr["Project"], "OpenEdge")
-	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
+	// round 4: function not exist
+	msgPayload = ""
+	msgFunctionName = "xxx"
+	msg = &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err = cli.Call(msg)
+	assert.Error(t, err)
 
 	err = p.Signal(syscall.SIGTERM)
 	assert.NoError(t, err)
-}
+	p.Wait()
 
+	b, err := ioutil.ReadFile(path.Join("var", "log", "openedge", "service.log"))
+	assert.NoError(t, err)
+	logInfo := string(b)
+	assert.True(t, strings.Contains(logInfo, "service starting"))
+	assert.True(t, strings.Contains(logInfo, "service closed"))
+	defer os.RemoveAll(path.Join("var", "log"))
+}
 
 func TestInstance_Node85(t *testing.T) {
-	tmpPath := "tmp" + uuid.Generate().String()
+	exe, err := exec.LookPath("node")
+	if err != nil {
+		t.Skip("need node8")
+	}
+
 	instanceName := "function-sayhi"
 	functionName := "node85-sayhi"
-	confTargetPath := path.Join(tmpPath, "etc", "openedge")
-	codeTargetPath := path.Join(tmpPath, "var", "db", "openedge", instanceName)
-	confSourcePath := path.Join("..", "example", "native", "var", "db", "openedge", "function-sayjs-conf")
-	codeSourcePath := path.Join("..", "example", "native", "var", "db", "openedge", "function-sayjs-code")
-	confFileName := "service.yml"
-	codeFileName := "index.js"
+	err = os.Chdir("testinstance/node")
+	assert.NoError(t, err)
+	defer os.Chdir("../..")
 
-	os.MkdirAll(confTargetPath, os.ModePerm)
-	os.MkdirAll(codeTargetPath, os.ModePerm)
-	utils.CopyFile(path.Join(confSourcePath, confFileName), path.Join(confTargetPath, confFileName))
-	utils.CopyFile(path.Join(codeSourcePath, codeFileName), path.Join(codeTargetPath, codeFileName))
-	defer os.RemoveAll(tmpPath)
-
-	env := []string{}
-	env = os.Environ()
 	hostName := "127.0.0.1"
 	port, err := utils.GetAvailablePort(hostName)
 	assert.NoError(t, err)
-
 	address := fmt.Sprintf("%s:%d", hostName, port)
+
+	env := os.Environ()
 	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_ADDRESS", address))
 	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_NAME", instanceName))
-	pwd, err := os.Getwd()
-	assert.NoError(t, err)
+	jsPath := path.Join("..", "..", "..", "openedge-function-node", "openedge-function-node85.js")
 
-	params := processConfigs{
-		exec: path.Join(pwd, "..", "openedge-function-node", "openedge-function-node85.js"),
-		env:  env,
-		pwd: path.Join(pwd, tmpPath),
-	}
-
-	os.Chmod(params.exec, os.ModePerm)
 	p, err := os.StartProcess(
-		params.exec,
-		params.argv,
+		exe,
+		[]string{"node", jsPath},
 		&os.ProcAttr{
-			Dir: params.pwd,
-			Env: params.env,
+			Env: env,
 			Files: []*os.File{
 				os.Stdin,
 				os.Stdout,
@@ -299,13 +187,12 @@ func TestInstance_Node85(t *testing.T) {
 	assert.NoError(t, err)
 
 	fcc := openedge.FunctionClientConfig{}
-	fcc.Address = address
-	fcc.Message.Length.Max = 4194304
-	fcc.Timeout = 30 * time.Second
-	fcc.Backoff.Max = 30 * time.Second
+	err = utils.UnmarshalJSON([]byte("{\"address\":\""+ address +"\"}"), &fcc)
+	assert.NoError(t, err)
 	cli, err := openedge.NewFClient(fcc)
 	assert.NoError(t, err)
 
+	// round 1: test binary payload
 	var msgId uint64 = 1234
 	var msgQOS uint32 = 0
 	var msgTopic string = "t"
@@ -320,6 +207,7 @@ func TestInstance_Node85(t *testing.T) {
 		FunctionName:     msgFunctionName,
 		FunctionInvokeID: msgFunctionInvokeID,
 	}
+
 	out, err := cli.Call(msg)
 	assert.NoError(t, err)
 
@@ -332,6 +220,7 @@ func TestInstance_Node85(t *testing.T) {
 	assert.Equal(t, dataArr["bytes"], msgPayload)
 	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
+	// round 2: test json payload
 	msgPayload = "{\"Project\":\"OpenEdge\"}"
 	msg = &openedge.FunctionMessage{
 		ID:               msgId,
@@ -341,6 +230,7 @@ func TestInstance_Node85(t *testing.T) {
 		FunctionName:     msgFunctionName,
 		FunctionInvokeID: msgFunctionInvokeID,
 	}
+
 	out, err = cli.Call(msg)
 	assert.NoError(t, err)
 
@@ -353,6 +243,177 @@ func TestInstance_Node85(t *testing.T) {
 	assert.Equal(t, dataArr["Project"], "OpenEdge")
 	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
+	// round 3: test error
+	msgPayload = "{\"err\":\"OpenEdge\"}"
+	msg = &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err = cli.Call(msg)
+	assert.Error(t, err)
+
+	// round 4: function not exist
+	msgPayload = ""
+	msgFunctionName = "xxx"
+	msg = &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err = cli.Call(msg)
+	assert.Error(t, err)
+
 	err = p.Signal(syscall.SIGTERM)
 	assert.NoError(t, err)
+	p.Wait()
+
+	b, err := ioutil.ReadFile(path.Join("var", "log", "openedge", "service.log"))
+	assert.NoError(t, err)
+	logInfo := string(b)
+	assert.True(t, strings.Contains(logInfo, "service starting"))
+	assert.True(t, strings.Contains(logInfo, "service closed"))
+	defer os.RemoveAll(path.Join("var", "log"))
+}
+
+func TestInstance_Python27(t *testing.T) {
+	exe, err := exec.LookPath("python2.7")
+	if err != nil {
+		t.Skip("need python2.7")
+	}
+
+	instanceName := "function-sayhi"
+	functionName := "python27-sayhi"
+	err = os.Chdir("testinstance/python")
+	assert.NoError(t, err)
+	defer os.Chdir("../..")
+
+	hostName := "127.0.0.1"
+	port, err := utils.GetAvailablePort(hostName)
+	assert.NoError(t, err)
+	address := fmt.Sprintf("%s:%d", hostName, port)
+
+	env := os.Environ()
+	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_ADDRESS", address))
+	env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_NAME", instanceName))
+	pyPath := path.Join("..", "..", "..", "openedge-function-python", "openedge-function-python27.py")
+
+	p, err := os.StartProcess(
+		exe,
+		[]string{"python2.7", pyPath},
+		&os.ProcAttr{
+			Env: env,
+			Files: []*os.File{
+				os.Stdin,
+				os.Stdout,
+				os.Stderr,
+			},
+		},
+	)
+	assert.NoError(t, err)
+
+	fcc := openedge.FunctionClientConfig{}
+	err = utils.UnmarshalJSON([]byte("{\"address\":\""+ address +"\"}"), &fcc)
+	assert.NoError(t, err)
+	cli, err := openedge.NewFClient(fcc)
+	assert.NoError(t, err)
+
+	// round 1: test binary payload
+	var msgId uint64 = 1234
+	var msgQOS uint32 = 0
+	var msgTopic string = "t"
+	var msgPayload string = "OpenEdge Project"
+	var msgFunctionName string = functionName
+	var msgFunctionInvokeID string = uuid.Generate().String()
+	msg := &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err := cli.Call(msg)
+	assert.NoError(t, err)
+
+	dataArr := map[string]interface{}{}
+	err = json.Unmarshal([]byte(out.Payload), &dataArr)
+	assert.NoError(t, err)
+	assert.Equal(t, dataArr["messageTopic"], msgTopic)
+	assert.Equal(t, dataArr["functionName"], msgFunctionName)
+	assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
+	assert.Equal(t, dataArr["bytes"], msgPayload)
+	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
+
+	// round 2: test json payload
+	msgPayload = "{\"Project\":\"OpenEdge\"}"
+	msg = &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err = cli.Call(msg)
+	assert.NoError(t, err)
+
+	dataArr = map[string]interface{}{}
+	err = json.Unmarshal([]byte(out.Payload), &dataArr)
+	assert.NoError(t, err)
+	assert.Equal(t, dataArr["messageTopic"], msgTopic)
+	assert.Equal(t, dataArr["functionName"], msgFunctionName)
+	assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
+	assert.Equal(t, dataArr["Project"], "OpenEdge")
+	assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
+
+	// round 3: test error
+	msgPayload = "{\"err\":\"OpenEdge\"}"
+	msg = &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err = cli.Call(msg)
+	assert.Error(t, err)
+
+	// round 4: function not exist
+	msgPayload = ""
+	msgFunctionName = "xxx"
+	msg = &openedge.FunctionMessage{
+		ID:               msgId,
+		QOS:              msgQOS,
+		Topic:            msgTopic,
+		Payload:          []byte(msgPayload),
+		FunctionName:     msgFunctionName,
+		FunctionInvokeID: msgFunctionInvokeID,
+	}
+
+	out, err = cli.Call(msg)
+	assert.Error(t, err)
+
+	err = p.Signal(syscall.SIGTERM)
+	assert.NoError(t, err)
+	p.Wait()
+
+	b, err := ioutil.ReadFile(path.Join("var", "log", "openedge", "service.log"))
+	assert.NoError(t, err)
+	logInfo := string(b)
+	assert.True(t, strings.Contains(logInfo, "service starting"))
+	assert.True(t, strings.Contains(logInfo, "service closed"))
+	defer os.RemoveAll(path.Join("var", "log"))
 }
