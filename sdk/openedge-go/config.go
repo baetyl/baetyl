@@ -1,7 +1,6 @@
 package openedge
 
 import (
-	"reflect"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -179,99 +178,4 @@ type FunctionServerConfig struct {
 		Max uint32 `yaml:"max" json:"max"`
 	} `yaml:"workers" json:"workers"`
 	utils.Certificate `yaml:",inline" json:",inline"`
-}
-
-// DiffVolumes return the removed volume and updated volume
-func DiffVolumes(olds, news []VolumeInfo) (map[string]bool, []VolumeInfo) {
-	removedVolumes := []VolumeInfo{}
-	updatedVolumes := make(map[string]bool)
-
-	if olds == nil && news == nil {
-		return updatedVolumes, removedVolumes
-	}
-
-	oldVolumesInfo := make(map[string]string)
-	newVolumesInfo := make(map[string]string)
-
-	for _, volume := range olds {
-		oldVolumesInfo[volume.Path] = volume.Name
-	}
-
-	// new volumes & updated volumes
-	for _, volume := range news {
-		newVolumesInfo[volume.Path] = volume.Name
-		_, ok := oldVolumesInfo[volume.Path]
-		if !ok {
-			updatedVolumes[volume.Name] = true
-			continue
-		}
-		if oldVolumesInfo[volume.Path] != volume.Name {
-			updatedVolumes[volume.Name] = true
-		}
-	}
-
-	for _, oldVolume := range olds {
-		if _, ok := newVolumesInfo[oldVolume.Path]; !ok {
-			removedVolumes = append(removedVolumes, oldVolume)
-		}
-	}
-
-	return updatedVolumes, removedVolumes
-}
-
-// DiffServices return the removed services and updated services
-func DiffServices(olds, news []ServiceInfo, updatedVolumes map[string]bool) ([]ServiceInfo, []ServiceInfo) {
-
-	removed := []ServiceInfo{}
-	updated := []ServiceInfo{}
-
-	if olds == nil && news == nil {
-		return updated, removed
-	}
-
-	oldServicesInfo := make(map[string]ServiceInfo)
-	newServicesInfo := make(map[string]ServiceInfo)
-
-	// old services info
-	for _, service := range olds {
-		oldServicesInfo[service.Name] = service
-	}
-
-	// new services & updated services & services need to stop
-	for _, newService := range news {
-		newServicesInfo[newService.Name] = newService
-		oldService, ok := oldServicesInfo[newService.Name]
-		if !ok {
-			updated = append(updated, newService)
-			continue
-		}
-		if _, ok := oldService.Env[EnvServiceNameKey]; ok {
-			newService.Env[EnvServiceNameKey] = oldService.Env[EnvServiceNameKey]
-		}
-		if _, ok := oldService.Env[EnvServiceTokenKey]; ok {
-			newService.Env[EnvServiceTokenKey] = oldService.Env[EnvServiceTokenKey]
-		}
-		if !reflect.DeepEqual(newService, oldService) {
-			updated = append(updated, newService)
-			removed = append(removed, oldService)
-			continue
-		}
-		for _, mountInfo := range oldService.Mounts {
-			if updatedVolumes[mountInfo.Name] {
-				updated = append(updated, newService)
-				removed = append(removed, oldService)
-				break
-			}
-		}
-	}
-
-	// removed service
-	for _, service := range olds {
-		_, ok := newServicesInfo[service.Name]
-		if !ok {
-			removed = append(removed, service)
-		}
-	}
-
-	return updated, removed
 }

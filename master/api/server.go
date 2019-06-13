@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/baidu/openedge/master/engine"
@@ -19,7 +18,7 @@ type Master interface {
 
 	// for system
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(string, bool) error
+	UpdateSystem(string) error
 
 	// for instance
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
@@ -78,11 +77,7 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	clean := false
-	if s, ok := args["clean"]; ok && strings.ToLower(s) == "true" {
-		clean = true
-	}
-	go s.m.UpdateSystem(args["file"], clean)
+	go s.m.UpdateSystem(args["file"])
 	return nil, nil
 }
 

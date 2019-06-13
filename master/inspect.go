@@ -78,6 +78,18 @@ func (is *infoStats) DelInstanceStats(serviceName, instanceName string) {
 	is.persistStats()
 }
 
+func (is *infoStats) updateVersion(ver string) {
+	is.Lock()
+	is.raw.Software.ConfVersion = ver
+	is.Unlock()
+}
+
+func (is *infoStats) getVersion() string {
+	is.RLock()
+	defer is.RUnlock()
+	return is.raw.Software.ConfVersion
+}
+
 func (is *infoStats) updateError(err error) {
 	is.Lock()
 	if err == nil {
@@ -94,16 +106,16 @@ func (is *infoStats) getError() string {
 	return is.raw.Error
 }
 
-func genVolumesStats(cfg []openedge.VolumeInfo) openedge.Volumes {
-	volumes := openedge.Volumes{}
-	for _, item := range cfg {
-		volumes = append(volumes, openedge.VolumeStatus{
-			Name:    item.Name,
-			Version: item.Meta.Version,
-		})
-	}
-	return volumes
-}
+// func genVolumesStats(cfg []openedge.VolumeInfo) openedge.Volumes {
+// 	volumes := openedge.Volumes{}
+// 	for _, item := range cfg {
+// 		volumes = append(volumes, openedge.VolumeStatus{
+// 			Name:    item.Name,
+// 			Version: item.Meta.Version,
+// 		})
+// 	}
+// 	return volumes
+// }
 
 func (is *infoStats) persistStats() {
 	data, err := yaml.Marshal(is.sss)
