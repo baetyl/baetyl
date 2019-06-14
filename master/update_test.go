@@ -9,7 +9,6 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	_ "github.com/baidu/openedge/master/engine/native"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/stretchr/testify/assert"
@@ -31,11 +30,12 @@ func TestUpdate(t *testing.T) {
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
+	badapp := path.Join("var", "db", "openedge", "app", "v5", "application.yml")
+	goodapp := path.Join("var", "db", "openedge", "app", "v2", "application.yml")
 
 	// round 1: failed to reload
-	targetPath := path.Join("var", "db", "openedge", "reload")
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appConfigFile)
-	utils.CopyFile(path.Join(targetPath, openedge.AppBackupFileName), appBackupFile)
+	utils.CopyFile(badapp, appConfigFile)
+	utils.CopyFile(goodapp, appBackupFile)
 
 	m := &Master{
 		accounts:  cmap.New(),
@@ -47,41 +47,41 @@ func TestUpdate(t *testing.T) {
 	assert.NoError(t, err)
 
 	err = m.update("")
-	assert.Equal(t, "v1", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
+	assert.EqualError(t, err, "volume 'cmd-bin' not found")
 	m.Close()
 
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
-	m.infostats.raw.Software.ConfVersion = ""
+	m.infostats.setVersion("")
 
 	// round 2: failed to reload
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appConfigFile)
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appBackupFile)
+	utils.CopyFile(badapp, appConfigFile)
+	utils.CopyFile(badapp, appBackupFile)
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
 	err = m.update("")
-	assert.Equal(t, "", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory; failed to rollback: open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
+	assert.EqualError(t, err, "volume 'cmd-bin' not found; failed to rollback: volume 'cmd-bin' not found")
 	m.Close()
 
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
-	m.infostats.raw.Software.ConfVersion = ""
+	m.infostats.setVersion("")
 
 	// round 2: success to reload
-	utils.CopyFile(path.Join(targetPath, openedge.AppBackupFileName), appConfigFile)
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appBackupFile)
+	utils.CopyFile(goodapp, appConfigFile)
+	utils.CopyFile(badapp, appBackupFile)
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 
 	err = m.update("")
 	assert.NoError(t, err)
-	assert.Equal(t, "v1", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	m.Close()
@@ -114,72 +114,72 @@ func TestUpdateSystem(t *testing.T) {
 	assert.NoError(t, err)
 	defer m.Close()
 
-	dir := path.Join("var", "db", "openedge", "app")
-	err = m.UpdateSystem(path.Join(dir, "v4"))
+	target := path.Join("var", "db", "openedge", "app")
+	err = m.UpdateSystem(path.Join(target, "v4"))
 	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
-	assert.Equal(t, "", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v5"))
+	err = m.UpdateSystem(path.Join(target, "v5"))
 	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
-	assert.Equal(t, "", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v6"))
+	err = m.UpdateSystem(path.Join(target, "v6"))
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	assert.Equal(t, "", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 
-	err = m.UpdateSystem(path.Join(dir, "v1"))
+	err = m.UpdateSystem(path.Join(target, "v1"))
 	assert.NoError(t, err)
-	assert.Equal(t, "v1", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "v1", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v4"))
+	err = m.UpdateSystem(path.Join(target, "v4"))
 	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
-	assert.Equal(t, "v1", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "v1", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v2"))
-	assert.Equal(t, "v2", m.infostats.raw.Software.ConfVersion)
+	err = m.UpdateSystem(path.Join(target, "v2"))
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v5"))
+	err = m.UpdateSystem(path.Join(target, "v5", "application.yml"))
 	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
-	assert.Equal(t, "v2", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v3"))
-	assert.Equal(t, "v3", m.infostats.raw.Software.ConfVersion)
+	err = m.UpdateSystem(path.Join(target, "v3", "application.yml"))
+	assert.Equal(t, "v3", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
 
-	err = m.UpdateSystem(path.Join(dir, "v6"))
+	err = m.UpdateSystem(path.Join(target, "v6", "application.yml"))
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	assert.Equal(t, "v3", m.infostats.raw.Software.ConfVersion)
+	assert.Equal(t, "v3", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
 
-	err = m.UpdateSystem(path.Join(dir, "v2"))
-	assert.Equal(t, "v2", m.infostats.raw.Software.ConfVersion)
+	err = m.UpdateSystem(path.Join(target, "v2", "application.yml"))
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
@@ -218,7 +218,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 	wantErrRB := "failed to update system: volume 'cmd-bin' not found; failed to rollback: volume 'cmd-bin' not found"
 	tests := []struct {
 		name        string
-		dir         string
+		target      string
 		pcur        string // prepare applicatuib.yml if not empty
 		pold        string // prepare applicatuib.yml.old if not empty
 		ccur        bool   // check if applicatuib.yml exists
@@ -228,7 +228,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 	}{
 		{
 			name:        "nil",
-			dir:         "",
+			target:      "",
 			ccur:        false,
 			cold:        false,
 			wantErr:     "",
@@ -236,7 +236,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "bad app.yml",
-			dir:         "",
+			target:      "",
 			pcur:        badapp,
 			ccur:        true,
 			cold:        false,
@@ -245,7 +245,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "bad app.yml.old",
-			dir:         "",
+			target:      "",
 			pold:        badapp,
 			ccur:        false,
 			cold:        false,
@@ -254,7 +254,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "good app.yml",
-			dir:         "",
+			target:      "",
 			pcur:        goodapp,
 			ccur:        true,
 			cold:        false,
@@ -263,7 +263,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "good app.yml.old",
-			dir:         "",
+			target:      "",
 			pold:        goodapp,
 			ccur:        false,
 			cold:        false,
@@ -272,7 +272,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "bad app.yml and app.yml.old",
-			dir:         "",
+			target:      "",
 			pcur:        badapp,
 			pold:        badapp,
 			ccur:        true,
@@ -282,7 +282,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "good app.yml and app.yml.old",
-			dir:         "",
+			target:      "",
 			pcur:        goodapp,
 			pold:        goodapp,
 			ccur:        true,
@@ -292,7 +292,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "good app.yml and bad app.yml.old",
-			dir:         "",
+			target:      "",
 			pcur:        goodapp,
 			pold:        badapp,
 			ccur:        true,
@@ -302,7 +302,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 		},
 		{
 			name:        "bad app.yml and good app.yml.old",
-			dir:         "",
+			target:      "",
 			pcur:        badapp,
 			pold:        goodapp,
 			ccur:        true,
@@ -321,7 +321,7 @@ func TestMaster_UpdateSystem(t *testing.T) {
 			utils.CopyFile(tt.pold, appBackupFile)
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			err := m.UpdateSystem(tt.dir)
+			err := m.UpdateSystem(tt.target)
 			assert.Equal(t, (tt.wantErr == ""), (err == nil))
 			assert.Equal(t, tt.wantErr, m.infostats.getError())
 			assert.Equal(t, tt.wantVersion, m.infostats.getVersion())

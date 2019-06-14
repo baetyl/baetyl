@@ -78,7 +78,7 @@ func (is *infoStats) DelInstanceStats(serviceName, instanceName string) {
 	is.persistStats()
 }
 
-func (is *infoStats) updateVersion(ver string) {
+func (is *infoStats) setVersion(ver string) {
 	is.Lock()
 	is.raw.Software.ConfVersion = ver
 	is.Unlock()
@@ -90,7 +90,7 @@ func (is *infoStats) getVersion() string {
 	return is.raw.Software.ConfVersion
 }
 
-func (is *infoStats) updateError(err error) {
+func (is *infoStats) setError(err error) {
 	is.Lock()
 	if err == nil {
 		is.raw.Error = ""

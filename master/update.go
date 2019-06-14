@@ -15,21 +15,21 @@ var appConfigFile = path.Join(appDir, openedge.AppConfFileName)
 var appBackupFile = path.Join(appDir, openedge.AppBackupFileName)
 
 // UpdateSystem updates system
-func (m *Master) UpdateSystem(dir string) error {
-	err := m.update(dir)
+func (m *Master) UpdateSystem(target string) error {
+	err := m.update(target)
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
 		m.log.Errorf(err.Error())
 	}
-	m.infostats.updateError(err)
+	m.infostats.setError(err)
 	return err
 }
 
-func (m *Master) update(dir string) error {
+func (m *Master) update(target string) error {
 	m.log.Infof("system is updating")
 	defer m.log.Infof("system is updated")
 
-	cur, old, err := m.reload(dir)
+	cur, old, err := m.reload(target)
 	if err != nil {
 		m.rollback()
 		return err
@@ -63,8 +63,8 @@ func (m *Master) update(dir string) error {
 	return nil
 }
 
-func (m *Master) reload(dir string) (cur, old openedge.AppConfig, err error) {
-	if dir != "" {
+func (m *Master) reload(target string) (cur, old openedge.AppConfig, err error) {
+	if target != "" {
 		// backup
 		if utils.FileExists(appConfigFile) {
 			// application.yml --> application.yml.old
@@ -82,8 +82,13 @@ func (m *Master) reload(dir string) (cur, old openedge.AppConfig, err error) {
 			f.Close()
 		}
 
-		// copy {dir}/application.yml to application.yml
-		err = utils.CopyFile(path.Join(dir, openedge.AppConfFileName), appConfigFile)
+		if utils.FileExists(target) {
+			// copy {target} to application.yml
+			err = utils.CopyFile(target, appConfigFile)
+		} else {
+			// copy {target}/application.yml to application.yml
+			err = utils.CopyFile(path.Join(target, openedge.AppConfFileName), appConfigFile)
+		}
 		if err != nil {
 			return
 		}
@@ -113,7 +118,7 @@ func (m *Master) rollback() error {
 
 func (m *Master) commit(ver string) {
 	// update config version
-	m.infostats.updateVersion(ver)
+	m.infostats.setVersion(ver)
 	// remove application.yml.old
 	err := os.RemoveAll(appBackupFile)
 	if err != nil {

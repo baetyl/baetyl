@@ -130,7 +130,7 @@ func (m *mo) processEvent(payload []byte) error {
 	if err != nil {
 		return fmt.Errorf("update event invalid: %s", err.Error())
 	}
-	err = m.ctx.UpdateSystem(volumeHostDir, updateEvent.Clean)
+	err = m.ctx.UpdateSystem(volumeHostDir)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}

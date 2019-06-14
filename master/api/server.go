@@ -77,7 +77,13 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	go s.m.UpdateSystem(args["file"])
+	// agent version >= 0.1.4
+	target, ok := args["path"]
+	if !ok {
+		// backward compatibility, agent version < 0.1.4
+		target = args["file"]
+	}
+	go s.m.UpdateSystem(target)
 	return nil, nil
 }
 
