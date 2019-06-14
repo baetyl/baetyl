@@ -52,7 +52,7 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi
+  - name: function-python27-sayhi
     image: openedge-function-python27
     replica: 0
     mounts:
@@ -62,7 +62,7 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-sayhi3
+  - name: function-python36-sayhi
     image: openedge-function-python36
     replica: 0
     mounts:
@@ -72,7 +72,17 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-filter
+  - name: function-node85-sayhi
+    image: openedge-function-node85
+    replica: 0
+    mounts:
+      - name: function-sayjs-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayjs-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
+  - name: function-sql-filter
     image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
     replica: 0
     mounts:
@@ -134,6 +144,10 @@ volumes:
     path: var/db/openedge/function-sayhi-conf
   - name: function-sayhi-code
     path: var/db/openedge/function-sayhi-code
+  - name: function-sayjs-conf
+    path: var/db/openedge/function-sayjs-conf
+  - name: function-sayjs-code
+    path: var/db/openedge/function-sayjs-code
   - name: function-filter-conf
     path: var/db/openedge/function-filter-conf
   # mosquitto

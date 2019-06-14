@@ -19,3 +19,4 @@
 /cover*.out
 /example/**/*-cert
 /**/processes.history*
+/**/node_modules

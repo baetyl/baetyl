@@ -14,7 +14,7 @@ go env  # View Go's environment variables
 go version # View Go's version
 ```
 
-_**NOTE**: OpenEdge requires that the compiled version of Go be above 1.10.0 ._
+_**NOTE**: OpenEdge requires that the compiled version of Go be above 1.10.0._
 
 ### Install Docker
 
