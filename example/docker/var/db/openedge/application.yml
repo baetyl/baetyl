@@ -82,7 +82,7 @@ services:
       - name: function-sayjs-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-filter
+  - name: function-sql-filter
     image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
     replica: 0
     mounts:

@@ -107,7 +107,7 @@ services:
       - name: openedge-function-node85-bin
         path: lib/openedge/openedge-function-node85
         readonly: true
-  # - name: function-filter
+  # - name: function-sql-filter
   #   image: openedge-function-sql
   #   replica: 0
   #   mounts:

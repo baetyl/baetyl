@@ -40,12 +40,12 @@ rules:
       name: python27-sayhi
     publish:
       topic: t/python2
-  - clientid: func-filter-1
+  - clientid: func-sql-filter-1
     subscribe:
       topic: t
       qos: 1
     function:
-      name: filter
+      name: sql-filter
     publish:
       topic: t/f
       qos: 1
@@ -70,8 +70,8 @@ functions:
       min: 0
       max: 10
       idletime: 1m
-  - name: filter
-    service: function-filter
+  - name: sql-filter
+    service: function-sql-filter
   - name: python36-sayhi
     service: function-python36-sayhi
     instance:
