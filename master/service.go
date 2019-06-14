@@ -2,6 +2,7 @@ package master
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/baidu/openedge/master/engine"
@@ -19,47 +20,20 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) prepareServices() ([]openedge.VolumeInfo, []openedge.ServiceInfo, []openedge.ServiceInfo, error) {
-	oldVolumes := m.appcfg.Volumes
-	oldServices := m.appcfg.Services
-
-	err := m.load()
-	if err != nil {
-		return nil, nil, nil, err
+func (m *Master) startServices(cur openedge.AppConfig) error {
+	volumes := map[string]openedge.VolumeInfo{}
+	for _, v := range cur.Volumes {
+		volumes[v.Name] = v
 	}
-
-	newVolumes := m.appcfg.Volumes
-	newServices := m.appcfg.Services
-
-	updatedVolumes, removedVolumes := openedge.DiffVolumes(oldVolumes, newVolumes)
-	updatedServices, removedServices := openedge.DiffServices(oldServices, newServices, updatedVolumes)
-
-	m.engine.Prepare(updatedServices)
-	return removedVolumes, updatedServices, removedServices, nil
-}
-
-func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error {
-	services := updatedServices
-	if updatedServices == nil {
-		services = m.appcfg.Services
-	} else if len(services) == 0 {
-		return nil
-	}
-
-	vs := make(map[string]openedge.VolumeInfo)
-	for _, v := range m.appcfg.Volumes {
-		vs[v.Name] = v
-	}
-	for _, s := range services {
-		cur, ok := m.services.Get(s.Name)
-		if ok {
-			cur.(engine.Service).Stop()
+	for _, s := range cur.Services {
+		if _, ok := m.services.Get(s.Name); ok {
+			continue
 		}
 		token := uuid.Generate().String()
 		m.accounts.Set(s.Name, token)
 		s.Env[openedge.EnvServiceNameKey] = s.Name
 		s.Env[openedge.EnvServiceTokenKey] = token
-		nxt, err := m.engine.Run(s, vs)
+		nxt, err := m.engine.Run(s, volumes)
 		if err != nil {
 			m.log.Infof("failed to start service (%s)", s.Name)
 			return err
@@ -70,17 +44,15 @@ func (m *Master) startAllServices(updatedServices []openedge.ServiceInfo) error 
 	return nil
 }
 
-func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
-	services := updatedServices
-	if updatedServices == nil {
-		services = m.appcfg.Services
-	} else if len(services) == 0 {
-		return
-	}
-
+func (m *Master) stopServices(keepServices map[string]struct{}) {
 	var wg sync.WaitGroup
-	for _, s := range services {
-		service, ok := m.services.Get(s.Name)
+	for item := range m.services.IterBuffered() {
+		s := item.Val.(engine.Service)
+		// skip the service not changed
+		if _, ok := keepServices[s.Name()]; ok {
+			continue
+		}
+		service, ok := m.services.Get(s.Name())
 		if !ok {
 			continue
 		}
@@ -93,7 +65,6 @@ func (m *Master) stopAllServices(updatedServices []openedge.ServiceInfo) {
 			m.log.Infof("service (%s) stopped", s.Name())
 		}(service.(engine.Service))
 	}
-
 	wg.Wait()
 }
 
@@ -123,4 +94,47 @@ func (m *Master) StopInstance(service, instance string) error {
 		return fmt.Errorf("service (%s) not found", service)
 	}
 	return s.(engine.Service).StopInstance(instance)
+}
+
+// DiffServices returns the services not changed
+func diffServices(cur, old openedge.AppConfig) map[string]struct{} {
+	oldVolumes := make(map[string]openedge.VolumeInfo)
+	for _, o := range old.Volumes {
+		oldVolumes[o.Name] = o
+	}
+	// find the volumes updated
+	updateVolumes := make(map[string]struct{})
+	for _, c := range cur.Volumes {
+		if o, ok := oldVolumes[c.Name]; ok && o.Path != c.Path {
+			updateVolumes[c.Name] = struct{}{}
+		}
+	}
+
+	oldServices := make(map[string]openedge.ServiceInfo)
+	for _, o := range old.Services {
+		oldServices[o.Name] = o
+	}
+
+	// find the services not changed
+	keepServices := map[string]struct{}{}
+	for _, c := range cur.Services {
+		o, ok := oldServices[c.Name]
+		if !ok {
+			continue
+		}
+		if !reflect.DeepEqual(c, o) {
+			continue
+		}
+		changed := false
+		for _, m := range c.Mounts {
+			if _, changed = updateVolumes[m.Name]; changed {
+				break
+			}
+		}
+		if changed {
+			continue
+		}
+		keepServices[c.Name] = struct{}{}
+	}
+	return keepServices
 }

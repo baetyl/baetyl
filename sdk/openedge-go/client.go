@@ -56,10 +56,10 @@ func (c *Client) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *Client) UpdateSystem(file string, clean bool) error {
+func (c *Client) UpdateSystem(path string) error {
 	data, err := json.Marshal(map[string]string{
-		"file":  file,
-		"clean": fmt.Sprintf("%t", clean),
+		"path": path,
+		"file": path, // backward compatibility, openedge master version < 0.1.4
 	})
 	if err != nil {
 		return err
