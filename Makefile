@@ -41,7 +41,7 @@ openedge-timer/package.zip:
 	make -C openedge-timer
 
 test:
-	go test --race ./...
+	go test --race --cover ./...
 
 install: openedge
 	install -d -m 0755 ${PREFIX}/bin
