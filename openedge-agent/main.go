@@ -125,15 +125,19 @@ func (m *mo) processEvent(payload []byte) error {
 	if err != nil {
 		return fmt.Errorf("update event invalid: %s", err.Error())
 	}
-	updateEvent := e.Content.(*UpdateEvent)
-	if updateEvent.Version != "v2" {
-		return fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", updateEvent.Version)
+	update := e.Content.(*UpdateEvent)
+	if update.Version != "v2" {
+		return fmt.Errorf("update event invalid: version '%s' not supported, expect 'v2'", update.Version)
 	}
-	volumeHostDir, err := m.prepare(updateEvent.Config)
+	appcfg, hostdir, err := m.cleaner.reset(m.downloadConfigVolume, update.Config)
 	if err != nil {
-		return fmt.Errorf("update event invalid: %s", err.Error())
+		return fmt.Errorf("failed to prepare config volume: %s", err.Error())
 	}
-	err = m.ctx.UpdateSystem(volumeHostDir)
+	err = m.downloadAppVolumes(appcfg)
+	if err != nil {
+		return fmt.Errorf("failed to prepare app volumes: %s", err.Error())
+	}
+	err = m.ctx.UpdateSystem(hostdir)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}

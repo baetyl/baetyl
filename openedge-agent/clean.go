@@ -30,11 +30,13 @@ func newCleaner(t string, l logger.Logger) *cleaner {
 	}
 }
 
-func (c *cleaner) reset(cfg *openedge.AppConfig) {
+func (c *cleaner) reset(prepare func(openedge.VolumeInfo) (*openedge.AppConfig, string, error), cfg openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
 	c.Lock()
+	defer c.Unlock()
+	appcfg, hostdir, err := prepare(cfg)
 	c.count = 3
-	c.last = cfg
-	c.Unlock()
+	c.last = appcfg
+	return appcfg, hostdir, err
 }
 
 func (c *cleaner) do(version string) {
