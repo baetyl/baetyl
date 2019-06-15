@@ -18,7 +18,7 @@ func Test_cleaner(t *testing.T) {
 	target, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
 	defer os.RemoveAll(target)
-	prepare(t, target)
+	prepareTest(t, target)
 	type args struct {
 		target  string
 		volumes []openedge.VolumeInfo
@@ -102,20 +102,6 @@ func Test_cleaner(t *testing.T) {
 	}
 
 	// test cleaner
-	cfg := &openedge.AppConfig{
-		Version: "v1",
-		Volumes: []openedge.VolumeInfo{
-			openedge.VolumeInfo{
-				Path: "no-exists",
-			},
-			openedge.VolumeInfo{
-				Path: filepath.Join(target, "b"),
-			},
-			openedge.VolumeInfo{
-				Path: filepath.Join(target, "c", "c1"),
-			},
-		},
-	}
 	log := newMockLogger()
 	c := newCleaner(target, log)
 	c.do("")
@@ -124,7 +110,7 @@ func Test_cleaner(t *testing.T) {
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]last app config is not cached"}, log.records)
 	log.records = []string{}
-	c.reset(cfg)
+	c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
 	c.do("v2")
 	assert.Equal(t, []string{"[Debugf]report version is not matched"}, log.records)
 	log.records = []string{}
@@ -152,8 +138,8 @@ func Test_cleaner(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 0)
 
-	cfg.Volumes = []openedge.VolumeInfo{}
-	c.reset(cfg)
+	appcfg, _, _ := c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
+	appcfg.Volumes = []openedge.VolumeInfo{}
 	c.do("v1")
 	assert.Len(t, log.records, 0)
 	c.do("v1")
@@ -179,7 +165,7 @@ func Test_cleaner2(t *testing.T) {
 	err := os.MkdirAll(target, 0777)
 	assert.NoError(t, err)
 	defer os.RemoveAll("var")
-	prepare(t, target)
+	prepareTest(t, target)
 	type args struct {
 		target  string
 		volumes []openedge.VolumeInfo
@@ -263,20 +249,6 @@ func Test_cleaner2(t *testing.T) {
 	}
 
 	// test cleaner
-	cfg := &openedge.AppConfig{
-		Version: "v1",
-		Volumes: []openedge.VolumeInfo{
-			openedge.VolumeInfo{
-				Path: "no-exists",
-			},
-			openedge.VolumeInfo{
-				Path: filepath.Join(target, "b"),
-			},
-			openedge.VolumeInfo{
-				Path: filepath.Join(target, "c", "c1"),
-			},
-		},
-	}
 	log := newMockLogger()
 	c := newCleaner(target, log)
 	c.do("")
@@ -285,7 +257,7 @@ func Test_cleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]last app config is not cached"}, log.records)
 	log.records = []string{}
-	c.reset(cfg)
+	c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
 	c.do("v2")
 	assert.Equal(t, []string{"[Debugf]report version is not matched"}, log.records)
 	log.records = []string{}
@@ -311,8 +283,8 @@ func Test_cleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 0)
 
-	cfg.Volumes = []openedge.VolumeInfo{}
-	c.reset(cfg)
+	appcfg, _, _ := c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
+	appcfg.Volumes = []openedge.VolumeInfo{}
 	c.do("v1")
 	assert.Len(t, log.records, 0)
 	c.do("v1")
@@ -332,7 +304,7 @@ func Test_cleaner2(t *testing.T) {
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 }
 
-func prepare(t *testing.T, target string) {
+func prepareTest(t *testing.T, target string) {
 	err := ioutil.WriteFile(filepath.Join(target, "a"), []byte{}, 0777)
 	assert.NoError(t, err)
 	err = os.MkdirAll(filepath.Join(target, "b"), 0777)
@@ -405,4 +377,21 @@ func (l *mackLogger) Errorln(args ...interface{}) {
 }
 func (l *mackLogger) Fatalln(args ...interface{}) {
 	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
+}
+
+func prepareConfig(v openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
+	return &openedge.AppConfig{
+		Version: "v1",
+		Volumes: []openedge.VolumeInfo{
+			openedge.VolumeInfo{
+				Path: "no-exists",
+			},
+			openedge.VolumeInfo{
+				Path: filepath.Join(v.Path, "b"),
+			},
+			openedge.VolumeInfo{
+				Path: filepath.Join(v.Path, "c", "c1"),
+			},
+		},
+	}, "", nil
 }
