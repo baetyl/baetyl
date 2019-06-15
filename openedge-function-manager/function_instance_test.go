@@ -3,10 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
-	"github.com/docker/distribution/uuid"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -14,36 +10,41 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+
+	"github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baidu/openedge/utils"
+	"github.com/docker/distribution/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_FunctionInstance(t *testing.T) {
 	tests := []struct {
-		name string
-		exec  string
-		functionName  string
-		workPath string
-		filePath []string
+		name         string
+		exec         string
+		functionName string
+		workPath     string
+		filePath     []string
 	}{
 		{
-			name: "test python3 runtime",
-			exec: "python3",
+			name:         "test python3 runtime",
+			exec:         "python3",
 			functionName: "python36-sayhi",
-			workPath: "testrun/python",
-			filePath: []string{"..", "..", "..", "openedge-function-python", "openedge-function-python36.py"},
+			workPath:     "testrun/python",
+			filePath:     []string{"..", "..", "..", "openedge-function-python", "openedge-function-python36.py"},
 		},
 		{
-			name: "test node8 runtime",
-			exec: "node",
+			name:         "test node8 runtime",
+			exec:         "node",
 			functionName: "node85-sayhi",
-			workPath: "testrun/node",
-			filePath: []string{"..", "..", "..", "openedge-function-node", "openedge-function-node85.js"},
+			workPath:     "testrun/node",
+			filePath:     []string{"..", "..", "..", "openedge-function-node", "openedge-function-node85.js"},
 		},
 		{
-			name: "test python2.7 runtime",
-			exec: "python2.7",
+			name:         "test python2.7 runtime",
+			exec:         "python2.7",
 			functionName: "python27-sayhi",
-			workPath: "testrun/python",
-			filePath: []string{"..", "..", "..", "openedge-function-python", "openedge-function-python27.py"},
+			workPath:     "testrun/python",
+			filePath:     []string{"..", "..", "..", "openedge-function-python", "openedge-function-python27.py"},
 		},
 	}
 	for _, tt := range tests {
@@ -84,20 +85,20 @@ func Test_FunctionInstance(t *testing.T) {
 			assert.NoError(t, err)
 
 			fcc := openedge.FunctionClientConfig{}
-			err = utils.UnmarshalJSON([]byte("{\"address\":\""+ address +"\"}"), &fcc)
+			err = utils.UnmarshalJSON([]byte("{\"address\":\""+address+"\"}"), &fcc)
 			assert.NoError(t, err)
 			cli, err := openedge.NewFClient(fcc)
 			assert.NoError(t, err)
 
 			// round 1: test binary payload
-			var msgId uint64 = 1234
-			var msgQOS uint32 = 0
-			var msgTopic string = "t"
-			var msgPayload string = "OpenEdge Project"
-			var msgFunctionName string = functionName
-			var msgFunctionInvokeID string = uuid.Generate().String()
+			msgID := uint64(1234)
+			msgQOS := uint32(0)
+			msgTopic := "t"
+			msgPayload := "OpenEdge Project"
+			msgFunctionName := functionName
+			msgFunctionInvokeID := uuid.Generate().String()
 			msg := &openedge.FunctionMessage{
-				ID:               msgId,
+				ID:               msgID,
 				QOS:              msgQOS,
 				Topic:            msgTopic,
 				Payload:          []byte(msgPayload),
@@ -109,7 +110,7 @@ func Test_FunctionInstance(t *testing.T) {
 			assert.NoError(t, err)
 
 			dataArr := map[string]interface{}{}
-			err = json.Unmarshal([]byte(out.Payload), &dataArr)
+			err = json.Unmarshal(out.Payload, &dataArr)
 			assert.NoError(t, err)
 			assert.Equal(t, dataArr["messageTopic"], msgTopic)
 			assert.Equal(t, dataArr["functionName"], msgFunctionName)
@@ -118,21 +119,12 @@ func Test_FunctionInstance(t *testing.T) {
 			assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
 			// round 2: test json payload
-			msgPayload = "{\"Project\":\"OpenEdge\"}"
-			msg = &openedge.FunctionMessage{
-				ID:               msgId,
-				QOS:              msgQOS,
-				Topic:            msgTopic,
-				Payload:          []byte(msgPayload),
-				FunctionName:     msgFunctionName,
-				FunctionInvokeID: msgFunctionInvokeID,
-			}
-
+			msg.Payload = []byte("{\"Project\":\"OpenEdge\"}")
 			out, err = cli.Call(msg)
 			assert.NoError(t, err)
 
 			dataArr = map[string]interface{}{}
-			err = json.Unmarshal([]byte(out.Payload), &dataArr)
+			err = json.Unmarshal(out.Payload, &dataArr)
 			assert.NoError(t, err)
 			assert.Equal(t, dataArr["messageTopic"], msgTopic)
 			assert.Equal(t, dataArr["functionName"], msgFunctionName)
@@ -141,31 +133,13 @@ func Test_FunctionInstance(t *testing.T) {
 			assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
 			// round 3: test error
-			msgPayload = "{\"err\":\"OpenEdge\"}"
-			msg = &openedge.FunctionMessage{
-				ID:               msgId,
-				QOS:              msgQOS,
-				Topic:            msgTopic,
-				Payload:          []byte(msgPayload),
-				FunctionName:     msgFunctionName,
-				FunctionInvokeID: msgFunctionInvokeID,
-			}
-
+			msg.Payload = []byte("{\"err\":\"OpenEdge\"}")
 			out, err = cli.Call(msg)
 			assert.Error(t, err)
 
 			// round 4: function not exist
-			msgPayload = ""
-			msgFunctionName = "xxx"
-			msg = &openedge.FunctionMessage{
-				ID:               msgId,
-				QOS:              msgQOS,
-				Topic:            msgTopic,
-				Payload:          []byte(msgPayload),
-				FunctionName:     msgFunctionName,
-				FunctionInvokeID: msgFunctionInvokeID,
-			}
-
+			msg.Payload = []byte("")
+			msg.FunctionName = "xxx"
 			out, err = cli.Call(msg)
 			assert.Error(t, err)
 
