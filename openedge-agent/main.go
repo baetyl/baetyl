@@ -27,6 +27,8 @@ type mo struct {
 
 	certSN  string
 	certKey []byte
+
+	cleaner *cleaner
 }
 
 func main() {
@@ -75,6 +77,7 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 		certKey: key,
 		errs:    []string{},
 		mqtt:    mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
+		cleaner: newCleaner(openedge.DefaultDBDir, ctx.Log().WithField("agent", "cleaner")),
 	}, nil
 }
 
@@ -145,7 +148,8 @@ func (m *mo) reporting() error {
 		select {
 		case <-t.C:
 			m.ctx.Log().Debugln("to report stats")
-			m.report(false)
+			version := m.report(false)
+			m.cleaner.do(version)
 		case <-m.tomb.Dying():
 			return nil
 		}
@@ -153,7 +157,7 @@ func (m *mo) reporting() error {
 }
 
 // Report reports info
-func (m *mo) report(overwrite bool, errors ...string) {
+func (m *mo) report(overwrite bool, errors ...string) string {
 	defer utils.Trace("report", logger.Debugf)()
 
 	if overwrite {
@@ -172,7 +176,7 @@ func (m *mo) report(overwrite bool, errors ...string) {
 	payload, err := json.Marshal(i)
 	if err != nil {
 		m.ctx.Log().WithError(err).Warnf("failed to marshal stats")
-		return
+		return ""
 	}
 	m.ctx.Log().Debugln("stats", string(payload))
 	p := packet.NewPublish()
@@ -186,6 +190,7 @@ func (m *mo) report(overwrite bool, errors ...string) {
 	if err != nil {
 		m.ctx.Log().WithError(err).Warnf("failed to report stats by https")
 	}
+	return i.Software.ConfVersion
 }
 
 func (m *mo) send(data []byte) error {
