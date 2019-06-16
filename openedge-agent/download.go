@@ -12,27 +12,28 @@ import (
 	"github.com/mholt/archiver"
 )
 
-func (m *mo) prepare(cfgVol openedge.VolumeInfo) (string, error) {
+func (m *mo) downloadConfigVolume(cfgVol openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
 	volumeHostDir, volumeContainerDir, err := m.download(cfgVol)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 	var cfg openedge.AppConfig
 	cfgFile := path.Join(volumeContainerDir, openedge.AppConfFileName)
 	err = utils.LoadYAML(cfgFile, &cfg)
-	if err != nil {
-		return "", err
-	}
+	return &cfg, volumeHostDir, err
+}
+
+func (m *mo) downloadAppVolumes(cfg *openedge.AppConfig) error {
 	for _, ds := range cfg.Volumes {
 		if ds.Meta.URL == "" {
 			continue
 		}
-		_, _, err = m.download(ds)
+		_, _, err := m.download(ds)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
-	return volumeHostDir, nil
+	return nil
 }
 
 func (m *mo) download(v openedge.VolumeInfo) (string, string, error) {
