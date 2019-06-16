@@ -74,7 +74,7 @@ func (m *Master) ReportInstance(serviceName, instanceName string, partialStats e
 	if !ok {
 		return fmt.Errorf("service (%s) not found", serviceName)
 	}
-	m.infostats.AddInstanceStats(serviceName, instanceName, partialStats)
+	m.infostats.SetInstanceStats(serviceName, instanceName, partialStats, false)
 	return nil
 }
 

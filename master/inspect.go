@@ -16,17 +16,17 @@ import (
 )
 
 type infoStats struct {
-	raw  openedge.Inspect
-	sss  engine.ServicesStats
-	file string
+	openedge.Inspect
+	services engine.ServicesStats
+	file     string
 	sync.RWMutex
 }
 
 func newInfoStats(pwd, mode, version, file string) *infoStats {
 	return &infoStats{
-		file: file,
-		sss:  engine.ServicesStats{},
-		raw: openedge.Inspect{
+		file:     file,
+		services: engine.ServicesStats{},
+		Inspect: openedge.Inspect{
 			Software: openedge.Software{
 				OS:         runtime.GOOS,
 				Arch:       runtime.GOARCH,
@@ -43,12 +43,12 @@ func newInfoStats(pwd, mode, version, file string) *infoStats {
 	}
 }
 
-func (is *infoStats) AddInstanceStats(serviceName, instanceName string, partialStats engine.PartialStats) {
+func (is *infoStats) SetInstanceStats(serviceName, instanceName string, partialStats engine.PartialStats, persist bool) {
 	is.Lock()
-	service, ok := is.sss[serviceName]
+	service, ok := is.services[serviceName]
 	if !ok {
 		service = engine.InstancesStats{}
-		is.sss[serviceName] = service
+		is.services[serviceName] = service
 	}
 	instance, ok := service[instanceName]
 	if !ok {
@@ -59,14 +59,16 @@ func (is *infoStats) AddInstanceStats(serviceName, instanceName string, partialS
 			instance[k] = v
 		}
 	}
-	is.persistStats()
+	if persist {
+		is.persistStats()
+	}
 	is.Unlock()
 }
 
-func (is *infoStats) DelInstanceStats(serviceName, instanceName string) {
+func (is *infoStats) DelInstanceStats(serviceName, instanceName string, persist bool) {
 	is.Lock()
 	defer is.Unlock()
-	service, ok := is.sss[serviceName]
+	service, ok := is.services[serviceName]
 	if !ok {
 		return
 	}
@@ -75,27 +77,29 @@ func (is *infoStats) DelInstanceStats(serviceName, instanceName string) {
 		return
 	}
 	delete(service, instanceName)
-	is.persistStats()
+	if persist {
+		is.persistStats()
+	}
 }
 
 func (is *infoStats) setVersion(ver string) {
 	is.Lock()
-	is.raw.Software.ConfVersion = ver
+	is.Inspect.Software.ConfVersion = ver
 	is.Unlock()
 }
 
 func (is *infoStats) getVersion() string {
 	is.RLock()
 	defer is.RUnlock()
-	return is.raw.Software.ConfVersion
+	return is.Inspect.Software.ConfVersion
 }
 
 func (is *infoStats) setError(err error) {
 	is.Lock()
 	if err == nil {
-		is.raw.Error = ""
+		is.Inspect.Error = ""
 	} else {
-		is.raw.Error = err.Error()
+		is.Inspect.Error = err.Error()
 	}
 	is.Unlock()
 }
@@ -103,7 +107,7 @@ func (is *infoStats) setError(err error) {
 func (is *infoStats) getError() string {
 	is.RLock()
 	defer is.RUnlock()
-	return is.raw.Error
+	return is.Inspect.Error
 }
 
 // func genVolumesStats(cfg []openedge.VolumeInfo) openedge.Volumes {
@@ -118,7 +122,7 @@ func (is *infoStats) getError() string {
 // }
 
 func (is *infoStats) persistStats() {
-	data, err := yaml.Marshal(is.sss)
+	data, err := yaml.Marshal(is.services)
 	if err != nil {
 		logger.Global.WithError(err).Warnf("failed to persist services stats")
 		return
@@ -129,7 +133,7 @@ func (is *infoStats) persistStats() {
 	}
 }
 
-func (is *infoStats) LoadStats(sss interface{}) bool {
+func (is *infoStats) LoadStats(services interface{}) bool {
 	if !utils.FileExists(is.file) {
 		return false
 	}
@@ -139,7 +143,7 @@ func (is *infoStats) LoadStats(sss interface{}) bool {
 		os.Rename(is.file, fmt.Sprintf("%s.%d", is.file, time.Now().Unix()))
 		return false
 	}
-	err = yaml.Unmarshal(data, sss)
+	err = yaml.Unmarshal(data, services)
 	if err != nil {
 		logger.Global.WithError(err).Warnf("failed to unmarshal old stats")
 		os.Rename(is.file, fmt.Sprintf("%s.%d", is.file, time.Now().Unix()))
@@ -148,23 +152,43 @@ func (is *infoStats) LoadStats(sss interface{}) bool {
 	return true
 }
 
-func (is *infoStats) getInfoStats() *openedge.Inspect {
+func (is *infoStats) stats() {
+	t := time.Now().UTC()
 	gi := utils.GetGPUInfo()
 	mi := utils.GetMemInfo()
 	ci := utils.GetCPUInfo()
 	di := utils.GetDiskInfo("/")
 
 	is.Lock()
-	is.raw.Hardware.GPUInfo = gi
-	is.raw.Hardware.MemInfo = mi
-	is.raw.Hardware.CPUInfo = ci
-	is.raw.Hardware.DiskInfo = di
-	result := is.raw
+	is.Inspect.Time = t
+	is.Inspect.Hardware.GPUInfo = gi
+	is.Inspect.Hardware.MemInfo = mi
+	is.Inspect.Hardware.CPUInfo = ci
+	is.Inspect.Hardware.DiskInfo = di
 	is.Unlock()
+}
 
-	result.Time = time.Now().UTC()
+// InspectSystem inspects info and stats of openedge system
+func (m *Master) InspectSystem() *openedge.Inspect {
+	defer utils.Trace("InspectSystem", logger.Global.Debugf)()
+	var wg sync.WaitGroup
+	for item := range m.services.IterBuffered() {
+		wg.Add(1)
+		go func(s engine.Service) {
+			defer wg.Done()
+			s.Stats()
+		}(item.Val.(engine.Service))
+	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		m.infostats.stats()
+	}()
+	wg.Wait()
+
+	result := m.infostats.Inspect
 	result.Services = openedge.Services{}
-	for serviceName, serviceStats := range is.sss {
+	for serviceName, serviceStats := range m.infostats.services {
 		service := openedge.NewServiceStatus(serviceName)
 		for _, instanceStats := range serviceStats {
 			service.Instances = append(service.Instances, map[string]interface{}(instanceStats))
@@ -172,10 +196,4 @@ func (is *infoStats) getInfoStats() *openedge.Inspect {
 		result.Services = append(result.Services, service)
 	}
 	return &result
-}
-
-// InspectSystem inspects info and stats of openedge system
-func (m *Master) InspectSystem() *openedge.Inspect {
-	defer utils.Trace("InspectSystem", logger.Global.Debugf)()
-	return m.infostats.getInfoStats()
 }
