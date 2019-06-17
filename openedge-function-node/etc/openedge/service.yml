@@ -1,8 +1,0 @@
-functions:
-  - name: 'node85-sayhi'
-    handler: 'index.handler'
-    codedir: 'var/db/openedge/function-sayjs'
-logger:
-  path: var/log/openedge/service.log
-  level: "debug"
-
