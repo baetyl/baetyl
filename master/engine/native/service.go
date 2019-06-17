@@ -8,7 +8,7 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 const packageConfigPath = "package.yml"
@@ -67,6 +67,13 @@ func (s *nativeService) Stop() {
 		}(v.(*nativeInstance), &wg)
 	}
 	wg.Wait()
+}
+
+func (s *nativeService) Stats() {
+	for _, item := range s.instances.Items() {
+		instance := item.(*nativeInstance)
+		s.engine.SetInstanceStats(s.Name(), instance.Name(), instance.Stats(), false)
+	}
 }
 
 func (s *nativeService) StartInstance(instanceName string, dynamicConfig map[string]string) error {

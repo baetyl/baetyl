@@ -307,47 +307,47 @@ push-image:
 	# Push hub images
 	docker tag $(IMAGE_PREFIX)openedge-hub-linux-amd64:latest $(IMAGE_PREFIX)openedge-hub-linux-amd64:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-hub-linux-arm64:latest $(IMAGE_PREFIX)openedge-hub-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)openedge-hub-linux-arm:latest $(IMAGE_PREFIX)openedge-hub-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-hub-linux-armv7:latest $(IMAGE_PREFIX)openedge-hub-linux-armv7:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-hub-linux-386:latest $(IMAGE_PREFIX)openedge-hub-linux-386:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-hub-linux-amd64
 	docker push $(IMAGE_PREFIX)openedge-hub-linux-arm64
-	docker push $(IMAGE_PREFIX)openedge-hub-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-hub-linux-armv7
 	docker push $(IMAGE_PREFIX)openedge-hub-linux-386
 	# Push agent images
 	docker tag $(IMAGE_PREFIX)openedge-agent-linux-amd64:latest $(IMAGE_PREFIX)openedge-agent-linux-amd64:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-agent-linux-arm64:latest $(IMAGE_PREFIX)openedge-agent-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)openedge-agent-linux-arm:latest $(IMAGE_PREFIX)openedge-agent-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-agent-linux-armv7:latest $(IMAGE_PREFIX)openedge-agent-linux-armv7:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-agent-linux-386:latest $(IMAGE_PREFIX)openedge-agent-linux-386:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-agent-linux-amd64
 	docker push $(IMAGE_PREFIX)openedge-agent-linux-arm64
-	docker push $(IMAGE_PREFIX)openedge-agent-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-agent-linux-armv7
 	docker push $(IMAGE_PREFIX)openedge-agent-linux-386
 	# Push function manager images
 	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-amd64:latest $(IMAGE_PREFIX)openedge-function-manager-linux-amd64:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-arm64:latest $(IMAGE_PREFIX)openedge-function-manager-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-arm:latest $(IMAGE_PREFIX)openedge-function-manager-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-armv7:latest $(IMAGE_PREFIX)openedge-function-manager-linux-armv7:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-function-manager-linux-386:latest $(IMAGE_PREFIX)openedge-function-manager-linux-386:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-amd64
 	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-arm64
-	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-armv7
 	docker push $(IMAGE_PREFIX)openedge-function-manager-linux-386
 	# Push remote mqtt images
 	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-amd64:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-amd64:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-armv7:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-armv7:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386:latest $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-amd64
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm64
-	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-armv7
 	docker push $(IMAGE_PREFIX)openedge-remote-mqtt-linux-386
 	# Push timer images
 	docker tag $(IMAGE_PREFIX)openedge-timer-linux-amd64:latest $(IMAGE_PREFIX)openedge-timer-linux-amd64:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-timer-linux-arm64:latest $(IMAGE_PREFIX)openedge-timer-linux-arm64:$(VERSION)
-	docker tag $(IMAGE_PREFIX)openedge-timer-linux-arm:latest $(IMAGE_PREFIX)openedge-timer-linux-arm:$(VERSION)
+	docker tag $(IMAGE_PREFIX)openedge-timer-linux-armv7:latest $(IMAGE_PREFIX)openedge-timer-linux-armv7:$(VERSION)
 	docker tag $(IMAGE_PREFIX)openedge-timer-linux-386:latest $(IMAGE_PREFIX)openedge-timer-linux-386:$(VERSION)
 	docker push $(IMAGE_PREFIX)openedge-timer-linux-amd64
 	docker push $(IMAGE_PREFIX)openedge-timer-linux-arm64
-	docker push $(IMAGE_PREFIX)openedge-timer-linux-arm
+	docker push $(IMAGE_PREFIX)openedge-timer-linux-armv7
 	docker push $(IMAGE_PREFIX)openedge-timer-linux-386
 	# Push function python27 images
 	docker tag $(IMAGE_PREFIX)openedge-function-python27:latest $(IMAGE_PREFIX)openedge-function-python27:$(VERSION)

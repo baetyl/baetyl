@@ -15,7 +15,7 @@ func Supervising(instance Instance) error {
 	_engine := service.Engine()
 	serviceName := service.Name()
 	instanceName := instance.Name()
-	defer _engine.DelInstanceStats(serviceName, instanceName)
+	defer _engine.DelInstanceStats(serviceName, instanceName, true)
 	defer instance.Stop()
 
 	c := 0
@@ -31,7 +31,7 @@ func Supervising(instance Instance) error {
 		instanceInfo := instance.Info()
 		instanceInfo[KeyStatus]=Running
 		instanceInfo[KeyStartTime]=time.Now().UTC()
-		_engine.AddInstanceStats(serviceName, instanceName, instanceInfo)
+		_engine.SetInstanceStats(serviceName, instanceName, instanceInfo, true)
 		go instance.Wait(s)
 		select {
 		case <-instance.Dying():
@@ -43,10 +43,10 @@ func Supervising(instance Instance) error {
 				if err == nil {
 					return nil
 				}
-				_engine.AddInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting))
+				_engine.SetInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting), true)
 				goto RESTART
 			case openedge.RestartAlways:
-				_engine.AddInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting))
+				_engine.SetInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting), true)
 				goto RESTART
 			case openedge.RestartNo:
 				// TODO: to test

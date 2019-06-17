@@ -7,7 +7,7 @@ import (
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 const (
@@ -63,6 +63,13 @@ func (s *dockerService) Stop() {
 		}(v.(*dockerInstance), &wg)
 	}
 	wg.Wait()
+}
+
+func (s *dockerService) Stats() {
+	for _, item := range s.instances.Items() {
+		instance := item.(*dockerInstance)
+		s.engine.SetInstanceStats(s.Name(), instance.Name(), instance.Stats(), false)
+	}
 }
 
 func (s *dockerService) StartInstance(instanceName string, dynamicConfig map[string]string) error {
