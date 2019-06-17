@@ -9,6 +9,7 @@ type Service interface {
 	RestartPolicy() openedge.RestartPolicyInfo
 	Start() error
 	Stop()
+	Stats()
 	StartInstance(instanceName string, dynamicConfig map[string]string) error
 	StopInstance(instanceName string) error
 }

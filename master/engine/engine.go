@@ -27,8 +27,8 @@ type Engine interface {
 	io.Closer
 	Name() string
 	Prepare([]openedge.ServiceInfo)
-	AddInstanceStats(serviceName, instanceName string, partialStats PartialStats)
-	DelInstanceStats(serviceName, instanceName string)
+	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
+	DelInstanceStats(serviceName, instanceName string, persist bool)
 	Run(openedge.ServiceInfo, map[string]openedge.VolumeInfo) (Service, error)
 }
 

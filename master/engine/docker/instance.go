@@ -76,6 +76,10 @@ func (i *dockerInstance) Info() engine.PartialStats {
 	return attr.toPartialStats()
 }
 
+func (i *dockerInstance) Stats() engine.PartialStats {
+	return i.service.engine.statsContainer(i.id)
+}
+
 func (i *dockerInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
 	err := i.service.engine.waitContainer(i.id)
