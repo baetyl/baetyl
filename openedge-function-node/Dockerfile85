@@ -1,4 +1,4 @@
-FROM openedge-function-node85-builder:0.1.4
+FROM hub.baidubce.com/openedgedev/openedge-function-node85-builder:0.1.4
 
 WORKDIR /
 COPY function_grpc_pb.js function_pb.js openedge-function-node85.js package.json /bin/
