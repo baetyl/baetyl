@@ -15,7 +15,6 @@ func TestNewEvent(t *testing.T) {
 		Type: Update,
 		Content: &UpdateEvent{
 			Version: "v2",
-			Clean:   true,
 		},
 	}
 	d, err := json.Marshal(e)

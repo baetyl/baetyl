@@ -31,6 +31,7 @@ type Instance interface {
 	Service() Service
 	Name() string
 	Info() PartialStats
+	Stats() PartialStats
 	Wait(w chan<- error)
 	Dying() <-chan struct{}
 	Restart() error

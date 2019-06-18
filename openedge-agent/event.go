@@ -44,6 +44,5 @@ func NewEvent(v []byte) (*Event, error) {
 // UpdateEvent update event
 type UpdateEvent struct {
 	Version string              `yaml:"version" json:"version"`
-	Clean   bool                `yaml:"clean" json:"clean"`
 	Config  openedge.VolumeInfo `yaml:"config" json:"config"`
 }

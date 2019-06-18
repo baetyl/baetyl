@@ -1,0 +1,7 @@
+FROM hub.baidubce.com/openedgedev/openedge-function-node85-builder:0.1.4
+
+WORKDIR /
+COPY function_grpc_pb.js function_pb.js openedge-function-node85.js package.json /bin/
+RUN cd /bin && npm install
+RUN chmod +x /bin/openedge-function-node85.js
+ENTRYPOINT ["openedge-function-node85.js"]

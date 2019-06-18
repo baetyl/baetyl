@@ -1,4 +1,4 @@
-# 配置解读
+# OpenEdge 配置文件释义
 
 - [说在前头](#说在前头)
 - [主程序配置](#主程序配置)
@@ -332,4 +332,23 @@ logger: 日志配置项
     max: 默认值：50，日志文件大小限制，单位 MB
   backup:
     max: 默认值：15，日志文件保留的最大数量
+```
+
+## openedge-timer 配置
+
+```yaml
+hub: 要连接的 Hub 信息
+  address: timer 模块要连接的 Hub 地址
+  username: timer 模块接入 Hub 的用户名
+  password: timer 模块接入 Hub 密码
+  clientid: Client 连接 Hub 的 Client ID
+timer: timer 相关属性
+  interval: timer 模块定时间隔
+publish:
+  topic: 定时结果发布到 Hub 的主题
+  payload: 负载数据，map 数据结构，例如：
+    id: 1
+logger: 日志配置项
+  path: 默认为空，即不打印到文件；如果指定文件则输出到文件
+  level: 默认值：info，日志等级，支持 debug、info、warn 和 error
 ```

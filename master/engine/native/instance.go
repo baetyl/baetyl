@@ -90,6 +90,10 @@ func (i *nativeInstance) Info() engine.PartialStats {
 	return attr.toPartialStats()
 }
 
+func (i *nativeInstance) Stats() engine.PartialStats {
+	return i.service.engine.statsProcess(i.proc)
+}
+
 func (i *nativeInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
 	err := i.service.engine.waitProcess(i.proc)

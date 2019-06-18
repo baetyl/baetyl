@@ -19,7 +19,6 @@ import (
 // Master master manages all modules and connects with cloud
 type Master struct {
 	cfg       Config
-	appcfg    openedge.AppConfig
 	server    *api.Server
 	engine    engine.Engine
 	services  cmap.ConcurrentMap
@@ -59,7 +58,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
-	err = m.update("", false, false)
+	err = m.UpdateSystem("")
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -74,7 +73,7 @@ func (m *Master) Close() error {
 	if m.server != nil {
 		m.server.Close()
 	}
-	m.stopAllServices(nil)
+	m.stopServices(map[string]struct{}{})
 	if m.engine != nil {
 		m.engine.Close()
 	}
