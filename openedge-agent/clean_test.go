@@ -15,11 +15,12 @@ import (
 )
 
 func Test_cleaner(t *testing.T) {
-	target, err := ioutil.TempDir("", t.Name())
+	prefix, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
-	defer os.RemoveAll(target)
-	prepareTest(t, target)
+	defer os.RemoveAll(prefix)
+	target := prepareTest(t, prefix)
 	type args struct {
+		prefix  string
 		target  string
 		volumes []openedge.VolumeInfo
 	}
@@ -32,6 +33,7 @@ func Test_cleaner(t *testing.T) {
 		{
 			name: "no volume",
 			args: args{
+				prefix:  prefix,
 				target:  target,
 				volumes: []openedge.VolumeInfo{},
 			},
@@ -45,19 +47,20 @@ func Test_cleaner(t *testing.T) {
 		{
 			name: "all volumes",
 			args: args{
+				prefix: prefix,
 				target: target,
 				volumes: []openedge.VolumeInfo{
 					openedge.VolumeInfo{
 						Path: "no-exists",
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "b"),
+						Path: filepath.Join(prefix, "b"),
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "c", "c1"),
+						Path: filepath.Join(prefix, "c", "c1"),
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "d", "d1", "d1i"),
+						Path: filepath.Join(prefix, "d", "d1", "d1i"),
 					},
 				},
 			},
@@ -69,16 +72,17 @@ func Test_cleaner(t *testing.T) {
 		{
 			name: "target volumes",
 			args: args{
+				prefix: prefix,
 				target: target,
 				volumes: []openedge.VolumeInfo{
 					openedge.VolumeInfo{
 						Path: target,
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "c"),
+						Path: filepath.Join(prefix, "c"),
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "d", "d1"),
+						Path: filepath.Join(prefix, "d", "d1"),
 					},
 				},
 			},
@@ -90,7 +94,7 @@ func Test_cleaner(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := list(tt.args.target, tt.args.volumes)
+			got, err := list(tt.args.prefix, tt.args.target, tt.args.volumes)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("list() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -103,14 +107,14 @@ func Test_cleaner(t *testing.T) {
 
 	// test cleaner
 	log := newMockLogger()
-	c := newCleaner(target, log)
+	c := newCleaner(prefix, target, log)
 	c.do("")
 	assert.Equal(t, []string{"[Debugf]report version is empty"}, log.records)
 	log.records = []string{}
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]last app config is not cached"}, log.records)
 	log.records = []string{}
-	c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
+	c.reset(prepareConfig, openedge.VolumeInfo{Path: prefix})
 	c.do("v2")
 	assert.Equal(t, []string{"[Debugf]report version is not matched"}, log.records)
 	log.records = []string{}
@@ -125,9 +129,9 @@ func Test_cleaner(t *testing.T) {
 	assert.FileExists(t, filepath.Join(target, "c", "c3"))
 	assert.FileExists(t, filepath.Join(target, "d", "d1", "d1i", "d1i1"))
 	c.do("v1")
-	assert.Len(t, log.records, 2)
+	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
-	assert.Contains(t, log.records[1], "[Infof]end to clean,  elapsed time:")
+	assert.Contains(t, log.records[3], "[Infof]end to clean, elapsed time:")
 	assert.FileExists(t, filepath.Join(target, "a"))
 	assert.FileExists(t, filepath.Join(target, "b", "b1"))
 	assert.FileExists(t, filepath.Join(target, "c", "c1", "c1i"))
@@ -151,9 +155,9 @@ func Test_cleaner(t *testing.T) {
 	assert.False(t, utils.DirExists(filepath.Join(target, "c", "c2")))
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 	c.do("v1")
-	assert.Len(t, log.records, 2)
+	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
-	assert.Contains(t, log.records[1], "[Infof]end to clean,  elapsed time:")
+	assert.Contains(t, log.records[3], "[Infof]end to clean, elapsed time:")
 	assert.FileExists(t, filepath.Join(target, "a"))
 	assert.False(t, utils.DirExists(filepath.Join(target, "b")))
 	assert.False(t, utils.DirExists(filepath.Join(target, "c")))
@@ -161,12 +165,13 @@ func Test_cleaner(t *testing.T) {
 }
 
 func Test_cleaner2(t *testing.T) {
-	target := "var/db/openedge"
-	err := os.MkdirAll(target, 0777)
+	prefix := "var/db/openedge"
+	err := os.MkdirAll(prefix, 0777)
 	assert.NoError(t, err)
 	defer os.RemoveAll("var")
-	prepareTest(t, target)
+	target := prepareTest(t, prefix)
 	type args struct {
+		prefix  string
 		target  string
 		volumes []openedge.VolumeInfo
 	}
@@ -179,6 +184,7 @@ func Test_cleaner2(t *testing.T) {
 		{
 			name: "no volume",
 			args: args{
+				prefix:  prefix,
 				target:  target,
 				volumes: []openedge.VolumeInfo{},
 			},
@@ -192,19 +198,20 @@ func Test_cleaner2(t *testing.T) {
 		{
 			name: "all volumes",
 			args: args{
+				prefix: prefix,
 				target: target,
 				volumes: []openedge.VolumeInfo{
 					openedge.VolumeInfo{
 						Path: "no-exists",
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "b"),
+						Path: filepath.Join(prefix, "b"),
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "c", "c1"),
+						Path: filepath.Join(prefix, "c", "c1"),
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "d", "d1", "d1i"),
+						Path: filepath.Join(prefix, "d", "d1", "d1i"),
 					},
 				},
 			},
@@ -216,16 +223,17 @@ func Test_cleaner2(t *testing.T) {
 		{
 			name: "target volumes",
 			args: args{
+				prefix: prefix,
 				target: target,
 				volumes: []openedge.VolumeInfo{
 					openedge.VolumeInfo{
-						Path: target,
+						Path: prefix,
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "c"),
+						Path: filepath.Join(prefix, "c"),
 					},
 					openedge.VolumeInfo{
-						Path: filepath.Join(target, "d", "d1"),
+						Path: filepath.Join(prefix, "d", "d1"),
 					},
 				},
 			},
@@ -237,7 +245,7 @@ func Test_cleaner2(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := list(tt.args.target, tt.args.volumes)
+			got, err := list(tt.args.prefix, tt.args.target, tt.args.volumes)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("list() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -250,14 +258,14 @@ func Test_cleaner2(t *testing.T) {
 
 	// test cleaner
 	log := newMockLogger()
-	c := newCleaner(target, log)
+	c := newCleaner(prefix, target, log)
 	c.do("")
 	assert.Equal(t, []string{"[Debugf]report version is empty"}, log.records)
 	log.records = []string{}
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]last app config is not cached"}, log.records)
 	log.records = []string{}
-	c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
+	c.reset(prepareConfig, openedge.VolumeInfo{Path: prefix})
 	c.do("v2")
 	assert.Equal(t, []string{"[Debugf]report version is not matched"}, log.records)
 	log.records = []string{}
@@ -271,9 +279,9 @@ func Test_cleaner2(t *testing.T) {
 	assert.DirExists(t, filepath.Join(target, "c", "c2"))
 	assert.FileExists(t, filepath.Join(target, "d", "d1", "d1i", "d1i1"))
 	c.do("v1")
-	assert.Len(t, log.records, 2)
+	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
-	assert.Contains(t, log.records[1], "[Infof]end to clean,  elapsed time:")
+	assert.Contains(t, log.records[3], "[Infof]end to clean, elapsed time:")
 	assert.FileExists(t, filepath.Join(target, "a"))
 	assert.FileExists(t, filepath.Join(target, "b", "b1"))
 	assert.FileExists(t, filepath.Join(target, "c", "c1", "c1i"))
@@ -283,7 +291,7 @@ func Test_cleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 0)
 
-	appcfg, _, _ := c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
+	appcfg, _, _ := c.reset(prepareConfig, openedge.VolumeInfo{Path: prefix})
 	appcfg.Volumes = []openedge.VolumeInfo{}
 	c.do("v1")
 	assert.Len(t, log.records, 0)
@@ -295,17 +303,20 @@ func Test_cleaner2(t *testing.T) {
 	assert.False(t, utils.DirExists(filepath.Join(target, "c", "c2")))
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 	c.do("v1")
-	assert.Len(t, log.records, 2)
+	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
-	assert.Contains(t, log.records[1], "[Infof]end to clean,  elapsed time:")
+	assert.Contains(t, log.records[3], "[Infof]end to clean, elapsed time:")
 	assert.FileExists(t, filepath.Join(target, "a"))
 	assert.False(t, utils.DirExists(filepath.Join(target, "b")))
 	assert.False(t, utils.DirExists(filepath.Join(target, "c")))
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 }
 
-func prepareTest(t *testing.T, target string) {
-	err := ioutil.WriteFile(filepath.Join(target, "a"), []byte{}, 0777)
+func prepareTest(t *testing.T, prefix string) string {
+	target := filepath.Join(prefix, "volumes")
+	err := os.MkdirAll(target, 0777)
+	assert.NoError(t, err)
+	err = ioutil.WriteFile(filepath.Join(target, "a"), []byte{}, 0777)
 	assert.NoError(t, err)
 	err = os.MkdirAll(filepath.Join(target, "b"), 0777)
 	assert.NoError(t, err)
@@ -325,6 +336,7 @@ func prepareTest(t *testing.T, target string) {
 	assert.NoError(t, err)
 	err = ioutil.WriteFile(filepath.Join(target, "d", "d1", "d1i", "d1i1"), []byte{}, 0777)
 	assert.NoError(t, err)
+	return target
 }
 
 type mackLogger struct {
