@@ -8,25 +8,26 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/baidu/openedge/utils"
-
 	"github.com/baidu/openedge/logger"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baidu/openedge/utils"
 )
 
 type cleaner struct {
 	count  int32
+	prefix string
 	target string
 	last   *openedge.AppConfig
 	log    logger.Logger
 	sync.Mutex
 }
 
-func newCleaner(t string, l logger.Logger) *cleaner {
+func newCleaner(prefix, target string, log logger.Logger) *cleaner {
 	return &cleaner{
 		count:  3,
-		target: t,
-		log:    l,
+		prefix: prefix,
+		target: target,
+		log:    log,
 	}
 }
 
@@ -66,10 +67,10 @@ func (c *cleaner) do(version string) {
 	}
 
 	c.log.Infof("start to clean '%s'", c.target)
-	defer utils.Trace("end to clean, ", c.log.Infof)()
+	defer utils.Trace("end to clean,", c.log.Infof)()
 
 	// list folders to remove
-	remove, err := list(c.target, c.last.Volumes)
+	remove, err := list(c.prefix, c.target, c.last.Volumes)
 	if err != nil {
 		c.log.WithError(err).Warnf("failed to list old volumes")
 		return
@@ -79,20 +80,25 @@ func (c *cleaner) do(version string) {
 		if err != nil {
 			c.log.WithError(err).Warnf("failed to remove old volumes")
 		}
+		c.log.Infof("old volume is removed: %s", v)
 	}
 }
 
-func list(target string, volumes []openedge.VolumeInfo) ([]string, error) {
+func list(prefix, target string, volumes []openedge.VolumeInfo) ([]string, error) {
 	keep := map[string]bool{}
 	for _, v := range volumes {
-		p, err := filepath.Rel(target, v.Path)
+		// remove prefix from path
+		p, err := filepath.Rel(prefix, v.Path)
 		if err != nil {
-			// v.Path may be out of target
 			continue
 		}
 		ps := strings.Split(p, string(filepath.Separator))
 		if len(ps) == 0 {
-			// ignore the case that v.Path equals target
+			// ignore the case that v.Path equals prefix
+			continue
+		}
+		if ps[0] == ".." {
+			// ignore the case that v.Path out of prefix
 			continue
 		}
 		keep[ps[0]] = len(ps) > 1
@@ -111,7 +117,7 @@ func list(target string, volumes []openedge.VolumeInfo) ([]string, error) {
 		if !ok {
 			remove = append(remove, filepath.Join(target, info.Name()))
 		} else if next {
-			nextremove, err := list(path.Join(target, info.Name()), volumes)
+			nextremove, err := list(path.Join(prefix, info.Name()), path.Join(target, info.Name()), volumes)
 			if err != nil {
 				return nil, err
 			}
