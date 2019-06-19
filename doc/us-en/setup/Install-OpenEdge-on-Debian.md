@@ -40,20 +40,23 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python and runtime dependency package in **native** process mode
+### Install related runtime environment and its dependencies in **native** process mode
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** or higher version locally and run the package it depends on. If you already have other version of Python3 lower than 3.6, it is recommended that you uninstall it first and install Python3.6. Or you can keep the inconsistent version but need to ensure compatibility.
+OpenEdge provides the Python runtime and the Node runtime. If you plan to use the **native** process mode, you need to install these runtime environments and dependencies locally. The corresponding versions are Python2.7, Python3.6, and Node8.5. Users can also choose other versions, but they need to ensure compatibility.
 
-- Step 1：Check the version of Python3. If the version is Python3.6 or higher, jump Step 3. Instead, jump Step 2.
+#### Install Python runtime
+
+The system provides Python2.7 by default, and the Python3.6 installation is below.
+
+- Step 1：Check to see if Python3.6 or above is already installed. If yes go directly executing Step 3, otherwise execute Step 2.
 
 ```shell
 which python3
 ```
 
-- Step 2：Use the following commands to install Python3.6.
+- Step 2：Install Python3.6:
 
-```shell
-sudo apt-get update
+```shellsudo apt-get update
 sudo apt-get upgrade
 sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev wget
 wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
@@ -65,10 +68,26 @@ make
 sudo make install
 ```
 
-- Step 3：Install the packages need by OpenEdge based on Python3.6.
+- Step 3：Install dependencies required by OpenEdge:
 
 ```shell
 sudo pip3 install grpcio protobuf pyyaml
+```
+
+#### Install Node runtime
+
+- Step 1：Check to see if Node8.5 or above is already installed. If not go directly executing Step 2.
+
+```shell
+node -v
+```
+
+- Step 2：Install Node8:
+
+```shell
+# Using Debian, as root
+curl -sL https://deb.nodesource.com/setup_8.x | bash -
+apt-get install -y nodejs
 ```
 
 ## Deploy OpenEdge
