@@ -32,17 +32,21 @@ curl -sSL https://get.docker.com | sh
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python and runtime dependency package in **native** process mode
+### Install prerequisites in **native** process mode
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** or higher version locally and run the package it depends on. If you already have other version of Python3 lower than 3.6, it is recommended that you uninstall it first and install Python3.6. Or you can keep the inconsistent version but need to ensure compatibility.
+OpenEdge provides Python and Node runtime. If you plan to use the native process mode, you need to install prerequisites first. The corresponding versions for Python runtime are Python2.7 and Python3.6, and Node8.5 for Node runtime. Besides, users can also choose other versions, but they must ensure compatibility.
 
-- Step 1：Check the version of Python3. If the version is Python3.6 or higher, jump Step 3. Instead, jump Step 2.
+#### Install Python runtime
+
+The system provides Python2.7 by default, and the Python3.6 installation is below.
+
+- Step 1：Check Python3.6 or above is already installed or not. If yes, goto Step 3, otherwise goto Step 2.
 
 ```shell
 which python3
 ```
 
-- Step 2：Use the following commands to install Python3.6.
+- Step 2：Install Python3.6:
 
 ```shell
 sudo apt-get update
@@ -57,10 +61,26 @@ make
 sudo make install
 ```
 
-- Step 3：Install the packages need by OpenEdge based on Python3.6.
+- Step 3：Install dependencies required by OpenEdge:
 
 ```shell
 sudo pip3 install grpcio protobuf pyyaml
+```
+
+#### Install Node runtime
+
+- Step 1：Check Node8.5 or above is already installed or not. If not, goto Step 2.
+
+```shell
+node -v
+```
+
+- Step 2：Install Node8:
+
+```shell
+# Using Debian, as root
+curl -sL https://deb.nodesource.com/setup_8.x | bash -
+apt-get install -y nodejs
 ```
 
 ## Deploy OpenEdge

@@ -47,17 +47,21 @@ docker version
 
 **更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
 
-### 进程模式下安装 Python 及其依赖包
+### 进程模式下安装依赖
 
-OpenEdge 提供了 Python 运行时，支持 Python2.7 版本、Python3.6 版本的运行。如计划使用 **native** 进程模式启动，这里推荐本地安装 Python3.6 或以上版本及运行所依赖的包。推荐安装 Python3.6 或以上版本，如果已经存在 Python3.6 以下版本，可以选择卸载后重装 Python3.6，也可以选择保留用户需要自行保证代码兼容 Python3.6 以保证可以正常使用函数计算服务。
+OpenEdge 提供了 Python 运行时、Node 运行时。如计划使用 **native** 进程模式启动，需要本地安装这些运行时环境及其相关依赖。对应版本分别为 Python2.7、Python3.6、Node8.5。用户也可以选择其他版本，但需要自行保证兼容性。
 
-- Step 1：查看系统 Python3 版本。如果显示版本是 Python3.6 或以上版本，直接执行 Step 3。否则的话，先执行 Step 2。
+#### 安装 Python 运行时
+
+系统默认提供 Python2.7，接下里介绍 Python3.6 安装过程。
+
+- Step 1：查看是否已经安装 Python3.6 或以上版本。如果是则直接执行 Step 3，否则执行 Step 2。
 
 ```shell
 which python3
 ```
 
-- Step 2：建议使用以下推荐方式安装 Python3.6:
+- Step 2：安装 Python3.6:
 
 ```shell
 sudo yum -y install epel-release
@@ -66,10 +70,25 @@ sudo yum install python36
 sudo yum install python36-pip
 ```
 
-- Step 3：安装 Python3.6 版本对应的 OpenEdge 项目依赖包:
+- Step 3：安装 OpenEdge 需要的相关依赖包:
 
 ```shell
 sudo pip3 install grpcio protobuf pyyaml
+```
+
+#### 安装 Node 运行时
+
+- Step 1：查看是否已经安装 Node8.5 或以上版本。如果没有则执行 Step 2。
+
+```shell
+node -v
+```
+
+- Step 2：安装 Node8:
+
+```shell
+curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+sudo yum install -y nodejs
 ```
 
 ## OpenEdge 部署
