@@ -48,9 +48,9 @@ docker version
 
 **更多内容请参考[官方文档](https://docs.docker.com/install/)。**
 
-### 进程模式下安装相关运行时环境及其依赖
+### 进程模式下安装依赖
 
-OpenEdge 提供了 Python 运行时、Node运行时。如计划使用 **native** 进程模式启动，需要本地安装这些运行时环境及其相关依赖。对应版本分别为 Python2.7、Python3.6、Node8.5。用户也可以选择其他版本，但需要自行保证兼容性。
+OpenEdge 提供了 Python 运行时、Node 运行时。如计划使用 **native** 进程模式启动，需要本地安装这些运行时环境及其相关依赖。对应版本分别为 Python2.7、Python3.6、Node8.5。用户也可以选择其他版本，但需要自行保证兼容性。
 
 #### 安装 Python 运行时
 

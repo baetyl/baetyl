@@ -47,11 +47,15 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
+### Install prerequisites in **native** process mode
+
+OpenEdge provides Python and Node runtime. If you plan to use the native process mode, you need to install prerequisites first. The corresponding versions for Python runtime are Python2.7 and Python3.6, and Node8.5 for Node runtime. Besides, users can also choose other versions, but they must ensure compatibility.
+
 #### Install Python runtime
 
 The system provides Python2.7 by default, and the Python3.6 installation is below.
 
-- Step 1：Check to see if Python3.6 or above is already installed. If yes go directly executing Step 3, otherwise execute Step 2.
+- Step 1：Check Python3.6 or above is already installed or not. If yes, goto Step 3, otherwise goto Step 2.
 
 ```shell
 which python3
@@ -74,7 +78,7 @@ sudo pip3 install grpcio protobuf pyyaml
 
 #### Install Node runtime
 
-- Step 1：Check to see if Node8.5 or above is already installed. If not go directly executing Step 2.
+- Step 1：Check Node8.5 or above is already installed or not. If not, goto Step 2.
 
 ```shell
 node -v
