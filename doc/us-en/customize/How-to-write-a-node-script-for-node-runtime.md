@@ -1,4 +1,4 @@
-# How to write a python script for Node runtime
+# How to write a javascript for Node runtime
 
 **Statement**：
 
@@ -106,7 +106,7 @@ OpenEdge officially provides the Node runtime to load javascripts written by use
 
 ## Function Name Convention
 
-The name of a javascript can refer to universal naming convention, which OpenEdge does not specifically limit. If you want to apply a javascript to handle an MQTT message, the configuration of the Node runtime service is as follows:
+The name of a javascript can refer to universal naming convention, which OpenEdge does not specifically limit. If you want to apply a javascript to handle an MQTT message, the configuration of Node runtime service is as follows:
 
 ```yaml
 functions:
@@ -122,7 +122,7 @@ function-sayjs-code/
 └── index.js
 ```
 
-More detailed configuration of Python runtime, please refer to [Node runtime configuration](../tutorials/Config-interpretation.md).
+More detailed configuration of Node runtime, please refer to [Node runtime configuration](../tutorials/Config-interpretation.md).
 
 ## Parameter Convention
 
@@ -178,4 +178,4 @@ exports.handler = (event, context, callback) => {
 
 ![发送非字典类数据](../../images/customize/write-node-script-none-dict.png)
 
-As above, for some general needs, we can do it through the standard library of the system Node environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution in [How to import third-party libraries for Node runtime](./How-to-import-third-party-libraries-for-node-runtime.md).
+As above, for some general needs, we can implement it through the Node Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Node runtime](./How-to-import-third-party-libraries-for-node-runtime.md).

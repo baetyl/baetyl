@@ -6,7 +6,7 @@
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
 - Node 版本为 8.5
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
-- 本文选取 [`Lodash`](https://www.lodashjs.com/) 第三方包来进行演示说明
+- 本文选择引入 [`Lodash`](https://www.lodashjs.com/) 这个第三方包来进行演示说明
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务。并且针对本文的测试案例中，对应的 `localhub` 服务、函数计算服务以及其他服务的配置统一如下：
 
 ```yaml
@@ -171,7 +171,7 @@ functions:
 }
 ```
 
-如上，`localhub` 服务接收到发送到主题 `node` 的消息后，会调用 `index.js` 脚本执行具体逻辑，对数据中的数组进行重复元素的筛选、排序、过滤。然后将执行结果以 MQTT 消息形式反馈给主题 `t/hi`。我们通过 MQTTBOX 订阅主题 `t/hi`，可以观察到如下消息:
+如上，`localhub` 服务接收到发送到主题 `node` 的消息后，会调用 `index.js` 脚本执行具体逻辑，对消息中的数组执行重复元素筛选、元素排序、元素按条件过滤等操作。然后将执行结果以 MQTT 消息形式反馈给主题 `t/hi`。我们通过 MQTTBOX 订阅主题 `t/hi`，可以观察到如下消息:
 
 ```javascript
 {

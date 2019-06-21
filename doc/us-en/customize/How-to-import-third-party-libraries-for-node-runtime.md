@@ -5,7 +5,7 @@
 - The operating system as mentioned in this document is Darwin.
 - The version of runtime is Node8.5
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
-- In this document, the third-party libraries we'll import are [`Lodash`](https://www.lodashjs.com/).
+- In this document, we give an example about how import the third-party library [`Lodash`](https://www.lodashjs.com/).
 - In this article, the service created based on the Hub module is called `localhub` service. And for the test case mentioned here, the `localhub` service, function calculation service, and other services are configured as follows:
 
 ```yaml
@@ -97,7 +97,7 @@ volumes:
     path: var/db/openedge/function-sayjs-code
 ```
 
-Generally, using the standard libraries of the system Node environment may not meet our needs. In fact, it is often necessary to import some third-party libraries. We'll give one example below.
+Generally, using the Node Standard Library may not meet our needs. In fact, it is often necessary to import some third-party libraries. We'll give one example below.
 
 ## Import `Lodash` third-party libraries
 
