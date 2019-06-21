@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"strings"
 	"time"
 
@@ -77,7 +78,7 @@ func newAgent(ctx openedge.Context) (*mo, error) {
 		certKey: key,
 		errs:    []string{},
 		mqtt:    mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
-		cleaner: newCleaner(openedge.DefaultDBDir, ctx.Log().WithField("agent", "cleaner")),
+		cleaner: newCleaner(openedge.DefaultDBDir, path.Join(openedge.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
 	}, nil
 }
 
