@@ -1,9 +1,9 @@
-# 如何针对 Python 运行时编写 Python 脚本
+# 如何针对 Node 运行时编写 js 脚本
 
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
-- python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
+- node 版本为 8.5
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务。并且针对本文的测试案例中，对应的 `localhub` 服务、函数计算服务以及其他服务的配置统一如下：
 
@@ -28,23 +28,23 @@ hub:
 rules:
   - clientid: localfunc-1
     subscribe:
-      topic: py
+      topic: node
     function:
-      name: sayhi3
+      name: sayhi
     publish:
-      topic: py/hi
+      topic: t/hi
 functions:
-  - name: sayhi3
-    service: function-sayhi3
+  - name: sayhi
+    service: function-sayhi
     instance:
       min: 0
       max: 10
       idletime: 1m
 
-# python function 配置
+# node function 配置
 functions:
-  - name: 'sayhi3'
-    handler: 'sayhi.handler'
+  - name: 'sayhi'
+    handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
 
 # application.yml配置
@@ -72,14 +72,14 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi3
-    image: openedge-function-python36
+  - name: function-sayhi
+    image: openedge-function-node85
     replica: 0
     mounts:
-      - name: function-sayhi-conf
+      - name: function-sayjs-conf
         path: etc/openedge
         readonly: true
-      - name: function-sayhi-code
+      - name: function-sayjs-code
         path: var/db/openedge/function-sayhi
         readonly: true
 volumes:
@@ -95,45 +95,44 @@ volumes:
     path: var/db/openedge/function-manager-conf
   - name: function-manager-log
     path: var/db/openedge/function-manager-log
-  # function python runtime sayhi
-  - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
-  - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+  # function node runtime sayhi
+  - name: function-sayjs-conf
+    path: var/db/openedge/function-sayjs-conf
+  - name: function-sayjs-code
+    path: var/db/openedge/function-sayjs-code
 ```
 
-OpenEdge 官方提供了 Python 运行时，可以加载用户所编写的 Python 脚本。下文将针对 Python 脚本的名称，执行函数名称，输入，输出参数等内容分别进行说明。
+OpenEdge 官方提供了 Node 运行时，可以加载用户所编写的 js 脚本。下文将针对 js 脚本的名称，执行函数名称，输入，输出参数等内容分别进行说明。
 
 ## 函数名约定
 
-Python 脚本的名称可以参照 Python 的通用命名规范，OpenEdge 并未对此做特别限制。如果要应用某 Python 脚本对某条 MQTT 消息做处理，则相应的函数运行时服务的配置如下：
+js 脚本的名称可以参照 js 的通用命名规范，OpenEdge 并未对此做特别限制。如果要应用某 js 脚本对某条 MQTT 消息做处理，则相应的函数运行时服务的配置如下：
 
 ```yaml
 functions:
-  - name: 'sayhi3'
-    handler: 'sayhi.handler'
+  - name: 'sayhi'
+    handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-这里，我们关注 `handler` 这一属性，其中 `sayhi` 代表脚本名称，后面的 `handler` 代表该文件中被调用的入口函数。
+这里，我们关注 `handler` 这一属性，其中 `index` 代表脚本名称，后面的 `handler` 代表该文件中被调用的入口函数。
 
 ```
-function-sayhi-code/
-├── __init__.py
-└── sayhi.py
+function-sayjs-code/
+└── index.js
 ```
 
 更多函数运行时服务配置请查看 [函数运行时服务配置释义](../tutorials/Config-interpretation.md)。
 
 ## 参数约定
 
-```python
-def handler(event, context):
-    # do something
-    return event
+```javascript
+exports.handler = (event, context, callback) => {
+    callback(null, event);
+};
 ```
 
-OpenEdge 官方提供的 Python 运行时支持 2 个参数: event 和 context，下面将分别介绍其用法。
+OpenEdge 官方提供的 Node 运行时支持 2 个参数: event 和 context，下面将分别介绍其用法。
 
 - **event**：根据 MQTT 报文中的 Payload 传入不同参数
     - 若原始 Payload 为一个 Json 数据，则传入经过 json.loads(Payload) 处理后的数据;
@@ -149,32 +148,34 @@ _**提示**：在云端 CFC 测试时，请注意不要直接使用 OpenEdge 定
 
 ## Hello World!
 
-下面我们实现一个简单的 Python 函数，目标是为每一条流经需要用该 Python 脚本进行处理的 MQTT 消息附加一条 `hello world` 信息。对于字典类消息，将其直接返回即可，对于非字典类消息，则将之转换为字符串后返回。
+下面我们实现一个简单的 js 脚本，目标是为每一条流经需要用该 js 脚本进行处理的 MQTT 消息附加一条 `hello world` 信息。对于字典类消息，将其直接返回即可，对于非字典类消息，则将之转换为字符串后返回。
 
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+```javascript
+#!/usr/bin/env node
 
-def handler(event, context):
-    result = {}
-    if isinstance(event, dict):
-        result['msg'] = event
-        result['type'] = 'dict'
-        result['say'] = 'hello world'
-    else:
-        result['msg'] = event
-        result['type'] = 'non-dict'
-        result['say'] = 'hello world'
+exports.handler = (event, context, callback) => {
+  result = {};
+  
+  if (Buffer.isBuffer(event)) {
+      const message = event.toString();
+      result["msg"] = message;
+      result["type"] = 'non-dict';
+  }else {
+      result["msg"] = event;
+      result["type"] = 'dict';
+  }
 
-    return result
+  result["say"] = 'hello world';
+  callback(null, result);
+};
 ```
 
 + **发送字典类数据**:
 
-![发送字典类数据](../../images/customize/write-python-script-dict.png)
+![发送字典类数据](../../images/customize/write-node-script-dict.png)
 
 + **发送非字典类数据**:
 
-![发送非字典类数据](../../images/customize/write-python-script-none-dict.png)
+![发送非字典类数据](../../images/customize/write-node-script-none-dict.png)
 
-如上，对于一些常规的需求，我们通过系统 Python 环境的标准库就可以完成。但是，对于一些较为复杂的需求，往往需要引入第三方库来完成。如何解决这个问题？我们将在 [如何针对 Python 运行时引入第三方包](./How-to-import-third-party-libraries-for-python-runtime.md) 小节详述。
+如上，对于一些常规的需求，我们通过系统 Node 环境的标准库就可以完成。但是，对于一些较为复杂的需求，往往需要引入第三方库来完成。如何解决这个问题？我们将在 [如何针对 Node 运行时引入第三方包](./How-to-import-third-party-libraries-for-node-runtime.md) 小节详述。

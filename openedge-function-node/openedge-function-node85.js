@@ -229,7 +229,7 @@ class NodeRuntimeModule {
                         call.request.setPayload(Buffer.from(jsonString));
                     }
                     catch (error) {
-                        err = util.format('(\'[UserCodeReturn]\', %s)', err.toString())
+                        err = util.format('(\'[UserCodeReturn]\', %s)', error.toString())
                         return callback(new Error(util.format(errFormat, err)));
                     }
                 }
