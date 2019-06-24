@@ -112,8 +112,7 @@ rebuild: clean all
 generate:
 	go generate ./...
 
-image:
-	make clean
+image: clean
 	for target in $(DEPLOY_TARGET) ; do \
 		make -C openedge-$$target image;\
 	done
@@ -121,7 +120,7 @@ image:
 function-python-image:
 	make -C openedge-function-python image
 
-release: release-image push-image release-manifest release-package
+release: clean release-image push-image release-manifest release-package
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
