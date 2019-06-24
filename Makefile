@@ -212,8 +212,7 @@ release-builder-manifest:
 
 	rm -rf tmp
 
-release-package:
-	make clean
+release-package: clean
 	# Release modules' package -- linux armv7
 	env GOOS=linux GOARCH=arm GOARM=7 make package
 	for target in $(DEPLOY_TARGET) ; do \
