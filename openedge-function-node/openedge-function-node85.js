@@ -204,7 +204,7 @@ class NodeRuntimeModule {
                 msg = Buffer.from(Payload); // raw data, not json format
             }
         }else{
-            return callback(null, call.request);
+            msg = {};
         }
 
         if (functionsHandle[ctx.functionName] == undefined){

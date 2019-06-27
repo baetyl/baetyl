@@ -137,8 +137,12 @@ func Test_FunctionInstance(t *testing.T) {
 			out, err = cli.Call(msg)
 			assert.Error(t, err)
 
-			// round 4: function not exist
+			// round 4: test empty payload
 			msg.Payload = []byte("")
+			out, err = cli.Call(msg)
+			assert.NoError(t, err)
+
+			// round 5: function not exist
 			msg.FunctionName = "xxx"
 			out, err = cli.Call(msg)
 			assert.Error(t, err)

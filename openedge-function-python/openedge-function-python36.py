@@ -95,17 +95,15 @@ class mo(function_pb2_grpc.FunctionServicer):
         ctx['functionInvokeID'] = request.FunctionInvokeID
         ctx['invokeid'] = request.FunctionInvokeID
 
-
-        if not request.Payload:
-            return request
-
         msg = None
         if request.Payload:
             try:
                 msg = json.loads(request.Payload)
             except BaseException:
                 msg = request.Payload # raw data, not json format
-
+        else:
+            msg = {}
+            
         try:
             msg = self.functions[request.FunctionName](msg, ctx)
         except BaseException as err:
