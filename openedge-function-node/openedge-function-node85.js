@@ -194,6 +194,7 @@ class NodeRuntimeModule {
 
         let msg = Buffer.from([]);
         const Payload = call.request.getPayload();
+
         if (Payload) {
             try {
                 const payloadString = Buffer.from(Payload).toString();
@@ -202,6 +203,8 @@ class NodeRuntimeModule {
             catch (error) {
                 msg = Buffer.from(Payload); // raw data, not json format
             }
+        }else{
+            return callback(null, call.request);
         }
 
         if (functionsHandle[ctx.functionName] == undefined){
