@@ -192,8 +192,9 @@ class NodeRuntimeModule {
         ctx.functionInvokeID = call.request.getFunctioninvokeid();
         ctx.invokeid = call.request.getFunctioninvokeid();
 
-        let msg = Buffer.from([]);
+        let msg = {};
         const Payload = call.request.getPayload();
+
         if (Payload) {
             try {
                 const payloadString = Buffer.from(Payload).toString();
