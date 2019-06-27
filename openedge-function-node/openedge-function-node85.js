@@ -192,7 +192,7 @@ class NodeRuntimeModule {
         ctx.functionInvokeID = call.request.getFunctioninvokeid();
         ctx.invokeid = call.request.getFunctioninvokeid();
 
-        let msg = Buffer.from([]);
+        let msg = {};
         const Payload = call.request.getPayload();
 
         if (Payload) {
@@ -203,8 +203,6 @@ class NodeRuntimeModule {
             catch (error) {
                 msg = Buffer.from(Payload); // raw data, not json format
             }
-        }else{
-            msg = {};
         }
 
         if (functionsHandle[ctx.functionName] == undefined){
