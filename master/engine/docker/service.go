@@ -68,7 +68,9 @@ func (s *dockerService) Stop() {
 func (s *dockerService) Stats() {
 	for _, item := range s.instances.Items() {
 		instance := item.(*dockerInstance)
-		s.engine.SetInstanceStats(s.Name(), instance.Name(), instance.Stats(), false)
+		if stats := instance.Stats(); stats["error"] == nil {
+			s.engine.SetInstanceStats(s.Name(), instance.Name(), stats, false)
+		}
 	}
 }
 

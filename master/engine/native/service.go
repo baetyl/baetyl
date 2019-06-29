@@ -72,7 +72,9 @@ func (s *nativeService) Stop() {
 func (s *nativeService) Stats() {
 	for _, item := range s.instances.Items() {
 		instance := item.(*nativeInstance)
-		s.engine.SetInstanceStats(s.Name(), instance.Name(), instance.Stats(), false)
+		if stats := instance.Stats(); stats["error"] == nil {
+			s.engine.SetInstanceStats(s.Name(), instance.Name(), stats, false)
+		}
 	}
 }
 
