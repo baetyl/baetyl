@@ -38,9 +38,9 @@ func (rr *ruler) ProcessPublish(pkt *packet.Publish) error {
 		QOS:              uint32(pkt.Message.QOS),
 		Topic:            pkt.Message.Topic,
 		Payload:          pkt.Message.Payload,
+		Timestamp:        time.Now().Unix(),
 		FunctionName:     rr.cfg.Function.Name,
 		FunctionInvokeID: uuid.Generate().String(),
-		Timestamp: time.Now().Unix(),
 	}
 	return rr.fun.CallAsync(msg, rr.callback)
 }
