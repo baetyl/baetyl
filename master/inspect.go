@@ -43,7 +43,7 @@ func newInfoStats(pwd, mode, version, file string) *infoStats {
 	}
 }
 
-func (is *infoStats) SetInstanceStats(serviceName, instanceName string, partialStats engine.PartialStats, persist bool) {
+func (is *infoStats) SetInstanceStats(serviceName string, instanceName string, partialStats engine.PartialStats, persist bool) {
 	is.Lock()
 	service, ok := is.services[serviceName]
 	if !ok {
@@ -65,7 +65,7 @@ func (is *infoStats) SetInstanceStats(serviceName, instanceName string, partialS
 	is.Unlock()
 }
 
-func (is *infoStats) DelInstanceStats(serviceName, instanceName string, persist bool) {
+func (is *infoStats) DelInstanceStats(serviceName string, instanceName string, persist bool) {
 	is.Lock()
 	defer is.Unlock()
 	service, ok := is.services[serviceName]
@@ -77,6 +77,22 @@ func (is *infoStats) DelInstanceStats(serviceName, instanceName string, persist 
 		return
 	}
 	delete(service, instanceName)
+	if len(service) == 0 {
+		delete(is.services, serviceName)
+	}
+	if persist {
+		is.persistStats()
+	}
+}
+
+func (is *infoStats) DelServiceStats(serviceName string, persist bool) {
+	is.Lock()
+	defer is.Unlock()
+	_, ok := is.services[serviceName]
+	if !ok {
+		return
+	}
+	delete(is.services, serviceName)
 	if persist {
 		is.persistStats()
 	}
