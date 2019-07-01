@@ -62,6 +62,7 @@ func (m *Master) stopServices(keepServices map[string]struct{}) {
 			s.Stop()
 			m.services.Remove(s.Name())
 			m.accounts.Remove(s.Name())
+			m.infostats.DelServiceStats(s.Name(), true)
 			m.log.Infof("service (%s) stopped", s.Name())
 		}(service.(engine.Service))
 	}
