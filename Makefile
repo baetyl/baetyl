@@ -120,7 +120,9 @@ image: clean
 function-python-image:
 	make -C openedge-function-python image
 
-release: clean release-image push-image release-manifest release-package
+release: clean release-master release-image push-image release-manifest release-package
+
+release-master: clean
 	# release linux 386
 	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
 	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
@@ -160,7 +162,7 @@ release: clean release-image push-image release-manifest release-package
 	# at last
 	rmdir __release_build
 
-release-image:
+release-image: clean
 	# linux-amd64 images release
 	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
 	make clean
