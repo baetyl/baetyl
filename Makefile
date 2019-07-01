@@ -162,7 +162,7 @@ release-master: clean
 	# at last
 	rmdir __release_build
 
-release-image:
+release-image: clean
 	# linux-amd64 images release
 	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
 	make clean
