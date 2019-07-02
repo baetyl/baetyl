@@ -10,6 +10,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
@@ -97,6 +98,7 @@ func Test_FunctionInstance(t *testing.T) {
 			msgPayload := "OpenEdge Project"
 			msgFunctionName := functionName
 			msgFunctionInvokeID := uuid.Generate().String()
+			msgTimestamp := time.Now().Unix()
 			msg := &openedge.FunctionMessage{
 				ID:               msgID,
 				QOS:              msgQOS,
@@ -104,6 +106,7 @@ func Test_FunctionInstance(t *testing.T) {
 				Payload:          []byte(msgPayload),
 				FunctionName:     msgFunctionName,
 				FunctionInvokeID: msgFunctionInvokeID,
+				Timestamp:        msgTimestamp,
 			}
 
 			out, err := cli.Call(msg)
@@ -112,9 +115,12 @@ func Test_FunctionInstance(t *testing.T) {
 			dataArr := map[string]interface{}{}
 			err = json.Unmarshal(out.Payload, &dataArr)
 			assert.NoError(t, err)
+			assert.Equal(t, len(dataArr), 7)
+			assert.Equal(t, uint32(dataArr["messageQOS"].(float64)), msgQOS)
 			assert.Equal(t, dataArr["messageTopic"], msgTopic)
 			assert.Equal(t, dataArr["functionName"], msgFunctionName)
 			assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
+			assert.Equal(t, int64(dataArr["messageTimestamp"].(float64)), msgTimestamp)
 			assert.Equal(t, dataArr["bytes"], msgPayload)
 			assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
@@ -126,19 +132,37 @@ func Test_FunctionInstance(t *testing.T) {
 			dataArr = map[string]interface{}{}
 			err = json.Unmarshal(out.Payload, &dataArr)
 			assert.NoError(t, err)
+			assert.Equal(t, len(dataArr), 7)
+			assert.Equal(t, uint32(dataArr["messageQOS"].(float64)), msgQOS)
 			assert.Equal(t, dataArr["messageTopic"], msgTopic)
 			assert.Equal(t, dataArr["functionName"], msgFunctionName)
 			assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
+			assert.Equal(t, int64(dataArr["messageTimestamp"].(float64)), msgTimestamp)
 			assert.Equal(t, dataArr["Project"], "OpenEdge")
 			assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
 
-			// round 3: test error
+			// round 3: test empty payload
+			msg.Payload = []byte("")
+			out, err = cli.Call(msg)
+			assert.NoError(t, err)
+
+			dataArr = map[string]interface{}{}
+			err = json.Unmarshal(out.Payload, &dataArr)
+			assert.NoError(t, err)
+			assert.Equal(t, len(dataArr), 6)
+			assert.Equal(t, uint32(dataArr["messageQOS"].(float64)), msgQOS)
+			assert.Equal(t, dataArr["messageTopic"], msgTopic)
+			assert.Equal(t, dataArr["functionName"], msgFunctionName)
+			assert.Equal(t, dataArr["functionInvokeID"], msgFunctionInvokeID)
+			assert.Equal(t, int64(dataArr["messageTimestamp"].(float64)), msgTimestamp)
+			assert.Equal(t, dataArr["Say"], "Hello OpenEdge")
+
+			// round 4: test error
 			msg.Payload = []byte("{\"err\":\"OpenEdge\"}")
 			out, err = cli.Call(msg)
 			assert.Error(t, err)
 
-			// round 4: function not exist
-			msg.Payload = []byte("")
+			// round 5: function not exist
 			msg.FunctionName = "xxx"
 			out, err = cli.Call(msg)
 			assert.Error(t, err)

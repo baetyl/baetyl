@@ -4,7 +4,6 @@
 function to say hi in python
 """
 
-
 def handler(event, context):
     """
     function handler

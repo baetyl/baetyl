@@ -1,9 +1,9 @@
-# How to write a python script for Python runtime
+# How to write a javascript for Node runtime
 
-**Statement**
+**Statement**：
 
 - The operating system as mentioned in this document is Darwin.
-- The version of runtime is Python3.6, and for Python2.7, configuration is the same except for the language difference when coding the scripts
+- The version of runtime is Node8.5
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service. And for the test case mentioned here, the `localhub` service, function calculation service, and other services are configured as follows:
 
@@ -28,23 +28,23 @@ hub:
 rules:
   - clientid: localfunc-1
     subscribe:
-      topic: py
+      topic: node
     function:
-      name: sayhi3
+      name: sayhi
     publish:
-      topic: py/hi
+      topic: t/hi
 functions:
-  - name: sayhi3
-    service: function-sayhi3
+  - name: sayhi
+    service: function-sayhi
     instance:
       min: 0
       max: 10
       idletime: 1m
 
-# The configuration of python function runtime
+# The configuration of Node function runtime
 functions:
-  - name: 'sayhi3'
-    handler: 'sayhi.handler'
+  - name: 'sayhi'
+    handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
 
 # The configuration of application.yml
@@ -72,14 +72,14 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi3
-    image: openedge-function-python36
+  - name: function-sayhi
+    image: openedge-function-node85
     replica: 0
     mounts:
-      - name: function-sayhi-conf
+      - name: function-sayjs-conf
         path: etc/openedge
         readonly: true
-      - name: function-sayhi-code
+      - name: function-sayjs-code
         path: var/db/openedge/function-sayhi
         readonly: true
 volumes:
@@ -95,45 +95,44 @@ volumes:
     path: var/db/openedge/function-manager-conf
   - name: function-manager-log
     path: var/db/openedge/function-manager-log
-  # function python runtime sayhi
-  - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
-  - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+  # function node runtime sayhi
+  - name: function-sayjs-conf
+    path: var/db/openedge/function-sayjs-conf
+  - name: function-sayjs-code
+    path: var/db/openedge/function-sayjs-code
 ```
 
-OpenEdge officially provides the Python runtime to load python scripts written by users. The following description is about the name of the python script, the execution function name, input, output parameters, and so on.
+OpenEdge officially provides the Node runtime to load javascripts written by users. The following description is about the name of a javascript, the execution function name, input, output parameters, and so on.
 
 ## Function Name Convention
 
-The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of Python3.6 runtime service is as follows:
+The name of a javascript can refer to universal naming convention, which OpenEdge does not specifically limit. If you want to apply a javascript to handle an MQTT message, the configuration of Node runtime service is as follows:
 
 ```yaml
 functions:
-  - name: 'sayhi3'
-    handler: 'sayhi.handler'
+  - name: 'sayhi'
+    handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
 ```
 
-Here, we focus on the `handler` attribute, where `sayhi` represents the script name and the `handler` represents the entry function called in the file.
+Here, we focus on the `handler` attribute, where `index` represents the script name and the `handler` represents the entry function called in the file.
 
 ```
-function-sayhi-code/
-├── __init__.py
-└── sayhi.py
+function-sayjs-code/
+└── index.js
 ```
 
-More detailed configuration of Python runtime, please refer to [Python runtime configuration](../tutorials/Config-interpretation.md).
+More detailed configuration of Node runtime, please refer to [Node runtime configuration](../tutorials/Config-interpretation.md).
 
 ## Parameter Convention
 
-```python
-def handler(event, context):
-    # do something
-    return event
+```javascript
+exports.handler = (event, context, callback) => {
+    callback(null, event);
+};
 ```
 
-The Python runtime provided by OpenEdge supports two parameters: `event` and `context`, which are described separately below.
+The Node runtime provided by OpenEdge supports two parameters: `event` and `context`, which are described separately below.
 
 - **event**：Depend on the `Payload` in the MQTT message
     - If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
@@ -149,32 +148,34 @@ _**NOTE**: When testing in the cloud CFC, please don't use the context defined b
 
 ## Hello World
 
-Now we will implement a simple python script with the goal of appending a `hello world` message to each MQTT message. For a dictionary format message, return it directly, and for an none dictionary format message, convert it to string and return.
+Now we will implement a simple javascript with the goal of appending a `hello world` message to each MQTT message. For a dictionary format message, return it directly, and for an none dictionary format message, convert it to string and return.
 
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+```javascript
+#!/usr/bin/env node
 
-def handler(event, context):
-    result = {}
-    if isinstance(event, dict):
-        result['msg'] = event
-        result['type'] = 'dict'
-        result['say'] = 'hello world'
-    else:
-        result['msg'] = event
-        result['type'] = 'non-dict'
-        result['say'] = 'hello world'
+exports.handler = (event, context, callback) => {
+  result = {};
+  
+  if (Buffer.isBuffer(event)) {
+      const message = event.toString();
+      result["msg"] = message;
+      result["type"] = 'non-dict';
+  }else {
+      result["msg"] = event;
+      result["type"] = 'dict';
+  }
 
-    return result
+  result["say"] = 'hello world';
+  callback(null, result);
+};
 ```
 
 **Publish a dict format message**:
 
-![Publish a dict format message](../../images/customize/write-python-script-dict.png)
+![发送字典类数据](../../images/customize/write-node-script-dict.png)
 
 **Publish an non-dict format message**:
 
-![Publish an non-dict format message](../../images/customize/write-python-script-none-dict.png)
+![发送非字典类数据](../../images/customize/write-node-script-none-dict.png)
 
-As above, for some general needs, we can implement it through the Python Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).
+As above, for some general needs, we can implement it through the Node Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Node runtime](./How-to-import-third-party-libraries-for-node-runtime.md).

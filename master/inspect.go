@@ -77,6 +77,22 @@ func (is *infoStats) DelInstanceStats(serviceName, instanceName string, persist 
 		return
 	}
 	delete(service, instanceName)
+	if len(service) == 0 {
+		delete(is.services, serviceName)
+	}
+	if persist {
+		is.persistStats()
+	}
+}
+
+func (is *infoStats) DelServiceStats(serviceName string, persist bool) {
+	is.Lock()
+	defer is.Unlock()
+	_, ok := is.services[serviceName]
+	if !ok {
+		return
+	}
+	delete(is.services, serviceName)
 	if persist {
 		is.persistStats()
 	}

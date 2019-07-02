@@ -192,8 +192,9 @@ class NodeRuntimeModule {
         ctx.functionInvokeID = call.request.getFunctioninvokeid();
         ctx.invokeid = call.request.getFunctioninvokeid();
 
-        let msg = Buffer.from([]);
+        let msg = {};
         const Payload = call.request.getPayload();
+
         if (Payload) {
             try {
                 const payloadString = Buffer.from(Payload).toString();
@@ -229,7 +230,7 @@ class NodeRuntimeModule {
                         call.request.setPayload(Buffer.from(jsonString));
                     }
                     catch (error) {
-                        err = util.format('(\'[UserCodeReturn]\', %s)', err.toString())
+                        err = util.format('(\'[UserCodeReturn]\', %s)', error.toString())
                         return callback(new Error(util.format(errFormat, err)));
                     }
                 }

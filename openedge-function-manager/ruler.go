@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/baidu/openedge/logger"
@@ -37,6 +38,7 @@ func (rr *ruler) ProcessPublish(pkt *packet.Publish) error {
 		QOS:              uint32(pkt.Message.QOS),
 		Topic:            pkt.Message.Topic,
 		Payload:          pkt.Message.Payload,
+		Timestamp:        time.Now().UTC().Unix(),
 		FunctionName:     rr.cfg.Function.Name,
 		FunctionInvokeID: uuid.Generate().String(),
 	}

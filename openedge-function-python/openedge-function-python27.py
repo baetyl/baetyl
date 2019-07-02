@@ -95,7 +95,7 @@ class mo(function_pb2_grpc.FunctionServicer):
         ctx['functionInvokeID'] = request.FunctionInvokeID
         ctx['invokeid'] = request.FunctionInvokeID
 
-        msg = None
+        msg = {}
         if request.Payload:
             try:
                 msg = json.loads(request.Payload)

@@ -201,6 +201,11 @@ func (e *dockerEngine) statsContainer(cid string) engine.PartialStats {
 		}
 	}
 
+	UsedPercent := 0.0
+	if tstats.MemoryStats.Limit > 0 {
+		UsedPercent = float64(tstats.MemoryStats.Usage) / float64(tstats.MemoryStats.Limit)
+	}
+
 	return engine.PartialStats{
 		"cpu_stats": utils.CPUInfo{
 			Time:        t,
@@ -210,7 +215,7 @@ func (e *dockerEngine) statsContainer(cid string) engine.PartialStats {
 			Time:        t,
 			Total:       tstats.MemoryStats.Limit,
 			Used:        tstats.MemoryStats.Usage,
-			UsedPercent: float64(tstats.MemoryStats.Usage) / float64(tstats.MemoryStats.Limit),
+			UsedPercent: UsedPercent,
 		},
 	}
 }
