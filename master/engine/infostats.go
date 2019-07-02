@@ -21,4 +21,5 @@ type InfoStats interface {
 	LoadStats(sss interface{}) bool
 	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
 	DelInstanceStats(serviceName, instanceName string, persist bool)
+	DelServiceStats(serviceName string, persist bool)
 }
