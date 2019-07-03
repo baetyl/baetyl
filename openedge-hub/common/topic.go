@@ -43,13 +43,10 @@ func getTopicSubjects(topic string) []subject {
 		switch value {
 		case SingleWildCard:
 			subjectList = append(subjectList, interface{}(singleWildcardSubject{value}).(subject))
-			break
 		case MultipleWildCard:
 			subjectList = append(subjectList, interface{}(multipleWildcardSubject{value}).(subject))
-			break
 		default:
 			subjectList = append(subjectList, interface{}(normalSubject{value}).(subject))
-			break
 		}
 	}
 	return subjectList
