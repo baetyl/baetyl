@@ -136,3 +136,16 @@ source ~/.bash_profile
 **问题 18**：从云端下发配置到边缘后，默认都是 `docker` 模式启动，修改 `mode: native` 之后，启动报错类似下述内容： `failed to update system: open /Users/xxx/openedge_native/var/run/openedge/services/agent/lib/openedge/hub.baidubce.com/openedge/openedge-agent:0.1.2/package.yml: no such file or directory`。
 
 **参考方案**： 目前我们的云管理不支持进程模式，如果需要在本地以进程模式启动 `OpenEdge` 请参考 `example/native` 中的配置内容，执行命令 `make install-native` 来进行安装，并通过命令 `sudo openedge start` 以进程方式来启动。
+
+**问题19**：下载镜像时有类似报错 `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" openedge=master
+`
+
+**参考方案**：这种情况是因为系统中缺少 `ca-certificates` 包，安装即可。
+例如，如宿主机系统为 debian ，可使用以下命令操作
+
+```shell
+sudo apt-get update
+sudo apt-get install ca-certificates
+```
+
+其他系统请自行查询相关安装操作。
