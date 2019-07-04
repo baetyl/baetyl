@@ -136,3 +136,16 @@ You must meet the following 2 conditions:
 **Question 18**: After the configuration is sent from the cloud to the edge, the default startup mode is `docker` container mode. After modifying `mode: native` in `etc/openedge/openedge.yml` the startup error is similar to the following: `failed to update system: open /Users/ Xxx/openedge_native/var/run/openedge/services/agent/lib/openedge/hub.baidubce.com/openedge/openedge-agent:0.1.2/package.yml: no such file or directory`.
 
 **Suggested Solution**: At present, our cloud management does not support the process mode. If you need to start `OpenEdge` in process mode locally, please refer to the configuration content in `example/native` and execute the command `make install-native`. Install and start by process with the command `sudo openedge start`.
+
+**Question 19**: There is a similar error when downloading the image: `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" openedge= Master
+`
+
+**Suggested Solution**: This is because the `ca-certificates` package is missing from the system and can be installed to solve this problem.
+For example, if the host system is Debian, you can use the following command to install it:
+
+```shell
+sudo apt-get update
+sudo apt-get install ca-certificates
+```
+
+For other systems, please check the relevant installation operations yourself.
