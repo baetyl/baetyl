@@ -48,6 +48,7 @@ OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力�
 - [OpenEdge 设计](./doc/zh-cn/overview/OpenEdge-design.md)
 - [OpenEdge 配置解读](./doc/zh-cn/tutorials/Config-interpretation.md)
 - [如何针对 Python 运行时编写 Python 脚本](./doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md)
+- [如何针对 Node 运行时编写 Node 脚本](./doc/zh-cn/customize/How-to-write-a-node-script-for-node-runtime.md)
 - [如何针对 Python 运行时引入第三方包](./doc/zh-cn/customize/How-to-import-third-party-libraries-for-python-runtime.md)
 - [如何针对 Node 运行时引入第三方包](./doc/zh-cn/customize/How-to-import-third-party-libraries-for-node-runtime.md)
 - [如何开发一个自定义函数运行时](./doc/zh-cn/customize/How-to-develop-a-customize-runtime-for-function.md)
