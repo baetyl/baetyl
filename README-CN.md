@@ -27,6 +27,7 @@ OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力�
 - 官方模块 [openedge-function-manager](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-manager) 提供基于 MQTT 消息机制，弹性、高可用、扩展性好、响应快的计算能力；
 - 官方模块 [openedge-function-python27](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-python27) 提供 Python2.7 函数运行时，可由 `openedge-function-manager` 动态启动实例；
 - 官方模块 [openedge-function-python36](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-python36) 提供 Python3.6 函数运行时，可由`openedge-function-manager` 动态启动实例；
+- 官方模块 [openedge-function-node85](./doc/zh-cn/overview/OpenEdge-design.md#openedge-function-node85) 提供 Node 8.5 函数运行时，可由`openedge-function-manager` 动态启动实例；
 - SDK (Golang) 可用于开发自定义模块。
 
 ### 架构图
@@ -47,7 +48,9 @@ OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力�
 - [OpenEdge 设计](./doc/zh-cn/overview/OpenEdge-design.md)
 - [OpenEdge 配置解读](./doc/zh-cn/tutorials/Config-interpretation.md)
 - [如何针对 Python 运行时编写 Python 脚本](./doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md)
+- [如何针对 Node 运行时编写 Node 脚本](./doc/zh-cn/customize/How-to-write-a-node-script-for-node-runtime.md)
 - [如何针对 Python 运行时引入第三方包](./doc/zh-cn/customize/How-to-import-third-party-libraries-for-python-runtime.md)
+- [如何针对 Node 运行时引入第三方包](./doc/zh-cn/customize/How-to-import-third-party-libraries-for-node-runtime.md)
 - [如何开发一个自定义函数运行时](./doc/zh-cn/customize/How-to-develop-a-customize-runtime-for-function.md)
 - [如何开发一个自定义模块](./doc/zh-cn/customize/How-to-develop-a-customize-module-for-OpenEdge.md)
 
