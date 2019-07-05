@@ -343,10 +343,11 @@ Currently, several modules are officially provided to meet some common applicati
 
 The `openedge-agent`, also known as the cloud agent module, is responsible for communicating with the BIE Cloud Management Suite. It has MQTT and HTTPS channels. MQTT enforces two-way authentication for SSL/TLS certificates. HTTPS enforces one-way authentication for SSL/TLS certificates. Developers can refer to this module to implement their own Agent module to connect their own cloud platform.
 
-The cloud agent do two things at the moment:
+The cloud agent do three things at the moment:
 
 1. After the startup, periodically obtain status information from the Master and report it to the cloud.
 2. Listen to the events sent by the cloud, trigger the corresponding operations, and currently only process the application OTA event.
+3. Responsible for cleaning the volume directory, the master will not be notified to do APP OTA during the volume cleaning period.
 
 After receiving the application OTA command from the BIE Cloud Management Suite, the cloud agent first downloads the storage volume data packets used in all configurations and decompresses them to the specified location. If the storage volume data packets already exist and the MD5 is the same, the download will be skipped. After all storage volumes are ready, the cloud agent module will call the Master's `/update/system` interface to trigger the Master to update the system.
 
