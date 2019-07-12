@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+         
+override_dh_auto_test:
+	: 
+        
+override_dh_auto_install:
+	make install PREFIX=debian/openedge
+
+override_dh_strip:
+	:
