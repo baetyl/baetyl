@@ -467,12 +467,6 @@
 			"revisionTime": "2018-05-06T18:05:49Z"
 		},
 		{
-			"checksumSHA1": "iCGwfqJz3oUw8SiEVwdtAWBwpmM=",
-			"path": "github.com/sevlyar/go-daemon",
-			"revision": "12616e426b1522ef2099701fafdd6ad9f476e8c1",
-			"revisionTime": "2018-10-06T20:25:41Z"
-		},
-		{
 			"checksumSHA1": "LvrQYiHnmi+OseM0g/4XZudwphw=",
 			"path": "github.com/shirou/gopsutil/cpu",
 			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
