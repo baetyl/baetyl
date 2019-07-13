@@ -63,16 +63,23 @@ which python3
 - Step 2：Install Python3.6:
 
 ```shell
-sudo yum -y install epel-release
+sudo yum install -y epel-release
 sudo yum update
-sudo yum install python36
-sudo yum install python36-pip
+sudo yum install -y python36
 ```
 
 - Step 3：Install dependencies required by OpenEdge:
 
 ```shell
+# python2
+sudo yum install -y python2-pip
+sudo pip2 install grpcio protobuf pyyaml
+sudo pip2 install -U PyYAML
+
+# python3
+sudo yum install -y python36-pip
 sudo pip3 install grpcio protobuf pyyaml
+sudo pip3 install -U PyYAML
 ```
 
 #### Install Node runtime
@@ -98,7 +105,7 @@ sudo yum install -y nodejs
 - Step2: Open the terminal and enter the OpenEdge directory for decompression:
 
 ```shell
-tar -zxvf openedge-xxx.tar.gz
+unzip openedge-xxx.zip
 ```
 
 - Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.

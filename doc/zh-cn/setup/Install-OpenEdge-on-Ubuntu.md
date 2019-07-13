@@ -68,13 +68,20 @@ which python3
 sudo add-apt-repository ppa:jonathonf/python-3.6
 sudo apt-get update
 sudo apt-get install python3.6
-sudo apt-get install python3-pip
 ```
 
 - Step 3：安装 OpenEdge 需要的相关依赖包:
 
 ```shell
+# python2
+sudo yum install -y python-pip
+sudo pip2 install grpcio protobuf pyyaml
+sudo pip2 install -U PyYAML
+
+# python3
+sudo apt-get install -y python3-pip
 sudo pip3 install grpcio protobuf pyyaml
+sudo pip3 install -U PyYAML
 ```
 
 #### 安装 Node 运行时
@@ -100,7 +107,7 @@ sudo apt-get install -y nodejs
 - Step 2：打开终端，进入 OpenEdge 软件包下载目录，进行解压缩操作：
 
 ```shell
-tar -zxvf openedge-xxx.tar.gz
+unzip openedge-xxx.zip
 ```
 
 - Step 3：完成解压缩操作后，进入 OpenEdge 程序包目录，执行命令 `sudo openedge start` 启动 OpenEdge。随后查看 OpenEdge 的启动、加载日志，并使用 `docker ps` 命令查看此时正在运行的 docker 容器，分析两者检查 OpenEdge 需要启动的镜像是否全部加载成功；

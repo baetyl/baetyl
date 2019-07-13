@@ -60,7 +60,14 @@ brew install --ignore-dependencies https://raw.githubusercontent.com/Homebrew/ho
 - Step 3：Install dependencies required by OpenEdge:
 
 ```shell
-sudo pip3 install grpcio protobuf pyyaml
+# python2
+brew install python@2
+pip2 install grpcio protobuf pyyaml
+pip2 install -U PyYAML
+
+# python3
+pip3 install grpcio protobuf pyyaml
+pip3 install -U PyYAML
 ```
 
 #### Install Node runtime
@@ -85,7 +92,7 @@ brew install node@8
 - Step2: Open the terminal and enter the OpenEdge directory for decompression:
 
 ```shell
-tar -zxvf openedge-xxx.tar.gz
+unzip openedge-xxx.zip
 ```
 
 - Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.

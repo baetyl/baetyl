@@ -58,7 +58,6 @@ which python3
 
 ```shell
 sudo apt-get update
-sudo apt-get upgrade
 sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev wget
 wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
 tar -xvf Python-3.6.5.tgz
@@ -72,7 +71,14 @@ sudo make install
 - Step 3：Install dependencies required by OpenEdge:
 
 ```shell
+# python2
+sudo yum install -y python-pip
+sudo pip2 install grpcio protobuf pyyaml
+sudo pip2 install -U PyYAML
+
+# python3
 sudo pip3 install grpcio protobuf pyyaml
+sudo pip3 install -U PyYAML
 ```
 
 #### Install Node runtime
@@ -99,7 +105,7 @@ apt-get install -y nodejs
 - Step2: Open the terminal and enter the OpenEdge directory for decompression:
 
 ```shell
-tar -zxvf openedge-xxx.tar.gz
+unzip openedge-xxx.zip
 ```
 
 - Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
