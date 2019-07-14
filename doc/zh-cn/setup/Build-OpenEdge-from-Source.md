@@ -33,7 +33,7 @@ _**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
 curl -sSL https://get.docker.com | sh
 ```
 
-##### Ubuntu
+**Ubuntu**
 
 使用命令
 
@@ -44,7 +44,7 @@ sudo apt-get install docker.io # Ubuntu 16.04 before
 
 即可完成 docker 安装。
 
-##### CentOS
+**CentOS**
 
 使用命令
 
@@ -60,7 +60,7 @@ yum install docker
 docker version
 ```
 
-##### Debian 9/Raspberry Pi 3
+**Debian 9/Raspberry Pi 3**
 
 使用以下命令完成安装：
 
@@ -139,14 +139,12 @@ go get github.com/baidu/openedge
 
 ### 本地镜像构建
 
-容器模式下 docker 通过运行各个模块对应的 **镜像** 来启动该模块，所以首先要构建各个模块的镜像。
-
-以 darwin 系统为例，用户可以通过下面的命令来构建镜像：
+容器模式下 docker 通过运行各个模块对应的 **镜像** 来启动该模块，所以首先要构建各个模块的镜像，命令如下：
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-env GOOS=linux GOARCH=amd64 make rebuild
-env GOOS=linux GOARCH=amd64 make image # 在本地生成模块镜像
+make rebuild
+make image # 在本地生成模块镜像
 ```
 
 通过上述命令编译生成如下六个镜像:
@@ -165,8 +163,6 @@ openedge-function-node85:latest
 ```shell
 docker images
 ```
-
-**注意**： GOOS 及 GOARCH 的值需要修改成对应的系统类型及 CPU 架构，特别的是，darwin 系统下，GOOS 和 GOARCH 仍然分别是 linux 和 amd64。
 
 ### 编译
 
@@ -189,7 +185,7 @@ openedge-remote-mqtt/openedge-remote-mqtt
 
 ### 安装
 
-默认路径：/usr/local。
+默认路径：`/usr/local`。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge

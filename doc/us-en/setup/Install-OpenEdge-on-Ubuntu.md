@@ -73,7 +73,7 @@ sudo apt-get -y install python3.6
 
 ```shell
 # python2
-sudo yum install -y python-pip
+sudo apt-get install -y python-pip
 sudo pip2 install grpcio protobuf pyyaml
 sudo pip2 install -U PyYAML
 
