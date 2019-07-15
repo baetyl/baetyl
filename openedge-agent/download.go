@@ -20,7 +20,14 @@ func (m *mo) downloadConfigVolume(cfgVol openedge.VolumeInfo) (*openedge.AppConf
 	var cfg openedge.AppConfig
 	cfgFile := path.Join(volumeContainerDir, openedge.AppConfFileName)
 	err = utils.LoadYAML(cfgFile, &cfg)
-	return &cfg, volumeHostDir, err
+	if err != nil {
+		return nil, "", err
+	}
+	// check service list, cannot be empty
+	if len(cfg.Services) == 0 {
+		return nil, "", fmt.Errorf("Invalid app Config: the service list is empty")
+	}
+	return &cfg, volumeHostDir, nil
 }
 
 func (m *mo) downloadAppVolumes(cfg *openedge.AppConfig) error {
