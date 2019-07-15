@@ -98,48 +98,53 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-## Deploy OpenEdge
+## Quick Deployment
 
-### Deployment Process
+A complete OpenEdge includes **main program** and **configurations**. The following is an introduction to OpenEdge's quick deployment using the latest official release and a sample configuration.
 
-- Step1: Download [OpenEdge](../Resources-download.md);
-- Step2: Open the terminal and enter the OpenEdge directory for decompression:
+### Step 1: Download
+
+Download [OpenEdge](../Resources-download.md) and [Example Configuration](https://github.com/baidu/openedge/releases/download/0.1.4/openedge_docker_mode_example.zip)；
+
+### Step 2: Unzip
+
+Open the terminal and enter the directory of downloaded zips for decompression:
 
 ```shell
 unzip openedge-xxx.zip
+unzip openedge_docker_mode_example.zip
 ```
 
-- Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
-- Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
+If the above operation is normal, the resulting file directory structure is as shown below:
 
-**NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)
+![OpenEdge directory](../../images/setup/openedge-dir.png)
 
-### Start Deployment
+The `bin` directory stores the `openedge` executable binary file of **main program**, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge. About Configuration, you can read [Configuration Interpretation](../tutorials/Config-interpretation.md) to learn more.
 
-As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
+Meantime, you can place the `openedge` in the directory specified in `PATH`, suggest `/usr/local/bin`, then copy the `var` and `etc` directories to `/ Usr/local`.
 
-![OpenEdge directory](../../images/setup/openedge-dir-ubuntu.png)
+### Step 3: Start
 
-The `bin` directory stores the openedge executable binary file, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge.
+Enter the directory of `openedge`, then start it:
 
-Place the binary file under `/usr/local/bin` or any directory that exists in your environment variable's `PATH` value. And copy the `etc` and `var` directories to the `/usr/local` or other upper level directories where you place the executable. Of course, you can just leave them in the place where you unpacked.
+```shell
+sudo openedge start
+```
 
-Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
+### Step 4: Verify
 
-![view the docker containers status](../../images/setup/docker-stats-before-ubuntu.png)
+OpenEdge may encounter an abnormal condition during the startup process. You can verify whether OpenEdge is successfully started according to the following steps:
 
-It can be found that the current system does not have a docker container running.
+- executing the command `ps -ef | grep openedge` to check whether `openedge` is running, as shown below. Otherwise, `openedge` fails to start.
 
-Then, step into the decompressed folder of OpenEdge, execute the command `sudo openedge start` and if you didn't put the `var` and `etc` directories to the upper level directory of where you keep executable file, you need use `-w` to specify the work directory like this: `sudo openedge start -w yourpath/to/configuration` . Check the result by executing the command `ps -ef | grep "openedge"` , as shown below:
+![OpenEdge](../../images/setup/openedge-started-thread.png)
 
-![OpenEdge startup log](../../images/setup/openedge-started-thread-ubuntu.png)
+- executing the command `docker stats` to view the running status of docker containers. `openedge` will pull the required images first. After completed, the running status of containers are as shown below. If some containers are missing, it says they failed to start.
 
-And you can check the log file for details. Log files are stored by default in the `var/log/openedge` directory of the working directory.
+![docker stats](../../images/setup/docker-stats.png)
 
-At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
+- Under the condition of two above failures, you need to view the log to check more. Log files are stored by default in the `var/log/openedge` directory of working directory. Then check and correct one by one according to the detailed error information. If necessary, just [Submit an issue](https://github.com/baidu/openedge/issues) for help.
 
-![running containers](../../images/setup/docker-stats-after-ubuntu.png)
+As mentioned above, if all the steps are executed correctly, it says OpenEdge has deployed successful on Ubuntu system.
 
-Obviously, OpenEdge has been successfully launched.
-
-As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the Ubuntu system.
+**NOTE**: The above deployment uses **docker** container mode. If you want to use **native** process mode or learn more, please refer to [source compiled](./Build-OpenEdge-from-Source.md).

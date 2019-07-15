@@ -1,6 +1,6 @@
 # Build OpenEdge From Source
 
-Compared to the rapid deployment of OpenEdge, users can compile OpenEdge from source to get the latest features.
+Compared to the quick deployment of OpenEdge, users can compile OpenEdge from source to get the latest features.
 
 Before compiling, user should configure the build environment. So this article consist of two parts: **environment configuration** and **source code compilation**.
 
