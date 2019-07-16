@@ -1,9 +1,0 @@
-FROM ubuntu:18.04
-ENV TZ=Asia/Shanghai
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
-    apt-get update && \
-    apt-get install -y software-properties-common --no-install-recommends gcc g++ python3-dev python3-setuptools python3-pip python3-opencv && \
-    pip3 install wheel && \
-    pip3 install pyyaml protobuf grpcio && \
-    rm -rf /var/lib/apt/lists/*
