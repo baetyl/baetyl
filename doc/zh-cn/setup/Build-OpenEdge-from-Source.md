@@ -1,8 +1,14 @@
 # 从源码编译 OpenEdge
 
-## Linux下编译环境配置
+相比于快速部署安装 OpenEdge，用户可以采用源码编译的方式来使用 OpenEdge 最新的功能。
 
-### Go 开发环境安装
+在编译源码前，用户应该进行编译环境的配置，所以本文将从 **环境配置** 和 **源码编译** 两方面进行介绍。
+
+## 环境配置
+
+### Linux 平台
+
+#### Go 开发环境安装
 
 前往 [相关资源下载页面](../Resources-download.md) 完成相关二进制包下载。具体请执行：
 
@@ -16,7 +22,7 @@ go version # 查看 Go 版本
 
 _**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
 
-### Docker 安装
+#### Docker 安装
 
 - 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装 17.05 及以上版本的 docker 来 build dockerfile。
 - 根据[官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 docker 版本具有一些安全隐患，建议安装/更新 docker 版本到 18.09.2 及以上。
@@ -27,7 +33,7 @@ _**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
 curl -sSL https://get.docker.com | sh
 ```
 
-#### Ubuntu
+**Ubuntu**
 
 使用命令
 
@@ -38,7 +44,7 @@ sudo apt-get install docker.io # Ubuntu 16.04 before
 
 即可完成 docker 安装。
 
-#### CentOS
+**CentOS**
 
 使用命令
 
@@ -54,7 +60,7 @@ yum install docker
 docker version
 ```
 
-#### Debian 9/Raspberry Pi 3
+**Debian 9/Raspberry Pi 3**
 
 使用以下命令完成安装：
 
@@ -64,9 +70,9 @@ curl -sSL https://get.docker.com | sh
 
 **更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
 
-## Darwin下编译环境配置
+### Darwin 平台
 
-### Go 开发环境配置
+#### Go 开发环境配置
 
 + 通过 HomeBrew 安装
 
@@ -109,7 +115,7 @@ go version # 查看 Go 版本
 
 _**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
 
-### Docker 安装
+#### Docker 安装
 
 前往 [官方页面](https://hub.docker.com/editions/community/docker-ce-desktop-mac) 下载所需 dmg 文件。完成后双击打开，将 docker 拖入 `Application` 文件夹即可。
 
@@ -121,7 +127,9 @@ _**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
 docker version
 ```
 
-## 源码下载
+## 源码编译
+
+### 源码下载
 
 按照对应环境完成编译环境配置后，前往 [OpenEdge Github](https://github.com/baidu/openedge) 下载 OpenEdge 源码
 
@@ -129,11 +137,38 @@ docker version
 go get github.com/baidu/openedge
 ```
 
-## 源码编译
+### 本地镜像构建
+
+容器模式下 docker 通过运行各个模块对应的 **镜像** 来启动该模块，所以首先要构建各个模块的镜像，命令如下：
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-make # 编译主程序和模块的可执行程序
+make rebuild
+make image # 在本地生成模块镜像
+```
+
+通过上述命令编译生成如下六个镜像:
+
+```shell
+openedge-agent:latest
+openedge-hub:latest
+openedge-function-manager:latest
+openedge-remote-mqtt:latest
+openedge-function-python27:latest
+openedge-function-node85:latest
+```
+
+通过以下命令查看生成的镜像：
+
+```shell
+docker images
+```
+
+### 编译
+
+```shell
+cd $GOPATH/src/github.com/baidu/openedge
+make rebuild
 ```
 
 编译完成后会在根目录及各个模块目录下生成如下五个可执行文件:
@@ -148,39 +183,9 @@ openedge-remote-mqtt/openedge-remote-mqtt
 
 除此之外,会在各个模块目录下共生成五个名为 `package.zip` 文件。
 
-如果之前为不同的平台编译了可执行文件，在为指定平台编译镜像之前，需要执行以下命令：
+### 安装
 
-```shell
-env GOOS=linux GOARCH=amd64 make rebuild
-```
-
-或者直接执行命令 `make clean` 去清理上述文件。
-
-```shell
-env GOOS=linux GOARCH=amd64 make image # 在本地生成模块镜像
-```
-
-**注意**： GOOS 及 GOARCH 的值需要修改成对应的系统类型及 CPU 架构，特别的是，darwin 系统下，GOOS 和 GOARCH 仍然分别是 linux 和 amd64。
-
-通过上述命令编译生成如下五个镜像:
-
-```shell
-openedge-agent:latest
-openedge-hub:latest
-openedge-function-manager:latest
-openedge-remote-mqtt:latest
-openedge-function-python27:latest
-```
-
-通过以下命令查看生成的镜像：
-
-```shell
-docker images
-```
-
-## 程序安装
-
-装到默认路径：/usr/local。
+默认路径：`/usr/local`。
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
@@ -195,7 +200,7 @@ cd $GOPATH/src/github.com/baidu/openedge
 make install PREFIX=output
 ```
 
-## 程序运行
+### 运行
 
 如果程序已经安装到默认路径：`/usr/local`。
 
@@ -219,7 +224,7 @@ sudo ./output/bin/openedge start
 - 如需使用自己的镜像，需要修改应用配置中的模块和函数的 `image`，指定自己的镜像。
 - 如需自定义配置，请按照 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行相关设置。
 
-## 程序卸载
+### 卸载
 
 如果是默认安装。
 

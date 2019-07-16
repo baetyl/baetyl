@@ -49,7 +49,6 @@ which python3
 
 ```shell
 sudo apt-get update
-sudo apt-get upgrade
 sudo apt-get -y install gcc make zlib1g-dev libffi-dev libssl-dev wget
 wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tgz
 tar -xvf Python-3.6.5.tgz
@@ -63,7 +62,14 @@ sudo make install
 - Step 3：安装 OpenEdge 需要的相关依赖包:
 
 ```shell
-sudo pip3 install grpcio protobuf pyyaml
+# python2
+sudo yum install -y python-pip
+sudo pip2 install grpcio protobuf pyyaml
+sudo pip2 install -U PyYAML
+
+# python3
+sudo pip3 install -y grpcio protobuf pyyaml
+sudo pip3 install -U PyYAML
 ```
 
 #### 安装 Node 运行时
@@ -82,48 +88,53 @@ curl -sL https://deb.nodesource.com/setup_8.x | bash -
 apt-get install -y nodejs
 ```
 
-## OpenEdge 部署
+## OpenEdge 快速部署
 
-### 部署流程
+一个完整的 OpenEdge 包括 **主程序** 和 **配置文件** 两个部分，下面利用官方的最新发布版本和示例配置介绍 OpenEdge 的快速部署方案。
 
-- Step 1：下载 [OpenEdge](../Resources-download.md) 压缩包；
-- Step 2：打开终端，进入 OpenEdge 软件包下载目录，进行解压缩操作：
+### Step 1: 下载
+
+下载 [OpenEdge](../Resources-download.md) 压缩包、[示例配置](https://github.com/baidu/openedge/releases/download/0.1.4/openedge_docker_mode_example.zip) 压缩包；
+
+### Step 2: 解压
+
+打开终端，进入压缩包下载目录，进行解压缩操作：
 
 ```shell
-tar -zxvf openedge-xxx.tar.gz
+unzip openedge-xxx.zip
+unzip openedge_docker_mode_example.zip
 ```
 
-- Step 3：完成解压缩操作后，进入 OpenEdge 程序包目录，执行命令 `sudo openedge start` 启动 OpenEdge。随后查看 OpenEdge 的启动、加载日志，并使用 `docker ps` 命令查看此时正在运行的 docker 容器，分析两者检查 OpenEdge 需要启动的镜像是否全部加载成功；
-- Step 4：如果日志中要启动的镜像全部在 docker 中通过容器加载成功，则表示 OpenEdge 启动成功。
+如上述操作正常，则形成的文件目录结构如下图所示：
 
-**注意**：官方下载页面仅提供容器模式程序运行包，如需以进程模式运行，请参考 [源码编译](./Build-OpenEdge-from-Source.md) 相关内容。
+![OpenEdge 可执行程序包目录](../../images/setup/openedge-dir.png)
 
-### 开始部署
+其中，`bin` 目录存储 `openedge` 主程序，`etc` 目录存储了程序启动的配置，`var` 目录存储了模块启动的配置和资源。关于 OpenEdge 的配置，用户可以阅读 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解。
 
-如上所述，首先从 [下载页面](../Resources-download.md) 选择某版本的 OpenEdge 完成下载（也可选择从源码编译，参见 [源码编译](./Build-OpenEdge-from-Source.md)），然后打开终端进入 OpenEdge 程序包下载目录，进行解压缩操作，成功解压缩后，可以发现 openedge 目录中主要包括 bin、etc、var 等目录，具体如下图示。
+为了方便，用户可以把 `openedge` 主程序放置到 `PATH` 环境变量中指定的目录中，建议 `/usr/local/bin`，然后将 `var` 和 `etc` 两个目录拷贝到 `/usr/local`。
 
-![OpenEdge 可执行程序包目录](../../images/setup/openedge-dir-raspbian.png)
+### Step 3: 安装
 
-其中，`bin` 目录存储 `openedge` 二进制可执行程序，`etc` 目录存储了程序启动的配置，`var` 目录存储了模块启动的配置和资源。
+进入 OpenEdge 主程序目录，执行命令启动 OpenEdge:
 
-建议把二进制文件放置到 `/usr/local/bin` 或者其他 `PATH` 环境变量中指定的目录中，然后将 `var` 和 `etc` 两个目录拷贝到 `/usr/local` 目录下，或者其他存放二进制文件目录的上级目录中。当然，你也可以将这两个文件夹保留在你解压的位置。
+```shell
+sudo openedge start
+```
 
-然后，新打开一个终端，执行命令 `docker stats` 查看当前 docker 中容器的运行状态，如下图示；
+### Step 4: 验证
 
-![当前运行 docker 容器查询](../../images/setup/docker-stats-before-raspbian.png)
+OpenEdge 在启动过程中可能会遇到异常情况导致失败，用户可以依据以下步骤验证 OpenEdge 是否启动成功：
 
-可以发现，当前系统并未有正在运行的 docker 容器。
+- 在终端中通过命令 `ps -ef | grep "openedge"` 来查看 `openedge` 是否正在运行，正常如下图所示，否则说明主程序 `openedge` 启动失败；
 
-接着，进入解压缩后的 OpenEdge 文件夹下，在另一个终端中执行命令 `sudo openedge start`，如果没有放置 `var` 和 `etc` 目录到二进制文件存放目录的上级目录中，需要通过 `-w` 参数指定工作目录，例： `sudo openedge start -w yourpath/to/configuration`。完成后可通过命令 `ps -ef | grep "openedge"` 来查看运行情况：
+![OpenEdge](../../images/setup/openedge-started-thread.png)
 
-![OpenEdge](../../images/setup/openedge-started-thread-raspbian.png)
+- 在终端中执行命令 `docker stats` 查看当前 docker 中容器的运行状态。主程序 `openedge` 会先拉取需要的镜像，拉取完成后容器的运行状态如下图所示，如果用户本地的镜像与下述不一致，说明模块启动失败；
 
-另外，可以通过查看日志了解更多 OpenEdge 运行情况。日志的默认存放位置为工作目录下的 `var/log/openedge.log`。
+![当前运行 docker 容器查询](../../images/setup/docker-stats.png)
 
-同时观察显示容器运行状态的终端，具体如下图所示：
-
-![当前运行 docker 容器查询](../../images/setup/docker-stats-after-raspbian.png)
-
-显然，OpenEdge 已经成功启动。
+- 针对上述两种失败情况，用户需要查看日志来了解具体的错误情况。日志的默认存放位置为工作目录下的 `var/log/openedge.log`。再根据日志中的详细错误信息进行逐一排查和修正，必要时可以直接[提交 Issue](https://github.com/baidu/openedge/issues)。
 
 如上所述，若各步骤执行无误，即可完成 OpenEdge 在 Raspbian 系统上的快速部署、启动。
+
+**注意**：上述部署采用的是 **docker** 容器模式，**native** 进程模式的部署或者更加详细的部署内容，请参考 [源码编译](./Build-OpenEdge-from-Source.md) 相关内容。
