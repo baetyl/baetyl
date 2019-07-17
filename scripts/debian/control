@@ -1,13 +1,13 @@
 Source: openedge
 Section: admin
 Priority: extra
-Maintainer: Baidu OpenEdge Devs
+Maintainer: OpenEdge Devs
 Build-Depends: build-essential, debhelper (>= 9)
 
 Package: openedge
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Baidu OpenEdge
+Description: OpenEdge
  OpenEdge is an open edge computing framework 
  that extends cloud computing, data and service seamlessly to edge devices. 
  .
