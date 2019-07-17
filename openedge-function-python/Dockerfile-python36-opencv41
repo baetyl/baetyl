@@ -2,7 +2,10 @@ FROM hub.baidubce.com/openedgedev/openedge-function-python36:0.1.5-opencv41-deve
 
 FROM ubuntu:18.04
 RUN apt-get update && \
-    apt-get install -y software-properties-common --no-install-recommends gcc g++ python3 && \
+    apt-get install -y software-properties-common --no-install-recommends \
+        gcc g++ python3 \
+        libavcodec-dev libavformat-dev libswscale-dev \
+        libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # copy OpenCV 4.1.0 libs
