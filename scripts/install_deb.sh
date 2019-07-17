@@ -17,9 +17,14 @@ set -e
 #   * https://www.debian.org/doc/manuals/maint-guide
 #   * https://www.aptly.info/
 
+# 添加脚本的权限
+# 1. 如果是普通用户，那么他需要在 sudo 组
+# 2. 如果是 root，能不能用root，然后打出的包的权限是什么样的
+
 SCRIPT_NAME=$(basename "$0")
 PACKAGE_NAME=openedge
 PRIVATE_KEY_NAME=key.private
+USER__=test
 
 print_status() {
     echo
@@ -114,6 +119,39 @@ process_args() {
         print_help_and_exit
     fi
 }
+
+# 检查是不是 root
+# 如果是 root， 那就创建新用户，然后切换到新用户目录下
+if [ $(id -u) -eq 0 ]; then
+    # 检查 test 用户，不存在创建一个并且目录转移
+    if id -u $USER_ >/dev/null 2>&1; then
+        print_status "User $USER_ exists!"
+        if [[ -z $(groups $USER_ | grep sudo) ]]; then
+            print_status "Added user $USER_ to sudo group"
+            exec_cmd "usermod -G sudo $USER_"
+            exec_cmd "su $USER_"
+            exec_cmd "cd $HOME"
+        fi
+    else
+        print_status "User $USER_ doesn't exist!"
+        print_status "User $USER_ created and added to sudo group"
+        exec_cmd "useradd -g sudo -d /home/$USER_ -m -s /bin/bash $USER_"
+        exec_cmd "echo useradd -g sudo -d /home/$USER_ -m -s /bin/bash $USER_"
+        echo -e "${PASSWORD}\n${PASSWORD}" | passwd $USER_
+        print_status "set passwd completed!"
+        exec_cmd "su $USER_"
+        exec_cmd "cd $HOME"
+    fi
+fi
+
+# TODO: 检查当前用户具有 sudo 权限
+if [[ -z $(groups | grep sudo) ]]; then
+    print_status "Please contact administrator to add you to sudo group"
+    print_status "use command 'usermod -G sudo username'"
+    exit 1
+fi
+
+print_status "Current User: $USER, current work directory: $(pwd)"
 
 install_check_deps() {
     PRE_INSTALL_PKGS=""
@@ -305,11 +343,15 @@ get_code() {
     # # git clean -df
 
     # print_status "get latest release successfully!"
+
+    echo "get_code is none"
 }
 
 build_deb() {
     # remove useless deb file
     rm -f ../openedge_*.changes ../openedge_*.deb
+
+    rm -rf ../debs
 
     rm -rf ./debian
 
@@ -340,6 +382,8 @@ repo_publish() {
 
     REPO_LIST=$(aptly repo list)
 
+    exec_cmd "mkdir -p ../store"
+
     # publish debian
     debian_dist=("buster" "jessie" "stretch" "wheezy")
 
@@ -350,8 +394,14 @@ repo_publish() {
         debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
         debs_exist=$(aptly repo show -with-packages openedge_debian_$dist)
         for deb in ${debs[@]}; do
-            if [[ -z $(echo $debs_exist | grep $deb) ]]; then
-                aptly repo add openedge_debian_$dist ../$deb
+            # openedge_0.1.4-1_amd64 --> openedge_0.1.4-1~buster_amd64
+            DEB_NAME1=$(echo $deb | sed -r "s/(${PACKAGE_NAME}_[0-9]+\.[0-9]+\.[0-9]-[0-9]+)_.*/\1/g")
+            DEB_NAME2=$(echo $deb | sed -r "s/${PACKAGE_NAME}_[0-9]+\.[0-9]+\.[0-9]-[0-9]+(_.*)/\1/g")
+            DEB_NAME_NEW=${DEB_NAME1}~${dist}${DEB_NAME2}
+            if [[ -z $(echo $debs_exist | grep $DEB_NAME_NEW) ]]; then
+                # cp openedge_0.1.4-1_amd64.deb --> debs/openedge_0.1.4-1~buster_amd64.deb
+                exec_cmd "cp ../${deb}.deb ../store/${DEB_NAME_NEW}.deb"
+                aptly repo add openedge_debian_$dist ../store/${DEB_NAME_NEW}.deb
             fi
         done
         if [[ ! -z $(aptly publish list | grep linux/debian/$dist) ]]; then
@@ -360,65 +410,45 @@ repo_publish() {
         aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_debian_$dist linux/debian
     done
 
-    # publish ubuntu
-    ubuntu_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
+    # # publish ubuntu
+    # ubuntu_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
 
-    for dist in ${ubuntu_dist[@]}; do
-        if [[ -z $(echo $REPO_LIST | grep openedge_ubuntu_$dist) ]]; then
-            aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge ubuntu $dist" -component main -distribution ${dist} openedge_ubuntu_$dist
-        fi
-        debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
-        debs_exist=$(aptly repo show -with-packages openedge_ubuntu_$dist)
-        for deb in ${debs[@]}; do
-            if [[ -z $(echo $debs_exist | grep $deb) ]]; then
-                aptly repo add openedge_ubuntu_$dist ../$deb
-            fi
-        done
-        if [[ ! -z $(aptly publish list | grep linux/ubuntu/$dist) ]]; then
-            aptly publish drop ${dist} linux/ubuntu
-        fi
-        aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_ubuntu_$dist linux/ubuntu
-    done
+    # for dist in ${ubuntu_dist[@]}; do
+    #     if [[ -z $(echo $REPO_LIST | grep openedge_ubuntu_$dist) ]]; then
+    #         aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge ubuntu $dist" -component main -distribution ${dist} openedge_ubuntu_$dist
+    #     fi
+    #     debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
+    #     debs_exist=$(aptly repo show -with-packages openedge_ubuntu_$dist)
+    #     for deb in ${debs[@]}; do
+    #         if [[ -z $(echo $debs_exist | grep $deb) ]]; then
+    #             aptly repo add openedge_ubuntu_$dist ../${deb}.deb
+    #         fi
+    #     done
+    #     if [[ ! -z $(aptly publish list | grep linux/ubuntu/$dist) ]]; then
+    #         aptly publish drop ${dist} linux/ubuntu
+    #     fi
+    #     aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_ubuntu_$dist linux/ubuntu
+    # done
 
-    # create raspbian
-    raspbian_dist=("jessie" "stretch" "buster")
+    # # publish raspbian
+    # raspbian_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
 
-    for dist in ${raspbian_dist[@]}; do
-        if ! $(echo $REPO_LIST | grep openedge_raspbian_$dist); then
-            aptly repo create -architectures arm64,i386 -comment "openedge raspbian $dist" -component main -distribution $dist openedge_raspbian_$dist
-        fi
-        debs=$(ls ../*.deb | sed 's/\.\.\///g')
-        debs_exist=$(aptly repo list)
-        for deb in ${debs[@]}; do
-            if $(echo $debs_exist | grep $deb); then
-                aptly repo add openedge_raspbian_$dist ../$deb
-            fi
-        done
-        if $(aptly publish list | grep linux/raspbian/$dist); then
-            aptly publish drop ${dist} linux/raspbian
-        fi
-        aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_raspbian_$dist linux/raspbian
-    done
-
-    # publish raspbian
-    raspbian_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
-
-    for dist in ${raspbian_dist[@]}; do
-        if [[ -z $(echo $REPO_LIST | grep openedge_raspbian_$dist) ]]; then
-            aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge raspbian $dist" -component main -distribution ${dist} openedge_raspbian_$dist
-        fi
-        debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
-        debs_exist=$(aptly repo show -with-packages openedge_raspbian_$dist)
-        for deb in ${debs[@]}; do
-            if [[ -z $(echo $debs_exist | grep $deb) ]]; then
-                aptly repo add openedge_raspbian_$dist ../$deb
-            fi
-        done
-        if [[ ! -z $(aptly publish list | grep linux/raspbian/$dist) ]]; then
-            aptly publish drop ${dist} linux/raspbian
-        fi
-        aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_raspbian_$dist linux/raspbian
-    done
+    # for dist in ${raspbian_dist[@]}; do
+    #     if [[ -z $(echo $REPO_LIST | grep openedge_raspbian_$dist) ]]; then
+    #         aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge raspbian $dist" -component main -distribution ${dist} openedge_raspbian_$dist
+    #     fi
+    #     debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
+    #     debs_exist=$(aptly repo show -with-packages openedge_raspbian_$dist)
+    #     for deb in ${debs[@]}; do
+    #         if [[ -z $(echo $debs_exist | grep $deb) ]]; then
+    #             aptly repo add openedge_raspbian_$dist ../${deb}.deb
+    #         fi
+    #     done
+    #     if [[ ! -z $(aptly publish list | grep linux/raspbian/$dist) ]]; then
+    #         aptly publish drop ${dist} linux/raspbian
+    #     fi
+    #     aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_raspbian_$dist linux/raspbian
+    # done
 }
 
 # #拷贝到 远程官方机器
@@ -444,3 +474,6 @@ build_deb
 repo_publish
 
 exit $?
+
+# 1. repo 里面有 1.3-1， 也有1.4-1 ，这样的话发布的时候会选哪一个？最新的？那么老的会不会带？
+# 2. publish之后拷贝后，怎么覆盖远程机器的东西
