@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+check_runtime()
+{
+    # Verify a container runtime exists before installing.
+
+    if ! getent group docker >/dev/null; then
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        echo ""
+        echo " ERROR: No container runtime detected."
+        echo ""
+        echo " Please install a container runtime and run this install again."
+        echo ""
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+        exit 1
+    fi
+}
+
+case "$1" in
+    install|upgrade)
+        check_runtime
+    ;;
+
+    abort-upgrade)
+    ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+
+
+
+exit 0
