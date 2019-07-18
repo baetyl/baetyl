@@ -90,7 +90,11 @@ uninstall-native:
 	rm -f ${PREFIX}/bin/openedge
 	rm -rf ${PREFIX}/etc/openedge
 	rm -rf ${PREFIX}/var/db/openedge
+	rm -rf ${PREFIX}/var/log/openedge
+	rm -rf ${PREFIX}/var/run/openedge
 	rmdir ${PREFIX}/var/db
+	rmdir ${PREFIX}/var/log
+	rmdir ${PREFIX}/var/run
 	rmdir ${PREFIX}/var
 	rmdir ${PREFIX}/etc
 	rmdir ${PREFIX}/bin

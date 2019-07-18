@@ -47,7 +47,10 @@ func NewClient(c ClientInfo) (*Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		sockets.ConfigureTransport(transport, url.Scheme, url.Host)
+		err = sockets.ConfigureTransport(transport, url.Scheme, url.Host)
+		if err != nil {
+			return nil, err
+		}
 		if url.Scheme == "unix" {
 			url.Host = "openedge"
 		}

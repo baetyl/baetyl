@@ -17,7 +17,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/sysinfo"
 	"github.com/docker/go-connections/nat"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 // NAME ot docker engine
@@ -127,8 +127,10 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		}
 		volumes = append(volumes, fmt.Sprintf(f, path.Join(e.pwd, path.Clean(v.Path)), path.Clean(m.Path)))
 	}
-	if runtime.GOOS == "linux" {
-		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, openedge.DefaultSockFile, openedge.DefaultSockFile))
+	hs := utils.GetEnv(openedge.EnvMasterHostSocketKey)
+	cs := utils.GetEnv(openedge.EnvMasterContainerSocketKey)
+	if hs != "" && cs != "" {
+		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, hs, cs))
 	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
 	if err != nil {

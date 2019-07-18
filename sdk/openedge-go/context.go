@@ -28,6 +28,9 @@ const (
 	EnvServiceAddressKey         = "OPENEDGE_SERVICE_ADDRESS" // deprecated
 	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
+
+	EnvMasterHostSocketKey      = "OPENEDGE_MASTER_HOST_SOCKET"
+	EnvMasterContainerSocketKey = "OPENEDGE_MASTER_CONTAINER_SOCKET"
 )
 
 // Path keys
@@ -69,7 +72,7 @@ type Context interface {
 	Wait()
 	// returns wait channel
 	WaitChan() <-chan os.Signal
-	
+
 	// Master RESTful API
 
 	// updates system and
