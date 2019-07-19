@@ -64,6 +64,10 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
+	// TODO: implement recover logic when master restarts
+	// Now it will stop all old services
+	m.engine.Recover()
+	// start application
 	err = m.UpdateSystem("")
 	if err != nil {
 		m.Close()
@@ -75,13 +79,14 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 
 // Close closes agent
 func (m *Master) Close() error {
-	defer m.log.Infoln("master stopped")
 	if m.server != nil {
 		m.server.Close()
+		m.log.Infoln("server stopped")
 	}
 	m.stopServices(map[string]struct{}{})
 	if m.engine != nil {
 		m.engine.Close()
+		m.log.Infoln("engine stopped")
 	}
 	return nil
 }

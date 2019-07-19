@@ -30,7 +30,6 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
 	}
-	e.clean()
 	return e, nil
 }
 
@@ -44,6 +43,12 @@ type nativeEngine struct {
 // Name of engine
 func (e *nativeEngine) Name() string {
 	return NAME
+}
+
+// Recover recover old services when master restart
+func (e *nativeEngine) Recover() {
+	// clean old services in native mode
+	e.clean()
 }
 
 // Prepare prepares all images
