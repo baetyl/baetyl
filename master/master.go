@@ -2,15 +2,16 @@ package master
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/api"
 	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/protocol/http"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	cmap "github.com/orcaman/concurrent-map"
@@ -45,14 +46,19 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		accounts:  cmap.New(),
 		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(openedge.DefaultDBDir, openedge.AppStatsFileName)),
 	}
-	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, pwd)
+	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
 	log.Infoln("engine started")
-	m.server, err = api.New(m.cfg.Server, m)
+	sc := http.ServerInfo{
+		Address:     m.cfg.Server.Address,
+		Timeout:     m.cfg.Server.Timeout,
+		Certificate: m.cfg.Server.Certificate,
+	}
+	m.server, err = api.New(sc, m)
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -81,27 +87,43 @@ func (m *Master) Close() error {
 }
 
 func defaults(c *Config) error {
-	if runtime.GOOS == "linux" {
-		err := os.MkdirAll(path.Dir(openedge.DefaultSockFile), os.ModePerm)
+	addr := c.Server.Address
+	url, err := utils.ParseURL(addr)
+	if err != nil {
+		return fmt.Errorf("failed to parse address of server: %s", err.Error())
+	}
+
+	if runtime.GOOS != "linux" && url.Scheme == "unix" {
+		return fmt.Errorf("unix domain socket only support on linux, please to use tcp socket")
+	}
+	if url.Scheme != "unix" && url.Scheme != "tcp" {
+		return fmt.Errorf("only support unix domian socket or tcp socket")
+	}
+
+	// address in container
+	if url.Scheme == "unix" {
+		sock, err := filepath.Abs(url.Host)
 		if err != nil {
-			return fmt.Errorf("failed to make directory of sock file: %s", err.Error())
+			return err
 		}
-		c.Server.Address = "unix://" + openedge.DefaultSockFile
-		utils.SetEnv(openedge.EnvMasterAPIKey, c.Server.Address)
+		err = os.MkdirAll(filepath.Dir(sock), 0755)
+		if err != nil {
+			return err
+		}
+		utils.SetEnv(openedge.EnvMasterHostSocketKey, sock)
+		if c.Mode == "native" {
+			utils.SetEnv(openedge.EnvMasterAPIKey, "unix://"+openedge.DefaultSockFile)
+		} else {
+			utils.SetEnv(openedge.EnvMasterAPIKey, "unix:///"+openedge.DefaultSockFile)
+		}
 	} else {
-		if c.Server.Address == "" {
-			c.Server.Address = "tcp://127.0.0.1:50050"
-		}
-		addr := c.Server.Address
-		uri, err := url.Parse(addr)
-		if err != nil {
-			return fmt.Errorf("failed to parse address of server: %s", err.Error())
-		}
-		if c.Mode == "docker" {
-			parts := strings.SplitN(uri.Host, ":", 2)
+		if c.Mode == "native" {
+			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
+		} else {
+			parts := strings.SplitN(url.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
+			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
 		}
-		utils.SetEnv(openedge.EnvMasterAPIKey, addr)
 	}
 	utils.SetEnv(openedge.EnvMasterAPIVersionKey, "v1")
 	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)

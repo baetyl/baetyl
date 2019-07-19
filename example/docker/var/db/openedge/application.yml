@@ -1,7 +1,7 @@
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: hub.baidubce.com/openedge/openedge-hub
     replica: 1
     ports:
       - 1883:1883
@@ -18,7 +18,7 @@ services:
       - name: localhub-log
         path: var/log/openedge
   # - name: agent
-  #   image: openedge-agent
+  #   image: hub.baidubce.com/openedge/openedge-agent
   #   replica: 1
   #   mounts:
   #     - name: agent-conf
@@ -32,7 +32,7 @@ services:
   #     - name: agent-log
   #       path: var/log/openedge
   # - name: remote-iothub
-  #   image: openedge-remote-mqtt
+  #   image: hub.baidubce.com/openedge/openedge-remote-mqtt
   #   replica: 1
   #   mounts:
   #     - name: remote-iothub-conf
@@ -44,7 +44,7 @@ services:
   #     - name: remote-iothub-log
   #       path: var/log/openedge
   - name: function-manager
-    image: openedge-function-manager
+    image: hub.baidubce.com/openedge/openedge-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
@@ -53,7 +53,7 @@ services:
       - name: function-manager-log
         path: var/log/openedge
   - name: function-python27-sayhi
-    image: openedge-function-python27
+    image: hub.baidubce.com/openedge/openedge-function-python27
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -63,7 +63,7 @@ services:
         path: var/db/openedge/function-sayhi
         readonly: true
   - name: function-python36-sayhi
-    image: openedge-function-python36
+    image: hub.baidubce.com/openedge/openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -73,7 +73,7 @@ services:
         path: var/db/openedge/function-sayhi
         readonly: true
   - name: function-node85-sayhi
-    image: openedge-function-node85
+    image: hub.baidubce.com/openedge/openedge-function-node85
     replica: 0
     mounts:
       - name: function-sayjs-conf
@@ -83,10 +83,17 @@ services:
         path: var/db/openedge/function-sayhi
         readonly: true
   - name: function-sql-filter
-    image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
+    image: hub.baidubce.com/openedge/openedge-function-sql
     replica: 0
     mounts:
       - name: function-filter-conf
+        path: etc/openedge
+        readonly: true
+  - name: timer
+    image: hub.baidubce.com/openedge/openedge-timer
+    replica: 1
+    mounts:
+      - name: timer-conf
         path: etc/openedge
         readonly: true
   - name: mosquitto
@@ -102,13 +109,7 @@ services:
         path: /mosquitto/data
       - name: mosquitto-log
         path: /mosquitto/log
-  - name: timer
-    image: openedge-timer
-    replica: 1
-    mounts:
-      - name: timer-conf
-        path: etc/openedge
-        readonly: true
+
 volumes:
   # hub
   - name: localhub-conf

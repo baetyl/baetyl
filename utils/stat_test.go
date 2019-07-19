@@ -99,3 +99,25 @@ func TestGetNetInfo(t *testing.T) {
 		})
 	}
 }
+
+func TestGetCPUInfo(t *testing.T) {
+	tests := []struct {
+		name    string
+		wantErr string
+	}{
+		{
+			name: "local1",
+		},
+		{
+			name: "local2",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetCPUInfo()
+			assert.Equal(t, got.Error, tt.wantErr)
+			data, _ := json.Marshal(got)
+			fmt.Println(string(data))
+		})
+	}
+}

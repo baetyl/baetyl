@@ -18,6 +18,7 @@ image:
 .PHONY: clean
 clean:
 	rm -f package85.zip
+	rm -rf node_modules
 
 .PHONY: rebuild
 rebuild: clean all

@@ -28,6 +28,8 @@ const (
 	EnvServiceAddressKey         = "OPENEDGE_SERVICE_ADDRESS" // deprecated
 	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
+
+	EnvMasterHostSocketKey      = "OPENEDGE_MASTER_HOST_SOCKET"
 )
 
 // Path keys
@@ -39,7 +41,7 @@ const (
 	// AppStatsFileName application stats file name
 	AppStatsFileName = "application.stats"
 	// DefaultSockFile sock file of openedge by default
-	DefaultSockFile = "/var/run/openedge.sock"
+	DefaultSockFile = "var/run/openedge.sock"
 	// DefaultPidFile pid file of openedge by default
 	DefaultPidFile = "/var/run/openedge.pid"
 	// DefaultConfFile config path of the service by default
@@ -69,7 +71,7 @@ type Context interface {
 	Wait()
 	// returns wait channel
 	WaitChan() <-chan os.Signal
-	
+
 	// Master RESTful API
 
 	// updates system and

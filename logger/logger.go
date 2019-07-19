@@ -111,11 +111,15 @@ func InitLogger(c LogInfo, fields ...string) Logger {
 
 	entry := logrus.NewEntry(logrus.New())
 	entry.Level = logLevel
-	entry.Logger.Out = ioutil.Discard
 	entry.Logger.Level = logLevel
 	entry.Logger.Formatter = newFormatter(c.Format)
 	if fileHook != nil {
 		entry.Logger.Hooks.Add(fileHook)
+	}
+	if logLevel == logrus.DebugLevel {
+		entry.Logger.Out = os.Stdout
+	} else {
+		entry.Logger.Out = ioutil.Discard
 	}
 	logrusFields := logrus.Fields{}
 	for index := 0; index < len(fields)-1; index = index + 2 {
