@@ -127,10 +127,9 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		}
 		volumes = append(volumes, fmt.Sprintf(f, path.Join(e.pwd, path.Clean(v.Path)), path.Clean(m.Path)))
 	}
-	hs := utils.GetEnv(openedge.EnvMasterHostSocketKey)
-	cs := utils.GetEnv(openedge.EnvMasterContainerSocketKey)
-	if hs != "" && cs != "" {
-		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, hs, cs))
+	sock := utils.GetEnv(openedge.EnvMasterHostSocketKey)
+	if sock != "" {
+		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, sock, openedge.DefaultSockFile))
 	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
 	if err != nil {

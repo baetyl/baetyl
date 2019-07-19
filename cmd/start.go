@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/baidu/openedge/master"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	"github.com/spf13/cobra"
 )
@@ -69,14 +68,6 @@ func startInternal() error {
 	err = utils.LoadYAML(path.Join(workDir, confFile), &cfg)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %s", err.Error())
-	}
-
-	//TODO: Avoid repeated startup
-	if utils.PathExists(openedge.DefaultSockFile) {
-		err = os.RemoveAll(openedge.DefaultSockFile)
-		if err != nil {
-			return fmt.Errorf("failed to remove sock file: %s", err.Error())
-		}
 	}
 
 	m, err := master.New(workDir, cfg, Version)

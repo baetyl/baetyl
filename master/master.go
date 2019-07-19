@@ -46,7 +46,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		accounts:  cmap.New(),
 		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(openedge.DefaultDBDir, openedge.AppStatsFileName)),
 	}
-	log.Infof("mode: %s; grace: %d; pwd: %s", cfg.Mode, cfg.Grace, pwd)
+	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)
 	if err != nil {
 		m.Close()
@@ -101,14 +101,24 @@ func defaults(c *Config) error {
 	}
 
 	// address in container
-	if c.Mode == "native" {
-		utils.SetEnv(openedge.EnvMasterAPIKey, addr)
-	} else {
-		if url.Scheme == "unix" {
-			path, _ := filepath.Abs(url.Host)
-			utils.SetEnv(openedge.EnvMasterHostSocketKey, path)
-			utils.SetEnv(openedge.EnvMasterContainerSocketKey, openedge.DefaultSockFile)
+	if url.Scheme == "unix" {
+		sock, err := filepath.Abs(url.Host)
+		if err != nil {
+			return err
+		}
+		err = os.MkdirAll(filepath.Dir(sock), 0755)
+		if err != nil {
+			return err
+		}
+		utils.SetEnv(openedge.EnvMasterHostSocketKey, sock)
+		if c.Mode == "native" {
 			utils.SetEnv(openedge.EnvMasterAPIKey, "unix://"+openedge.DefaultSockFile)
+		} else {
+			utils.SetEnv(openedge.EnvMasterAPIKey, "unix:///"+openedge.DefaultSockFile)
+		}
+	} else {
+		if c.Mode == "native" {
+			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
 		} else {
 			parts := strings.SplitN(url.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])

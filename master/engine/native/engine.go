@@ -11,7 +11,7 @@ import (
 	"github.com/baidu/openedge/master/engine"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 	"github.com/shirou/gopsutil/process"
 )
 
@@ -91,7 +91,11 @@ func (e *nativeEngine) clean() {
 // Run new service
 func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.VolumeInfo) (engine.Service, error) {
 	spwd := path.Join(e.pwd, "var", "run", "openedge", "services", cfg.Name)
-	err := mount(e.pwd, spwd, cfg.Mounts, vs)
+	err := os.RemoveAll(spwd)
+	if err != nil {
+		return nil, err
+	}
+	err = mountAll(e.pwd, spwd, cfg.Mounts, vs)
 	if err != nil {
 		os.RemoveAll(spwd)
 		return nil, err
@@ -130,30 +134,36 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
-func mount(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.VolumeInfo) error {
+func mountAll(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.VolumeInfo) error {
 	for _, m := range ms {
 		v, ok := vs[m.Name]
 		if !ok {
 			return fmt.Errorf("volume '%s' not found", m.Name)
 		}
-		src := path.Join(epwd, path.Clean(v.Path))
-		err := os.MkdirAll(src, 0755)
-		if err != nil {
-			return err
-		}
-		dst := path.Join(spwd, path.Clean(strings.TrimSpace(m.Path)))
-		err = os.MkdirAll(path.Dir(dst), 0755)
-		if err != nil {
-			return err
-		}
-		err = os.RemoveAll(dst)
-		if err != nil {
-			return err
-		}
-		err = os.Symlink(src, dst)
+		err := mount(path.Join(epwd, strings.TrimSpace(v.Path)), path.Join(spwd, strings.TrimSpace(m.Path)))
 		if err != nil {
 			return err
 		}
 	}
+	sock := utils.GetEnv(openedge.EnvMasterHostSocketKey)
+	if sock != "" {
+		return mount(sock, path.Join(spwd, openedge.DefaultSockFile))
+	}
 	return nil
+}
+
+func mount(src, dst string) error {
+	// if it is a file mapping, the file must exist, otherwise it
+	// will be used as a dir mapping and make the dir.
+	if !utils.PathExists(src) {
+		err := os.MkdirAll(src, 0755)
+		if err != nil {
+			return err
+		}
+	}
+	err := os.MkdirAll(path.Dir(dst), 0755)
+	if err != nil {
+		return err
+	}
+	return os.Symlink(src, dst)
 }

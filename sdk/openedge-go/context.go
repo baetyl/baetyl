@@ -30,7 +30,6 @@ const (
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 
 	EnvMasterHostSocketKey      = "OPENEDGE_MASTER_HOST_SOCKET"
-	EnvMasterContainerSocketKey = "OPENEDGE_MASTER_CONTAINER_SOCKET"
 )
 
 // Path keys
@@ -42,7 +41,7 @@ const (
 	// AppStatsFileName application stats file name
 	AppStatsFileName = "application.stats"
 	// DefaultSockFile sock file of openedge by default
-	DefaultSockFile = "/var/run/openedge.sock"
+	DefaultSockFile = "var/run/openedge.sock"
 	// DefaultPidFile pid file of openedge by default
 	DefaultPidFile = "/var/run/openedge.pid"
 	// DefaultConfFile config path of the service by default

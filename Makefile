@@ -46,16 +46,6 @@ install: openedge
 	install -m 0755 openedge ${PREFIX}/bin/
 	tar cf - -C example/docker etc var | tar xvf - -C ${PREFIX}/
 
-uninstall:
-	rm -f ${PREFIX}/bin/openedge
-	rm -rf ${PREFIX}/etc/openedge
-	rm -rf ${PREFIX}/var/db/openedge
-	rmdir ${PREFIX}/var/db
-	rmdir ${PREFIX}/var
-	rmdir ${PREFIX}/etc
-	rmdir ${PREFIX}/bin
-	rmdir ${PREFIX}
-
 install-native: openedge package
 	install -d -m 0755 ${PREFIX}/bin
 	install -m 0755 openedge ${PREFIX}/bin/
@@ -86,7 +76,7 @@ install-native: openedge package
 
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
-uninstall-native:
+uninstall:
 	rm -f ${PREFIX}/bin/openedge
 	rm -rf ${PREFIX}/etc/openedge
 	rm -rf ${PREFIX}/var/db/openedge
@@ -99,6 +89,8 @@ uninstall-native:
 	rmdir ${PREFIX}/etc
 	rmdir ${PREFIX}/bin
 	rmdir ${PREFIX}
+
+uninstall-native: uninstall
 
 .PHONY: clean
 clean:
