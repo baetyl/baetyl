@@ -178,10 +178,13 @@ func GetNetInfo() *NetInfo {
 
 // CPUInfo CPU information
 type CPUInfo struct {
-	Time        time.Time    `json:"time,omitempty"`
-	UsedPercent float64      `json:"used_percent,omitempty"`
-	CPUs        []PerCPUInfo `json:"cpus,omitempty"`
-	Error       string       `json:"error,omitempty"`
+	Time        time.Time `json:"time,omitempty"`
+	Mhz         float64   `json:"mhz,omitempty"`
+	CacheSize   int32     `json:"cache_size,omitempty"`
+	UsedPercent float64   `json:"used_percent,omitempty"`
+	PhysicalID  string    `json:"physical_id,omitempty"`
+	ModelName   string    `json:"model_name,omitempty"`
+	Error       string    `json:"error,omitempty"`
 }
 
 // PerCPUInfo one CPU information
@@ -192,21 +195,25 @@ type PerCPUInfo struct {
 // GetCPUInfo gets CPU information
 func GetCPUInfo() *CPUInfo {
 	ci := &CPUInfo{Time: time.Now().UTC()}
+	info, err := cpu.Info()
+	if err != nil {
+		ci.Error = err.Error()
+		return ci
+	}
 	raw, err := cpu.Percent(0, false)
 	if err != nil {
 		ci.Error = err.Error()
 		return ci
 	}
-	per, err := cpu.Percent(0, true)
-	if err != nil {
-		ci.Error = err.Error()
-		return ci
+	// only get first CPU
+	if len(info) >= 1 {
+		ci.Mhz = info[0].Mhz
+		ci.CacheSize = info[0].CacheSize
+		ci.ModelName = info[0].ModelName
+		ci.PhysicalID = info[0].PhysicalID
 	}
-	if len(raw) == 1 {
+	if len(raw) >= 1 {
 		ci.UsedPercent = raw[0]
-	}
-	for _, v := range per {
-		ci.CPUs = append(ci.CPUs, PerCPUInfo{UsedPercent: v})
 	}
 	return ci
 }

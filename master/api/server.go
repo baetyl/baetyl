@@ -168,7 +168,6 @@ func toInspectSystemV0(v1 *openedge.Inspect) ([]byte, error) {
 	v0.Hardware.NetInfo = v1.Hardware.NetInfo
 	v0.Hardware.MemInfo = v1.Hardware.MemInfo
 	v0.Hardware.CPUInfo = &CPUInfoV0{}
-	v0.Hardware.CPUInfo.CPUs = len(v1.Hardware.CPUInfo.CPUs)
 	v0.Hardware.CPUInfo.UsedPercent = v1.Hardware.CPUInfo.UsedPercent
 	v0.Hardware.GPUInfo = []GPUInfoV0{}
 	for _, v := range v1.Hardware.GPUInfo.GPUs {
@@ -219,7 +218,6 @@ type HardwareV0 struct {
 
 // CPUInfoV0 CPU information
 type CPUInfoV0 struct {
-	CPUs        int     `json:"cpus,omitempty"`
 	UsedPercent float64 `json:"used_percent,omitempty"`
 }
 
