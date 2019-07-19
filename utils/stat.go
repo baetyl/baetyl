@@ -180,10 +180,11 @@ func GetNetInfo() *NetInfo {
 type CPUInfo struct {
 	Time        time.Time `json:"time,omitempty"`
 	Mhz         float64   `json:"mhz,omitempty"`
+	Cores       int32     `json:"cores,omitempty"`
 	CacheSize   int32     `json:"cache_size,omitempty"`
-	UsedPercent float64   `json:"used_percent,omitempty"`
-	PhysicalID  string    `json:"physical_id,omitempty"`
 	ModelName   string    `json:"model_name,omitempty"`
+	PhysicalID  string    `json:"physical_id,omitempty"`
+	UsedPercent float64   `json:"used_percent,omitempty"`
 	Error       string    `json:"error,omitempty"`
 }
 
@@ -208,6 +209,7 @@ func GetCPUInfo() *CPUInfo {
 	// only get first CPU
 	if len(info) >= 1 {
 		ci.Mhz = info[0].Mhz
+		ci.Cores = info[0].Cores
 		ci.CacheSize = info[0].CacheSize
 		ci.ModelName = info[0].ModelName
 		ci.PhysicalID = info[0].PhysicalID
