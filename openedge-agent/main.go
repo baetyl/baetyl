@@ -184,14 +184,15 @@ func (m *mo) report(overwrite bool, errors ...string) string {
 		return ""
 	}
 	m.ctx.Log().Debugln("stats", string(payload))
-	p := packet.NewPublish()
-	p.Message.Topic = m.cfg.Remote.Report.Topic
-	p.Message.Payload = payload
-	err = m.mqtt.Send(p)
-	if err != nil {
-		m.ctx.Log().WithError(err).Warnf("failed to report stats by mqtt")
-	}
-	err = m.send(p.Message.Payload)
+	// TODO: connect with device management on cloud
+	// p := packet.NewPublish()
+	// p.Message.Topic = m.cfg.Remote.Report.Topic
+	// p.Message.Payload = payload
+	// err = m.mqtt.Send(p)
+	// if err != nil {
+	// 	m.ctx.Log().WithError(err).Warnf("failed to report stats by mqtt")
+	// }
+	err = m.send(payload)
 	if err != nil {
 		m.ctx.Log().WithError(err).Warnf("failed to report stats by https")
 	}
