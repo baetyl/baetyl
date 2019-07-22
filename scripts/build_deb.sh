@@ -9,7 +9,7 @@ set -e
 #       3. 环境配置
 #       4. 打包：最新代码；打包
 #       5. 本地发布
-#       6. 拷贝到远程
+#       6. TODO: 拷贝到远程
 #
 # Please run it on Ubuntu16.04 amd64 machine.
 #
@@ -17,9 +17,9 @@ set -e
 #   * https://www.debian.org/doc/manuals/maint-guide
 #   * https://www.aptly.info/
 
-# 添加脚本的权限
-# 1. 如果是普通用户，那么他需要在 sudo 组
-# 2. 如果是 root，能不能用root，然后打出的包的权限是什么样的
+# 1. 添加脚本的权限
+# 2. 如果是普通用户，那么他需要在 sudo 组
+# 3. 如果是 root，能不能用root，然后打出的包的权限是什么样的
 
 SCRIPT_NAME=$(basename "$0")
 PACKAGE_NAME=openedge
@@ -120,38 +120,38 @@ process_args() {
     fi
 }
 
-# 检查是不是 root
-# 如果是 root， 那就创建新用户，然后切换到新用户目录下
-if [ $(id -u) -eq 0 ]; then
-    # 检查 test 用户，不存在创建一个并且目录转移
-    if id -u $USER_ >/dev/null 2>&1; then
-        print_status "User $USER_ exists!"
-        if [[ -z $(groups $USER_ | grep sudo) ]]; then
-            print_status "Added user $USER_ to sudo group"
-            exec_cmd "usermod -G sudo $USER_"
+check_user() {
+    # 检查是不是 root
+    # 如果是 root， 那就创建新用户，然后切换到新用户目录下
+    if [ $(id -u) -eq 0 ]; then
+        # 检查 test 用户，不存在创建一个并且目录转移
+        if id -u $USER_ >/dev/null 2>&1; then
+            print_status "User $USER_ exists!"
+            if [[ -z $(groups $USER_ | grep sudo) ]]; then
+                exec_cmd "usermod -G sudo $USER_"
+                print_status "Added user $USER_ to sudo group"
+                exec_cmd "su $USER_"
+                exec_cmd "cd $HOME"
+            fi
+        else
+            print_status "User $USER_ doesn't exist!"
+            exec_cmd "useradd -g sudo -d /home/$USER_ -m -s /bin/bash $USER_"
+            echo -e "${PASSWORD}\n${PASSWORD}" | passwd $USER_
+            print_status "User $USER_ created and added to sudo group"
             exec_cmd "su $USER_"
             exec_cmd "cd $HOME"
         fi
-    else
-        print_status "User $USER_ doesn't exist!"
-        print_status "User $USER_ created and added to sudo group"
-        exec_cmd "useradd -g sudo -d /home/$USER_ -m -s /bin/bash $USER_"
-        exec_cmd "echo useradd -g sudo -d /home/$USER_ -m -s /bin/bash $USER_"
-        echo -e "${PASSWORD}\n${PASSWORD}" | passwd $USER_
-        print_status "set passwd completed!"
-        exec_cmd "su $USER_"
-        exec_cmd "cd $HOME"
     fi
-fi
 
-# TODO: 检查当前用户具有 sudo 权限
-if [[ -z $(groups | grep sudo) ]]; then
-    print_status "Please contact administrator to add you to sudo group"
-    print_status "use command 'usermod -G sudo username'"
-    exit 1
-fi
+    # TODO: 检查当前用户具有 sudo 权限
+    if [[ -z $(groups | grep sudo) ]]; then
+        print_status "Please contact administrator to add you to sudo group"
+        print_status "use command 'usermod -G sudo username'"
+        exit 1
+    fi
 
-print_status "Current User: $USER, current work directory: $(pwd)"
+    print_status "Current User: $USER, current work directory: $(pwd)"
+}
 
 install_check_deps() {
     PRE_INSTALL_PKGS=""
@@ -247,7 +247,7 @@ import_key() {
         print_status "Already have gpg secret key $KEY_NAME"
     else
         # 导入密钥
-        curl -fsSL http://$URL_KEY/$PRIVATE_KEY_NAME | gpg --import -
+        curl -fsSL $URL_KEY/$PRIVATE_KEY_NAME | gpg --import -
 
         # check secret key
         if [[ -z $(gpg --list-secret-keys | grep $KEY_NAME) ]]; then
@@ -270,6 +270,16 @@ import_key() {
 
 install_deps() {
     PRE_INSTALL_PKGS=""
+
+    # check package unzip
+    if [ ! -x /usr/bin/unzip ]; then
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} unzip"
+    fi
+
+    # check package git
+    if [[ -z $(dpkg --get-selections | grep git) ]]; then
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} git"
+    fi
 
     # check package gdebi-core
     if [[ -z $(dpkg --get-selections | grep gdebi-core) ]]; then
@@ -311,9 +321,9 @@ install_deps() {
         PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} ca-certificates"
     fi
 
-    # check package git
-    if [[ -z $(dpkg --get-selections | grep git) ]]; then
-        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} git"
+    # check package ca-certificates
+    if [[ -z $(dpkg --get-selections | grep dh-systemd) ]]; then
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} dh-systemd"
     fi
 
     if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
@@ -329,60 +339,68 @@ install_deps() {
 }
 
 get_code() {
-    # # get the latest commit
-    # go get -v -u -x -d github.com/baidu/openedge
 
-    # cd $GOPATH/src/github.com/baidu/openedge
+    if [ ! -d $GOPATH/src/github.com/baidu ]; then
+        exec_cmd "mkdir -p $GOPATH/src/github.com/baidu"
+        exec_cmd "cd $GOPATH/src/github.com/baidu"
+        git clone https://github.com/baidu/openedge.git
+        exec_cmd "cd openedge"
+    else
+        exec_cmd "cd $GOPATH/src/github.com/baidu/openedge"
+        exec_cmd "git checkout -f master"
+        exec_cmd "git checkout HEAD"
+        exec_cmd "git clean -df"
+        git pull origin master:master
+        print_status "git pull done!"
+    fi
 
-    # # get latest tag
-    # LatestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
+    # get latest tag
+    LatestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
 
-    # # check to the commit with latest tag
-    # git checkout $LatestTag
+    # check to the commit with latest tag
+    git checkout $LatestTag
 
-    # # git clean -df
-
-    # print_status "get latest release successfully!"
-
-    echo "get_code is none"
+    print_status "get latest release successfully!"
 }
 
 build_deb() {
     # remove useless deb file
-    rm -f ../openedge_*.changes ../openedge_*.deb
+    exec_cmd "rm -f ../*.changes ../*.deb"
 
-    rm -rf ../debs
+    exec_cmd "rm -rf ./debian"
 
-    rm -rf ./debian
-
-    cp -r ./scripts/debian ./debian
+    exec_cmd "cp -r ./scripts/debian ./debian"
 
     # TODO: generate changelog file according to CHANGELOG.md
 
     # amd64
     sed -i "s/make install PREFIX=debian\/openedge/env GOOS=linux GOARCH=amd64 make install PREFIX=debian\/openedge/g" debian/rules
-    dpkg-buildpackage -a amd64 -b -d -uc -us
+    dpkg-buildpackage -a amd64 -b -d -uc -us -i
 
     # arm64
     sed -i "s/env GOOS=linux GOARCH=amd64 make install PREFIX=debian\/openedge/env GOOS=linux GOARCH=arm64 make install PREFIX=debian\/openedge/g" debian/rules
-    dpkg-buildpackage -a arm64 -b -d -uc -us
+    dpkg-buildpackage -a arm64 -b -d -uc -us -i
 
     # i386
     sed -i "s/env GOOS=linux GOARCH=arm64 make install PREFIX=debian\/openedge/env GOOS=linux GOARCH=386 make install PREFIX=debian\/openedge/g" debian/rules
-    dpkg-buildpackage -a i386 -b -d -uc -us
+    dpkg-buildpackage -a i386 -b -d -uc -us -i
 
     # armhf
     sed -i "s/env GOOS=linux GOARCH=386 make install PREFIX=debian\/openedge/env GOOS=linux GOARCH=arm GOARM=7 make install PREFIX=debian\/openedge/g" debian/rules
-    dpkg-buildpackage -a armhf -b -d -uc -us
+    dpkg-buildpackage -a armhf -b -d -uc -us -i
 
     print_status "build_deb successfully!"
 }
 
 repo_publish() {
 
+    # TODO: 如果本地仓库有文件内容相同，但是文件名称不同，那么添加时候会失败
+
     REPO_LIST=$(aptly repo list)
 
-    exec_cmd "mkdir -p ../store"
+    if [ ! -d ../store ]; then
+        exec_cmd "mkdir -p ../store"
+    fi
 
     # publish debian
     debian_dist=("buster" "jessie" "stretch" "wheezy")
@@ -394,68 +412,68 @@ repo_publish() {
         debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
         debs_exist=$(aptly repo show -with-packages openedge_debian_$dist)
         for deb in ${debs[@]}; do
-            # openedge_0.1.4-1_amd64 --> openedge_0.1.4-1~buster_amd64
-            DEB_NAME1=$(echo $deb | sed -r "s/(${PACKAGE_NAME}_[0-9]+\.[0-9]+\.[0-9]-[0-9]+)_.*/\1/g")
-            DEB_NAME2=$(echo $deb | sed -r "s/${PACKAGE_NAME}_[0-9]+\.[0-9]+\.[0-9]-[0-9]+(_.*)/\1/g")
-            DEB_NAME_NEW=${DEB_NAME1}~${dist}${DEB_NAME2}
-            if [[ -z $(echo $debs_exist | grep $DEB_NAME_NEW) ]]; then
-                # cp openedge_0.1.4-1_amd64.deb --> debs/openedge_0.1.4-1~buster_amd64.deb
-                exec_cmd "cp ../${deb}.deb ../store/${DEB_NAME_NEW}.deb"
-                aptly repo add openedge_debian_$dist ../store/${DEB_NAME_NEW}.deb
+            if [[ -z $(echo $debs_exist | grep $deb) ]]; then
+                aptly repo add openedge_debian_$dist ../${deb}.deb
             fi
         done
-        if [[ ! -z $(aptly publish list | grep linux/debian/$dist) ]]; then
-            aptly publish drop ${dist} linux/debian
+        if [[ -z $(aptly publish list | grep linux/debian/$dist) ]]; then
+            aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_debian_$dist linux/debian
+        else
+            aptly publish update -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" ${dist} linux/debian
         fi
-        aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_debian_$dist linux/debian
     done
 
-    # # publish ubuntu
-    # ubuntu_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
+    # publish ubuntu
+    ubuntu_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
 
-    # for dist in ${ubuntu_dist[@]}; do
-    #     if [[ -z $(echo $REPO_LIST | grep openedge_ubuntu_$dist) ]]; then
-    #         aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge ubuntu $dist" -component main -distribution ${dist} openedge_ubuntu_$dist
-    #     fi
-    #     debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
-    #     debs_exist=$(aptly repo show -with-packages openedge_ubuntu_$dist)
-    #     for deb in ${debs[@]}; do
-    #         if [[ -z $(echo $debs_exist | grep $deb) ]]; then
-    #             aptly repo add openedge_ubuntu_$dist ../${deb}.deb
-    #         fi
-    #     done
-    #     if [[ ! -z $(aptly publish list | grep linux/ubuntu/$dist) ]]; then
-    #         aptly publish drop ${dist} linux/ubuntu
-    #     fi
-    #     aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_ubuntu_$dist linux/ubuntu
-    # done
+    for dist in ${ubuntu_dist[@]}; do
+        if [[ -z $(echo $REPO_LIST | grep openedge_ubuntu_$dist) ]]; then
+            aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge ubuntu $dist" -component main -distribution ${dist} openedge_ubuntu_$dist
+        fi
+        debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
+        debs_exist=$(aptly repo show -with-packages openedge_ubuntu_$dist)
+        for deb in ${debs[@]}; do
+            if [[ -z $(echo $debs_exist | grep $deb) ]]; then
+                aptly repo add openedge_ubuntu_$dist ../${deb}.deb
+            fi
+        done
+        if [[ -z $(aptly publish list | grep linux/ubuntu/$dist) ]]; then
+            aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_ubuntu_$dist linux/ubuntu
+        else
+            aptly publish update -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" ${dist} linux/ubuntu
+        fi
+    done
 
-    # # publish raspbian
-    # raspbian_dist=("artful" "bionic" "cosmic" "disco" "trusty" "xenial" "yakkety" "zesty")
+    # publish raspbian
+    raspbian_dist=("buster" "jessie" "stretch")
 
-    # for dist in ${raspbian_dist[@]}; do
-    #     if [[ -z $(echo $REPO_LIST | grep openedge_raspbian_$dist) ]]; then
-    #         aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge raspbian $dist" -component main -distribution ${dist} openedge_raspbian_$dist
-    #     fi
-    #     debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
-    #     debs_exist=$(aptly repo show -with-packages openedge_raspbian_$dist)
-    #     for deb in ${debs[@]}; do
-    #         if [[ -z $(echo $debs_exist | grep $deb) ]]; then
-    #             aptly repo add openedge_raspbian_$dist ../${deb}.deb
-    #         fi
-    #     done
-    #     if [[ ! -z $(aptly publish list | grep linux/raspbian/$dist) ]]; then
-    #         aptly publish drop ${dist} linux/raspbian
-    #     fi
-    #     aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_raspbian_$dist linux/raspbian
-    # done
+    for dist in ${raspbian_dist[@]}; do
+        if [[ -z $(echo $REPO_LIST | grep openedge_raspbian_$dist) ]]; then
+            aptly repo create -architectures amd64,arm64,i386,armhf -comment "openedge raspbian $dist" -component main -distribution ${dist} openedge_raspbian_$dist
+        fi
+        debs=$(ls ../*.deb | sed 's/\.\.\///g; s/\.deb//g;')
+        debs_exist=$(aptly repo show -with-packages openedge_raspbian_$dist)
+        for deb in ${debs[@]}; do
+            if [[ -z $(echo $debs_exist | grep $deb) ]]; then
+                aptly repo add openedge_raspbian_$dist ../${deb}.deb
+            fi
+        done
+        if [[ -z $(aptly publish list | grep linux/raspbian/$dist) ]]; then
+            aptly publish repo -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" openedge_raspbian_$dist linux/raspbian
+        else
+            aptly publish update -gpg-key="$GPG_KEY" -passphrase="$PASSPHRASE" ${dist} linux/raspbian
+        fi
+    done
 }
 
+# TODO
 # #拷贝到 远程官方机器
 # scp xx xx@xx:xx
 # # 单纯拷贝
 
 process_args "$@"
+
+check_user
 
 install_check_deps
 
@@ -477,3 +495,7 @@ exit $?
 
 # 1. repo 里面有 1.3-1， 也有1.4-1 ，这样的话发布的时候会选哪一个？最新的？那么老的会不会带？
 # 2. publish之后拷贝后，怎么覆盖远程机器的东西
+# TODO: 需要一个 彻底删除 aptly publish、aptly repo 的选项
+
+# sudo apt-get install dh-systemd
+# 传 HEAD uuid 和 version 版本

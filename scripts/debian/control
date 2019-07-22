@@ -2,7 +2,9 @@ Source: openedge
 Section: admin
 Priority: extra
 Maintainer: OpenEdge Devs
-Build-Depends: build-essential, debhelper (>= 9)
+Build-Depends: build-essential, 
+               debhelper (>= 9), 
+               dh-systemd
 
 Package: openedge
 Architecture: any
