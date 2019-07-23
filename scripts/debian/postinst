@@ -1,7 +1,41 @@
 #!/bin/sh
 set -e
 
+case "$1" in
+configure)
+    echo "==============================================================================="
+    echo ""
+    echo "                              OpenEdge"
+    echo ""
+    echo "  IMPORTANT: Please download your configuration file from your cloud management"
+    echo "  suits, then put them in"
+    echo "    /usr/local/"
+    echo ""
+    echo "  You will need to restart the 'openedge' service for these changes to take"
+    echo "  effect."
+    echo ""
+    echo "  To restart the 'openedge' service, use:"
+    echo ""
+    echo "    'sudo systemctl restart openedge'"
+    echo ""
+    echo "    - OR -"
+    echo ""
+    echo "    sudo /etc/init.d/openedge restart"
+    echo ""
+    echo "  These commands may need to be run with sudo depending on your environment."
+    echo ""
+    echo "==============================================================================="
+    ;;
 
+abort-upgrade | abort-remove | abort-deconfigure) ;;
 
+\
+    *)
+    echo "postinst called with unknown argument \`$1'" >&2
+    exit 1
+    ;;
+esac
+
+#DEBHELPER#
 
 exit 0

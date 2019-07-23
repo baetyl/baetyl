@@ -2,11 +2,13 @@ Source: openedge
 Section: admin
 Priority: extra
 Maintainer: OpenEdge Devs
-Build-Depends: build-essential, debhelper (>= 9)
+Build-Depends: build-essential, 
+               debhelper (>= 9), 
+               dh-systemd
 
 Package: openedge
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: libc6 (>= 2.3.2), init-system-helpers (>= 1.13~)
 Description: OpenEdge
  OpenEdge is an open edge computing framework 
  that extends cloud computing, data and service seamlessly to edge devices. 
