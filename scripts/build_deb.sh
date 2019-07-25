@@ -340,27 +340,28 @@ install_deps() {
 
 get_code() {
 
-    if [ ! -d $GOPATH/src/github.com/baidu ]; then
-        exec_cmd "mkdir -p $GOPATH/src/github.com/baidu"
-        exec_cmd "cd $GOPATH/src/github.com/baidu"
-        git clone https://github.com/baidu/openedge.git
-        exec_cmd "cd openedge"
-    else
-        exec_cmd "cd $GOPATH/src/github.com/baidu/openedge"
-        exec_cmd "git checkout -f master"
-        exec_cmd "git checkout HEAD"
-        exec_cmd "git clean -df"
-        git pull origin master:master
-        print_status "git pull done!"
-    fi
+    # if [ ! -d $GOPATH/src/github.com/baidu ]; then
+    #     exec_cmd "mkdir -p $GOPATH/src/github.com/baidu"
+    #     exec_cmd "cd $GOPATH/src/github.com/baidu"
+    #     git clone https://github.com/baidu/openedge.git
+    #     exec_cmd "cd openedge"
+    # else
+    #     exec_cmd "cd $GOPATH/src/github.com/baidu/openedge"
+    #     exec_cmd "git checkout -f master"
+    #     exec_cmd "git checkout HEAD"
+    #     exec_cmd "git clean -df"
+    #     git pull origin master:master
+    #     print_status "git pull done!"
+    # fi
 
-    # get latest tag
-    LatestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
+    # # get latest tag
+    # LatestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
 
-    # check to the commit with latest tag
-    git checkout $LatestTag
+    # # check to the commit with latest tag
+    # git checkout $LatestTag
 
     print_status "get latest release successfully!"
+
 }
 
 build_deb() {

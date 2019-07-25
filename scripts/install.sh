@@ -46,7 +46,7 @@ PACKAGE_NAME=openedge
 URL_KEY=https://github.com/chensheng0/testfork/releases/download/key
 PRUBLIC_KEY_NAME=key.public
 
-echo "deb http://106.13.24.234/linux/${SYSTEM_NAME} $DISTRO main" |
+echo "deb http://106.13.23.136/linux/${SYSTEM_NAME} $DISTRO main" |
     sudo tee /etc/apt/sources.list.d/${PACKAGE_NAME}.list
 
 print_status "Added repo /etc/apt/sources.list.d/${PACKAGE_NAME}.list"
