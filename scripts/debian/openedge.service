@@ -8,7 +8,7 @@ ExecStart=/usr/local/bin/openedge start
 KillMode=process
 TimeoutStartSec=600
 TimeoutStopSec=40
-Restart=on-failure
+Restart=always
 
 
 [Install]
