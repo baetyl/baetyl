@@ -1,17 +1,26 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@
-         
+	dh $@ --with systemd
+
 override_dh_auto_test:
 	: 
-        
+
 override_dh_auto_install:
-	make install PREFIX=debian/openedge
+	make install PREFIX=debian/openedge/usr/local
 
 override_dh_strip:
-	:
+	:       
 
 override_dh_auto_build:
 	:
-	
+
+override_dh_usrlocal:
+	:
+
+override_dh_installinit:
+	dh_systemd_enable
+	dh_installinit
+
+override_dh_systemd_start:
+	echo "Not running dh_systemd_start"

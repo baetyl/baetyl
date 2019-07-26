@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-check_runtime()
-{
+add_groups() {
+    echo "TODO: add_groups..."
+}
+
+check_runtime() {
     # Verify a container runtime exists before installing.
 
     if ! getent group docker >/dev/null; then
@@ -19,20 +22,20 @@ check_runtime()
 }
 
 case "$1" in
-    install|upgrade)
-        check_runtime
+install | upgrade)
+    check_runtime
+    add_groups
     ;;
 
-    abort-upgrade)
-    ;;
+abort-upgrade) ;;
 
+\
     *)
-        echo "preinst called with unknown argument \`$1'" >&2
-        exit 1
+    echo "preinst called with unknown argument \`$1'" >&2
+    exit 1
     ;;
 esac
 
-
-
+#DEBHELPER#
 
 exit 0

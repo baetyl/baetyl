@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"syscall"
 	"time"
 
 	"github.com/baidu/openedge/logger"
@@ -95,6 +97,12 @@ func (s *Server) Handle(handle func(Params, []byte) ([]byte, error), method, pat
 
 // Start starts server
 func (s *Server) Start() error {
+	if s.uri.Scheme == "unix" {
+		if err := syscall.Unlink(s.uri.Host); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+	}
+
 	l, err := net.Listen(s.uri.Scheme, s.uri.Host)
 	if err != nil {
 		return err
