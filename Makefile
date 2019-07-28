@@ -14,7 +14,7 @@ SRC=$(wildcard *.go) $(shell find cmd master logger sdk protocol utils -type f -
 
 openedge: $(SRC)
 	@echo "BUILD $@"
-	@go build ${GOFLAG} .
+	@go build -o openedge ${GOFLAG} .
 
 openedge-hub/package.zip:
 	make -C openedge-hub

@@ -1,6 +1,6 @@
 Name:           openedge
-Version:        0.1.4
-Release:        1@%{?dist}
+Version:        @version@
+Release:        1%{?dist}
 
 License:        Proprietary
 Summary:        OpenEdge rpm package
@@ -24,7 +24,8 @@ This package contains the IoT Edge daemon and CLI tool.
 
 %install
 rm -rf %{buildroot}
-make install PREFIX=%{buildroot}/usr/local
+make install PREFIX=%{buildroot}/usr/local VERSION=_VERSION_
+install -d %{buildroot}%{_unitdir}
 install scripts/debian/openedge.service %{buildroot}%{_unitdir}/openedge.service  
 
 %clean
@@ -69,7 +70,6 @@ echo ""
 echo "  These commands may need to be run with sudo depending on your environment."
 echo ""
 echo "==============================================================================="
-;;
 %systemd_post openedge.service
 
 %preun
@@ -79,10 +79,10 @@ echo "==========================================================================
 %systemd_postun_with_restart openedge.service
 
 %files
-/usr/local/bin/openedge
-/usr/local/var/db/openedge/*
+/usr/local/*
 
 # systemd
 %{_unitdir}/%{name}.service
 
 %changelog
+
