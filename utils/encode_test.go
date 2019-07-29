@@ -46,6 +46,14 @@ modules:
 	assert.NoError(t, err)
 	assert.Equal(t, cfg, cfg2)
 
+	err = UnmarshalYAML([]byte{}, &cfg2)
+	assert.NoError(t, err)
+	assert.Equal(t, cfg, cfg2)
+
+	err = UnmarshalYAML(nil, &cfg2)
+	assert.NoError(t, err)
+	assert.Equal(t, cfg, cfg2)
+
 	err = UnmarshalYAML([]byte("-{}-"), &cfg2)
 	assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `-{}-` into utils.testEncodeStruct")
 }

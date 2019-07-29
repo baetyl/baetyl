@@ -138,7 +138,7 @@ func (m *mo) processEvent(payload []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to prepare app volumes: %s", err.Error())
 	}
-	err = m.ctx.UpdateSystem(hostdir)
+	err = m.ctx.UpdateSystem(openedge.OTAAPP, hostdir)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}
@@ -152,8 +152,8 @@ func (m *mo) reporting() error {
 	for {
 		select {
 		case <-t.C:
-			m.ctx.Log().Debugln("to report stats")
 			version := m.report(false)
+			m.ctx.Log().Debugln("stats is reported")
 			m.cleaner.do(version)
 		case <-m.tomb.Dying():
 			return nil

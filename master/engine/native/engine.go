@@ -150,7 +150,7 @@ func mountAll(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge
 			return err
 		}
 	}
-	sock := utils.GetEnv(openedge.EnvMasterHostSocketKey)
+	sock := utils.GetEnv(openedge.EnvMasterHostSocket)
 	if sock != "" {
 		return mount(sock, path.Join(spwd, openedge.DefaultSockFile))
 	}

@@ -32,6 +32,8 @@ services:
   #       path: var/db/openedge/volumes
   #     - name: agent-log
   #       path: var/log/openedge
+  #     - name: openedge-log
+  #       path: var/db/openedge/openedge-log/
   #     # native process mode only
   #     - name: openedge-agent-bin
   #       path: lib/openedge/openedge-agent

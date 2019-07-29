@@ -113,7 +113,7 @@ func (i *nativeInstance) Restart() error {
 }
 
 func (i *nativeInstance) Stop() {
-	i.log.Infof("to stop instance")
+	i.log.Infof("instance is stopping")
 	err := i.service.engine.stopProcess(i.proc)
 	if err != nil {
 		i.log.Debugf("failed to stop instance: %s", err.Error())
@@ -126,7 +126,7 @@ func (i *nativeInstance) Dying() <-chan struct{} {
 }
 
 func (i *nativeInstance) Close() error {
-	i.log.Infof("to close instance")
+	i.log.Infof("instance is closing")
 	i.tomb.Kill(nil)
 	return i.tomb.Wait()
 }

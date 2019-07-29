@@ -56,8 +56,9 @@ func (c *Client) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *Client) UpdateSystem(path string) error {
+func (c *Client) UpdateSystem(tp, path string) error {
 	data, err := json.Marshal(map[string]string{
+		"type": tp,
 		"path": path,
 		"file": path, // backward compatibility, openedge master version < 0.1.4
 	})
