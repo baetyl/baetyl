@@ -1,18 +1,21 @@
 #!/bin/bash
 set -e
 
+# TODO：规范化
+
 print_status() {
     echo
     echo "## $1"
     echo
 }
 
+PACKAGE_NAME=openedge
+URL_PACKAGE=106.13.23.136
+URL_KEY=https://github.com/chensheng0/testfork/releases/download/key
+PRUBLIC_KEY_NAME=key.public
 PRE_INSTALL_PKGS=""
 SYSTEM_NAME=$(lsb_release -is | tr 'A-Z' 'a-z')
 DISTRO=$(lsb_release -cs)
-PACKAGE_NAME=openedge
-URL_KEY=https://github.com/chensheng0/testfork/releases/download/key
-PRUBLIC_KEY_NAME=key.public
 
 if [ ! -x /usr/bin/lsb_release ]; then
     PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
@@ -38,10 +41,10 @@ if [ $SYSTEM_NAME = centos ]; then
     {
         echo '[openedge]'
         echo 'name=openedge'
-        echo 'baseurl=http://106.13.23.136/linux/centos/7/x86_64'
+        echo "baseurl=http://${URL_PACKAGE}/linux/centos/7/x86_64"
         echo 'gpgcheck=1'
         echo 'enabled=1'
-        echo 'gpgkey=https://github.com/chensheng0/testfork/releases/download/key/key.public'
+        echo "gpgkey=$URL_KEY/$PRUBLIC_KEY_NAME"
     } >>/etc/yum.repos.d/openedge.repo
 
     yum install $PACKAGE_NAME
@@ -61,7 +64,7 @@ else
         apt-get install -y ${PRE_INSTALL_PKGS} >/dev/null 2>&1
     fi
 
-    echo "deb http://106.13.23.136/linux/${SYSTEM_NAME} $DISTRO main" |
+    echo "deb http://${URL_PACKAGE}/linux/${SYSTEM_NAME} $DISTRO main" |
         sudo tee /etc/apt/sources.list.d/${PACKAGE_NAME}.list
 
     print_status "Added repo /etc/apt/sources.list.d/${PACKAGE_NAME}.list"
