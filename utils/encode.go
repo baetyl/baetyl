@@ -1,8 +1,12 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"os"
+	"text/template"
+	"strings"
 
 	units "github.com/docker/go-units"
 	validator "gopkg.in/validator.v2"
@@ -15,7 +19,23 @@ func LoadYAML(path string, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	return UnmarshalYAML(data, out)
+	text := string(data)
+	envs := os.Environ()
+	envMap := make(map[string]string)
+	for _, s := range envs {
+		t := strings.Split(s, "=")
+		envMap[t[0]] = t[1]
+	}
+	tmpl, err := template.New("template").Parse(text)
+	if err != nil {
+		return err
+	}
+	buffer := bytes.NewBuffer(nil)
+	err = tmpl.Execute(buffer, envMap)
+	if err != nil {
+		return err
+	}
+	return UnmarshalYAML(buffer.Bytes(), out)
 }
 
 // UnmarshalYAML unmarshals, defaults and validates
