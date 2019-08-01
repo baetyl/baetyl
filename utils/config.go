@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -21,6 +22,7 @@ func LoadYAML(path string, out interface{}) error {
 	}
 	res, err := ParseEnv(data)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "config parse error: %s", err.Error())
 		res = data
 	}
 	return UnmarshalYAML(res, out)
@@ -34,7 +36,7 @@ func ParseEnv(data []byte) ([]byte, error) {
 		t := strings.Split(s, "=")
 		envMap[t[0]] = t[1]
 	}
-	tmpl, err := template.New("template").Parse(text)
+	tmpl, err := template.New("template").Option("missingkey=error").Parse(text)
 	if err != nil {
 		return nil, err
 	}

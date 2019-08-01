@@ -110,10 +110,8 @@ modules:
       - arg1
       - arg2
 `
-	res2, err2 := ParseEnv([]byte(confString2))
-	assert.NoError(t, err2)
-	resString2 := string(res2)
-	assert.False(t, strings.Contains(resString2, "OPENEDGE_NOT_EXIST"))
+	_, err2 := ParseEnv([]byte(confString2))
+	assert.Error(t, err2)
 
 	// syntax error
 	confString3 := `
