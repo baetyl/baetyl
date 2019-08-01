@@ -286,6 +286,12 @@
 			"revisionTime": "2018-09-12T20:56:54Z"
 		},
 		{
+			"checksumSHA1": "7NP1qUMF8Kx1y0zANxx0e+oq9Oo=",
+			"path": "github.com/fsnotify/fsnotify",
+			"revision": "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9",
+			"revisionTime": "2018-01-10T05:33:47Z"
+		},
+		{
 			"checksumSHA1": "vTmc/uvCPpTs51Rl9bVomPZMZIM=",
 			"path": "github.com/go-ole/go-ole",
 			"revision": "97b6244175ae18ea6eef668034fd6565847501c9",
