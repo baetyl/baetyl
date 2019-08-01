@@ -19,14 +19,14 @@ func LoadYAML(path string, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	res, err := ParseEnvs(data)
+	res, err := ParseEnv(data)
 	if err != nil {
 		res = data
 	}
 	return UnmarshalYAML(res, out)
 }
 
-func ParseEnvs(data []byte) ([]byte, error) {
+func ParseEnv(data []byte) ([]byte, error) {
 	text := string(data)
 	envs := os.Environ()
 	envMap := make(map[string]string)
