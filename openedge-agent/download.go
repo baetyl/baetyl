@@ -12,30 +12,12 @@ import (
 	"github.com/mholt/archiver"
 )
 
-func (m *mo) downloadConfigVolume(cfgVol openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
-	volumeHostDir, volumeContainerDir, err := m.download(cfgVol)
-	if err != nil {
-		return nil, "", err
-	}
-	var cfg openedge.AppConfig
-	cfgFile := path.Join(volumeContainerDir, openedge.AppConfFileName)
-	err = utils.LoadYAML(cfgFile, &cfg)
-	if err != nil {
-		return nil, "", err
-	}
-	// check service list, cannot be empty
-	if len(cfg.Services) == 0 {
-		return nil, "", fmt.Errorf("Invalid app Config: the service list is empty")
-	}
-	return &cfg, volumeHostDir, nil
-}
-
-func (m *mo) downloadAppVolumes(cfg *openedge.AppConfig) error {
-	for _, ds := range cfg.Volumes {
-		if ds.Meta.URL == "" {
+func (a *agent) downloadAppVolumes(volumes []openedge.VolumeInfo) error {
+	for _, v := range volumes {
+		if v.Meta.URL == "" {
 			continue
 		}
-		_, _, err := m.download(ds)
+		_, _, err := a.download(v)
 		if err != nil {
 			return err
 		}
@@ -43,7 +25,7 @@ func (m *mo) downloadAppVolumes(cfg *openedge.AppConfig) error {
 	return nil
 }
 
-func (m *mo) download(v openedge.VolumeInfo) (string, string, error) {
+func (a *agent) download(v openedge.VolumeInfo) (string, string, error) {
 	rp, err := filepath.Rel(openedge.DefaultDBDir, v.Path)
 	if err != nil {
 		return "", "", fmt.Errorf("path of volume (%s) invalid: %s", v.Name, err.Error())
@@ -57,16 +39,16 @@ func (m *mo) download(v openedge.VolumeInfo) (string, string, error) {
 	if utils.FileExists(volumeZipFile) {
 		volumeMD5, err := utils.CalculateFileMD5(volumeZipFile)
 		if err == nil && volumeMD5 == v.Meta.MD5 {
-			m.ctx.Log().Debugf("volume (%s) exists", v.Name)
+			a.ctx.Log().Debugf("volume (%s) exists", v.Name)
 			return volumeHostDir, volumeContainerDir, nil
 		}
 	}
 
-	res, err := m.http.SendUrl("GET", v.Meta.URL, nil, nil)
+	res, err := a.http.SendUrl("GET", v.Meta.URL, nil, nil)
 	if err != nil || res == nil {
 		// retry
 		time.Sleep(time.Second)
-		res, err = m.http.SendUrl("GET", v.Meta.URL, nil, nil)
+		res, err = a.http.SendUrl("GET", v.Meta.URL, nil, nil)
 		if err != nil || res == nil {
 			return "", "", fmt.Errorf("failed to download volume (%s): %v", v.Name, err)
 		}

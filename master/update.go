@@ -17,18 +17,13 @@ var appDir = path.Join("var", "db", "openedge")
 var appConfigFile = path.Join(appDir, openedge.AppConfFileName)
 var appBackupFile = path.Join(appDir, openedge.AppBackupFileName)
 
-var binFile = path.Join("bin", "openedge")
-
-// BinBackupFile the backup file path of master binary
-var BinBackupFile = path.Join("bin", "openedge.old")
-
 // UpdateSystem updates application or master
-func (m *Master) UpdateSystem(tp, target string) (err error) {
+func (m *Master) UpdateSystem(trace, tp, target string) (err error) {
 	switch tp {
 	case openedge.OTAMST:
-		err = m.UpdateMST(target, BinBackupFile)
+		err = m.UpdateMST(trace, target, openedge.DefaultBinBackupFile)
 	default:
-		err = m.UpdateAPP(target)
+		err = m.UpdateAPP(trace, target)
 	}
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
@@ -39,22 +34,22 @@ func (m *Master) UpdateSystem(tp, target string) (err error) {
 }
 
 // UpdateAPP updates application
-func (m *Master) UpdateAPP(target string) error {
+func (m *Master) UpdateAPP(trace, target string) error {
 	log := m.log
 	if target != "" {
-		log = logger.New(m.cfg.OTALog, "type", openedge.OTAAPP)
+		log = logger.New(m.cfg.OTALog, openedge.OTAKeyTrace, trace, openedge.OTAKeyType, openedge.OTAAPP)
 	}
-	log.WithField("step", openedge.OTAUpdating).Infof("app is updating")
+	log.WithField(openedge.OTAKeyStep, openedge.OTAUpdating).Infof("app is updating")
 
 	cur, old, err := m.loadAPPConfig(target)
 	if err != nil {
-		log.WithField("step", openedge.OTARollingBack).Infof("failed to reload config: %s, to roll back app", err.Error())
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to reload config")
 		rberr := m.rollBackAPP()
 		if rberr != nil {
-			log.WithField("step", openedge.OTAFailure).Infof("failed to roll back: %s", rberr.Error())
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to reload config: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		log.WithField("step", openedge.OTARolledBack).Infof("app is rolled back")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("app is rolled back")
 		return fmt.Errorf("failed to reload config: %s", err.Error())
 	}
 
@@ -67,10 +62,10 @@ func (m *Master) UpdateAPP(target string) error {
 	// start all updated or added services
 	err = m.startServices(cur)
 	if err != nil {
-		log.WithField("step", openedge.OTARollingBack).Infof("failed to start app: %s, to roll back app", err.Error())
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start app")
 		rberr := m.rollBackAPP()
 		if rberr != nil {
-			log.WithField("step", openedge.OTAFailure).Infof("failed to roll back: %s", rberr.Error())
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to start app: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		// stop all updated or added services
@@ -78,15 +73,15 @@ func (m *Master) UpdateAPP(target string) error {
 		// start all removed or updated services
 		rberr = m.startServices(old)
 		if rberr != nil {
-			log.WithField("step", openedge.OTAFailure).Infof("failed to roll back: %s", rberr.Error())
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to restart old app: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		m.commitAPP(old.Version)
-		log.WithField("step", openedge.OTARolledBack).Infof("app is rolled back")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("app is rolled back")
 		return fmt.Errorf("failed to start app: %s", err.Error())
 	}
 	m.commitAPP(cur.Version)
-	log.WithField("step", openedge.OTAUpdated).Infof("app updated")
+	log.WithField(openedge.OTAKeyStep, openedge.OTAUpdated).Infof("app is updated")
 	return nil
 }
 
@@ -156,46 +151,46 @@ func (m *Master) commitAPP(ver string) {
 }
 
 // UpdateMST updates master
-func (m *Master) UpdateMST(target, backup string) (err error) {
-	log := logger.New(m.cfg.OTALog, "type", openedge.OTAMST)
+func (m *Master) UpdateMST(trace, target, backup string) (err error) {
+	log := logger.New(m.cfg.OTALog, openedge.OTAKeyTrace, trace, openedge.OTAKeyType, openedge.OTAMST)
 
 	if err = m.check(target); err != nil {
-		log.WithField("step", openedge.OTAFailure).Infof(err.Error())
+		log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(err).Infof("failed to check master")
 		return fmt.Errorf("failed to check master: %s", err.Error())
 	}
 
-	log.WithField("step", openedge.OTAUpdating).Infof("master updating")
+	log.WithField(openedge.OTAKeyStep, openedge.OTAUpdating).Infof("master is updating")
 	if err = apply(target, backup); err != nil {
-		log.WithField("step", openedge.OTARollingBack).Infof("failed to apply master: %s", err.Error())
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to apply master")
 		rberr := RollBackMST()
 		if rberr != nil {
-			log.WithField("step", openedge.OTAFailure).Infof("failed to roll back: %s", rberr.Error())
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to apply master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		log.WithField("step", openedge.OTARolledBack).Infof("master is rolled back")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
 		return fmt.Errorf("failed to apply master: %s", err.Error())
 	}
 
-	log.WithField("step", openedge.OTARestarting).Infof("master is restarting")
+	log.WithField(openedge.OTAKeyStep, openedge.OTARestarting).Infof("master is restarting")
 	return m.Close()
 }
 
 // RollBackMST rolls back master
 func RollBackMST() error {
-	if !utils.FileExists(BinBackupFile) {
+	if !utils.FileExists(openedge.DefaultBinBackupFile) {
 		return nil
 	}
-	return apply(BinBackupFile, "")
+	return apply(openedge.DefaultBinBackupFile, "")
 }
 
 // CommitMST commits master
 func CommitMST() {
-	if !utils.FileExists(BinBackupFile) {
+	if !utils.FileExists(openedge.DefaultBinBackupFile) {
 		return
 	}
-	err := os.RemoveAll(BinBackupFile)
+	err := os.RemoveAll(openedge.DefaultBinBackupFile)
 	if err != nil {
-		logger.WithError(err).Errorf("failed to remove backup file (%s)", BinBackupFile)
+		logger.WithError(err).Errorf("failed to remove backup file (%s)", openedge.DefaultBinBackupFile)
 	}
 }
 

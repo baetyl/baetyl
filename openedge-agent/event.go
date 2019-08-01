@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/256dpi/gomqtt/packet"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 )
 
@@ -16,7 +17,8 @@ type EventHandle func(e *Event)
 
 // The type of event from cloud
 const (
-	Update  EventType = "UPDATE"
+	OTA     EventType = "OTA"
+	Update  EventType = "UPDATE" // deprecated
 	Unknown EventType = "UNKNOWN"
 )
 
@@ -29,20 +31,75 @@ type Event struct {
 
 // NewEvent creates a new event
 func NewEvent(v []byte) (*Event, error) {
-	var e Event
-	json.Unmarshal(v, &e)
+	e := &Event{}
+	err := json.Unmarshal(v, e)
+	if err != nil {
+		return nil, fmt.Errorf("event invalid: %s", err.Error())
+	}
 	switch e.Type {
+	case OTA:
+		e.Content = &EventOTA{}
 	case Update:
 		e.Content = &UpdateEvent{}
-		json.Unmarshal(v, &e)
-		return &e, nil
 	default:
-		return nil, fmt.Errorf("event type unexpected")
+		return nil, fmt.Errorf("event type (%s) unexpected", e.Type)
 	}
+	err = json.Unmarshal(v, e)
+	if err != nil {
+		return nil, fmt.Errorf("event content invalid: %s", err.Error())
+	}
+	return e, nil
+}
+
+// EventOTA OTA event
+type EventOTA struct {
+	Type    string              `json:"type,omitempty"`
+	Trace   string              `json:"trace,omitempty"`
+	Version string              `json:"version,omitempty"`
+	Volume  openedge.VolumeInfo `json:"volume,omitempty"`
 }
 
 // UpdateEvent update event
+// TODO: deprecate
 type UpdateEvent struct {
-	Version string              `yaml:"version" json:"version"`
-	Config  openedge.VolumeInfo `yaml:"config" json:"config"`
+	Trace   string              `json:"trace,omitempty"`
+	Version string              `json:"version,omitempty"`
+	Config  openedge.VolumeInfo `json:"config,omitempty"`
+}
+
+func (a *agent) ProcessPublish(p *packet.Publish) error {
+	if p.Message.QOS == 1 {
+		puback := packet.NewPuback()
+		puback.ID = p.ID
+		a.mqtt.Send(puback)
+	}
+	e, err := NewEvent(p.Message.Payload)
+	if err != nil {
+		return err
+	}
+	// convert update event to ota event
+	ue, ok := e.Content.(*UpdateEvent)
+	if ok {
+		e.Type = OTA
+		e.Content = &EventOTA{
+			Type:    openedge.OTAAPP,
+			Trace:   ue.Trace,
+			Version: ue.Version,
+			Volume:  ue.Config,
+		}
+	}
+	a.ctx.Log().Debugln("event:", string(p.Message.Payload))
+	select {
+	case a.events <- e:
+	case <-a.tomb.Dying():
+	}
+	return nil
+}
+
+func (a *agent) ProcessPuback(p *packet.Puback) error {
+	return nil
+}
+
+func (a *agent) ProcessError(err error) {
+	a.ctx.Log().Errorf(err.Error())
 }

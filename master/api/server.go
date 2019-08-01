@@ -18,7 +18,7 @@ type Master interface {
 
 	// for system
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(tp, target string) error
+	UpdateSystem(trace, tp, target string) error
 
 	// for instance
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
@@ -117,7 +117,8 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 		// backward compatibility, agent version < 0.1.4
 		target = args["file"]
 	}
-	go s.m.UpdateSystem(tp, target)
+	trace, _ := args["trace"]
+	go s.m.UpdateSystem(trace, tp, target)
 	return nil, nil
 }
 

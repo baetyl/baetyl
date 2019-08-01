@@ -23,7 +23,7 @@ var (
 
 var checkCmd = &cobra.Command{
 	Use:   "check",
-	Short: "check openedge",
+	Short: "check openedge and its configuration",
 	Long:  ``,
 	Run:   check,
 }

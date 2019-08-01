@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_cleaner(t *testing.T) {
+func TestCleaner(t *testing.T) {
 	prefix, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
 	defer os.RemoveAll(prefix)
@@ -109,25 +109,15 @@ func Test_cleaner(t *testing.T) {
 	log := newMockLogger()
 	c := newCleaner(prefix, target, log)
 	c.do("")
-	assert.Equal(t, []string{"[Debugf]report version is empty"}, log.records)
+	assert.Equal(t, []string{"[Debugf]version () is ignored"}, log.records)
 	log.records = []string{}
 	c.do("v1")
-	assert.Equal(t, []string{"[Debugf]last app config is not cached"}, log.records)
+	assert.Equal(t, []string{"[Debugf]version (v1) is ignored"}, log.records)
 	log.records = []string{}
-	c.reset(prepareConfig, openedge.VolumeInfo{Path: prefix})
+	c.set("v1", prepareConfig(openedge.VolumeInfo{Path: prefix}).Volumes)
 	c.do("v2")
-	assert.Equal(t, []string{"[Debugf]report version is not matched"}, log.records)
+	assert.Equal(t, []string{"[Debugf]version (v2) is ignored"}, log.records)
 	log.records = []string{}
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	assert.FileExists(t, filepath.Join(target, "a"))
-	assert.FileExists(t, filepath.Join(target, "b", "b1"))
-	assert.FileExists(t, filepath.Join(target, "c", "c1", "c1i"))
-	assert.DirExists(t, filepath.Join(target, "c", "c2"))
-	assert.FileExists(t, filepath.Join(target, "c", "c3"))
-	assert.FileExists(t, filepath.Join(target, "d", "d1", "d1i", "d1i1"))
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
@@ -140,20 +130,9 @@ func Test_cleaner(t *testing.T) {
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 	log.records = []string{}
 	c.do("v1")
-	assert.Len(t, log.records, 0)
-
-	appcfg, _, _ := c.reset(prepareConfig, openedge.VolumeInfo{Path: target})
-	appcfg.Volumes = []openedge.VolumeInfo{}
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	assert.FileExists(t, filepath.Join(target, "a"))
-	assert.FileExists(t, filepath.Join(target, "b", "b1"))
-	assert.FileExists(t, filepath.Join(target, "c", "c1", "c1i"))
-	assert.FileExists(t, filepath.Join(target, "c", "c3"))
-	assert.False(t, utils.DirExists(filepath.Join(target, "c", "c2")))
-	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
+	assert.Len(t, log.records, 2)
+	log.records = []string{}
+	c.set("v1", prepareConfig(openedge.VolumeInfo{Path: target}).Volumes)
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
@@ -164,7 +143,7 @@ func Test_cleaner(t *testing.T) {
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 }
 
-func Test_cleaner2(t *testing.T) {
+func TestCleaner2(t *testing.T) {
 	prefix := "var/db/openedge"
 	err := os.MkdirAll(prefix, 0777)
 	assert.NoError(t, err)
@@ -260,24 +239,15 @@ func Test_cleaner2(t *testing.T) {
 	log := newMockLogger()
 	c := newCleaner(prefix, target, log)
 	c.do("")
-	assert.Equal(t, []string{"[Debugf]report version is empty"}, log.records)
+	assert.Equal(t, []string{"[Debugf]version () is ignored"}, log.records)
 	log.records = []string{}
 	c.do("v1")
-	assert.Equal(t, []string{"[Debugf]last app config is not cached"}, log.records)
+	assert.Equal(t, []string{"[Debugf]version (v1) is ignored"}, log.records)
 	log.records = []string{}
-	c.reset(prepareConfig, openedge.VolumeInfo{Path: prefix})
+	c.set("v1", prepareConfig(openedge.VolumeInfo{Path: prefix}).Volumes)
 	c.do("v2")
-	assert.Equal(t, []string{"[Debugf]report version is not matched"}, log.records)
+	assert.Equal(t, []string{"[Debugf]version (v2) is ignored"}, log.records)
 	log.records = []string{}
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	assert.FileExists(t, filepath.Join(target, "a"))
-	assert.FileExists(t, filepath.Join(target, "b", "b1"))
-	assert.FileExists(t, filepath.Join(target, "c", "c1", "c1i"))
-	assert.DirExists(t, filepath.Join(target, "c", "c2"))
-	assert.FileExists(t, filepath.Join(target, "d", "d1", "d1i", "d1i1"))
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
@@ -289,19 +259,9 @@ func Test_cleaner2(t *testing.T) {
 	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
 	log.records = []string{}
 	c.do("v1")
-	assert.Len(t, log.records, 0)
-
-	appcfg, _, _ := c.reset(prepareConfig, openedge.VolumeInfo{Path: prefix})
-	appcfg.Volumes = []openedge.VolumeInfo{}
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	c.do("v1")
-	assert.Len(t, log.records, 0)
-	assert.FileExists(t, filepath.Join(target, "a"))
-	assert.FileExists(t, filepath.Join(target, "b", "b1"))
-	assert.FileExists(t, filepath.Join(target, "c", "c1", "c1i"))
-	assert.False(t, utils.DirExists(filepath.Join(target, "c", "c2")))
-	assert.False(t, utils.DirExists(filepath.Join(target, "d")))
+	assert.Len(t, log.records, 2)
+	log.records = []string{}
+	c.set("v1", prepareConfig(openedge.VolumeInfo{Path: target}).Volumes)
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
@@ -391,7 +351,7 @@ func (l *mackLogger) Fatalln(args ...interface{}) {
 	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
 }
 
-func prepareConfig(v openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
+func prepareConfig(v openedge.VolumeInfo) *openedge.AppConfig {
 	return &openedge.AppConfig{
 		Version: "v1",
 		Volumes: []openedge.VolumeInfo{
@@ -405,5 +365,5 @@ func prepareConfig(v openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
 				Path: filepath.Join(v.Path, "c", "c1"),
 			},
 		},
-	}, "", nil
+	}
 }
