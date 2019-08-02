@@ -46,7 +46,7 @@ func (a *agent) processEvent(e *Event) {
 }
 
 func (a *agent) processOTA(eo *EventOTA) error {
-	hostDir, containerDir, err := a.download(eo.Volume)
+	hostDir, containerDir, err := a.downloadVolume(eo.Volume)
 	if err != nil {
 		return fmt.Errorf("failed to download volume: %s", err.Error())
 	}
@@ -63,7 +63,7 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		if len(cfg.Services) == 0 {
 			return fmt.Errorf("app config invalid: service list is empty")
 		}
-		err = a.downloadAppVolumes(cfg.Volumes)
+		err = a.downloadVolumes(cfg.Volumes)
 		if err != nil {
 			return fmt.Errorf("failed to download app volumes: %s", err.Error())
 		}

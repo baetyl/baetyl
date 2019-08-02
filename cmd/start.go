@@ -33,14 +33,14 @@ func start(cmd *cobra.Command, args []string) {
 }
 
 func startInternal() error {
-	toRollBack := utils.FileExists(openedge.DefaultBinBackupFile)
+	isOTA := utils.FileExists(openedge.DefaultBinBackupFile)
 	cfg, err := checkInternal()
 	log := logger.InitLogger(cfg.Logger, "openedge", "master")
-	if toRollBack {
+	if isOTA {
 		log = logger.New(cfg.OTALog, "type", openedge.OTAMST)
 	}
 	if err != nil {
-		if toRollBack {
+		if isOTA {
 			log = log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack)
 		}
 		log.WithError(err).Infof("failed to start master")
@@ -49,7 +49,7 @@ func startInternal() error {
 			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		if toRollBack {
+		if isOTA {
 			log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
 		}
 		return fmt.Errorf("failed to start master: %s", err.Error())
@@ -57,7 +57,7 @@ func startInternal() error {
 
 	m, err := master.New(workDir, *cfg, Version)
 	if err != nil {
-		if toRollBack {
+		if isOTA {
 			log = log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack)
 		}
 		log.WithError(err).Infof("failed to start master")
@@ -66,14 +66,14 @@ func startInternal() error {
 			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		if toRollBack {
+		if isOTA {
 			log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
 		}
 		return fmt.Errorf("failed to start master: %s", err.Error())
 	}
 	defer m.Close()
 	master.CommitMST()
-	if toRollBack {
+	if isOTA {
 		log.WithField(openedge.OTAKeyStep, openedge.OTAUpdated).Infof("master is updated")
 	}
 	return m.Wait()
