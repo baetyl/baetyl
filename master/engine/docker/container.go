@@ -113,7 +113,7 @@ func (e *dockerEngine) waitContainer(cid string) error {
 }
 
 func (e *dockerEngine) stopContainer(cid string) error {
-	e.log.Debugf("to stop container (%s)", cid[:12])
+	e.log.Debugf("container (%s) is stopping", cid[:12])
 
 	ctx := context.Background()
 	err := e.cli.ContainerStop(ctx, cid, &e.grace)

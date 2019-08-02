@@ -6,7 +6,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/baidu/openedge/logger"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
@@ -14,55 +13,34 @@ import (
 )
 
 type cleaner struct {
-	count  int32
-	prefix string
-	target string
-	last   *openedge.AppConfig
-	log    logger.Logger
-	sync.Mutex
+	prefix   string
+	target   string
+	lversion string                // ast version
+	lvolumes []openedge.VolumeInfo // last volumes
+	log      logger.Logger
 }
 
 func newCleaner(prefix, target string, log logger.Logger) *cleaner {
 	return &cleaner{
-		count:  3,
 		prefix: prefix,
 		target: target,
 		log:    log,
 	}
 }
 
-func (c *cleaner) reset(prepare func(openedge.VolumeInfo) (*openedge.AppConfig, string, error), cfg openedge.VolumeInfo) (*openedge.AppConfig, string, error) {
-	c.Lock()
-	defer c.Unlock()
-	appcfg, hostdir, err := prepare(cfg)
-	c.count = 3
-	c.last = appcfg
-	return appcfg, hostdir, err
+func (c *cleaner) reset() {
+	c.lversion = ""
+	c.lvolumes = nil
+}
+
+func (c *cleaner) set(version string, volumes []openedge.VolumeInfo) {
+	c.lversion = version
+	c.lvolumes = volumes
 }
 
 func (c *cleaner) do(version string) {
-	if version == "" {
-		c.log.Debugf("report version is empty")
-		return
-	}
-
-	c.Lock()
-	defer c.Unlock()
-	// not clean if last app config is not cached,
-	// for example, when agent is restarted
-	if c.last == nil {
-		c.log.Debugf("last app config is not cached")
-		return
-	}
-	// not clean if last app config version is not matched,
-	// for example, openedge master reload task is not finised or failed.
-	if c.last.Version != version {
-		c.log.Debugf("report version is not matched")
-		return
-	}
-	// delay three reporting cycles and then clean up
-	c.count--
-	if c.count != 0 {
+	if c.lvolumes == nil || version == "" || c.lversion != version {
+		c.log.Debugf("version (%s) is ignored", version)
 		return
 	}
 
@@ -70,7 +48,7 @@ func (c *cleaner) do(version string) {
 	defer utils.Trace("end to clean,", c.log.Infof)()
 
 	// list folders to remove
-	remove, err := list(c.prefix, c.target, c.last.Volumes)
+	remove, err := list(c.prefix, c.target, c.lvolumes)
 	if err != nil {
 		c.log.WithError(err).Warnf("failed to list old volumes")
 		return

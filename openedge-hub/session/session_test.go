@@ -693,14 +693,14 @@ func (c *mockClient) assertReceive(pid int, qos packet.QOS, topic string, pld []
 			c.assertOnPuback(p.ID)
 		}
 	case <-time.After(time.Second * 3):
-		assert.FailNow(c.t, "Receive packet timeout")
+		assert.FailNow(c.t, "receive packet timeout")
 	}
 }
 
 func (c *mockClient) assertReceiveTimeout() {
 	select {
 	case pkt := <-c.o:
-		assert.FailNow(c.t, "Packet not expected : %s", pkt.String())
+		assert.FailNow(c.t, "packet is not expected : %s", pkt.String())
 		return
 	case <-time.After(time.Second):
 		return

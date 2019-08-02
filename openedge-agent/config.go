@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/http"
 	"github.com/baidu/openedge/protocol/mqtt"
 )
@@ -21,4 +22,11 @@ type Config struct {
 			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
 		} `yaml:"desire" json:"desire"`
 	} `yaml:"remote" json:"remote"`
+	OTA OTAInfo `yaml:"ota" json:"ota"`
+}
+
+// OTAInfo ota config
+type OTAInfo struct {
+	Timeout time.Duration  `yaml:"timeout" json:"timeout" default:"5m"`
+	Logger  logger.LogInfo `yaml:"logger" json:"logger" default:"{\"path\":\"var/db/openedge/openedge-log/openedge-ota.log\",\"format\":\"json\"}"`
 }
