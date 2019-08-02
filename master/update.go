@@ -36,10 +36,11 @@ func (m *Master) UpdateSystem(trace, tp, target string) (err error) {
 // UpdateAPP updates application
 func (m *Master) UpdateAPP(trace, target string) error {
 	log := m.log
-	if target != "" {
+	isOTA := target != "" || utils.FileExists(m.cfg.OTALog.Path)
+	if isOTA {
 		log = logger.New(m.cfg.OTALog, openedge.OTAKeyTrace, trace, openedge.OTAKeyType, openedge.OTAAPP)
+		log.WithField(openedge.OTAKeyStep, openedge.OTAUpdating).Infof("app is updating")
 	}
-	log.WithField(openedge.OTAKeyStep, openedge.OTAUpdating).Infof("app is updating")
 
 	cur, old, err := m.loadAPPConfig(target)
 	if err != nil {
@@ -81,7 +82,9 @@ func (m *Master) UpdateAPP(trace, target string) error {
 		return fmt.Errorf("failed to start app: %s", err.Error())
 	}
 	m.commitAPP(cur.Version)
-	log.WithField(openedge.OTAKeyStep, openedge.OTAUpdated).Infof("app is updated")
+	if isOTA {
+		log.WithField(openedge.OTAKeyStep, openedge.OTAUpdated).Infof("app is updated")
+	}
 	return nil
 }
 
@@ -139,7 +142,7 @@ func (m *Master) rollBackAPP() error {
 }
 
 func (m *Master) commitAPP(ver string) {
-	defer m.log.Infof("app (%s) committed", ver)
+	defer m.log.Infof("app version (%s) committed", ver)
 
 	// update config version
 	m.infostats.setVersion(ver)
@@ -180,18 +183,27 @@ func RollBackMST() error {
 	if !utils.FileExists(openedge.DefaultBinBackupFile) {
 		return nil
 	}
-	return apply(openedge.DefaultBinBackupFile, "")
+	err := apply(openedge.DefaultBinBackupFile, "")
+	if err != nil {
+		logger.WithError(err).Errorf("failed to apply backup master")
+	}
+	err = os.RemoveAll(openedge.DefaultBinBackupFile)
+	if err != nil {
+		logger.WithError(err).Errorf("failed to remove backup file (%s)", openedge.DefaultBinBackupFile)
+	}
+	return nil
 }
 
 // CommitMST commits master
-func CommitMST() {
+func CommitMST() bool {
 	if !utils.FileExists(openedge.DefaultBinBackupFile) {
-		return
+		return false
 	}
 	err := os.RemoveAll(openedge.DefaultBinBackupFile)
 	if err != nil {
 		logger.WithError(err).Errorf("failed to remove backup file (%s)", openedge.DefaultBinBackupFile)
 	}
+	return true
 }
 
 func apply(target, backup string) error {

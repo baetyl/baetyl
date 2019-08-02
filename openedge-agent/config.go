@@ -27,6 +27,6 @@ type Config struct {
 
 // OTAInfo ota config
 type OTAInfo struct {
-	Timeout time.Duration  `yaml:"timeout" json:"timeout" default:"10m"`
+	Timeout time.Duration  `yaml:"timeout" json:"timeout" default:"5m"`
 	Logger  logger.LogInfo `yaml:"logger" json:"logger" default:"{\"path\":\"var/db/openedge/openedge-log/openedge-ota.log\",\"format\":\"json\"}"`
 }

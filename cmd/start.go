@@ -33,48 +33,39 @@ func start(cmd *cobra.Command, args []string) {
 }
 
 func startInternal() error {
-	isOTA := utils.FileExists(openedge.DefaultBinBackupFile)
 	cfg, err := checkInternal()
 	log := logger.InitLogger(cfg.Logger, "openedge", "master")
+	isOTA := utils.FileExists(cfg.OTALog.Path)
 	if isOTA {
 		log = logger.New(cfg.OTALog, "type", openedge.OTAMST)
 	}
 	if err != nil {
-		if isOTA {
-			log = log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack)
-		}
-		log.WithError(err).Infof("failed to start master")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start master")
 		rberr := master.RollBackMST()
 		if rberr != nil {
 			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		if isOTA {
-			log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
-		}
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
 		return fmt.Errorf("failed to start master: %s", err.Error())
 	}
 
 	m, err := master.New(workDir, *cfg, Version)
 	if err != nil {
-		if isOTA {
-			log = log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack)
-		}
-		log.WithError(err).Infof("failed to start master")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start master")
 		rberr := master.RollBackMST()
 		if rberr != nil {
 			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
 			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		if isOTA {
-			log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
-		}
+		log.WithField(openedge.OTAKeyStep, openedge.OTARestarting).Infof("master is restarting")
 		return fmt.Errorf("failed to start master: %s", err.Error())
 	}
 	defer m.Close()
-	master.CommitMST()
-	if isOTA {
+	if master.CommitMST() {
 		log.WithField(openedge.OTAKeyStep, openedge.OTAUpdated).Infof("master is updated")
+	} else if isOTA {
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
 	}
 	return m.Wait()
 }
