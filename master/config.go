@@ -55,5 +55,10 @@ func (c *Config) Validate() error {
 	utils.SetEnv(openedge.EnvMasterAPIVersionKey, "v1")
 	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
 	utils.SetEnv(openedge.EnvRunningModeKey, c.Mode)
+
+	hi := utils.GetHostInfo()
+	if hi.HostID != "" {
+		utils.SetEnv(openedge.EnvHostID, hi.HostID)
+	}
 	return nil
 }

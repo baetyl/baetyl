@@ -54,11 +54,11 @@ func (c *cleaner) do(version string) {
 		return
 	}
 	for _, v := range remove {
-		err := os.RemoveAll(v)
-		if err != nil {
+		if os.RemoveAll(v) == nil {
+			c.log.Infof("old volume is removed: %s", v)
+		} else {
 			c.log.WithError(err).Warnf("failed to remove old volumes")
 		}
-		c.log.Infof("old volume is removed: %s", v)
 	}
 }
 
