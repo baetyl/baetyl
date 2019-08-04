@@ -55,6 +55,7 @@ const (
 	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 
+	EnvHostID           = "OPENEDGE_HOST_ID"
 	EnvMasterHostSocket = "OPENEDGE_MASTER_HOST_SOCKET"
 )
 
