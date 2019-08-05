@@ -90,6 +90,10 @@ func (i *nativeInstance) Info() engine.PartialStats {
 	return attr.toPartialStats()
 }
 
+func (i *nativeInstance) Stats() engine.PartialStats {
+	return i.service.engine.statsProcess(i.proc)
+}
+
 func (i *nativeInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
 	err := i.service.engine.waitProcess(i.proc)
@@ -109,7 +113,7 @@ func (i *nativeInstance) Restart() error {
 }
 
 func (i *nativeInstance) Stop() {
-	i.log.Infof("to stop instance")
+	i.log.Infof("instance is stopping")
 	err := i.service.engine.stopProcess(i.proc)
 	if err != nil {
 		i.log.Debugf("failed to stop instance: %s", err.Error())
@@ -122,7 +126,7 @@ func (i *nativeInstance) Dying() <-chan struct{} {
 }
 
 func (i *nativeInstance) Close() error {
-	i.log.Infof("to close instance")
+	i.log.Infof("instance is closing")
 	i.tomb.Kill(nil)
 	return i.tomb.Wait()
 }

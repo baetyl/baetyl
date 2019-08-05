@@ -3,37 +3,24 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/signal"
-	"path"
-	"path/filepath"
-	"syscall"
 
+	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
-	daemon "github.com/sevlyar/go-daemon"
-	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/cobra"
-)
-
-const defaultConfFile = "etc/openedge/openedge.yml"
-
-// compile variables
-var (
-	workDir  string
-	confFile string
 )
 
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "start openedge on background",
+	Short: "start openedge",
 	Long:  ``,
 	Run:   start,
 }
 
 func init() {
 	startCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "work directory of openedge")
-	startCmd.Flags().StringVarP(&confFile, "config", "c", "", "config path of openedge")
+	startCmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config path of openedge")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -41,103 +28,44 @@ func start(cmd *cobra.Command, args []string) {
 	err := startInternal()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 }
 
 func startInternal() error {
-	exe, err := os.Executable()
+	cfg, err := checkInternal()
+	log := logger.InitLogger(cfg.Logger, "openedge", "master")
+	isOTA := utils.FileExists(cfg.OTALog.Path)
+	if isOTA {
+		log = logger.New(cfg.OTALog, "type", openedge.OTAMST)
+	}
 	if err != nil {
-		return fmt.Errorf("failed to get executable: %s", err.Error())
-	}
-	exe, err = filepath.EvalSymlinks(exe)
-	if err != nil {
-		return fmt.Errorf("failed to get path of executable: %s", err.Error())
-	}
-	if workDir == "" {
-		workDir = path.Dir(path.Dir(exe))
-	}
-	workDir, err = filepath.Abs(workDir)
-	if err != nil {
-		return fmt.Errorf("failed to get absolute path of work directory: %s", err.Error())
-	}
-	err = os.Chdir(workDir)
-	if err != nil {
-		return fmt.Errorf("failed to change work directory: %s", err.Error())
-	}
-	if confFile == "" {
-		confFile = defaultConfFile
-	}
-	var cfg master.Config
-	err = utils.LoadYAML(path.Join(workDir, confFile), &cfg)
-	if err != nil {
-		return fmt.Errorf("failed to load config: %s", err.Error())
-	}
-
-	args := []string{"openedge", "start"}
-	if workDir != "" {
-		args = append(args, "-w", workDir)
-	}
-
-	if confFile != "" {
-		args = append(args, "-c", confFile)
-	}
-
-	ctx := &daemon.Context{
-		PidFileName: openedge.DefaultPidFile,
-		PidFilePerm: 0644,
-		Umask:       027,
-		Args:        args,
-	}
-	if cfg.Logger.Path != "" {
-		os.MkdirAll(path.Dir(cfg.Logger.Path), 0755)
-		ctx.LogFileName = cfg.Logger.Path + ".console"
-	} else {
-		ctx.LogFileName = "openedge.log.console"
-	}
-
-	if utils.FileExists(openedge.DefaultPidFile) && !daemon.WasReborn() {
-		pid, err := daemon.ReadPidFile(openedge.DefaultPidFile)
-		if err != nil {
-			err = fmt.Errorf("failed to read existed pid file: %s", err.Error())
-			return err
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start master")
+		rberr := master.RollBackMST()
+		if rberr != nil {
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		process := &process.Process{Pid: int32(pid)}
-		_, err = process.Status()
-		if err != nil {
-			os.Remove(openedge.DefaultPidFile)
-		}
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
+		return fmt.Errorf("failed to start master: %s", err.Error())
 	}
 
-	d, err := ctx.Reborn()
+	m, err := master.New(workDir, *cfg, Version)
 	if err != nil {
-		if err == daemon.ErrWouldBlock {
-			err = fmt.Errorf("openedge has been started, please do not start again")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start master")
+		rberr := master.RollBackMST()
+		if rberr != nil {
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		return err
-	}
-
-	if d != nil {
-		return nil
-	}
-
-	if utils.PathExists(openedge.DefaultSockFile) {
-		err = os.RemoveAll(openedge.DefaultSockFile)
-		if err != nil {
-			return fmt.Errorf("failed to remove sock file: %s", err.Error())
-		}
-	}
-
-	defer ctx.Release()
-
-	m, err := master.New(workDir, cfg, Version)
-	if err != nil {
-		return fmt.Errorf("failed to create master: %s", err.Error())
+		log.WithField(openedge.OTAKeyStep, openedge.OTARestarting).Infof("master is restarting")
+		return fmt.Errorf("failed to start master: %s", err.Error())
 	}
 	defer m.Close()
-
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
-	signal.Ignore(syscall.SIGPIPE)
-	<-sig
-	return nil
+	if master.CommitMST() {
+		log.WithField(openedge.OTAKeyStep, openedge.OTAUpdated).Infof("master is updated")
+	} else if isOTA {
+		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
+	}
+	return m.Wait()
 }

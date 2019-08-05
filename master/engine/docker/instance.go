@@ -76,6 +76,10 @@ func (i *dockerInstance) Info() engine.PartialStats {
 	return attr.toPartialStats()
 }
 
+func (i *dockerInstance) Stats() engine.PartialStats {
+	return i.service.engine.statsContainer(i.id)
+}
+
 func (i *dockerInstance) Wait(s chan<- error) {
 	defer i.log.Infof("instance stopped")
 	err := i.service.engine.waitContainer(i.id)
@@ -93,7 +97,7 @@ func (i *dockerInstance) Restart() error {
 }
 
 func (i *dockerInstance) Stop() {
-	i.log.Infof("to stop instance")
+	i.log.Infof("instance is stopping")
 	err := i.service.engine.stopContainer(i.id)
 	if err != nil {
 		i.log.WithError(err).Errorf("failed to stop instance")
@@ -107,7 +111,7 @@ func (i *dockerInstance) Dying() <-chan struct{} {
 }
 
 func (i *dockerInstance) Close() error {
-	i.log.Infof("to close instance")
+	i.log.Infof("instance is closing")
 	i.tomb.Kill(nil)
 	return i.tomb.Wait()
 }

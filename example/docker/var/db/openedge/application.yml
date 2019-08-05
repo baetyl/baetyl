@@ -1,7 +1,7 @@
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: hub.baidubce.com/openedge/openedge-hub
     replica: 1
     ports:
       - 1883:1883
@@ -18,7 +18,7 @@ services:
       - name: localhub-log
         path: var/log/openedge
   # - name: agent
-  #   image: openedge-agent
+  #   image: hub.baidubce.com/openedge/openedge-agent
   #   replica: 1
   #   mounts:
   #     - name: agent-conf
@@ -31,8 +31,10 @@ services:
   #       path: var/db/openedge/volumes
   #     - name: agent-log
   #       path: var/log/openedge
+  #     - name: openedge-log
+  #       path: var/db/openedge/openedge-log/
   # - name: remote-iothub
-  #   image: openedge-remote-mqtt
+  #   image: hub.baidubce.com/openedge/openedge-remote-mqtt
   #   replica: 1
   #   mounts:
   #     - name: remote-iothub-conf
@@ -44,7 +46,7 @@ services:
   #     - name: remote-iothub-log
   #       path: var/log/openedge
   - name: function-manager
-    image: openedge-function-manager
+    image: hub.baidubce.com/openedge/openedge-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
@@ -52,8 +54,8 @@ services:
         readonly: true
       - name: function-manager-log
         path: var/log/openedge
-  - name: function-sayhi
-    image: openedge-function-python27
+  - name: function-python27-sayhi
+    image: hub.baidubce.com/openedge/openedge-function-python27
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -62,8 +64,8 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-sayhi3
-    image: openedge-function-python36
+  - name: function-python36-sayhi
+    image: hub.baidubce.com/openedge/openedge-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -72,33 +74,44 @@ services:
       - name: function-sayhi-code
         path: var/db/openedge/function-sayhi
         readonly: true
-  - name: function-filter
-    image: hub.baidubce.com/openedge/openedge-function-sql:0.1.2
+  - name: function-node85-sayhi
+    image: hub.baidubce.com/openedge/openedge-function-node85
+    replica: 0
+    mounts:
+      - name: function-sayjs-conf
+        path: etc/openedge
+        readonly: true
+      - name: function-sayjs-code
+        path: var/db/openedge/function-sayhi
+        readonly: true
+  - name: function-sql-filter
+    image: hub.baidubce.com/openedge/openedge-function-sql
     replica: 0
     mounts:
       - name: function-filter-conf
         path: etc/openedge
         readonly: true
-  - name: mosquitto
-    image: eclipse-mosquitto
-    replica: 1
-    ports:
-      - 1893:1893
-    mounts:
-      - name: mosquitto-config
-        path: /mosquitto/config
-        readonly: true
-      - name: mosquitto-data
-        path: /mosquitto/data
-      - name: mosquitto-log
-        path: /mosquitto/log
   - name: timer
-    image: openedge-timer
+    image: hub.baidubce.com/openedge/openedge-timer
     replica: 1
     mounts:
       - name: timer-conf
         path: etc/openedge
         readonly: true
+  # - name: mosquitto
+  #   image: eclipse-mosquitto
+  #   replica: 1
+  #   ports:
+  #     - 1893:1893
+  #   mounts:
+  #     - name: mosquitto-config
+  #       path: /mosquitto/config
+  #       readonly: true
+  #     - name: mosquitto-data
+  #       path: /mosquitto/data
+  #     - name: mosquitto-log
+  #       path: /mosquitto/log
+
 volumes:
   # hub
   - name: localhub-conf
@@ -118,6 +131,8 @@ volumes:
     path: var/db/openedge
   - name: agent-log
     path: var/db/openedge/agent-log
+  - name: openedge-log
+    path: var/log/openedge
   # remote mqtt
   - name: remote-iothub-conf
     path: var/db/openedge/remote-iothub-conf
@@ -134,6 +149,10 @@ volumes:
     path: var/db/openedge/function-sayhi-conf
   - name: function-sayhi-code
     path: var/db/openedge/function-sayhi-code
+  - name: function-sayjs-conf
+    path: var/db/openedge/function-sayjs-conf
+  - name: function-sayjs-code
+    path: var/db/openedge/function-sayjs-code
   - name: function-filter-conf
     path: var/db/openedge/function-filter-conf
   # mosquitto

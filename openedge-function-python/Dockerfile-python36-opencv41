@@ -1,0 +1,22 @@
+FROM hub.baidubce.com/openedgedev/openedge-function-python36:0.1.5-opencv41-devel as devel
+
+FROM ubuntu:18.04
+RUN apt-get update && \
+    apt-get install -y software-properties-common --no-install-recommends \
+        libavcodec-dev libavformat-dev libswscale-dev \
+        libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev \
+        python3 && \
+    rm -rf /var/lib/apt/lists/*
+
+# copy OpenCV 4.1.0 libs
+COPY --from=devel /usr/local/lib /usr/local/lib
+COPY --from=devel /usr/local/lib/pkgconfig/opencv4.pc /usr/local/lib/pkgconfig/opencv4.pc
+COPY --from=devel /usr/local/include/opencv4/opencv2 /usr/local/include/opencv4/opencv2
+# copy Python 3.6 packages
+COPY --from=devel /usr/local/lib/python3.6/dist-packages /usr/local/lib/python3.6/dist-packages/
+
+ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
+ENV LD_LIBRARY_PATH /usr/local/lib
+
+COPY openedge-function-python36.py function_pb2.py function_pb2_grpc.py /bin/
+ENTRYPOINT ["openedge-function-python36.py"]

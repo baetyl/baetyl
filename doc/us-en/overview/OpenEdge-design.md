@@ -1,4 +1,4 @@
-# OpenEdge
+# OpenEdge Design
 
 - [Concepts](#concepts)
 - [Components](#components)
@@ -18,6 +18,7 @@
   - [openedge-function-manager](#openedge-function-manager)
   - [openedge-function-python27](#openedge-function-python27)
   - [openedge-function-python36](#openedge-function-python36)
+  - [openedge-function-node85](#openedge-function-node85)
   - [openedge-remote-mqtt](#openedge-remote-mqtt)
 
 ## Concepts
@@ -43,6 +44,7 @@ At present, OpenEdge has the following official modules:
 - [openedge-function-manager](#openedge-function-manager): Provides function services for function instance management and message-triggered function calls.
 - [openedge-function-python27](#openedge-function-python27): Provides a GRPC micro-service that loads Python scripts based on Python2.7 runtime that can be managed by openedge-function-manager as a function instance provider.
 - [openedge-function-python36](#openedge-function-python36)：Provides a GRPC micro-service that loads Python scripts based on Python3.6 runtime that can be managed by openedge-function-manager as a function instance provider.
+- [openedge-function-node85](#openedge-function-node85)：Provides a GRPC micro-service that loads javascripts based on Node8.5 runtime that can be managed by openedge-function-manager as a function instance provider.
 
 Structure Diagram:
 
@@ -128,7 +130,7 @@ The docker engine interprets the service Image as a docker image address and sta
 
 #### Native Engine
 
-On platforms that do not provide container services (such as older versions of Windows), the Native engine simulates the container's experience as much as possible. The engine interprets the service image as the package name. The package is provided by the storage volume and contains the program required by the service, but the dependencies of this program (such as Python interpreter, lib, etc.) need to be installed on the host in advance. All services use the host network directly, all ports are exposed, and users need to be careful to avoid port conflicts. Each instance of the service corresponds to a process, and the engine is responsible for starting and stopping the process.
+On platforms that do not provide container services (such as older versions of Windows), the Native engine simulates the container's experience as much as possible. The engine interprets the service image as the package name. The package is provided by the storage volume and contains the program required by the service, but the dependencies of this program (such as Python interpreter, Node interpreter, lib, etc.) need to be installed on the host in advance. All services use the host network directly, all ports are exposed, and users need to be careful to avoid port conflicts. Each instance of the service corresponds to a process, and the engine is responsible for starting and stopping the process.
 
 _**NOTE**: Process mode does not support resource restrictions, no need to expose ports, map devices._
 
@@ -341,14 +343,15 @@ Currently, several modules are officially provided to meet some common applicati
 
 The `openedge-agent`, also known as the cloud agent module, is responsible for communicating with the BIE Cloud Management Suite. It has MQTT and HTTPS channels. MQTT enforces two-way authentication for SSL/TLS certificates. HTTPS enforces one-way authentication for SSL/TLS certificates. Developers can refer to this module to implement their own Agent module to connect their own cloud platform.
 
-The cloud agent do two things at the moment:
+The cloud agent do three things at the moment:
 
 1. After the startup, periodically obtain status information from the Master and report it to the cloud.
 2. Listen to the events sent by the cloud, trigger the corresponding operations, and currently only process the application OTA event.
+3. Responsible for cleaning the volume directory, the master will not be notified to do APP OTA during the volume cleaning period.
 
 After receiving the application OTA command from the BIE Cloud Management Suite, the cloud agent first downloads the storage volume data packets used in all configurations and decompresses them to the specified location. If the storage volume data packets already exist and the MD5 is the same, the download will be skipped. After all storage volumes are ready, the cloud agent module will call the Master's `/update/system` interface to trigger the Master to update the system.
 
-_**Tip **: If the device cannot connect to the external network or needs to leave the cloud management suite, you can remove the Agent module from the application configuration and run offline. _
+_**NOTE**: If the device cannot connect to the external network or needs to leave the cloud management suite, you can remove the Agent module from the application configuration and run offline. _
 
 ### openedge-hub
 
@@ -415,7 +418,7 @@ Python functions support reading environment variables such as os.environ['PATH'
 
 Python functions support reading contexts such as context['functionName'].
 
-An example of a Python function implementation:
+An example is shown below:
 
 ```python
 #!/usr/bin/env python3
@@ -436,7 +439,33 @@ def handler(event, context):
     return event
 ```
 
-_**Tips**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install **Python3.6** and its packages **pyyaml**, **protobuf3** and **grpcio** (pip installation can be used, `**pip3** install pyyaml protobuf grpcio`). _
+_**NOTE**: In the native process mode, to run sayhi.py provided in the example of this project, you need to install **Python3.6** and its packages **pyyaml**, **protobuf3** and **grpcio** (pip installation can be used, `**pip3** install pyyaml protobuf grpcio`). _
+
+### openedge-function-node85
+
+The design motion of module `openedge-function-node85` is the same as the module `openedge-function-python36`, and provide Node8.5 runtime for OpenEdge, where users can write javascripts to handle messages in JSON or binary format. An example is shown below:
+
+```javascript
+#!/usr/bin/env node
+
+exports.handler = (event, context, callback) => {
+  result = {};
+  
+  if (Buffer.isBuffer(event)) {
+      const message = event.toString();
+      result["msg"] = message;
+      result["type"] = 'non-dict';
+  }else {
+      result["msg"] = event;
+      result["type"] = 'dict';
+  }
+
+  result["say"] = 'hello world';
+  callback(null, result);
+};
+```
+
+_**提示**：In the native process mode, to run index.js provided in the example of this project, you need to install **Node8.5**._
 
 ### openedge-remote-mqtt
 

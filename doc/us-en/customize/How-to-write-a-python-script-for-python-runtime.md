@@ -106,7 +106,7 @@ OpenEdge officially provides the Python runtime to load python scripts written b
 
 ## Function Name Convention
 
-The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of the Python3.6 runtime service is as follows:
+The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of Python3.6 runtime service is as follows:
 
 ```yaml
 functions:
@@ -169,12 +169,12 @@ def handler(event, context):
     return result
 ```
 
-**Publish a dict format message**：
+**Publish a dict format message**:
 
 ![Publish a dict format message](../../images/customize/write-python-script-dict.png)
 
-**Publish an non-dict format message**：
+**Publish an non-dict format message**:
 
 ![Publish an non-dict format message](../../images/customize/write-python-script-none-dict.png)
 
-As above, for some general needs, we can do it through the standard library of the system python environment. However, for some more complex demands, it is often necessary to import some third-party libraries to complete. How to solve the problem? We will provide a general solution in [How to import third-party libraries for Python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).
+As above, for some general needs, we can implement it through the Python Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).

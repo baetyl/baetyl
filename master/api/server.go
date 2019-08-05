@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/baidu/openedge/master/engine"
@@ -19,7 +18,7 @@ type Master interface {
 
 	// for system
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(string, bool) error
+	UpdateSystem(trace, tp, target string) error
 
 	// for instance
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
@@ -69,6 +68,37 @@ func (s *Server) inspectSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	return json.Marshal(s.m.InspectSystem())
 }
 
+/**********************************
+agent version < 0.1.4
+{
+	"file": "var/db/openedge/app/V1"
+}
+***********************************/
+/**********************************
+agent version = 0.1.4
+{
+	"path": "var/db/openedge/app/V1"
+}
+***********************************/
+/**********************************
+agent version > 0.1.4
+// map host dir 'var/log/openedge' to container dir 'var/db/openedge/openedge-log'.
+// in the container, agent will link 'var/db/openedge/openedge-log/ota.log' to 'var/db/openedge/openedge-log/ota.log.<trace>'.
+// and agent will report the content of 'var/db/openedge/openedge-log/ota.log.<trace>' to cloud.
+// master will write log to 'var/log/openedge/openege.log' and ota log to 'var/log/openedge/ota.log'
+// update application
+{
+	"type": "APP"
+	"path": "var/db/openedge/ota/app/V1"
+	"trace": "xxxx-xx-xx-xxxxxxxx"
+}
+// update master
+{
+	"type": "MST"
+	"path": "var/db/openedge/ota/mst/0.1.6/openedge"
+	"trace": "xxxx-xx-xx-xxxxxxxx"
+}
+***********************************/
 func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
@@ -78,11 +108,17 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	clean := false
-	if s, ok := args["clean"]; ok && strings.ToLower(s) == "true" {
-		clean = true
+	tp, ok := args["type"]
+	if !ok {
+		tp = "APP"
 	}
-	go s.m.UpdateSystem(args["file"], clean)
+	target, ok := args["path"]
+	if !ok {
+		// backward compatibility, agent version < 0.1.4
+		target = args["file"]
+	}
+	trace, _ := args["trace"]
+	go s.m.UpdateSystem(trace, tp, target)
 	return nil, nil
 }
 
@@ -167,7 +203,6 @@ func toInspectSystemV0(v1 *openedge.Inspect) ([]byte, error) {
 	v0.Hardware.NetInfo = v1.Hardware.NetInfo
 	v0.Hardware.MemInfo = v1.Hardware.MemInfo
 	v0.Hardware.CPUInfo = &CPUInfoV0{}
-	v0.Hardware.CPUInfo.CPUs = len(v1.Hardware.CPUInfo.CPUs)
 	v0.Hardware.CPUInfo.UsedPercent = v1.Hardware.CPUInfo.UsedPercent
 	v0.Hardware.GPUInfo = []GPUInfoV0{}
 	for _, v := range v1.Hardware.GPUInfo.GPUs {
@@ -218,7 +253,6 @@ type HardwareV0 struct {
 
 // CPUInfoV0 CPU information
 type CPUInfoV0 struct {
-	CPUs        int     `json:"cpus,omitempty"`
 	UsedPercent float64 `json:"used_percent,omitempty"`
 }
 

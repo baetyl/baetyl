@@ -46,73 +46,104 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-### Install Python and runtime dependency package in **native** process mode
+### Install prerequisites in **native** process mode
 
-OpenEdge provides Python Runtime, which supports running code written in Python2.7 and Python3.6. If you plan to use the **native** process mode to start, it is recommended to install **Python3.6** or higher version locally and run the package it depends on. If you already have other version of Python3 lower than 3.6, it is recommended that you uninstall it first and install Python3.6. Or you can keep the inconsistent version but need to ensure compatibility.
+OpenEdge provides Python and Node runtime. If you plan to use the native process mode, you need to install prerequisites first. The corresponding versions for Python runtime are Python2.7 and Python3.6, and Node8.5 for Node runtime. Besides, users can also choose other versions, but they must ensure compatibility.
 
-- Step 1：Check the version of Python3. If the version is Python3.6 or higher, jump Step 3. Instead, jump Step 2.
+#### Install Python runtime
+
+The system provides Python2.7 by default, and the Python3.6 installation is below.
+
+- Step 1：Check Python3.6 or above is already installed or not. If yes, goto Step 3, otherwise goto Step 2.
 
 ```shell
 which python3
 ```
 
-- Step 2：Use the following commands to install Python3.6.
+- Step 2：Install Python3.6:
 
 ```shell
-sudo add-apt-repository ppa:jonathonf/python-3.6
-sudo apt-get update
-sudo apt-get install python3.6
-sudo apt-get install python3-pip
+sudo yum install -y epel-release
+sudo yum update
+sudo yum install -y python36
 ```
 
-- Step 3：Install the packages need by OpenEdge based on Python3.6.
+- Step 3：Install dependencies required by OpenEdge:
 
 ```shell
+# python2
+sudo yum install -y python2-pip
+sudo pip2 install grpcio protobuf pyyaml
+sudo pip2 install -U PyYAML
+
+# python3
+sudo yum install -y python36-pip
 sudo pip3 install grpcio protobuf pyyaml
+sudo pip3 install -U PyYAML
 ```
 
-## Deploy OpenEdge
+#### Install Node runtime
 
-### Deployment Process
-
-- Step1: Download [OpenEdge](../Resources-download.md);
-- Step2: Open the terminal and enter the OpenEdge directory for decompression:
+- Step 1：Check Node8.5 or above is already installed or not. If not, goto Step 2.
 
 ```shell
-tar -zxvf openedge-xxx.tar.gz
+node -v
 ```
 
-- Step3: After the decompression operation is completed, execute the command `sudo openedge start` in the OpenEdge directory to start OpenEdge. Then check the starting and loading logs, meantimes execute the command `docker stats` to display the running status of the docker containers. Compare both to see whether all the images needed by OpenEdge are loaded successfully by docker.
-- Step4: If the images to be launched in logs are all successfully loaded by the docker containers, OpenEdge is successfully started.
+- Step 2：Install Node8:
 
-**NOTE**: The official download page only provides the docker mode executable file. If you want to run in process mode, please refer to [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md).
+```shell
+curl -sL https://rpm.nodesource.com/setup_8.x | bash -
+sudo yum install -y nodejs
+```
 
-### Start Deployment
+## Quick Deployment
 
-As mentioned above, download OpenEdge from the [Download page](../Resources-download.md) first (also can compile from source, see [Build-OpenEdge-From-Source](./Build-OpenEdge-from-Source.md)), then open the terminal to enter OpenEdge directory for decompression. After successful decompression, you can find that the openedge directory mainly includes `bin`, `etc`, `var`, etc., as shown in the following picture:
+A complete OpenEdge includes **main program** and **configurations**. The following is an introduction to OpenEdge's quick deployment using the latest official release and a sample configuration.
 
-![OpenEdge directory](../../images/setup/openedge-dir-centos.png)
+### Step 1: Download
 
-The `bin` directory stores the openedge executable binary file, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge.
+Download [OpenEdge](../Resources-download.md) and [Example Configuration](https://github.com/baidu/openedge/releases/download/0.1.4/openedge_docker_mode_example.zip)；
 
-Place the binary file under `/usr/local/bin` or any directory that exists in your environment variable's `PATH` value. And copy the `etc` and `var` directories to the `/usr/local` or other upper level directories where you place the executable. Of course, you can just leave them in the place where you unpacked.
+### Step 2: Unzip
 
-Then, open a new terminal and execute the command `docker stats` to view the running status of the container in the installed docker, as shown in the following picture:
+Open the terminal and enter the directory of downloaded zips for decompression:
 
-![view the docker containers status](../../images/setup/docker-stats-before-centos.png)
+```shell
+unzip openedge-xxx.zip
+unzip openedge_docker_mode_example.zip
+```
 
-It can be found that the current system does not have a docker container running.
+If the above operation is normal, the resulting file directory structure is as shown below:
 
-Then, step into the decompressed folder of OpenEdge, execute the command `sudo openedge start` and if you didn't put the `var` and `etc` directories to the upper level directory of where you keep executable file, you need use `-w` to specify the work directory like this: `sudo openedge start -w yourpath/to/configuration`. Check the result by executing the command `ps -ef | grep "openedge"` , as shown below:
+![OpenEdge directory](../../images/setup/openedge-dir.png)
 
-![OpenEdge startup log](../../images/setup/openedge-started-thread-centos.png)
+The `bin` directory stores the `openedge` executable binary file of **main program**, the `etc` directory stores the configuration of OpenEdge, and the `var` directory stores the configuration and resources for the modules of OpenEdge. About Configuration, you can read [Configuration Interpretation](../tutorials/Config-interpretation.md) to learn more.
 
-And you can check the log file for details. Log files are stored by default in the `var/log/openedge` directory of the working directory.
+Meantime, you can place the `openedge` in the directory specified in `PATH`, suggest `/usr/local/bin`, then copy the `var` and `etc` directories to `/ Usr/local`.
 
-At the same time, observe the terminal that shows the running status of the container, as shown in the following picture:
+### Step 3: Start
 
-![running containers](../../images/setup/docker-stats-after-centos.png)
+Enter the directory of `openedge`, then start it:
 
-Obviously, OpenEdge has been successfully launched.
+```shell
+sudo openedge start
+```
 
-As mentioned above, if the steps are executed correctly, OpenEdge can be quickly deployed and started on the CentOS system.
+### Step 4: Verify
+
+OpenEdge may encounter an abnormal condition during the startup process. You can verify whether OpenEdge is successfully started according to the following steps:
+
+- executing the command `ps -ef | grep openedge` to check whether `openedge` is running, as shown below. Otherwise, `openedge` fails to start.
+
+![OpenEdge](../../images/setup/openedge-started-thread.png)
+
+- executing the command `docker stats` to view the running status of docker containers. `openedge` will pull the required images first. After completed, the running status of containers are as shown below. If some containers are missing, it says they failed to start.
+
+![docker stats](../../images/setup/docker-stats.png)
+
+- Under the condition of two above failures, you need to view the log to check more. Log files are stored by default in the `var/log/openedge` directory of working directory. Then check and correct one by one according to the detailed error information. If necessary, just [Submit an issue](https://github.com/baidu/openedge/issues) for help.
+
+As mentioned above, if all the steps are executed correctly, it says OpenEdge has deployed successful on CentOS system.
+
+**NOTE**: The above deployment uses **docker** container mode. If you want to use **native** process mode or learn more, please refer to [source compiled](./Build-OpenEdge-from-Source.md).

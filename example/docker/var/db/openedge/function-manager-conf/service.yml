@@ -1,72 +1,56 @@
 
-#### server
-## 如果要开放 GRPC 服务给客户端直接访问，需配置服务地址，如果不配置则不启动 GRPC 服务。
-## If you want to open the GRPC service to the client for direct access,
-## you need to configure the service address.
-## If not configured, the GRPC service will not be started.
-####
-server: 
-
-  ## GRPC 服务地址，举例：0.0.0.0:50051。
-  ## The GRPC service address, e.g. 0.0.0.0:50051.
-  address: 0.0.0.0:50051
-
-  ## 最大并发连接数，默认不限制。
-  ## Maximum number of concurrent connections, no limit by default.
-  #concurrent:
-  #  max: 0
-
-  ## 最大消息长度，默认 4m。
-  ## Maximum number of message length, 4m by default.
-  #message:
-  #  length:
-  #    max: 4m
-
-  ## 服务端证书，包括 CA 证书、私钥和公钥的路径。
-  ## Server certificate, including the path to the CA certificate, private key and public key.
-  #ca: var/db/openedge/cert/ca.pem
-  #key: var/db/openedge/cert/server.pem
-  #cert: var/db/openedge/cert/server.key
-
 hub:
   address: tcp://localhub:1883
   username: test
   password: hahaha
 rules:
-  - clientid: localfunc-1
+  - clientid: func-python27-sayhi-1
     subscribe:
       topic: t
     function:
-      name: sayhi
+      name: python27-sayhi
     publish:
-      topic: t/hi
-  - clientid: localfunc-2
+      topic: t/py2hi
+  - clientid: func-sql-filter-1
     subscribe:
       topic: t
       qos: 1
     function:
-      name: filter
+      name: sql-filter
     publish:
-      topic: t/f
+      topic: t/sqlfilter
       qos: 1
-  - clientid: localfunc-3
+  - clientid: func-python36-sayhi-1
     subscribe:
       topic: t
     function:
-      name: sayhi3
+      name: python36-sayhi
     publish:
-      topic: t/hi3
+      topic: t/py3hi
+  - clientid: func-node85-sayhi-1
+    subscribe:
+      topic: t
+    function:
+      name: node85-sayhi
+    publish:
+      topic: t/node8hi
 functions:
-  - name: sayhi
-    service: function-sayhi
+  - name: python27-sayhi
+    service: function-python27-sayhi
     instance:
       min: 0
       max: 10
       idletime: 1m
-  - name: filter
-    service: function-filter
-  - name: sayhi3
-    service: function-sayhi3
+  - name: sql-filter
+    service: function-sql-filter
+  - name: python36-sayhi
+    service: function-python36-sayhi
+    instance:
+      min: 0
+      max: 10
+      idletime: 1m
+  - name: node85-sayhi
+    service: function-node85-sayhi
     instance:
       min: 0
       max: 10

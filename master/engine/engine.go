@@ -26,9 +26,11 @@ func Factories() map[string]Factory {
 type Engine interface {
 	io.Closer
 	Name() string
+	Recover()
 	Prepare([]openedge.ServiceInfo)
-	AddInstanceStats(serviceName, instanceName string, partialStats PartialStats)
-	DelInstanceStats(serviceName, instanceName string)
+	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
+	DelInstanceStats(serviceName, instanceName string, persist bool)
+	DelServiceStats(serviceName string, persist bool)
 	Run(openedge.ServiceInfo, map[string]openedge.VolumeInfo) (Service, error)
 }
 

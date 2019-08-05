@@ -10,8 +10,8 @@ import (
 	"github.com/jpillora/backoff"
 )
 
-var errMsgChanClosed = fmt.Errorf("message channel already closed")
-var errMsgDiscarded = fmt.Errorf("message discarded since channel is full")
+var errMsgChanClosed = fmt.Errorf("message channel is closed")
+var errMsgDiscarded = fmt.Errorf("message is discarded since channel is full")
 
 // Q0: it means the message with QOS=0 published by clients or functions
 // Q1: it means the message with QOS=1 published by clients or functions
@@ -133,13 +133,13 @@ loop:
 		case msg := <-c.msgq0:
 			c.process(msg)
 		case <-time.After(endTime.Sub(time.Now())):
-			c.log.Warnf("process inflight messages from channel (Q0) timed out during shutdown")
+			c.log.Warnf("timed out to process inflight messages from channel (Q0) during shutdown")
 			return nil
 		case <-c.acktomb.Dying():
-			c.log.Debugf("process inflight messages from channel (Q0) interrupted during session close")
+			c.log.Debugf("interrupted to process inflight messages from channel (Q0) during session close")
 			return nil
 		default:
-			c.log.Debugf("process inflight messages from channel (Q0) finished")
+			c.log.Debugf("finished to process inflight messages from channel (Q0)")
 			return nil
 		}
 	}
@@ -166,13 +166,13 @@ loop:
 		case msg := <-c.msgq1:
 			c.process(msg)
 		case <-time.After(endTime.Sub(time.Now())):
-			c.log.Warnf("process inflight messages (qos=1) timed out during shutdown")
+			c.log.Warnf("timed out to process inflight messages (qos=1) during shutdown")
 			return nil
 		case <-c.acktomb.Dying():
-			c.log.Debugf("process inflight messages (qos=1) interrupted during session close")
+			c.log.Debugf("interrupted to process inflight messages (qos=1) during session close")
 			return nil
 		default:
-			c.log.Debugf("process inflight messages (qos=1) finished")
+			c.log.Debugf("finished to process inflight messages (qos=1)")
 			return nil
 		}
 	}

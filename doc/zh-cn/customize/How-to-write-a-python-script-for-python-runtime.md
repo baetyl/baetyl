@@ -169,11 +169,11 @@ def handler(event, context):
     return result
 ```
 
-+ **发送字典类数据**：
++ **发送字典类数据**:
 
 ![发送字典类数据](../../images/customize/write-python-script-dict.png)
 
-+ **发送非字典类数据**：
++ **发送非字典类数据**:
 
 ![发送非字典类数据](../../images/customize/write-python-script-none-dict.png)
 

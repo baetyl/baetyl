@@ -17,7 +17,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/sysinfo"
 	"github.com/docker/go-connections/nat"
-	"github.com/orcaman/concurrent-map"
+	cmap "github.com/orcaman/concurrent-map"
 )
 
 // NAME ot docker engine
@@ -40,7 +40,6 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
 	}
-	e.clean()
 	err = e.initNetwork()
 	if err != nil {
 		e.Close()
@@ -63,6 +62,12 @@ func (e *dockerEngine) Name() string {
 	return NAME
 }
 
+// Recover recover old services when master restart
+func (e *dockerEngine) Recover() {
+	// clean old services in docker mode
+	e.clean()
+}
+
 // Prepare prepares all images
 func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
 	var wg sync.WaitGroup
@@ -76,7 +81,7 @@ func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
 	wg.Wait()
 }
 
-// Clean clean all old instances
+// Clean recover all old instances
 func (e *dockerEngine) clean() {
 	sss := map[string]map[string]attribute{}
 	if e.LoadStats(&sss) {
@@ -127,8 +132,9 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		}
 		volumes = append(volumes, fmt.Sprintf(f, path.Join(e.pwd, path.Clean(v.Path)), path.Clean(m.Path)))
 	}
-	if runtime.GOOS == "linux" {
-		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, openedge.DefaultSockFile, openedge.DefaultSockFile))
+	sock := utils.GetEnv(openedge.EnvMasterHostSocket)
+	if sock != "" {
+		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, sock, openedge.DefaultSockFile))
 	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
 	if err != nil {

@@ -112,7 +112,7 @@ var
 
 具体地，如上图所示，**client1**、**client2** 及 **client3** 分别与 `localhub` 服务建立连接关系，**client1** 具备向主题 `t` 发布消息的权限，**client2** 及 **client3** 分别拥有向主题 `t` 及 `t/topic` 订阅消息的权限。
 
-一旦上述三个 client 与本地 Hub 服务的连接关系建立后，依照上文 subscriptions 配置项信息，**client2** 及 **client3** 将会分别得到从 **client1** 向 OpenEdge Hub 服务发布到主题 `t` 的消息。
+一旦上述三个 client 与 `localhub` 服务的连接关系建立后，依照上文 subscriptions 配置项信息，**client2** 及 **client3** 将会分别得到从 **client1** 向 OpenEdge Hub 服务发布到主题 `t` 的消息。
 
 特别地，**client1**、**client2** 及 **client3** 可以合并为一个 client，则新的 client 即会拥有向主题 `t` 的发布消息权限，拥有向主题 `t` 及 `t/topic` 订阅消息的权限。这里，采用 MQTTBOX 作为该新 client，点击 `Add subscriber` 按钮添加主题 `t` 及 `t/topic` 进行订阅，具体如下图示。
 

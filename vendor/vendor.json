@@ -286,6 +286,12 @@
 			"revisionTime": "2018-09-12T20:56:54Z"
 		},
 		{
+			"checksumSHA1": "7NP1qUMF8Kx1y0zANxx0e+oq9Oo=",
+			"path": "github.com/fsnotify/fsnotify",
+			"revision": "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9",
+			"revisionTime": "2018-01-10T05:33:47Z"
+		},
+		{
 			"checksumSHA1": "vTmc/uvCPpTs51Rl9bVomPZMZIM=",
 			"path": "github.com/go-ole/go-ole",
 			"revision": "97b6244175ae18ea6eef668034fd6565847501c9",
@@ -356,6 +362,30 @@
 			"path": "github.com/gorilla/websocket",
 			"revision": "3ff3320c2a1756a3691521efc290b4701575147c",
 			"revisionTime": "2018-08-16T22:18:03Z"
+		},
+		{
+			"checksumSHA1": "YjZiQ5N552dJ7GpJ2P4TTRu4PKI=",
+			"path": "github.com/inconshreveable/go-update",
+			"revision": "8152e7eb6ccf8679a64582a66b78519688d156ad",
+			"revisionTime": "2016-01-12T19:33:35Z"
+		},
+		{
+			"checksumSHA1": "LeFW+ad/zlj30+Z0O4wwnXrVUSQ=",
+			"path": "github.com/inconshreveable/go-update/internal/binarydist",
+			"revision": "8152e7eb6ccf8679a64582a66b78519688d156ad",
+			"revisionTime": "2016-01-12T19:33:35Z"
+		},
+		{
+			"checksumSHA1": "H63+DW/S2nASpHk59G1wEUZD1qk=",
+			"path": "github.com/inconshreveable/go-update/internal/osext",
+			"revision": "8152e7eb6ccf8679a64582a66b78519688d156ad",
+			"revisionTime": "2016-01-12T19:33:35Z"
+		},
+		{
+			"checksumSHA1": "40vJyUB4ezQSn/NSadsKEOrudMc=",
+			"path": "github.com/inconshreveable/mousetrap",
+			"revision": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75",
+			"revisionTime": "2014-10-17T20:07:13Z"
 		},
 		{
 			"checksumSHA1": "VbUVPPW23lfYaBxmNX6js5dvqGY=",
@@ -467,12 +497,6 @@
 			"revisionTime": "2018-05-06T18:05:49Z"
 		},
 		{
-			"checksumSHA1": "iCGwfqJz3oUw8SiEVwdtAWBwpmM=",
-			"path": "github.com/sevlyar/go-daemon",
-			"revision": "12616e426b1522ef2099701fafdd6ad9f476e8c1",
-			"revisionTime": "2018-10-06T20:25:41Z"
-		},
-		{
 			"checksumSHA1": "LvrQYiHnmi+OseM0g/4XZudwphw=",
 			"path": "github.com/shirou/gopsutil/cpu",
 			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
@@ -513,6 +537,12 @@
 			"path": "github.com/shirou/gopsutil/process",
 			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
 			"revisionTime": "2019-03-23T13:16:28Z"
+		},
+		{
+			"checksumSHA1": "Nve7SpDmjsv6+rhkXAkfg/UQx94=",
+			"path": "github.com/shirou/w32",
+			"revision": "bb4de0191aa41b5507caa14b0650cdbddcd9280b",
+			"revisionTime": "2016-09-30T03:27:40Z"
 		},
 		{
 			"checksumSHA1": "HBvdI4AkWfRbjneWZ1UKXM0o9zE=",

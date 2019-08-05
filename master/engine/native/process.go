@@ -5,6 +5,10 @@ import (
 	"os"
 	"syscall"
 	"time"
+
+	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/utils"
+	"github.com/shirou/gopsutil/process"
 )
 
 type processConfigs struct {
@@ -51,7 +55,7 @@ func (e *nativeEngine) waitProcess(p *os.Process) error {
 }
 
 func (e *nativeEngine) stopProcess(p *os.Process) error {
-	e.log.Debugf("to stop process (%d)", p.Pid)
+	e.log.Debugf("process (%d) is stopping", p.Pid)
 
 	err := p.Signal(syscall.SIGTERM)
 	if err != nil {
@@ -77,5 +81,35 @@ func (e *nativeEngine) stopProcess(p *os.Process) error {
 			e.log.Debugf("failed to wait process (%d): %s", p.Pid, err.Error())
 		}
 		return nil
+	}
+}
+
+func (e *nativeEngine) statsProcess(p *os.Process) engine.PartialStats {
+	proc, err := process.NewProcess(int32(p.Pid))
+	if err != nil {
+		return engine.PartialStats{"error": err.Error()}
+	}
+	cpu := utils.CPUInfo{Time: time.Now().UTC()}
+	cpu.UsedPercent, err = proc.CPUPercent()
+	if err != nil {
+		cpu.Error = err.Error()
+	}
+	mem := utils.MemInfo{Time: time.Now().UTC()}
+	meminfo, err := proc.MemoryInfo()
+	if err != nil {
+		mem.Error = err.Error()
+	} else {
+		mem.Used = meminfo.RSS
+		mem.SwapUsed = meminfo.Swap
+		mup, err := proc.MemoryPercent()
+		if err != nil {
+			mem.Error = err.Error()
+		} else {
+			mem.UsedPercent = float64(mup)
+		}
+	}
+	return engine.PartialStats{
+		"cpu_stats": cpu,
+		"mem_stats": mem,
 	}
 }

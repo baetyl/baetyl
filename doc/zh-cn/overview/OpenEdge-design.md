@@ -1,4 +1,4 @@
-# OpenEdge
+# OpenEdge 架构
 
 - [概念](#概念)
 - [组成](#组成)
@@ -18,6 +18,7 @@
   - [openedge-function-manager](#openedge-function-manager)
   - [openedge-function-python27](#openedge-function-python27)
   - [openedge-function-python36](#openedge-function-python36)
+  - [openedge-function-node85](#openedge-function-node85)
   - [openedge-remote-mqtt](#openedge-remote-mqtt)
 
 ## 概念
@@ -42,6 +43,7 @@
 - [openedge-function-manager](#openedge-function-manager)：提供函数计算服务，进行函数实例管理和消息触发的函数调用。
 - [openedge-function-python27](#openedge-function-python27)：提供加载基于 Python2.7 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
 - [openedge-function-python36](#openedge-function-python36)：提供加载基于 Python3.6 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
+- [openedge-function-node85](#openedge-function-node85)：提供加载基于 Node8.5 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
 
 架构图:
 
@@ -126,7 +128,7 @@ Docker 引擎会将服务 Image 解释为 Docker 镜像地址，并通过调用 
 
 #### Native 引擎
 
-在无法提供容器服务的平台（如旧版本的 Windows）上，Native 引擎以裸进程方式尽可能的模拟容器的使用体验。该引擎会将服务 Image 解释为 Package 名称，Package 由存储卷提供，内含服务所需的程序，但这些程序的依赖（如 Python 解释器、lib 等）需要在主机上提前安装好。所有服务直接使用宿主机网络，所有端口都是暴露的，用户需要注意避免端口冲突。服务的每个实例对应于一个进程，引擎负责进程的启停和重启。
+在无法提供容器服务的平台（如旧版本的 Windows）上，Native 引擎以裸进程方式尽可能的模拟容器的使用体验。该引擎会将服务 Image 解释为 Package 名称，Package 由存储卷提供，内含服务所需的程序，但这些程序的依赖（如 Python 解释器、Node 解释器、lib 等）需要在主机上提前安装好。所有服务直接使用宿主机网络，所有端口都是暴露的，用户需要注意避免端口冲突。服务的每个实例对应于一个进程，引擎负责进程的启停和重启。
 
 _**注意**：进程模式不支持资源的限制，无需暴露端口、映射设备。_
 
@@ -338,10 +340,11 @@ _**注意**：应用中配置的环境变量如果和上述系统环境变量相
 
 `openedge-agent` 又称云代理模块，负责和 BIE 云端管理套件通讯，拥有 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证。开发者可以参考该模块实现自己的 Agent 模块来对接自己的云平台。
 
-云代理目前就做两件事：
+云代理目前就做三件事：
 
 1. 启动后定时向主程序获取状态信息并上报给云端
 2. 监听云端下发的事件，触发相应的操作，目前只处理应用 OTA 事件
+3. 负责清理存储卷目录，存储卷清理期间不会通知主程序进行应用 OTA
 
 云代理接收到 BIE 云端管理套件的应用 OTA 指令后，会先下载所有配置中使用的存储卷数据包并解压到指定位置，如果存储卷数据包已经存在并且 MD5 相同则不会重复下载。所有存储卷都准备好之后，云代理模块会调用主程序的 `/update/system` 接口触发主程序更新系统。
 
@@ -412,7 +415,7 @@ Python 函数支持读取环境变量，比如 os.environ['PATH']。
 
 Python 函数支持读取上下文，比如 context['functionName']。
 
-Python 函数实现举例：
+Python 函数示例如下：
 
 ```python
 #!/usr/bin/env python3
@@ -433,7 +436,33 @@ def handler(event, context):
     return event
 ```
 
-_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 sayhi.py，需要自行安装 Python3.6，且需要基于 Python3.6 安装 protobuf3、grpcio (采用 pip 安装即可，`pip3 install pyyaml protobuf grpcio`)。_
+_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 index.py，需要自行安装 Python3.6，且需要基于 Python3.6 安装 protobuf3、grpcio (采用 pip 安装即可，`pip3 install pyyaml protobuf grpcio`)。_
+
+### openedge-function-node85
+
+`openedge-function-node85` 模块的设计思想与 `openedge-function-python36` 模块相同，为 OpenEdge 提供 Node8.5 运行时环境，用户可以编写 javascript 脚本来处理消息，同样支持 JSON 格式也可以是二进制形式的数据，javascript 脚本示例如下：
+
+```javascript
+#!/usr/bin/env node
+
+exports.handler = (event, context, callback) => {
+  result = {};
+  
+  if (Buffer.isBuffer(event)) {
+      const message = event.toString();
+      result["msg"] = message;
+      result["type"] = 'non-dict';
+  }else {
+      result["msg"] = event;
+      result["type"] = 'dict';
+  }
+
+  result["say"] = 'hello world';
+  callback(null, result);
+};
+```
+
+_**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 index.js，需要自行安装 Node8.5。_
 
 ### openedge-remote-mqtt
 

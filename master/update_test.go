@@ -1,9 +1,9 @@
-// +build !windows
-
 package master
 
 import (
-	"io/ioutil"
+	"bufio"
+	"encoding/json"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -18,27 +18,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUpdate(t *testing.T) {
-	err := os.Chdir("testdata")
+func TestUpdateAPP(t *testing.T) {
+	oldpwd, err := os.Getwd()
 	assert.NoError(t, err)
+	err = os.Chdir("testdata")
+	assert.NoError(t, err)
+	defer os.Chdir(oldpwd)
+
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
 	os.RemoveAll("var/run")
-	os.RemoveAll("var/db/openedge/cmd2")
-
-	targetPath := path.Join("var", "db", "openedge", "reload")
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appConfigFile)
-	utils.CopyFile(path.Join(targetPath, openedge.AppBackupFileName), appBackupFile)
-
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
 	defer os.RemoveAll("var/run")
-	defer os.RemoveAll("var/db/openedge/cmd2")
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
+	badapp := path.Join("var", "db", "openedge", "app", "v5", "application.yml")
+	goodapp := path.Join("var", "db", "openedge", "app", "v2", "application.yml")
+
+	// round 1: failed to reload
+	utils.CopyFile(badapp, appConfigFile)
+	utils.CopyFile(goodapp, appBackupFile)
 
 	m := &Master{
+		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
 		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
@@ -47,177 +51,335 @@ func TestUpdate(t *testing.T) {
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	err = m.update("", false, false)
-	assert.Equal(t, "v1", m.appcfg.Version)
+	err = m.UpdateAPP("", "")
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
+	assert.EqualError(t, err, "failed to start app: volume 'cmd-bin' not found")
 	m.Close()
+	m.Wait()
 
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
+	m.infostats.setVersion("")
 
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appConfigFile)
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appBackupFile)
+	// round 2: failed to reload
+	utils.CopyFile(badapp, appConfigFile)
+	utils.CopyFile(badapp, appBackupFile)
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	err = m.update("", false, false)
-	assert.Equal(t, "v2", m.appcfg.Version)
+	err = m.UpdateAPP("", "")
+	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.EqualError(t, err, "open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory; failed to rollback: open "+pwd+"/var/run/openedge/services/wait_exit_1/lib/openedge/cmd/package.yml: no such file or directory")
+	assert.EqualError(t, err, "failed to restart old app: volume 'cmd-bin' not found; failed to roll back: volume 'cmd-bin' not found")
 	m.Close()
+	m.Wait()
 
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
+	m.infostats.setVersion("")
 
-	utils.CopyFile(path.Join(targetPath, openedge.AppBackupFileName), appConfigFile)
-	utils.CopyFile(path.Join(targetPath, openedge.AppConfFileName), appBackupFile)
+	// round 2: success to reload
+	utils.CopyFile(goodapp, appConfigFile)
+	utils.CopyFile(badapp, appBackupFile)
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 
-	err = m.update("", false, false)
+	err = m.UpdateAPP("", "")
 	assert.NoError(t, err)
-	assert.Equal(t, "v1", m.appcfg.Version)
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	m.Close()
+	m.Wait()
 }
 
-func TestUpdateSystem(t *testing.T) {
+func TestUpdateSystemAPP(t *testing.T) {
+	oldpwd, err := os.Getwd()
+	assert.NoError(t, err)
+	err = os.Chdir("testdata")
+	assert.NoError(t, err)
+	defer os.Chdir(oldpwd)
+
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
 	os.RemoveAll("var/run")
+	os.RemoveAll("var/log")
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
 	defer os.RemoveAll("var/run")
+	defer os.RemoveAll("var/log")
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
 
 	m := &Master{
+		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
 		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
 		log:       logger.WithField("openedge", "master"),
 	}
+	err = utils.UnmarshalYAML(nil, &m.cfg)
+	assert.NoError(t, err)
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
+	defer m.Wait()
 	defer m.Close()
 
-	dir := path.Join("var", "db", "openedge", "app")
-	err = m.UpdateSystem(path.Join(dir, "v4"), false)
-	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
-	assert.Equal(t, "", m.appcfg.Version)
-	assert.False(t, utils.FileExists(appConfigFile))
+	target := path.Join("var", "db", "openedge", "app")
+	err = m.UpdateSystem("", "APP", path.Join(target, "v4"))
+	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory")
+	assert.Equal(t, "", m.infostats.getVersion())
+	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
+	assert.Equal(t, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
 
-	err = m.UpdateSystem(path.Join(dir, "v5"), false)
-	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
-	assert.Equal(t, "", m.appcfg.Version)
-	assert.False(t, utils.FileExists(appConfigFile))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v5"))
+	assert.EqualError(t, err, "failed to update system: failed to start app: volume 'cmd-bin' not found")
+	assert.Equal(t, "", m.infostats.getVersion())
+	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", m.infostats.getError())
+	assert.Equal(t, "failed to update system: failed to start app: volume 'cmd-bin' not found", m.infostats.getError())
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
 
-	err = m.UpdateSystem(path.Join(dir, "v6"), false)
+	err = m.UpdateSystem("", "APP", path.Join(target, "v6"))
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	assert.Equal(t, "", m.appcfg.Version)
-	assert.False(t, utils.FileExists(appConfigFile))
-	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-
-	err = m.UpdateSystem(path.Join(dir, "v1"), false)
-	assert.NoError(t, err)
-	assert.Equal(t, "v1", m.appcfg.Version)
-	assert.True(t, utils.FileExists(appConfigFile))
-	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "", m.infostats.getError())
-
-	err = m.UpdateSystem(path.Join(dir, "v4"), false)
-	assert.EqualError(t, err, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory")
-	assert.Equal(t, "v1", m.appcfg.Version)
-	assert.True(t, utils.FileExists(appConfigFile))
-	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
-
-	err = m.UpdateSystem(path.Join(dir, "v2"), false)
-	assert.Equal(t, "v2", m.appcfg.Version)
-	assert.True(t, utils.FileExists(appConfigFile))
-	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "", m.infostats.getError())
-
-	err = m.UpdateSystem(path.Join(dir, "v5"), false)
-	assert.EqualError(t, err, "failed to update system: volume 'cmd-bin' not found")
-	assert.Equal(t, "v2", m.appcfg.Version)
-	assert.True(t, utils.FileExists(appConfigFile))
-	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: volume 'cmd-bin' not found", m.infostats.getError())
-
-	err = m.UpdateSystem(path.Join(dir, "v3"), false)
-	assert.Equal(t, "v3", m.appcfg.Version)
-	assert.True(t, utils.FileExists(appConfigFile))
-	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "", m.infostats.getError())
-
-	err = m.UpdateSystem(path.Join(dir, "v6"), false)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	assert.Equal(t, "v3", m.appcfg.Version)
+	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
 
-	err = m.UpdateSystem(path.Join(dir, "v2"), false)
-	assert.Equal(t, "v2", m.appcfg.Version)
+	err = m.UpdateSystem("", "APP", path.Join(target, "v1"))
+	assert.NoError(t, err)
+	assert.Equal(t, "v1", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
 
-	dv := path.Join("var", "db", "openedge", "dummy")
-	err = os.MkdirAll(dv, 0755)
-	assert.NoError(t, err)
-	f7 := path.Join("var", "db", "openedge", "app", "v7", "application.yml")
-	err = os.MkdirAll(path.Dir(f7), 0755)
-	assert.NoError(t, err)
-	err = ioutil.WriteFile(f7, []byte(`
-version: v7
-volumes:
-  - name: cmd-bin
-    path: var/db/openedge/cmd
-  - name: cmd-bin
-    path: var/db/openedge/cmd
-  - name: dummy
-    path: var/db/openedge/dummy
-`), 0755)
-	assert.NoError(t, err)
+	err = m.UpdateSystem("", "APP", path.Join(target, "v4"))
+	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory")
+	assert.Equal(t, "v1", m.infostats.getVersion())
+	assert.True(t, utils.FileExists(appConfigFile))
+	assert.False(t, utils.FileExists(appBackupFile))
+	assert.Equal(t, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
 
-	err = m.UpdateSystem(path.Join(dir, "v7"), true)
-	assert.Equal(t, "v7", m.appcfg.Version)
+	err = m.UpdateSystem("", "APP", path.Join(target, "v2"))
+	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
-	assert.True(t, utils.DirExists(dv))
-	assert.False(t, utils.FileExists(f7))
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
 
-	f8 := path.Join("var", "db", "openedge", "app", "v8", "application.yml")
-	err = os.MkdirAll(path.Dir(f8), 0755)
-	assert.NoError(t, err)
-	err = ioutil.WriteFile(f8, []byte(`
-version: v8
-volumes:
-  - name: cmd-bin
-    path: var/db/openedge/cmd
-`), 0755)
-	assert.NoError(t, err)
+	err = m.UpdateSystem("", "APP", path.Join(target, "v5", "application.yml"))
+	assert.EqualError(t, err, "failed to update system: failed to start app: volume 'cmd-bin' not found")
+	assert.Equal(t, "v2", m.infostats.getVersion())
+	assert.True(t, utils.FileExists(appConfigFile))
+	assert.False(t, utils.FileExists(appBackupFile))
+	assert.Equal(t, "failed to update system: failed to start app: volume 'cmd-bin' not found", m.infostats.getError())
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
 
-	err = m.UpdateSystem(path.Join(dir, "v8"), true)
-	assert.NoError(t, err)
-	assert.Equal(t, "v8", m.appcfg.Version)
+	err = m.UpdateSystem("", "APP", path.Join(target, "v3", "application.yml"))
+	assert.Equal(t, "v3", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
-	assert.False(t, utils.DirExists(dv))
-	assert.False(t, utils.FileExists(f8))
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
+
+	err = m.UpdateSystem("", "APP", path.Join(target, "v6", "application.yml"))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
+	assert.Equal(t, "v3", m.infostats.getVersion())
+	assert.True(t, utils.FileExists(appConfigFile))
+	assert.False(t, utils.FileExists(appBackupFile))
+	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+
+	err = m.UpdateSystem("", "APP", path.Join(target, "v2", "application.yml"))
+	assert.Equal(t, "v2", m.infostats.getVersion())
+	assert.True(t, utils.FileExists(appConfigFile))
+	assert.False(t, utils.FileExists(appBackupFile))
+	assert.Equal(t, "", m.infostats.getError())
+	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
+}
+
+func TestUpdateSystemAPP2(t *testing.T) {
+	oldpwd, err := os.Getwd()
+	assert.NoError(t, err)
+	err = os.Chdir("testdata")
+	assert.NoError(t, err)
+	defer os.Chdir(oldpwd)
+
+	os.RemoveAll(appConfigFile)
+	os.RemoveAll(appBackupFile)
+	os.RemoveAll("var/run")
+	os.RemoveAll("var/log")
+	os.MkdirAll("var/log/openedge", 0755)
+	defer os.RemoveAll(appConfigFile)
+	defer os.RemoveAll(appBackupFile)
+	defer os.RemoveAll("var/run")
+	defer os.RemoveAll("var/log")
+
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	badapp := path.Join("var", "db", "openedge", "app", "v5", "application.yml")
+	goodapp := path.Join("var", "db", "openedge", "app", "v2", "application.yml")
+	otalog := "var/log/openedge/openedge-ota.log"
+
+	m := &Master{
+		sig:       make(chan os.Signal, 1),
+		accounts:  cmap.New(),
+		services:  cmap.New(),
+		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
+		log:       logger.WithField("openedge", "master"),
+	}
+	err = utils.UnmarshalYAML(nil, &m.cfg)
+	assert.NoError(t, err)
+	defer m.Wait()
+	defer m.Close()
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	assert.NoError(t, err)
+
+	wantErr := "failed to update system: failed to start app: volume 'cmd-bin' not found"
+	wantErrRB := "failed to update system: failed to restart old app: volume 'cmd-bin' not found; failed to roll back: volume 'cmd-bin' not found"
+	tests := []struct {
+		name        string
+		target      string
+		pcur        string // prepare applicatuib.yml if not empty
+		pold        string // prepare applicatuib.yml.old if not empty
+		ccur        bool   // check if applicatuib.yml exists
+		cold        bool   // check if applicatuib.yml.old exists
+		wantErr     string
+		wantVersion string
+		otalog      string
+	}{
+		{
+			name:        "nil",
+			target:      "",
+			ccur:        false,
+			cold:        false,
+			wantErr:     "",
+			wantVersion: "",
+		},
+		{
+			name:        "bad app.yml",
+			target:      "",
+			pcur:        badapp,
+			ccur:        true,
+			cold:        false,
+			wantErr:     wantErr,
+			wantVersion: "",
+		},
+		{
+			name:        "bad app.yml.old",
+			target:      "",
+			pold:        badapp,
+			ccur:        false,
+			cold:        false,
+			wantErr:     "",
+			wantVersion: "",
+		},
+		{
+			name:        "good app.yml",
+			target:      "",
+			pcur:        goodapp,
+			ccur:        true,
+			cold:        false,
+			wantErr:     "",
+			wantVersion: "v2",
+		},
+		{
+			name:        "good app.yml.old",
+			target:      "",
+			pold:        goodapp,
+			ccur:        false,
+			cold:        false,
+			wantErr:     "",
+			wantVersion: "",
+		},
+		{
+			name:        "bad app.yml and app.yml.old",
+			target:      "",
+			pcur:        badapp,
+			pold:        badapp,
+			ccur:        true,
+			cold:        false,
+			wantErr:     wantErrRB,
+			wantVersion: "",
+		},
+		{
+			name:        "good app.yml and app.yml.old",
+			target:      "",
+			pcur:        goodapp,
+			pold:        goodapp,
+			ccur:        true,
+			cold:        false,
+			wantErr:     "",
+			wantVersion: "v2",
+		},
+		{
+			name:        "good app.yml and bad app.yml.old",
+			target:      "",
+			pcur:        goodapp,
+			pold:        badapp,
+			ccur:        true,
+			cold:        false,
+			wantErr:     "",
+			wantVersion: "v2",
+		},
+		{
+			name:        "bad app.yml and good app.yml.old",
+			target:      "",
+			pcur:        badapp,
+			pold:        goodapp,
+			ccur:        true,
+			cold:        false,
+			wantErr:     wantErr,
+			wantVersion: "v2",
+		},
+	}
+	for _, tt := range tests {
+		os.RemoveAll(appConfigFile)
+		os.RemoveAll(appBackupFile)
+		os.RemoveAll(otalog)
+		if tt.pcur != "" {
+			utils.CopyFile(tt.pcur, appConfigFile)
+		}
+		if tt.pold != "" {
+			utils.CopyFile(tt.pold, appBackupFile)
+		}
+		t.Run(tt.name, func(t *testing.T) {
+			err := m.UpdateSystem("", "APP", tt.target)
+			assert.Equal(t, (tt.wantErr == ""), (err == nil))
+			assert.Equal(t, tt.wantErr, m.infostats.getError())
+			assert.Equal(t, tt.wantVersion, m.infostats.getVersion())
+			assert.Equal(t, tt.ccur, utils.FileExists(appConfigFile))
+			assert.Equal(t, tt.cold, utils.FileExists(appBackupFile))
+			assert.Equal(t, false, utils.FileExists(otalog))
+		})
+	}
+}
+
+func checkOTALog(t *testing.T, ss ...string) {
+	defer os.RemoveAll("var/log/openedge/openedge-ota.log")
+	fi, err := os.Open("var/log/openedge/openedge-ota.log")
+	assert.NoError(t, err)
+	defer fi.Close()
+
+	m := map[string]string{}
+	br := bufio.NewReader(fi)
+	for _, s := range ss {
+		l, _, err := br.ReadLine()
+		assert.NoError(t, err)
+		json.Unmarshal(l, &m)
+		assert.Equal(t, s, m["step"])
+	}
+	_, _, err = br.ReadLine()
+	assert.Equal(t, io.EOF, err)
 }

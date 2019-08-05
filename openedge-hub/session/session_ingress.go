@@ -26,7 +26,7 @@ func (s *session) Handle() {
 			return
 		}
 		if _, ok := pkt.(*packet.Connect); !ok && s.authorizer == nil {
-			s.log.Errorf("only connect packet allowed before auth")
+			s.log.Errorf("only connect packet is allowed before auth")
 			s.close(true)
 			return
 		}
@@ -90,7 +90,7 @@ func (s *session) onConnect(p *packet.Connect) error {
 		s.authorizer = s.manager.auth.AuthenticateCert(p.Username)
 		if s.authorizer == nil {
 			s.sendConnack(packet.BadUsernameOrPassword)
-			return fmt.Errorf("username (%s) not permitted over tls", p.Username)
+			return fmt.Errorf("username (%s) is not permitted over tls", p.Username)
 		}
 	} else {
 		s.sendConnack(packet.BadUsernameOrPassword)
@@ -274,9 +274,9 @@ func (s *session) onUnsubscribe(p *packet.Unsubscribe) error {
 			if !s.clean {
 				s.manager.recorder.removeSub(s.id, topic)
 			}
-			s.log.Infof("topic (%s) unsubscribed", topic)
+			s.log.Infof("topic (%s) is unsubscribed", topic)
 		} else {
-			s.log.Warnf("topic (%s) not subscribed yet", topic)
+			s.log.Warnf("topic (%s) is not subscribed yet", topic)
 		}
 	}
 	ack.ID = p.ID

@@ -97,7 +97,7 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-Generally, using the standard libraries of the system python environment may not meet our needs. In fact, it is often necessary to import some third-party libraries. Two examples are given below.
+Generally, using the Python Standard Library may not meet our needs. In fact, it is often necessary to import some third-party libraries. Two examples are given below.
 
 ## Import `requests` third-party libraries
 
