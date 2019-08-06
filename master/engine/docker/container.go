@@ -240,7 +240,7 @@ func (e *dockerEngine) logsContainer(cid string, since time.Time) error {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		if len(line) == 0 {
+		if len(line) <= 8 {
 			continue
 		}
 		switch stdcopy.StdType(line[0]) {

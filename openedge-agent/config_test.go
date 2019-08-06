@@ -24,6 +24,7 @@ func TestConfig(t *testing.T) {
 			err := utils.UnmarshalYAML(tt.args, &cfg)
 			assert.NoError(t, err)
 
+			assert.Equal(t, "var/db/openedge/volumes/ota.log", cfg.OTA.Logger.Path)
 			assert.Equal(t, time.Duration(20*time.Second), cfg.Remote.Report.Interval)
 			assert.Equal(t, time.Duration(5*time.Minute), cfg.OTA.Timeout)
 		})
