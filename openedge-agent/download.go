@@ -37,8 +37,8 @@ func (a *agent) downloadVolume(v openedge.VolumeInfo) (string, string, error) {
 
 	// volume exists
 	if utils.FileExists(containerZipFile) {
-		volumeMD5, err := utils.CalculateFileMD5(containerZipFile)
-		if err == nil && volumeMD5 == v.Meta.MD5 {
+		md5, err := utils.CalculateFileMD5(containerZipFile)
+		if err == nil && md5 == v.Meta.MD5 {
 			a.ctx.Log().Debugf("volume (%s) exists", v.Name)
 			return hostDir, containerDir, nil
 		}
@@ -65,12 +65,12 @@ func (a *agent) downloadVolume(v openedge.VolumeInfo) (string, string, error) {
 		return "", "", fmt.Errorf("failed to prepare volume (%s): %s", v.Name, err.Error())
 	}
 
-	volumeMD5, err := utils.CalculateFileMD5(containerZipFile)
+	md5, err := utils.CalculateFileMD5(containerZipFile)
 	if err != nil {
 		os.RemoveAll(containerDir)
 		return "", "", fmt.Errorf("failed to calculate MD5 of volume (%s): %s", v.Name, err.Error())
 	}
-	if volumeMD5 != v.Meta.MD5 {
+	if md5 != v.Meta.MD5 {
 		os.RemoveAll(containerDir)
 		return "", "", fmt.Errorf("MD5 of volume (%s) invalid", v.Name)
 	}
