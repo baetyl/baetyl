@@ -9,7 +9,6 @@ import (
 	"github.com/baidu/openedge/logger"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
-	"github.com/fsnotify/fsnotify"
 )
 
 type record struct {
@@ -54,12 +53,11 @@ type otalog struct {
 	cfg      OTAInfo
 	opt      operator
 	progress *progress
-	watcher  *fsnotify.Watcher
 	rlog     logger.Logger
 	log      logger.Logger
 }
 
-func newOTALog(cfg OTAInfo, opt operator, event *EventOTA, log logger.Logger) (*otalog, error) {
+func newOTALog(cfg OTAInfo, opt operator, event *EventOTA, log logger.Logger) *otalog {
 	o := &otalog{
 		cfg:      cfg,
 		opt:      opt,
@@ -67,7 +65,7 @@ func newOTALog(cfg OTAInfo, opt operator, event *EventOTA, log logger.Logger) (*
 	}
 	if event == nil {
 		if !utils.FileExists(cfg.Logger.Path) {
-			return nil, nil
+			return nil
 		}
 		o.rlog = logger.New(cfg.Logger)
 		o.log = log
@@ -76,17 +74,7 @@ func newOTALog(cfg OTAInfo, opt operator, event *EventOTA, log logger.Logger) (*
 		o.log = log.WithField(openedge.OTAKeyTrace, event.Trace).WithField(openedge.OTAKeyType, event.Type)
 		o.write(openedge.OTAReceived, "ota event is received", nil)
 	}
-
-	var err error
-	o.watcher, err = fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-	err = o.watcher.Add(cfg.Logger.Path)
-	if err != nil {
-		return nil, err
-	}
-	return o, nil
+	return o
 }
 
 func (o *otalog) write(step, msg string, err error) {
@@ -119,11 +107,11 @@ func (o *otalog) isSuccess() bool {
 	return o.progress.records[l-1].Step == openedge.OTAUpdated
 }
 
-func (o *otalog) load() {
+func (o *otalog) load() bool {
 	file, err := os.Open(o.cfg.Logger.Path)
 	if err != nil {
 		o.log.WithError(err).Warnf("failed to open log")
-		return
+		return false
 	}
 	defer file.Close()
 
@@ -133,7 +121,7 @@ func (o *otalog) load() {
 		r, err := newRecord(scanner.Bytes())
 		if err != nil {
 			o.log.WithError(err).Warnf("failed to parse record")
-			return
+			return false
 		}
 		if o.progress.event == nil && r.Trace != "" {
 			o.progress.event = &EventOTA{
@@ -142,9 +130,14 @@ func (o *otalog) load() {
 		}
 		records = append(records, r)
 	}
-	if len(records) >= 0 {
-		o.progress.records = records
+
+	if len(records) == 0 {
+		return false
 	}
+
+	changed := len(o.progress.records) != len(records)
+	o.progress.records = records
+	return changed
 }
 
 func (o *otalog) wait() {
@@ -152,43 +145,21 @@ func (o *otalog) wait() {
 	defer o.log.Infof("ota is finished")
 	defer o.close()
 
-	o.load()
-	o.opt.report(o.progress)
-	if o.isFinished() {
-		return
-	}
-
-	t := time.NewTimer(o.cfg.Timeout)
+	ticker := time.NewTicker(time.Second)
+	timer := time.NewTimer(o.cfg.Timeout)
 	for {
 		select {
-		case e, ok := <-o.watcher.Events:
-			if !ok {
-				return
-			}
-			o.log.Debugf("ota file event: %s", e.Name)
-			if e.Op&fsnotify.Write != fsnotify.Write {
-				continue
-			}
-			o.load()
-			io := o.opt.report(o.progress)
-			if o.isFinished() {
-				if o.isSuccess() {
-					o.opt.clean(io.Software.ConfVersion)
+		case <-ticker.C:
+			if o.load() {
+				io := o.opt.report(o.progress)
+				if o.isFinished() {
+					if o.isSuccess() {
+						o.opt.clean(io.Software.ConfVersion)
+					}
+					return
 				}
-				return
 			}
-		case err, ok := <-o.watcher.Errors:
-			if !ok {
-				return
-			}
-			o.load()
-			if !o.isFinished() {
-				o.write(openedge.OTAFailure, "failed to watch log", err)
-				o.log.WithError(err).Warnf("failed to watch log")
-			}
-			o.opt.report(o.progress)
-			return
-		case <-t.C:
+		case <-timer.C:
 			o.load()
 			if !o.isFinished() {
 				o.write(openedge.OTATimeout, "ota is timed out", nil)
@@ -205,12 +176,6 @@ func (o *otalog) wait() {
 }
 
 func (o *otalog) close() {
-	if o.watcher != nil {
-		err := o.watcher.Close()
-		if err != nil {
-			o.log.WithError(err).Warnf("failed to close watcher")
-		}
-	}
 	if o.isFinished() {
 		err := os.RemoveAll(o.cfg.Logger.Path)
 		if err != nil {
