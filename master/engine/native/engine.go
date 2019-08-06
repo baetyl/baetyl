@@ -145,7 +145,7 @@ func mountAll(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge
 		if !ok {
 			return fmt.Errorf("volume '%s' not found", m.Name)
 		}
-		err := mount(path.Join(epwd, v.Path), path.Join(spwd, strings.TrimSpace(m.Path)))
+		err := mount(v.Path, path.Join(spwd, strings.TrimSpace(m.Path)))
 		if err != nil {
 			return err
 		}

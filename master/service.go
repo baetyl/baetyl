@@ -24,7 +24,8 @@ func (m *Master) Auth(username, password string) bool {
 func (m *Master) startServices(cur openedge.AppConfig) error {
 	volumes := map[string]openedge.VolumeInfo{}
 	for _, v := range cur.Volumes {
-		v.Path = path.Join("/", path.Clean(v.Path))
+		// for preventing path escape
+		v.Path = path.Join(m.pwd, path.Join("/", v.Path))
 		volumes[v.Name] = v
 	}
 	for _, s := range cur.Services {
