@@ -40,10 +40,10 @@ func startInternal() error {
 		log = logger.New(cfg.OTALog, "type", openedge.OTAMST)
 	}
 	if err != nil {
-		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start master")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Errorf("failed to start master")
 		rberr := master.RollBackMST()
 		if rberr != nil {
-			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")
@@ -52,10 +52,10 @@ func startInternal() error {
 
 	m, err := master.New(workDir, *cfg, Version)
 	if err != nil {
-		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start master")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Errorf("failed to start master")
 		rberr := master.RollBackMST()
 		if rberr != nil {
-			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to start master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		log.WithField(openedge.OTAKeyStep, openedge.OTARestarting).Infof("master is restarting")

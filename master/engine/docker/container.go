@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/pkg/stdcopy"
 )
 
 const defaultNetworkName = "openedge"
@@ -94,13 +96,16 @@ func (e *dockerEngine) restartContainer(cid string) error {
 }
 
 func (e *dockerEngine) waitContainer(cid string) error {
+	t := time.Now()
 	ctx := context.Background()
 	statusChan, errChan := e.cli.ContainerWait(ctx, cid, container.WaitConditionNotRunning)
 	select {
 	case err := <-errChan:
+		e.logsContainer(cid, t)
 		e.log.WithError(err).Warnf("failed to wait container (%s)", cid[:12])
 		return err
 	case status := <-statusChan:
+		e.logsContainer(cid, t)
 		e.log.Debugf("container (%s) exit status: %v", cid[:12], status)
 		if status.Error != nil {
 			return fmt.Errorf(status.Error.Message)
@@ -218,4 +223,34 @@ func (e *dockerEngine) statsContainer(cid string) engine.PartialStats {
 			UsedPercent: UsedPercent,
 		},
 	}
+}
+
+func (e *dockerEngine) logsContainer(cid string, since time.Time) error {
+	ctx := context.Background()
+	r, err := e.cli.ContainerLogs(ctx, cid, types.ContainerLogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+		Since:      since.Format("2006-01-02T15:04:05"),
+	})
+	if err != nil {
+		e.log.WithError(err).Warnf("failed to log container (%s)", cid[:12])
+		return err
+	}
+	defer r.Close()
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			continue
+		}
+		switch stdcopy.StdType(line[0]) {
+		case stdcopy.Stderr:
+			e.log.Errorf("container (%s) %s", cid[:12], string(line[8:]))
+		case stdcopy.Stdin, stdcopy.Stdout:
+			e.log.Infof("container (%s) %s", cid[:12], string(line[8:]))
+		default:
+			e.log.Infof("container (%s) %s", cid[:12], string(line))
+		}
+	}
+	return nil
 }

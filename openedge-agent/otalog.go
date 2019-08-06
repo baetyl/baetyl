@@ -95,7 +95,7 @@ func (o *otalog) write(step, msg string, err error) {
 		o.rlog.WithField(openedge.OTAKeyStep, step).Infof(msg)
 	} else {
 		o.progress.append(step, msg, err.Error())
-		o.rlog.WithField(openedge.OTAKeyStep, step).WithError(err).Infof(msg)
+		o.rlog.WithField(openedge.OTAKeyStep, step).WithError(err).Errorf(msg)
 	}
 }
 

@@ -44,10 +44,10 @@ func (m *Master) UpdateAPP(trace, target string) error {
 
 	cur, old, err := m.loadAPPConfig(target)
 	if err != nil {
-		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to reload config")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Errorf("failed to reload config")
 		rberr := m.rollBackAPP()
 		if rberr != nil {
-			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to reload config: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("app is rolled back")
@@ -63,10 +63,10 @@ func (m *Master) UpdateAPP(trace, target string) error {
 	// start all updated or added services
 	err = m.startServices(cur)
 	if err != nil {
-		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to start app")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Errorf("failed to start app")
 		rberr := m.rollBackAPP()
 		if rberr != nil {
-			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to start app: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		// stop all updated or added services
@@ -74,7 +74,7 @@ func (m *Master) UpdateAPP(trace, target string) error {
 		// start all removed or updated services
 		rberr = m.startServices(old)
 		if rberr != nil {
-			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to restart old app: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		m.commitAPP(old.Version)
@@ -158,16 +158,16 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 	log := logger.New(m.cfg.OTALog, openedge.OTAKeyTrace, trace, openedge.OTAKeyType, openedge.OTAMST)
 
 	if err = m.check(target); err != nil {
-		log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(err).Infof("failed to check master")
+		log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(err).Errorf("failed to check master")
 		return fmt.Errorf("failed to check master: %s", err.Error())
 	}
 
 	log.WithField(openedge.OTAKeyStep, openedge.OTAUpdating).Infof("master is updating")
 	if err = apply(target, backup); err != nil {
-		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Infof("failed to apply master")
+		log.WithField(openedge.OTAKeyStep, openedge.OTARollingBack).WithError(err).Errorf("failed to apply master")
 		rberr := RollBackMST()
 		if rberr != nil {
-			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Infof("failed to roll back")
+			log.WithField(openedge.OTAKeyStep, openedge.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to apply master: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
 		log.WithField(openedge.OTAKeyStep, openedge.OTARolledBack).Infof("master is rolled back")

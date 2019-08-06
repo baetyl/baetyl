@@ -88,7 +88,10 @@ func (m *Master) Close() error {
 		m.engine.Close()
 		m.log.Infoln("engine stopped")
 	}
-	m.sig <- syscall.SIGQUIT
+	select {
+	case m.sig <- syscall.SIGQUIT:
+	default:
+	}
 	return nil
 }
 
