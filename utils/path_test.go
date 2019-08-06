@@ -65,65 +65,6 @@ func TestPathJoin(t *testing.T) {
 	assert.False(t, path.IsAbs(p))
 	assert.False(t, path.IsAbs("var/db/openedge/./vv/v1"))
 	assert.False(t, path.IsAbs("var/db/openedge/vv/v1"))
-}
-
-func TestEscapeIntercept(t *testing.T) {
-	tests := []struct {
-		args string
-		want string
-	}{
-		{
-			args: "bin/../../../test/edge/bin/../op",
-			want: "test/edge/op",
-		},
-		{
-			args: "bin/../../yiu..//.../.././",
-			want: "yiu..",
-		},
-		{
-			args: "bin/../../",
-			want: ".",
-		},
-		{
-			args: "./",
-			want: ".",
-		},
-		{
-			args: "./bin/openedge/../var/db/test",
-			want: "bin/var/db/test",
-		},
-		{
-			args: "./bin/openedge/var/db/test",
-			want: "bin/openedge/var/db/test",
-		},
-		{
-			args: "bin/openedge/var/db/test",
-			want: "bin/openedge/var/db/test",
-		},
-		{
-			args: "/etc/",
-			want: "etc",
-		},
-		{
-			args: "/bin/../../..//openedge/var/db/test",
-			want: "openedge/var/db/test",
-		},
-		{
-			args: "/bin/../../../",
-			want: ".",
-		},
-		{
-			args: "/",
-			want: ".",
-		},
-		{
-			args: "",
-			want: ".",
-		},
-	}
-	for _, test := range tests {
-		str, err := EscapeIntercept(test.args)
-		assert.NoError(t, err)
-		assert.Equal(t, test.want, str)
-	}
+	assert.Equal(t, "/usr/local/bin", path.Join("/usr/local/", path.Join("/", "../../../../bin")))
+	assert.Equal(t, "/mnt/data0", path.Join("/", path.Join("/", "/mnt/data0")))
 }
