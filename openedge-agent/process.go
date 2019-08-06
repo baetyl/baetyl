@@ -9,11 +9,7 @@ import (
 )
 
 func (a *agent) processing() error {
-	ol, err := newOTALog(a.cfg.OTA, a, nil, a.ctx.Log().WithField("agent", "otalog"))
-	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to create ota log from log file")
-		return err
-	}
+	ol := newOTALog(a.cfg.OTA, a, nil, a.ctx.Log().WithField("agent", "otalog"))
 	if ol != nil {
 		ol.wait()
 	}
@@ -31,14 +27,10 @@ func (a *agent) processing() error {
 func (a *agent) processEvent(e *Event) {
 	eo := e.Content.(*EventOTA)
 	a.ctx.Log().Infof("process ota: type=%s, trace=%s", eo.Type, eo.Trace)
-	ol, err := newOTALog(a.cfg.OTA, a, eo, a.ctx.Log().WithField("agent", "otalog"))
-	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to create ota log")
-		return
-	}
+	ol := newOTALog(a.cfg.OTA, a, eo, a.ctx.Log().WithField("agent", "otalog"))
 	defer ol.wait()
 
-	err = a.processOTA(eo)
+	err := a.processOTA(eo)
 	if err != nil {
 		a.ctx.Log().WithError(err).Warnf("failed to process ota event")
 		ol.write(openedge.OTAFailure, "failed to process ota event", err)
