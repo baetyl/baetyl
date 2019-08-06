@@ -44,6 +44,7 @@ func TestUpdateAPP(t *testing.T) {
 
 	m := &Master{
 		sig:       make(chan os.Signal, 1),
+		pwd:       pwd,
 		accounts:  cmap.New(),
 		services:  cmap.New(),
 		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
@@ -114,6 +115,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.NoError(t, err)
 
 	m := &Master{
+		pwd:       pwd,
 		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
@@ -229,6 +231,7 @@ func TestUpdateSystemAPP2(t *testing.T) {
 	otalog := "var/db/openedge/ota.log"
 
 	m := &Master{
+		pwd:       pwd,
 		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
