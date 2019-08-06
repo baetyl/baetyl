@@ -82,10 +82,8 @@ agent version = 0.1.4
 ***********************************/
 /**********************************
 agent version > 0.1.4
-// map host dir 'var/log/openedge' to container dir 'var/db/openedge/openedge-log'.
-// in the container, agent will link 'var/db/openedge/openedge-log/ota.log' to 'var/db/openedge/openedge-log/ota.log.<trace>'.
-// and agent will report the content of 'var/db/openedge/openedge-log/ota.log.<trace>' to cloud.
-// master will write log to 'var/log/openedge/openege.log' and ota log to 'var/log/openedge/ota.log'
+// master will write the ota log to 'var/db/openedge/ota.log'
+// agent will report the content of 'var/db/openedge/ota.log' to cloud.
 // update application
 {
 	"type": "APP"

@@ -165,6 +165,7 @@ func (o *otalog) wait() {
 			if !ok {
 				return
 			}
+			o.log.Debugf("ota file event: %s", e.Name)
 			if e.Op&fsnotify.Write != fsnotify.Write {
 				continue
 			}

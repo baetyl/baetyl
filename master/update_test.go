@@ -27,6 +27,7 @@ func TestUpdateAPP(t *testing.T) {
 
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
+	os.RemoveAll(appBackupFile)
 	os.RemoveAll("var/run")
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
@@ -105,11 +106,9 @@ func TestUpdateSystemAPP(t *testing.T) {
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
 	os.RemoveAll("var/run")
-	os.RemoveAll("var/log")
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
 	defer os.RemoveAll("var/run")
-	defer os.RemoveAll("var/log")
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
@@ -219,18 +218,15 @@ func TestUpdateSystemAPP2(t *testing.T) {
 	os.RemoveAll(appConfigFile)
 	os.RemoveAll(appBackupFile)
 	os.RemoveAll("var/run")
-	os.RemoveAll("var/log")
-	os.MkdirAll("var/log/openedge", 0755)
 	defer os.RemoveAll(appConfigFile)
 	defer os.RemoveAll(appBackupFile)
 	defer os.RemoveAll("var/run")
-	defer os.RemoveAll("var/log")
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
 	badapp := path.Join("var", "db", "openedge", "app", "v5", "application.yml")
 	goodapp := path.Join("var", "db", "openedge", "app", "v2", "application.yml")
-	otalog := "var/log/openedge/openedge-ota.log"
+	otalog := "var/db/openedge/ota.log"
 
 	m := &Master{
 		sig:       make(chan os.Signal, 1),
@@ -367,8 +363,8 @@ func TestUpdateSystemAPP2(t *testing.T) {
 }
 
 func checkOTALog(t *testing.T, ss ...string) {
-	defer os.RemoveAll("var/log/openedge/openedge-ota.log")
-	fi, err := os.Open("var/log/openedge/openedge-ota.log")
+	defer os.RemoveAll("var/db/openedge/ota.log")
+	fi, err := os.Open("var/db/openedge/ota.log")
 	assert.NoError(t, err)
 	defer fi.Close()
 
