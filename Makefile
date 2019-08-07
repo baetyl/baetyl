@@ -1,7 +1,8 @@
 PREFIX?=/usr/local
-VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
+GITVERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 GOFLAG?=-ldflags "-X 'github.com/baidu/openedge/cmd.GoVersion=`go version`' -X 'github.com/baidu/openedge/cmd.Version=$(VERSION)'"
-DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
+#DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
+DEPLOY_TARGET=agent hub function-manager remote-mqtt timer 
 
 all: openedge package
 
@@ -82,13 +83,13 @@ uninstall:
 	rm -rf ${PREFIX}/var/db/openedge
 	rm -rf ${PREFIX}/var/log/openedge
 	rm -rf ${PREFIX}/var/run/openedge
-	rmdir ${PREFIX}/var/db
-	rmdir ${PREFIX}/var/log
-	rmdir ${PREFIX}/var/run
-	rmdir ${PREFIX}/var
-	rmdir ${PREFIX}/etc
-	rmdir ${PREFIX}/bin
-	rmdir ${PREFIX}
+	rm -rf ${PREFIX}/var/db
+	rm -rf ${PREFIX}/var/log
+	rm -rf ${PREFIX}/var/run
+	rm -rf ${PREFIX}/var
+	rm -rf ${PREFIX}/etc
+	rm -rf ${PREFIX}/bin
+	rm -rf ${PREFIX}
 
 uninstall-native: uninstall
 
@@ -116,44 +117,29 @@ image: clean
 function-python-image:
 	make -C openedge-function-python image
 
-release: clean release-master release-image push-image release-manifest release-package
+release: clean release-master release-image push-image release-manifest
 
 release-master: clean
 	# release linux 386
-	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-linux-386-$(VERSION)
-	tar czf openedge-linux-386-$(VERSION).tar.gz -C __release_build/openedge-linux-386-$(VERSION) bin etc var
-	tar cjf openedge-linux-386-$(VERSION).tar.bz2 -C __release_build/openedge-linux-386-$(VERSION) bin etc var
-	cd __release_build/openedge-linux-386-$(VERSION) && zip -q -r ../../openedge-linux-386-$(VERSION).zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-linux-386-$(VERSION)
+	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-386
+	cd __release_build/openedge-$(GITVERSION)-linux-386 && zip -q -r ../../openedge-$(GITVERSION)-linux-386.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-386
 	# release linux amd64
-	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
-	tar czf openedge-linux-amd64-$(VERSION).tar.gz -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
-	tar cjf openedge-linux-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-amd64-$(VERSION) bin etc var
-	cd __release_build/openedge-linux-amd64-$(VERSION) && zip -q -r ../../openedge-linux-amd64-$(VERSION).zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-linux-amd64-$(VERSION)
+	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-amd64
+	cd __release_build/openedge-$(GITVERSION)-linux-amd64 && zip -q -r ../../openedge-$(GITVERSION)-linux-amd64.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-amd64
 	# release linux arm v7
-	env GOOS=linux GOARCH=arm GOARM=7 make install PREFIX=__release_build/openedge-linux-armv7-$(VERSION)
-	tar czf openedge-linux-armv7-$(VERSION).tar.gz -C __release_build/openedge-linux-armv7-$(VERSION) bin etc var
-	tar cjf openedge-linux-armv7-$(VERSION).tar.bz2 -C __release_build/openedge-linux-armv7-$(VERSION) bin etc var
-	cd __release_build/openedge-linux-armv7-$(VERSION) && zip -q -r ../../openedge-linux-armv7-$(VERSION).zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-linux-armv7-$(VERSION)
+	env GOOS=linux GOARCH=arm GOARM=7 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-armv7
+	cd __release_build/openedge-$(GITVERSION)-linux-armv7 && zip -q -r ../../openedge-$(GITVERSION)-linux-armv7.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-armv7
 	# release linux arm64
-	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
-	tar czf openedge-linux-arm64-$(VERSION).tar.gz -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
-	tar cjf openedge-linux-arm64-$(VERSION).tar.bz2 -C __release_build/openedge-linux-arm64-$(VERSION) bin etc var
-	cd __release_build/openedge-linux-arm64-$(VERSION) && zip -q -r ../../openedge-linux-arm64-$(VERSION).zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-linux-arm64-$(VERSION)
+	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-arm64
+	cd __release_build/openedge-$(GITVERSION)-linux-arm64 && zip -q -r ../../openedge-$(GITVERSION)-linux-arm64.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-arm64
 	# release darwin amd64
-	env GOOS=darwin GOARCH=amd64 make all
-	make install PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
-	tar czf openedge-darwin-amd64-$(VERSION).tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
-	tar cjf openedge-darwin-amd64-$(VERSION).tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION) bin etc var
-	cd __release_build/openedge-darwin-amd64-$(VERSION) && zip -q -r ../../openedge-darwin-amd64-$(VERSION).zip bin/
-	make uninstall PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)
-	make install-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
-	tar czf openedge-darwin-amd64-$(VERSION)-native.tar.gz -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
-	tar cjf openedge-darwin-amd64-$(VERSION)-native.tar.bz2 -C __release_build/openedge-darwin-amd64-$(VERSION)-native bin etc var
-	make uninstall-native PREFIX=__release_build/openedge-darwin-amd64-$(VERSION)-native
+	env GOOS=darwin GOARCH=amd64 make install PREFIX=__release_build/openedge-$(GITVERSION)-darwin-amd64
+	cd __release_build/openedge-$(GITVERSION)-darwin-amd64 && zip -q -r ../../openedge-$(GITVERSION)-darwin-amd64.zip bin/
+	make uninstall PREFIX=__release_build/openedge-$(GITVERSION)-darwin-amd64
 	make clean
 	# at last
 	rmdir __release_build
@@ -176,10 +162,10 @@ release-manifest:
 	rm -rf tmp
 	mkdir tmp
 	for target in $(DEPLOY_TARGET) ; do \
-		sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-$$target/manifest.yml.template > tmp/manifest-$$target-$(VERSION).yml;\
-		./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-$(VERSION).yml;\
-		sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-$$target/manifest.yml.template > tmp/manifest-$$target-latest.yml;\
-		./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-latest.yml;\
+		sed "s?__IMAGE_PREFIX__?$(IMAGE_PREFIX)?g; s?__TAG__?$(VERSION)?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?openedge-$$target?g;" manifest.yml.template > tmp/manifest-$$target-$(VERSION).yml;\
+		./bin/manifest-tool-darwin-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-$(VERSION).yml;\
+		sed "s?__IMAGE_PREFIX__?$(IMAGE_PREFIX)?g; s?__TAG__?latest?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?openedge-$$target?g;" manifest.yml.template > tmp/manifest-$$target-latest.yml;\
+		./bin/manifest-tool-darwin-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-latest.yml;\
 	done
 	rm -rf tmp
 
@@ -243,12 +229,8 @@ release-package: clean
 
 push-image:
 	for target in $(DEPLOY_TARGET); do \
-		docker tag $(IMAGE_PREFIX)openedge-$$target-linux-amd64:latest $(IMAGE_PREFIX)openedge-$$target-linux-amd64:$(VERSION);\
-		docker tag $(IMAGE_PREFIX)openedge-$$target-linux-arm64:latest $(IMAGE_PREFIX)openedge-$$target-linux-arm64:$(VERSION);\
-		docker tag $(IMAGE_PREFIX)openedge-$$target-linux-armv7:latest $(IMAGE_PREFIX)openedge-$$target-linux-armv7:$(VERSION);\
-		docker tag $(IMAGE_PREFIX)openedge-$$target-linux-386:latest $(IMAGE_PREFIX)openedge-$$target-linux-386:$(VERSION);\
-		docker push $(IMAGE_PREFIX)openedge-$$target-linux-amd64;\
-		docker push $(IMAGE_PREFIX)openedge-$$target-linux-arm64;\
-		docker push $(IMAGE_PREFIX)openedge-$$target-linux-armv7;\
-		docker push $(IMAGE_PREFIX)openedge-$$target-linux-386;\
+		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-amd64;\
+		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-arm64;\
+		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-armv7;\
+		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-386;\
 	done

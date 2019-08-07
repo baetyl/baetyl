@@ -1,4 +1,4 @@
-TAG?=latest
+VERSION?=latest
 SRC=$(wildcard *.go)
 
 all: openedge-remote-mqtt package.zip
@@ -16,7 +16,7 @@ package.zip: openedge-remote-mqtt
 
 image: openedge-remote-mqtt
 	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG) .
+	docker build -t $(IMAGE_PREFIX)/$<:$(VERSION)$(IMAGE_SUFFIX) .
 
 .PHONY: clean
 clean:

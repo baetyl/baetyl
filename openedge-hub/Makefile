@@ -1,4 +1,4 @@
-TAG?=latest
+VERSION?=latest
 SRC=$(shell find . -type f -name '*.go')
 
 all: openedge-hub package.zip
@@ -16,7 +16,7 @@ package.zip: openedge-hub
 
 image: openedge-hub
 	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG) .
+	docker build -t $(IMAGE_PREFIX)/$<:$(VERSION)$(IMAGE_SUFFIX) .
 
 .PHONY: clean
 clean:

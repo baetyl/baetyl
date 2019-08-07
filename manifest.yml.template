@@ -1,0 +1,28 @@
+image: __IMAGE_PREFIX__/__TARGET__:__TAG__
+manifests:
+  -
+    image: __IMAGE_PREFIX__/__TARGET__:__VERSION__-linux-amd64
+    platform:
+      architecture: amd64
+      os: linux
+  -
+    image: __IMAGE_PREFIX__/__TARGET__:__VERSION__-linux-amd64
+    platform:
+      architecture: amd64
+      os: darwin
+  -
+    image: __IMAGE_PREFIX__/__TARGET__:__VERSION__-linux-armv7
+    platform:
+      architecture: arm
+      os: linux
+      variant: v7
+  -
+    image: __IMAGE_PREFIX__/__TARGET__:__VERSION__-linux-arm64
+    platform:
+      architecture: arm64
+      os: linux      
+  -
+    image: __IMAGE_PREFIX__/__TARGET__:__VERSION__-linux-386
+    platform:
+      architecture: 386
+      os: linux      
