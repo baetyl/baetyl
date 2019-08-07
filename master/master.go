@@ -3,45 +3,45 @@ package master
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
-	"path/filepath"
-	"runtime"
-	"strings"
+	"syscall"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/master/api"
 	"github.com/baidu/openedge/master/engine"
 	"github.com/baidu/openedge/protocol/http"
 	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
 // Master master manages all modules and connects with cloud
 type Master struct {
 	cfg       Config
+	ver       string
+	pwd       string
 	server    *api.Server
 	engine    engine.Engine
 	services  cmap.ConcurrentMap
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
+	sig       chan os.Signal
 	log       logger.Logger
 }
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
-	err := defaults(&cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to set default config: %s", err.Error())
-	}
-	err = os.MkdirAll(openedge.DefaultDBDir, 0755)
+	err := os.MkdirAll(openedge.DefaultDBDir, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
 	log := logger.InitLogger(cfg.Logger, "openedge", "master")
 	m := &Master{
 		cfg:       cfg,
+		ver:       ver,
+		pwd:       pwd,
 		log:       log,
+		sig:       make(chan os.Signal, 1),
 		services:  cmap.New(),
 		accounts:  cmap.New(),
 		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(openedge.DefaultDBDir, openedge.AppStatsFileName)),
@@ -68,7 +68,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 	// Now it will stop all old services
 	m.engine.Recover()
 	// start application
-	err = m.UpdateSystem("")
+	err = m.UpdateAPP("", "")
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -88,50 +88,17 @@ func (m *Master) Close() error {
 		m.engine.Close()
 		m.log.Infoln("engine stopped")
 	}
+	select {
+	case m.sig <- syscall.SIGQUIT:
+	default:
+	}
 	return nil
 }
 
-func defaults(c *Config) error {
-	addr := c.Server.Address
-	url, err := utils.ParseURL(addr)
-	if err != nil {
-		return fmt.Errorf("failed to parse address of server: %s", err.Error())
-	}
-
-	if runtime.GOOS != "linux" && url.Scheme == "unix" {
-		return fmt.Errorf("unix domain socket only support on linux, please to use tcp socket")
-	}
-	if url.Scheme != "unix" && url.Scheme != "tcp" {
-		return fmt.Errorf("only support unix domian socket or tcp socket")
-	}
-
-	// address in container
-	if url.Scheme == "unix" {
-		sock, err := filepath.Abs(url.Host)
-		if err != nil {
-			return err
-		}
-		err = os.MkdirAll(filepath.Dir(sock), 0755)
-		if err != nil {
-			return err
-		}
-		utils.SetEnv(openedge.EnvMasterHostSocketKey, sock)
-		if c.Mode == "native" {
-			utils.SetEnv(openedge.EnvMasterAPIKey, "unix://"+openedge.DefaultSockFile)
-		} else {
-			utils.SetEnv(openedge.EnvMasterAPIKey, "unix:///"+openedge.DefaultSockFile)
-		}
-	} else {
-		if c.Mode == "native" {
-			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
-		} else {
-			parts := strings.SplitN(url.Host, ":", 2)
-			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
-			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
-		}
-	}
-	utils.SetEnv(openedge.EnvMasterAPIVersionKey, "v1")
-	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
-	utils.SetEnv(openedge.EnvRunningModeKey, c.Mode)
+// Wait waits until master closes
+func (m *Master) Wait() error {
+	signal.Notify(m.sig, syscall.SIGTERM, syscall.SIGINT)
+	signal.Ignore(syscall.SIGPIPE)
+	<-m.sig
 	return nil
 }

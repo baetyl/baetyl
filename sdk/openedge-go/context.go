@@ -17,6 +17,32 @@ const (
 	ModeDocker = "docker"
 )
 
+// OTA types
+const (
+	OTAAPP = "APP"
+	OTAMST = "MST"
+)
+
+// OTA steps
+const (
+	OTAKeyStep  = "step"
+	OTAKeyType  = "type"
+	OTAKeyTrace = "trace"
+
+	OTAReceived    = "RECEIVED"    // [agent] ota event is received
+	OTAUpdating    = "UPDATING"    // [master] to update app or master
+	OTAUpdated     = "UPDATED"     // [master][finished] app or master is updated
+	OTARestarting  = "RESTARTING"  // [master] to restart master
+	OTARestarted   = "RESTARTED"   // [master] master is restarted
+	OTARollingBack = "ROLLINGBACK" // [master] to roll back app or master
+	OTARolledBack  = "ROLLEDBACK"  // [master][finished] app or master is rolled back
+	OTAFailure     = "FAILURE"     // [master/agent][finished] failed to update app or master
+	OTATimeout     = "TIMEOUT"     // [agent][finished] ota is timed out
+)
+
+// CheckOK print OK if binary is valid
+const CheckOK = "OK!"
+
 // Env keys
 const (
 	EnvHostOSKey                 = "OPENEDGE_HOST_OS"
@@ -29,7 +55,8 @@ const (
 	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 
-	EnvMasterHostSocketKey      = "OPENEDGE_MASTER_HOST_SOCKET"
+	EnvHostID           = "OPENEDGE_HOST_ID"
+	EnvMasterHostSocket = "OPENEDGE_MASTER_HOST_SOCKET"
 )
 
 // Path keys
@@ -40,6 +67,11 @@ const (
 	AppBackupFileName = "application.yml.old"
 	// AppStatsFileName application stats file name
 	AppStatsFileName = "application.stats"
+
+	// BinFile the file path of master binary
+	DefaultBinFile = "bin/openedge"
+	// DefaultBinBackupFile the backup file path of master binary
+	DefaultBinBackupFile = "bin/openedge.old"
 	// DefaultSockFile sock file of openedge by default
 	DefaultSockFile = "var/run/openedge.sock"
 	// DefaultPidFile pid file of openedge by default
@@ -74,8 +106,8 @@ type Context interface {
 
 	// Master RESTful API
 
-	// updates system and
-	UpdateSystem(string) error
+	// updates application or master
+	UpdateSystem(trace, tp, path string) error
 	// inspects system stats
 	InspectSystem() (*Inspect, error)
 	// gets an available port of the host
@@ -169,8 +201,8 @@ func (c *ctx) InspectSystem() (*Inspect, error) {
 }
 
 // UpdateSystem updates and reloads config
-func (c *ctx) UpdateSystem(path string) error {
-	return c.cli.UpdateSystem(path)
+func (c *ctx) UpdateSystem(trace, tp, path string) error {
+	return c.cli.UpdateSystem(trace, tp, path)
 }
 
 // GetAvailablePort gets available port

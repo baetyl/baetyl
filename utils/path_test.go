@@ -65,4 +65,6 @@ func TestPathJoin(t *testing.T) {
 	assert.False(t, path.IsAbs(p))
 	assert.False(t, path.IsAbs("var/db/openedge/./vv/v1"))
 	assert.False(t, path.IsAbs("var/db/openedge/vv/v1"))
+	assert.Equal(t, "/usr/local/bin", path.Join("/usr/local/", path.Join("/", "../../../../bin")))
+	assert.Equal(t, "/mnt/data0", path.Join("/", path.Join("/", "/mnt/data0")))
 }

@@ -15,7 +15,7 @@ var (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Show the OpenEdge version information",
+	Short: "show the version of openedge",
 	Long:  ``,
 	Run:   version,
 }
@@ -25,7 +25,5 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	log.Printf("\nOpenEdge version %s\n%s\n\n",
-		Version,
-		GoVersion)
+	log.Printf("\nopenedge version %s\n%s\n\n", Version, GoVersion)
 }

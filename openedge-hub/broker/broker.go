@@ -81,13 +81,13 @@ func (b *Broker) Flow(msg *common.Message) {
 		select {
 		case b.msgQ1Chan <- msg:
 		case <-b.tomb.Dying():
-			b.log.Debugf("flow message (qos=1, pid=%d) failed since broker closed", msg.PacketID)
+			b.log.Debugf("failed to flow message (qos=1, pid=%d) since broker closed", msg.PacketID)
 		}
 	} else {
 		select {
 		case b.msgQ0Chan <- msg:
 		case <-b.tomb.Dying():
-			b.log.Debugf("flow message (qos=0) failed since broker closed")
+			b.log.Debugf("failed to flow message (qos=0) since broker closed")
 		}
 	}
 }

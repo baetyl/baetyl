@@ -55,7 +55,7 @@ func (e *nativeEngine) waitProcess(p *os.Process) error {
 }
 
 func (e *nativeEngine) stopProcess(p *os.Process) error {
-	e.log.Debugf("to stop process (%d)", p.Pid)
+	e.log.Debugf("process (%d) is stopping", p.Pid)
 
 	err := p.Signal(syscall.SIGTERM)
 	if err != nil {

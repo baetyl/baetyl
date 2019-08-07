@@ -31,6 +31,8 @@ services:
   #       path: var/db/openedge/volumes
   #     - name: agent-log
   #       path: var/log/openedge
+  #     - name: openedge-log
+  #       path: var/db/openedge/openedge-log/
   # - name: remote-iothub
   #   image: hub.baidubce.com/openedge/openedge-remote-mqtt
   #   replica: 1
@@ -96,19 +98,19 @@ services:
       - name: timer-conf
         path: etc/openedge
         readonly: true
-  - name: mosquitto
-    image: eclipse-mosquitto
-    replica: 1
-    ports:
-      - 1893:1893
-    mounts:
-      - name: mosquitto-config
-        path: /mosquitto/config
-        readonly: true
-      - name: mosquitto-data
-        path: /mosquitto/data
-      - name: mosquitto-log
-        path: /mosquitto/log
+  # - name: mosquitto
+  #   image: eclipse-mosquitto
+  #   replica: 1
+  #   ports:
+  #     - 1893:1893
+  #   mounts:
+  #     - name: mosquitto-config
+  #       path: /mosquitto/config
+  #       readonly: true
+  #     - name: mosquitto-data
+  #       path: /mosquitto/data
+  #     - name: mosquitto-log
+  #       path: /mosquitto/log
 
 volumes:
   # hub
@@ -129,6 +131,8 @@ volumes:
     path: var/db/openedge
   - name: agent-log
     path: var/db/openedge/agent-log
+  - name: openedge-log
+    path: var/log/openedge
   # remote mqtt
   - name: remote-iothub-conf
     path: var/db/openedge/remote-iothub-conf

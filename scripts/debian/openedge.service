@@ -6,10 +6,8 @@ Wants=network-online.target docker.service
 [Service]
 ExecStart=/usr/local/bin/openedge start
 KillMode=process
-TimeoutStartSec=600
-TimeoutStopSec=40
+TimeoutStopSec=60
 Restart=always
-
 
 [Install]
 WantedBy=multi-user.target

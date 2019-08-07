@@ -5,12 +5,18 @@ package master
 import (
 	"time"
 
-	"github.com/baidu/openedge/utils"
+	"github.com/baidu/openedge/logger"
+	"github.com/baidu/openedge/protocol/http"
 )
 
-// Server server config
-type Server struct {
-	Address           string        `yaml:"address" json:"address" default:"unix:///var/run/openedge.sock"`
-	Timeout           time.Duration `yaml:"timeout" json:"timeout" default:"5m"`
-	utils.Certificate `yaml:",inline" json:",inline"`
+// Config master init config
+type Config struct {
+	Mode   string          `yaml:"mode" json:"mode" default:"docker" validate:"regexp=^(native|docker)$"`
+	Server http.ServerInfo `yaml:"server" json:"server" default:"{\"address\":\"unix:///var/run/openedge.sock\"}"`
+	Logger logger.LogInfo  `yaml:"logger" json:"logger" default:"{\"path\":\"var/log/openedge/openedge.log\"}"`
+	OTALog logger.LogInfo  `yaml:"otalog" json:"otalog" default:"{\"path\":\"var/db/openedge/ota.log\",\"format\":\"json\"}"`
+	Grace  time.Duration   `yaml:"grace" json:"grace" default:"30s"`
+
+	// cache config file path
+	File string
 }

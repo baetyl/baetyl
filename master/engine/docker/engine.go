@@ -130,9 +130,9 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		if m.ReadOnly {
 			f = fmtVolumeRO
 		}
-		volumes = append(volumes, fmt.Sprintf(f, path.Join(e.pwd, path.Clean(v.Path)), path.Clean(m.Path)))
+		volumes = append(volumes, fmt.Sprintf(f, v.Path, path.Clean(m.Path)))
 	}
-	sock := utils.GetEnv(openedge.EnvMasterHostSocketKey)
+	sock := utils.GetEnv(openedge.EnvMasterHostSocket)
 	if sock != "" {
 		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, sock, openedge.DefaultSockFile))
 	}

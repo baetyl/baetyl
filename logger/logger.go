@@ -80,8 +80,8 @@ func (l *logger) Fatalln(args ...interface{}) {
 	l.entry.Fatalln(args...)
 }
 
-// InitLogger init global logger
-func InitLogger(c LogInfo, fields ...string) Logger {
+// New create a new logger
+func New(c LogInfo, fields ...string) Logger {
 	logLevel, err := logrus.ParseLevel(c.Level)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to parse log level (%s), use default level (info)", c.Level)
@@ -125,7 +125,12 @@ func InitLogger(c LogInfo, fields ...string) Logger {
 	for index := 0; index < len(fields)-1; index = index + 2 {
 		logrusFields[fields[index]] = fields[index+1]
 	}
-	Global = &logger{entry.WithFields(logrusFields)}
+	return &logger{entry.WithFields(logrusFields)}
+}
+
+// InitLogger init global logger
+func InitLogger(c LogInfo, fields ...string) Logger {
+	Global = New(c, fields...)
 	return Global
 }
 

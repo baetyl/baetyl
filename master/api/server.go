@@ -18,7 +18,7 @@ type Master interface {
 
 	// for system
 	InspectSystem() *openedge.Inspect
-	UpdateSystem(string) error
+	UpdateSystem(trace, tp, target string) error
 
 	// for instance
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
@@ -68,6 +68,35 @@ func (s *Server) inspectSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	return json.Marshal(s.m.InspectSystem())
 }
 
+/**********************************
+agent version < 0.1.4
+{
+	"file": "var/db/openedge/app/V1"
+}
+***********************************/
+/**********************************
+agent version = 0.1.4
+{
+	"path": "var/db/openedge/app/V1"
+}
+***********************************/
+/**********************************
+agent version > 0.1.4
+// master will write the ota log to 'var/db/openedge/ota.log'
+// agent will report the content of 'var/db/openedge/ota.log' to cloud.
+// update application
+{
+	"type": "APP"
+	"path": "var/db/openedge/ota/app/V1"
+	"trace": "xxxx-xx-xx-xxxxxxxx"
+}
+// update master
+{
+	"type": "MST"
+	"path": "var/db/openedge/ota/mst/0.1.6/openedge"
+	"trace": "xxxx-xx-xx-xxxxxxxx"
+}
+***********************************/
 func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if reqBody == nil {
 		return nil, fmt.Errorf("request body invalid")
@@ -77,13 +106,17 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// agent version >= 0.1.4
+	tp, ok := args["type"]
+	if !ok {
+		tp = "APP"
+	}
 	target, ok := args["path"]
 	if !ok {
 		// backward compatibility, agent version < 0.1.4
 		target = args["file"]
 	}
-	go s.m.UpdateSystem(target)
+	trace, _ := args["trace"]
+	go s.m.UpdateSystem(trace, tp, target)
 	return nil, nil
 }
 

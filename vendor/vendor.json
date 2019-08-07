@@ -214,6 +214,12 @@
 			"revisionTime": "2019-01-03T00:48:25Z"
 		},
 		{
+			"checksumSHA1": "w0waeTRJ1sFygI0dZXH6l9E1c60=",
+			"path": "github.com/docker/docker/pkg/stdcopy",
+			"revision": "fb5fe241b5931c7031fc4aa2ad4ca61159888df1",
+			"revisionTime": "2019-06-14T08:55:40Z"
+		},
+		{
 			"checksumSHA1": "buMp78JO3CRe52xoF4z6TUrv1cs=",
 			"path": "github.com/docker/docker/pkg/sysinfo",
 			"revision": "626022d0f64d3fab10c80523c03613a8b3869cfb",
@@ -356,6 +362,30 @@
 			"path": "github.com/gorilla/websocket",
 			"revision": "3ff3320c2a1756a3691521efc290b4701575147c",
 			"revisionTime": "2018-08-16T22:18:03Z"
+		},
+		{
+			"checksumSHA1": "YjZiQ5N552dJ7GpJ2P4TTRu4PKI=",
+			"path": "github.com/inconshreveable/go-update",
+			"revision": "8152e7eb6ccf8679a64582a66b78519688d156ad",
+			"revisionTime": "2016-01-12T19:33:35Z"
+		},
+		{
+			"checksumSHA1": "LeFW+ad/zlj30+Z0O4wwnXrVUSQ=",
+			"path": "github.com/inconshreveable/go-update/internal/binarydist",
+			"revision": "8152e7eb6ccf8679a64582a66b78519688d156ad",
+			"revisionTime": "2016-01-12T19:33:35Z"
+		},
+		{
+			"checksumSHA1": "H63+DW/S2nASpHk59G1wEUZD1qk=",
+			"path": "github.com/inconshreveable/go-update/internal/osext",
+			"revision": "8152e7eb6ccf8679a64582a66b78519688d156ad",
+			"revisionTime": "2016-01-12T19:33:35Z"
+		},
+		{
+			"checksumSHA1": "40vJyUB4ezQSn/NSadsKEOrudMc=",
+			"path": "github.com/inconshreveable/mousetrap",
+			"revision": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75",
+			"revisionTime": "2014-10-17T20:07:13Z"
 		},
 		{
 			"checksumSHA1": "VbUVPPW23lfYaBxmNX6js5dvqGY=",
@@ -507,6 +537,12 @@
 			"path": "github.com/shirou/gopsutil/process",
 			"revision": "2cbc9195c892b304060269ef280375236d2fcac9",
 			"revisionTime": "2019-03-23T13:16:28Z"
+		},
+		{
+			"checksumSHA1": "Nve7SpDmjsv6+rhkXAkfg/UQx94=",
+			"path": "github.com/shirou/w32",
+			"revision": "bb4de0191aa41b5507caa14b0650cdbddcd9280b",
+			"revisionTime": "2016-09-30T03:27:40Z"
 		},
 		{
 			"checksumSHA1": "HBvdI4AkWfRbjneWZ1UKXM0o9zE=",
