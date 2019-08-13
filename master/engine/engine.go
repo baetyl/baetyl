@@ -28,6 +28,7 @@ type Engine interface {
 	Name() string
 	Recover()
 	Prepare([]openedge.ServiceInfo)
+	InitNetworks(map[string]openedge.NetworkInfo) error
 	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
 	DelInstanceStats(serviceName, instanceName string, persist bool)
 	DelServiceStats(serviceName string, persist bool)

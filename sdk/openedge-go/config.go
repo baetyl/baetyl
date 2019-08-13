@@ -23,6 +23,8 @@ type AppConfig struct {
 	Services []ServiceInfo `yaml:"services" json:"services" default:"[]"`
 	// specifies the storage volume information of the application
 	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
+	// specifies the network information of the application
+	Networks map[string]NetworkInfo `yaml:"networks" json:"networks" default:"{}"`
 }
 
 // ServiceInfo service configuration
@@ -35,6 +37,13 @@ type ServiceInfo struct {
 	Replica int `yaml:"replica" json:"replica" validate:"min=0"`
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
 	Mounts []MountInfo `yaml:"mounts" json:"mounts" default:"[]"`
+	// specifies the network that the service used
+	Networks map[string]struct {
+		// alternative hostname for the service on the network
+		Aliases []string `yaml:"aliases" json:"aliases" default:"[]"`
+		// spefifies a static ipv4 address for the service when join the network
+		Ipv4Address string `yaml:"ipv4_address" json:"ipv4_address"`
+	} `yaml:"networks" json:"networks" default:"{}"`
 	// specifies the port bindings which exposed by the service, only for Docker container mode
 	Ports []string `yaml:"ports" json:"ports" default:"[]"`
 	// specifies the device bindings which used by the service, only for Docker container mode
@@ -63,6 +72,18 @@ type VolumeInfo struct {
 		MD5     string `yaml:"md5" json:"md5"`
 		Version string `yaml:"version" json:"version"`
 	} `yaml:"meta" json:"meta"`
+}
+
+// NetworkInfo network configuration
+type NetworkInfo struct {
+	// specifies name for network
+	Name string `yaml:"name" json:"name"`
+	// specifies driver for network, including bridge(default), host, none, overlay
+	Driver string `yaml:"driver" json:"driver"`
+	// specified driver options for network
+	DriverOptions map[string]string `yaml:"driver_opts" json:"driver_opts"`
+	// specifies labels to add metadata
+	Labels map[string]string `yaml:"labels" json:"labels" default:"{}"`
 }
 
 // MountInfo storage volume mapping configuration

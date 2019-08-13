@@ -56,6 +56,10 @@ func (m *Master) UpdateAPP(trace, target string) error {
 
 	// prepare services
 	keepServices := diffServices(cur, old)
+	err = m.engine.InitNetworks(cur.Networks)
+	if err != nil {
+		return fmt.Errorf("failed to init custom network: %s", err.Error())
+	}
 	m.engine.Prepare(cur.Services)
 
 	// stop all removed or updated services

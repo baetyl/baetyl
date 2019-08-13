@@ -56,6 +56,12 @@ func (e *nativeEngine) Prepare([]openedge.ServiceInfo) {
 	// do nothing in native mode
 }
 
+// Init networks
+func (e *nativeEngine) InitNetworks(networks map[string]openedge.NetworkInfo) error {
+	// do nothing in native mode
+	return nil
+}
+
 // Clean clean all old instances
 func (e *nativeEngine) clean() {
 	sss := map[string]map[string]attribute{}

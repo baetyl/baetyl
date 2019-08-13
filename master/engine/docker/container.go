@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -39,8 +40,8 @@ func (e *dockerEngine) initNetwork() error {
 		return err
 	}
 	if len(nws) > 0 {
-		e.nid = nws[0].ID
-		e.log.Debugf("network (%s:%s) exists", e.nid[:12], defaultNetworkName)
+		e.netMap[defaultNetworkName] = nws[0].ID
+		e.log.Debugf("network (%s:%s) exists", e.netMap[defaultNetworkName][:12], defaultNetworkName)
 		return nil
 	}
 	nw, err := e.cli.NetworkCreate(ctx, defaultNetworkName, types.NetworkCreate{Driver: "bridge", Scope: "local"})
@@ -51,8 +52,56 @@ func (e *dockerEngine) initNetwork() error {
 	if nw.Warning != "" {
 		e.log.Warnf(nw.Warning)
 	}
-	e.nid = nw.ID
-	e.log.Debugf("network (%s:%s) created", e.nid[:12], defaultNetworkName)
+	e.netMap[defaultNetworkName] = nw.ID
+	e.log.Debugf("network (%s:%s) created", e.netMap[defaultNetworkName][:12], defaultNetworkName)
+	return nil
+}
+
+func (e *dockerEngine) InitNetworks(networks map[string]openedge.NetworkInfo) error {
+	if len(networks) <= 0 {
+		return nil;
+	}
+	ctx := context.Background()
+	for networkName, network := range networks {
+		if network.Name != "" {
+			networkName = network.Name
+		}
+		// default network driver is set to bridge
+		networkDriver := "bridge"
+		if network.Driver != "" {
+			networkDriver = network.Driver
+		}
+		args := filters.NewArgs()
+		args.Add("driver", networkDriver)
+		args.Add("type", "custom")
+		args.Add("name", networkName)
+		nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
+		if err != nil {
+			e.log.WithError(err).Errorf("failed to list network (%s)", networkName)
+			return err
+		}
+		if len(nws) > 0 {
+			e.netMap[networkName] = nws[0].ID
+			e.log.Debugf("network (%s:%s) exists", e.netMap[networkName][:12], networkName)
+			continue
+		}
+		networkMsg := types.NetworkCreate {
+			Driver: networkDriver,
+			Options: network.DriverOptions,
+			Scope: "local",
+			Labels: network.Labels,
+		}
+		nw, err := e.cli.NetworkCreate(ctx, networkName, networkMsg)
+		if err != nil {
+			e.log.WithError(err).Errorf("failed to create network (%s)", networkName)
+			return err
+		}
+		if nw.Warning != "" {
+			e.log.Warnf(nw.Warning)
+		}
+		e.netMap[networkName] = nw.ID
+		e.log.Debugf("network (%s:%s) created", e.netMap[networkName][:12], networkName)
+	}
 	return nil
 }
 

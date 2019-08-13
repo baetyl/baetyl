@@ -36,6 +36,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 	e := &dockerEngine{
 		InfoStats: stats,
 		cli:       cli,
+		netMap:    make(map[string]string),
 		pwd:       pwd,
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
@@ -51,7 +52,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 type dockerEngine struct {
 	engine.InfoStats
 	cli   *client.Client
-	nid   string // network id
+	netMap map[string]string
 	pwd   string // work directory
 	grace time.Duration
 	tomb  utils.Tomb
@@ -168,11 +169,20 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		},
 	}
 	params.networkConfig = network.NetworkingConfig{
-		EndpointsConfig: map[string]*network.EndpointSettings{
-			defaultNetworkName: &network.EndpointSettings{
-				NetworkID: e.nid,
-			},
-		},
+		EndpointsConfig: map[string]*network.EndpointSettings{},
+	}
+	if len(cfg.Networks) == 0 {
+		params.networkConfig.EndpointsConfig[defaultNetworkName] = &network.EndpointSettings{
+			NetworkID: e.netMap[defaultNetworkName],
+		}
+	} else {
+		for networkName, networkInfo := range cfg.Networks {
+			params.networkConfig.EndpointsConfig[networkName] = &network.EndpointSettings{
+				NetworkID: e.netMap[networkName],
+				Aliases: networkInfo.Aliases,
+				IPAddress: networkInfo.Ipv4Address,
+			}
+		}
 	}
 	s := &dockerService{
 		cfg:       cfg,
