@@ -1,8 +1,7 @@
 PREFIX?=/usr/local
 GITVERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 GOFLAG?=-ldflags "-X 'github.com/baidu/openedge/cmd.GoVersion=`go version`' -X 'github.com/baidu/openedge/cmd.Version=$(VERSION)'"
-#DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
-DEPLOY_TARGET=agent hub function-manager remote-mqtt timer 
+DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
 
 all: openedge package
 
@@ -83,13 +82,13 @@ uninstall:
 	rm -rf ${PREFIX}/var/db/openedge
 	rm -rf ${PREFIX}/var/log/openedge
 	rm -rf ${PREFIX}/var/run/openedge
-	rm -rf ${PREFIX}/var/db
-	rm -rf ${PREFIX}/var/log
-	rm -rf ${PREFIX}/var/run
-	rm -rf ${PREFIX}/var
-	rm -rf ${PREFIX}/etc
-	rm -rf ${PREFIX}/bin
-	rm -rf ${PREFIX}
+	! test -d ${PREFIX}/var/db || rmdir ${PREFIX}/var/db 
+	! test -d ${PREFIX}/var/log || rmdir ${PREFIX}/var/log 
+	! test -d ${PREFIX}/var/run || rmdir ${PREFIX}/var/run 
+	! test -d ${PREFIX}/var || rmdir ${PREFIX}/var 
+	! test -d ${PREFIX}/etc || rmdir ${PREFIX}/etc 
+	! test -d ${PREFIX}/bin || rmdir ${PREFIX}/bin 
+	! test -d ${PREFIX} || rmdir ${PREFIX} 
 
 uninstall-native: uninstall
 
