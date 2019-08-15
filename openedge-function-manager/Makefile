@@ -1,4 +1,3 @@
-VERSION?=latest
 SRC=$(shell find . -type f -name '*.go')
 
 all: openedge-function-manager package.zip

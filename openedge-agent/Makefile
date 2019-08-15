@@ -1,4 +1,3 @@
-VERSION?=latest
 SRC=$(wildcard *.go)
 
 all: openedge-agent package.zip

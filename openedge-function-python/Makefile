@@ -1,4 +1,3 @@
-TAG?=latest
 PYSRC27=$(shell find . -type f -name '*.py' -not -name '*36*')
 PYSRC36=$(shell find . -type f -name '*.py' -not -name '*27*')
 

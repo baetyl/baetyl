@@ -1,5 +1,5 @@
 PREFIX?=/usr/local
-GITVERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
+VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 GOFLAG?=-ldflags "-X 'github.com/baidu/openedge/cmd.GoVersion=`go version`' -X 'github.com/baidu/openedge/cmd.Version=$(VERSION)'"
 DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
 
@@ -76,20 +76,22 @@ install-native: openedge package
 
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
 
+.PHONY: uninstall
 uninstall:
-	rm -f ${PREFIX}/bin/openedge
-	rm -rf ${PREFIX}/etc/openedge
-	rm -rf ${PREFIX}/var/db/openedge
-	rm -rf ${PREFIX}/var/log/openedge
-	rm -rf ${PREFIX}/var/run/openedge
-	! test -d ${PREFIX}/var/db || rmdir ${PREFIX}/var/db 
-	! test -d ${PREFIX}/var/log || rmdir ${PREFIX}/var/log 
-	! test -d ${PREFIX}/var/run || rmdir ${PREFIX}/var/run 
-	! test -d ${PREFIX}/var || rmdir ${PREFIX}/var 
-	! test -d ${PREFIX}/etc || rmdir ${PREFIX}/etc 
-	! test -d ${PREFIX}/bin || rmdir ${PREFIX}/bin 
-	! test -d ${PREFIX} || rmdir ${PREFIX} 
+	@rm -f ${PREFIX}/bin/openedge
+	@rm -rf ${PREFIX}/etc/openedge
+	@rm -rf ${PREFIX}/var/db/openedge
+	@rm -rf ${PREFIX}/var/log/openedge
+	@rm -rf ${PREFIX}/var/run/openedge
+	@! test -d ${PREFIX}/var/db || ! ls ${PREFIX}/var/db | xargs test -z || rmdir ${PREFIX}/var/db
+	@! test -d ${PREFIX}/var/log || ! ls ${PREFIX}/var/log | xargs test -z || rmdir ${PREFIX}/var/log
+	@! test -d ${PREFIX}/var/run || ! ls ${PREFIX}/var/run | xargs test -z || rmdir ${PREFIX}/var/run
+	@! test -d ${PREFIX}/var || ! ls ${PREFIX}/var | xargs test -z || rmdir ${PREFIX}/var
+	@! test -d ${PREFIX}/etc || ! ls ${PREFIX}/etc | xargs test -z || rmdir ${PREFIX}/etc
+	@! test -d ${PREFIX}/bin || ! ls ${PREFIX}/bin | xargs test -z || rmdir ${PREFIX}/bin
+	@! test -d ${PREFIX} || ! ls ${PREFIX} | xargs test -z || rmdir ${PREFIX}
 
+.PHONY: uninstall-native
 uninstall-native: uninstall
 
 .PHONY: clean
@@ -120,25 +122,25 @@ release: clean release-master release-image push-image release-manifest
 
 release-master: clean
 	# release linux 386
-	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-386
-	cd __release_build/openedge-$(GITVERSION)-linux-386 && zip -q -r ../../openedge-$(GITVERSION)-linux-386.zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-386
+	env GOOS=linux GOARCH=386 make install PREFIX=__release_build/openedge-$(VERSION)-linux-386
+	cd __release_build/openedge-$(VERSION)-linux-386 && zip -q -r ../../openedge-$(VERSION)-linux-386.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(VERSION)-linux-386
 	# release linux amd64
-	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-amd64
-	cd __release_build/openedge-$(GITVERSION)-linux-amd64 && zip -q -r ../../openedge-$(GITVERSION)-linux-amd64.zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-amd64
+	env GOOS=linux GOARCH=amd64 make install PREFIX=__release_build/openedge-$(VERSION)-linux-amd64
+	cd __release_build/openedge-$(VERSION)-linux-amd64 && zip -q -r ../../openedge-$(VERSION)-linux-amd64.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(VERSION)-linux-amd64
 	# release linux arm v7
-	env GOOS=linux GOARCH=arm GOARM=7 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-armv7
-	cd __release_build/openedge-$(GITVERSION)-linux-armv7 && zip -q -r ../../openedge-$(GITVERSION)-linux-armv7.zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-armv7
+	env GOOS=linux GOARCH=arm GOARM=7 make install PREFIX=__release_build/openedge-$(VERSION)-linux-armv7
+	cd __release_build/openedge-$(VERSION)-linux-armv7 && zip -q -r ../../openedge-$(VERSION)-linux-armv7.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(VERSION)-linux-armv7
 	# release linux arm64
-	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-$(GITVERSION)-linux-arm64
-	cd __release_build/openedge-$(GITVERSION)-linux-arm64 && zip -q -r ../../openedge-$(GITVERSION)-linux-arm64.zip bin/
-	make uninstall clean PREFIX=__release_build/openedge-$(GITVERSION)-linux-arm64
+	env GOOS=linux GOARCH=arm64 make install PREFIX=__release_build/openedge-$(VERSION)-linux-arm64
+	cd __release_build/openedge-$(VERSION)-linux-arm64 && zip -q -r ../../openedge-$(VERSION)-linux-arm64.zip bin/
+	make uninstall clean PREFIX=__release_build/openedge-$(VERSION)-linux-arm64
 	# release darwin amd64
-	env GOOS=darwin GOARCH=amd64 make install PREFIX=__release_build/openedge-$(GITVERSION)-darwin-amd64
-	cd __release_build/openedge-$(GITVERSION)-darwin-amd64 && zip -q -r ../../openedge-$(GITVERSION)-darwin-amd64.zip bin/
-	make uninstall PREFIX=__release_build/openedge-$(GITVERSION)-darwin-amd64
+	env GOOS=darwin GOARCH=amd64 make install PREFIX=__release_build/openedge-$(VERSION)-darwin-amd64
+	cd __release_build/openedge-$(VERSION)-darwin-amd64 && zip -q -r ../../openedge-$(VERSION)-darwin-amd64.zip bin/
+	make uninstall PREFIX=__release_build/openedge-$(VERSION)-darwin-amd64
 	make clean
 	# at last
 	rmdir __release_build

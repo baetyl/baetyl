@@ -1,4 +1,3 @@
-TAG?=latest
 PYSRC85=function_grpc_pb.js function_pb.js openedge-function-node85.js
 
 package85.zip: $(PYSRC85)
