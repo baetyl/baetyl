@@ -6,7 +6,7 @@ go:
   - 1.10.1
 
 before_install:
-  - pyenv local 3.6 2.7
+  - pyenv local 2.7.15 3.7
   - sudo apt-get install python3-pip
   - sudo apt-get install python-pip
   - pip3 install grpcio protobuf pyyaml
