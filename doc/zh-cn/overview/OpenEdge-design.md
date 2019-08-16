@@ -55,12 +55,12 @@
 
 主程序启停过程如下：
 
-1. 执行启动命令：`sudo openedge start`，默认工作目录为 openedge 安装目录的上一级目录。
-2. 主程序首先会加载工作目录下的 `etc/openedge/openedge.yml`，初始化运行模式、API Server、日志和退出超时时间等，这些配置不会随应用配置下发而改变。如果启动没有报错，会在 `/var/run/` 目录下生成 openedge.pid 和 openedge.sock（Linux）文件。
+1. 前台运行 openedge，执行启动命令：`sudo openedge start`，默认工作目录为 openedge 安装目录的上一级目录。
+2. 主程序首先会加载工作目录下的 `etc/openedge/openedge.yml`，初始化运行模式、API Server、日志和退出超时时间等，这些配置不会随应用配置下发而改变。如果启动没有报错，会在 `/var/run/` 目录下生成 openedge.sock（Linux）文件。
 3. 然后主程序会尝试加载应用配置 `var/db/openedge/application.yml`，如果该配置不存在则不启动任何服务，否则加载应用配置中的服务列表和存储卷列表。该文件会随应用配置下发而更新，届时系统会根据新配置重新编排服务。
 4. 在启动所有服务前，主程序会先调用 Engine 接口执行一些准备工作，比如容器模式下会先尝试下载所有服务的镜像。
 5. 准备工作完成后，开始顺序启动所有服务，如果服务启动失败则会导致主程序退出。容器模式下会将存储卷映射到容器内部；进程模式下会为每个服务创建各自的临时工作目录，并将存储卷软链到工作目录下，服务退出后临时工作目录会被清理，行为同容器模式。
-6. 最后，如果需要退出，可执行 `sudo openedge stop`，主程序会同时通知所有服务的实例退出并等待，如果超时则强制杀掉实例。然后清理 openedge.pid 和 openedge.sock 后退出。
+6. 最后，可操作 `ctrl + c` 退出 openedge，主程序会同时通知所有服务的实例退出并等待，如果超时则强制杀掉实例。然后清理 openedge.sock 后退出。
 
 下面是完整的 application.yml 配置字段：
 
