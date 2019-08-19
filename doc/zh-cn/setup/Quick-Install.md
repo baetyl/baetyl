@@ -22,6 +22,8 @@ docker version
 
 **注意**：根据 官方 Release 日志 说明，低于 18.09.2 的 Docker 版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2 及以上。
 
+**更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
+
 ## 安装 OpenEdge
 
 在 OpenEdge 发布新版本的同时，也会发布对应的 rpm、deb 包。使用以下命令，用户可以通过包管理方式将 OpenEdge 的最新版本安装到设备上:
@@ -40,7 +42,7 @@ sudo systemctl start openedge
 
 ## 导入默认配置包（可选）
 
-OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力外，还提供一些基础功能模块，比如 hub、function-manager 模块等。用户需要通过编辑配置文件，来让 `openedge` 主程序加载相应的模块以及设定模块本身的运行参数。关于各个模块的功能介绍，可参考 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解
+OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力外，还提供一些基础功能模块，比如 hub、function-manager 模块等。用户需要通过编辑配置文件，来让 `openedge` 主程序加载相应的模块以及设定模块本身的运行参数。关于各个模块的功能介绍，可参考 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解。
 
 OpenEdge 官方提供了一套默认配置，用户可通过以下命令导入默认配置文件:
 
@@ -60,7 +62,7 @@ curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E
 
 ![OpenEdge](../../images/setup/openedge-systemctl-status.png)
 
-- 在终端中执行命令 `docker stats` 查看当前 docker 中容器的运行状态。由于主程序 `openedge` 会先到镜像仓库拉取需要的镜像，用户需要等待 3~5 分钟执行此条命令。以上一步中导入的默认配置为例，待主程序拉取完成后，容器的运行状态如下图所示。如果用户本地的镜像与下述不一致，说明模块启动失败；
+- 在终端中执行命令 `docker stats` 查看当前 docker 中容器的运行状态。由于主程序 `openedge` 会先到镜像仓库拉取需要的镜像，用户需要等待 2~5 分钟执行此条命令。以上一步中导入的默认配置为例，待主程序拉取完成后，容器的运行状态如下图所示。如果用户本地的镜像与下述不一致，说明模块启动失败；
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats.png)
 
