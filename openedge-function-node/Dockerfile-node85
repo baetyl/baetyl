@@ -1,10 +1,5 @@
-FROM hub.baidubce.com/openedgedev/openedge-function-node85:0.1.5-devel as devel
+FROM hub.baidubce.com/openedge/openedge-function-node85:0.1.5-devel
 
-FROM ubuntu:18.04
-COPY --from=devel /package /usr/local
-COPY --from=devel /node_modules /bin/node_modules
-
-WORKDIR /
-COPY function_grpc_pb.js function_pb.js openedge-function-node85.js /bin/
+COPY *.js /bin/
 RUN chmod +x /bin/openedge-function-node85.js
 ENTRYPOINT ["openedge-function-node85.js"]
