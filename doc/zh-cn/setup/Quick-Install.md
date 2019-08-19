@@ -1,6 +1,6 @@
 # 快速安装 OpenEdge
 
-相比于手动下载安装的方式，最新版本 OpenEdge 支持包管理器的安装方式。通过包管理器方式，用户可以在终端简单输入几条命令，快速安装最新版本的 OpenEdge。
+相较于之前版本的手动下载安装方式，最新版本(0.1.5 版本) OpenEdge 支持包管理器的安装方式。通过包管理器方式，用户可以在终端简单输入几条命令，快速安装 OpenEdge。
 
 OpenEdge 包安装器目前支持的系统有: Ubuntu Server 16.04、Ubuntu Server 18.04、Debian9、CentOS7、Raspbian-stretch，支持的平台有 X64、i386、ARM32 和 ARM64。
 
@@ -30,7 +30,9 @@ docker version
 curl -sSL http://download.openedge.tech/install.sh | sudo -E bash -
 ```
 
-最新版本 OpenEdge 支持 Systemd 守护，可以使用以下命令开启守护:
+执行完毕以后，OpenEdge 将会被安装到 `/usr/local` 目录下。
+
+最新版本的 OpenEdge 使用 Systemd 守护，用户可以使用以下命令启动 OpenEdge:
 
 ```shell
 sudo systemctl start openedge
@@ -38,7 +40,9 @@ sudo systemctl start openedge
 
 ## 导入默认配置包（可选）
 
-OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力外，还提供一些基础功能模块。用户可以通过配置文件，加载相应的模块以及设定模块本身的运行参数。OpenEdge 官方提供了一套默认配置，可以通过以下命令导入默认配置文件:
+OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力外，还提供一些基础功能模块，比如 hub、function-manager 模块等。用户需要通过编辑配置文件，来让 `openedge` 主程序加载相应的模块以及设定模块本身的运行参数。关于各个模块的功能介绍，可参考 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解
+
+OpenEdge 官方提供了一套默认配置，用户可通过以下命令导入默认配置文件:
 
 ```shell
 curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E bash -
@@ -50,6 +54,8 @@ curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E
 
 ## 验证是否成功安装
 
+通过包管理器的方式安装 OpenEdge 以后，用户可以依据以下步骤验证 OpenEdge 是否启动成功：
+
 - 在终端中命令 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行。正常如下图所示，否则说明主程序 `openedge` 启动失败；
 
 ![OpenEdge](../../images/setup/openedge-systemctl-status.png)
@@ -58,4 +64,4 @@ curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats.png)
 
-- 针对上述两种失败情况，用户需要查看日志来了解具体的错误情况。日志的默认存放位置为 `/usr/local/var/log/openedge/openedge.log`。针对日志中出现的错误，用户可先参考常见问题 [常见问题](../FAQ.md) 进行解决。必要时可以直接[提交 Issue](https://github.com/baidu/openedge/issues)。
+- 针对上述两种失败情况，用户需要查看主程序日志来了解具体的错误情况。主程序日志的默认存放位置为 `/usr/local/var/log/openedge/openedge.log`。针对日志中出现的错误，用户可先参考常见问题 [常见问题](../FAQ.md) 进行解决。必要时可以直接[提交 Issue](https://github.com/baidu/openedge/issues)。
