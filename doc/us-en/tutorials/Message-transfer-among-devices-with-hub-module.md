@@ -3,6 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
+- This test is based on the OpenEdge you downloaded in [Quick Install](../setup/Quick-Install), and import the default configuration package
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service.
 
@@ -20,10 +21,43 @@ This document uses the TCP connection method as an example to test the message r
 
 ## Message Routing Test
 
-The configuration of the `localhub` Service used in the test is as follows:
+Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
+
+The configuration of OpenEdge Master is as follows:
 
 ```yaml
 # The configuration of localhub service
+version: V2
+services:
+  - name: hub
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    replica: 1
+    ports:
+      - '1883:1883'
+    env: {}
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub_data
+        path: var/db/openedge/data
+      - name: log-V1
+        path: var/log/openedge
+volumes:
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf/V1
+  - name: log-V1
+    path: var/db/openedge/log
+  - name: localhub_data
+    path: var/db/openedge/localhub_data
+```
+
+Configuration file location for the OpenEdge Hub module: `var/db/openedge/localhub-conf/service.yml`.
+
+The configuration of OpenEdge Hub Module is as follows:
+
+```yaml
+# localhub 服务配置
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -42,29 +76,6 @@ subscriptions:
 logger:
   path: var/log/openedge/service.log
   level: "debug"
-  
-# The configuration of application.yml
-services:
-  - name: localhub
-    image: openedge-hub
-    replica: 1
-    ports:
-      - 1883:1883
-    mounts:
-      - name: localhub-conf
-        path: etc/openedge
-        readonly: true
-      - name: localhub-data
-        path: var/db/openedge/data
-      - name: localhub-log
-        path: var/log/openedge
-volumes:
-  - name: localhub-conf
-    path: var/db/openedge/localhub-conf
-  - name: localhub-data
-    path: var/db/openedge/localhub-data
-  - name: localhub-log
-    path: var/db/openedge/localhub-log
 ```
 
 The directory of configuration tree is as follows:

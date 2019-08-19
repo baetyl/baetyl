@@ -3,6 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
+- This test is based on the OpenEdge you downloaded in [Quick Install](../setup/Quick-Install), and import the default configuration package
 - The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
 - The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
 - Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
@@ -31,30 +32,29 @@ The workflow diagram is as follows.
 
 ## Message Synchronize via Remote Module
 
-The principal configuration of OpenEdge Master is as follows:
+Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
+
+The configuration of OpenEdge Master is as follows:
 
 ```yaml
-version: V2
+version: v0
 services:
   - name: localhub
-    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    image: hub.baidubce.com/openedge/openedge-hub:latest
     replica: 1
     ports:
-      - '1883:1883'
-      - '8080:8080'
-      - '8883:8883'
-    env: {}
+      - 1883:1883
     mounts:
-      - name: dxc_localhub_conf-V2
+      - name: localhub-conf
         path: etc/openedge
         readonly: true
-      - name: dxc_localhub_cert-V1
-        path: var/db/openedge/cert
-      - name: dxc_localhub_data-V1
+      - name: localhub-data
         path: var/db/openedge/data
-      - name: dxc_localhub_log-V1
+      - name: localhub-log
         path: var/log/openedge
-  - name: remote-iothub
+      - name: localhub-cert
+        path: var/db/openedge/cert
+   - name: remote-iothub
     image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
     replica: 1
     mounts:
@@ -65,8 +65,17 @@ services:
         path: var/db/openedge/cert
         readonly: true
       - name: remote-iothub-log
-        path: var/log/openedge      
+        path: var/log/openedge
 volumes:
+  # hub
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
+  - name: localhub-cert
+    path: var/db/openedge/localhub-cert-only-for-test
   # remote mqtt
   - name: remote-iothub-conf
     path: var/db/openedge/remote-iothub-conf
@@ -74,15 +83,9 @@ volumes:
     path: var/db/openedge/remote-iothub-cert
   - name: remote-iothub-log
     path: var/db/openedge/remote-iothub-log
-  - name: dxc_localhub_conf-V2
-    path: var/db/openedge/dxc_localhub_conf/V2
-  - name: dxc_localhub_cert-V1
-    path: var/db/openedge/dxc_localhub_cert/V1
-  - name: dxc_localhub_log-V1
-    path: var/db/openedge/dxc_localhub_log
-  - name: dxc_localhub_data-V1
-    path: var/db/openedge/dxc_localhub_data
 ```
+
+Configuration file location for the Remote module: `var/db/openedge/remote-iothub-conf/application.yml`.
 
 The configuration of OpenEdge Remote module is as follows:
 
@@ -113,6 +116,7 @@ logger:
   path: var/log/openedge/service.log
   level: "debug"
 ```
+
 According to the configuration of the above, it means that the Remote module subscribes the topic `t1` from the Local Hub module, subscribes the topic `t2` from Baidu IoT Hub. When MQTTBOX publishes a message to the topic `t1`, the Local Hub module will receive this message and forward it to Baidu IoT Hub via Remote module, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoT Hub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoT Hub will receive it and forward it to the Local Hub module via Remote module. Finally, MQTTBOX will receive this message(suppose MQTTBOX has already subscribed the topic `t2` before).
 
 In a word, from MQTTBOX publishes a message to the topic `t1`, to MQTT.fx receives the message, the routing path of the message is as follows.

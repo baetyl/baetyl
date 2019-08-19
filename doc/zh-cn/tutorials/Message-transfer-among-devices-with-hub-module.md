@@ -3,6 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
+- 本文测试前先 [安装 OpenEdge](../setup/Quick-Install), 并导入默认配置包
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
 
@@ -20,7 +21,35 @@
 
 ## 消息路由测试
 
-本文测试使用的 `localhub` 服务的相关配置信息如下：
+OpenEdge 主程序的配置文件位置 `var/db/openedge/application.yml`，配置信息如下：
+
+```yaml
+version: V2
+services:
+  - name: hub
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    replica: 1
+    ports:
+      - '1883:1883'
+    env: {}
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub_data
+        path: var/db/openedge/data
+      - name: log-V1
+        path: var/log/openedge
+volumes:
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf/V1
+  - name: log-V1
+    path: var/db/openedge/log
+  - name: localhub_data
+    path: var/db/openedge/localhub_data
+```
+
+OpenEdge Hub 模块启动的连接相关配置文件位置 `var/db/openedge/localhub-conf/service.yml`，配置信息如下：
 
 ```yaml
 # localhub 服务配置
@@ -42,29 +71,6 @@ subscriptions:
 logger:
   path: var/log/openedge/service.log
   level: "debug"
-
-# application.yml 配置
-services:
-  - name: localhub
-    image: openedge-hub
-    replica: 1
-    ports:
-      - 1883:1883
-    mounts:
-      - name: localhub-conf
-        path: etc/openedge
-        readonly: true
-      - name: localhub-data
-        path: var/db/openedge/data
-      - name: localhub-log
-        path: var/log/openedge
-volumes:
-  - name: localhub-conf
-    path: var/db/openedge/localhub-conf
-  - name: localhub-data
-    path: var/db/openedge/localhub-data
-  - name: localhub-log
-    path: var/db/openedge/localhub-log
 ```
 
 目录结构如下：

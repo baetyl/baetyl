@@ -3,6 +3,7 @@
 **Statement**:
 
 - The device system used in this test is Darwin
+- This test is based on the OpenEdge you downloaded in [Quick Install](../setup/Quick-Install), and import the default configuration package
 - MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
 - The hub module image used  is the official image published in the OpenEdge Cloud Management Suite: `hub.baidubce.com/openedge/openedge-hub:latest`
 - You can also compile the required Hub module image by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md)
@@ -26,53 +27,45 @@ The complete configuration reference for [Hub Module Configuration](./Config-int
 
 As mentioned above, OpenEdge must be started before the connection test.
 
-### OpenEdge Startup
-
-According to Step 1, execute `sudo openedge start` to start OpenEdge in Docker mode. The normal situation is shown as below.
-
-![OpenEdge startup](../../images/tutorials/connect/openedge-hub-start.png)
-
-As you can see, the image of Hub module has been loaded after OpenEdge starts up normally. Alternatively, you can use `docker ps` command to check which docker container is currently running.
-
-![docker ps](../../images/tutorials/connect/container-openedge-hub-run.png)
-
-**NOTE**：The `hub.baidubce.com/openedge/openedge-agent:latest` image in the log is the Agent module which is delivered by BIE Cloud Management Suite.
-
 ### OpenEdge Connection Test
+
+Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
 
 The configuration of OpenEdge Master is as follows:
 
 ```yaml
-version: V2
+version: v0
 services:
   - name: localhub
-    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    image: hub.baidubce.com/openedge/openedge-hub:latest
     replica: 1
     ports:
-      - '1883:1883'
-      - '8080:8080'
-      - '8883:8883'
-    env: {}
+      - 1883:1883
+      - 8883:8883
+      - 8080:8080
     mounts:
-      - name: dxc_localhub_conf-V2
+      - name: localhub-conf
         path: etc/openedge
         readonly: true
-      - name: dxc_localhub_cert-V1
+      - name: localhub-cert
         path: var/db/openedge/cert
-      - name: dxc_localhub_data-V1
+        readonly: true
+      - name: localhub-data
         path: var/db/openedge/data
-      - name: dxc_localhub_log-V1
+      - name: localhub-log
         path: var/log/openedge
-volumes:  
-  - name: dxc_localhub_conf-V2
-    path: var/db/openedge/dxc_localhub_conf/V2
-  - name: dxc_localhub_cert-V1
-    path: var/db/openedge/dxc_localhub_cert/V1
-  - name: dxc_localhub_data-V1
-    path: var/db/openedge/dxc_localhub_data
-  - name: dxc_localhub_log-V1
-    path: var/db/openedge/dxc_localhub_log  
+volumes:
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-cert
+    path: var/db/openedge/localhub-cert-only-for-test
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
 ```
+
+Configuration file location for the OpenEdge Hub module: `var/db/openedge/localhub-conf/service.yml`.
 
 The configuration of OpenEdge Hub Module is as follows:
 
@@ -103,6 +96,18 @@ logger:
   path: var/log/openedge/service.log
   level: "debug"
 ```
+
+### OpenEdge Startup
+
+According to Step 1, execute `sudo openedge start` to start OpenEdge in Docker mode. The normal situation is shown as below.
+
+![OpenEdge startup](../../images/tutorials/connect/openedge-hub-start.png)
+
+As you can see, the image of Hub module has been loaded after OpenEdge starts up normally. Alternatively, you can use `docker ps` command to check which docker container is currently running.
+
+![docker ps](../../images/tutorials/connect/container-openedge-hub-run.png)
+
+**NOTE**：The `hub.baidubce.com/openedge/openedge-agent:latest` image in the log is the Agent module which is delivered by BIE Cloud Management Suite.
 
 As mentioned above, when the Hub Module starts, it will open ports 1883, 8883 and 8080 at the same time, which are used for TCP, SSL, WS (Websocket) protocol. Then we will use MQTTBOX and MQTT.fx as MQTT client to check the connection between MQTT client and OpenEdge .
 

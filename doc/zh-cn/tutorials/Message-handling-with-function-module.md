@@ -3,6 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
+- 本文测试前先 [安装 OpenEdge](../setup/Quick-Install), 并导入默认配置包
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 - 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
@@ -26,53 +27,14 @@
 
 ## 消息处理测试
 
-本文测试使用的 `localhub` 服务 及函数计算服务的相关配置信息如下：
+OpenEdge 主程序的配置文件位置 `var/db/openedge/application.yml`，配置信息如下：
 
 ```yaml
-# localhub 配置
-listen:
-  - tcp://0.0.0.0:1883
-principals:
-  - username: 'test'
-    password: 'hahaha'
-    permissions:
-      - action: 'pub'
-        permit: ['#']
-      - action: 'sub'
-        permit: ['#']
-
-# 本地 openedge-function-manager 配置
-hub:
-  address: tcp://localhub:1883
-  username: test
-  password: hahaha
-rules:
-  - clientid: localfunc-1
-    subscribe:
-      topic: t
-    function:
-      name: sayhi
-    publish:
-      topic: t/hi
-functions:
-  - name: sayhi
-    service: function-sayhi
-    instance:
-      min: 0
-      max: 10
-      idletime: 1m
-
-# python function 配置
-functions:
-  - name: 'sayhi'
-    handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
-
 # application.yml 配置
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: hub.baidubce.com/openedge/openedge-hub:latest
     replica: 1
     ports:
       - 1883:1883
@@ -85,7 +47,7 @@ services:
       - name: localhub-log
         path: var/log/openedge
   - name: function-manager
-    image: openedge-function-manager
+    image: hub.baidubce.com/openedge/openedge-function-manager:latest
     replica: 1
     mounts:
       - name: function-manager-conf
@@ -94,7 +56,7 @@ services:
       - name: function-manager-log
         path: var/log/openedge
   - name: function-sayhi
-    image: openedge-function-python36
+    image: hub.baidubce.com/openedge/openedge-function-python36:latest
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -123,7 +85,94 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-目录结构如下：
+OpenEdge Hub 模块启动的连接相关配置文件位置 `var/db/openedge/localhub-conf/service.yml`，配置信息如下：
+
+```yaml
+listen:
+  - tcp://0.0.0.0:1883
+principals:
+  - username: 'test'
+    password: 'hahaha'
+    permissions:
+      - action: 'pub'
+        permit: ['#']
+      - action: 'sub'
+        permit: ['#']
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
+```
+
+OpenEdge 本地函数计算服务相关配置文件位置 `var/db/openedge/function-manager-conf/service.yml`，`var/db/openedge/function-sayhi-conf/service.yml`，配置信息如下：
+
+```yaml
+# 本地 openedge-function-manager 配置
+hub:
+  address: tcp://localhub:1883
+  username: test
+  password: hahaha
+rules:
+  - clientid: localfunc-1
+    subscribe:
+      topic: t
+    function:
+      name: sayhi
+    publish:
+      topic: t/hi
+functions:
+  - name: sayhi
+    service: function-sayhi
+    instance:
+      min: 0
+      max: 10
+      idletime: 1m
+
+# python function 配置
+functions:
+  - name: 'sayhi'
+    handler: 'sayhi.handler'
+    codedir: 'var/db/openedge/function-sayhi'
+```
+
+处理函数 `sayhi` 的具体文件位置`var/db/openedge/function-sayhi-code/sayhi.py`，具体内容如下示：
+
+```python
+#!/usr/bin/env python3
+#-*- coding:utf-8 -*-
+"""
+module to say hi
+"""
+
+import os
+
+def handler(event, context):
+    """
+    function handler
+    """
+    if 'USER_ID' in os.environ:
+      event['USER_ID'] = os.environ['USER_ID']
+
+    if 'functionName' in context:
+      event['functionName'] = context['functionName']
+
+    if 'functionInvokeID' in context:
+      event['functionInvokeID'] = context['functionInvokeID']
+
+    if 'invokeid' in context:
+      event['invokeid'] = context['invokeid']
+
+    if 'messageQOS' in context:
+      event['messageQOS'] = context['messageQOS']
+
+    if 'messageTopic' in context:
+      event['messageTopic'] = context['messageTopic']
+
+    event['py'] = '你好，世界！'
+
+    return event
+```
+
+本文使用到的目录如下：
 ```shell
 var/
 └── db
@@ -166,45 +215,9 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 ### 消息处理验证
 
-根据上文所述，这里我们利用 Python 函数 `sayhi` 对主题 `t` 的消息进行处理，并将结果反馈给主题 `t/hi` 。那么，首先，需要获悉的就是处理函数 `sayhi` 的具体信息，具体如下示：
+根据上文所述，这里我们利用 Python 函数 `sayhi` 对主题 `t` 的消息进行处理，并将结果反馈给主题 `t/hi` 。
 
-```python
-#!/usr/bin/env python3
-#-*- coding:utf-8 -*-
-"""
-module to say hi
-"""
-
-import os
-
-def handler(event, context):
-    """
-    function handler
-    """
-    if 'USER_ID' in os.environ:
-      event['USER_ID'] = os.environ['USER_ID']
-
-    if 'functionName' in context:
-      event['functionName'] = context['functionName']
-
-    if 'functionInvokeID' in context:
-      event['functionInvokeID'] = context['functionInvokeID']
-
-    if 'invokeid' in context:
-      event['invokeid'] = context['invokeid']
-
-    if 'messageQOS' in context:
-      event['messageQOS'] = context['messageQOS']
-
-    if 'messageTopic' in context:
-      event['messageTopic'] = context['messageTopic']
-
-    event['py'] = '你好，世界！'
-
-    return event
-```
-
-可以发现，在接收到某字典类格式的消息后，函数 `sayhi` 会对其进行一系列处理，然后将处理结果返回。返回的结果中包括：环境变量 `USER_ID`、函数名称 `functionName`、函数调用 ID `functionInvokeID`、输入消息主题 `messageTopic`、输入消息消息 QoS `messageQOS` 等字段。
+通过查看 `sayhi.py` 代码文件可以发现，在接收到某字典类格式的消息后，函数 `sayhi` 会对其进行一系列处理，然后将处理结果返回。返回的结果中包括：环境变量 `USER_ID`、函数名称 `functionName`、函数调用 ID `functionInvokeID`、输入消息主题 `messageTopic`、输入消息消息 QoS `messageQOS` 等字段。
 
 这里，我们通过 MQTTBOX 将消息 `{"id":10}` 发布给主题 `t` ，然后观察主题 `t/hi` 的接收消息情况，具体如下图示。
 

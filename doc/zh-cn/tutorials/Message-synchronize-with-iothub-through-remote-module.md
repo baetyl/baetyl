@@ -3,6 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
+- 本文测试前先 [安装 OpenEdge](../setup/Quick-Install), 并导入默认配置包
 - 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md) 和 [MQTT.fx](../Resources-download.md)
 - 本文所用的 Hub 模块镜像和 Remote 模块镜像为 OpenEdge 云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
 - 您也可以通过 OpenEdge 源码自行编译所需的 Hub 模块镜像和 Remote 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
@@ -31,30 +32,28 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 
 ## Remote 模块消息远程同步
 
-OpenEdge 主程序的核心配置如下：
+OpenEdge 主程序的配置文件位置 `var/db/openedge/application.yml`，配置信息如下：
 
 ```yaml
-version: V2
+# application.yml 配置
+version: v0
 services:
   - name: localhub
-    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    image: hub.baidubce.com/openedge/openedge-hub:latest
     replica: 1
     ports:
-      - '1883:1883'
-      - '8080:8080'
-      - '8883:8883'
-    env: {}
+      - 1883:1883
     mounts:
-      - name: dxc_localhub_conf-V2
+      - name: localhub-conf
         path: etc/openedge
         readonly: true
-      - name: dxc_localhub_cert-V1
-        path: var/db/openedge/cert
-      - name: dxc_localhub_data-V1
+      - name: localhub-data
         path: var/db/openedge/data
-      - name: dxc_localhub_log-V1
+      - name: localhub-log
         path: var/log/openedge
-  - name: remote-iothub
+      - name: localhub-cert
+        path: var/db/openedge/cert
+   - name: remote-iothub
     image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
     replica: 1
     mounts:
@@ -65,8 +64,17 @@ services:
         path: var/db/openedge/cert
         readonly: true
       - name: remote-iothub-log
-        path: var/log/openedge      
+        path: var/log/openedge
 volumes:
+  # hub
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
+  - name: localhub-cert
+    path: var/db/openedge/localhub-cert-only-for-test
   # remote mqtt
   - name: remote-iothub-conf
     path: var/db/openedge/remote-iothub-conf
@@ -74,17 +82,9 @@ volumes:
     path: var/db/openedge/remote-iothub-cert
   - name: remote-iothub-log
     path: var/db/openedge/remote-iothub-log
-  - name: dxc_localhub_conf-V2
-    path: var/db/openedge/dxc_localhub_conf/V2
-  - name: dxc_localhub_cert-V1
-    path: var/db/openedge/dxc_localhub_cert/V1
-  - name: dxc_localhub_log-V1
-    path: var/db/openedge/dxc_localhub_log
-  - name: dxc_localhub_data-V1
-    path: var/db/openedge/dxc_localhub_data
 ```
 
-Remote模块的配置如下：
+Remote 模块的配置文件位置 `var/db/openedge/remote-iothub-conf/application.yml`，配置信息如下：
 
 ```yaml
 name: remote-iothub
