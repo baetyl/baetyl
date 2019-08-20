@@ -20,11 +20,11 @@ go env  # View Go's environment variables
 go version # View Go's version
 ```
 
-**NOTE**: OpenEdge requires that the compiled version of Go be above 1.10.0.
+**NOTE**: OpenEdge requires that the compiled version of Go should be above 1.10.0.
 
 #### Install the container runtime
 
-In **docker** container mode, OpenEdge relies on docker container runtime. If `docker` is not installed yet, users can install the latest version of docker (for Linux-like systems) with the following command:
+In **docker** container mode, OpenEdge relies on docker container. If `docker` is not installed yet, users can install the latest version of docker (for Linux-like systems) with the following command:
 
 ```shell
 curl -sSL https://get.docker.com | sh
@@ -83,9 +83,9 @@ go env  # View Go's environment variables
 go version # View Go's version
 ```
 
-_**NOTE**: OpenEdge requires that the compiled version of Go be above 1.10.0 ._
+**NOTE**: OpenEdge requires that the compiled version of Go should be above 1.10.0.
 
-#### Install Docker
+#### Install the container runtime
 
 Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag docker into the application folder.
 
