@@ -14,7 +14,7 @@ OpenEdge relies on docker container runtime in **docker** container mode. Users 
 curl -sSL https://get.docker.com | sh
 ```
 
-Users can check the version of docker when the installation is completed:
+View the version of installed docker:
 
 ```shell
 docker version
