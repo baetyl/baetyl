@@ -2,6 +2,8 @@ package openedge
 
 import (
 	"time"
+	"reflect"
+	"fmt"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/mqtt"
@@ -24,7 +26,7 @@ type AppConfig struct {
 	// specifies the storage volume information of the application
 	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
 	// specifies the network information of the application
-	Networks map[string]NetworkInfo `yaml:"networks" json:"networks" default:"{}"`
+	Networks map[string]NetworkInfo `yaml:"networks" json:"networks"`
 }
 
 // ServiceInfo service configuration
@@ -38,12 +40,9 @@ type ServiceInfo struct {
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
 	Mounts []MountInfo `yaml:"mounts" json:"mounts" default:"[]"`
 	// specifies the network that the service used
-	Networks map[string]struct {
-		// alternative hostname for the service on the network
-		Aliases []string `yaml:"aliases" json:"aliases" default:"[]"`
-		// spefifies a static ipv4 address for the service when join the network
-		Ipv4Address string `yaml:"ipv4_address" json:"ipv4_address"`
-	} `yaml:"networks" json:"networks" default:"{}"`
+	Networks ServiceNetworks `yaml:"networks" json:"networks"`
+	// specifies the network mode of the service
+	NetworkMode string `yaml:"network_mode" json:"network_mode"`
 	// specifies the port bindings which exposed by the service, only for Docker container mode
 	Ports []string `yaml:"ports" json:"ports" default:"[]"`
 	// specifies the device bindings which used by the service, only for Docker container mode
@@ -76,14 +75,12 @@ type VolumeInfo struct {
 
 // NetworkInfo network configuration
 type NetworkInfo struct {
-	// specifies name for network
-	Name string `yaml:"name" json:"name"`
 	// specifies driver for network, including bridge(default), host, none, overlay
 	Driver string `yaml:"driver" json:"driver"`
 	// specified driver options for network
 	DriverOptions map[string]string `yaml:"driver_opts" json:"driver_opts"`
 	// specifies labels to add metadata
-	Labels map[string]string `yaml:"labels" json:"labels" default:"{}"`
+	Labels map[string]string `yaml:"labels" json:"labels"`
 }
 
 // MountInfo storage volume mapping configuration
@@ -199,4 +196,59 @@ type FunctionServerConfig struct {
 		Max uint32 `yaml:"max" json:"max"`
 	} `yaml:"workers" json:"workers"`
 	utils.Certificate `yaml:",inline" json:",inline"`
+}
+
+
+ // ServiceNetworks network configurations of service
+type ServiceNetworks struct {
+	ServiceNetworkInfos map[string]ServiceNetworkInfo
+}
+
+// ServiceNetworkInfo specific network configuration of service
+type ServiceNetworkInfo struct {
+	Aliases []string
+	Ipv4Address string
+}
+
+// UnmarshalYAML customizes unmarshal
+func (sn *ServiceNetworks) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if sn.ServiceNetworkInfos == nil {
+		sn.ServiceNetworkInfos = make(map[string]ServiceNetworkInfo)
+	}
+	var networks interface{}
+	err := unmarshal(&networks)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(networks).Kind() {
+		case reflect.Slice:
+			for _, item := range networks.([]interface{}) {
+				name := item.(string)
+				sn.ServiceNetworkInfos[name] = ServiceNetworkInfo{}
+			}
+		case reflect.Map:
+			for key, val := range networks.(map[interface{}]interface{}) {
+				name := key.(string)
+				serviceNetworkInfo := ServiceNetworkInfo{}
+				if val != nil {
+					info := val.(map[interface{}]interface{})
+					for k, v := range info {
+						strKey := k.(string)
+	        			info[strKey] = v
+					}
+					if aliases, ok := info["aliases"]; ok {
+						for _, alias := range aliases.([]interface{}){
+							serviceNetworkInfo.Aliases = append(serviceNetworkInfo.Aliases, fmt.Sprintf("%v", alias))	
+						}
+					}
+					if ipv4Address, ok := info["ipv4_address"]; ok {
+						serviceNetworkInfo.Ipv4Address = fmt.Sprintf("%v", ipv4Address)
+					}
+				}
+				sn.ServiceNetworkInfos[name] = serviceNetworkInfo
+			}
+		default:
+			return fmt.Errorf("parse service network error")
+	}
+	return nil
 }

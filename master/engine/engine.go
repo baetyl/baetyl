@@ -27,8 +27,7 @@ type Engine interface {
 	io.Closer
 	Name() string
 	Recover()
-	Prepare([]openedge.ServiceInfo)
-	InitNetworks(map[string]openedge.NetworkInfo) error
+	Prepare(openedge.AppConfig)
 	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
 	DelInstanceStats(serviceName, instanceName string, persist bool)
 	DelServiceStats(serviceName string, persist bool)

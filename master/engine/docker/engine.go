@@ -36,15 +36,10 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 	e := &dockerEngine{
 		InfoStats: stats,
 		cli:       cli,
-		netMap:    make(map[string]string),
+		networks:    make(map[string]string),
 		pwd:       pwd,
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
-	}
-	err = e.initNetwork()
-	if err != nil {
-		e.Close()
-		return nil, err
 	}
 	return e, nil
 }
@@ -52,7 +47,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 type dockerEngine struct {
 	engine.InfoStats
 	cli   *client.Client
-	netMap map[string]string
+	networks map[string]string
 	pwd   string // work directory
 	grace time.Duration
 	tomb  utils.Tomb
@@ -70,8 +65,9 @@ func (e *dockerEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
+func (e *dockerEngine) Prepare(cfg openedge.AppConfig) {
 	var wg sync.WaitGroup
+	ss := cfg.Services
 	for _, s := range ss {
 		wg.Add(1)
 		go func(i string, w *sync.WaitGroup) {
@@ -79,6 +75,11 @@ func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
 			e.pullImage(i)
 		}(s.Image, &wg)
 	}
+	wg.Add(1)
+	go func(nw map[string]openedge.NetworkInfo, w *sync.WaitGroup) {
+		defer w.Done()
+		e.initNetworks(nw)
+	}(cfg.Networks, &wg)
 	wg.Wait()
 }
 
@@ -157,6 +158,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		Binds:        volumes,
 		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
+		NetworkMode: container.NetworkMode(cfg.NetworkMode),
 		// container is supervised by openedge,
 		RestartPolicy: container.RestartPolicy{Name: "no"},
 		Resources: container.Resources{
@@ -168,21 +170,36 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			Devices:    deviceBindings,
 		},
 	}
-	params.networkConfig = network.NetworkingConfig{
-		EndpointsConfig: map[string]*network.EndpointSettings{},
-	}
-	if len(cfg.Networks) == 0 {
-		params.networkConfig.EndpointsConfig[defaultNetworkName] = &network.EndpointSettings{
-			NetworkID: e.netMap[defaultNetworkName],
+	endpointsConfig := map[string]*network.EndpointSettings{}
+	for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+		endpointsConfig[networkName] = &network.EndpointSettings{
+			NetworkID: e.networks[networkName],
+			Aliases: networkInfo.Aliases,
+			IPAddress: networkInfo.Ipv4Address,
 		}
-	} else {
-		for networkName, networkInfo := range cfg.Networks {
-			params.networkConfig.EndpointsConfig[networkName] = &network.EndpointSettings{
-				NetworkID: e.netMap[networkName],
-				Aliases: networkInfo.Aliases,
-				IPAddress: networkInfo.Ipv4Address,
+	}
+	if validateNetworkMode(cfg.NetworkMode) {
+		if cfg.NetworkMode == "host" {
+			ports := []string{}
+			for key := range exposedPorts {
+				ports = append(ports, strings.Split(string(key), "/")[0])
+			}
+			usedPorts, inUse := utils.CheckPortsInUse(ports)
+			if inUse {
+				return nil, fmt.Errorf("service %s use conflicting ports %s", cfg.Name, usedPorts)
 			}
 		}
+		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
+			NetworkID: e.networks[cfg.NetworkMode],
+		}
+	}
+	if len(endpointsConfig) == 0 {
+		endpointsConfig[defaultNetworkName] = &network.EndpointSettings{
+			NetworkID: e.networks[defaultNetworkName],
+		}
+	}
+	params.networkConfig = network.NetworkingConfig{
+		EndpointsConfig: endpointsConfig,
 	}
 	s := &dockerService{
 		cfg:       cfg,
@@ -227,4 +244,8 @@ func (e *dockerEngine) parseDeviceSpecs(devices []string) (deviceBindings []cont
 
 func (e *dockerEngine) Close() error {
 	return e.cli.Close()
+}
+
+func validateNetworkMode(networkMode string) bool {
+	return networkMode == "bridge" || networkMode == "host" || networkMode == "none"
 }

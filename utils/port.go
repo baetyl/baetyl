@@ -16,3 +16,19 @@ func GetAvailablePort(host string) (int, error) {
 	defer listener.Close()
 	return listener.Addr().(*net.TCPAddr).Port, nil
 }
+
+// CheckPortsInUse check if the ports are in use
+func CheckPortsInUse(ports []string) ([]string, bool) {
+	var usedPorts []string
+	for _, port := range ports {
+		conn, _ := net.Dial("tcp", net.JoinHostPort("", port))
+		if conn != nil {
+			conn.Close()
+			usedPorts = append(usedPorts, port)
+		}
+	}
+	if len(usedPorts) > 0 {
+		return usedPorts, true
+	}
+	return usedPorts, false
+}

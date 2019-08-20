@@ -52,14 +52,8 @@ func (e *nativeEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *nativeEngine) Prepare([]openedge.ServiceInfo) {
+func (e *nativeEngine) Prepare(openedge.AppConfig) {
 	// do nothing in native mode
-}
-
-// Init networks
-func (e *nativeEngine) InitNetworks(networks map[string]openedge.NetworkInfo) error {
-	// do nothing in native mode
-	return nil
 }
 
 // Clean clean all old instances

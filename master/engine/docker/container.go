@@ -28,65 +28,57 @@ type containerConfigs struct {
 	networkConfig network.NetworkingConfig
 }
 
-func (e *dockerEngine) initNetwork() error {
-	ctx := context.Background()
-	args := filters.NewArgs()
-	args.Add("driver", "bridge")
-	args.Add("type", "custom")
-	args.Add("name", defaultNetworkName)
-	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
-	if err != nil {
-		e.log.WithError(err).Errorf("failed to list network (%s)", defaultNetworkName)
-		return err
-	}
-	if len(nws) > 0 {
-		e.netMap[defaultNetworkName] = nws[0].ID
-		e.log.Debugf("network (%s:%s) exists", e.netMap[defaultNetworkName][:12], defaultNetworkName)
+func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) error {
+	if len(networks) <= 0 {
 		return nil
 	}
-	nw, err := e.cli.NetworkCreate(ctx, defaultNetworkName, types.NetworkCreate{Driver: "bridge", Scope: "local"})
+
+	// add docker default network, including bridge, host, none
+	ctx := context.Background()
+	args := filters.NewArgs()
+	args.Add("type", "builtin")
+	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
 	if err != nil {
-		e.log.WithError(err).Errorf("failed to create network (%s)", defaultNetworkName)
+		e.log.WithError(err).Errorf("failed to list builtin networks")
 		return err
 	}
-	if nw.Warning != "" {
-		e.log.Warnf(nw.Warning)
+	for _, builtinNet := range nws {
+		e.networks[builtinNet.Name] = builtinNet.ID
 	}
-	e.netMap[defaultNetworkName] = nw.ID
-	e.log.Debugf("network (%s:%s) created", e.netMap[defaultNetworkName][:12], defaultNetworkName)
-	return nil
-}
 
-func (e *dockerEngine) InitNetworks(networks map[string]openedge.NetworkInfo) error {
-	if len(networks) <= 0 {
-		return nil;
+	args = filters.NewArgs()
+	args.Add("type", "custom")
+	nws, err = e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
+	if err != nil {
+		e.log.WithError(err).Errorf("failed to list custom networks")
+		return err
 	}
-	ctx := context.Background()
+
+	// add openedge as default network
+	networks[defaultNetworkName] = openedge.NetworkInfo {
+		Driver: "bridge",
+	}
 	for networkName, network := range networks {
-		if network.Name != "" {
-			networkName = network.Name
+		if network.Driver == "" {
+			network.Driver = "bridge"
 		}
-		// default network driver is set to bridge
-		networkDriver := "bridge"
-		if network.Driver != "" {
-			networkDriver = network.Driver
+		exist := false
+		for _, nw := range nws {
+			if nw.Name == networkName {
+				if nw.Driver != network.Driver {
+					return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
+				}
+				e.networks[networkName] = nw.ID
+				e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
+				exist = true
+				break
+			}
 		}
-		args := filters.NewArgs()
-		args.Add("driver", networkDriver)
-		args.Add("type", "custom")
-		args.Add("name", networkName)
-		nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
-		if err != nil {
-			e.log.WithError(err).Errorf("failed to list network (%s)", networkName)
-			return err
-		}
-		if len(nws) > 0 {
-			e.netMap[networkName] = nws[0].ID
-			e.log.Debugf("network (%s:%s) exists", e.netMap[networkName][:12], networkName)
+		if exist {
 			continue
 		}
 		networkMsg := types.NetworkCreate {
-			Driver: networkDriver,
+			Driver: network.Driver,
 			Options: network.DriverOptions,
 			Scope: "local",
 			Labels: network.Labels,
@@ -99,8 +91,8 @@ func (e *dockerEngine) InitNetworks(networks map[string]openedge.NetworkInfo) er
 		if nw.Warning != "" {
 			e.log.Warnf(nw.Warning)
 		}
-		e.netMap[networkName] = nw.ID
-		e.log.Debugf("network (%s:%s) created", e.netMap[networkName][:12], networkName)
+		e.networks[networkName] = nw.ID
+		e.log.Debugf("network (%s:%s) created", e.networks[networkName][:12], networkName)
 	}
 	return nil
 }
