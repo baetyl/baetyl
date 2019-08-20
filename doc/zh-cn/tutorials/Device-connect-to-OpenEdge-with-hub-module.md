@@ -3,7 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
-- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [Darwin 下 OpenEdge 运行环境配置及快速部署](../setup/Install-OpenEdge-on-Darwin.md)
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)
 - 模拟 MQTT Client 行为的客户端为 MQTT.fx 和 MQTTBOX，其中 [MQTT.fx](../Resources-download.md) 用于 TCP 和 SSL 连接方式的测试，[MQTTBOX](../Resources-download.md) 用于 WS(Websocket）连接方式的测试。
 - 本文所用的 Hub 模块镜像为 OpenEdge 云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`
 - 您也可以通过 OpenEdge 源码自行编译所需的 Hub 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)

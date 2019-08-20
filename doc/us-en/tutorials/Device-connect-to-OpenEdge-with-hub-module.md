@@ -3,7 +3,7 @@
 **Statement**:
 
 - The device system used in this test is Darwin
-- It should be installed for OpenEdge when you read this document, more details please refer to [Install OpenEdge on Darwin](../setup/Install-OpenEdge-on-Darwin.md)
+- It should be installed for OpenEdge when you read this document, more details please refer to [Build OpenEdge From Source](../setup/Build-from-Source.md )
 - MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
 - The hub module image used  is the official image published in the OpenEdge Cloud Management Suite: `hub.baidubce.com/openedge/openedge-hub:latest`
 - You can also compile the required Hub module image by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md)

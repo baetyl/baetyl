@@ -3,7 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- It should be installed for OpenEdge when you read this document, more details please refer to [Install OpenEdge on Darwin](../setup/Install-OpenEdge-on-Darwin.md)
+- It should be installed for OpenEdge when you read this document, more details please refer to [Build OpenEdge From Source](../setup/Build-from-Source.md )
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service.
 
