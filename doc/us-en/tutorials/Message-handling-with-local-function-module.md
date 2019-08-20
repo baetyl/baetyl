@@ -17,7 +17,7 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Workflow
 
-- Step 1：Execute `sudo systemctl openedge start` to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running.
+- Step 1：Execute `sudo systemctl start openedge` to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running.
 - Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md)
     - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service, and observe the log of OpenEdge.
         - If the OpenEdge's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
@@ -203,7 +203,7 @@ _**NOTE**: Any function that appears in the `rules` configuration must be config
 
 ### OpenEdge Start
 
-According to Step 1, execute `sudo systemctl openedge start` to start OpenEdge in Docker mode and then execute the command `sudo systemctl status openedge` to check whether openedge is running. The normal situation is shown as below.
+According to Step 1, execute `sudo systemctl start openedge` to start OpenEdge in Docker mode and then execute the command `sudo systemctl status openedge` to check whether openedge is running. The normal situation is shown as below.
 
 ![OpenEdge status](../../images/setup/openedge-systemctl-status.png)
 
