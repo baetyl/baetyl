@@ -52,17 +52,17 @@ sudo systemctl stop openedge
 sudo openedge start
 ```
 
-## 导入默认配置包（可选）
+## 导入示例配置包（可选）
 
-OpenEdge 作为一个边缘计算平台，除了提供底层服务管理能力外，还提供一些基础功能模块，比如 hub、function-manager 模块等。用户需要通过编辑配置文件，来让 `openedge` 主程序加载相应的模块以及设定模块本身的运行参数。关于各个模块的功能介绍，可参考 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解。
+作为一个边缘计算框架，OpenEdge 通过 hub 模块提供基于 MQTT 的消息路由服务，通过 function-manager 模块和 python27、python36、nodejs85、sql 等运行时模块来提供本地函数计算服务。用户需要通过编辑配置文件，来让 openedge 主程序加载相应的模块以及设定模块本身的运行参数。关于各个模块的配置详情，可参考 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解。
 
-OpenEdge 官方提供了一套默认配置，用户可通过以下命令导入默认配置文件:
+OpenEdge 官方提供了一套示例配置，用户可通过以下命令导入示例配置文件:
 
 ```shell
 curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E bash -
 ```
 
-默认配置只用于学习和测试目的，用户应根据自己的实际工作场景按需配置，具体可参考 [配置解读](../tutorials/Config-interpretation.md) 中的内容进行进一步了解。
+示例配置只用于学习和测试目的，用户应根据自己的实际工作场景按需配置。
 
 如果用户不需要启动任何模块，那就不需要导入任何配置文件。
 
@@ -74,7 +74,7 @@ curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E
 
 ![OpenEdge](../../images/setup/openedge-systemctl-status.png)
 
-- 在终端中执行命令 `docker stats` 查看当前 docker 中容器的运行状态。由于主程序 `openedge` 会先到镜像仓库拉取需要的镜像，用户需要等待 2~5 分钟执行此条命令。以上一步中导入的默认配置为例，待主程序拉取完成后，容器的运行状态如下图所示。如果用户本地的镜像与下述不一致，说明模块启动失败；
+- 在终端中执行命令 `docker stats` 查看当前 docker 中容器的运行状态。由于主程序 `openedge` 会先到镜像仓库拉取需要的镜像，用户需要等待 2~5 分钟执行此条命令。以上一步中导入的示例配置为例，待主程序拉取完成后，容器的运行状态如下图所示。如果用户本地的镜像与下述不一致，说明模块启动失败；
 
 ![当前运行 docker 容器查询](../../images/setup/docker-stats.png)
 

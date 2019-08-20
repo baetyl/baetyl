@@ -1,6 +1,6 @@
 # Quick Install OpenEdge
 
-Compared to manual download software in previous version, it supports installing `OpenEdge` through package manager in latest version(0.1.5). With this method, users can quickly install `OpenEdge` by simply typing a few commands at terminal.
+Compared to manually download software in previous version, it supports installing `OpenEdge` through package manager in latest version(0.1.5). With this method, users can quickly install `OpenEdge` by simply typing a few commands at terminal.
 
 Installation packages are provided for Ubuntu16.04, Ubuntu18.04, Debian9, CentOS7 and Raspbian-stretch currently. The supported platforms are amd64, i386, armv7l, and arm64.
 
@@ -14,7 +14,7 @@ OpenEdge relies on docker container runtime in **docker** container mode. Users 
 curl -sSL https://get.docker.com | sh
 ```
 
-Users can check the version of `docker` when the installation is completed:
+Users can check the version of docker when the installation is completed:
 
 ```shell
 docker version
@@ -32,9 +32,9 @@ The rpm and deb packages will be released accordingly when OpenEdge releases a n
 curl -sSL http://download.openedge.tech/install.sh | sudo -E bash -
 ```
 
-OpenEdge will be installed to the `/usr/local` directory after the execution is complete.
+If everything is ok, OpenEdge will be installed on the `/usr/local` directory after the execution is complete.
 
-The latest version of OpenEdge uses `Systemd` daemon, and users can start OpenEdge with the following command:
+The latest version of OpenEdge uses `Systemd` as a daemon, and users can start OpenEdge with the following command:
 
 ```shell
 sudo systemctl start openedge
@@ -52,17 +52,17 @@ If users only want to run OpenEdge in the foreground, execute the following comm
 sudo openedge start
 ```
 
-## Import the default configuration (optional)
+## Import the example configuration (optional)
 
-As an edge computing platform, OpenEdge provides basic functional modules, such as hub and function-manager modules, in addition to the underlying service management capabilities. Users can make `openedge` main program to load corresponding modules and set running parameters of the modules themselves with editing the configuration files. For an introduction to each module, refer to [Configuration Interpretation](../tutorials/Config-interpretation.md) for further information.
+As an edge computing framework, OpenEdge provides MQTT connect service through hub module, provides local functional service through function manager module and some runtime modules like python27, python36, nodejs85, sql and so on. What's more, all the modules are started by OpenEdge main program through a configuration file. More detailed contents about the module's configuration please refer to [Configuration Interpretation](../tutorials/Config-interpretation.md) for further information.
 
-OpenEdge officially provides a default configuration which can be imported using following command:
+OpenEdge officially provides an example configuration for some module which can be imported using following command:
 
 ```shell
 curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E bash -
 ```
 
-The default configuration is for learning and testing purposes only. Users should perform on-demand configuration according to actual working scenarios. For details, refer to [Configuration Interpretation](../tutorials/Config-interpretation.md) for further understanding.
+The example configuration is for learning and testing purposes only. Users should perform on-demand configuration according to actual working scenarios.
 
 There is no need to import any configuration files if no modules need to launch.
 
@@ -74,7 +74,7 @@ After installation, users can verify whether OpenEdge is successfully installed 
 
 ![OpenEdge](../../images/setup/openedge-systemctl-status.png)
 
-- Executing the command `docker stats` to view the running status of docker containers. Since the main program openedge will first pull required images from docker mirror repository, it will take 2~5 minutes to see the openedge starts successfully. Take the default configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
+- Executing the command `docker stats` to view the running status of docker containers. Since the main program openedge will first pull required images from docker mirror repository, it will take 2~5 minutes to see the openedge starts successfully. Take the example configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
 
 ![docker stats](../../images/setup/docker-stats.png)
 
