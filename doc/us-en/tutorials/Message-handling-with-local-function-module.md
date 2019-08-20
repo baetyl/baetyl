@@ -29,9 +29,9 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Message Handling Test
 
-Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
+Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
 
-The configuration of OpenEdge Master is as follows:
+The configuration of OpenEdge Master are as follows:
 
 ```yaml
 version: v0
@@ -88,9 +88,9 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-Configuration file location for the OpenEdge Hub module: `var/db/openedge/localhub-conf/service.yml`.
+Configuration file location for the OpenEdge Hub module is: `var/db/openedge/localhub-conf/service.yml`.
 
-The configuration of OpenEdge Hub Module is as follows:
+The configuration of OpenEdge Hub Module are as follows:
 
 ```yaml
 listen:
@@ -108,12 +108,11 @@ logger:
   level: "debug"
 ```
 
-Configuration file location for the Local Function Service: `var/db/openedge/function-manager-conf/service.yml`，`var/db/openedge/function-sayhi-conf/service.yml`.
+Configuration file location for the Local Function Service is: `var/db/openedge/function-manager-conf/service.yml`，`var/db/openedge/function-sayhi-conf/service.yml`.
 
-The configuration of Local Function Service is as follows:
+The configuration of Local Function Service are as follows:
 
 ```yaml
-# 本地 openedge-function-manager 配置
 hub:
   address: tcp://localhub:1883
   username: test
@@ -134,7 +133,6 @@ functions:
       max: 10
       idletime: 1m
 
-# python function 配置
 functions:
   - name: 'sayhi'
     handler: 'sayhi.handler'
@@ -179,7 +177,7 @@ def handler(event, context):
     return event
 ```
 
-The directory of configuration tree is as follows:
+The directory of configuration tree are as follows:
 
 ```shell
 var/
@@ -207,7 +205,7 @@ According to Step 1, execute `sudo systemctl start openedge` to start OpenEdge i
 
 ![OpenEdge status](../../images/setup/openedge-systemctl-status.png)
 
-**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode. The normal situation is shown as below.
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode.
 
 ![OpenEdge start](../../images/tutorials/process/openedge-function-start.png)
 

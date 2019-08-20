@@ -23,9 +23,9 @@ This document uses the TCP connection method as an example to test the message r
 
 ## Message Routing Test
 
-Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
+Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
 
-The configuration of OpenEdge Master is as follows:
+The configuration of OpenEdge Master are as follows:
 
 ```yaml
 # The configuration of localhub service
@@ -54,9 +54,9 @@ volumes:
     path: var/db/openedge/localhub_data
 ```
 
-Configuration file location for the OpenEdge Hub module: `var/db/openedge/localhub-conf/service.yml`.
+Configuration file location for the OpenEdge Hub module is: `var/db/openedge/localhub-conf/service.yml`.
 
-The configuration of OpenEdge Hub Module is as follows:
+The configuration of OpenEdge Hub Module are as follows:
 
 ```yaml
 # localhub 服务配置
@@ -80,7 +80,7 @@ logger:
   level: "debug"
 ```
 
-The directory of configuration tree is as follows:
+The directory of configuration tree are as follows:
 
 ```shell
 var
@@ -121,7 +121,7 @@ For OpenEdge, if the topic `+` is configured in the `permit` item list(whether `
 
 ### Message Transfer Test Among Devices
 
-The message transferring and routing workflow among devices is as follows:
+The message transferring and routing workflow among devices are as follows:
 
 ![Message transfer test among devices](../../images/tutorials/trans/openedge-trans-flow.png)
 

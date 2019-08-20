@@ -28,15 +28,15 @@ The Remote Module was developed to meet the needs of the IoT scenario. The OpenE
 - Step 5：Due to the configuration of Remote Module, using MQTTBOX publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBOX.
 - Step 6：If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
 
-The workflow diagram is as follows.
+The workflow diagram are as follows.
 
 ![using Remote Module to synchronize message](../../images/tutorials/remote/openedge-remote-flow.png)
 
 ## Message Synchronize via Remote Module
 
-Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
+Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
 
-The configuration of OpenEdge Master is as follows:
+The configuration of OpenEdge Master are as follows:
 
 ```yaml
 version: v0
@@ -87,9 +87,9 @@ volumes:
     path: var/db/openedge/remote-iothub-log
 ```
 
-Configuration file location for the Remote module: `var/db/openedge/remote-iothub-conf/application.yml`.
+Configuration file location for the Remote module is: `var/db/openedge/remote-iothub-conf/application.yml`.
 
-The configuration of OpenEdge Remote module is as follows:
+The configuration of OpenEdge Remote module are as follows:
 
 ```yaml
 name: remote-iothub
@@ -121,11 +121,11 @@ logger:
 
 According to the configuration of the above, it means that the Remote module subscribes the topic `t1` from the Local Hub module, subscribes the topic `t2` from Baidu IoT Hub. When MQTTBOX publishes a message to the topic `t1`, the Local Hub module will receive this message and forward it to Baidu IoT Hub via Remote module, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoT Hub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoT Hub will receive it and forward it to the Local Hub module via Remote module. Finally, MQTTBOX will receive this message(suppose MQTTBOX has already subscribed the topic `t2` before).
 
-In a word, from MQTTBOX publishes a message to the topic `t1`, to MQTT.fx receives the message, the routing path of the message is as follows.
+In a word, from MQTTBOX publishes a message to the topic `t1`, to MQTT.fx receives the message, the routing path of the message are as follows.
 
 > **MQTTBOX -> Local Hub Module -> Remote Module -> Baidu IoT Hub -> MQTT.fx**
 
-Similarly, from MQTT.fx publishes a message to the topic `t2`, to MQTTBOX receives the message, the routing path of the message is as follows.
+Similarly, from MQTT.fx publishes a message to the topic `t2`, to MQTTBOX receives the message, the routing path of the message are as follows.
 
 > **MQTT.fx -> Baidu IoT Hub -> Remote Module -> Local Hub Module -> MQTTBOX**
 

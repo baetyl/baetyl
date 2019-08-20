@@ -14,7 +14,7 @@ The complete configuration reference for [Hub Module Configuration](./Config-int
 
 ## Workflow
 
-- Step 1: Write the configuration according to the usage requirements, and then execute `sudo systemctl start openedge`(you should install OpenEdge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running.
+- Step 1: Write the configuration according to the usage requirements, and then execute `sudo systemctl start openedge`(you should install OpenEdge first, more detailed contents can refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)) to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running.
 - Step 2: Configure the MQTT Client according to the connection protocol selected.
     - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
     - If SSL protocol was selected, username, private key, certificate and CA should be need. then fill in the corresponding port;
@@ -29,9 +29,9 @@ As mentioned above, OpenEdge must be started before the connection test.
 
 ### OpenEdge Connection Test
 
-Configuration file location for the OpenEdge main program: `var/db/openedge/application.yml`.
+Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
 
-The configuration of OpenEdge Master is as follows:
+The configuration of OpenEdge Master are as follows:
 
 ```yaml
 version: v0
@@ -65,9 +65,9 @@ volumes:
     path: var/db/openedge/localhub-log
 ```
 
-Configuration file location for the OpenEdge Hub module: `var/db/openedge/localhub-conf/service.yml`.
+Configuration file location for the OpenEdge Hub module is: `var/db/openedge/localhub-conf/service.yml`.
 
-The configuration of OpenEdge Hub Module is as follows:
+The configuration of OpenEdge Hub Module are as follows:
 
 ```yaml
 listen:
@@ -108,15 +108,13 @@ According to Step 1, execute `sudo systemctl start openedge` to start OpenEdge i
 
 ![OpenEdge status](../../images/setup/openedge-systemctl-status.png)
 
-**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode. The normal situation is shown as below.
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode.
 
 ![OpenEdge startup](../../images/tutorials/connect/openedge-hub-start.png)
 
 As you can see, the image of Hub module has been loaded after OpenEdge starts up normally. Alternatively, you can use `docker ps` command to check which docker container is currently running.
 
 ![docker ps](../../images/tutorials/connect/container-openedge-hub-run.png)
-
-**NOTE**：The `hub.baidubce.com/openedge/openedge-agent:latest` image in the log is the Agent module which is delivered by BIE Cloud Management Suite.
 
 Container mode requires port mapping, allowing external access to the container, the configuration item is the `ports` field in the main program configuration file.
 
