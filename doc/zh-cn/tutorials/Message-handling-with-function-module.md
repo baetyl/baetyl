@@ -201,7 +201,7 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 ![OpenEdge 状态](../../images/setup/openedge-systemctl-status.png)
 
-_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图。_
+_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge。_
 
 ![OpenEdge 加载、启动日志](../../images/tutorials/process/openedge-function-start.png)
 

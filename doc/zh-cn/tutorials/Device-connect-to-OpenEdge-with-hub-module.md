@@ -108,7 +108,7 @@ logger:
 
 ![OpenEdge 状态](../../images/setup/openedge-systemctl-status.png)
 
-_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图。_
+_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge。_
 
 ![OpenEdge 启动](../../images/tutorials/connect/openedge-hub-start.png)
 
