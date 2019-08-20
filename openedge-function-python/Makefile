@@ -1,3 +1,4 @@
+TAG?=latest
 PYSRC27=$(shell find . -type f -name '*.py' -not -name '*36*')
 PYSRC36=$(shell find . -type f -name '*.py' -not -name '*27*')
 
@@ -23,9 +24,9 @@ package36.zip: $(PYSRC36)
 
 image:
 	@echo "IMAGE openedge-function-python27"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python27$(IMAGE_SUFFIX):$(TAG) -f Dockerfile27 .
+	docker build -t $(IMAGE_PREFIX)openedge-function-python27:$(TAG)$(IMAGE_SUFFIX) -f Dockerfile-python27 .
 	@echo "IMAGE openedge-function-python36"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python36$(IMAGE_SUFFIX):$(TAG) -f Dockerfile36 .
+	docker build -t $(IMAGE_PREFIX)openedge-function-python36:$(TAG)$(IMAGE_SUFFIX) -f Dockerfile-python36 .
 
 function-builder-image:
 	@echo "IMAGE openedge-function-python27 builder"

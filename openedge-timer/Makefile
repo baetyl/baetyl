@@ -1,3 +1,4 @@
+TAG?=latest
 SRC=$(wildcard *.go)
 
 all: openedge-timer package.zip
@@ -15,7 +16,7 @@ package.zip: openedge-timer
 
 image: openedge-timer
 	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)/$<:$(VERSION)$(IMAGE_SUFFIX) .
+	docker build -t $(IMAGE_PREFIX)$<:$(TAG)$(IMAGE_SUFFIX) .
 
 .PHONY: clean
 clean:
