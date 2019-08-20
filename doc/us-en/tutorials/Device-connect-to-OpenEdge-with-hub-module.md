@@ -14,7 +14,7 @@ The complete configuration reference for [Hub Module Configuration](./Config-int
 
 ## Workflow
 
-- Step 1: Write the configuration according to the usage requirements, and then execute `sudo systemctl start openedge`(you should install OpenEdge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode.
+- Step 1: Write the configuration according to the usage requirements, and then execute `sudo openedge start`(you should install OpenEdge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode.
 - Step 2: Configure the MQTT Client according to the connection protocol selected.
     - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
     - If SSL protocol was selected, username, private key, certificate and CA should be need. then fill in the corresponding port;
@@ -114,7 +114,9 @@ As you can see, the image of Hub module has been loaded after OpenEdge starts up
 
 **NOTE**：The `hub.baidubce.com/openedge/openedge-agent:latest` image in the log is the Agent module which is delivered by BIE Cloud Management Suite.
 
-As mentioned above, when the Hub Module starts, it will open ports 1883, 8883 and 8080 at the same time, which are used for TCP, SSL, WS (Websocket) protocol. Then we will use MQTTBOX and MQTT.fx as MQTT client to check the connection between MQTT client and OpenEdge .
+Container mode requires port mapping, allowing external access to the container, the configuration item is the `ports` field in the main program configuration file.
+
+As mentioned above, when the Hub Module starts, it will open ports 1883, 8883 and 8080 at the same time, which are used for TCP, SSL, WS (Websocket) protocol. Then we will use MQTTBOX and MQTT.fx as MQTT client to check the connection between MQTT client and OpenEdge.
 
 **TCP Connection Test**
 

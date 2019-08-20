@@ -14,7 +14,7 @@ _**提示**：要求部署、启动 OpenEdge 的设备系统已安装好 docker�
 
 ## 操作流程
 
-- Step 1：依据使用需求编写配置文件信息，然后执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序；
+- Step 1：依据使用需求编写配置文件信息，然后执行 `sudo openedge start` 以容器模式启动 OpenEdge 可执行程序；
 - Step 2：依据选定的连接测试方式，对 MQTT Client作相应配置；
     - 若采用 TCP 连接，则仅需配置用户名、密码（参见配置文件 `principals` 配置项 `username`、`password`），并选定对应连接端口即可；
     - 若采用 SSL 证书认证，除选定所需的用户名外，还需选定 CA 证书以及由 CA 签发的客户端证书和私钥，依据对应的连接端口连接即可；
@@ -97,6 +97,8 @@ logger:
   path: var/log/openedge/service.log
   level: "debug"
 ```
+
+容器模式需要端口映射，允许外部通过端口来访问容器，对应的配置项为主程序配置文件中的 `ports` 字段。
 
 如上所述，Hub 模块启动时会同时开启 1883、8883 以及 8080 端口，分别用作 TCP、SSL、WS（Websocket）等几种方式进行连接，下文将以 MQTTBOX 和 MQTT.fx 作为 MQTT Client，测试他们分别在上述这几种连接方式下与 OpenEdge 的连接情况，具体如下。
 
