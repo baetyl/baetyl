@@ -3,7 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- This test is based on the OpenEdge you downloaded in [Quick Install](../setup/Quick-Install), and import the default configuration package
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).

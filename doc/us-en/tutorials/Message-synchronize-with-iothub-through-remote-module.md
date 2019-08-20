@@ -3,7 +3,7 @@
 **Statement**
 
 - The operating system as mentioned in this document is Darwin.
-- This test is based on the OpenEdge you downloaded in [Quick Install](../setup/Quick-Install), and import the default configuration package
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
 - The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
 - Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)

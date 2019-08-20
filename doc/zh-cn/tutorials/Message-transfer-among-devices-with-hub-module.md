@@ -3,7 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
-- 本文测试前先 [安装 OpenEdge](../setup/Quick-Install), 并导入默认配置包
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
 
