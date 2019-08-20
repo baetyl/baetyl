@@ -2,12 +2,14 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
-- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)
+- 本文测试所用设备系统为 Ubuntu18.04
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
 - 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md) 和 [MQTT.fx](../Resources-download.md)
 - 本文所用的 Hub 模块镜像和 Remote 模块镜像为 OpenEdge 云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
 - 您也可以通过 OpenEdge 源码自行编译所需的 Hub 模块镜像和 Remote 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 - 远程 Hub 接入平台选用 [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
+
+_**提示**：Darwin 系统可以通过源码安装OpenEdge，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)。_
 
 Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [Remote 模块配置](./Config-interpretation.md)。
 
@@ -17,7 +19,7 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 - Step 2：依据步骤 `Step 1` 中创建的连接信息，选择 MQTT.fx 作为测试用 MQTT 客户端，配置相关连接信息，并将之与 Baidu IoT Hub 建立连接，并订阅既定主题；
   - 若成功建立连接，则继续下一步操作；
   - 若未成功建立连接，则重复上述步骤，直至看到 MQTT.fx 与 Baidu IoT Hub 成功[建立连接](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E6.95.B0.E6.8D.AE.E5.9E.8B.E9.A1.B9.E7.9B.AE)。
-- Step 3：打开终端，进入 OpenEdge 程序包目录，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序，并观察 Hub 模块、Remote 模块启动状态；
+- Step 3：打开终端，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序，然后执行 `sudo systemctl status openedge` 来查看 OpenEdge 是否正常运行，并观察 Hub 模块、Remote 模块启动状态；
   - 若 Hub、Remote 模块成功启动，则继续下一步操作；
   - 若 Hub、Remote 模块未成功启动，则重复 `Step 3`，直至看到 Hub、Remote 模块成功启动。
 - Step 4：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)，并订阅既定主题；
@@ -146,7 +148,11 @@ logger:
 
 ### 通过 MQTTBOX 与本地 Hub 模块建立连接
 
-依据步骤 `Step 3` 所述，调整 OpenEdge 主程序启动加载配置项，这里，要求 OpenEdge 启动后加载 Hub、Remote 模块，成功加载的状态如下图示。
+依据步骤 `Step 3` 所述，调整 OpenEdge 主程序启动加载配置项，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge，这里，要求 OpenEdge 启动后加载 Hub、Remote 模块，执行 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行，成功加载的状态如下图示。
+
+![OpenEdge 状态](../../images/setup/openedge-systemctl-status.png)
+
+_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图。_
 
 ![OpenEdge 成功加载 Hub、Remote](../../images/tutorials/remote/openedge-hub-remote-start.png)
 

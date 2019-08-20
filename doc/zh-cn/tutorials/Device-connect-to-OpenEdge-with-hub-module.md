@@ -2,19 +2,19 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
-- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)
+- 本文测试所用设备系统为 Ubuntu18.04
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
 - 模拟 MQTT Client 行为的客户端为 MQTT.fx 和 MQTTBOX，其中 [MQTT.fx](../Resources-download.md) 用于 TCP 和 SSL 连接方式的测试，[MQTTBOX](../Resources-download.md) 用于 WS(Websocket）连接方式的测试。
 - 本文所用的 Hub 模块镜像为 OpenEdge 云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`
 - 您也可以通过 OpenEdge 源码自行编译所需的 Hub 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
 OpenEdge Hub 模块的完整的配置参考 [Hub 模块配置](./Config-interpretation.md)。
 
-_**提示**：要求部署、启动 OpenEdge 的设备系统已安装好 docker，详见 [在 Darwin 系统上安装 OpenEdge](../setup/Install-OpenEdge-on-Darwin.md)。_
+_**提示**：Darwin 系统可以通过源码安装 OpenEdge，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)。_
 
 ## 操作流程
 
-- Step 1：依据使用需求编写配置文件信息，然后执行 `sudo openedge start` 以容器模式启动 OpenEdge 可执行程序；
+- Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序，然后执行 `sudo systemctl status openedge` 来查看 OpenEdge 是否正常运行；
 - Step 2：依据选定的连接测试方式，对 MQTT Client作相应配置；
     - 若采用 TCP 连接，则仅需配置用户名、密码（参见配置文件 `principals` 配置项 `username`、`password`），并选定对应连接端口即可；
     - 若采用 SSL 证书认证，除选定所需的用户名外，还需选定 CA 证书以及由 CA 签发的客户端证书和私钥，依据对应的连接端口连接即可；
@@ -104,7 +104,11 @@ logger:
 
 ### OpenEdge 启动
 
-依据 `Step 1`，执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图所示。
+依据 `Step 1`，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge，然后执行 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行。正常启动的情况如下图所示。
+
+![OpenEdge 状态](../../images/setup/openedge-systemctl-status.png)
+
+_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图。_
 
 ![OpenEdge 启动](../../images/tutorials/connect/openedge-hub-start.png)
 

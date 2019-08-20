@@ -2,12 +2,14 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Darwin.
-- It should be installed for OpenEdge when you read this document, more details please refer to [Build OpenEdge From Source](../setup/Build-from-Source.md )
+- The operating system as mentioned in this document is Ubuntu18.04.
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
 - In this article, the service created based on the Hub module is called `localhub` service.
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md).
 
 Different from the `localhub` service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include `localhub` service and Python3.6 runtime service). In the document, `localhub` service is used to establish connection between OpenEdge and mqtt client, Python3.6 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine `localhub` service with Python3.6 runtime service with message context.
 
@@ -15,7 +17,7 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Workflow
 
-- Step 1：Startup OpenEdge in docker container mode.
+- Step 1：Execute `sudo systemctl openedge start` to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running.
 - Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md)
     - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service, and observe the log of OpenEdge.
         - If the OpenEdge's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
@@ -201,7 +203,11 @@ _**NOTE**: Any function that appears in the `rules` configuration must be config
 
 ### OpenEdge Start
 
-As described in `Step 1`, OpenEdge starts with docker container mode. And it can be found that OpenEdge is starting via OpenEdge's log. More detailed contents are as follows:
+According to Step 1, execute `sudo systemctl openedge start` to start OpenEdge in Docker mode and then execute the command `sudo systemctl status openedge` to check whether openedge is running. The normal situation is shown as below.
+
+![OpenEdge status](../../images/setup/openedge-systemctl-status.png)
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode. The normal situation is shown as below.
 
 ![OpenEdge start](../../images/tutorials/process/openedge-function-start.png)
 

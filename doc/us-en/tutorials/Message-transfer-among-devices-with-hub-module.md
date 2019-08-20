@@ -2,10 +2,12 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Darwin.
-- It should be installed for OpenEdge when you read this document, more details please refer to [Build OpenEdge From Source](../setup/Build-from-Source.md )
+- The operating system as mentioned in this document is Ubuntu18.04.
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service.
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md).
 
 Different from [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
 

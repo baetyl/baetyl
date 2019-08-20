@@ -2,19 +2,19 @@
 
 **Statement**:
 
-- The device system used in this test is Darwin
-- It should be installed for OpenEdge when you read this document, more details please refer to [Build OpenEdge From Source](../setup/Build-from-Source.md )
+- The device system used in this test is Ubuntu18.04
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
 - The hub module image used  is the official image published in the OpenEdge Cloud Management Suite: `hub.baidubce.com/openedge/openedge-hub:latest`
 - You can also compile the required Hub module image by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md)
 
 The complete configuration reference for [Hub Module Configuration](./Config-interpretation.md).
 
-**NOTE**：Docker is required to install on the device system which deploy OpenEdge. See [Install OpenEdge on Darwin System](../setup/Install-OpenEdge-on-Darwin.md).
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md).
 
 ## Workflow
 
-- Step 1: Write the configuration according to the usage requirements, and then execute `sudo openedge start`(you should install OpenEdge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode.
+- Step 1: Write the configuration according to the usage requirements, and then execute `sudo systemctl openedge start`(you should install OpenEdge first, more detailed contents can refer to Install-OpenEdge-on-Darwin) to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running
 - Step 2: Configure the MQTT Client according to the connection protocol selected.
     - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
     - If SSL protocol was selected, username, private key, certificate and CA should be need. then fill in the corresponding port;
@@ -104,7 +104,11 @@ logger:
 
 ### OpenEdge Startup
 
-According to Step 1, execute `sudo openedge start` to start OpenEdge in Docker mode. The normal situation is shown as below.
+According to Step 1, execute `sudo systemctl openedge start` to start OpenEdge in Docker mode and then execute the command `sudo systemctl status openedge` to check whether openedge is running. The normal situation is shown as below.
+
+![OpenEdge status](../../images/setup/openedge-systemctl-status.png)
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode. The normal situation is shown as below.
 
 ![OpenEdge startup](../../images/tutorials/connect/openedge-hub-start.png)
 

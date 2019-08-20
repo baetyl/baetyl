@@ -2,12 +2,14 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
-- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)
+- 本文测试所用设备系统为 Ubuntu18.04
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 - 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
+
+_**提示**：Darwin 系统可以通过源码安装OpenEdge，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)。_
 
 与基于 `localhub` 服务实现设备间消息转发不同的是，本文主要介绍利用本地函数计算服务进行消息处理。其中，`localhub` 服务用于建立 OpenEdge 与 MQTT 客户端之间的连接，Python 运行时服务用于处理 MQTT 消息，而本地函数计算服务则通过 MQTT 消息上下文衔接本地 Hub 服务与 Python 运行时服务。
 
@@ -15,7 +17,7 @@
 
 ## 操作流程
 
-- Step 1：以 docker 容器模式启动 OpenEdge 可执行程序；
+- Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序，然后执行 `sudo systemctl status openedge` 来查看 OpenEdge 是否正常运行；
 - Step 2：通过 MQTTBOX 以 TCP 方式与 OpenEdge Hub 服务 [建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)；
     - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察 OpenEdge 日志信息；
       - 若 OpenEdge 日志显示已经启动 Python 运行时服务，则表明发布的消息受到了预期的函数处理；
@@ -195,7 +197,11 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 ### OpenEdge 启动
 
-如 `Step 1` 所述，以 docker 容器模式启动 OpenEdge，通过观察 OpenEdge 启动日志可以发现 `localhub` 服务和函数计算服务均已被成功加载，具体如下图示。
+依据 `Step 1`，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdg，然后执行 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行。通过观察 OpenEdge 启动日志可以发现 `localhub` 服务和函数计算服务均已被成功加载，具体如下图示。
+
+![OpenEdge 状态](../../images/setup/openedge-systemctl-status.png)
+
+_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图。_
 
 ![OpenEdge 加载、启动日志](../../images/tutorials/process/openedge-function-start.png)
 
