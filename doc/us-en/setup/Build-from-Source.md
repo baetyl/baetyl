@@ -1,6 +1,6 @@
 # Build OpenEdge From Source
 
-Compared to the quick deployment of OpenEdge, users can compile OpenEdge from source to get the latest features.
+Compared to the quick installation of OpenEdge, users can compile OpenEdge from source to get the latest features.
 
 Before compiling, user should configure the build environment. So this article consist of two parts: **environment configuration** and **source code compilation**.
 
@@ -20,49 +20,23 @@ go env  # View Go's environment variables
 go version # View Go's version
 ```
 
-_**NOTE**: OpenEdge requires that the compiled version of Go be above 1.10.0._
+**NOTE**: OpenEdge requires that the compiled version of Go should be above 1.10.0.
 
-#### Install Docker
+#### Install the container runtime
 
-- The official Dockerfile is offered for multi-stage builds. If you need to build the relevant image yourself, The version of docker you installed should be above 17.05;
-- According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
-
-Can be installed by the following command(Suitable for linux-like systems, [Supported Platforms](./Support-platforms.md)):
+In **docker** container mode, OpenEdge relies on docker container runtime. If `docker` is not installed yet, users can install the latest version of docker (for Linux-like systems) with the following command:
 
 ```shell
 curl -sSL https://get.docker.com | sh
 ```
 
-**Ubuntu**
-
-Command:
-
-```shell
-sudo snap install docker # Ubuntu16.04 after
-sudo apt-get install docker.io # Ubuntu 16.04 before
-```
-
-**CentOS**
-
-Command:
-
-```shell
-yum install docker
-```
-
-**NOTE**: After the docker installation is complete, use the following command to view the installed version of docker.
+View the version of installed docker:
 
 ```shell
 docker version
 ```
 
-**Debian 9/Raspberry Pi 3**
-
-Command:
-
-```shell
-curl -sSL https://get.docker.com | sh
-```
+**NOTE**：According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
@@ -70,7 +44,7 @@ curl -sSL https://get.docker.com | sh
 
 #### Install Go
 
-+ Install by using HomeBrew
+- Install by using HomeBrew
 
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  # install homebrew
@@ -97,7 +71,7 @@ Create the GOPATH specified directory:
 test -d "${GOPATH}" || mkdir "${GOPATH}"
 ```
 
-+ Install by using binary file
+- Install by using binary file
 
 Go to [related resources](../Resources-download.md) to complete the download, then:
 
@@ -109,9 +83,9 @@ go env  # View Go's environment variables
 go version # View Go's version
 ```
 
-_**NOTE**: OpenEdge requires that the compiled version of Go be above 1.10.0 ._
+**NOTE**: OpenEdge requires that the compiled version of Go should be above 1.10.0.
 
-#### Install Docker
+#### Install the container runtime
 
 Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag docker into the application folder.
 

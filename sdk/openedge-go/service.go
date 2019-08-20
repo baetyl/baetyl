@@ -3,6 +3,7 @@ package openedge
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/baidu/openedge/logger"
 )
@@ -11,7 +12,7 @@ import (
 func Run(handle func(Context) error) {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Fprintln(os.Stderr, "service is stopped with panic:", r)
+			fmt.Fprintf(os.Stderr, "service is stopped with panic: %s\n%s", r, string(debug.Stack()))
 		}
 	}()
 	c, err := newContext()

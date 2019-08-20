@@ -7,7 +7,10 @@ override_dh_auto_test:
 	: 
 
 override_dh_auto_install:
-	make install PREFIX=debian/openedge/usr/local
+	make openedge
+	install -d -m 0755 debian/openedge/usr/local/bin
+	install -m 0755 openedge debian/openedge/usr/local/bin/
+	tar cf - -C example/docker etc | tar xvf - -C debian/openedge/usr/local
 
 override_dh_strip:
 	:       

@@ -1,4 +1,3 @@
-TAG?=latest
 SRC=$(wildcard *.go)
 
 all: openedge-agent package.zip
@@ -16,7 +15,7 @@ package.zip: openedge-agent
 
 image: openedge-agent
 	@echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG) .
+	docker build -t $(IMAGE_PREFIX)/$<:$(VERSION)$(IMAGE_SUFFIX) .
 
 .PHONY: clean
 clean:

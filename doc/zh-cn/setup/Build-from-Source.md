@@ -1,6 +1,6 @@
-# 从源码编译 OpenEdge
+# 源码编译 OpenEdge
 
-相比于快速部署安装 OpenEdge，用户可以采用源码编译的方式来使用 OpenEdge 最新的功能。
+相比于快速安装 OpenEdge，用户可以采用源码编译的方式来使用 OpenEdge 最新的功能。
 
 在编译源码前，用户应该进行编译环境的配置，所以本文将从 **环境配置** 和 **源码编译** 两方面进行介绍。
 
@@ -20,53 +20,23 @@ go env  # 查看 Go 相关环境变量配置
 go version # 查看 Go 版本
 ```
 
-_**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
+**注意**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。
 
 #### Docker 安装
 
-- 官方提供 Dockerfile 为多阶段镜像构建，如需自行构建相关镜像，需要安装 17.05 及以上版本的 docker 来 build dockerfile。
-- 根据[官方 Release 日志](https://docs.docker.com/engine/release-notes/#18092) 说明，低于 18.09.2 的 docker 版本具有一些安全隐患，建议安装/更新 docker 版本到 18.09.2 及以上。
-
-可通过以下命令进行安装（适用于类Linux系统，[支持多种平台](./Support-platforms.md)）：
+在 **docker** 容器模式下，OpenEdge 依赖于 docker 容器运行时。如果用户机器尚未安装 docker 容器运行时，可通过以下命令来安装 docker 的最新版本（适用于类 Linux 系统）:
 
 ```shell
 curl -sSL https://get.docker.com | sh
 ```
 
-**Ubuntu**
-
-使用命令
-
-```shell
-sudo snap install docker # Ubuntu16.04 after
-sudo apt-get install docker.io # Ubuntu 16.04 before
-```
-
-即可完成 docker 安装。
-
-**CentOS**
-
-使用命令
-
-```shell
-yum install docker
-```
-
-即可完成 docker 安装。
-
-**提示**: docker 安装完成后可通过一下命令查看所安装 docker 版本。
+安装结束后，可以查看 docker 的版本号:
 
 ```shell
 docker version
 ```
 
-**Debian 9/Raspberry Pi 3**
-
-使用以下命令完成安装：
-
-```shell
-curl -sSL https://get.docker.com | sh
-```
+**注意**：根据 官方 Release 日志 说明，低于 18.09.2 的 Docker 版本具有一些安全隐患，建议安装/更新 Docker 版本到 18.09.2 及以上。
 
 **更多内容请参考 [官方文档](https://docs.docker.com/install/)。**
 
@@ -74,7 +44,7 @@ curl -sSL https://get.docker.com | sh
 
 #### Go 开发环境配置
 
-+ 通过 HomeBrew 安装
+- 通过 HomeBrew 安装
 
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  # 安装 HomeBrew
@@ -101,7 +71,7 @@ source yourfile
 test -d "${GOPATH}" || mkdir "${GOPATH}"
 ```
 
-+ 通过二进制文件安装
+- 通过二进制文件安装
 
 前往 [相关资源下载页面](../Resources-download.md) 完成二进制包下载。具体请执行：
 
