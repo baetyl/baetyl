@@ -3,7 +3,7 @@
 **声明**：
 
 - 本文测试所用设备系统为 Darwin
-- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [Darwin 下 OpenEdge 运行环境配置及快速部署](../setup/Install-OpenEdge-on-Darwin.md)
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
 - 本文所用镜像为依赖 OpenEdge 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)

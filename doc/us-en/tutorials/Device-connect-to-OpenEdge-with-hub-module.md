@@ -3,7 +3,7 @@
 **Statement**:
 
 - The device system used in this test is Darwin
-- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
+- It should be installed for OpenEdge when you read this document, more details please refer to [Install OpenEdge on Darwin](../setup/Install-OpenEdge-on-Darwin.md)
 - MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
 - The hub module image used  is the official image published in the OpenEdge Cloud Management Suite: `hub.baidubce.com/openedge/openedge-hub:latest`
 - You can also compile the required Hub module image by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md)
@@ -104,11 +104,9 @@ logger:
 
 ### OpenEdge Startup
 
-According to Step 1, execute `sudo systemctl start openedge` to start OpenEdge in Docker mode. The normal situation is shown as below.
+According to Step 1, execute `sudo openedge start` to start OpenEdge in Docker mode. The normal situation is shown as below.
 
 ![OpenEdge startup](../../images/tutorials/connect/openedge-hub-start.png)
-
-> executing the command `sudo systemctl status openedge` to check whether `openedge` is running.
 
 As you can see, the image of Hub module has been loaded after OpenEdge starts up normally. Alternatively, you can use `docker ps` command to check which docker container is currently running.
 
