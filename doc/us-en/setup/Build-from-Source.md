@@ -24,7 +24,7 @@ go version # View Go's version
 
 #### Install the container runtime
 
-In **docker** container mode, OpenEdge relies on docker container. If `docker` is not installed yet, users can install the latest version of docker (for Linux-like systems) with the following command:
+In **docker** container mode, OpenEdge relies on docker container runtime. If `docker` is not installed yet, users can install the latest version of docker (for Linux-like systems) with the following command:
 
 ```shell
 curl -sSL https://get.docker.com | sh

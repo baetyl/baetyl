@@ -2,7 +2,7 @@
 
 Compared to manual download software in previous version, it supports installing `OpenEdge` through package manager in latest version(0.1.5). With this method, users can quickly install `OpenEdge` by simply typing a few commands at terminal.
 
-Installation packages are provided for Ubuntu16.04, Ubuntu18.04, Debian9., CentOS7., and Raspbian-stretch currently. The supported platforms are amd64, i386, armv7l, and arm64.
+Installation packages are provided for Ubuntu16.04, Ubuntu18.04, Debian9, CentOS7 and Raspbian-stretch currently. The supported platforms are amd64, i386, armv7l, and arm64.
 
 OpenEdge supports two running modes: **docker** container mode and **native** process mode. This document will be described in **docker** container mode.
 
