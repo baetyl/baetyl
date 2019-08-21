@@ -1,15 +1,10 @@
 FROM ubuntu:18.04
 
 RUN apt-get update \
-        && apt-get install -y software-properties-common --no-install-recommends \
-        && add-apt-repository -y ppa:jonathonf/python-3.6 \
-        && apt update \
-        && apt install -y python3.6 \
-        && ln -s /usr/bin/python3.6 /usr/bin/python \
-        && rm /usr/bin/python3 \
-        && ln -s /usr/bin/python3.6 /usr/bin/python3 \
-        && apt-get install -y gcc g++ python3.6-dev python3-setuptools python3-pip --no-install-recommends \
-        && ln -s /usr/bin/pip3 /usr/bin/pip \
-        && python -m pip install --upgrade pip \
+        && apt-get install -y gcc g++ python3 --no-install-recommends \
+        && ln -s /usr/bin/python3 /usr/bin/python \
+        && apt-get install -y python3-pip \
+        && pip3 install -U pip \
         && pip install pyyaml protobuf grpcio \
         && rm -rf /var/lib/apt/lists/*
+        

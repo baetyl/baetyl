@@ -6,9 +6,10 @@ RUN apt-get update \
         && tar vxzf node-v8.5.0.tar.gz \
         && cd node-v8.5.0 \
         && ./configure --prefix=/package \
-        && make -j "$(nproc)" \
+        && make \
         && make install \
-        && cp -r /package/* /usr/local
+        && cp -r /package/* /usr/local \
+        && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json /
 RUN cd / \

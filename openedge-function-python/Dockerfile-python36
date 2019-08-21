@@ -2,13 +2,8 @@ FROM hub.baidubce.com/openedge/openedge-function-python36:0.1.5-devel as devel
 
 FROM ubuntu:18.04
 RUN apt-get update \
-        && apt-get install -y software-properties-common --no-install-recommends \
-        && add-apt-repository -y ppa:jonathonf/python-3.6 \
-        && apt update \
-        && apt install -y python3.6 \
-        && ln -s /usr/bin/python3.6 /usr/bin/python \
-        && rm /usr/bin/python3 \
-        && ln -s /usr/bin/python3.6 /usr/bin/python3 \
+        && apt-get install -y gcc g++ python3 --no-install-recommends \
+        && ln -s /usr/bin/python3 /usr/bin/python \
 
 COPY --from=devel /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
 
