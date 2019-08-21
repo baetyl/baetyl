@@ -170,23 +170,37 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		},
 	}
 	endpointsConfig := map[string]*network.EndpointSettings{}
-	for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
-		endpointsConfig[networkName] = &network.EndpointSettings{
-			NetworkID: e.networks[networkName],
-			Aliases: networkInfo.Aliases,
-			IPAddress: networkInfo.Ipv4Address,
-		}
-	}
 	if cfg.NetworkMode != "" {
 		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
 			NetworkID: e.networks[cfg.NetworkMode],
 		}
-		params.hostConfig.NetworkMode = container.NetworkMode(cfg.NetworkMode)
+		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
+			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
+		}
 	}
+	var connectedNetworkName string
+	if len(endpointsConfig) == 0 {
+		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+			endpointsConfig[networkName] = &network.EndpointSettings{
+				NetworkID: e.networks[networkName],
+				Aliases: networkInfo.Aliases,
+				IPAddress: networkInfo.Ipv4Address,
+			}
+			cfg.NetworkMode = networkName
+			connectedNetworkName = networkName
+			break
+		}
+	}
+	if cfg.NetworkMode == "" {
+		cfg.NetworkMode = defaultNetworkName
+	}
+	params.hostConfig.NetworkMode = container.NetworkMode(cfg.NetworkMode)
+
 	if len(endpointsConfig) == 0 {
 		endpointsConfig[defaultNetworkName] = &network.EndpointSettings{
 			NetworkID: e.networks[defaultNetworkName],
 		}
+		connectedNetworkName = defaultNetworkName
 	}
 	params.networkConfig = network.NetworkingConfig{
 		EndpointsConfig: endpointsConfig,
@@ -202,6 +216,18 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	if err != nil {
 		s.Stop()
 		return nil, err
+	}
+	if len(cfg.Networks.ServiceNetworkInfos) > 1 {
+		instance, ok := s.instances.Get(cfg.Name)
+		if !ok {
+			return nil, fmt.Errorf("can not find instance of service %s", cfg.Name)
+		}
+		instanceID := instance.(*dockerInstance).id
+		err = e.ReConnectNetworks(cfg, e.networks[connectedNetworkName], instanceID)
+		if err != nil {
+			s.Stop()
+			return nil, err
+		}
 	}
 	return s, nil
 }
