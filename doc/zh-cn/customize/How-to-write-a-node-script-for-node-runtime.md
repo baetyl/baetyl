@@ -2,13 +2,14 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
+- 本文测试所用设备系统为 Ubuntu18.04
 - node 版本为 8.5
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务。并且针对本文的测试案例中，对应的 `localhub` 服务、函数计算服务以及其他服务的配置统一如下：
 
 ```yaml
 # 本地 Hub 配置
+# 配置文件位置: var/db/openedge/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -21,6 +22,7 @@ principals:
         permit: ['#']
 
 # 本地 openedge-function-manager 配置
+# 配置文件位置: var/db/openedge/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -42,12 +44,14 @@ functions:
       idletime: 1m
 
 # node function 配置
+# 配置文件位置: var/db/openedge/function-sayjs-conf/service.yml
 functions:
   - name: 'sayhi'
     handler: 'index.handler'
     codedir: 'var/db/openedge/function-sayhi'
 
 # application.yml配置
+# 配置文件位置: var/db/openedge/application.yml
 version: v0
 services:
   - name: localhub

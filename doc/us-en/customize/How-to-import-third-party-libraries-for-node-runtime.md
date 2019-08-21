@@ -2,7 +2,7 @@
 
 **Statement**：
 
-- The operating system as mentioned in this document is Darwin.
+- The operating system as mentioned in this document is Ubuntu18.04.
 - The version of runtime is Node8.5
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this document, we give an example about how import the third-party library [`Lodash`](https://www.lodashjs.com/).
@@ -10,6 +10,7 @@
 
 ```yaml
 # The configuration of Local Hub service
+# Configuration file location is: var/db/openedge/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -22,6 +23,7 @@ principals:
         permit: ['#']
 
 # The configuration of Local Function Manager service
+# Configuration file location is: var/db/openedge/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -43,6 +45,7 @@ functions:
       idletime: 1m
 
 # The configuration of application.yml
+# Configuration file location is: var/db/openedge/application.yml
 version: v0
 services:
   - name: localhub

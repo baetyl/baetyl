@@ -1,17 +1,5 @@
 # Resources download
 
-## OpenEdge download
-
-**Statement**: The official download page only provides the docker mode executable file.
-
-| OS         |  CPU  | SHA256                                                       | Download link                                                                       |
-| ------------ | ------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Linux | 386 | 5887151d29bbb62e57e1ff640aa1536e8977b28216a8c9bfb74e49d4a2779539 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-386-0.1.3.tar.gz) |
-| Linux | amd64 | 6892b52768789b12c11a977a2bd19252616d2b5411693ff284ac1fc948c49f93 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-amd64-0.1.3.tar.gz) |
-| Linux | armv7 | dd7db30731d8436296ef8d3dc3193d80d2547626540e830ea820bf3fc70d89c3 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-arm-0.1.3.tar.gz) |
-| Linux | arm64 | 93630bfc2292611b86dcbfa743d859e968bbd6275e6a077caeba157f088e8778 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-linux-arm64-0.1.3.tar.gz) |
-| Darwin | amd64 | 7fd999d11d98e904b74dc2efa41cf0968e8b3eaa9edbfcbe169c8d907da8e828 | [Download](https://openedge.bj.bcebos.com/OpenEdge-0.1.3/github/openedge-darwin-amd64-0.1.3.tar.gz) |
-
 ## Golang download
 
 Official website：[https://golang.org/dl/](https://golang.org/dl/)

@@ -2,7 +2,7 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
+- 本文测试所用设备系统为 Ubuntu18.04
 - 模拟 MQTT client 向本地 Hub 模块发送消息的客户端为 [MQTT.fx](../Resources-download.md#下载-MQTT.fx-客户端)
 - 模拟 MQTT client 向云端远程 Hub 模块订阅消息的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 

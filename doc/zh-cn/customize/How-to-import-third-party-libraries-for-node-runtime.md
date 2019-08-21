@@ -2,7 +2,7 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
+- 本文测试所用设备系统为 Ubuntu18.04
 - 运行模式为 **docker** 容器模式，**native** 进程模式配置流程相同
 - Node 版本为 8.5
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
@@ -11,6 +11,7 @@
 
 ```yaml
 # localhub 配置
+# 配置文件位置: var/db/openedge/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -23,6 +24,7 @@ principals:
         permit: ['#']
 
 # 本地 openedge-function-manager 配置
+# 配置文件位置: var/db/openedge/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -44,6 +46,7 @@ functions:
       idletime: 1m
 
 # application.yml配置
+# 配置文件位置: var/db/openedge/application.yml
 version: v0
 services:
   - name: localhub
