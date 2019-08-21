@@ -2,11 +2,14 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Darwin.
+- The operating system as mentioned in this document is Ubuntu18.04.
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - The version of runtime is Python3.6, and for Python2.7, configuration is the same except fot the language difference when coding the scripts
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - The docker image used in this document is compiled from the OpenEdge source code. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md).
 - In this article, the service created based on the Hub module is called `localhub` service.
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md).
 
 Different from the `localhub` service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include `localhub` service and Python3.6 runtime service). In the document, `localhub` service is used to establish connection between OpenEdge and mqtt client, Python3.6 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine `localhub` service with Python3.6 runtime service with message context.
 
@@ -14,7 +17,7 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Workflow
 
-- Step 1：Startup OpenEdge in docker container mode.
+- Step 1：Execute `sudo systemctl start openedge` to start the OpenEdge in Docker container mode. Then execute the command `sudo systemctl status openedge` to check whether openedge is running.
 - Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md)
     - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service, and observe the log of OpenEdge.
         - If the OpenEdge's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
@@ -26,53 +29,15 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Message Handling Test
 
-The configuration of the `localhub` Service and the Local Function Manager Service used in the test is as follows:
+Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
+
+The configuration of OpenEdge Master are as follows:
 
 ```yaml
-# The configuration of localhub service
-listen:
-  - tcp://0.0.0.0:1883
-principals:
-  - username: 'test'
-    password: 'hahaha'
-    permissions:
-      - action: 'pub'
-        permit: ['#']
-      - action: 'sub'
-        permit: ['#']
-
-# The configuration of Local Function Manager service
-hub:
-  address: tcp://localhub:1883
-  username: test
-  password: hahaha
-rules:
-  - clientid: localfunc-1
-    subscribe:
-      topic: t
-    function:
-      name: sayhi
-    publish:
-      topic: t/hi
-functions:
-  - name: sayhi
-    service: function-sayhi
-    instance:
-      min: 0
-      max: 10
-      idletime: 1m
-
-# The configuration of Python3.6 runtime
-functions:
-  - name: 'sayhi'
-    handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
-
-# The configuration of application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: hub.baidubce.com/openedge/openedge-hub:latest
     replica: 1
     ports:
       - 1883:1883
@@ -85,7 +50,7 @@ services:
       - name: localhub-log
         path: var/log/openedge
   - name: function-manager
-    image: openedge-function-manager
+    image: hub.baidubce.com/openedge/openedge-function-manager:latest
     replica: 1
     mounts:
       - name: function-manager-conf
@@ -94,7 +59,7 @@ services:
       - name: function-manager-log
         path: var/log/openedge
   - name: function-sayhi
-    image: openedge-function-python36
+    image: hub.baidubce.com/openedge/openedge-function-python36:latest
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -123,7 +88,96 @@ volumes:
     path: var/db/openedge/function-sayhi-code
 ```
 
-The directory of configuration tree is as follows:
+Configuration file location for the OpenEdge Hub module is: `var/db/openedge/localhub-conf/service.yml`.
+
+The configuration of OpenEdge Hub Module are as follows:
+
+```yaml
+listen:
+  - tcp://0.0.0.0:1883
+principals:
+  - username: 'test'
+    password: 'hahaha'
+    permissions:
+      - action: 'pub'
+        permit: ['#']
+      - action: 'sub'
+        permit: ['#']
+logger:
+  path: var/log/openedge/service.log
+  level: "debug"
+```
+
+Configuration file location for the Local Function Service is: `var/db/openedge/function-manager-conf/service.yml`，`var/db/openedge/function-sayhi-conf/service.yml`.
+
+The configuration of Local Function Service are as follows:
+
+```yaml
+hub:
+  address: tcp://localhub:1883
+  username: test
+  password: hahaha
+rules:
+  - clientid: localfunc-1
+    subscribe:
+      topic: t
+    function:
+      name: sayhi
+    publish:
+      topic: t/hi
+functions:
+  - name: sayhi
+    service: function-sayhi
+    instance:
+      min: 0
+      max: 10
+      idletime: 1m
+
+functions:
+  - name: 'sayhi'
+    handler: 'sayhi.handler'
+    codedir: 'var/db/openedge/function-sayhi'
+```
+
+`sayhi.py` file location for the Local Function Service: `var/db/openedge/function-sayhi-code/sayhi.py`
+
+```python
+#!/usr/bin/env python3
+#-*- coding:utf-8 -*-
+"""
+module to say hi
+"""
+
+import os
+
+def handler(event, context):
+    """
+    function handler
+    """
+    if 'USER_ID' in os.environ:
+      event['USER_ID'] = os.environ['USER_ID']
+
+    if 'functionName' in context:
+      event['functionName'] = context['functionName']
+
+    if 'functionInvokeID' in context:
+      event['functionInvokeID'] = context['functionInvokeID']
+
+    if 'invokeid' in context:
+      event['invokeid'] = context['invokeid']
+
+    if 'messageQOS' in context:
+      event['messageQOS'] = context['messageQOS']
+
+    if 'messageTopic' in context:
+      event['messageTopic'] = context['messageTopic']
+
+    event['py'] = '你好，世界！'
+
+    return event
+```
+
+The directory of configuration tree are as follows:
 
 ```shell
 var/
@@ -147,7 +201,11 @@ _**NOTE**: Any function that appears in the `rules` configuration must be config
 
 ### OpenEdge Start
 
-As described in `Step 1`, OpenEdge starts with docker container mode. And it can be found that OpenEdge is starting via OpenEdge's log. More detailed contents are as follows:
+According to Step 1, execute `sudo systemctl start openedge` to start OpenEdge in Docker mode and then execute the command `sudo systemctl status openedge` to check whether openedge is running. The normal situation is shown as below.
+
+![OpenEdge status](../../images/setup/openedge-systemctl-status.png)
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code, and excute `sudo openedge start` to start the OpenEdge in Docker container mode.
 
 ![OpenEdge start](../../images/tutorials/process/openedge-function-start.png)
 

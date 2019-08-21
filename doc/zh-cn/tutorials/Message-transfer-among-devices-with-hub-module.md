@@ -2,9 +2,12 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
+- 本文测试所用设备系统为 Ubuntu18.04
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
+
+_**提示**：Darwin 系统可以通过源码安装OpenEdge，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)。_
 
 与 [连接测试](./Device-connect-to-OpenEdge-with-hub-module.md) 不同的是，若需要通过 `localhub` 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考 [Hub 服务配置](./Config-interpretation.md#openedge-hub配置)。
 
@@ -12,7 +15,7 @@
 
 ## 操作流程
 
-- Step 1：以 Docker 容器模式启动 OpenEdge 可执行程序；
+- Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序，然后执行 `sudo systemctl status openedge` 来查看 OpenEdge 是否正常运行；
 - Step 2：通过 MQTTBOX 以 TCP 方式与 `localhub` 服务[建立连接](./Device-connect-to-OpenEdge-with-hub-module.md)；
     - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
     - 若与 `localhub` 服务建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 `localhub` 服务成功建立连接为止。
@@ -20,7 +23,35 @@
 
 ## 消息路由测试
 
-本文测试使用的 `localhub` 服务的相关配置信息如下：
+OpenEdge 主程序的配置文件位置 `var/db/openedge/application.yml`，配置信息如下：
+
+```yaml
+version: V2
+services:
+  - name: hub
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    replica: 1
+    ports:
+      - '1883:1883'
+    env: {}
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub_data
+        path: var/db/openedge/data
+      - name: log-V1
+        path: var/log/openedge
+volumes:
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf/V1
+  - name: log-V1
+    path: var/db/openedge/log
+  - name: localhub_data
+    path: var/db/openedge/localhub_data
+```
+
+OpenEdge Hub 模块启动的连接相关配置文件位置 `var/db/openedge/localhub-conf/service.yml`，配置信息如下：
 
 ```yaml
 # localhub 服务配置
@@ -42,29 +73,6 @@ subscriptions:
 logger:
   path: var/log/openedge/service.log
   level: "debug"
-
-# application.yml 配置
-services:
-  - name: localhub
-    image: openedge-hub
-    replica: 1
-    ports:
-      - 1883:1883
-    mounts:
-      - name: localhub-conf
-        path: etc/openedge
-        readonly: true
-      - name: localhub-data
-        path: var/db/openedge/data
-      - name: localhub-log
-        path: var/log/openedge
-volumes:
-  - name: localhub-conf
-    path: var/db/openedge/localhub-conf
-  - name: localhub-data
-    path: var/db/openedge/localhub-data
-  - name: localhub-log
-    path: var/db/openedge/localhub-log
 ```
 
 目录结构如下：

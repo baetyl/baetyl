@@ -2,9 +2,12 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Darwin.
+- The operating system as mentioned in this document is Ubuntu18.04.
+- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service.
+
+**NOTE**：Darwin can install OpenEdge by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md).
 
 Different from [Device connect to OpenEdge with Hub module](./Device-connect-to-OpenEdge-with-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
 
@@ -20,10 +23,43 @@ This document uses the TCP connection method as an example to test the message r
 
 ## Message Routing Test
 
-The configuration of the `localhub` Service used in the test is as follows:
+Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
+
+The configuration of OpenEdge Master are as follows:
 
 ```yaml
 # The configuration of localhub service
+version: V2
+services:
+  - name: hub
+    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    replica: 1
+    ports:
+      - '1883:1883'
+    env: {}
+    mounts:
+      - name: localhub-conf
+        path: etc/openedge
+        readonly: true
+      - name: localhub_data
+        path: var/db/openedge/data
+      - name: log-V1
+        path: var/log/openedge
+volumes:
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf/V1
+  - name: log-V1
+    path: var/db/openedge/log
+  - name: localhub_data
+    path: var/db/openedge/localhub_data
+```
+
+Configuration file location for the OpenEdge Hub module is: `var/db/openedge/localhub-conf/service.yml`.
+
+The configuration of OpenEdge Hub Module are as follows:
+
+```yaml
+# localhub 服务配置
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -42,32 +78,9 @@ subscriptions:
 logger:
   path: var/log/openedge/service.log
   level: "debug"
-  
-# The configuration of application.yml
-services:
-  - name: localhub
-    image: openedge-hub
-    replica: 1
-    ports:
-      - 1883:1883
-    mounts:
-      - name: localhub-conf
-        path: etc/openedge
-        readonly: true
-      - name: localhub-data
-        path: var/db/openedge/data
-      - name: localhub-log
-        path: var/log/openedge
-volumes:
-  - name: localhub-conf
-    path: var/db/openedge/localhub-conf
-  - name: localhub-data
-    path: var/db/openedge/localhub-data
-  - name: localhub-log
-    path: var/db/openedge/localhub-log
 ```
 
-The directory of configuration tree is as follows:
+The directory of configuration tree are as follows:
 
 ```shell
 var
@@ -108,7 +121,7 @@ For OpenEdge, if the topic `+` is configured in the `permit` item list(whether `
 
 ### Message Transfer Test Among Devices
 
-The message transferring and routing workflow among devices is as follows:
+The message transferring and routing workflow among devices are as follows:
 
 ![Message transfer test among devices](../../images/tutorials/trans/openedge-trans-flow.png)
 

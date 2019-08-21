@@ -2,18 +2,19 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
+- 本文测试所用设备系统为 Ubuntu18.04
+- 本文测试前先安装 OpenEdge，并导入默认配置包，可参考 [快速安装 OpenEdge](../setup/Quick-Install.md)
 - 模拟 MQTT Client 行为的客户端为 MQTT.fx 和 MQTTBOX，其中 [MQTT.fx](../Resources-download.md) 用于 TCP 和 SSL 连接方式的测试，[MQTTBOX](../Resources-download.md) 用于 WS(Websocket）连接方式的测试。
 - 本文所用的 Hub 模块镜像为 OpenEdge 云端管理套件中发布的官方镜像：`hub.baidubce.com/openedge/openedge-hub:latest`
 - 您也可以通过 OpenEdge 源码自行编译所需的 Hub 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-OpenEdge-from-Source.md)
 
 OpenEdge Hub 模块的完整的配置参考 [Hub 模块配置](./Config-interpretation.md)。
 
-_**提示**：要求部署、启动 OpenEdge 的设备系统已安装好 docker，详见 [在 Darwin 系统上安装 OpenEdge](../setup/Install-OpenEdge-on-Darwin.md)。_
+_**提示**：Darwin 系统可以通过源码安装 OpenEdge，可参考 [源码编译 OpenEdge](../setup/Build-from-Source.md)。_
 
 ## 操作流程
 
-- Step 1：依据使用需求编写配置文件信息，然后执行 `sudo openedge start` 以容器模式启动 OpenEdge 可执行程序；
+- Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge 可执行程序，然后执行 `sudo systemctl status openedge` 来查看 OpenEdge 是否正常运行；
 - Step 2：依据选定的连接测试方式，对 MQTT Client作相应配置；
     - 若采用 TCP 连接，则仅需配置用户名、密码（参见配置文件 `principals` 配置项 `username`、`password`），并选定对应连接端口即可；
     - 若采用 SSL 证书认证，除选定所需的用户名外，还需选定 CA 证书以及由 CA 签发的客户端证书和私钥，依据对应的连接端口连接即可；
@@ -26,54 +27,43 @@ _**提示**：要求部署、启动 OpenEdge 的设备系统已安装好 docker�
 
 如上所述，进行设备连接 OpenEdge 测试前，须提前启动 OpenEdge。
 
-### OpenEdge 启动
+### OpenEdge 配置信息
 
-依据 `Step 1`，执行 `sudo openedge start` 以容器模式启动 OpenEdge，正常启动的情况如下图所示。
+OpenEdge 主程序的配置文件位置 `var/db/openedge/application.yml`，配置信息如下：
 
-![OpenEdge 启动](../../images/tutorials/connect/openedge-hub-start.png)
-
-可以看到，OpenEdge 正常启动后，Hub 模块镜像已被加载。另外，亦可以通过命令 `docker ps` 查看系统当前正在运行的容器。
-
-![查看系统当前正在运行的容器](../../images/tutorials/connect/container-openedge-hub-run.png)
-
-**提示**：图中的 `hub.baidubce.com/openedge/openedge-agent:latest` 镜像是 OpenEdge 连接云端管理套件的 Agent 模块。
-
-### OpenEdge 连接测试
-
-OpenEdge 主程序的配置信息如下：
 ```yaml
-version: V2
+version: v0
 services:
   - name: localhub
-    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    image: hub.baidubce.com/openedge/openedge-hub:latest
     replica: 1
     ports:
-      - '1883:1883'
-      - '8080:8080'
-      - '8883:8883'
-    env: {}
+      - 1883:1883
+      - 8883:8883
+      - 8080:8080
     mounts:
-      - name: dxc_localhub_conf-V2
+      - name: localhub-conf
         path: etc/openedge
         readonly: true
-      - name: dxc_localhub_cert-V1
+      - name: localhub-cert
         path: var/db/openedge/cert
         readonly: true
-      - name: dxc_localhub_data-V1
+      - name: localhub-data
         path: var/db/openedge/data
-      - name: dxc_localhub_log-V1
+      - name: localhub-log
         path: var/log/openedge
 volumes:
-  - name: dxc_localhub_conf-V2
-    path: var/db/openedge/dxc_localhub_conf/V2
-  - name: dxc_localhub_cert-V1
-    path: var/db/openedge/dxc_localhub_cert/V1
-  - name: dxc_localhub_data-V1
-    path: var/db/openedge/dxc_localhub_data
-  - name: dxc_localhub_log-V1
-    path: var/db/openedge/dxc_localhub_log
+  - name: localhub-conf
+    path: var/db/openedge/localhub-conf
+  - name: localhub-data
+    path: var/db/openedge/localhub-data
+  - name: localhub-cert
+    path: var/db/openedge/localhub-cert-only-for-test
+  - name: localhub-log
+    path: var/db/openedge/localhub-log
 ```
-OpenEdge Hub 模块启动的连接相关配置信息如下：
+
+OpenEdge Hub 模块启动的连接相关配置文件位置 `var/db/openedge/localhub-conf/service.yml`，配置信息如下：
 
 ```yaml
 listen:
@@ -98,12 +88,33 @@ principals:
         permit: ['#']
       - action: 'sub'
         permit: ['#']
+subscriptions:
+  - source:
+      topic: 't'
+    target:
+      topic: 't/topic'
 logger:
   path: var/log/openedge/service.log
   level: "debug"
 ```
 
+容器模式需要端口映射，允许外部通过端口来访问容器，对应的配置项为主程序配置文件中的 `ports` 字段。
+
 如上所述，Hub 模块启动时会同时开启 1883、8883 以及 8080 端口，分别用作 TCP、SSL、WS（Websocket）等几种方式进行连接，下文将以 MQTTBOX 和 MQTT.fx 作为 MQTT Client，测试他们分别在上述这几种连接方式下与 OpenEdge 的连接情况，具体如下。
+
+### OpenEdge 启动
+
+依据 `Step 1`，执行 `sudo systemctl start openedge` 以容器模式启动 OpenEdge，然后执行 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行。正常启动的情况如下图所示。
+
+![OpenEdge 状态](../../images/setup/openedge-systemctl-status.png)
+
+_**提示**：Darwin 系统通过源码安装OpenEdge，可执行 `sudo openedge start` 以容器模式启动 OpenEdge。_
+
+![OpenEdge 启动](../../images/tutorials/connect/openedge-hub-start.png)
+
+可以看到，OpenEdge 正常启动后，Hub 模块镜像已被加载。另外，亦可以通过命令 `docker ps` 查看系统当前正在运行的容器。
+
+![查看系统当前正在运行的容器](../../images/tutorials/connect/container-openedge-hub-run.png)
 
 **TCP 连接测试**
 
