@@ -56,7 +56,10 @@ Structure Diagram:
 
 The start and stop process of the Master is as follows:
 
-1. Execute the startup command: `sudo openedge start` to run openedge in the foreground. The default working directory is the upper directory of the openedge installation directory.
+1. Execute the startup command: `sudo systemctl start openedge` to start OpenEdge in Docker mode and then execute the command `sudo systemctl status openedge` to check whether openedge is running.
+
+**NOTE**：Darwin can excute `sudo openedge start` to start the OpenEdge in Docker container mode.
+
 2. The Master will first load etc/openedge/openedge.yml in the working directory, initialize the running mode, API server, log and exit timeout, etc. These configurations can not be changed during application OTA. If no error is reported, the openedge.sock (only on Linux) file is generated in the var/run/ directory.
 3. The Master will then attempt to load the application configuration var/db/openedge/application.yml and will not start any service if the configuration does not exist, otherwise the list of services and storage volumes in the application configuration will be loaded. This file will be updated during application OTA, and the system will update the services according to the new configuration.
 4. Before starting all services, the Master will first call the Engine interface to perform some preparatory work. For example, in container mode, it will try to download the image of all services first.

@@ -55,7 +55,10 @@
 
 主程序启停过程如下：
 
-1. 前台运行 openedge，执行启动命令：`sudo openedge start`，默认工作目录为 openedge 安装目录的上一级目录。
+1. 执行启动命令：`sudo systemctl start openedge` 以容器模式启动 OpenEdge，然后执行 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行。
+
+_**提示**：Darwin 系统可通过执行 `sudo openedge start` 以容器模式启动 OpenEdge。_
+
 2. 主程序首先会加载工作目录下的 `etc/openedge/openedge.yml`，初始化运行模式、API Server、日志和退出超时时间等，这些配置不会随应用配置下发而改变。如果启动没有报错，会在 `/var/run/` 目录下生成 openedge.sock（Linux）文件。
 3. 然后主程序会尝试加载应用配置 `var/db/openedge/application.yml`，如果该配置不存在则不启动任何服务，否则加载应用配置中的服务列表和存储卷列表。该文件会随应用配置下发而更新，届时系统会根据新配置重新编排服务。
 4. 在启动所有服务前，主程序会先调用 Engine 接口执行一些准备工作，比如容器模式下会先尝试下载所有服务的镜像。

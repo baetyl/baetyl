@@ -2,7 +2,7 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Darwin.
+- The operating system as mentioned in this document is Ubuntu18.04.
 - The version of runtime is Python3.6, and for Python2.7, configurations are the same except for the language differences when coding the scripts.
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this document, the third-party libraries we'll import are [`requests`](https://pypi.org/project/requests) and [`Pytorch`](https://pytorch.org/).
@@ -10,6 +10,7 @@
 
 ```yaml
 # The configuration of localhub service
+# Configuration file location is: var/db/openedge/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -22,6 +23,7 @@ principals:
         permit: ['#']
 
 # The configuration of Local Function Manager service
+# Configuration file location is: var/db/openedge/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -43,6 +45,7 @@ functions:
       idletime: 1m
 
 # The configuration of application.yml
+# Configuration file location is: var/db/openedge/application.yml
 version: v0
 services:
   - name: localhub
@@ -107,13 +110,13 @@ Suppose we want to crawl a website and get the response. Here, we can import a t
 
 ```shell
 cd /directory/of/Python/script
-pip3 download requests
+pip download requests
 ```
 
 - Step 2: inflate the downloaded `.whl` files for getting the source packages, then remove useless `.whl` files and package-description files
 
 ```shell
-unzip -d . *.whl
+unzip -d . "*.whl"
 rm -rf *.whl *.dist-info
 ```
 
