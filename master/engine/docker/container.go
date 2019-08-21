@@ -29,10 +29,6 @@ type containerConfigs struct {
 }
 
 func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) error {
-	if len(networks) <= 0 {
-		return nil
-	}
-
 	// add docker default network, including bridge, host, none
 	ctx := context.Background()
 	args := filters.NewArgs()
@@ -53,8 +49,14 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 		e.log.WithError(err).Errorf("failed to list custom networks")
 		return err
 	}
-
+	nwMap := map[string]types.NetworkResource{}
+	for _, val := range nws {
+		nwMap[val.Name] = val
+	}
 	// add openedge as default network
+	if networks == nil{
+		networks = make(map[string]openedge.NetworkInfo)
+	}
 	networks[defaultNetworkName] = openedge.NetworkInfo {
 		Driver: "bridge",
 	}
@@ -62,37 +64,30 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 		if network.Driver == "" {
 			network.Driver = "bridge"
 		}
-		exist := false
-		for _, nw := range nws {
-			if nw.Name == networkName {
-				if nw.Driver != network.Driver {
-					return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
-				}
-				e.networks[networkName] = nw.ID
-				e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
-				exist = true
-				break
+		if nw, ok := nwMap[networkName]; ok {
+			if nw.Driver != network.Driver {
+				return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
 			}
+			e.networks[networkName] = nw.ID
+			e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
+		} else {
+			networkParams := types.NetworkCreate {
+				Driver: network.Driver,
+				Options: network.DriverOptions,
+				Scope: "local",
+				Labels: network.Labels,
+			}
+			nw, err := e.cli.NetworkCreate(ctx, networkName, networkParams)
+			if err != nil {
+				e.log.WithError(err).Errorf("failed to create network (%s)", networkName)
+				return err
+			}
+			if nw.Warning != "" {
+				e.log.Warnf(nw.Warning)
+			}
+			e.networks[networkName] = nw.ID
+			e.log.Debugf("network (%s:%s) created", e.networks[networkName][:12], networkName)
 		}
-		if exist {
-			continue
-		}
-		networkMsg := types.NetworkCreate {
-			Driver: network.Driver,
-			Options: network.DriverOptions,
-			Scope: "local",
-			Labels: network.Labels,
-		}
-		nw, err := e.cli.NetworkCreate(ctx, networkName, networkMsg)
-		if err != nil {
-			e.log.WithError(err).Errorf("failed to create network (%s)", networkName)
-			return err
-		}
-		if nw.Warning != "" {
-			e.log.Warnf(nw.Warning)
-		}
-		e.networks[networkName] = nw.ID
-		e.log.Debugf("network (%s:%s) created", e.networks[networkName][:12], networkName)
 	}
 	return nil
 }

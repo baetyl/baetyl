@@ -178,17 +178,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			IPAddress: networkInfo.Ipv4Address,
 		}
 	}
-	if validateNetworkMode(cfg.NetworkMode) {
-		if cfg.NetworkMode == "host" {
-			ports := []string{}
-			for key := range exposedPorts {
-				ports = append(ports, strings.Split(string(key), "/")[0])
-			}
-			usedPorts, inUse := utils.CheckPortsInUse(ports)
-			if inUse {
-				return nil, fmt.Errorf("service %s use conflicting ports %s", cfg.Name, usedPorts)
-			}
-		}
+	if cfg.NetworkMode != "" {
 		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
 			NetworkID: e.networks[cfg.NetworkMode],
 		}
@@ -244,8 +234,4 @@ func (e *dockerEngine) parseDeviceSpecs(devices []string) (deviceBindings []cont
 
 func (e *dockerEngine) Close() error {
 	return e.cli.Close()
-}
-
-func validateNetworkMode(networkMode string) bool {
-	return networkMode == "bridge" || networkMode == "host" || networkMode == "none"
 }

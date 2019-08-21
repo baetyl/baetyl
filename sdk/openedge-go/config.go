@@ -26,7 +26,7 @@ type AppConfig struct {
 	// specifies the storage volume information of the application
 	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
 	// specifies the network information of the application
-	Networks map[string]NetworkInfo `yaml:"networks" json:"networks"`
+	Networks map[string]NetworkInfo `yaml:"networks" json:"networks" default:"{}"`
 }
 
 // ServiceInfo service configuration
@@ -40,9 +40,9 @@ type ServiceInfo struct {
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
 	Mounts []MountInfo `yaml:"mounts" json:"mounts" default:"[]"`
 	// specifies the network that the service used
-	Networks ServiceNetworks `yaml:"networks" json:"networks"`
+	Networks NetworksInfo `yaml:"networks" json:"networks"`
 	// specifies the network mode of the service
-	NetworkMode string `yaml:"network_mode" json:"network_mode"`
+	NetworkMode string `yaml:"network_mode" json:"network_mode" validate:"regexp=^(bridge|host|none)?$"`
 	// specifies the port bindings which exposed by the service, only for Docker container mode
 	Ports []string `yaml:"ports" json:"ports" default:"[]"`
 	// specifies the device bindings which used by the service, only for Docker container mode
@@ -76,7 +76,7 @@ type VolumeInfo struct {
 // NetworkInfo network configuration
 type NetworkInfo struct {
 	// specifies driver for network, including bridge(default), host, none, overlay
-	Driver string `yaml:"driver" json:"driver"`
+	Driver string `yaml:"driver" json:"driver" default:"bridge" validate:"regexp=^(bridge|host|none|overlay)?$"`
 	// specified driver options for network
 	DriverOptions map[string]string `yaml:"driver_opts" json:"driver_opts"`
 	// specifies labels to add metadata
@@ -199,19 +199,19 @@ type FunctionServerConfig struct {
 }
 
 
- // ServiceNetworks network configurations of service
-type ServiceNetworks struct {
-	ServiceNetworkInfos map[string]ServiceNetworkInfo
+ // NetworksInfo network configurations of service
+type NetworksInfo struct {
+	ServiceNetworkInfos map[string]ServiceNetworkInfo `yaml:"networks" json:"networks"`
 }
 
 // ServiceNetworkInfo specific network configuration of service
 type ServiceNetworkInfo struct {
-	Aliases []string
-	Ipv4Address string
+	Aliases []string `yaml:"aliases" json:"aliases"`
+	Ipv4Address string `yaml:"ipv4_address" json:"ipv4_address"`
 }
 
 // UnmarshalYAML customizes unmarshal
-func (sn *ServiceNetworks) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (sn *NetworksInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if sn.ServiceNetworkInfos == nil {
 		sn.ServiceNetworkInfos = make(map[string]ServiceNetworkInfo)
 	}
@@ -227,25 +227,9 @@ func (sn *ServiceNetworks) UnmarshalYAML(unmarshal func(interface{}) error) erro
 				sn.ServiceNetworkInfos[name] = ServiceNetworkInfo{}
 			}
 		case reflect.Map:
-			for key, val := range networks.(map[interface{}]interface{}) {
-				name := key.(string)
-				serviceNetworkInfo := ServiceNetworkInfo{}
-				if val != nil {
-					info := val.(map[interface{}]interface{})
-					for k, v := range info {
-						strKey := k.(string)
-	        			info[strKey] = v
-					}
-					if aliases, ok := info["aliases"]; ok {
-						for _, alias := range aliases.([]interface{}){
-							serviceNetworkInfo.Aliases = append(serviceNetworkInfo.Aliases, fmt.Sprintf("%v", alias))	
-						}
-					}
-					if ipv4Address, ok := info["ipv4_address"]; ok {
-						serviceNetworkInfo.Ipv4Address = fmt.Sprintf("%v", ipv4Address)
-					}
-				}
-				sn.ServiceNetworkInfos[name] = serviceNetworkInfo
+			err = unmarshal(&sn.ServiceNetworkInfos)
+			if err != nil {
+				return err
 			}
 		default:
 			return fmt.Errorf("parse service network error")
