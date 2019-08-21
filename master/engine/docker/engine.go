@@ -158,7 +158,6 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		Binds:        volumes,
 		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
-		NetworkMode: container.NetworkMode(cfg.NetworkMode),
 		// container is supervised by openedge,
 		RestartPolicy: container.RestartPolicy{Name: "no"},
 		Resources: container.Resources{
@@ -182,6 +181,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
 			NetworkID: e.networks[cfg.NetworkMode],
 		}
+		params.hostConfig.NetworkMode = container.NetworkMode(cfg.NetworkMode)
 	}
 	if len(endpointsConfig) == 0 {
 		endpointsConfig[defaultNetworkName] = &network.EndpointSettings{
