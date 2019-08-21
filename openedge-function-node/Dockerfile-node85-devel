@@ -6,12 +6,10 @@ RUN apt-get update \
         && tar vxzf node-v8.5.0.tar.gz \
         && cd node-v8.5.0 \
         && ./configure --prefix=/package \
-        && make \
+        && make -j "$(nproc)" \
         && make install \
         && cp -r /package/* /usr/local
 
-WORKDIR /
-COPY package.json /
+COPY package.json package-lock.json /
 RUN cd / \
         && npm install
-
