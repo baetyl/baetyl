@@ -1,9 +1,8 @@
 FROM ubuntu:18.04
 
-RUN apt-get update \
-        && apt-get install -y gcc g++ python2.7 --no-install-recommends \
-        && ln -s /usr/bin/python2.7 /usr/bin/python \
-        && apt-get install -y python-pip \
-        && pip install -U pip \
-        && pip2 install pyyaml protobuf grpcio \
-        && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install \
+        build-essential python2.7 python-setuptools \
+        python-pip && \
+    pip install pyyaml protobuf grpcio && \
+    rm -rf /var/lib/apt/lists/*

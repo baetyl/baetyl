@@ -1,11 +1,13 @@
 FROM hub.baidubce.com/openedge/openedge-function-python36:0.1.5-devel as devel
 
 FROM ubuntu:18.04
-RUN apt-get update \
-        && apt-get install -y gcc g++ python3 --no-install-recommends \
-        && ln -s /usr/bin/python3 /usr/bin/python \
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install \
+        python3 && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY --from=devel /usr/local/lib/python3.6/site-packages /usr/local/lib/python3.6/site-packages
+COPY --from=devel /usr/local/lib/python3.6/dist-packages /usr/local/lib/python3.6/dist-packages
 
 COPY openedge-function-python36.py function_pb2.py function_pb2_grpc.py /bin/
 RUN chmod +x /bin/openedge-function-python36.py
