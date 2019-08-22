@@ -92,15 +92,9 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 	return nil
 }
 
-func (e *dockerEngine) ReConnectNetworks(cfg openedge.ServiceInfo, connectedNetworkID string, instanceID string) error {
+func (e *dockerEngine) ConnectNetworks(serviceNetworkInfos map[string]openedge.ServiceNetworkInfo, instanceID string) error {
 	ctx := context.Background()
-	err := e.cli.NetworkDisconnect(ctx, connectedNetworkID, instanceID, true)
-	if err != nil {
-		e.log.WithError(err).Errorf("can not disconnect instance %s from network %s", instanceID[:12], connectedNetworkID[:12])
-		return err
-	}
-	e.log.Debugf("disconnect instance %s to network %s", instanceID[:12], connectedNetworkID[:12])
-	for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+	for networkName, networkInfo := range serviceNetworkInfos {
 		networkID := e.networks[networkName]
 		endpointSettings := &network.EndpointSettings{
 			NetworkID: networkID,

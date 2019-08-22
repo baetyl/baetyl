@@ -223,7 +223,14 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			return nil, fmt.Errorf("can not find instance of service %s", cfg.Name)
 		}
 		instanceID := instance.(*dockerInstance).id
-		err = e.ReConnectNetworks(cfg, e.networks[connectedNetworkName], instanceID)
+		networkInfo := make(map[string]openedge.ServiceNetworkInfo)
+		for k, v := range cfg.Networks.ServiceNetworkInfos {
+			if k == connectedNetworkName {
+				continue
+			}
+			networkInfo[k] = v
+		}
+		err = e.ConnectNetworks(networkInfo, instanceID)
 		if err != nil {
 			s.Stop()
 			return nil, err
