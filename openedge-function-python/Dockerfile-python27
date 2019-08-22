@@ -2,8 +2,7 @@ FROM hub.baidubce.com/openedge/openedge-function-python27:0.1.5-devel as devel
 
 FROM ubuntu:18.04
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install \
-        python2.7 && \
+    apt-get -y --no-install-recommends install python2.7 && \
     ln -s /usr/bin/python2.7 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/*
 
