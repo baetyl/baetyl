@@ -83,7 +83,7 @@ go env  # 查看 Go 相关环境变量配置
 go version # 查看 Go 版本
 ```
 
-_**提示**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。_
+**注意**: OpenEdge 要求编译使用的 Go 版本在 1.10.0 以上。
 
 #### Docker 安装
 
@@ -113,8 +113,13 @@ go get github.com/baidu/openedge
 
 ```shell
 cd $GOPATH/src/github.com/baidu/openedge
-make rebuild
 make image # 在本地生成模块镜像
+```
+
+**注意**: 在 Darwin 系统下，因为编译出的镜像本身基于 Linux 系统，需要指定编译参数:
+
+```shell
+env GOOS=linux GOARCH=amd64 make image
 ```
 
 通过上述命令编译生成如下六个镜像:
