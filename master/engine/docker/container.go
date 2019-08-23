@@ -228,8 +228,8 @@ func (e *dockerEngine) statsContainer(cid string) engine.PartialStats {
 func (e *dockerEngine) logsContainer(cid string, since time.Time) error {
 	ctx := context.Background()
 	r, err := e.cli.ContainerLogs(ctx, cid, types.ContainerLogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
+		ShowStdout: false,
+		ShowStderr: true, // only read error message
 		Since:      since.Format("2006-01-02T15:04:05"),
 	})
 	if err != nil {
@@ -247,9 +247,9 @@ func (e *dockerEngine) logsContainer(cid string, since time.Time) error {
 		case stdcopy.Stderr:
 			e.log.Errorf("container (%s) %s", cid[:12], string(line[8:]))
 		case stdcopy.Stdin, stdcopy.Stdout:
-			e.log.Infof("container (%s) %s", cid[:12], string(line[8:]))
+			e.log.Debugf("container (%s) %s", cid[:12], string(line[8:]))
 		default:
-			e.log.Infof("container (%s) %s", cid[:12], string(line))
+			e.log.Debugf("container (%s) %s", cid[:12], string(line))
 		}
 	}
 	return nil
