@@ -115,9 +115,6 @@ image: clean
 		make -C openedge-$$target image;\
 	done
 
-function-python-image:
-	make -C openedge-function-python image
-
 release: clean release-master release-image push-image release-manifest
 
 release-master: clean
@@ -147,53 +144,34 @@ release-master: clean
 
 release-image: clean
 	# linux-amd64 images release
-	env GOOS=linux GOARCH=amd64 make image IMAGE_SUFFIX="-linux-amd64"
+	env GOOS=linux GOARCH=amd64 make image TAG="$(VERSION)-linux-amd64"
 	make clean
 	# linux-386 images release
-	env GOOS=linux GOARCH=386 make image IMAGE_SUFFIX="-linux-386"
+	env GOOS=linux GOARCH=386 make image TAG="$(VERSION)-linux-386"
 	make clean
 	# linux-arm images release
-	env GOOS=linux GOARCH=arm GOARM=7 make image IMAGE_SUFFIX="-linux-armv7"
+	env GOOS=linux GOARCH=arm GOARM=7 make image TAG="$(VERSION)-linux-armv7"
 	make clean
 	# linux-arm64 images release
-	env GOOS=linux GOARCH=arm64 make image IMAGE_SUFFIX="-linux-arm64"
+	env GOOS=linux GOARCH=arm64 make image TAG="$(VERSION)-linux-arm64"
 	make clean
 
 release-manifest:
 	rm -rf tmp
 	mkdir tmp
 	for target in $(DEPLOY_TARGET) ; do \
-		sed "s?__IMAGE_PREFIX__?$(IMAGE_PREFIX)?g; s?__TAG__?$(VERSION)?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?openedge-$$target?g;" manifest.yml.template > tmp/manifest-$$target-$(VERSION).yml;\
-		./bin/manifest-tool-darwin-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-$(VERSION).yml;\
-		sed "s?__IMAGE_PREFIX__?$(IMAGE_PREFIX)?g; s?__TAG__?latest?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?openedge-$$target?g;" manifest.yml.template > tmp/manifest-$$target-latest.yml;\
-		./bin/manifest-tool-darwin-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-latest.yml;\
+		sed "s?__IMAGE_PREFIX__/?$(IMAGE_PREFIX)?g; s?__TAG__?$(VERSION)?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?openedge-$$target?g;" manifest.yml.template > tmp/manifest-$$target-$(VERSION).yml;\
+		./bin/manifest-tool-linux-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-$(VERSION).yml;\
 	done
 	rm -rf tmp
 
-
-# You need build the function-builder image at different platforms and push them to the hub first
-release-builder-manifest:
+release-manifest-latest:
+	rm -rf tmp
 	mkdir tmp
-
-	# Push openedge-python27-builder manifest version
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest-python27-builder.yml.template > tmp/manifest-python27-builder-$(VERSION).yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python27-builder-$(VERSION).yml
-	# Push openedge-python27-builder manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python27-builder.yml.template > tmp/manifest-python27-builder-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python27-builder-latest.yml
-	# Push openedge-python36-builder manifest version
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-$(VERSION).yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-$(VERSION).yml
-	# Push openedge-python36-builder manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-python/manifest-python36-builder.yml.template > tmp/manifest-python36-builder-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-python36-builder-latest.yml
-	# Push openedge-node85-builder manifest version
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/$(VERSION)/g;" openedge-function-node/manifest-node85-builder.yml.template > tmp/manifest-node85-builder-$(VERSION).yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-node85-builder-$(VERSION).yml
-	# Push openedge-node85-builder manifest latest
-	sed "s/__REGISTRY__/$(REGISTRY)/g; s/__NAMESPACE__/$(NAMESPACE)/g; s/__VERSION__/latest/g;" openedge-function-node/manifest-node85-builder.yml.template > tmp/manifest-node85-builder-latest.yml
-	./bin/manifest-tool-linux-amd64 --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-node85-builder-latest.yml
-
+	for target in $(DEPLOY_TARGET) ; do \
+		sed "s?__IMAGE_PREFIX__/?$(IMAGE_PREFIX)?g; s?__TAG__?latest?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?openedge-$$target?g;" manifest.yml.template > tmp/manifest-$$target-latest.yml;\
+		./bin/manifest-tool-linux-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-$(VERSION).yml;\
+	done
 	rm -rf tmp
 
 release-package: clean
@@ -230,8 +208,8 @@ release-package: clean
 
 push-image:
 	for target in $(DEPLOY_TARGET); do \
-		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-amd64;\
-		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-arm64;\
-		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-armv7;\
-		docker push $(IMAGE_PREFIX)/openedge-$$target:$(VERSION)-linux-386;\
+		docker push $(IMAGE_PREFIX)openedge-$$target:$(VERSION)-linux-amd64;\
+		docker push $(IMAGE_PREFIX)openedge-$$target:$(VERSION)-linux-arm64;\
+		docker push $(IMAGE_PREFIX)openedge-$$target:$(VERSION)-linux-armv7;\
+		docker push $(IMAGE_PREFIX)openedge-$$target:$(VERSION)-linux-386;\
 	done
