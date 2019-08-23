@@ -1,3 +1,4 @@
+TAG?=latest
 PYSRC85=function_grpc_pb.js function_pb.js openedge-function-node85.js
 
 package85.zip: $(PYSRC85)
@@ -12,7 +13,11 @@ package85.zip: $(PYSRC85)
 
 image:
 	@echo "IMAGE openedge-function-node85"
-	docker build -t $(IMAGE_PREFIX)openedge-function-node85$(IMAGE_SUFFIX):$(TAG) -f Dockerfile85 .
+	docker build -t $(IMAGE_PREFIX)openedge-function-node85:$(TAG) -f Dockerfile-node85 .
+
+image-devel:
+	@echo "IMAGE openedge-function-node85 devel"
+	docker build -t $(IMAGE_PREFIX)openedge-function-node85:$(TAG) -f Dockerfile-node85-devel .
 
 .PHONY: clean
 clean:

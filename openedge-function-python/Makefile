@@ -1,3 +1,4 @@
+TAG?=latest
 PYSRC27=$(shell find . -type f -name '*.py' -not -name '*36*')
 PYSRC36=$(shell find . -type f -name '*.py' -not -name '*27*')
 
@@ -23,15 +24,15 @@ package36.zip: $(PYSRC36)
 
 image:
 	@echo "IMAGE openedge-function-python27"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python27$(IMAGE_SUFFIX):$(TAG) -f Dockerfile27 .
+	docker build -t $(IMAGE_PREFIX)openedge-function-python27:$(TAG) -f Dockerfile-python27 .
 	@echo "IMAGE openedge-function-python36"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python36$(IMAGE_SUFFIX):$(TAG) -f Dockerfile36 .
+	docker build -t $(IMAGE_PREFIX)openedge-function-python36:$(TAG) -f Dockerfile-python36 .
 
-function-builder-image:
-	@echo "IMAGE openedge-function-python27 builder"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python27-builder$(IMAGE_SUFFIX):$(TAG) -f Dockerfile27-builder .
-	@echo "IMAGE openedge-function-python36 builder"
-	docker build -t $(IMAGE_PREFIX)openedge-function-python36-builder$(IMAGE_SUFFIX):$(TAG) -f Dockerfile36-builder .
+image-devel:
+	@echo "IMAGE openedge-function-python27 devel"
+	docker build -t $(IMAGE_PREFIX)openedge-function-python27:$(TAG) -f Dockerfile-python27-devel .
+	@echo "IMAGE openedge-function-python36 devel"
+	docker build -t $(IMAGE_PREFIX)openedge-function-python36:$(TAG) -f Dockerfile-python36-devel .
 
 .PHONY: clean
 clean:
