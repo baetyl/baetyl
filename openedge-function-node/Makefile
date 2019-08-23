@@ -15,7 +15,7 @@ image:
 	@echo "IMAGE openedge-function-node85"
 	docker build -t $(IMAGE_PREFIX)openedge-function-node85:$(TAG) -f Dockerfile-node85 .
 
-devel-image:
+image-devel:
 	@echo "IMAGE openedge-function-node85 devel"
 	docker build -t $(IMAGE_PREFIX)openedge-function-node85:$(TAG) -f Dockerfile-node85-devel .
 
