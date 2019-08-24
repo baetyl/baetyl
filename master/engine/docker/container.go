@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/baidu/openedge/master/engine"
+	"github.com/baidu/openedge/sdk/openedge-go"
 	"github.com/baidu/openedge/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -27,32 +28,65 @@ type containerConfigs struct {
 	networkConfig network.NetworkingConfig
 }
 
-func (e *dockerEngine) initNetwork() error {
+func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) error {
 	ctx := context.Background()
 	args := filters.NewArgs()
-	args.Add("driver", "bridge")
 	args.Add("type", "custom")
-	args.Add("name", defaultNetworkName)
 	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
 	if err != nil {
-		e.log.WithError(err).Errorf("failed to list network (%s)", defaultNetworkName)
+		e.log.WithError(err).Errorf("failed to list custom networks")
 		return err
 	}
-	if len(nws) > 0 {
-		e.nid = nws[0].ID
-		e.log.Debugf("network (%s:%s) exists", e.nid[:12], defaultNetworkName)
-		return nil
+	nwMap := map[string]types.NetworkResource{}
+	for _, val := range nws {
+		nwMap[val.Name] = val
 	}
-	nw, err := e.cli.NetworkCreate(ctx, defaultNetworkName, types.NetworkCreate{Driver: "bridge", Scope: "local"})
-	if err != nil {
-		e.log.WithError(err).Errorf("failed to create network (%s)", defaultNetworkName)
-		return err
+	// add openedge as default network
+	if networks == nil{
+		networks = make(map[string]openedge.NetworkInfo)
 	}
-	if nw.Warning != "" {
-		e.log.Warnf(nw.Warning)
+	networks[defaultNetworkName] = openedge.NetworkInfo {
+		Driver: "bridge",
 	}
-	e.nid = nw.ID
-	e.log.Debugf("network (%s:%s) created", e.nid[:12], defaultNetworkName)
+	for networkName, network := range networks {
+		if nw, ok := nwMap[networkName]; ok {
+			if nw.Driver != network.Driver {
+				return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
+			}
+			e.networks[networkName] = nw.ID
+			e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
+		} else {
+			networkParams := types.NetworkCreate {
+				Driver: network.Driver,
+				Options: network.DriverOpts,
+				Scope: "local",
+				Labels: network.Labels,
+			}
+			nw, err := e.cli.NetworkCreate(ctx, networkName, networkParams)
+			if err != nil {
+				e.log.WithError(err).Errorf("failed to create network (%s)", networkName)
+				return err
+			}
+			if nw.Warning != "" {
+				e.log.Warnf(nw.Warning)
+			}
+			e.networks[networkName] = nw.ID
+			e.log.Debugf("network (%s:%s) created", e.networks[networkName][:12], networkName)
+		}
+	}
+	return nil
+}
+
+func (e *dockerEngine) connectNetworks(endpointSettings map[string]*network.EndpointSettings, containerID string) error {
+	ctx := context.Background()
+	for _, endpointSetting := range endpointSettings {
+		err := e.cli.NetworkConnect(ctx, endpointSetting.NetworkID, containerID, endpointSetting)
+		if err != nil {
+			e.log.WithError(err).Errorf("can not connect instance %s to network %s", containerID[:12], endpointSetting.NetworkID[:12])
+			return err
+		}
+		e.log.Debugf("connect instance %s to network %s", containerID[:12], endpointSetting.NetworkID[:12])
+	}
 	return nil
 }
 
@@ -70,10 +104,16 @@ func (e *dockerEngine) pullImage(name string) error {
 
 func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string, error) {
 	ctx := context.Background()
-	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, &cfg.networkConfig, name)
+	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, nil, name)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to create container (%s)", name)
 		return "", err
+	}
+	if len(cfg.networkConfig.EndpointsConfig) > 0 {
+		err = e.connectNetworks(cfg.networkConfig.EndpointsConfig, container.ID)
+		if err != nil {
+			return "", err
+		}
 	}
 	err = e.cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	if err != nil {

@@ -56,7 +56,7 @@ func (m *Master) UpdateAPP(trace, target string) error {
 
 	// prepare services
 	keepServices := diffServices(cur, old)
-	m.engine.Prepare(cur.Services)
+	m.engine.Prepare(cur)
 
 	// stop all removed or updated services
 	m.stopServices(keepServices)

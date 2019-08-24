@@ -52,7 +52,7 @@ func (e *nativeEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *nativeEngine) Prepare([]openedge.ServiceInfo) {
+func (e *nativeEngine) Prepare(openedge.AppConfig) {
 	// do nothing in native mode
 }
 

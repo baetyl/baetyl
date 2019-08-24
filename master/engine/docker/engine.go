@@ -36,14 +36,10 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 	e := &dockerEngine{
 		InfoStats: stats,
 		cli:       cli,
+		networks:  make(map[string]string),
 		pwd:       pwd,
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
-	}
-	err = e.initNetwork()
-	if err != nil {
-		e.Close()
-		return nil, err
 	}
 	return e, nil
 }
@@ -51,7 +47,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 type dockerEngine struct {
 	engine.InfoStats
 	cli   *client.Client
-	nid   string // network id
+	networks map[string]string
 	pwd   string // work directory
 	grace time.Duration
 	tomb  utils.Tomb
@@ -69,8 +65,9 @@ func (e *dockerEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
+func (e *dockerEngine) Prepare(cfg openedge.AppConfig) {
 	var wg sync.WaitGroup
+	ss := cfg.Services
 	for _, s := range ss {
 		wg.Add(1)
 		go func(i string, w *sync.WaitGroup) {
@@ -78,6 +75,11 @@ func (e *dockerEngine) Prepare(ss []openedge.ServiceInfo) {
 			e.pullImage(i)
 		}(s.Image, &wg)
 	}
+	wg.Add(1)
+	go func(nw map[string]openedge.NetworkInfo, w *sync.WaitGroup) {
+		defer w.Done()
+		e.initNetworks(nw)
+	}(cfg.Networks, &wg)
 	wg.Wait()
 }
 
@@ -152,10 +154,32 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		ExposedPorts: exposedPorts,
 		Labels:       map[string]string{"openedge": "openedge", "service": cfg.Name},
 	}
+	endpointsConfig := map[string]*network.EndpointSettings{}
+	if cfg.NetworkMode != "" {
+		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
+			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
+		}
+	} else {
+		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+			cfg.NetworkMode = networkName
+			endpointsConfig[networkName] = &network.EndpointSettings{
+				NetworkID: e.networks[networkName],
+				Aliases: networkInfo.Aliases,
+				IPAddress: networkInfo.Ipv4Address,
+			}
+		}
+		if cfg.NetworkMode == "" {
+			cfg.NetworkMode = defaultNetworkName
+		}
+	}
+	params.networkConfig = network.NetworkingConfig{
+		EndpointsConfig: endpointsConfig,
+	}
 	params.hostConfig = container.HostConfig{
 		Binds:        volumes,
 		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
+		NetworkMode:  container.NetworkMode(cfg.NetworkMode),
 		// container is supervised by openedge,
 		RestartPolicy: container.RestartPolicy{Name: "no"},
 		Resources: container.Resources{
@@ -165,13 +189,6 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			MemorySwap: cfg.Resources.Memory.Swap,
 			PidsLimit:  cfg.Resources.Pids.Limit,
 			Devices:    deviceBindings,
-		},
-	}
-	params.networkConfig = network.NetworkingConfig{
-		EndpointsConfig: map[string]*network.EndpointSettings{
-			defaultNetworkName: &network.EndpointSettings{
-				NetworkID: e.nid,
-			},
 		},
 	}
 	s := &dockerService{

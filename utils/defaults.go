@@ -32,18 +32,21 @@ func SetDefaults(ptr interface{}) error {
 				}
 			}
 		}
-		// if tf.Type.Kind() == reflect.Map {
-		// 	for _, k := range vf.MapKeys() {
-		// 		item := vf.MapIndex(k)
-		// 		if item.Kind() != reflect.Struct {
-		// 			continue
-		// 		}
-		// 		err := setDefaults(item)
-		// 		if err != nil {
-		// 			return err
-		// 		}
-		// 	}
-		// }
+		if tf.Type.Kind() == reflect.Map {
+			for _, k := range vf.MapKeys() {
+				item := vf.MapIndex(k)
+				if item.Kind() != reflect.Struct {
+					continue
+				}
+				tmp := reflect.New(item.Type())
+				tmp.Elem().Set(item)
+				err := setDefaults(tmp.Elem())
+				vf.SetMapIndex(k, tmp.Elem())
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 	return nil
 }

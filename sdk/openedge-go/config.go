@@ -2,6 +2,8 @@ package openedge
 
 import (
 	"time"
+	"reflect"
+	"fmt"
 
 	"github.com/baidu/openedge/logger"
 	"github.com/baidu/openedge/protocol/mqtt"
@@ -23,6 +25,8 @@ type AppConfig struct {
 	Services []ServiceInfo `yaml:"services" json:"services" default:"[]"`
 	// specifies the storage volume information of the application
 	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
+	// specifies the network information of the application
+	Networks map[string]NetworkInfo `yaml:"networks" json:"networks" default:"{}"`
 }
 
 // ServiceInfo service configuration
@@ -35,6 +39,10 @@ type ServiceInfo struct {
 	Replica int `yaml:"replica" json:"replica" validate:"min=0"`
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
 	Mounts []MountInfo `yaml:"mounts" json:"mounts" default:"[]"`
+	// specifies the network that the service used
+	Networks NetworksInfo `yaml:"networks" json:"networks"`
+	// specifies the network mode of the service
+	NetworkMode string `yaml:"network_mode" json:"network_mode" validate:"regexp=^(bridge|host|none)?$"`
 	// specifies the port bindings which exposed by the service, only for Docker container mode
 	Ports []string `yaml:"ports" json:"ports" default:"[]"`
 	// specifies the device bindings which used by the service, only for Docker container mode
@@ -63,6 +71,16 @@ type VolumeInfo struct {
 		MD5     string `yaml:"md5" json:"md5"`
 		Version string `yaml:"version" json:"version"`
 	} `yaml:"meta" json:"meta"`
+}
+
+// NetworkInfo network configuration
+type NetworkInfo struct {
+	// specifies driver for network
+	Driver string `yaml:"driver" json:"driver" default:"bridge"`
+	// specified driver options for network
+	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts"`
+	// specifies labels to add metadata
+	Labels map[string]string `yaml:"labels" json:"labels"`
 }
 
 // MountInfo storage volume mapping configuration
@@ -178,4 +196,43 @@ type FunctionServerConfig struct {
 		Max uint32 `yaml:"max" json:"max"`
 	} `yaml:"workers" json:"workers"`
 	utils.Certificate `yaml:",inline" json:",inline"`
+}
+
+
+ // NetworksInfo network configurations of service
+type NetworksInfo struct {
+	ServiceNetworkInfos map[string]ServiceNetworkInfo `yaml:"networks" json:"networks"`
+}
+
+// ServiceNetworkInfo specific network configuration of service
+type ServiceNetworkInfo struct {
+	Aliases []string `yaml:"aliases" json:"aliases"`
+	Ipv4Address string `yaml:"ipv4_address" json:"ipv4_address"`
+}
+
+// UnmarshalYAML customizes unmarshal
+func (sn *NetworksInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if sn.ServiceNetworkInfos == nil {
+		sn.ServiceNetworkInfos = make(map[string]ServiceNetworkInfo)
+	}
+	var networks interface{}
+	err := unmarshal(&networks)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(networks).Kind() {
+		case reflect.Slice:
+			for _, item := range networks.([]interface{}) {
+				name := item.(string)
+				sn.ServiceNetworkInfos[name] = ServiceNetworkInfo{}
+			}
+		case reflect.Map:
+			err = unmarshal(&sn.ServiceNetworkInfos)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("parse service network error")
+	}
+	return nil
 }
