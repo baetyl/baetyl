@@ -1,5 +1,5 @@
 # Contact us
 
-In order to create a better iteration and development of OpenEdge, if you have better advice about OpenEdge, please contact us:
+In order to create a better iteration and development of Baetyl, if you have better advice about Baetyl, please contact us:
 
-> OpenEdge official e-mail：<contact@openedge.tech>
+> Baetyl official e-mail：<contact@baetyl.io>

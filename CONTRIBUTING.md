@@ -1,12 +1,12 @@
 # Contributing
 
-Welcome to OpenEdge of Baidu Open Source Project. To contribute to OpenEdge, please follow the process below.
+Welcome to Baetyl of Baidu Open Source Project. To contribute to Baetyl, please follow the process below.
 
 We sincerely appreciate your contribution. This document explains our workflow and work style.
 
 ## Workflow
 
-OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-branching-model/). The following steps guide usual contributions.
+Baetyl use this [Git branching model](https://nvie.com/posts/a-successful-git-branching-model/). The following steps guide usual contributions.
 
 1. Fork
 
@@ -15,10 +15,10 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 2. Prepare for the development environment
 
    ```bash
-   go get github.com/baidu/openedge # clone openedge official repository
-   cd $GOPATH/src/github.com/baidu/openedge # step into openedge
+   go get github.com/baetyl/baetyl # clone baetyl official repository
+   cd $GOPATH/src/github.com/baetyl/baetyl # step into baetyl
    git checkout master  # verify master branch
-   git remote add fork https://github.com/<your_github_account>/openedge  # specify remote repository
+   git remote add fork https://github.com/<your_github_account>/baetyl  # specify remote repository
    ```
 
 3. Push changes to your forked repository
@@ -32,7 +32,7 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 4. Create pull request
 
-   You can push and file a pull request to OpenEdge official repository [https://github.com/baidu/openedge](https://github.com/baidu/openedge). To create a pull request, please follow [these steps](https://help.github.com/articles/creating-a-pull-request/). Once the OpenEdge repository reviewer approves and merges your pull request, you will see the code which contributed by you in the OpenEdge official repository.
+   You can push and file a pull request to Baetyl official repository [https://github.com/baetyl/baetyl](https://github.com/baetyl/baetyl). To create a pull request, please follow [these steps](https://help.github.com/articles/creating-a-pull-request/). Once the Baetyl repository reviewer approves and merges your pull request, you will see the code which contributed by you in the Baetyl official repository.
 
 ## Code Review
 
@@ -46,5 +46,5 @@ OpenEdge use this [Git branching model](https://nvie.com/posts/a-successful-git-
 
 - Please run command `govendor fmt +local` before push changes, more details refer to [govendor](https://github.com/kardianos/govendor)
 - Must run command `make test` before push changes(unit test should be contained), and make sure all unit test and data race test passed
-- Only the passed(unit test and data race test) code can be allowed to submit to OpenEdge official repository
-- At least one reviewer approved code can be merged into OpenEdge official repository
+- Only the passed(unit test and data race test) code can be allowed to submit to Baetyl official repository
+- At least one reviewer approved code can be merged into Baetyl official repository

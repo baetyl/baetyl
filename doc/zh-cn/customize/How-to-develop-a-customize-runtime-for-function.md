@@ -5,16 +5,16 @@
 
 函数运行时是函数执行的载体，通过动态加载函数代码来执行函数，跟函数实现的语言强相关。比如 Python 代码需要使用 Python 运行时来调用。这里就涉及到多种语言的问题，为了统一调用接口和协议，我们最终选择了 GRPC，借助其强大的跨语言 IDL 和高性能 RPC 通讯能力，打造可灵活扩展的函数计算框架。
 
-在函数计算服务中，`openedge-function-manager` 负责函数实例的管理和调用。函数实例由函数运行时服务提供，函数运行时服务只需满足下面介绍的约定。
+在函数计算服务中，`baetyl-function-manager` 负责函数实例的管理和调用。函数实例由函数运行时服务提供，函数运行时服务只需满足下面介绍的约定。
 
 ## 协议约定
 
-开发者可直接使用 sdk/openedge-go 中的 `function.proto` 生成各自编程语言的消息和服务实现，具体定义如下。GRPC 使用方法可参考 [GRPC 官网的文档](https://grpc.io/docs/quickstart/go.html)。
+开发者可直接使用 sdk/baetyl-go 中的 `function.proto` 生成各自编程语言的消息和服务实现，具体定义如下。GRPC 使用方法可参考 [GRPC 官网的文档](https://grpc.io/docs/quickstart/go.html)。
 
 ```proto
 syntax = "proto3";
 
-package openedge;
+package baetyl;
 
 // 函数 Server 定义
 service Function {
@@ -50,9 +50,9 @@ message FunctionMessage {
 functions:
   - name: 'sayhi'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 ## 启动约定
 
-函数运行时服务同其他服务一样，唯一的区别是实例是由其他服务动态启动的。比如为了避免监听端口冲突，可以动态指定端口。函数运行时模块可以从环境变量中读取 `OPENEDGE_SERVICE_ADDRESS` 作为 GRPC Server 监听的地址。另外，动态启动的函数实例没有权限调用主程序的 API 。最后，模块监听 `SIGTERM` 信号来实现优雅退出。完整的实现可参考 Python2.7、Python3.6 运行时模块（`openedge-function-python27`、`openedge-function-python36`）。
+函数运行时服务同其他服务一样，唯一的区别是实例是由其他服务动态启动的。比如为了避免监听端口冲突，可以动态指定端口。函数运行时模块可以从环境变量中读取 `OPENEDGE_SERVICE_ADDRESS` 作为 GRPC Server 监听的地址。另外，动态启动的函数实例没有权限调用主程序的 API 。最后，模块监听 `SIGTERM` 信号来实现优雅退出。完整的实现可参考 Python2.7、Python3.6 运行时模块（`baetyl-function-python27`、`baetyl-function-python36`）。

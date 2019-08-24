@@ -5,4 +5,4 @@ services:
     replica: 1
     mounts:
       - name: cmd-bin
-        path: lib/openedge/cmd
+        path: lib/baetyl/cmd

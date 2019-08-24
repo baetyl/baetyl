@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
@@ -65,7 +65,7 @@ func (e *dockerEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *dockerEngine) Prepare(cfg openedge.AppConfig) {
+func (e *dockerEngine) Prepare(cfg baetyl.AppConfig) {
 	var wg sync.WaitGroup
 	ss := cfg.Services
 	for _, s := range ss {
@@ -76,7 +76,7 @@ func (e *dockerEngine) Prepare(cfg openedge.AppConfig) {
 		}(s.Image, &wg)
 	}
 	wg.Add(1)
-	go func(nw map[string]openedge.NetworkInfo, w *sync.WaitGroup) {
+	go func(nw map[string]baetyl.NetworkInfo, w *sync.WaitGroup) {
 		defer w.Done()
 		e.initNetworks(nw)
 	}(cfg.Networks, &wg)
@@ -112,7 +112,7 @@ func (e *dockerEngine) clean() {
 }
 
 // Run a new service
-func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.VolumeInfo) (engine.Service, error) {
+func (e *dockerEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeInfo) (engine.Service, error) {
 
 	if runtime.GOOS == "linux" && cfg.Resources.CPU.Cpus > 0 {
 		sysInfo := sysinfo.New(true)
@@ -134,9 +134,9 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		}
 		volumes = append(volumes, fmt.Sprintf(f, v.Path, path.Clean(m.Path)))
 	}
-	sock := utils.GetEnv(openedge.EnvMasterHostSocket)
+	sock := utils.GetEnv(baetyl.EnvMasterHostSocket)
 	if sock != "" {
-		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, sock, openedge.DefaultSockFile))
+		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, sock, baetyl.DefaultSockFile))
 	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
 	if err != nil {
@@ -152,7 +152,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		Env:          utils.AppendEnv(cfg.Env, false),
 		Cmd:          cfg.Args,
 		ExposedPorts: exposedPorts,
-		Labels:       map[string]string{"openedge": "openedge", "service": cfg.Name},
+		Labels:       map[string]string{"baetyl": "baetyl", "service": cfg.Name},
 	}
 	endpointsConfig := map[string]*network.EndpointSettings{}
 	if cfg.NetworkMode != "" {
@@ -180,7 +180,7 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
 		NetworkMode:  container.NetworkMode(cfg.NetworkMode),
-		// container is supervised by openedge,
+		// container is supervised by baetyl,
 		RestartPolicy: container.RestartPolicy{Name: "no"},
 		Resources: container.Resources{
 			CpusetCpus: cfg.Resources.CPU.SetCPUs,

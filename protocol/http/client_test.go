@@ -9,7 +9,7 @@ import (
 func TestClient_SendUrl(t *testing.T) {
 	t.Skip("need network")
 	var cfg ClientInfo
-	cfg.CA = "../../example/native/var/db/openedge/localhub-cert-only-for-test/ca.pem"
+	cfg.CA = "../../example/native/var/db/baetyl/localhub-cert-only-for-test/ca.pem"
 	cli, err := NewClient(cfg)
 	assert.NoError(t, err)
 	url := "https://www.baidu.com/"

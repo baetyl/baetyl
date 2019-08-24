@@ -9,7 +9,7 @@
 
 ```yaml
 # The configuration of Local Hub service
-# Configuration file location is: `var/db/openedge/localhub-conf/service.yml`.
+# Configuration file location is: `var/db/baetyl/localhub-conf/service.yml`.
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -22,7 +22,7 @@ principals:
         permit: ['#']
 
 # The configuration of Local Function Manager service
-# Configuration file location is: var/db/openedge/function-manager-conf/service.yml
+# Configuration file location is: var/db/baetyl/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -44,79 +44,79 @@ functions:
       idletime: 1m
 
 # The configuration of python function runtime
-# Configuration file location is: var/db/openedge/function-sayhi-conf/service.yml
+# Configuration file location is: var/db/baetyl/function-sayhi-conf/service.yml
 functions:
   - name: 'sayhi3'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 
 # The configuration of application.yml
-# Configuration file location is: var/db/openedge/application.yml
+# Configuration file location is: var/db/baetyl/application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: baetyl-hub
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-manager
-    image: openedge-function-manager
+    image: baetyl-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-manager-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-sayhi3
-    image: openedge-function-python36
+    image: baetyl-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-sayhi-code
-        path: var/db/openedge/function-sayhi
+        path: var/db/baetyl/function-sayhi
         readonly: true
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   # function manager
   - name: function-manager-conf
-    path: var/db/openedge/function-manager-conf
+    path: var/db/baetyl/function-manager-conf
   - name: function-manager-log
-    path: var/db/openedge/function-manager-log
+    path: var/db/baetyl/function-manager-log
   # function python runtime sayhi
   - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
+    path: var/db/baetyl/function-sayhi-conf
   - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+    path: var/db/baetyl/function-sayhi-code
 ```
 
-OpenEdge officially provides the Python runtime to load python scripts written by users. The following description is about the name of the python script, the execution function name, input, output parameters, and so on.
+Baetyl officially provides the Python runtime to load python scripts written by users. The following description is about the name of the python script, the execution function name, input, output parameters, and so on.
 
 ## Function Name Convention
 
-The name of a python script can refer to Python's universal naming convention, which OpenEdge does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of Python3.6 runtime service is as follows:
+The name of a python script can refer to Python's universal naming convention, which Baetyl does not specifically limit. If you want to apply a python script to handle an MQTT message, the configuration of Python3.6 runtime service is as follows:
 
 ```yaml
 functions:
   - name: 'sayhi3'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 Here, we focus on the `handler` attribute, where `sayhi` represents the script name and the `handler` represents the entry function called in the file.
@@ -137,7 +137,7 @@ def handler(event, context):
     return event
 ```
 
-The Python runtime provided by OpenEdge supports two parameters: `event` and `context`, which are described separately below.
+The Python runtime provided by Baetyl supports two parameters: `event` and `context`, which are described separately below.
 
 - **event**：Depend on the `Payload` in the MQTT message
     - If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
@@ -149,7 +149,7 @@ The Python runtime provided by OpenEdge supports two parameters: `event` and `co
     - context.functionInvokeID //MQTT function invokeID
     - context.invokeid // as above, be used to compatible with [CFC](https://cloud.baidu.com/product/cfc.html)
 
-_**NOTE**: When testing in the cloud CFC, please don't use the context defined by OpenEdge directly. The recommended method is to first determine whether the field is exists or not in the `context`. If exists, read it._
+_**NOTE**: When testing in the cloud CFC, please don't use the context defined by Baetyl directly. The recommended method is to first determine whether the field is exists or not in the `context`. If exists, read it._
 
 ## Hello World
 

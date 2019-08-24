@@ -1,4 +1,4 @@
-# 通过 OpenEdge 将数据脱敏后存到云端 TSDB
+# 通过 Baetyl 将数据脱敏后存到云端 TSDB
 
 **声明**：
 
@@ -10,11 +10,11 @@
 
 实际应用场景中，我们需要把设备产生的数据在本地进行 **脱敏** 处理后上云展示。
 
-本文则以某实际生产车间中的温度传感器为例，应用 OpenEdge，并联合 [百度云天工](https://cloud.baidu.com/solution/iot/index.html) 相关产品服务一起将温度传感器采集到的数据进行 **脱敏** 处理（如去除车间编号、设备型号、设备 ID 等信息），然后将 **脱敏** 后的数据上传至远程云端进行可视化展示。
+本文则以某实际生产车间中的温度传感器为例，应用 Baetyl，并联合 [百度云天工](https://cloud.baidu.com/solution/iot/index.html) 相关产品服务一起将温度传感器采集到的数据进行 **脱敏** 处理（如去除车间编号、设备型号、设备 ID 等信息），然后将 **脱敏** 后的数据上传至远程云端进行可视化展示。
 
 其数据流经的路径/服务为：
 
-> **MQTT.fx -> OpenEdge Local Hub -> OpenEdge Function SQL Runtime -> OpenEdge Local Hub -> OpenEdge MQTT Remote Module -> Baidu IoT Hub -> Baidu IoT Rule Engine -> Baidu IoT TSDB -> Baidu IoT Visualization**
+> **MQTT.fx -> Baetyl Local Hub -> Baetyl Function SQL Runtime -> Baetyl Local Hub -> Baetyl MQTT Remote Module -> Baidu IoT Hub -> Baidu IoT Rule Engine -> Baidu IoT TSDB -> Baidu IoT Visualization**
 
 ![本文 case 流程示意图](../../images/practice/write-tsdb/practice-write-data-to-tsdb-workflow.png)
 
@@ -26,7 +26,7 @@
 
 ![创建物接入 Endpoint](../../images/practice/write-tsdb/practice-create-iothub-endpoint.png)
 
-如上，已创建好一个名为 `openedge_demo` 的物接入项目。其用户名为 `vn33eye/test`，身份信息为 principal，认证方式为证书认证，策略为 policy，对主题 **data/filter** 有发布和订阅消息的权限（详见下文测试时 MQTT Remote 远程服务模块配置）。
+如上，已创建好一个名为 `baetyl_demo` 的物接入项目。其用户名为 `vn33eye/test`，身份信息为 principal，认证方式为证书认证，策略为 policy，对主题 **data/filter** 有发布和订阅消息的权限（详见下文测试时 MQTT Remote 远程服务模块配置）。
 
 ## 创建规则引擎 Rule
 
@@ -47,7 +47,7 @@
 
 ![数据解析、转换 TSDB 规则](../../images/practice/write-tsdb/practice-hub-from-rule.png)
 
-如上，已创建好一个名为 `openedge-demo` 的规则，该规则会默认从物接入 Endpoint 的 **data/filter** 主题提取消息，然后通过 [SQL 语句进行转换](https://cloud.baidu.com/doc/RE/GUIGettingStarted.html#.E6.97.B6.E5.BA.8F.E6.95.B0.E6.8D.AE.E5.BA.93.28TSDB.29)，将其转换为符合 [TSDB 规范](https://cloud.baidu.com/doc/TSDB/GUIGettingStarted.html#.E4.B8.8E.E5.A4.A9.E5.B7.A5.E4.BA.A7.E5.93.81.E5.AF.B9.E6.8E.A5) 的数据，并将之存储在名为 **openedge** 的 TSDB 数据库中。
+如上，已创建好一个名为 `baetyl-demo` 的规则，该规则会默认从物接入 Endpoint 的 **data/filter** 主题提取消息，然后通过 [SQL 语句进行转换](https://cloud.baidu.com/doc/RE/GUIGettingStarted.html#.E6.97.B6.E5.BA.8F.E6.95.B0.E6.8D.AE.E5.BA.93.28TSDB.29)，将其转换为符合 [TSDB 规范](https://cloud.baidu.com/doc/TSDB/GUIGettingStarted.html#.E4.B8.8E.E5.A4.A9.E5.B7.A5.E4.BA.A7.E5.93.81.E5.AF.B9.E6.8E.A5) 的数据，并将之存储在名为 **baetyl** 的 TSDB 数据库中。
 
 ## 创建 TSDB 数据库
 
@@ -55,7 +55,7 @@
 
 ![创建 TSDB](../../images/practice/write-tsdb/practice-tsdb-config.png)
 
-如上，已创建好一个名为 openedge 的 TSDB 时序数据库，该数据库会默认查询 **选定时间段** 的符合时间序列度量标识的时序数据信息，且默认显示前 1000 个符合上述条件的值。
+如上，已创建好一个名为 baetyl 的 TSDB 时序数据库，该数据库会默认查询 **选定时间段** 的符合时间序列度量标识的时序数据信息，且默认显示前 1000 个符合上述条件的值。
 
 ## 创建物可视展示板
 
@@ -63,7 +63,7 @@
 
 ![创建物可视](../../images/practice/write-tsdb/practice-iotvz-config.png)
 
-如上，已创建一个名为 `openedge_demo` 的物可视展示板，其展示数据来源于时序数据库 **openedge**，时间序列度量信息为 **device_temperature**，显示数据的时间依据数据存储 TSDB 的时间确定。
+如上，已创建一个名为 `baetyl_demo` 的物可视展示板，其展示数据来源于时序数据库 **baetyl**，时间序列度量信息为 **device_temperature**，显示数据的时间依据数据存储 TSDB 的时间确定。
 
 至此，正式测试前云端相关服务的创建、设置工作已经完成。
 
@@ -74,11 +74,11 @@ _**提示**：以上创建的物接入 Endpoint、规则引擎 Rule、TSDB 数�
 将生产设备数据经 **脱敏** 后上云、写入 TSDB 及在云端物可视进行展示所涉及的流程步骤主要包括：
 
 - 步骤1: **创建核心并下载配置(含主程序)** 在 BIE 云端管理套件页面选定区域（北京，或广州）创建核心，完善核心创建所需配置信息，点击“下载配置”，然后选择包含主程序，具体请参考[BIE操作指南](https://cloud.baidu.com/doc/BIE/GettingStarted.html)
-- 步骤2: **本地启动 OpenEdge** 本地解压缩主程序（含配置）后，启动 OpenEdge，然后点击核心连接状态按钮，如 OpenEdge 正常启动，即可看到核心连接状态已变更为 **已连接**
-    - OpenEdge 启动参考命令：
-        - `tar -zxvf openedge-xxx.tar.gz`
-        - `cd openedge-xxx`
-        - `sudo openedge start`
+- 步骤2: **本地启动 Baetyl** 本地解压缩主程序（含配置）后，启动 Baetyl，然后点击核心连接状态按钮，如 Baetyl 正常启动，即可看到核心连接状态已变更为 **已连接**
+    - Baetyl 启动参考命令：
+        - `tar -zxvf baetyl-xxx.tar.gz`
+        - `cd baetyl-xxx`
+        - `sudo baetyl start`
 - 步骤3: **建立服务配置** 进入已创建的核心，然后开始依次创建本次测试所需的服务配置信息（Hub 服务配置、Function Manager服务配置、Function Filter服务配置、Remote服务配置），详细内容可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
     - Hub 服务配置：需要挂载conf、data、cert、log四个挂载卷，分别存储Hub服务的配置、持久化数据、ssl认证资源和日志
     ![localhub_volume](../../images/practice/write-tsdb/localhub_volume.png)
@@ -88,37 +88,37 @@ _**提示**：以上创建的物接入 Endpoint、规则引擎 Rule、TSDB 数�
     ![localhubfunction_filter_volume](../../images/practice/write-tsdb/localfunction_filter_volume.png)
     - Remote 服务配置：需要挂载conf、cert、log三个挂载卷，存储配置、ssl认证资源和日志
     ![localhubremote_volume](../../images/practice/write-tsdb/localremote_volume.png)
-- 步骤4: **发布及下发服务配置** 完成核心所需的各个服务的配置后，点击“生成配置”按钮生成当前版本配置，然后再点击“下发配置”按钮将生成的版本配置下发至本地，OpenEdge 服务会自动切换、加载该下发的新配置信息，具体可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
-    - 此过程要求 OpenEdge 持续 **保持连接** 状态，如果 OpenEdge 在下发配置前已断开连接，则重新启动 OpenEdge，在连接状态恢复至 **已连接** 后下发新配置即可（推荐）；或可选择 **下载配置** 按钮，将该新配置下载至本地，然后自行在本地替换，然后再启动 OpenEdge
+- 步骤4: **发布及下发服务配置** 完成核心所需的各个服务的配置后，点击“生成配置”按钮生成当前版本配置，然后再点击“下发配置”按钮将生成的版本配置下发至本地，Baetyl 服务会自动切换、加载该下发的新配置信息，具体可参考[BIE快速入门](https://cloud.baidu.com/doc/BIE/QuickGuide.html)
+    - 此过程要求 Baetyl 持续 **保持连接** 状态，如果 Baetyl 在下发配置前已断开连接，则重新启动 Baetyl，在连接状态恢复至 **已连接** 后下发新配置即可（推荐）；或可选择 **下载配置** 按钮，将该新配置下载至本地，然后自行在本地替换，然后再启动 Baetyl
 - 步骤5: **配置 MQTTBOX 连接信息** 启动 MQTTBOX，配置其与本地 Hub 模块建立连接所需的各配置信息
 - 步骤6: **发送测试数据** 在 MQTTBOX 与本地 Hub 模块建立连接后，向主题 **data** 发送测试数据，然后打开 TSDB 面板，查看是否有数据成功写入，同时打开物可视展示板，观察数据写入的状态
 - 步骤7：**结果验证** 若上述过程顺利，则可以看到刚才已发送的测试已经成功写入 TSDB，并在物可视进行展示。
 
 ## 测试与验证
 
-本节中将会结合 [智能边缘 BIE 云端管理套件](https://console.bce.baidu.com/iot2/edge/)从云端创建 OpenEdge 执行所需的一切配置信息，然后由 智能边缘 BIE 云端管理套件下发本地部署，最后由本地启动 OpenEdge，完成整个测试例的测试与验证。
+本节中将会结合 [智能边缘 BIE 云端管理套件](https://console.bce.baidu.com/iot2/edge/)从云端创建 Baetyl 执行所需的一切配置信息，然后由 智能边缘 BIE 云端管理套件下发本地部署，最后由本地启动 Baetyl，完成整个测试例的测试与验证。
 
-### OpenEdge 主程序配置
+### Baetyl 主程序配置
 
 ```yaml
 version: V2
 services:
   - name: agent
-    image: 'hub.baidubce.com/openedge/openedge-agent:latest'
+    image: 'hub.baidubce.com/baetyl/baetyl-agent:latest'
     replica: 1
     mounts:
       - name: agent-conf-c8a2r4voa-V1
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: agent-cert-c8a2r4voa-V1
-        path: var/db/openedge/cert
+        path: var/db/baetyl/cert
         readonly: true
       - name: agent-volumes-c8a2r4voa-V1
-        path: var/db/openedge/volumes
+        path: var/db/baetyl/volumes
       - name: agent-log-c8a2r4voa-V1
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: dxc-localhub
-    image: 'hub.baidubce.com/openedge/openedge-hub:latest'
+    image: 'hub.baidubce.com/baetyl/baetyl-hub:latest'
     replica: 1
     ports:
       - '1883:1883'
@@ -126,99 +126,99 @@ services:
     env: {}
     mounts:
       - name: dxc-localhub-conf-V1
-        path: etc/openedge
+        path: etc/baetyl
       - name: dxc-localhub-cert-V1
-        path: var/db/openedge/cert
+        path: var/db/baetyl/cert
       - name: dxc-localhub-data-V1
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: dxc-localhub-log-V1
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: dxc-remote-iothub
-    image: 'hub.baidubce.com/openedge/openedge-remote-mqtt:latest'
+    image: 'hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest'
     replica: 1
     env: {}
     mounts:
       - name: dxc-remote-iothub-conf-V1
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: dxc-remote-iothub-cert-V1
-        path: var/db/openedge/cert
+        path: var/db/baetyl/cert
       - name: dxc-remote-iothub-log-V1
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: dxc-function-manager
-    image: 'hub.baidubce.com/openedge/openedge-function-manager:latest'
+    image: 'hub.baidubce.com/baetyl/baetyl-function-manager:latest'
     replica: 1
     env: {}
     mounts:
       - name: dxc-function-manager-conf-V1
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: dxc-function-manager-log-V1
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: dxc-function-filter
-    image: 'hub.baidubce.com/openedge/openedge-function-sql:latest'
+    image: 'hub.baidubce.com/baetyl/baetyl-function-sql:latest'
     replica: 0
     env: {}
     mounts:
       - name: dxc-function-filter-conf-V1
-        path: etc/openedge
+        path: etc/baetyl
 volumes:
   - name: agent-conf-c8a2r4voa-V1
-    path: var/db/openedge/agent-conf-c8a2r4voa/V1
+    path: var/db/baetyl/agent-conf-c8a2r4voa/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxxx
       md5: sXH/NXjPLTn17eNDMRxHTg==
   - name: agent-cert-c8a2r4voa-V1
-    path: var/db/openedge/agent-cert-c8a2r4voa/V1
+    path: var/db/baetyl/agent-cert-c8a2r4voa/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxx
       md5: Bs/LsR58pMh8yuFZnTZlGw==
   - name: agent-volumes-c8a2r4voa-V1
-    path: var/db/openedge
+    path: var/db/baetyl
   - name: agent-log-c8a2r4voa-V1
-    path: var/db/openedge/agent-log
+    path: var/db/baetyl/agent-log
   - name: dxc-localhub-conf-V1
-    path: var/db/openedge/dxc-localhub-conf/V1
+    path: var/db/baetyl/dxc-localhub-conf/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxx
       md5: xacIA6W8XL6ZKS5dsjX0aQ==
   - name: dxc-localhub-cert-V1
-    path: var/db/openedge/dxc-localhub-cert/V1
+    path: var/db/baetyl/dxc-localhub-cert/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxxxx
       md5: mSoMOQHl914HEHKTQiOyDQ==
   - name: dxc-localhub-data-V1
-    path: var/db/openedge/dxc-localhub-data
+    path: var/db/baetyl/dxc-localhub-data
   - name: dxc-localhub-log-V1
-    path: var/db/openedge/dxc-localhub-log
+    path: var/db/baetyl/dxc-localhub-log
   - name: dxc-remote-iothub-conf-V1
-    path: var/db/openedge/dxc-remote-iothub-conf/V1
+    path: var/db/baetyl/dxc-remote-iothub-conf/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxxxxx
       md5: oPDBGL3jRqo38EHnRO9F1w==
   - name: dxc-remote-iothub-cert-V1
-    path: var/db/openedge/dxc-remote-iothub-cert/V1
+    path: var/db/baetyl/dxc-remote-iothub-cert/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxxxxxx
       md5: T7TS786mCX2n9R/O0JpH3Q==
   - name: dxc-remote-iothub-log-V1
-    path: var/db/openedge/dxc-remote-iothub-log
+    path: var/db/baetyl/dxc-remote-iothub-log
   - name: dxc-function-manager-conf-V1
-    path: var/db/openedge/dxc-function-manager-conf/V1
+    path: var/db/baetyl/dxc-function-manager-conf/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxxxxxx
       md5: SOCtclXmEZCGLpQxx7LthQ==
   - name: dxc-function-manager-log-V1
-    path: var/db/openedge/dxc-function-manager-log
+    path: var/db/baetyl/dxc-function-manager-log
   - name: dxc-function-filter-conf-V1
-    path: var/db/openedge/dxc-function-filter-conf/V1
+    path: var/db/baetyl/dxc-function-filter-conf/V1
     meta:
       url: >-
         https://edge.bos.gz.xxxxxxxxxx
@@ -232,9 +232,9 @@ listen:
   - tcp://0.0.0.0:1883
   - ssl://0.0.0.0:8883
 certificate:
-  ca: var/db/openedge/cert/ca.pem
-  cert: var/db/openedge/cert/server.pem
-  key: var/db/openedge/cert/server.key
+  ca: var/db/baetyl/cert/ca.pem
+  cert: var/db/baetyl/cert/server.pem
+  key: var/db/baetyl/cert/server.key
 principals:
   - username: two-way-tls
     permissions:
@@ -250,7 +250,7 @@ principals:
       - action: 'sub'
         permit: ['#']
 logger:
-  path: var/log/openedge/service.log
+  path: var/log/baetyl/service.log
   level: "info"
 ```
 
@@ -278,7 +278,7 @@ functions:
       min: 1
       max: 10
 logger:
-  path: var/log/openedge/service.log
+  path: var/log/baetyl/service.log
   level: "debug"
 ```
 
@@ -304,9 +304,9 @@ remotes:
     address: 'ssl://xxxx.mqtt.iot.bj.baidubce.com:8884'
     clientid: 11dd7422353c46fc8851ef8fb7114533
     username: eqzw9sq/edge_client
-    ca: var/db/openedge/cert/ca.pem
-    cert: var/db/openedge/cert/client.pem
-    key: var/db/openedge/cert/client.key
+    ca: var/db/baetyl/cert/ca.pem
+    cert: var/db/baetyl/cert/client.pem
+    key: var/db/baetyl/cert/client.key
 rules:
   - hub:
       subscriptions:
@@ -318,11 +318,11 @@ rules:
         - topic: data
           qos: 0
 logger:
-  path: var/log/openedge/service.log
+  path: var/log/baetyl/service.log
   level: "debug"
 ```
 
-如上配置，本地 Hub 模块会将主题 **data/filter** 的消息发送给 Remote 远程服务模块（上文创建物接入 Endpoint 已拥有主题 **data/filter** 的订阅权限），然后远程 Hub 模块接收到主题 **data/filter** 的消息触发规则 **openedge-demo** （上文已创建），然后由规则引擎对消息进行封装（以满足 TSDB 规范），传送给 TSDB，最终在物可视进行可视化展示。
+如上配置，本地 Hub 模块会将主题 **data/filter** 的消息发送给 Remote 远程服务模块（上文创建物接入 Endpoint 已拥有主题 **data/filter** 的订阅权限），然后远程 Hub 模块接收到主题 **data/filter** 的消息触发规则 **baetyl-demo** （上文已创建），然后由规则引擎对消息进行封装（以满足 TSDB 规范），传送给 TSDB，最终在物可视进行可视化展示。
 
 ### 测试
 
@@ -347,7 +347,7 @@ logger:
 }
 ```
 
-如按上文的消息处理逻辑，该条消息会被筛选出来，并回传给本地 Hub 服务，再由本地 Hub 服务将数据发送给 Remote 服务，最后上传至云端物接入，经由规则 **openedge-demo** 封装处理，传送给 TSDB，最终在物可视展示。相关示意图如下示。
+如按上文的消息处理逻辑，该条消息会被筛选出来，并回传给本地 Hub 服务，再由本地 Hub 服务将数据发送给 Remote 服务，最后上传至云端物接入，经由规则 **baetyl-demo** 封装处理，传送给 TSDB，最终在物可视展示。相关示意图如下示。
 
 **MQTTBOX 收到处理后的消息**，表示消息已被 Function Filter 服务处理，并将结果回传给了 Hub 服务。
 
@@ -390,7 +390,7 @@ logger:
 
 可见，MQTTBOX 和 MQTT.fx 均未收到被处理后的消息，是因为该条消息不符合 SQL 运行时过滤规则（本文 case 为 `temperature < 50`）被过滤掉了。
 
-同理，规则引擎 **openedge-demo**、TSDB 和物可视均不会收到该处理后的消息。
+同理，规则引擎 **baetyl-demo**、TSDB 和物可视均不会收到该处理后的消息。
 
 为更清晰地在云端展示处理后的结果，我们写入多条符合要求的数据，得到对应的 TSDB 和物可视的展示效果如下图示。
 
@@ -410,4 +410,4 @@ logger:
 
 ![物可视收到多条处理结果](../../images/practice/write-tsdb/practice-iotvz-multi-view.png)
 
-至此，通过 OpenEdge 将数据写入 TSDB 及物可视进行可视化展示就全部结束了。
+至此，通过 Baetyl 将数据写入 TSDB 及物可视进行可视化展示就全部结束了。

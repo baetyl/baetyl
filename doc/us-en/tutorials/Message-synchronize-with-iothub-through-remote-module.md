@@ -1,17 +1,17 @@
-# Message Synchronize between OpenEdge and Baidu IoT Hub via Remote Module
+# Message Synchronize between Baetyl and Baidu IoT Hub via Remote Module
 
 **Statement**
 
 - The operating system as mentioned in this document is Ubuntu18.04.
-- It should be installed for OpenEdge when you read this document, more details please refer to [How-to-quick-install-OpenEdge](../setup/Quick-Install.md)
+- It should be installed for Baetyl when you read this document, more details please refer to [How-to-quick-install-Baetyl](../setup/Quick-Install.md)
 - The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
-- The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/openedge/openedge-hub:latest`、`hub.baidubce.com/openedge/openedge-remote-mqtt:latest`
-- Docker images compiled from the OpenEdge source code also can be used. More detailed contents please refer to [Build OpenEdge from source](../setup/Build-OpenEdge-from-Source.md)
+- The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
+- Docker images compiled from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../setup/Build-Baetyl-from-Source.md)
 - The Remote Hub as mentioned in this document is [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-**NOTE**：Darwin can install OpenEdge by using OpenEdge source code. Please see [How to build image from source code](../setup/Build-OpenEdge-from-Source.md).
+**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-Baetyl-from-Source.md).
 
-The Remote Module was developed to meet the needs of the IoT scenario. The OpenEdge(via Local Hub Module) can synchronize message with Remote Hub services([Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)) via the Remote Module. That is to say, through the Remote Module, we can either subscribe the message from Remote Hub and publish it to the Local Hub Module or subscribe the message from Local Hub Module and publish it to Remote Hub service. The configuration of Remote Module can refer to [Remote Module Configuration](./Config-interpretation.md).
+The Remote Module was developed to meet the needs of the IoT scenario. The Baetyl(via Local Hub Module) can synchronize message with Remote Hub services([Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)) via the Remote Module. That is to say, through the Remote Module, we can either subscribe the message from Remote Hub and publish it to the Local Hub Module or subscribe the message from Local Hub Module and publish it to Remote Hub service. The configuration of Remote Module can refer to [Remote Module Configuration](./Config-interpretation.md).
 
 ## Workflow
 
@@ -19,7 +19,7 @@ The Remote Module was developed to meet the needs of the IoT scenario. The OpenE
 - Step 2：Select MQTT.fx as the MQTT client that used to connect to Baidu IoT Hub.
   - If connect successfully, then do the following next.
   - If connect unsuccessfully, then retry it until it connect successfully. More detailed contents can refer to [How to connect to Baidu IoT Hub via MQTT.fx](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E6.95.B0.E6.8D.AE.E5.9E.8B.E9.A1.B9.E7.9B.AE)。
-- Step 3：Startup OpenEdge in docker container mode, and observe the log of OpenEdge.
+- Step 3：Startup Baetyl in docker container mode, and observe the log of Baetyl.
   - If the Local Hub Module and Remote Module start successfully, then do the following next.
   - If the Local Hub Module and Remote Module start unsuccessfully, then retry `Step 3` until they start successfully.
 - Step 4：Select MQTTBOX as the MQTT client that used to connect to the Local Hub.
@@ -30,66 +30,66 @@ The Remote Module was developed to meet the needs of the IoT scenario. The OpenE
 
 The workflow diagram are as follows.
 
-![using Remote Module to synchronize message](../../images/tutorials/remote/openedge-remote-flow.png)
+![using Remote Module to synchronize message](../../images/tutorials/remote/baetyl-remote-flow.png)
 
 ## Message Synchronize via Remote Module
 
-Configuration file location for the OpenEdge main program is: `var/db/openedge/application.yml`.
+Configuration file location for the Baetyl main program is: `var/db/baetyl/application.yml`.
 
-The configuration of OpenEdge Master are as follows:
+The configuration of Baetyl Master are as follows:
 
 ```yaml
 version: v0
 services:
   - name: localhub
-    image: hub.baidubce.com/openedge/openedge-hub:latest
+    image: hub.baidubce.com/baetyl/baetyl-hub:latest
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
       - name: localhub-cert
-        path: var/db/openedge/cert
+        path: var/db/baetyl/cert
    - name: remote-iothub
-    image: hub.baidubce.com/openedge/openedge-remote-mqtt:latest
+    image: hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest
     replica: 1
     mounts:
       - name: remote-iothub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: remote-iothub-cert
-        path: var/db/openedge/cert
+        path: var/db/baetyl/cert
         readonly: true
       - name: remote-iothub-log
-        path: var/log/openedge
+        path: var/log/baetyl
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   - name: localhub-cert
-    path: var/db/openedge/localhub-cert-only-for-test
+    path: var/db/baetyl/localhub-cert-only-for-test
   # remote mqtt
   - name: remote-iothub-conf
-    path: var/db/openedge/remote-iothub-conf
+    path: var/db/baetyl/remote-iothub-conf
   - name: remote-iothub-cert
-    path: var/db/openedge/remote-iothub-cert
+    path: var/db/baetyl/remote-iothub-cert
   - name: remote-iothub-log
-    path: var/db/openedge/remote-iothub-log
+    path: var/db/baetyl/remote-iothub-log
 ```
 
-Configuration file location for the Remote module is: `var/db/openedge/remote-iothub-conf/application.yml`.
+Configuration file location for the Remote module is: `var/db/baetyl/remote-iothub-conf/application.yml`.
 
-The configuration of OpenEdge Remote module are as follows:
+The configuration of Baetyl Remote module are as follows:
 
 ```yaml
 name: remote-iothub
@@ -102,9 +102,9 @@ remotes:
     address: 'ssl://h7gvsuh.mqtt.iot.bj.baidubce.com:1884'
     clientid: 11dd7422353c46fc8851ef8fb7114509
     username: h7gvsuh/test_edge_client
-    ca: var/db/openedge/cert/ca.pem
-    cert: var/db/openedge/cert/client.pem
-    key: var/db/openedge/cert/client.key
+    ca: var/db/baetyl/cert/ca.pem
+    cert: var/db/baetyl/cert/client.pem
+    key: var/db/baetyl/cert/client.key
 rules:
   - hub:
       subscriptions:
@@ -115,7 +115,7 @@ rules:
         - topic: t2
           qos: 1
 logger:
-  path: var/log/openedge/service.log
+  path: var/log/baetyl/service.log
   level: "debug"
 ```
 
@@ -151,15 +151,15 @@ After the connection is established, switch to the `Subscribe` page and subscrib
 
 ### Establish a Connection between MQTTBOX and the Local Hub Module
 
-As described in `Step 3`, the Local Hub Module and Remote Module also loaded when OpenEdge started. More detailed contents are shown below.
+As described in `Step 3`, the Local Hub Module and Remote Module also loaded when Baetyl started. More detailed contents are shown below.
 
-![OpenEdge successfully load Hub、Remote](../../images/tutorials/remote/openedge-hub-remote-start.png)
+![Baetyl successfully load Hub、Remote](../../images/tutorials/remote/baetyl-hub-remote-start.png)
 
 In addition, we can execute the command `docker ps` to view the list of docker containers currently running on the system.
 
-![View the list of docker containers currently running](../../images/tutorials/remote/openedge-docker-ps-hub-remote-run.png)
+![View the list of docker containers currently running](../../images/tutorials/remote/baetyl-docker-ps-hub-remote-run.png)
 
-After OpenEdge successfully startup, set the configuration of connection, then establish the connection with the Local Hub Module and subscribe the topic `t2`.
+After Baetyl successfully startup, set the configuration of connection, then establish the connection with the Local Hub Module and subscribe the topic `t2`.
 
 ![MQTTBOX successfully subscribe the topic t2](../../images/tutorials/remote/mqttbox-sub-t2-success.png)
 

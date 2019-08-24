@@ -1,13 +1,13 @@
-# OpenEdge Configuration Interpretation
+# Baetyl Configuration Interpretation
 
 - [Statement](#statement)
 - [Master Configuration](#master-configuration)
 - [Application Configuration](#application-configuration)
-- [openedge-agent Configuration](#openedge-agent-configuration)
-- [openedge-hub Configuration](#openedge-hub-configuration)
-- [openedge-function-manager Configuration](#openedge-function-manager-configuration)
-- [openedge-function-python27、openedge-function-python36 Configuration](#openedge-function-python27-configuration-openedge-function-python36-configuration)
-- [openedge-remote-mqtt Configuration](#openedge-remote-mqtt-configuration)
+- [baetyl-agent Configuration](#baetyl-agent-configuration)
+- [baetyl-hub Configuration](#baetyl-hub-configuration)
+- [baetyl-function-manager Configuration](#baetyl-function-manager-configuration)
+- [baetyl-function-python27、baetyl-function-python36 Configuration](#baetyl-function-python27-configuration-baetyl-function-python36-configuration)
+- [baetyl-remote-mqtt Configuration](#baetyl-remote-mqtt-configuration)
 
 ## Statement
 
@@ -20,7 +20,7 @@ Configuration examples can be found in the `example` directory of this project.
 
 ## Master Configuration
 
-The Master configuration and application configuration are separated. The default configuration file is `etc/openedge/openedge.yml` in the working directory. The configuration is interpreted as follows:
+The Master configuration and application configuration are separated. The default configuration file is `etc/baetyl/baetyl.yml` in the working directory. The configuration is interpreted as follows:
 
 ```yaml
 mode: The default value is `docker`, running mode of services. **docker** container mode or **native** process mode
@@ -42,7 +42,7 @@ logger: Logger configuration
 
 ## Application Configuration
 
-The default configuration file for the application configuration is `var/db/openedge/application.yml` in the working directory. The configuration is interpreted as follows:
+The default configuration file for the application configuration is `var/db/baetyl/application.yml` in the working directory. The configuration is interpreted as follows:
 
 ```yaml
 version: Application version
@@ -89,7 +89,7 @@ volumes: Storage volume list
     path: [MUST] The path of the storage volume on the host, relative to the working directory of the Master
 ```
 
-## openedge-agent Configuration
+## baetyl-agent Configuration
 
 ```yaml
 remote:
@@ -117,7 +117,7 @@ remote:
     topic: The template of desire topic. No configuration required
 ```
 
-## openedge-hub Configuration
+## baetyl-hub Configuration
 
 ```yaml
 listen: [MUST] Listening address, for example
@@ -189,15 +189,15 @@ logger: Logger configuration
     max: The default value is `15`, the maximum number of log files to keep.
 status: Service status configuration
   logging:
-    enable: The default value is `false`, means whether to print openedge status information.
-    interval: The default value is `60s`, means interval of printing openedge status information.
+    enable: The default value is `false`, means whether to print baetyl status information.
+    interval: The default value is `60s`, means interval of printing baetyl status information.
 storage: Database storage configuration
-  dir: The default value is `var/db/openedge/data`, means database storage directory.
+  dir: The default value is `var/db/baetyl/data`, means database storage directory.
 shutdown: Service exit configuration
   timeout: The default value is `10m`, means timeout of service exit.
 ```
 
-## openedge-function-manager Configuration
+## baetyl-function-manager Configuration
 
 ```yaml
 hub:
@@ -240,11 +240,11 @@ functions:
     timeout: The default value is `30s`, Client connection function instance timeout
 ```
 
-## openedge-function-python27、openedge-function-python36 Configuration
+## baetyl-function-python27、baetyl-function-python36 Configuration
 
 ```yaml
 # the configurations of the two modules are the same, so we can follow this sample below
-server: GRPC Server configuration; Do not configure if the instances of this service are managed by openedge-function-manager
+server: GRPC Server configuration; Do not configure if the instances of this service are managed by baetyl-function-manager
   address: GRPC Server address, <host>:<port>
   workers:
     max: The default value is the number of CPU core multiplied by 5, the maximum capacity of the thread pool
@@ -272,7 +272,7 @@ logger: Logger configuration
     max: The default value is `15`, the maximum number of log files to keep.
 ```
 
-## openedge-remote-mqtt Configuration
+## baetyl-remote-mqtt Configuration
 
 ```yaml
 hub:
@@ -332,7 +332,7 @@ logger: Logger configuration
     max: The default value is `15`, the maximum number of log files to keep.
 ```
 
-## openedge-timer Configuration
+## baetyl-timer Configuration
 
 ```yaml
 hub: Hub configuration

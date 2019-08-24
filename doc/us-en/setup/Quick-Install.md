@@ -1,14 +1,14 @@
-# Quick Install OpenEdge
+# Quick Install Baetyl
 
-Compared to manually download software in previous version, it supports installing `OpenEdge` through package manager in latest version(0.1.5). With this method, users can quickly install `OpenEdge` by simply typing a few commands at terminal.
+Compared to manually download software in previous version, it supports installing `Baetyl` through package manager in latest version(0.1.5). With this method, users can quickly install `Baetyl` by simply typing a few commands at terminal.
 
 Installation packages are provided for Ubuntu16.04, Ubuntu18.04, Debian9, CentOS7 and Raspbian-stretch currently. The supported platforms are amd64, i386, armv7l, and arm64.
 
-OpenEdge supports two running modes: **docker** container mode and **native** process mode. This document will be described in **docker** container mode.
+Baetyl supports two running modes: **docker** container mode and **native** process mode. This document will be described in **docker** container mode.
 
 ## Install the container runtime
 
-OpenEdge relies on docker container runtime in **docker** container mode. Users can install docker (for Linux-like systems) with the following command if it's not installed yet:
+Baetyl relies on docker container runtime in **docker** container mode. Users can install docker (for Linux-like systems) with the following command if it's not installed yet:
 
 ```shell
 curl -sSL https://get.docker.com | sh
@@ -24,42 +24,42 @@ docker version
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 
-## Install OpenEdge
+## Install Baetyl
 
-The rpm and deb packages will be released accordingly when OpenEdge releases a new version. Users can install OpenEdge to the device through package manager with following command:
+The rpm and deb packages will be released accordingly when Baetyl releases a new version. Users can install Baetyl to the device through package manager with following command:
 
 ```shell
-curl -sSL http://download.openedge.tech/install.sh | sudo -E bash -
+curl -sSL http://dl.baetyl.io/install.sh | sudo -E bash -
 ```
 
-If everything is ok, OpenEdge will be installed on the `/usr/local` directory after the execution is complete.
+If everything is ok, Baetyl will be installed on the `/usr/local` directory after the execution is complete.
 
-The latest version of OpenEdge uses `Systemd` as a daemon, and users can start OpenEdge with the following command:
+The latest version of Baetyl uses `Systemd` as a daemon, and users can start Baetyl with the following command:
 
 ```shell
-sudo systemctl start openedge
+sudo systemctl start baetyl
 ```
 
-stop OpenEdge:
+stop Baetyl:
 
 ```shell
-sudo systemctl stop openedge
+sudo systemctl stop baetyl
 ```
 
-If users only want to run OpenEdge in the foreground, execute the following command::
+If users only want to run Baetyl in the foreground, execute the following command::
 
 ```shell
-sudo openedge start
+sudo baetyl start
 ```
 
 ## Import the example configuration (optional)
 
-As an edge computing framework, OpenEdge provides MQTT connect service through hub module, provides local functional service through function manager module and some runtime modules like python27, python36, nodejs85, sql and so on. What's more, all the modules are started by OpenEdge main program through a configuration file. More detailed contents about the module's configuration please refer to [Configuration Interpretation](../tutorials/Config-interpretation.md) for further information.
+As an edge computing framework, Baetyl provides MQTT connect service through hub module, provides local functional service through function manager module and some runtime modules like python27, python36, nodejs85, sql and so on. What's more, all the modules are started by Baetyl main program through a configuration file. More detailed contents about the module's configuration please refer to [Configuration Interpretation](../tutorials/Config-interpretation.md) for further information.
 
-OpenEdge officially provides an example configuration for some module which can be imported using following command:
+Baetyl officially provides an example configuration for some module which can be imported using following command:
 
 ```shell
-curl -sSL http://download.openedge.tech/install_with_docker_example.sh | sudo -E bash -
+curl -sSL http://dl.baetyl.io/install_with_docker_example.sh | sudo -E bash -
 ```
 
 The example configuration is for learning and testing purposes only. Users should perform on-demand configuration according to actual working scenarios.
@@ -68,14 +68,14 @@ There is no need to import any configuration files if no modules need to launch.
 
 ## Verify successful installation
 
-After installation, users can verify whether OpenEdge is successfully installed or not by the following steps:
+After installation, users can verify whether Baetyl is successfully installed or not by the following steps:
 
-- executing the command `sudo systemctl status openedge` to check whether `openedge` is running, as shown below. Otherwise, `openedge` fails to start.
+- executing the command `sudo systemctl status baetyl` to check whether `baetyl` is running, as shown below. Otherwise, `baetyl` fails to start.
 
-![OpenEdge](../../images/setup/openedge-systemctl-status.png)
+![Baetyl](../../images/setup/baetyl-systemctl-status.png)
 
-- Executing the command `docker stats` to view the running status of docker containers. Since the main program openedge will first pull required images from docker mirror repository, it will take 2~5 minutes to see the openedge starts successfully. Take the example configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
+- Executing the command `docker stats` to view the running status of docker containers. Since the main program baetyl will first pull required images from docker mirror repository, it will take 2~5 minutes to see the baetyl starts successfully. Take the example configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
 
 ![docker stats](../../images/setup/docker-stats.png)
 
-- Under the condition of two above failures, you need to view the log of main program. And the log file which is stored in /usr/local/var/log/openedge/openedge.log by default. Once found errors in the log file, users can refer to [FAQ](../FAQ.md). If necessary, just [Submit an issue](https://github.com/baidu/openedge/issues).
+- Under the condition of two above failures, you need to view the log of main program. And the log file which is stored in /usr/local/var/log/baetyl/baetyl.log by default. Once found errors in the log file, users can refer to [FAQ](../FAQ.md). If necessary, just [Submit an issue](https://github.com/baetyl/baetyl/issues).

@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
-	_ "github.com/baidu/openedge/master/engine/native"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	_ "github.com/baetyl/baetyl/master/engine/native"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,8 +35,8 @@ func TestUpdateAPP(t *testing.T) {
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
-	badapp := path.Join("var", "db", "openedge", "app", "v5", "application.yml")
-	goodapp := path.Join("var", "db", "openedge", "app", "v2", "application.yml")
+	badapp := path.Join("var", "db", "baetyl", "app", "v5", "application.yml")
+	goodapp := path.Join("var", "db", "baetyl", "app", "v2", "application.yml")
 
 	// round 1: failed to reload
 	utils.CopyFile(badapp, appConfigFile)
@@ -47,8 +47,8 @@ func TestUpdateAPP(t *testing.T) {
 		pwd:       pwd,
 		accounts:  cmap.New(),
 		services:  cmap.New(),
-		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
-		log:       logger.WithField("openedge", "master"),
+		infostats: newInfoStats(pwd, "native", "", "var/run/baetyl.stats"),
+		log:       logger.WithField("baetyl", "master"),
 	}
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
@@ -119,8 +119,8 @@ func TestUpdateSystemAPP(t *testing.T) {
 		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
-		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
-		log:       logger.WithField("openedge", "master"),
+		infostats: newInfoStats(pwd, "native", "", "var/run/baetyl.stats"),
+		log:       logger.WithField("baetyl", "master"),
 	}
 	err = utils.UnmarshalYAML(nil, &m.cfg)
 	assert.NoError(t, err)
@@ -129,14 +129,14 @@ func TestUpdateSystemAPP(t *testing.T) {
 	defer m.Wait()
 	defer m.Close()
 
-	target := path.Join("var", "db", "openedge", "app")
+	target := path.Join("var", "db", "baetyl", "app")
 	err = m.UpdateSystem("", "APP", path.Join(target, "v4"))
-	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory")
+	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory")
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+	assert.Equal(t, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory", m.infostats.getError())
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v5"))
 	assert.EqualError(t, err, "failed to update system: failed to start app: volume 'cmd-bin' not found")
@@ -144,16 +144,16 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "failed to update system: failed to start app: volume 'cmd-bin' not found", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v6"))
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
+	assert.Contains(t, err.Error(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v1"))
 	assert.NoError(t, err)
@@ -161,22 +161,22 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v4"))
-	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory")
+	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory")
 	assert.Equal(t, "v1", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: failed to reload config: open var/db/openedge/app/v4/application.yml: no such file or directory", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+	assert.Equal(t, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory", m.infostats.getError())
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v2"))
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v5", "application.yml"))
 	assert.EqualError(t, err, "failed to update system: failed to start app: volume 'cmd-bin' not found")
@@ -184,30 +184,30 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "failed to update system: failed to start app: volume 'cmd-bin' not found", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v3", "application.yml"))
 	assert.Equal(t, "v3", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v6", "application.yml"))
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
+	assert.Contains(t, err.Error(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "v3", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/openedge/cmd-nonexist/package.yml: no such file or directory")
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTARollingBack, openedge.OTARolledBack)
+	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v2", "application.yml"))
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
-	checkOTALog(t, openedge.OTAUpdating, openedge.OTAUpdated)
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 }
 
 func TestUpdateSystemAPP2(t *testing.T) {
@@ -226,17 +226,17 @@ func TestUpdateSystemAPP2(t *testing.T) {
 
 	pwd, err := os.Getwd()
 	assert.NoError(t, err)
-	badapp := path.Join("var", "db", "openedge", "app", "v5", "application.yml")
-	goodapp := path.Join("var", "db", "openedge", "app", "v2", "application.yml")
-	otalog := "var/db/openedge/ota.log"
+	badapp := path.Join("var", "db", "baetyl", "app", "v5", "application.yml")
+	goodapp := path.Join("var", "db", "baetyl", "app", "v2", "application.yml")
+	otalog := "var/db/baetyl/ota.log"
 
 	m := &Master{
 		pwd:       pwd,
 		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
-		infostats: newInfoStats(pwd, "native", "", "var/run/openedge.stats"),
-		log:       logger.WithField("openedge", "master"),
+		infostats: newInfoStats(pwd, "native", "", "var/run/baetyl.stats"),
+		log:       logger.WithField("baetyl", "master"),
 	}
 	err = utils.UnmarshalYAML(nil, &m.cfg)
 	assert.NoError(t, err)
@@ -366,8 +366,8 @@ func TestUpdateSystemAPP2(t *testing.T) {
 }
 
 func checkOTALog(t *testing.T, ss ...string) {
-	defer os.RemoveAll("var/db/openedge/ota.log")
-	fi, err := os.Open("var/db/openedge/ota.log")
+	defer os.RemoveAll("var/db/baetyl/ota.log")
+	fi, err := os.Open("var/db/baetyl/ota.log")
 	assert.NoError(t, err)
 	defer fi.Close()
 

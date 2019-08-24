@@ -4,28 +4,28 @@
 - [启动约定](#启动约定)
 - [SDK](#sdk)
 
-在开发自定义模块前请阅读[从源码编译 OpenEdge](../setup/Build-OpenEdge-from-Source.md)，了解 OpenEdge 的编译环境要求。
+在开发自定义模块前请阅读[从源码编译 Baetyl](../setup/Build-Baetyl-from-Source.md)，了解 Baetyl 的编译环境要求。
 
 自定义模块不限定开发语言，可运行即可，基本没有限制，甚至可以直接使用 `hub.docker.com` 上已有的镜像，比如 `eclipse-mosquitto`。但是了解下面介绍的约定，有利于更好、更快地开发自定义模块。
 
 ## 目录约定
 
-目前，进程模式和容器模式一样，会为每个服务开辟独立的工作空间，虽然达不到隔离的效果，但是可以保证用户使用体验的一致。进程模式会在 `var/run/openedge/services` 目录下为每个服务创建一个以服务名称命名的目录，服务程序启动时会指定该目录为工作目录，服务绑定的存储卷（volume）会映射（软链）到工作目录下。这里我们沿用容器模式的叫法，把该目录下的空间也称作容器，那么容器中的目录有如下推荐的使用方式：
+目前，进程模式和容器模式一样，会为每个服务开辟独立的工作空间，虽然达不到隔离的效果，但是可以保证用户使用体验的一致。进程模式会在 `var/run/baetyl/services` 目录下为每个服务创建一个以服务名称命名的目录，服务程序启动时会指定该目录为工作目录，服务绑定的存储卷（volume）会映射（软链）到工作目录下。这里我们沿用容器模式的叫法，把该目录下的空间也称作容器，那么容器中的目录有如下推荐的使用方式：
 
 - 容器中默认工作目录：`/`
-- 容器中默认配置文件：`/etc/openedge/service.yml`
-- 容器中默认持久化路径：`/var/db/openedge`
-- 容器中默认日志路径：`/var/log/openedge`
+- 容器中默认配置文件：`/etc/baetyl/service.yml`
+- 容器中默认持久化路径：`/var/db/baetyl`
+- 容器中默认日志路径：`/var/log/baetyl`
 
 **注意**：如果数据需要持久化在设备（宿主机）上，比如数据库和日志，必须通过存储卷将容器中的目录映射到宿主机目录上，否者服务停止后数据会丢失。
 
 ## 启动约定
 
-模块启动的方式没有过多要求，推荐从默认文件中加载YMAL格式的配置，然后运行模块的业务逻辑，最后监听 `SIGTERM` 信号来优雅退出。一个简单的 `Golang` 模块实现可参考 MQTT 远程通讯模块（`openedge-remote-mqtt`）。
+模块启动的方式没有过多要求，推荐从默认文件中加载YMAL格式的配置，然后运行模块的业务逻辑，最后监听 `SIGTERM` 信号来优雅退出。一个简单的 `Golang` 模块实现可参考 MQTT 远程通讯模块（`baetyl-remote-mqtt`）。
 
 ## SDK
 
-如果模块使用 `Golang` 开发，可使用 OpenEdge 提供的 SDK，位于该项目的 sdk 目录中，由 `Context` 提供功能接口。目前，提供的 SDK 能力还比较有限，后续会逐渐加强。
+如果模块使用 `Golang` 开发，可使用 Baetyl 提供的 SDK，位于该项目的 sdk 目录中，由 `Context` 提供功能接口。目前，提供的 SDK 能力还比较有限，后续会逐渐加强。
 
 `Context` 接口列表如下：
 
@@ -68,8 +68,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/baidu/openedge/protocol/mqtt"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baetyl/baetyl/protocol/mqtt"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 // 自定义模块的自定义配置，
@@ -81,8 +81,8 @@ type config struct {
 }
 
 func main() {
-	// 模块在 OpenEdge 的 Context 中启动，SDK 的功能均由 Context 提供
-	openedge.Run(func(ctx openedge.Context) error {
+	// 模块在 Baetyl 的 Context 中启动，SDK 的功能均由 Context 提供
+	baetyl.Run(func(ctx baetyl.Context) error {
 		var cfg config
 		// 加载自定义配置
 		err := ctx.LoadConfig(&cfg)
@@ -119,7 +119,7 @@ func main() {
 }
 ```
 
-`openedge-timer` 的配置中，`hub` 属于系统配置，`timer` 和 `publish` 是该模块的自定义配置。
+`baetyl-timer` 的配置中，`hub` 属于系统配置，`timer` 和 `publish` 是该模块的自定义配置。
 
 ```yaml
 hub:

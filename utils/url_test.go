@@ -15,26 +15,26 @@ func TestParseURL(t *testing.T) {
 	}{
 		{
 			name: "unix-1",
-			addr: "unix:///var/run/openedge.sock",
+			addr: "unix:///var/run/baetyl.sock",
 			want: &url.URL{
 				Scheme: "unix",
-				Host:   "/var/run/openedge.sock",
+				Host:   "/var/run/baetyl.sock",
 			},
 		},
 		{
 			name: "unix-2",
-			addr: "unix://./var/run/openedge.sock",
+			addr: "unix://./var/run/baetyl.sock",
 			want: &url.URL{
 				Scheme: "unix",
-				Host:   "./var/run/openedge.sock",
+				Host:   "./var/run/baetyl.sock",
 			},
 		},
 		{
 			name: "unix-3",
-			addr: "unix://var/run/openedge.sock",
+			addr: "unix://var/run/baetyl.sock",
 			want: &url.URL{
 				Scheme: "unix",
-				Host:   "var/run/openedge.sock",
+				Host:   "var/run/baetyl.sock",
 			},
 		},
 		{

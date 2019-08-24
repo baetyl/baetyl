@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/protocol/http"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/protocol/http"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 )
 
 // Master master interface
@@ -17,7 +17,7 @@ type Master interface {
 	Auth(u, p string) bool
 
 	// for system
-	InspectSystem() *openedge.Inspect
+	InspectSystem() *baetyl.Inspect
 	UpdateSystem(trace, tp, target string) error
 
 	// for instance
@@ -71,29 +71,29 @@ func (s *Server) inspectSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 /**********************************
 agent version < 0.1.4
 {
-	"file": "var/db/openedge/app/V1"
+	"file": "var/db/baetyl/app/V1"
 }
 ***********************************/
 /**********************************
 agent version = 0.1.4
 {
-	"path": "var/db/openedge/app/V1"
+	"path": "var/db/baetyl/app/V1"
 }
 ***********************************/
 /**********************************
 agent version > 0.1.4
-// master will write the ota log to 'var/db/openedge/ota.log'
-// agent will report the content of 'var/db/openedge/ota.log' to cloud.
+// master will write the ota log to 'var/db/baetyl/ota.log'
+// agent will report the content of 'var/db/baetyl/ota.log' to cloud.
 // update application
 {
 	"type": "APP"
-	"path": "var/db/openedge/ota/app/V1"
+	"path": "var/db/baetyl/ota/app/V1"
 	"trace": "xxxx-xx-xx-xxxxxxxx"
 }
 // update master
 {
 	"type": "MST"
-	"path": "var/db/openedge/ota/mst/0.1.6/openedge"
+	"path": "var/db/baetyl/ota/mst/0.1.6/baetyl"
 	"trace": "xxxx-xx-xx-xxxxxxxx"
 }
 ***********************************/
@@ -188,7 +188,7 @@ func (s *Server) inspectSystemV0(_ http.Params, reqBody []byte) ([]byte, error) 
 	return toInspectSystemV0(s.m.InspectSystem())
 }
 
-func toInspectSystemV0(v1 *openedge.Inspect) ([]byte, error) {
+func toInspectSystemV0(v1 *baetyl.Inspect) ([]byte, error) {
 	v0 := &InspectV0{
 		Time:     v1.Time,
 		Error:    v1.Error,
@@ -217,20 +217,20 @@ func toInspectSystemV0(v1 *openedge.Inspect) ([]byte, error) {
 	return json.Marshal(v0)
 }
 
-// InspectV0 all openedge information and status inspected
+// InspectV0 all baetyl information and status inspected
 type InspectV0 struct {
 	// exception information
 	Error string `json:"error,omitempty"`
 	// inspect time
 	Time time.Time `json:"time,omitempty"`
 	// software information
-	Software openedge.Software `json:"software,omitempty"`
+	Software baetyl.Software `json:"software,omitempty"`
 	// hardware information
 	Hardware HardwareV0 `json:"hardware,omitempty"`
 	// service information, including service name, instance running status, etc.
-	Services openedge.Services `json:"services,omitempty"`
+	Services baetyl.Services `json:"services,omitempty"`
 	// storage volume information, including name and version
-	Volumes openedge.Volumes `json:"volumes,omitempty"`
+	Volumes baetyl.Volumes `json:"volumes,omitempty"`
 }
 
 // HardwareV0 hardware information

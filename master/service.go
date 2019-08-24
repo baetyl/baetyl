@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baetyl/baetyl/master/engine"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -21,8 +21,8 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) startServices(cur openedge.AppConfig) error {
-	volumes := map[string]openedge.VolumeInfo{}
+func (m *Master) startServices(cur baetyl.AppConfig) error {
+	volumes := map[string]baetyl.VolumeInfo{}
 	for _, v := range cur.Volumes {
 		// for preventing path escape
 		v.Path = path.Join(m.pwd, path.Join("/", v.Path))
@@ -34,8 +34,8 @@ func (m *Master) startServices(cur openedge.AppConfig) error {
 		}
 		token := uuid.Generate().String()
 		m.accounts.Set(s.Name, token)
-		s.Env[openedge.EnvServiceNameKey] = s.Name
-		s.Env[openedge.EnvServiceTokenKey] = token
+		s.Env[baetyl.EnvServiceNameKey] = s.Name
+		s.Env[baetyl.EnvServiceTokenKey] = token
 		nxt, err := m.engine.Run(s, volumes)
 		if err != nil {
 			m.log.Infof("failed to start service (%s)", s.Name)
@@ -101,8 +101,8 @@ func (m *Master) StopInstance(service, instance string) error {
 }
 
 // DiffServices returns the services not changed
-func diffServices(cur, old openedge.AppConfig) map[string]struct{} {
-	oldVolumes := make(map[string]openedge.VolumeInfo)
+func diffServices(cur, old baetyl.AppConfig) map[string]struct{} {
+	oldVolumes := make(map[string]baetyl.VolumeInfo)
 	for _, o := range old.Volumes {
 		oldVolumes[o.Name] = o
 	}
@@ -114,7 +114,7 @@ func diffServices(cur, old openedge.AppConfig) map[string]struct{} {
 		}
 	}
 
-	oldServices := make(map[string]openedge.ServiceInfo)
+	oldServices := make(map[string]baetyl.ServiceInfo)
 	for _, o := range old.Services {
 		oldServices[o.Name] = o
 	}

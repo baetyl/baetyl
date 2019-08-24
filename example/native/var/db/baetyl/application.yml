@@ -1,0 +1,196 @@
+version: v0
+services:
+  - name: localhub
+    image: baetyl-hub
+    replica: 1
+    mounts:
+      - name: localhub-conf
+        path: etc/baetyl
+        readonly: true
+      - name: localhub-cert
+        path: var/db/baetyl/cert
+        readonly: true
+      - name: localhub-data
+        path: var/db/baetyl/data
+      - name: localhub-log
+        path: var/log/baetyl
+      # native process mode only
+      - name: baetyl-hub-bin
+        path: lib/baetyl/baetyl-hub
+        readonly: true
+  # - name: agent
+  #   image: baetyl-agent
+  #   replica: 1
+  #   mounts:
+  #     - name: agent-conf
+  #       path: etc/baetyl
+  #       readonly: true
+  #     - name: agent-cert
+  #       path: var/db/baetyl/cert
+  #       readonly: true
+  #     - name: agent-volumes
+  #       path: var/db/baetyl/volumes
+  #     - name: agent-log
+  #       path: var/log/baetyl
+  #     - name: baetyl-log
+  #       path: var/db/baetyl/baetyl-log/
+  #     # native process mode only
+  #     - name: baetyl-agent-bin
+  #       path: lib/baetyl/baetyl-agent
+  #       readonly: true
+  # - name: remote-iothub
+  #   image: baetyl-remote-mqtt
+  #   replica: 1
+  #   mounts:
+  #     - name: remote-iothub-conf
+  #       path: etc/baetyl
+  #       readonly: true
+  #     - name: remote-iothub-cert
+  #       path: var/db/baetyl/cert
+  #       readonly: true
+  #     - name: remote-iothub-log
+  #       path: var/log/baetyl
+  #     # native process mode only
+  #     - name: baetyl-remote-mqtt-bin
+  #       path: lib/baetyl/baetyl-remote-mqtt
+  #       readonly: true
+  - name: function-manager
+    image: baetyl-function-manager
+    replica: 1
+    mounts:
+      - name: function-manager-conf
+        path: etc/baetyl
+        readonly: true
+      - name: function-manager-log
+        path: var/log/baetyl
+      # native process mode only
+      - name: baetyl-function-manager-bin
+        path: lib/baetyl/baetyl-function-manager
+        readonly: true
+  - name: function-python27-sayhi
+    image: baetyl-function-python27
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/baetyl
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/baetyl/function-sayhi
+        readonly: true
+      # native process mode only
+      - name: baetyl-function-python27-bin
+        path: lib/baetyl/baetyl-function-python27
+        readonly: true
+  - name: function-python36-sayhi
+    image: baetyl-function-python36
+    replica: 0
+    mounts:
+      - name: function-sayhi-conf
+        path: etc/baetyl
+        readonly: true
+      - name: function-sayhi-code
+        path: var/db/baetyl/function-sayhi
+        readonly: true
+      # native process mode only
+      - name: baetyl-function-python36-bin
+        path: lib/baetyl/baetyl-function-python36
+        readonly: true
+  - name: function-node85-sayhi
+    image: baetyl-function-node85
+    replica: 0
+    mounts:
+      - name: function-sayjs-conf
+        path: etc/baetyl
+        readonly: true
+      - name: function-sayjs-code
+        path: var/db/baetyl/function-sayhi
+        readonly: true
+      # native process mode only
+      - name: baetyl-function-node85-bin
+        path: lib/baetyl/baetyl-function-node85
+        readonly: true
+  # - name: function-sql-filter
+  #   image: baetyl-function-sql
+  #   replica: 0
+  #   mounts:
+  #     - name: function-filter-conf
+  #       path: etc/baetyl
+  #       readonly: true
+  #     # native process mode only
+  #     - name: baetyl-function-sql-bin
+  #       path: lib/baetyl/baetyl-function-sql
+  #       readonly: true
+  - name: timer
+    image: baetyl-timer
+    replica: 1
+    mounts:
+      - name: timer-conf
+        path: etc/baetyl
+        readonly: true
+      # native process mode only
+      - name: baetyl-timer-bin
+        path: lib/baetyl/baetyl-timer
+        readonly: true
+volumes:
+  # hub
+  - name: localhub-conf
+    path: var/db/baetyl/localhub-conf
+  - name: localhub-data
+    path: var/db/baetyl/localhub-data
+  - name: localhub-cert
+    path: var/db/baetyl/localhub-cert-only-for-test
+  - name: localhub-log
+    path: var/db/baetyl/localhub-log
+  # agent
+  - name: agent-conf
+    path: var/db/baetyl/agent-conf
+  - name: agent-cert
+    path: var/db/baetyl/agent-cert
+  - name: agent-volumes
+    path: var/db/baetyl
+  - name: agent-log
+    path: var/db/baetyl/agent-log
+  # remote mqtt
+  - name: remote-iothub-conf
+    path: var/db/baetyl/remote-iothub-conf
+  - name: remote-iothub-cert
+    path: var/db/baetyl/remote-iothub-cert
+  - name: remote-iothub-log
+    path: var/db/baetyl/remote-iothub-log
+  # function
+  - name: function-manager-conf
+    path: var/db/baetyl/function-manager-conf
+  - name: function-manager-log
+    path: var/db/baetyl/function-manager-log
+  - name: function-sayhi-conf
+    path: var/db/baetyl/function-sayhi-conf
+  - name: function-sayhi-code
+    path: var/db/baetyl/function-sayhi-code
+  - name: function-sayjs-conf
+    path: var/db/baetyl/function-sayjs-conf
+  - name: function-sayjs-code
+    path: var/db/baetyl/function-sayjs-code
+  - name: function-filter-conf
+    path: var/db/baetyl/function-filter-conf
+  # timer
+  - name: timer-conf
+    path: var/db/baetyl/timer-conf
+  # bin, native process mode only
+  - name: baetyl-hub-bin
+    path: var/db/baetyl/baetyl-hub
+  - name: baetyl-agent-bin
+    path: var/db/baetyl/baetyl-agent
+  - name: baetyl-remote-mqtt-bin
+    path: var/db/baetyl/baetyl-remote-mqtt
+  - name: baetyl-function-manager-bin
+    path: var/db/baetyl/baetyl-function-manager
+  - name: baetyl-function-python27-bin
+    path: var/db/baetyl/baetyl-function-python27
+  - name: baetyl-function-python36-bin
+    path: var/db/baetyl/baetyl-function-python36
+  - name: baetyl-function-node85-bin
+    path: var/db/baetyl/baetyl-function-node85
+  - name: baetyl-function-sql-bin
+    path: var/db/baetyl/baetyl-function-sql
+  - name: baetyl-timer-bin
+    path: var/db/baetyl/baetyl-timer

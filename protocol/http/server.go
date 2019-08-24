@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/creasty/defaults"
 	"github.com/gorilla/mux"
 )

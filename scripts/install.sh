@@ -2,8 +2,8 @@
 
 set -e
 
-PACKAGE_NAME=openedge
-URL_PACKAGE=download.openedge.tech
+PACKAGE_NAME=baetyl
+URL_PACKAGE=dl.baetyl.io
 URL_KEY=http://${URL_PACKAGE}/key.public
 PRE_INSTALL_PKGS=""
 SYSTEM_NAME=$(lsb_release -is | tr 'A-Z' 'a-z')
@@ -34,13 +34,13 @@ if [ $SYSTEM_NAME = centos ]; then
     fi
 
     {
-        echo '[openedge]'
-        echo 'name=openedge'
+        echo '[baetyl]'
+        echo 'name=baetyl'
         echo "baseurl=http://${URL_PACKAGE}/linux/centos/7/x86_64"
         echo 'gpgcheck=1'
         echo 'enabled=1'
         echo "gpgkey=$URL_KEY"
-    } >>/etc/yum.repos.d/openedge.repo
+    } >>/etc/yum.repos.d/baetyl.repo
 
     yum install -y $PACKAGE_NAME
     systemctl enable $PACKAGE_NAME

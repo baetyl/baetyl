@@ -2,17 +2,17 @@
 
 ## 2019 Goals
 
-OpenEdge will embrace cloud native to edge creative, including:
+Baetyl will embrace cloud native to edge creative, including:
 
 - Deliver a lightweight, immutable, all-in-memory edge computing operating system based on Linux kernel.
 - Build and manage service mesh across cloud, edge and IoT devices to enable free flow of applications and data.
-- Improved troubleshooting and tunability of OpenEdge under production conditions.
+- Improved troubleshooting and tunability of Baetyl under production conditions.
 - Supports edge clusters consisting of a large number of nodes, providing intelligent task scheduling capabilities.
 - Provides various forms of device and data connection capabilities such as AMQP, OPC-UA, and ZigBee.
 
 ## Release 1.0 in Autumn 2019
 
-OpenEdge will provide infrastructure and application development tools for IoT and edge computing, including:
+Baetyl will provide infrastructure and application development tools for IoT and edge computing, including:
 
 - Core framework:
   - System security
