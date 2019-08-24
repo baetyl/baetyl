@@ -36,7 +36,7 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 	e := &dockerEngine{
 		InfoStats: stats,
 		cli:       cli,
-		networks:    make(map[string]string),
+		networks:  make(map[string]string),
 		pwd:       pwd,
 		grace:     grace,
 		log:       logger.WithField("engine", NAME),
@@ -154,10 +154,40 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 		ExposedPorts: exposedPorts,
 		Labels:       map[string]string{"openedge": "openedge", "service": cfg.Name},
 	}
+	endpointsConfig := map[string]*network.EndpointSettings{}
+	if cfg.NetworkMode != "" {
+		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
+			NetworkID: e.networks[cfg.NetworkMode],
+		}
+		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
+			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
+		}
+	} else {
+		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+			if cfg.NetworkMode == "" {
+				cfg.NetworkMode = networkName
+			}
+			endpointsConfig[networkName] = &network.EndpointSettings{
+				NetworkID: e.networks[networkName],
+				Aliases: networkInfo.Aliases,
+				IPAddress: networkInfo.Ipv4Address,
+			}
+		}
+		if len(endpointsConfig) == 0 {
+			endpointsConfig[defaultNetworkName] = &network.EndpointSettings{
+				NetworkID: e.networks[defaultNetworkName],
+			}
+			cfg.NetworkMode = defaultNetworkName
+		}
+	}
+	params.networkConfig = network.NetworkingConfig{
+		EndpointsConfig: endpointsConfig,
+	}
 	params.hostConfig = container.HostConfig{
 		Binds:        volumes,
 		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
+		NetworkMode:  container.NetworkMode(cfg.NetworkMode),
 		// container is supervised by openedge,
 		RestartPolicy: container.RestartPolicy{Name: "no"},
 		Resources: container.Resources{
@@ -168,42 +198,6 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 			PidsLimit:  cfg.Resources.Pids.Limit,
 			Devices:    deviceBindings,
 		},
-	}
-	endpointsConfig := map[string]*network.EndpointSettings{}
-	if cfg.NetworkMode != "" {
-		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
-			NetworkID: e.networks[cfg.NetworkMode],
-		}
-		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
-			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
-		}
-	}
-	var connectedNetworkName string
-	if len(endpointsConfig) == 0 {
-		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
-			endpointsConfig[networkName] = &network.EndpointSettings{
-				NetworkID: e.networks[networkName],
-				Aliases: networkInfo.Aliases,
-				IPAddress: networkInfo.Ipv4Address,
-			}
-			cfg.NetworkMode = networkName
-			connectedNetworkName = networkName
-			break
-		}
-	}
-	if cfg.NetworkMode == "" {
-		cfg.NetworkMode = defaultNetworkName
-	}
-	params.hostConfig.NetworkMode = container.NetworkMode(cfg.NetworkMode)
-
-	if len(endpointsConfig) == 0 {
-		endpointsConfig[defaultNetworkName] = &network.EndpointSettings{
-			NetworkID: e.networks[defaultNetworkName],
-		}
-		connectedNetworkName = defaultNetworkName
-	}
-	params.networkConfig = network.NetworkingConfig{
-		EndpointsConfig: endpointsConfig,
 	}
 	s := &dockerService{
 		cfg:       cfg,
@@ -216,25 +210,6 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	if err != nil {
 		s.Stop()
 		return nil, err
-	}
-	if len(cfg.Networks.ServiceNetworkInfos) > 1 {
-		instance, ok := s.instances.Get(cfg.Name)
-		if !ok {
-			return nil, fmt.Errorf("can not find instance of service %s", cfg.Name)
-		}
-		instanceID := instance.(*dockerInstance).id
-		networkInfo := make(map[string]openedge.ServiceNetworkInfo)
-		for k, v := range cfg.Networks.ServiceNetworkInfos {
-			if k == connectedNetworkName {
-				continue
-			}
-			networkInfo[k] = v
-		}
-		err = e.ConnectNetworks(networkInfo, instanceID)
-		if err != nil {
-			s.Stop()
-			return nil, err
-		}
 	}
 	return s, nil
 }

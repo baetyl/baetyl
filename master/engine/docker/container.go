@@ -61,9 +61,6 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 		Driver: "bridge",
 	}
 	for networkName, network := range networks {
-		if network.Driver == "" {
-			network.Driver = "bridge"
-		}
 		if nw, ok := nwMap[networkName]; ok {
 			if nw.Driver != network.Driver {
 				return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
@@ -92,21 +89,15 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 	return nil
 }
 
-func (e *dockerEngine) ConnectNetworks(serviceNetworkInfos map[string]openedge.ServiceNetworkInfo, instanceID string) error {
+func (e *dockerEngine) connectNetworks(endpointSettings map[string]*network.EndpointSettings, containerID string) error {
 	ctx := context.Background()
-	for networkName, networkInfo := range serviceNetworkInfos {
-		networkID := e.networks[networkName]
-		endpointSettings := &network.EndpointSettings{
-			NetworkID: networkID,
-			Aliases: networkInfo.Aliases,
-			IPAddress: networkInfo.Ipv4Address,
-		}
-		err := e.cli.NetworkConnect(ctx, networkID, instanceID, endpointSettings)
+	for _, endpointSetting := range endpointSettings {
+		err := e.cli.NetworkConnect(ctx, endpointSetting.NetworkID, containerID, endpointSetting)
 		if err != nil {
-			e.log.WithError(err).Errorf("can not connect instance %s to network %s", instanceID[:12], networkID[:12])
+			e.log.WithError(err).Errorf("can not connect instance %s to network %s", containerID[:12], endpointSetting.NetworkID[:12])
 			return err
 		}
-		e.log.Debugf("connect instance %s to network %s", instanceID[:12], networkID[:12])
+		e.log.Debugf("connect instance %s to network %s", containerID[:12], endpointSetting.NetworkID[:12])
 	}
 	return nil
 }
@@ -125,10 +116,35 @@ func (e *dockerEngine) pullImage(name string) error {
 
 func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string, error) {
 	ctx := context.Background()
-	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, &cfg.networkConfig, name)
+	// since container can only bind to one network when created
+	// mutilple networks were divided into a single network(same as network mode) and the others
+	var singleNetworkConfig *network.NetworkingConfig
+	restEndpointSettings := map[string]*network.EndpointSettings{}
+	if len(cfg.networkConfig.EndpointsConfig) > 1 {
+		singleNetworkSetting := map[string]*network.EndpointSettings{}
+		for name, endpointSetting := range cfg.networkConfig.EndpointsConfig {
+			if name == string(cfg.hostConfig.NetworkMode) {
+				singleNetworkSetting[name] = endpointSetting
+			} else {
+				restEndpointSettings[name] = endpointSetting
+			}
+		}
+		singleNetworkConfig = &network.NetworkingConfig{
+			EndpointsConfig: singleNetworkSetting,
+		}
+	} else {
+		singleNetworkConfig = &cfg.networkConfig
+	}
+	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, singleNetworkConfig, name)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to create container (%s)", name)
 		return "", err
+	}
+	if len(restEndpointSettings) > 0 {
+		err := e.connectNetworks(restEndpointSettings, container.ID)
+		if err != nil {
+			return "", err
+		}
 	}
 	err = e.cli.ContainerStart(ctx, container.ID, types.ContainerStartOptions{})
 	if err != nil {
