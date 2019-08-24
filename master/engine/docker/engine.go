@@ -156,27 +156,19 @@ func (e *dockerEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	}
 	endpointsConfig := map[string]*network.EndpointSettings{}
 	if cfg.NetworkMode != "" {
-		endpointsConfig[cfg.NetworkMode] = &network.EndpointSettings{
-			NetworkID: e.networks[cfg.NetworkMode],
-		}
 		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
 			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
 		}
 	} else {
 		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
-			if cfg.NetworkMode == "" {
-				cfg.NetworkMode = networkName
-			}
+			cfg.NetworkMode = networkName
 			endpointsConfig[networkName] = &network.EndpointSettings{
 				NetworkID: e.networks[networkName],
 				Aliases: networkInfo.Aliases,
 				IPAddress: networkInfo.Ipv4Address,
 			}
 		}
-		if len(endpointsConfig) == 0 {
-			endpointsConfig[defaultNetworkName] = &network.EndpointSettings{
-				NetworkID: e.networks[defaultNetworkName],
-			}
+		if cfg.NetworkMode == "" {
 			cfg.NetworkMode = defaultNetworkName
 		}
 	}

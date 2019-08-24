@@ -75,10 +75,10 @@ type VolumeInfo struct {
 
 // NetworkInfo network configuration
 type NetworkInfo struct {
-	// specifies driver for network, including bridge(default), host, none, overlay
-	Driver string `yaml:"driver" json:"driver" default:"bridge" validate:"regexp=^(bridge|host|none|overlay)?$"`
+	// specifies driver for network
+	Driver string `yaml:"driver" json:"driver" default:"bridge"`
 	// specified driver options for network
-	DriverOptions map[string]string `yaml:"driver_opts" json:"driver_opts"`
+	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts"`
 	// specifies labels to add metadata
 	Labels map[string]string `yaml:"labels" json:"labels"`
 }

@@ -29,22 +29,10 @@ type containerConfigs struct {
 }
 
 func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) error {
-	// add docker default network, including bridge, host, none
 	ctx := context.Background()
 	args := filters.NewArgs()
-	args.Add("type", "builtin")
-	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
-	if err != nil {
-		e.log.WithError(err).Errorf("failed to list builtin networks")
-		return err
-	}
-	for _, builtinNet := range nws {
-		e.networks[builtinNet.Name] = builtinNet.ID
-	}
-
-	args = filters.NewArgs()
 	args.Add("type", "custom")
-	nws, err = e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
+	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
 	if err != nil {
 		e.log.WithError(err).Errorf("failed to list custom networks")
 		return err
@@ -70,7 +58,7 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 		} else {
 			networkParams := types.NetworkCreate {
 				Driver: network.Driver,
-				Options: network.DriverOptions,
+				Options: network.DriverOpts,
 				Scope: "local",
 				Labels: network.Labels,
 			}
@@ -116,32 +104,13 @@ func (e *dockerEngine) pullImage(name string) error {
 
 func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string, error) {
 	ctx := context.Background()
-	// since container can only bind to one network when created
-	// mutilple networks were divided into a single network(same as network mode) and the others
-	var singleNetworkConfig *network.NetworkingConfig
-	restEndpointSettings := map[string]*network.EndpointSettings{}
-	if len(cfg.networkConfig.EndpointsConfig) > 1 {
-		singleNetworkSetting := map[string]*network.EndpointSettings{}
-		for name, endpointSetting := range cfg.networkConfig.EndpointsConfig {
-			if name == string(cfg.hostConfig.NetworkMode) {
-				singleNetworkSetting[name] = endpointSetting
-			} else {
-				restEndpointSettings[name] = endpointSetting
-			}
-		}
-		singleNetworkConfig = &network.NetworkingConfig{
-			EndpointsConfig: singleNetworkSetting,
-		}
-	} else {
-		singleNetworkConfig = &cfg.networkConfig
-	}
-	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, singleNetworkConfig, name)
+	container, err := e.cli.ContainerCreate(ctx, &cfg.config, &cfg.hostConfig, nil, name)
 	if err != nil {
 		e.log.WithError(err).Warnf("failed to create container (%s)", name)
 		return "", err
 	}
-	if len(restEndpointSettings) > 0 {
-		err := e.connectNetworks(restEndpointSettings, container.ID)
+	if len(cfg.networkConfig.EndpointsConfig) > 0 {
+		err = e.connectNetworks(cfg.networkConfig.EndpointsConfig, container.ID)
 		if err != nil {
 			return "", err
 		}
