@@ -16,7 +16,7 @@ type testDefaultsStruct struct {
 	Others  string               `yaml:"others"`
 	Timeout time.Duration        `yaml:"timeout" default:"1m"`
 	Modules []testDefaultsModule `yaml:"modules" default:"[]"`
-	// Services map[string]testDefaultsModule `yaml:"modules" default:"{}"`
+	Services map[string]testDefaultsModule `yaml:"modules" default:"{}"`
 }
 
 func TestSetDefaults(t *testing.T) {
@@ -39,12 +39,12 @@ func TestSetDefaults(t *testing.T) {
 						Params: []string{"arg1", "arg2"},
 					},
 				},
-				// Services: map[string]testDefaultsModule{
-				// 	"m1": testDefaultsModule{},
-				// 	"m2": testDefaultsModule{
-				// 		Params: []string{"arg1", "arg2"},
-				// 	},
-				// },
+				Services: map[string]testDefaultsModule{
+					"m1": testDefaultsModule{},
+					"m2": testDefaultsModule{
+						Params: []string{"arg1", "arg2"},
+					},
+				},
 			},
 			want: &testDefaultsStruct{
 				Others:  "others",
@@ -59,14 +59,14 @@ func TestSetDefaults(t *testing.T) {
 						Params: []string{"arg1", "arg2"},
 					},
 				},
-				// Services: map[string]testDefaultsModule{
-				// 	"m1": testDefaultsModule{
-				// 		Params: []string{"-c", "conf.yml"},
-				// 	},
-				// 	"m2": testDefaultsModule{
-				// 		Params: []string{"arg1", "arg2"},
-				// 	},
-				// },
+				Services: map[string]testDefaultsModule{
+					"m1": testDefaultsModule{
+						Params: []string{"-c", "conf.yml"},
+					},
+					"m2": testDefaultsModule{
+						Params: []string{"arg1", "arg2"},
+					},
+				},
 			},
 		},
 	}
