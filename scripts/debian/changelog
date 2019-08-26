@@ -13,5 +13,5 @@ baetyl (0.1.4-1) unstable; urgency=medium
   [ Others ]
   * [#269](https://github.com/baetyl/baetyl/issues/269) [#273](https://github.com/baetyl/baetyl/issues/273) [#280](https://github.com/baetyl/baetyl/issues/280) update makefile, support selected deploy
 
- -- Baetyl Devs <contact@baetyl.io>  Fri, 05 Jul 2019 00:00:00 +0000
+ -- Baetyl Devs <baetyl@lists.lfedge.org>  Fri, 05 Jul 2019 00:00:00 +0000
 

@@ -65,4 +65,4 @@ Baetyl 作为中国首发的开源边缘计算框架，我们旨在打造一个*
 - 如果您想参与 Baetyl 的日常开发交流，欢迎您加入 [Baetyl 开发交流群](https://baetyl.bj.bcebos.com/Wechat/Wechat-Baetyl.png)
 - 如果您有更多关于 Baetyl 的功能需求或 Bug 反馈，欢迎您直接[提交 Issue](https://github.com/baetyl/baetyl/issues)
 - 如果您想了解更多关于 Baetyl 与百度云其他服务的相关内容，欢迎您加入[百度云开发者论坛](https://cloud.baidu.com/forum/bce)
-- 如果您有更好的关于 Baetyl 的发展建议，欢迎您通过电子邮件方式与我们联系：<contact@baetyl.io>
+- 如果您有更好的关于 Baetyl 的发展建议，欢迎您通过电子邮件方式与我们联系：<baetyl@lists.lfedge.org>
