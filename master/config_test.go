@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,13 +38,13 @@ func TestConfig(t *testing.T) {
 			assert.Equal(t, "docker", cfg.Mode)
 
 			if runtime.GOOS == "linux" {
-				assert.Equal(t, "unix:///var/run/openedge.sock", cfg.Server.Address)
+				assert.Equal(t, "unix:///var/run/baetyl.sock", cfg.Server.Address)
 			} else {
 				assert.Equal(t, "tcp://127.0.0.1:50050", cfg.Server.Address)
 			}
 			assert.Equal(t, time.Duration(5*60*1000*1000000), cfg.Server.Timeout)
 
-			assert.Equal(t, "var/log/openedge/openedge.log", cfg.Logger.Path)
+			assert.Equal(t, "var/log/baetyl/baetyl.log", cfg.Logger.Path)
 			assert.Equal(t, "info", cfg.Logger.Level)
 			assert.Equal(t, "text", cfg.Logger.Format)
 			assert.Equal(t, 15, cfg.Logger.Age.Max)

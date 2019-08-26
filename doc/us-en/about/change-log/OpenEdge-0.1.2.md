@@ -11,9 +11,9 @@
 
 ## Bug fixes
 
-- Add `openedge.sock` clean logic
-- Upgrade openedge-hub, change auth logic of password and tls
-- Upgrade openedge-function-x, add retry logic and remove keep order logic
+- Add `baetyl.sock` clean logic
+- Upgrade baetyl-hub, change auth logic of password and tls
+- Upgrade baetyl-function-x, add retry logic and remove keep order logic
 
 ## Others(include release engineering)
 

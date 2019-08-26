@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/shirou/gopsutil/process"
 )
@@ -52,7 +52,7 @@ func (e *nativeEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *nativeEngine) Prepare(openedge.AppConfig) {
+func (e *nativeEngine) Prepare(baetyl.AppConfig) {
 	// do nothing in native mode
 }
 
@@ -94,8 +94,8 @@ func (e *nativeEngine) clean() {
 }
 
 // Run new service
-func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.VolumeInfo) (engine.Service, error) {
-	spwd := path.Join(e.pwd, "var", "run", "openedge", "services", cfg.Name)
+func (e *nativeEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeInfo) (engine.Service, error) {
+	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", cfg.Name)
 	err := os.RemoveAll(spwd)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (e *nativeEngine) Run(cfg openedge.ServiceInfo, vs map[string]openedge.Volu
 	}
 	var pkg packageConfig
 	image := strings.Replace(strings.TrimSpace(cfg.Image), ":", "/", -1)
-	pkgDir := path.Join(spwd, "lib", "openedge", image)
+	pkgDir := path.Join(spwd, "lib", "baetyl", image)
 	err = utils.LoadYAML(path.Join(pkgDir, packageConfigPath), &pkg)
 	if err != nil {
 		os.RemoveAll(spwd)
@@ -139,7 +139,7 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
-func mountAll(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge.VolumeInfo) error {
+func mountAll(epwd, spwd string, ms []baetyl.MountInfo, vs map[string]baetyl.VolumeInfo) error {
 	for _, m := range ms {
 		v, ok := vs[m.Name]
 		if !ok {
@@ -150,9 +150,9 @@ func mountAll(epwd, spwd string, ms []openedge.MountInfo, vs map[string]openedge
 			return err
 		}
 	}
-	sock := utils.GetEnv(openedge.EnvMasterHostSocket)
+	sock := utils.GetEnv(baetyl.EnvMasterHostSocket)
 	if sock != "" {
-		return mount(sock, path.Join(spwd, openedge.DefaultSockFile))
+		return mount(sock, path.Join(spwd, baetyl.DefaultSockFile))
 	}
 	return nil
 }

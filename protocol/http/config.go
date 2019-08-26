@@ -3,7 +3,7 @@ package http
 import (
 	"time"
 
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/utils"
 )
 
 // ServerInfo http server config

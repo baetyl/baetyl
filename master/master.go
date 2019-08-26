@@ -7,11 +7,11 @@ import (
 	"path"
 	"syscall"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/api"
-	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/protocol/http"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/api"
+	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/protocol/http"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -31,11 +31,11 @@ type Master struct {
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
-	err := os.MkdirAll(openedge.DefaultDBDir, 0755)
+	err := os.MkdirAll(baetyl.DefaultDBDir, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
-	log := logger.InitLogger(cfg.Logger, "openedge", "master")
+	log := logger.InitLogger(cfg.Logger, "baetyl", "master")
 	m := &Master{
 		cfg:       cfg,
 		ver:       ver,
@@ -44,7 +44,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		sig:       make(chan os.Signal, 1),
 		services:  cmap.New(),
 		accounts:  cmap.New(),
-		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(openedge.DefaultDBDir, openedge.AppStatsFileName)),
+		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(baetyl.DefaultDBDir, baetyl.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)

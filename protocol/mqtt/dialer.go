@@ -4,7 +4,7 @@ import (
 	"net/url"
 
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/utils"
 )
 
 // The Dialer handles connecting to a server and creating a connection.

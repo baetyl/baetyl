@@ -1,4 +1,4 @@
-# OpenEdge 架构
+# Baetyl 架构
 
 - [概念](#概念)
 - [组成](#组成)
@@ -13,57 +13,57 @@
     - [Instance Report](#instance-report)
   - [环境变量](#环境变量)
 - [官方模块](#官方模块)
-  - [openedge-agent](#openedge-agent)
-  - [openedge-hub](#openedge-hub)
-  - [openedge-function-manager](#openedge-function-manager)
-  - [openedge-function-python27](#openedge-function-python27)
-  - [openedge-function-python36](#openedge-function-python36)
-  - [openedge-function-node85](#openedge-function-node85)
-  - [openedge-remote-mqtt](#openedge-remote-mqtt)
+  - [baetyl-agent](#baetyl-agent)
+  - [baetyl-hub](#baetyl-hub)
+  - [baetyl-function-manager](#baetyl-function-manager)
+  - [baetyl-function-python27](#baetyl-function-python27)
+  - [baetyl-function-python36](#baetyl-function-python36)
+  - [baetyl-function-node85](#baetyl-function-node85)
+  - [baetyl-remote-mqtt](#baetyl-remote-mqtt)
 
 ## 概念
 
-- **系统**：这里专指 OpenEdge 系统，包行 **主程序**、**服务**、**存储卷** 和使用的系统资源。
-- **主程序**： 指 OpenEdge 实现的核心部分，负责管理所有 **存储卷** 和 **服务**，内置 **引擎系统**，对外提供 RESTful API 和命令行等。
-- **服务**：指一组接受 OpenEdge 控制的运行程序集合，用于提供某些具体的功能，比如消息路由服务、函数计算服务、微服务等。
+- **系统**：这里专指 Baetyl 系统，包行 **主程序**、**服务**、**存储卷** 和使用的系统资源。
+- **主程序**： 指 Baetyl 实现的核心部分，负责管理所有 **存储卷** 和 **服务**，内置 **引擎系统**，对外提供 RESTful API 和命令行等。
+- **服务**：指一组接受 Baetyl 控制的运行程序集合，用于提供某些具体的功能，比如消息路由服务、函数计算服务、微服务等。
 - **实例**：指 **服务** 启动的具体的运行程序或容器，一个 **服务** 可以启动多个实例，也可以由其他服务负责动态启动实例，比如函数计算的运行时实例就是由函数计算管理服务动态启停的。
 - **存储卷**：指被 **服务** 使用的目录，可以是只读的目录，比如放置配置、证书、脚本等资源的目录，也可以是可写的目录，比如日志、数据等持久化目录。
 - **引擎系统**： 指 **服务** 的各类运行模式的操作抽象和具体实现，比如 Docker 容器模式和 Native 进程模式。
-- **服务** 和 **系统** 的关系：OpenEdge 系统可以启动多个服务，服务之间没有依赖关系，不应当假设他们的启动顺序（虽然当前还是顺序启动的）。服务在运行时产生的所有信息都是临时的，服务停止后这些信息都会被删除，除非映射到持久化目录。服务内的程序由于种种原因可能会停止，服务会根据用户的配置对程序进行重启，这种情况不等于服务的停止，所以信息不会被删除。
+- **服务** 和 **系统** 的关系：Baetyl 系统可以启动多个服务，服务之间没有依赖关系，不应当假设他们的启动顺序（虽然当前还是顺序启动的）。服务在运行时产生的所有信息都是临时的，服务停止后这些信息都会被删除，除非映射到持久化目录。服务内的程序由于种种原因可能会停止，服务会根据用户的配置对程序进行重启，这种情况不等于服务的停止，所以信息不会被删除。
 
 ## 组成
 
-一个完整的 OpenEdge 系统由**主程序**、**服务**、**存储卷**和使用的系统资源组成，主程序根据应用配置加载各个模块启动相应的服务，一个服务又可以启动若干个实例，所有实例都由主程序负责管理和守护。需要注意的是同一个服务下的实例共享该服务绑定的存储卷，所以如果出现独占的资源，比如监听同一个端口，只能成功启动一个实例；如果使用同一个 Client ID 连接 Hub，会出现连接互踢的情况。
+一个完整的 Baetyl 系统由**主程序**、**服务**、**存储卷**和使用的系统资源组成，主程序根据应用配置加载各个模块启动相应的服务，一个服务又可以启动若干个实例，所有实例都由主程序负责管理和守护。需要注意的是同一个服务下的实例共享该服务绑定的存储卷，所以如果出现独占的资源，比如监听同一个端口，只能成功启动一个实例；如果使用同一个 Client ID 连接 Hub，会出现连接互踢的情况。
 
-目前 OpenEdge 开源了如下几个官方模块：
+目前 Baetyl 开源了如下几个官方模块：
 
-- [openedge-agent](#openedge-agent)：提供 BIE 云代理服务，进行状态上报和应用下发。
-- [openedge-hub](#openedge-hub)：提供基于 MQTT 的消息路由服务。
-- [openedge-remote-mqtt](#openedge-remote-mqtt)：提供 Hub 和远程 MQTT 服务进行消息同步的服务。
-- [openedge-function-manager](#openedge-function-manager)：提供函数计算服务，进行函数实例管理和消息触发的函数调用。
-- [openedge-function-python27](#openedge-function-python27)：提供加载基于 Python2.7 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
-- [openedge-function-python36](#openedge-function-python36)：提供加载基于 Python3.6 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
-- [openedge-function-node85](#openedge-function-node85)：提供加载基于 Node8.5 版本的函数脚本的 GRPC 微服务，可以托管给 openedge-function-manager 成为函数实例提供方。
+- [baetyl-agent](#baetyl-agent)：提供 BIE 云代理服务，进行状态上报和应用下发。
+- [baetyl-hub](#baetyl-hub)：提供基于 MQTT 的消息路由服务。
+- [baetyl-remote-mqtt](#baetyl-remote-mqtt)：提供 Hub 和远程 MQTT 服务进行消息同步的服务。
+- [baetyl-function-manager](#baetyl-function-manager)：提供函数计算服务，进行函数实例管理和消息触发的函数调用。
+- [baetyl-function-python27](#baetyl-function-python27)：提供加载基于 Python2.7 版本的函数脚本的 GRPC 微服务，可以托管给 baetyl-function-manager 成为函数实例提供方。
+- [baetyl-function-python36](#baetyl-function-python36)：提供加载基于 Python3.6 版本的函数脚本的 GRPC 微服务，可以托管给 baetyl-function-manager 成为函数实例提供方。
+- [baetyl-function-node85](#baetyl-function-node85)：提供加载基于 Node8.5 版本的函数脚本的 GRPC 微服务，可以托管给 baetyl-function-manager 成为函数实例提供方。
 
 架构图:
 
-![架构图](../../images/overview/design/openedge_design.png)
+![架构图](../../images/overview/design/baetyl_design.png)
 
 ## 主程序
 
-**主程序**作为 OpenEdge 系统的核心，负责管理所有存储卷和服务，内置运行引擎系统，对外提供 RESTful API 和命令行。
+**主程序**作为 Baetyl 系统的核心，负责管理所有存储卷和服务，内置运行引擎系统，对外提供 RESTful API 和命令行。
 
 主程序启停过程如下：
 
-1. 执行启动命令：`sudo systemctl start openedge` 以容器模式启动 OpenEdge，然后执行 `sudo systemctl status openedge` 来查看 `openedge` 是否正常运行。
+1. 执行启动命令：`sudo systemctl start baetyl` 以容器模式启动 Baetyl，然后执行 `sudo systemctl status baetyl` 来查看 `baetyl` 是否正常运行。
 
-_**提示**：Darwin 系统可通过执行 `sudo openedge start` 以容器模式启动 OpenEdge。_
+_**提示**：Darwin 系统可通过执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
-2. 主程序首先会加载工作目录下的 `etc/openedge/openedge.yml`，初始化运行模式、API Server、日志和退出超时时间等，这些配置不会随应用配置下发而改变。如果启动没有报错，会在 `/var/run/` 目录下生成 openedge.sock（Linux）文件。
-3. 然后主程序会尝试加载应用配置 `var/db/openedge/application.yml`，如果该配置不存在则不启动任何服务，否则加载应用配置中的服务列表和存储卷列表。该文件会随应用配置下发而更新，届时系统会根据新配置重新编排服务。
+2. 主程序首先会加载工作目录下的 `etc/baetyl/baetyl.yml`，初始化运行模式、API Server、日志和退出超时时间等，这些配置不会随应用配置下发而改变。如果启动没有报错，会在 `/var/run/` 目录下生成 baetyl.sock（Linux）文件。
+3. 然后主程序会尝试加载应用配置 `var/db/baetyl/application.yml`，如果该配置不存在则不启动任何服务，否则加载应用配置中的服务列表和存储卷列表。该文件会随应用配置下发而更新，届时系统会根据新配置重新编排服务。
 4. 在启动所有服务前，主程序会先调用 Engine 接口执行一些准备工作，比如容器模式下会先尝试下载所有服务的镜像。
 5. 准备工作完成后，开始顺序启动所有服务，如果服务启动失败则会导致主程序退出。容器模式下会将存储卷映射到容器内部；进程模式下会为每个服务创建各自的临时工作目录，并将存储卷软链到工作目录下，服务退出后临时工作目录会被清理，行为同容器模式。
-6. 最后，可操作 `ctrl + c` 退出 openedge，主程序会同时通知所有服务的实例退出并等待，如果超时则强制杀掉实例。然后清理 openedge.sock 后退出。
+6. 最后，可操作 `ctrl + c` 退出 baetyl，主程序会同时通知所有服务的实例退出并等待，如果超时则强制杀掉实例。然后清理 baetyl.sock 后退出。
 
 下面是完整的 application.yml 配置字段：
 
@@ -127,7 +127,7 @@ type ServiceInfo struct {
 
 #### Docker 引擎
 
-Docker 引擎会将服务 Image 解释为 Docker 镜像地址，并通过调用 `Docker Engine` 客户端来启动服务。所有服务使用 `Docker Engine` 提供的自定义网络（默认为 openedge），并根据 `Ports` 信息来对外暴露端口，根据 `Mounts` 信息来映射目录，根据 `Devices` 信息来映射设备，根据 `Resources` 信息来配置容器可使用的资源，比如 CPU、内存等。服务之间可以直接使用服务名访问，由 Docker 的 DNS Server 负责路由。服务的每个实例对应于一个容器，引擎负责容器的启停和重启。
+Docker 引擎会将服务 Image 解释为 Docker 镜像地址，并通过调用 `Docker Engine` 客户端来启动服务。所有服务使用 `Docker Engine` 提供的自定义网络（默认为 baetyl），并根据 `Ports` 信息来对外暴露端口，根据 `Mounts` 信息来映射目录，根据 `Devices` 信息来映射设备，根据 `Resources` 信息来配置容器可使用的资源，比如 CPU、内存等。服务之间可以直接使用服务名访问，由 Docker 的 DNS Server 负责路由。服务的每个实例对应于一个容器，引擎负责容器的启停和重启。
 
 #### Native 引擎
 
@@ -139,14 +139,14 @@ _**注意**：进程模式不支持资源的限制，无需暴露端口、映射
 
 ### RESTful API
 
-OpenEdge 主程序会暴露一组 RESTful API，采用 HTTP/1。在 Linux 系统下默认采用 Unix Domain Socket，固定地址为 `/var/run/openedge.sock`；其他环境采用TCP，默认地址为 `tcp://127.0.0.1:50050`。目前接口的认证方式采用简单的动态 Token 的方式，主程序在启动服务时会为每个服务动态生成一个 Token，将服务名和 Token 以环境变量的方式传入服务的实例，实例读取后放入请求的 Header 中发给主程序即可。需要注意的是动态启动的实例是无法获取到 Token 的，因此动态实例无法动态启动其他实例。
+Baetyl 主程序会暴露一组 RESTful API，采用 HTTP/1。在 Linux 系统下默认采用 Unix Domain Socket，固定地址为 `/var/run/baetyl.sock`；其他环境采用TCP，默认地址为 `tcp://127.0.0.1:50050`。目前接口的认证方式采用简单的动态 Token 的方式，主程序在启动服务时会为每个服务动态生成一个 Token，将服务名和 Token 以环境变量的方式传入服务的实例，实例读取后放入请求的 Header 中发给主程序即可。需要注意的是动态启动的实例是无法获取到 Token 的，因此动态实例无法动态启动其他实例。
 
 对服务实例而言，实例启动后可以从环境变量中获取主程序的 API Server 地址，服务的名称和 Token，以及实例的名称，详见下一节[环境变量](#环境变量)。
 
 Header 名称如下：
 
-- x-openedge-username：账号名称，即服务名称
-- x-openedge-password：账号密码，即动态 Token
+- x-baetyl-username：账号名称，即服务名称
+- x-baetyl-password：账号密码，即动态 Token
 
 下面是目前提供的接口：
 
@@ -162,7 +162,7 @@ Header 名称如下：
 该接口用于获取如下信息和状态：
 
 ```golang
-// 采集的所有 OpenEdge 系统的信息和状态
+// 采集的所有 Baetyl 系统的信息和状态
 type Inspect struct {
     // 异常信息
     Error    string    `json:"error,omitempty"`
@@ -184,15 +184,15 @@ type Software struct {
     OS          string `json:"os,omitempty"`
     // 宿主机 CPU 型号
     Arch        string `json:"arch,omitempty"`
-    // OpenEdge 服务运行模式
+    // Baetyl 服务运行模式
     Mode        string `json:"mode,omitempty"`
-    // OpenEdge 工作路径
+    // Baetyl 工作路径
 	PWD string `json:"pwd,omitempty"`
-    // OpenEdge 编译的 Golang 版本
+    // Baetyl 编译的 Golang 版本
     GoVersion   string `json:"go_version,omitempty"`
-    // OpenEdge 发布版本
+    // Baetyl 发布版本
     BinVersion  string `json:"bin_version,omitempty"`
-    // OpenEdge 加载的应用配置版本
+    // Baetyl 加载的应用配置版本
     ConfVersion string `json:"conf_version,omitempty"`
 }
 
@@ -211,11 +211,11 @@ type Hardware struct {
 
 #### System Update
 
-该接口用于更新系统中的应用，我们称之为应用 OTA，后续还会实现主程序 OTA（即 OpenEdge 主程序的自升级）。应用 OTA 会先停止所有老服务再启动所有新服务，所以有停服时间。我们后续会继续优化，避免重启未更新的服务。
+该接口用于更新系统中的应用，我们称之为应用 OTA，后续还会实现主程序 OTA（即 Baetyl 主程序的自升级）。应用 OTA 会先停止所有老服务再启动所有新服务，所以有停服时间。我们后续会继续优化，避免重启未更新的服务。
 
 一次应用 OTA 的过程如下：
 
-![update](../../images/overview/design/openedge_update.png)
+![update](../../images/overview/design/baetyl_update.png)
 
 _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有老服务再启动所有新服务，因此服务会中断。_
 
@@ -244,7 +244,7 @@ _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有�
 }
 ```
 
-则 OpenEdge 的 Agent 模块后续上报到云端的 JSON 如下：
+则 Baetyl 的 Agent 模块后续上报到云端的 JSON 如下：
 
 ```json
 {
@@ -287,7 +287,7 @@ _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有�
 }
 ```
 
-则 OpenEdge 的 Agent 模块后续上报到云端的 JSON 如下, 旧 info 被保持，旧 stats 被覆盖：
+则 Baetyl 的 Agent 模块后续上报到云端的 JSON 如下, 旧 info 被保持，旧 stats 被覆盖：
 
 ```json
 {
@@ -321,17 +321,17 @@ _**注意**：目前应用 OTA 采用全量更新的方式，即先停止所有�
 
 ### 环境变量
 
-OpenEdge 目前会给服务实例设置如下几个系统环境变量：
+Baetyl 目前会给服务实例设置如下几个系统环境变量：
 
-- OPENEDGE_HOST_OS：OpenEdge 所在设备（宿主机）的系统类型
-- OPENEDGE_MASTER_API：OpenEdge 主程序的 API Server 地址
-- OPENEDGE_RUNNING_MODE：OpenEdge 主程序采用的服务运行模式
+- OPENEDGE_HOST_OS：Baetyl 所在设备（宿主机）的系统类型
+- OPENEDGE_MASTER_API：Baetyl 主程序的 API Server 地址
+- OPENEDGE_RUNNING_MODE：Baetyl 主程序采用的服务运行模式
 - OPENEDGE_SERVICE_NAME：服务的名称
 - OPENEDGE_SERVICE_TOKEN：动态分配的 Token
 - OPENEDGE_SERVICE_INSTANCE_NAME：服务实例的名称，用于动态指定
 - OPENEDGE_SERVICE_INSTANCE_ADDRESS：服务实例的地址，用于动态指定
 
-官方提供的函数计算管理服务就是通过读取 `OPENEDGE_MASTER_API` 来连接 OpenEdge 主程序的，比如 Linux 系统下 `OPENEDGE_MASTER_API` 默认是 `unix:///var/run/openedge.sock`；其他系统的容器模式下 `OPENEDGE_MASTER_API` 默认是 `tcp://host.docker.internal:50050`；其他系统的进程模式下 `OPENEDGE_MASTER_API` 默认是 `tcp://127.0.0.1:50050`。
+官方提供的函数计算管理服务就是通过读取 `OPENEDGE_MASTER_API` 来连接 Baetyl 主程序的，比如 Linux 系统下 `OPENEDGE_MASTER_API` 默认是 `unix:///var/run/baetyl.sock`；其他系统的容器模式下 `OPENEDGE_MASTER_API` 默认是 `tcp://host.docker.internal:50050`；其他系统的进程模式下 `OPENEDGE_MASTER_API` 默认是 `tcp://127.0.0.1:50050`。
 
 _**注意**：应用中配置的环境变量如果和上述系统环境变量相同会被覆盖。_
 
@@ -339,9 +339,9 @@ _**注意**：应用中配置的环境变量如果和上述系统环境变量相
 
 目前官方提供了若干模块，用于满足部分常见的应用场景，当然开发者也可以开发自己的模块。
 
-### openedge-agent
+### baetyl-agent
 
-`openedge-agent` 又称云代理模块，负责和 BIE 云端管理套件通讯，拥有 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证。开发者可以参考该模块实现自己的 Agent 模块来对接自己的云平台。
+`baetyl-agent` 又称云代理模块，负责和 BIE 云端管理套件通讯，拥有 MQTT 和 HTTPS 通道，MQTT 强制 SSL/TLS 证书双向认证，HTTPS 强制 SSL/TLS 证书单向认证。开发者可以参考该模块实现自己的 Agent 模块来对接自己的云平台。
 
 云代理目前就做三件事：
 
@@ -353,9 +353,9 @@ _**注意**：应用中配置的环境变量如果和上述系统环境变量相
 
 _**提示**：如果设备无法连接外网或者需要脱离云端管理，可以从应用配置中移除 Agent 模块，离线运行。_
 
-### openedge-hub
+### baetyl-hub
 
-`openedge-hub` 简称 Hub 是一个单机版的消息订阅和发布中心，采用 MQTT3.1.1 协议，可在低带宽、不可靠网络中提供可靠的消息传输服务。其作为 OpenEdge 系统的消息中间件，为所有服务提供消息驱动的互联能力。
+`baetyl-hub` 简称 Hub 是一个单机版的消息订阅和发布中心，采用 MQTT3.1.1 协议，可在低带宽、不可靠网络中提供可靠的消息传输服务。其作为 Baetyl 系统的消息中间件，为所有服务提供消息驱动的互联能力。
 
 目前支持 4 种接入方式：TCP、SSL（TCP + SSL）、WS（Websocket）及 WSS（Websocket + SSL），MQTT 协议支持度如下：
 
@@ -379,13 +379,13 @@ Hub 支持简单的主题路由，比如订阅主题为 `t` 的消息并以新�
 
 如果该模块无法满足您的要求，您也可以使用第三方的 MQTT Broker/Server 来替换。
 
-### openedge-function-manager
+### baetyl-function-manager
 
-`openedge-function-manager` 又称函数管理模块，提供基于 MQTT 消息机制，弹性、高可用、扩展性好、响应快的的计算能力，并且兼容[百度云-函数计算 CFC](https://cloud.baidu.com/product/cfc.html)。**需要注意的是函数计算不保证消息顺序，除非只启动一个函数实例**。
+`baetyl-function-manager` 又称函数管理模块，提供基于 MQTT 消息机制，弹性、高可用、扩展性好、响应快的的计算能力，并且兼容[百度云-函数计算 CFC](https://cloud.baidu.com/product/cfc.html)。**需要注意的是函数计算不保证消息顺序，除非只启动一个函数实例**。
 
 函数管理模块负责管理所有函数实例和消息路由规则，支持自动扩容和缩容。结构图如下：
 
-![函数计算服务](../../images/overview/design/openedge_function.png)
+![函数计算服务](../../images/overview/design/baetyl_function.png)
 
 如果函数执行错误，函数计算会返回如下格式的消息，供后续处理。其中 `functionMessage` 是函数输入的消息（被处理的消息），不是函数返回的消息。示例如下：
 
@@ -404,13 +404,13 @@ Hub 支持简单的主题路由，比如订阅主题为 `t` 的消息并以新�
 }
 ```
 
-### openedge-function-python27
+### baetyl-function-python27
 
-`openedge-function-python27` 模块的设计思想与 `openedge-function-python36` 模块相同，但是两者的函数运行时不同。`openedge-function-python27` 所使用的函数运行时基于 Python2.7 版本，并提供基于 Python2.7 的 pyyaml、protobuf3、grpcio。
+`baetyl-function-python27` 模块的设计思想与 `baetyl-function-python36` 模块相同，但是两者的函数运行时不同。`baetyl-function-python27` 所使用的函数运行时基于 Python2.7 版本，并提供基于 Python2.7 的 pyyaml、protobuf3、grpcio。
 
-### openedge-function-python36
+### baetyl-function-python36
 
-`openedge-function-python36` 提供 Python 函数与 [百度云-函数计算 CFC](https://cloud.baidu.com/product/cfc.html) 类似，用户通过编写的自己的函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。该模块可作为 GRPC 服务单独启动，也可以为函数管理模块提供函数运行实例。所使用的函数运行时基于 Python3.6 版本。
+`baetyl-function-python36` 提供 Python 函数与 [百度云-函数计算 CFC](https://cloud.baidu.com/product/cfc.html) 类似，用户通过编写的自己的函数来处理消息，可进行消息的过滤、转换和转发等，使用非常灵活。该模块可作为 GRPC 服务单独启动，也可以为函数管理模块提供函数运行实例。所使用的函数运行时基于 Python3.6 版本。
 
 Python 函数的输入输出可以是 JSON 格式也可以是二进制形式。消息 Payload 在作为参数传给函数前会尝试一次 JSON 解码（`json.loads(payload)`），如果成功则传入字典（dict）类型，失败则传入原二进制数据。
 
@@ -441,9 +441,9 @@ def handler(event, context):
 
 _**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 index.py，需要自行安装 Python3.6，且需要基于 Python3.6 安装 protobuf3、grpcio (采用 pip 安装即可，`pip3 install pyyaml protobuf grpcio`)。_
 
-### openedge-function-node85
+### baetyl-function-node85
 
-`openedge-function-node85` 模块的设计思想与 `openedge-function-python36` 模块相同，为 OpenEdge 提供 Node8.5 运行时环境，用户可以编写 javascript 脚本来处理消息，同样支持 JSON 格式也可以是二进制形式的数据，javascript 脚本示例如下：
+`baetyl-function-node85` 模块的设计思想与 `baetyl-function-python36` 模块相同，为 Baetyl 提供 Node8.5 运行时环境，用户可以编写 javascript 脚本来处理消息，同样支持 JSON 格式也可以是二进制形式的数据，javascript 脚本示例如下：
 
 ```javascript
 #!/usr/bin/env node
@@ -467,10 +467,10 @@ exports.handler = (event, context, callback) => {
 
 _**提示**：Native 进程模式下，若要运行本代码库 example 中提供的 index.js，需要自行安装 Node8.5。_
 
-### openedge-remote-mqtt
+### baetyl-remote-mqtt
 
-`openedge-remote-mqtt` 又称远程 MQTT 通讯模块，可桥接两个 MQTT Server 进行消息同步。目前支持配置多路消息转发，可配置多个 Remote 和 Hub 同时进行消息同步，结构图如下：
+`baetyl-remote-mqtt` 又称远程 MQTT 通讯模块，可桥接两个 MQTT Server 进行消息同步。目前支持配置多路消息转发，可配置多个 Remote 和 Hub 同时进行消息同步，结构图如下：
 
-![远程MQTT通讯举例](../../images/overview/design/openedge_remote_mqtt.png)
+![远程MQTT通讯举例](../../images/overview/design/baetyl_remote_mqtt.png)
 
-如上图示，这里 OpenEdge 的本地 Hub 与远程云端 Hub 平台之间通过 OpenEdge 远程 MQTT 通讯模块实现消息的转发、同步。进一步地，通过在两端接入 MQTT Client 即可实现 **端云协同式** 的消息转发与传递。
+如上图示，这里 Baetyl 的本地 Hub 与远程云端 Hub 平台之间通过 Baetyl 远程 MQTT 通讯模块实现消息的转发、同步。进一步地，通过在两端接入 MQTT Client 即可实现 **端云协同式** 的消息转发与传递。

@@ -11,7 +11,7 @@
 
 ```yaml
 # localhub 配置
-# 配置文件位置: var/db/openedge/localhub-conf/service.yml
+# 配置文件位置: var/db/baetyl/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -23,8 +23,8 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# 本地 openedge-function-manager 配置
-# 配置文件位置: var/db/openedge/function-manager-conf/service.yml
+# 本地 baetyl-function-manager 配置
+# 配置文件位置: var/db/baetyl/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -46,59 +46,59 @@ functions:
       idletime: 1m
 
 # application.yml配置
-# 配置文件位置: var/db/openedge/application.yml
+# 配置文件位置: var/db/baetyl/application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: baetyl-hub
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-manager
-    image: openedge-function-manager
+    image: baetyl-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-manager-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-sayhi
-    image: openedge-function-node85
+    image: baetyl-function-node85
     replica: 0
     mounts:
       - name: function-sayjs-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-sayjs-code
-        path: var/db/openedge/function-sayhi
+        path: var/db/baetyl/function-sayhi
         readonly: true
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   # function manager
   - name: function-manager-conf
-    path: var/db/openedge/function-manager-conf
+    path: var/db/baetyl/function-manager-conf
   - name: function-manager-log
-    path: var/db/openedge/function-manager-log
+    path: var/db/baetyl/function-manager-log
   # function node runtime sayhi
   - name: function-sayjs-conf
-    path: var/db/openedge/function-sayjs-conf
+    path: var/db/baetyl/function-sayjs-conf
   - name: function-sayjs-code
-    path: var/db/openedge/function-sayjs-code
+    path: var/db/baetyl/function-sayjs-code
 ```
 
 系统自带的 Node 环境有可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出示例。
@@ -158,7 +158,7 @@ exports.handler = (event, context, callback) => {
 functions:
   - name: 'sayhi'
     handler: 'index.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 首先定义如下的 json 数据作为输入消息:

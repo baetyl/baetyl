@@ -1,10 +1,10 @@
-This document mainly provides related issues and solutions for OpenEdge deployment and startup in various platforms.
+This document mainly provides related issues and solutions for Baetyl deployment and startup in various platforms.
 
-**Question 1**: Prompt missing startup dependency configuration item when starting OpenEdge in docker container mode.
+**Question 1**: Prompt missing startup dependency configuration item when starting Baetyl in docker container mode.
 
 ![Picture](../images/faq/docker-engine-conf-miss.png)
 
-**Suggested Solution**: As shown in the above picture, OpenEdge startup lacks configuration dependency files, refer to [GitHub-OpenEdge](https://github.com/baidu/openedge) `example` folder(the location is `etc/openedge/openedge.yml`).
+**Suggested Solution**: As shown in the above picture, Baetyl startup lacks configuration dependency files, refer to [GitHub-Baetyl](https://github.com/baetyl/baetyl) `example` folder(the location is `etc/baetyl/baetyl.yml`).
 
 **Question 2**: Execute the command `docker info` get the following result on Ubuntu/Debian:
 
@@ -22,11 +22,11 @@ WARNING: No swap limit support
 
 _**NOTE**: If you got some error when you execute `step2`, it may be that the `grub` setting is incorrect. Please repeat `steps 1 and 2`._
 
-**Question 3**: Found `WARNING: Your kernel does not support swap limit capabilities. Limitation discarded` when OpenEdge start.
+**Question 3**: Found `WARNING: Your kernel does not support swap limit capabilities. Limitation discarded` when Baetyl start.
 
 **Suggested Solution**: Refer to Question 2.
 
-**Question 4**: Found `Got permission denied while trying to connect to the docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/images/json: dial unix /var/run/docker.sock: connect: permission denied` when OpenEdge start.
+**Question 4**: Found `Got permission denied while trying to connect to the docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.38/images/json: dial unix /var/run/docker.sock: connect: permission denied` when Baetyl start.
 
 **Suggested Solution**: Add the docker group if it doesn't already exist:
 
@@ -41,7 +41,7 @@ sudo usermod -aG docker ${USER}
 su - ${USER}
 ``` 
 
-**Question 5**: Found `Cannot connect to the docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` when OpenEdge start.
+**Question 5**: Found `Cannot connect to the docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` when Baetyl start.
 
 **Suggested Solution**: If you still report this issue after the solution of Question 4 solution is executed, restart the docker service.
 
@@ -51,7 +51,7 @@ For example, execute the following command on CentOS:
 systemctl start docker
 ```
 
-**Question 6**: Found `failed to create master: Error response from daemon: client version 1.39 is too new. Maximum supported API version is 1.38` when OpenEdge start.
+**Question 6**: Found `failed to create master: Error response from daemon: client version 1.39 is too new. Maximum supported API version is 1.38` when Baetyl start.
 
 **Suggested Solution**: Workaround is to pass API version via environment variable:
 
@@ -65,17 +65,17 @@ export DOCKER_API_VERSION=1.38
 source ~/.bash_profile
 ```
 
-**Question 7**: How does OpenEdge connect to NB-IOT network?
+**Question 7**: How does Baetyl connect to NB-IOT network?
 
-**Suggested Solution**: NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy OpenEdge application and communicate with [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud service.
+**Suggested Solution**: NB-IoT is a network standard similar to 2/3/4G with low bandwidth and low power consumption. NB-IoT supports TCP-based MQTT protocol, so you can use NB-IoT card to connect to Baidu Cloud IotHub, deploy Baetyl application and communicate with [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite. However, among the three major operators in China, Telecom have imposed whitelist restrictions on their NB cards, and only allow to connect to Telecom Cloud service IP. Therefore, only Mobile NB cards and Unicom NB cards can be used to connect to Baidu Cloud service.
 
-**Question 8**: Does OpenEdge support to push data to Kafka?
+**Question 8**: Does Baetyl support to push data to Kafka?
 
-**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for OpenEdge](https://github.com/baidu/openedge/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-OpenEdge.md), which subscribes message from the local Hub module and then writes it to Kafka.
+**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for Baetyl](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-Baetyl.md), which subscribes message from the local Hub module and then writes it to Kafka.
 
-**Question 9**: What are the ways to change OpenEdge configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
+**Question 9**: What are the ways to change Baetyl configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
 
-**Suggested Solution**: Currently, we recommend changing configurations through the BIE Cloud Management Suite, but you can also manually change the configuration file on the core device and then restart OpenEdge to take effect.
+**Suggested Solution**: Currently, we recommend changing configurations through the BIE Cloud Management Suite, but you can also manually change the configuration file on the core device and then restart Baetyl to take effect.
 
 **Question 10**：I download MQTTBOX client, extract it to a directory, and copy/move the executable file `MQTTBox` to `/usr/local/bin`(other directory is similar, such as `/usr/bin`, `/bin`, `/usr/sbin`, etc.). But it reports an error of `error while loading shared libraries: libgconf-2.so.4: cannot open shared object file: No such file or directory` when `MQTTBox` start.
 
@@ -114,7 +114,7 @@ According to the above information, the actual error is judged, and the configur
 2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
 3. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
 
-**Question 15**: How to process data in the cloud platform after message send to [Baidu IoT Hub]((https://cloud.baidu.com/product/iot.html)) by OpenEdge?
+**Question 15**: How to process data in the cloud platform after message send to [Baidu IoT Hub]((https://cloud.baidu.com/product/iot.html)) by Baetyl?
 
 **Suggested Solution**:
 In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html) can be used to transmit data to other cloud services, such as [CFC(Cloud Function Compute)](https://cloud.baidu.com/product/cfc.html), [TSDB](https://cloud.baidu.com/product/tsdb.html).
@@ -133,11 +133,11 @@ You must meet the following 2 conditions:
 - To make sure messages will be persist in local disk which are sent to local hub, the topic's QoS must be set to 1.
 - To make sure messages will be sent to cloud successful, the QoS of `rules` configuration of Remote module must be set to 1, which includes remote sub's QoS and the pub's QoS. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
 
-**Question 18**: After the configuration is sent from the cloud to the edge, the default startup mode is `docker` container mode. After modifying `mode: native` in `etc/openedge/openedge.yml` the startup error is similar to the following: `failed to update system: open /Users/ Xxx/openedge_native/var/run/openedge/services/agent/lib/openedge/hub.baidubce.com/openedge/openedge-agent:0.1.2/package.yml: no such file or directory`.
+**Question 18**: After the configuration is sent from the cloud to the edge, the default startup mode is `docker` container mode. After modifying `mode: native` in `etc/baetyl/baetyl.yml` the startup error is similar to the following: `failed to update system: open /Users/ Xxx/baetyl_native/var/run/baetyl/services/agent/lib/baetyl/hub.baidubce.com/baetyl/baetyl-agent:0.1.2/package.yml: no such file or directory`.
 
-**Suggested Solution**: At present, our cloud management does not support the process mode. If you need to start `OpenEdge` in process mode locally, please refer to the configuration content in `example/native` and execute the command `make install-native`. Install and start by process with the command `sudo openedge start`.
+**Suggested Solution**: At present, our cloud management does not support the process mode. If you need to start `Baetyl` in process mode locally, please refer to the configuration content in `example/native` and execute the command `make install-native`. Install and start by process with the command `sudo baetyl start`.
 
-**Question 19**: There is a similar error when downloading the image: `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" openedge= Master
+**Question 19**: There is a similar error when downloading the image: `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" baetyl= Master
 `
 
 **Suggested Solution**: This is because the `ca-certificates` package is missing from the system and can be installed to solve this problem.

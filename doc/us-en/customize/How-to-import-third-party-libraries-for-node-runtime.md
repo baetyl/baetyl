@@ -10,7 +10,7 @@
 
 ```yaml
 # The configuration of Local Hub service
-# Configuration file location is: var/db/openedge/localhub-conf/service.yml
+# Configuration file location is: var/db/baetyl/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -23,7 +23,7 @@ principals:
         permit: ['#']
 
 # The configuration of Local Function Manager service
-# Configuration file location is: var/db/openedge/function-manager-conf/service.yml
+# Configuration file location is: var/db/baetyl/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -45,66 +45,66 @@ functions:
       idletime: 1m
 
 # The configuration of application.yml
-# Configuration file location is: var/db/openedge/application.yml
+# Configuration file location is: var/db/baetyl/application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: baetyl-hub
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-manager
-    image: openedge-function-manager
+    image: baetyl-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-manager-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-sayhi
-    image: openedge-function-node85
+    image: baetyl-function-node85
     replica: 0
     mounts:
       - name: function-sayjs-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-sayjs-code
-        path: var/db/openedge/function-sayhi
+        path: var/db/baetyl/function-sayhi
         readonly: true
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   # function manager
   - name: function-manager-conf
-    path: var/db/openedge/function-manager-conf
+    path: var/db/baetyl/function-manager-conf
   - name: function-manager-log
-    path: var/db/openedge/function-manager-log
+    path: var/db/baetyl/function-manager-log
   # function node runtime sayhi
   - name: function-sayjs-conf
-    path: var/db/openedge/function-sayjs-conf
+    path: var/db/baetyl/function-sayjs-conf
   - name: function-sayjs-code
-    path: var/db/openedge/function-sayjs-code
+    path: var/db/baetyl/function-sayjs-code
 ```
 
 Generally, using the Node Standard Library may not meet our needs. In fact, it is often necessary to import some third-party libraries. We'll give one example below.
 
 ## Import `Lodash` third-party libraries
 
-`Lodash` is a modern JavaScript utility library delivering modularity, performance & extras. OpenEdge support import third-party libraries such as [`Lodash`](https://www.lodashjs.com/) to use its functions. How to import it, as shown below:
+`Lodash` is a modern JavaScript utility library delivering modularity, performance & extras. Baetyl support import third-party libraries such as [`Lodash`](https://www.lodashjs.com/) to use its functions. How to import it, as shown below:
 
 - Step 1: change path to the directory of javascripts, then install `Lodash` package
 
@@ -157,7 +157,7 @@ The configuration of Node function runtime is as below:
 functions:
   - name: 'sayhi'
     handler: 'index.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 First define the following json data as an input message:

@@ -10,7 +10,7 @@
 
 ```yaml
 # The configuration of localhub service
-# Configuration file location is: var/db/openedge/localhub-conf/service.yml
+# Configuration file location is: var/db/baetyl/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -23,7 +23,7 @@ principals:
         permit: ['#']
 
 # The configuration of Local Function Manager service
-# Configuration file location is: var/db/openedge/function-manager-conf/service.yml
+# Configuration file location is: var/db/baetyl/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -45,59 +45,59 @@ functions:
       idletime: 1m
 
 # The configuration of application.yml
-# Configuration file location is: var/db/openedge/application.yml
+# Configuration file location is: var/db/baetyl/application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: baetyl-hub
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-manager
-    image: openedge-function-manager
+    image: baetyl-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-manager-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-sayhi3
-    image: openedge-function-python36
+    image: baetyl-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-sayhi-code
-        path: var/db/openedge/function-sayhi
+        path: var/db/baetyl/function-sayhi
         readonly: true
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   # function manager
   - name: function-manager-conf
-    path: var/db/openedge/function-manager-conf
+    path: var/db/baetyl/function-manager-conf
   - name: function-manager-log
-    path: var/db/openedge/function-manager-log
+    path: var/db/baetyl/function-manager-log
   # function python runtime sayhi
   - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
+    path: var/db/baetyl/function-sayhi-conf
   - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+    path: var/db/baetyl/function-sayhi-code
 ```
 
 Generally, using the Python Standard Library may not meet our needs. In fact, it is often necessary to import some third-party libraries. Two examples are given below.
@@ -142,7 +142,7 @@ If the above operations are normal, the resulting script directory structure is 
 
 ![the directory of the Python script](../../images/customize/python-third-lib-dir-requests.png)
 
-Now we write the Python script `get.py` to get the headers information of [https://openedge.tech](https://openedge.tech), assuming the trigger condition is that Python3.6 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
+Now we write the Python script `get.py` to get the headers information of [https://baetyl.io](https://baetyl.io), assuming the trigger condition is that Python3.6 runtime receives the "A" command from the `localhub` service. More detailed contents are as follows:
 
 ```python
 #!/usr/bin/env python3
@@ -156,7 +156,7 @@ def handler(event, context):
     """
     if 'action' in event:
         if event['action'] == 'A':
-            r = requests.get('https://openedge.tech')
+            r = requests.get('https://baetyl.io')
             if str(r.status_code) == '200':
                 event['info'] = dict(r.headers)
             else:
@@ -176,12 +176,12 @@ The configuration of Python function runtime is as below:
 functions:
   - name: 'sayhi3'
     handler: 'get.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
-As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `get.py` script to handle, and following it publish the result to the topic `py/hi`. So in the test case, we use MQTTBOX to subscribe the topic `py/hi` and publish the message `{"action": "A"}` to the `localhub` service by the topic `py`. If everything works correctly, MQTTBOX can receive the message of the topic `py/hi` which contains the headers information of [https://openedge.tech](https://openedge.tech) as shown below.
+As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `get.py` script to handle, and following it publish the result to the topic `py/hi`. So in the test case, we use MQTTBOX to subscribe the topic `py/hi` and publish the message `{"action": "A"}` to the `localhub` service by the topic `py`. If everything works correctly, MQTTBOX can receive the message of the topic `py/hi` which contains the headers information of [https://baetyl.io](https://baetyl.io) as shown below.
 
-![Get the header information of https://openedge.tech](../../images/customize/write-python-script-third-lib-requests.png)
+![Get the header information of https://baetyl.io](../../images/customize/write-python-script-third-lib-requests.png)
 
 ## Import `Pytorch` third-party libraries
 
@@ -254,7 +254,7 @@ The configuration of Python function runtime is as below:
 functions:
   - name: 'sayhi3'
     handler: 'calc.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 As above, after receiving the message publish to the topic `py`, the `localhub` service will call the `calc.py` script to handle, and following it publish the result to the topic `py/hi`. So in the test case, we use MQTTBOX to subscribe the topic `py/hi` and publish the message `{"action": "B"}` to the `localhub` service by the topic `py`. If everything works correctly, MQTTBOX can receive the message of the topic `py/hi` in which we can get a random tensor as shown below.

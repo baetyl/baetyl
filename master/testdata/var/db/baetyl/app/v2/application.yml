@@ -1,0 +1,23 @@
+version: v2
+services:
+  - name: wait_exit_2
+    image: hub.baidubce.com/baetyl/cmd:0.1.2
+    replica: 1
+    mounts:
+      - name: cmd-bin
+        path: lib/baetyl/hub.baidubce.com/baetyl/cmd/0.1.2
+  - name: hi
+    image: cmd
+    replica: 1
+    mounts:
+      - name: cmd-bin
+        path: lib/baetyl/cmd
+  - name: wait_exit_4
+    image: cmd
+    replica: 1
+    mounts:
+      - name: cmd-bin
+        path: lib/baetyl/cmd
+volumes:
+  - name: cmd-bin
+    path: var/db/baetyl/cmd

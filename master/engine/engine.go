@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 // Factory create engine by given config
@@ -27,11 +27,11 @@ type Engine interface {
 	io.Closer
 	Name() string
 	Recover()
-	Prepare(openedge.AppConfig)
+	Prepare(baetyl.AppConfig)
 	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
 	DelInstanceStats(serviceName, instanceName string, persist bool)
 	DelServiceStats(serviceName string, persist bool)
-	Run(openedge.ServiceInfo, map[string]openedge.VolumeInfo) (Service, error)
+	Run(baetyl.ServiceInfo, map[string]baetyl.VolumeInfo) (Service, error)
 }
 
 // New engine by given name

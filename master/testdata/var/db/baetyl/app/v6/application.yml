@@ -1,0 +1,11 @@
+version: v6
+services:
+  - name: wait_exit_5
+    image: cmd-nonexist
+    replica: 1
+    mounts:
+      - name: cmd-bin
+        path: lib/baetyl/cmd
+volumes:
+  - name: cmd-bin
+    path: var/db/baetyl/cmd

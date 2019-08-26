@@ -1,0 +1,10 @@
+FROM hub.baidubce.com/baetyl/baetyl-function-node85:0.1.5-devel as devel
+
+FROM ubuntu:18.04
+
+COPY --from=devel /package /usr/local
+COPY --from=devel /node_modules /bin/node_modules
+
+COPY function_grpc_pb.js function_pb.js function-node85.js /bin/
+RUN chmod +x /bin/function-node85.js
+ENTRYPOINT ["function-node85.js"]

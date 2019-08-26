@@ -11,7 +11,7 @@
 
 ```yaml
 # localhub 配置
-# 配置文件位置: var/db/openedge/localhub-conf/service.yml
+# 配置文件位置: var/db/baetyl/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -23,8 +23,8 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# 本地 openedge-function-manager 配置
-# 配置文件位置: var/db/openedge/function-manager-conf/service.yml
+# 本地 baetyl-function-manager 配置
+# 配置文件位置: var/db/baetyl/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -46,59 +46,59 @@ functions:
       idletime: 1m
 
 # application.yml配置
-# 配置文件位置: var/db/openedge/application.yml
+# 配置文件位置: var/db/baetyl/application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: baetyl-hub
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-manager
-    image: openedge-function-manager
+    image: baetyl-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-manager-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-sayhi3
-    image: openedge-function-python36
+    image: baetyl-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-sayhi-code
-        path: var/db/openedge/function-sayhi
+        path: var/db/baetyl/function-sayhi
         readonly: true
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   # function manager
   - name: function-manager-conf
-    path: var/db/openedge/function-manager-conf
+    path: var/db/baetyl/function-manager-conf
   - name: function-manager-log
-    path: var/db/openedge/function-manager-log
+    path: var/db/baetyl/function-manager-log
   # function python runtime sayhi
   - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
+    path: var/db/baetyl/function-sayhi-conf
   - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+    path: var/db/baetyl/function-sayhi-code
 ```
 
 系统自带的 Python 环境有可能不会满足我们的需要，实际使用往往需要引入第三方库，下面给出两个示例。
@@ -143,7 +143,7 @@ python your_script.py
 
 ![Python requests 第三方库脚本目录](../../images/customize/python-third-lib-dir-requests.png)
 
-下面，我们编写脚本 `get.py` 来获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息，假定触发条件为 Python 运行时接收到来自 `localhub` 服务的 `A` 指令，具体如下：
+下面，我们编写脚本 `get.py` 来获取 [https://baetyl.io](https://baetyl.io) 的 headers 信息，假定触发条件为 Python 运行时接收到来自 `localhub` 服务的 `A` 指令，具体如下：
 
 ```python
 #!/usr/bin/env python3
@@ -157,7 +157,7 @@ def handler(event, context):
   """
   if 'action' in event:
     if event['action'] == 'A':
-      r = requests.get('https://openedge.tech')
+      r = requests.get('https://baetyl.io')
       if str(r.status_code) == '200':
         event['info'] = dict(r.headers)
       else:
@@ -176,12 +176,12 @@ def handler(event, context):
 functions:
   - name: 'sayhi3'
     handler: 'get.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
-如上，`localhub` 服务接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况。如正常，则可正常获取 [https://openedge.tech](https://openedge.tech) 的 headers 信息。
+如上，`localhub` 服务接收到发送到主题 `py` 的消息后，会调用 `get.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "A"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况。如正常，则可正常获取 [https://baetyl.io](https://baetyl.io) 的 headers 信息。
 
-![获取OpenEdge官网headers信息](../../images/customize/write-python-script-third-lib-requests.png)
+![获取Baetyl官网headers信息](../../images/customize/write-python-script-third-lib-requests.png)
 
 ## 引用 `Pytorch` 第三方包
 
@@ -254,7 +254,7 @@ def handler(event, context):
 functions:
   - name: 'sayhi3'
     handler: 'calc.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 如上，`localhub` 服务接收到发送到主题 `py` 的消息后，会调用 `calc.py` 脚本执行具体处理逻辑，然后将执行结果以 MQTT 消息形式反馈给主题 `py/hi`。这里，我们通过 MQTTBOX 订阅主题 `py/hi`，并向主题 `py` 发送消息 `{"action": "B"}`，然后观察 MQTTBOX 订阅主题 `py/hi` 的消息收取情况。如正常，则可正常生成随机张量。

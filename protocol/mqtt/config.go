@@ -3,7 +3,7 @@ package mqtt
 import (
 	"time"
 
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/utils"
 )
 
 // TopicInfo with topic and qos

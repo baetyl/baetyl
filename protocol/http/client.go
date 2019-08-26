@@ -10,14 +10,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/creasty/defaults"
 	"github.com/docker/go-connections/sockets"
 )
 
 const (
-	headerKeyUsername = "x-openedge-username"
-	headerKeyPassword = "x-openedge-password"
+	headerKeyUsername = "x-baetyl-username"
+	headerKeyPassword = "x-baetyl-password"
 )
 
 var errAccountUnauthorized = errors.New("account unauthorized")
@@ -52,7 +52,7 @@ func NewClient(c ClientInfo) (*Client, error) {
 			return nil, err
 		}
 		if url.Scheme == "unix" {
-			url.Host = "openedge"
+			url.Host = "baetyl"
 		}
 		if url.Scheme != "http" && url.Scheme != "https" {
 			url.Scheme = "http"

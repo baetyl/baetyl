@@ -6,16 +6,16 @@
 
 The function runtime is the carrier of the function execution. The function is executed by dynamically loading the function code, which is strongly related to the language of the function implementation. For example, Python code needs to be called using the Python runtime. This is a multi-language issue. In order to unify the interface and protocol, we finally chose GRPC to create a flexible functional computing framework with its powerful cross-language IDL and high-performance RPC communication capabilities.
 
-In the function compute service (FaaS), `openedge-function-manager` is responsible for the management and invocation of function instances. The function instance is provided by the function runtime service, and the function runtime service only needs to meet the conventions described below.
+In the function compute service (FaaS), `baetyl-function-manager` is responsible for the management and invocation of function instances. The function instance is provided by the function runtime service, and the function runtime service only needs to meet the conventions described below.
 
 ## Protocol Convention
 
-Developers can use the `function.proto` in `sdk/openedge-go` to generate messages and service implementations for their respective programming languages, as defined below. For the usage of GRPC, refer to [GRPC Official Documents](https://grpc.io/docs/quickstart/go.html).
+Developers can use the `function.proto` in `sdk/baetyl-go` to generate messages and service implementations for their respective programming languages, as defined below. For the usage of GRPC, refer to [GRPC Official Documents](https://grpc.io/docs/quickstart/go.html).
 
 ```proto
 syntax = "proto3";
 
-package openedge;
+package baetyl;
 
 // The function server definition.
 service Function {
@@ -51,9 +51,9 @@ The following is a configuration example of a Python function runtime service:
 functions:
   - name: 'sayhi'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 ## Start/Stop Convention
 
-The function runtime service is the same as other services, the only difference is that the instance is dynamically started by other services. For example, to avoid listening port conflicts, you can specify the port dynamically. The function runtime module can read `OPENEDGE_SERVICE_ADDRESS` from the environment variable as the address that the GRPC Server listens on. In addition, dynamically launched function instances do not have permission to call the main program's API. Finally, the module listens for the `SIGTERM` signal to gracefully exit. A complete implementation can be found in the Python2.7、Python3.6 runtime module (`openedge-function-python27`、`openedge-function-python36`).
+The function runtime service is the same as other services, the only difference is that the instance is dynamically started by other services. For example, to avoid listening port conflicts, you can specify the port dynamically. The function runtime module can read `OPENEDGE_SERVICE_ADDRESS` from the environment variable as the address that the GRPC Server listens on. In addition, dynamically launched function instances do not have permission to call the main program's API. Finally, the module listens for the `SIGTERM` signal to gracefully exit. A complete implementation can be found in the Python2.7、Python3.6 runtime module (`baetyl-function-python27`、`baetyl-function-python36`).

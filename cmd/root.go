@@ -8,8 +8,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "openedge",
-	Short: "openedge " + Version + "\nopenedge extends cloud computing, data and service seamlessly to edge devices",
+	Use:   "baetyl",
+	Short: "baetyl " + Version + "\nbaetyl extends cloud computing, data and service seamlessly to edge devices",
 	Long:  ``,
 }
 

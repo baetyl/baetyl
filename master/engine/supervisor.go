@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baetyl/baetyl/logger"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/jpillora/backoff"
 )
 
@@ -38,17 +38,17 @@ func Supervising(instance Instance) error {
 			return nil
 		case err := <-s:
 			switch p.Policy {
-			case openedge.RestartOnFailure:
+			case baetyl.RestartOnFailure:
 				// TODO: to test
 				if err == nil {
 					return nil
 				}
 				_engine.SetInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting), true)
 				goto RESTART
-			case openedge.RestartAlways:
+			case baetyl.RestartAlways:
 				_engine.SetInstanceStats(serviceName, instanceName, NewPartialStatsByStatus(Restarting), true)
 				goto RESTART
-			case openedge.RestartNo:
+			case baetyl.RestartNo:
 				// TODO: to test
 				return nil
 			default:
