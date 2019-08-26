@@ -52,7 +52,7 @@ if ! /usr/bin/getent group docker >/dev/null; then
     echo ""
     echo ""
 fi
-if [ ! -x /bin/systemctld -a ! -x /usr/bin/systemctld ]; then
+if [ ! -x /bin/systemctl -a ! -x /usr/bin/systemctl ]; then
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     echo ""
     echo " WARNING: systemd is not installed!"
