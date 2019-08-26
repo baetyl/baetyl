@@ -6,9 +6,9 @@ About architecture design, Baetyl takes **modularization** and **containerizatio
 
 More about Baetyl, please visit:
 
-- [Baetyl advantages](./Baetyl-advantages.md)
-- [Baetyl design](./Baetyl-design.md)
-- [Baetyl open framework](./Baetyl-open-framework.md)
-- [Baetyl customize extension](./Baetyl-extension.md)
-- [Baetyl security](./Baetyl-security.md)
-- [Baetyl control](./Baetyl-control.md)
+- [Baetyl advantages](./Advantages.md)
+- [Baetyl design](./Design.md)
+- [Baetyl open framework](./Framework.md)
+- [Baetyl customize extension](./Extension.md)
+- [Baetyl security](./Security.md)
+- [Baetyl control](./Control.md)

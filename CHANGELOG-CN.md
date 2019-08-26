@@ -20,7 +20,7 @@
 
 ## 功能
 
-- [#199](https://github.com/baetyl/baetyl/issues/199) 支持上报服务实例的自定义状态信息，同时采集更多系统状态信息，具体参考 [Baetyl 系统信息采集](./doc/zh-cn/overview/Baetyl-design.md#system-inspect)
+- [#199](https://github.com/baetyl/baetyl/issues/199) 支持上报服务实例的自定义状态信息，同时采集更多系统状态信息，具体参考 [Baetyl 系统信息采集](./doc/zh-cn/overview/Design.md#system-inspect)
 - [#209](https://github.com/baetyl/baetyl/issues/209) 当 baetyl 启动时，会清理旧实例（残留实例一般由于 baetyl 异常退出造成）
 - [#211](https://github.com/baetyl/baetyl/issues/211) 增加了 Python3.6 版本的函数运行时，使用 Ubuntu16.04 作为基础镜像
 - [#222](https://github.com/baetyl/baetyl/issues/222) Docker 容器模式支持 runtime 和 args 配置

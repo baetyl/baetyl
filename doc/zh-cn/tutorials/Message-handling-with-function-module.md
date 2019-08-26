@@ -18,14 +18,14 @@ _**提示**：Darwin 系统可以通过源码安装Baetyl，可参考 [源码编
 ## 操作流程
 
 - Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl 可执行程序，然后执行 `sudo systemctl status baetyl` 来查看 Baetyl 是否正常运行；
-- Step 2：通过 MQTTBOX 以 TCP 方式与 Baetyl Hub 服务 [建立连接](./Device-connect-to-Baetyl-with-hub-module.md)；
+- Step 2：通过 MQTTBOX 以 TCP 方式与 Baetyl Hub 服务 [建立连接](./Device-connect-to-hub-module.md)；
     - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察 Baetyl 日志信息；
       - 若 Baetyl 日志显示已经启动 Python 运行时服务，则表明发布的消息受到了预期的函数处理；
       - 若 Baetyl 日志显示未成功启动 Python 运行时服务，则重复上述操作，直至看到 Baetyl 主程序成功启动了 Python 运行时服务。
     - 若与 Baetyl Hub 建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 Baetyl Hub 服务成功建立连接为止。
 - Step 3：通过 MQTTBOX 查看对应主题消息的收发状态。
 
-![基于本地函数计算服务实现设备消息处理流程](../../images/tutorials/process/baetyl-python-flow.png)
+![基于本地函数计算服务实现设备消息处理流程](../../images/tutorials/process/python-flow.png)
 
 ## 消息处理测试
 
@@ -199,15 +199,15 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 依据 `Step 1`，执行 `sudo systemctl start baetyl` 以容器模式启动 OpenEdg，然后执行 `sudo systemctl status baetyl` 来查看 `baetyl` 是否正常运行。通过观察 Baetyl 启动日志可以发现 `localhub` 服务和函数计算服务均已被成功加载，具体如下图示。
 
-![Baetyl 状态](../../images/setup/baetyl-systemctl-status.png)
+![Baetyl 状态](../../images/setup/systemctl-status.png)
 
 _**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
-![Baetyl 加载、启动日志](../../images/tutorials/process/baetyl-function-start.png)
+![Baetyl 加载、启动日志](../../images/tutorials/process/function-start.png)
 
 同样，我们也可以通过执行命令 `docker ps` 查看系统当前正在运行的 docker 容器列表，具体如下图示。
 
-![通过 `docker ps` 命令查看系统当前运行 docker 容器列表](../../images/tutorials/process/baetyl-docker-ps-after.png)
+![通过 `docker ps` 命令查看系统当前运行 docker 容器列表](../../images/tutorials/process/docker-ps-after.png)
 
 经过对比，不难发现，本次 Baetyl 启动时已经成功加载了 `localhub` 服务和函数计算服务两个容器服务。
 
@@ -233,8 +233,8 @@ _**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl sta
 
 此外，我们这时可以观察 Baetyl 的日志及再次执行命令 `docker ps` 查看系统当前正在运行的容器列表，其结果如下图示。
 
-![运用 Python 函数处理消息时 Baetyl 日志](../../images/tutorials/process/baetyl-python-start.png)
+![运用 Python 函数处理消息时 Baetyl 日志](../../images/tutorials/process/python-start.png)
 
-![通过 `docker ps` 命令查看系统当前正在运行的容器列表](../../images/tutorials/process/baetyl-docker-ps-python-start.png)
+![通过 `docker ps` 命令查看系统当前正在运行的容器列表](../../images/tutorials/process/docker-ps-after-python-start.png)
 
-从上述两张图片中可以看出，除了 Baetyl 启动时已加载的 `localhub` 服务和函数计算服务容器，在利用 Python 函数 `sayhi` 对主题 `t` 消息进行处理时，系统还启动、并运行了 Python 运行时服务，其主要用于对消息作运行时处理（各类服务加载、启动细节可参见 [Baetyl 设计](../overview/Baetyl-design.md)）。
+从上述两张图片中可以看出，除了 Baetyl 启动时已加载的 `localhub` 服务和函数计算服务容器，在利用 Python 函数 `sayhi` 对主题 `t` 消息进行处理时，系统还启动、并运行了 Python 运行时服务，其主要用于对消息作运行时处理（各类服务加载、启动细节可参见 [Baetyl 设计](../overview/Design.md)）。

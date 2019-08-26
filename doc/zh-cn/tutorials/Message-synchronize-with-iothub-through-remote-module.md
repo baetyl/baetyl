@@ -22,7 +22,7 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 - Step 3：打开终端，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl 可执行程序，然后执行 `sudo systemctl status baetyl` 来查看 Baetyl 是否正常运行，并观察 Hub 模块、Remote 模块启动状态；
   - 若 Hub、Remote 模块成功启动，则继续下一步操作；
   - 若 Hub、Remote 模块未成功启动，则重复 `Step 3`，直至看到 Hub、Remote 模块成功启动。
-- Step 4：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-Baetyl-with-hub-module.md)，并订阅既定主题；
+- Step 4：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-hub-module.md)，并订阅既定主题；
     - 若成功与 Hub 模块建立连接，则继续下一步操作；
     - 若与 Hub 建立连接失败，则重复 `Step 4` 操作，直至 MQTTBOX 与本地 Hub 模块成功建立连接。
 - Step 5：依据 Remote 模块的相关配置信息，从 MQTTBOX 向既定主题发布消息，观察 MQTT.fx 的消息接收情况；同理，从 MQTT.fx 向既定主题发布消息，观察 MQTTBOX 的消息接收情况。
@@ -30,7 +30,7 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
 
 上述操作流程相关的流程示意图具体如下图示。
 
-![使用 Remote 模块进行消息同步](../../images/tutorials/remote/baetyl-remote-flow.png)
+![使用 Remote 模块进行消息同步](../../images/tutorials/remote/remote-flow.png)
 
 ## Remote 模块消息远程同步
 
@@ -150,15 +150,15 @@ logger:
 
 依据步骤 `Step 3` 所述，调整 Baetyl 主程序启动加载配置项，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl，这里，要求 Baetyl 启动后加载 Hub、Remote 模块，执行 `sudo systemctl status baetyl` 来查看 `baetyl` 是否正常运行，成功加载的状态如下图示。
 
-![Baetyl 状态](../../images/setup/baetyl-systemctl-status.png)
+![Baetyl 状态](../../images/setup/systemctl-status.png)
 
 _**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
-![Baetyl 成功加载 Hub、Remote](../../images/tutorials/remote/baetyl-hub-remote-start.png)
+![Baetyl 成功加载 Hub、Remote](../../images/tutorials/remote/remote-start.png)
 
 此外，亦可通过执行命令 `docker ps` 查看系统当前正在运行的 docker 容器列表，具体如下图示。
 
-![通过命令 docker ps 查看系统当前正在运行的 docker 容器列表](../../images/tutorials/remote/baetyl-docker-ps-hub-remote-run.png)
+![通过命令 docker ps 查看系统当前正在运行的 docker 容器列表](../../images/tutorials/remote/docker-ps-after-remote-start.png)
 
 成功启动 Baetyl 后，通过 MQTTBOX 成功与 Hub 模块建立连接，并订阅主题 `t2`，成功订阅的状态如下图示。
 

@@ -106,15 +106,15 @@ logger:
 
 According to Step 1, execute `sudo systemctl start baetyl` to start Baetyl in Docker mode and then execute the command `sudo systemctl status baetyl` to check whether baetyl is running. The normal situation is shown as below.
 
-![Baetyl status](../../images/setup/baetyl-systemctl-status.png)
+![Baetyl status](../../images/setup/systemctl-status.png)
 
 **NOTE**：Darwin can install Baetyl by using Baetyl source code, and excute `sudo baetyl start` to start the Baetyl in Docker container mode.
 
-![Baetyl startup](../../images/tutorials/connect/baetyl-hub-start.png)
+![Baetyl startup](../../images/tutorials/connect/master-start.png)
 
 As you can see, the image of Hub module has been loaded after Baetyl starts up normally. Alternatively, you can use `docker ps` command to check which docker container is currently running.
 
-![docker ps](../../images/tutorials/connect/container-baetyl-hub-run.png)
+![docker ps](../../images/tutorials/connect/docker-ps.png)
 
 Container mode requires port mapping, allowing external access to the container, the configuration item is the `ports` field in the main program configuration file.
 
