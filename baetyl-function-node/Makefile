@@ -1,6 +1,10 @@
 TAG?=latest
 PYSRC85=function_grpc_pb.js function_pb.js function-node85.js
 
+all: package
+
+package: package85.zip
+
 package85.zip: $(PYSRC85)
 	install -d -m 0755 __package/bin
 	cp $^ __package/bin
