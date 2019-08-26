@@ -48,7 +48,7 @@ At present, Baetyl has the following official modules:
 
 Structure Diagram:
 
-![Structure Diagram](../../images/overview/design/baetyl_design.png)
+![Structure Diagram](../../images/overview/design/design_overview.png)
 
 ## Master
 
@@ -218,7 +218,7 @@ This interface is used to update the application in the system. We call it the a
 
  The process of application OTA is as follows:
 
-![update](../../images/overview/design/baetyl_update.png)
+![update](../../images/overview/design/design_app_ota.png)
 
 _**NOTE**: At present, the application OTA adopts the full update method, that is, all the old services are stopped and all new services are started, so the service will be interrupted._
 
@@ -388,7 +388,7 @@ The `baetyl-function-manager`, also known as the function manager module, provid
 
 The function manager module is responsible for managing all function instances and message routing rules, and supports automatic scaling. The structure diagram is as follows:
 
-![Structure Diagram](../../images/overview/design/baetyl_function.png)
+![Structure Diagram](../../images/overview/design/design_function.png)
 
 If the function executes incorrectly, the function server returns a message in the following format for subsequent processing. Where `functionMessage` is the message input by the function (the message being processed), not the message returned by the function. An example is as follows:
 
@@ -474,6 +474,6 @@ _**提示**：In the native process mode, to run index.js provided in the exampl
 
 `baetyl-remote-mqtt`, also known as the remote MQTT communication module, bridges two MQTT Servers for message synchronization. Currently, you can configure multiple message routing rules. The structure is as follows:
 
-![Remote MQTT Communication Example](../../images/overview/design/baetyl_remote_mqtt.png)
+![Remote MQTT Communication Example](../../images/overview/design/design_remote_mqtt.png)
 
 As shown in the figure above, the Baetyl remote communication module is used to forward and synchronize messages between the Baetyl Local Hub Module and the remote cloud Hub. Further, the edge-cloud collaborative message forwarding and delivery can be realized by accessing the MQTT Client at both ends.

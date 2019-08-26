@@ -71,7 +71,7 @@ source ~/.bash_profile
 
 **Question 8**: Does Baetyl support to push data to Kafka?
 
-**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for Baetyl](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-develop-a-customize-module-for-Baetyl.md), which subscribes message from the local Hub module and then writes it to Kafka.
+**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for Baetyl](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-develop-a-customize-module.md), which subscribes message from the local Hub module and then writes it to Kafka.
 
 **Question 9**: What are the ways to change Baetyl configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
 

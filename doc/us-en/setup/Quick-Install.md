@@ -72,7 +72,7 @@ After installation, users can verify whether Baetyl is successfully installed or
 
 - executing the command `sudo systemctl status baetyl` to check whether `baetyl` is running, as shown below. Otherwise, `baetyl` fails to start.
 
-![Baetyl](../../images/setup/baetyl-systemctl-status.png)
+![Baetyl](../../images/setup/systemctl-status.png)
 
 - Executing the command `docker stats` to view the running status of docker containers. Since the main program baetyl will first pull required images from docker mirror repository, it will take 2~5 minutes to see the baetyl starts successfully. Take the example configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
 

@@ -30,7 +30,7 @@ The Remote Module was developed to meet the needs of the IoT scenario. The Baety
 
 The workflow diagram are as follows.
 
-![using Remote Module to synchronize message](../../images/tutorials/remote/baetyl-remote-flow.png)
+![using Remote Module to synchronize message](../../images/tutorials/remote/remote-flow.png)
 
 ## Message Synchronize via Remote Module
 
@@ -153,11 +153,11 @@ After the connection is established, switch to the `Subscribe` page and subscrib
 
 As described in `Step 3`, the Local Hub Module and Remote Module also loaded when Baetyl started. More detailed contents are shown below.
 
-![Baetyl successfully load Hub、Remote](../../images/tutorials/remote/baetyl-hub-remote-start.png)
+![Baetyl successfully load Hub、Remote](../../images/tutorials/remote/remote-start.png)
 
 In addition, we can execute the command `docker ps` to view the list of docker containers currently running on the system.
 
-![View the list of docker containers currently running](../../images/tutorials/remote/baetyl-docker-ps-hub-remote-run.png)
+![View the list of docker containers currently running](../../images/tutorials/remote/docker-ps-after-remote-start.png)
 
 After Baetyl successfully startup, set the configuration of connection, then establish the connection with the Local Hub Module and subscribe the topic `t2`.
 
