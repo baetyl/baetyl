@@ -106,15 +106,15 @@ logger:
 
 依据 `Step 1`，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl，然后执行 `sudo systemctl status baetyl` 来查看 `baetyl` 是否正常运行。正常启动的情况如下图所示。
 
-![Baetyl 状态](../../images/setup/baetyl-systemctl-status.png)
+![Baetyl 状态](../../images/setup/systemctl-status.png)
 
 _**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
-![Baetyl 启动](../../images/tutorials/connect/baetyl-hub-start.png)
+![Baetyl 启动](../../images/tutorials/connect/master-start.png)
 
 可以看到，Baetyl 正常启动后，Hub 模块镜像已被加载。另外，亦可以通过命令 `docker ps` 查看系统当前正在运行的容器。
 
-![查看系统当前正在运行的容器](../../images/tutorials/connect/container-baetyl-hub-run.png)
+![查看系统当前正在运行的容器](../../images/tutorials/connect/docker-ps.png)
 
 **TCP 连接测试**
 

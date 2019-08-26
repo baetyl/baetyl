@@ -71,7 +71,7 @@ source ~/.bash_profile
 
 **问题 8**: Baetyl 支持数据计算后将计算结果推送 Kafka 吗？
 
-**参考方案**：支持，您可以参考 [如何针对 Python 运行时编写 Python 脚本](https://github.com/baetyl/baetyl/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md) 一文，向 Hub 订阅消息，并将消息逐个写入 Kafka。您也可以参考 [如何开发一个 Baetyl 自定义模块](customize/How-to-develop-a-customize-module-for-Baetyl.md)，该模块用于向 Hub 订阅消息，然后批量写入 Kafka。
+**参考方案**：支持，您可以参考 [如何针对 Python 运行时编写 Python 脚本](https://github.com/baetyl/baetyl/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md) 一文，向 Hub 订阅消息，并将消息逐个写入 Kafka。您也可以参考 [如何开发一个 Baetyl 自定义模块](customize/How-to-develop-a-customize-module.md)，该模块用于向 Hub 订阅消息，然后批量写入 Kafka。
 
 **问题 9**: Baetyl 配置更改的方式有哪些？只能通过 [云端管理套件](https://cloud.baidu.com/product/bie.html) 进行配置更改吗？
 
@@ -118,7 +118,7 @@ source ~/.bash_profile
 
 **问题 15**：消息通过 Baetyl 传输到 [百度云 IoT Hub](https://cloud.baidu.com/product/iot.html) 后，如何在云端进行后续的数据处理？
 
-**参考方案**：消息到达物接入后，可以通过 [规则引擎](https://cloud.baidu.com/product/re.html) 进行简单的 sql 处理，或者通过规则引擎传输给 [百度云函数计算平台](https://cloud.baidu.com/product/cfc.html) 等其他云端服务，具体配置详情参考 [规则引擎操作指南](https://cloud.baidu.com/doc/RE/GUIGettingStarted.html#.E6.93.8D.E4.BD.9C.E5.87.86.E5.A4.87)。更多配置亦可参考 [通过 Baetyl 将数据脱敏后存到云端 TSDB](practice/Write-data-to-TSDB-with-Baetyl.md) 一文。
+**参考方案**：消息到达物接入后，可以通过 [规则引擎](https://cloud.baidu.com/product/re.html) 进行简单的 sql 处理，或者通过规则引擎传输给 [百度云函数计算平台](https://cloud.baidu.com/product/cfc.html) 等其他云端服务，具体配置详情参考 [规则引擎操作指南](https://cloud.baidu.com/doc/RE/GUIGettingStarted.html#.E6.93.8D.E4.BD.9C.E5.87.86.E5.A4.87)。更多配置亦可参考 [通过 Baetyl 将数据脱敏后存到云端 TSDB](practice/Write-data-to-TSDB.md) 一文。
 
 **问题 16**：Baetyl 如何使用 [Remote](./tutorials/Message-synchronize-with-iothub-through-remote-module.md) 功能连接 [百度云 IoT Hub 设备型项目](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B) ？
 
