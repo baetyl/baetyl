@@ -6,10 +6,10 @@
 - 本文测试前先安装 Baetyl，并导入默认配置包，可参考 [快速安装 Baetyl](../setup/Quick-Install.md)
 - 模拟 MQTT Client 行为的客户端为 [MQTTBOX](../Resources-download.md) 和 [MQTT.fx](../Resources-download.md)
 - 本文所用的 Hub 模块镜像和 Remote 模块镜像为 Baetyl 云端管理套件中发布的官方镜像：`hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
-- 您也可以通过 Baetyl 源码自行编译所需的 Hub 模块镜像和 Remote 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-Baetyl-from-Source.md)
+- 您也可以通过 Baetyl 源码自行编译所需的 Hub 模块镜像和 Remote 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-from-Source.md)
 - 远程 Hub 接入平台选用 [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-_**提示**：Darwin 系统可以通过源码安装Baetyl，可参考 [源码编译 Baetyl](../setup/Build-from-Source.md)。_
+_**提示**：Darwin 系统可以通过源码安装 Baetyl，可参考 [源码编译 Baetyl](../setup/Build-from-Source.md)。_
 
 Remote 远程服务模块是为了满足物联网场景下另外一种用户需求而研发，能够实现本地 Hub 与远程 Hub 服务（如[Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)等）的数据同步。即通过 Remote 远程服务模块我们既可以从远程 Hub 订阅消息到本地 Hub，也可以将本地 Hub 的消息发送给远程 Hub，完整的配置可参考 [Remote 模块配置](./Config-interpretation.md)。
 
@@ -23,8 +23,8 @@ Remote 远程服务模块是为了满足物联网场景下另外一种用户需�
   - 若 Hub、Remote 模块成功启动，则继续下一步操作；
   - 若 Hub、Remote 模块未成功启动，则重复 `Step 3`，直至看到 Hub、Remote 模块成功启动。
 - Step 4：选择 MQTTBOX 作为测试用 MQTT 客户端，与 Hub 模块[建立连接](./Device-connect-to-hub-module.md)，并订阅既定主题；
-    - 若成功与 Hub 模块建立连接，则继续下一步操作；
-    - 若与 Hub 建立连接失败，则重复 `Step 4` 操作，直至 MQTTBOX 与本地 Hub 模块成功建立连接。
+  - 若成功与 Hub 模块建立连接，则继续下一步操作；
+  - 若与 Hub 建立连接失败，则重复 `Step 4` 操作，直至 MQTTBOX 与本地 Hub 模块成功建立连接。
 - Step 5：依据 Remote 模块的相关配置信息，从 MQTTBOX 向既定主题发布消息，观察 MQTT.fx 的消息接收情况；同理，从 MQTT.fx 向既定主题发布消息，观察 MQTTBOX 的消息接收情况。
 - Step 6：若 `Step 5` 中双方均能接收到对方发布的消息内容，则表明功能测试顺利通过。
 
@@ -113,10 +113,10 @@ rules:
           qos: 1
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
-依据上述 Remote 模块的配置信息，意即 Remote 模块向本地 Hub 模块订阅主题 `t1` 的消息，向 Baidu IoT Hub订 阅主题 `t2` 的消息；当 MQTTBOX 向主题 `t1` 发布消息时，Hub 模块接收到主题 `t1` 的消息后，将其转发给 Remote 模块，再由 Remote 模块将之转发给 Baidu IoT Hub，这样如果 MQTT.fx 订阅了主题 `t1`，即会收到该条从 MQTTBOX 发布的消息；同理，当 MQTT.fx 向主题 `t2` 发布消息时，Baidu IoT Hub 会将消息转发给 Remote 模块，由 Remote 模块将之转发给本地 Hub 模块，这样如果 MQTTBOX 订阅了主题 `t2`，即会收到该消息。
+依据上述 Remote 模块的配置信息，意即 Remote 模块向本地 Hub 模块订阅主题 `t1` 的消息，向 Baidu IoT Hub 订 阅主题 `t2` 的消息；当 MQTTBOX 向主题 `t1` 发布消息时，Hub 模块接收到主题 `t1` 的消息后，将其转发给 Remote 模块，再由 Remote 模块将之转发给 Baidu IoT Hub，这样如果 MQTT.fx 订阅了主题 `t1`，即会收到该条从 MQTTBOX 发布的消息；同理，当 MQTT.fx 向主题 `t2` 发布消息时，Baidu IoT Hub 会将消息转发给 Remote 模块，由 Remote 模块将之转发给本地 Hub 模块，这样如果 MQTTBOX 订阅了主题 `t2`，即会收到该消息。
 
 简单来说，由 MQTT.fx 发布的消息，到 MQTTBOX 接收到该消息，流经的路径信息为：
 
@@ -152,11 +152,11 @@ logger:
 
 ![Baetyl 状态](../../images/setup/systemctl-status.png)
 
-_**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
+_**提示**：Darwin 系统通过源码安装 Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
 ![Baetyl 成功加载 Hub、Remote](../../images/tutorials/remote/remote-start.png)
 
-此外，亦可通过执行命令 `docker ps` 查看系统当前正在运行的 docker 容器列表，具体如下图示。
+此外，亦可通过执行命令 `docker stats` 查看系统当前正在运行的 docker 容器列表，具体如下图示。
 
 ![通过命令 docker ps 查看系统当前正在运行的 docker 容器列表](../../images/tutorials/remote/docker-ps-after-remote-start.png)
 

@@ -39,7 +39,7 @@ Add the current user to the docker group:
 ```shell
 sudo usermod -aG docker ${USER}
 su - ${USER}
-``` 
+```
 
 **Question 5**: Found `Cannot connect to the docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?` when Baetyl start.
 
@@ -71,7 +71,7 @@ source ~/.bash_profile
 
 **Question 8**: Does Baetyl support to push data to Kafka?
 
-**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for Baetyl](https://github.com/baetyl/baetyl/blob/master/doc/us-en/customize/How-to-develop-a-customize-module.md), which subscribes message from the local Hub module and then writes it to Kafka.
+**Suggested Solution**: Support, you can refer to [How to write a python script for python runtime](./customize/How-to-write-a-python-script-for-python-runtime.md), and subscribe messages from the local Hub module and writing them to Kafka service. Besides, you can also refer to [How to develop a customize module for Baetyl](./customize/How-to-develop-a-customize-module.md), which subscribes message from the local Hub module and then writes it to Kafka.
 
 **Question 9**: What are the ways to change Baetyl configurations? Can I only make configuration changes through the [BIE](https://cloud.baidu.com/product/bie.html) Cloud Management Suite?
 
@@ -104,17 +104,19 @@ According to the above information, the actual error is judged, and the configur
 **Question 13**： How can i use BIE Cloud Management Suite with [CFC(Cloud Function Compute)](https://cloud.baidu.com/product/cfc.html)?
 
 **Suggested Solution**:
+
 1. Make sure your BIE configuration and CFC functions in the same region, such as beijing/guangzhou.
 2. Make sure your CFC functions are published.
 
 **Question 14**： What‘s the relationship between the parameter ports and the parameter listen which in the hub configuration file?
 
 **Suggested Solution**:
+
 1. ports: Port exposed configuration in docker container mode.
 2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
 3. By referring to [Configuration Analysis Document](./tutorials/Config-interpretation.md)
 
-**Question 15**: How to process data in the cloud platform after message send to [Baidu IoT Hub]((https://cloud.baidu.com/product/iot.html)) by Baetyl?
+**Question 15**: How to process data in the cloud platform after message send to [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html) by Baetyl?
 
 **Suggested Solution**:
 In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html) can be used to transmit data to other cloud services, such as [CFC(Cloud Function Compute)](https://cloud.baidu.com/product/cfc.html), [TSDB](https://cloud.baidu.com/product/tsdb.html).
@@ -137,8 +139,7 @@ You must meet the following 2 conditions:
 
 **Suggested Solution**: At present, our cloud management does not support the process mode. If you need to start `Baetyl` in process mode locally, please refer to the configuration content in `example/native` and execute the command `make install-native`. Install and start by process with the command `sudo baetyl start`.
 
-**Question 19**: There is a similar error when downloading the image: `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" baetyl= Master
-`
+**Question 19**: There is a similar error when downloading the image: `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" baetyl= Master`
 
 **Suggested Solution**: This is because the `ca-certificates` package is missing from the system and can be installed to solve this problem.
 For example, if the host system is Debian, you can use the following command to install it:

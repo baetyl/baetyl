@@ -85,7 +85,7 @@ echo "  Baetyl is running in docker container mode by default. And Baetyl "
 echo "  also supports native process mode. "
 echo ""
 echo "  If you need run baetyl in native mode, please visit"
-echo "  https://baetyl.io/en/docs/setup/Build-Baetyl-from-Source for help."
+echo "  https://baetyl.io/en/docs/setup/Build-from-Source for help."
 echo ""
 echo "==============================================================================="
 

@@ -6,10 +6,10 @@
 - 本文测试前先安装 Baetyl，并导入默认配置包，可参考 [快速安装 Baetyl](../setup/Quick-Install.md)
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载MQTTBOX客户端)
-- 本文所用镜像为依赖 Baetyl 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-Baetyl-from-Source.md)
+- 本文所用镜像为依赖 Baetyl 源码自行编译所得，具体请查看 [如何从源码构建镜像](../setup/Build-from-Source.md)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
 
-_**提示**：Darwin 系统可以通过源码安装Baetyl，可参考 [源码编译 Baetyl](../setup/Build-from-Source.md)。_
+_**提示**：Darwin 系统可以通过源码安装 Baetyl，可参考 [源码编译 Baetyl](../setup/Build-from-Source.md)。_
 
 与基于 `localhub` 服务实现设备间消息转发不同的是，本文主要介绍利用本地函数计算服务进行消息处理。其中，`localhub` 服务用于建立 Baetyl 与 MQTT 客户端之间的连接，Python 运行时服务用于处理 MQTT 消息，而本地函数计算服务则通过 MQTT 消息上下文衔接本地 Hub 服务与 Python 运行时服务。
 
@@ -19,10 +19,10 @@ _**提示**：Darwin 系统可以通过源码安装Baetyl，可参考 [源码编
 
 - Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl 可执行程序，然后执行 `sudo systemctl status baetyl` 来查看 Baetyl 是否正常运行；
 - Step 2：通过 MQTTBOX 以 TCP 方式与 Baetyl Hub 服务 [建立连接](./Device-connect-to-hub-module.md)；
-    - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察 Baetyl 日志信息；
-      - 若 Baetyl 日志显示已经启动 Python 运行时服务，则表明发布的消息受到了预期的函数处理；
-      - 若 Baetyl 日志显示未成功启动 Python 运行时服务，则重复上述操作，直至看到 Baetyl 主程序成功启动了 Python 运行时服务。
-    - 若与 Baetyl Hub 建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 Baetyl Hub 服务成功建立连接为止。
+  - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息，并观察 Baetyl 日志信息；
+    - 若 Baetyl 日志显示已经启动 Python 运行时服务，则表明发布的消息受到了预期的函数处理；
+    - 若 Baetyl 日志显示未成功启动 Python 运行时服务，则重复上述操作，直至看到 Baetyl 主程序成功启动了 Python 运行时服务。
+  - 若与 Baetyl Hub 建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 Baetyl Hub 服务成功建立连接为止。
 - Step 3：通过 MQTTBOX 查看对应主题消息的收发状态。
 
 ![基于本地函数计算服务实现设备消息处理流程](../../images/tutorials/process/python-flow.png)
@@ -102,7 +102,7 @@ principals:
         permit: ['#']
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
 Baetyl 本地函数计算服务相关配置文件位置 `var/db/baetyl/function-manager-conf/service.yml`，`var/db/baetyl/function-sayhi-conf/service.yml`，配置信息如下：
@@ -175,6 +175,7 @@ def handler(event, context):
 ```
 
 本文使用到的目录如下：
+
 ```shell
 var/
 └── db
@@ -201,7 +202,7 @@ _**提示**：凡是在 `rules` 消息路由配置项中出现、用到的函数
 
 ![Baetyl 状态](../../images/setup/systemctl-status.png)
 
-_**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
+_**提示**：Darwin 系统通过源码安装 Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
 ![Baetyl 加载、启动日志](../../images/tutorials/process/function-start.png)
 
