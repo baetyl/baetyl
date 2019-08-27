@@ -1,0 +1,25 @@
+FROM  hub.baidubce.com/baetyl-beta/baetyl-openvino:0.1.5-devel
+
+ARG TEMP_DIR=/tmp/golang
+ARG GOLANG_TGZ=https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-amd64.tar.gz
+
+RUN apt-get update -y && \
+    apt-get -y --no-install-recommends install git && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p ${TEMP_DIR} && \
+    cd  ${TEMP_DIR} && \
+    curl -Lo golang.tgz ${GOLANG_TGZ} && \
+    tar -C /usr/local -xzf golang.tgz && \
+    rm -rf $TEMP_DIR
+
+ENV CGO_CXXFLAGS "--std=c++11"
+ENV CGO_CPPFLAGS "-I${INTEL_CVSDK_DIR}/opencv/include -I${INTEL_CVSDK_DIR}/deployment_tools/inference_engine/include"
+ENV CGO_LDFLAGS "-L${INTEL_CVSDK_DIR}/opencv/lib -L${INTEL_CVSDK_DIR}/deployment_tools/inference_engine/lib/intel64 -lpthread -ldl -lHeteroPlugin -lMKLDNNPlugin -lmyriadPlugin -linference_engine -lclDNNPlugin -lopencv_core -lopencv_videoio -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs -lopencv_objdetect -lopencv_features2d -lopencv_video -lopencv_dnn -lopencv_calib3d -lopencv_flann -lopencv_gapi -lopencv_ml -lopencv_photo -lopencv_stitching -lopencv_videoio_ffmpeg -lopencv_videoio_gstreamer -lopencv_videoio_intel_mfx"
+ENV PKG_CONFIG_PATH /usr/lib64/pkgconfig
+ENV PATH "${PATH}:/usr/local/go/bin"
+ENV GOPATH /root/go
+
+RUN go get -u -d gocv.io/x/gocv && \
+    cd $GOPATH/src/gocv.io/x/gocv && \
+    go run -tags openvino ./cmd/version/main.go

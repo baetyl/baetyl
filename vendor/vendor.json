@@ -593,6 +593,12 @@
 			"revisionTime": "2018-07-03T11:21:13Z"
 		},
 		{
+			"checksumSHA1": "PT/H4YhFXpIRuDF0YHu765q0VuM=",
+			"path": "gocv.io/x/gocv",
+			"revision": "a0e3403cfa575254bfb43d0f9999c6cfd2ea76c7",
+			"revisionTime": "2019-05-23T12:40:21Z"
+		},
+		{
 			"checksumSHA1": "BSPDVKviqHQaG2phOFN690zAKB8=",
 			"path": "golang.org/x/crypto/ssh/terminal",
 			"revision": "505ab145d0a99da450461ae2c1a9f6cd10d1f447",
@@ -893,5 +899,5 @@
 			"revisionTime": "2018-03-28T19:50:20Z"
 		}
 	],
-	"rootPath": "github.com/baidu/openedge"
+	"rootPath": "github.com/baetyl/baetyl"
 }
