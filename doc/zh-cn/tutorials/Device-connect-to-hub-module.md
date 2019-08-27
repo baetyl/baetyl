@@ -6,7 +6,7 @@
 - 本文测试前先安装 Baetyl，并导入默认配置包，可参考 [快速安装 Baetyl](../setup/Quick-Install.md)
 - 模拟 MQTT Client 行为的客户端为 MQTT.fx 和 MQTTBOX，其中 [MQTT.fx](../Resources-download.md) 用于 TCP 和 SSL 连接方式的测试，[MQTTBOX](../Resources-download.md) 用于 WS(Websocket）连接方式的测试。
 - 本文所用的 Hub 模块镜像为 Baetyl 云端管理套件中发布的官方镜像：`hub.baidubce.com/baetyl/baetyl-hub:latest`
-- 您也可以通过 Baetyl 源码自行编译所需的 Hub 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-Baetyl-from-Source.md)
+- 您也可以通过 Baetyl 源码自行编译所需的 Hub 模块镜像，具体请查看 [如何从源码构建镜像](../setup/Build-from-Source.md)
 
 Baetyl Hub 模块的完整的配置参考 [Hub 模块配置](./Config-interpretation.md)。
 
@@ -15,13 +15,13 @@ _**提示**：Darwin 系统可以通过源码安装 Baetyl，可参考 [源码�
 ## 操作流程
 
 - Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl 可执行程序，然后执行 `sudo systemctl status baetyl` 来查看 Baetyl 是否正常运行；
-- Step 2：依据选定的连接测试方式，对 MQTT Client作相应配置；
-    - 若采用 TCP 连接，则仅需配置用户名、密码（参见配置文件 `principals` 配置项 `username`、`password`），并选定对应连接端口即可；
-    - 若采用 SSL 证书认证，除选定所需的用户名外，还需选定 CA 证书以及由 CA 签发的客户端证书和私钥，依据对应的连接端口连接即可；
-    - 若采用 WS 连接，与 TCP 连接配置一样，仅需配置用户名、密码、相应端口即可；
+- Step 2：依据选定的连接测试方式，对 MQTT Client 作相应配置；
+  - 若采用 TCP 连接，则仅需配置用户名、密码（参见配置文件 `principals` 配置项 `username`、`password`），并选定对应连接端口即可；
+  - 若采用 SSL 证书认证，除选定所需的用户名外，还需选定 CA 证书以及由 CA 签发的客户端证书和私钥，依据对应的连接端口连接即可；
+  - 若采用 WS 连接，与 TCP 连接配置一样，仅需配置用户名、密码、相应端口即可；
 - Step 3：若上述步骤一切正常，操作无误，即可通过 Baetyl 日志或 MQTT Client 查看连接状态。
 
-**提示**：最新版Baetyl Hub模块 `principals` 配置项中 `password` 已改为明文存储。
+**提示**：最新版 Baetyl Hub 模块 `principals` 配置项中 `password` 已改为明文存储。
 
 ## 连接测试
 
@@ -95,7 +95,7 @@ subscriptions:
       topic: 't/topic'
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
 容器模式需要端口映射，允许外部通过端口来访问容器，对应的配置项为主程序配置文件中的 `ports` 字段。
@@ -108,7 +108,7 @@ logger:
 
 ![Baetyl 状态](../../images/setup/systemctl-status.png)
 
-_**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
+_**提示**：Darwin 系统通过源码安装 Baetyl，可执行 `sudo baetyl start` 以容器模式启动 Baetyl。_
 
 ![Baetyl 启动](../../images/tutorials/connect/master-start.png)
 
@@ -134,7 +134,7 @@ _**提示**：Darwin 系统通过源码安装Baetyl，可执行 `sudo baetyl sta
 
 ![SSL 连接测试配置](../../images/tutorials/connect/mqttbox-ssl-connect-config2.png)
 
-然后关掉配置页面，选择刚才的 Profile Name 进行 `Connect`，若连接配置信息与 Baetyl Hub 模块  `principals` 配置项中允许连接的权限信息匹配，即可看到连接成功的标志，具体如下图示。
+然后关掉配置页面，选择刚才的 Profile Name 进行 `Connect`，若连接配置信息与 Baetyl Hub 模块 `principals` 配置项中允许连接的权限信息匹配，即可看到连接成功的标志，具体如下图示。
 
 ![SSL 连接成功](../../images/tutorials/connect/mqttbox-ssl-connect-success.png)
 

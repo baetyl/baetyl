@@ -7,7 +7,7 @@
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务
 
-_**提示**：Darwin 系统可以通过源码安装Baetyl，可参考 [源码编译 Baetyl](../setup/Build-from-Source.md)。_
+_**提示**：Darwin 系统可以通过源码安装 Baetyl，可参考 [源码编译 Baetyl](../setup/Build-from-Source.md)。_
 
 与 [连接测试](./Device-connect-to-hub-module.md) 不同的是，若需要通过 `localhub` 服务完成消息在设备间的转发及简单路由，除需要配置连接项信息外，还需要给可允许连接的 client 配置相应主题的权限，及简单的消息路由策略，完整的配置参考 [Hub 服务配置](./Config-interpretation.md#baetyl-hub配置)。
 
@@ -17,8 +17,8 @@ _**提示**：Darwin 系统可以通过源码安装Baetyl，可参考 [源码编
 
 - Step 1：依据使用需求编写配置文件信息，执行 `sudo systemctl start baetyl` 以容器模式启动 Baetyl 可执行程序，然后执行 `sudo systemctl status baetyl` 来查看 Baetyl 是否正常运行；
 - Step 2：通过 MQTTBOX 以 TCP 方式与 `localhub` 服务[建立连接](./Device-connect-to-hub-module.md)；
-    - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
-    - 若与 `localhub` 服务建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 `localhub` 服务成功建立连接为止。
+  - 若成功与 `localhub` 服务建立连接，则依据配置的主题权限信息向有权限的主题发布消息，同时向拥有订阅权限的主题订阅消息；
+  - 若与 `localhub` 服务建立连接失败，则重复 `Step 2` 操作，直至 MQTTBOX 与 `localhub` 服务成功建立连接为止。
 - Step 3：通过 MQTTBOX 查看消息的收发状态。
 
 ## 消息路由测试
@@ -72,10 +72,11 @@ subscriptions:
       topic: 't/topic'
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
 目录结构如下：
+
 ```shell
 var
 └── db
@@ -84,6 +85,7 @@ var
         └── localhub-conf
             └── service.yml
 ```
+
 如上配置，消息路由依赖 `subscriptions` 配置项，这里表示发布到主题 `t` 的消息将会转发给所有订阅主题 `t/topic` 的设备（用户）。
 
 **注意**：上述配置项信息中，`permissions` 项下属 `action` 的 `permit` 权限主题列表支持 `+` 和 `#` 通配符配置，其具体释义如下详述。

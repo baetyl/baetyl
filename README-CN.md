@@ -36,12 +36,8 @@ Baetyl 作为一个边缘计算平台，除了提供底层服务管理能力外�
 
 ## 安装
 
-- [CentOS 下 Baetyl 安装及部署](./doc/zh-cn/setup/Install-Baetyl-on-CentOS.md)
-- [Debian 下 Baetyl 安装及部署](./doc/zh-cn/setup/Install-Baetyl-on-Debian.md)
-- [Raspbian 下 Baetyl 安装及部署](./doc/zh-cn/setup/Install-Baetyl-on-Raspbian.md)
-- [Ubuntu 下 Baetyl 安装及部署](./doc/zh-cn/setup/Install-Baetyl-on-Ubuntu.md)
-- [Darwin 下 Baetyl 安装及部署](./doc/zh-cn/setup/Install-Baetyl-on-Darwin.md)
-- [从源码编译 Baetyl 及相关编译环境配置](./doc/zh-cn/setup/Build-Baetyl-from-Source.md)
+- [快速安装 Baetyl](./doc/zh-cn/setup/Quick-Install.md)
+- [源码编译 Baetyl](./doc/zh-cn/setup/Build-from-Source.md)
 
 ## 文档
 

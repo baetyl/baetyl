@@ -5,20 +5,20 @@
 - The device system used in this test is Ubuntu18.04
 - It should be installed for Baetyl when you read this document, more details please refer to [How-to-quick-install-Baetyl](../setup/Quick-Install.md)
 - MQTT.fx and MQTTBOX are MQTT Clients in this test, which [MQTT.fx](../Resources-download.md) used for TCP and SSL connection test and [MQTTBOX](../Resources-download.md) used for WS (Websocket) connection test.
-- The hub module image used  is the official image published in the Baetyl Cloud Management Suite: `hub.baidubce.com/baetyl/baetyl-hub:latest`
-- You can also compile the required Hub module image by using Baetyl source code. Please see [How to build image from source code](../setup/Build-Baetyl-from-Source.md)
+- The hub module image used is the official image published in the Baetyl Cloud Management Suite: `hub.baidubce.com/baetyl/baetyl-hub:latest`
+- You can also compile the required Hub module image by using Baetyl source code. Please see [How to build image from source code](../setup/Build-from-Source.md)
 
 The complete configuration reference for [Hub Module Configuration](./Config-interpretation.md).
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-Baetyl-from-Source.md).
+**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-from-Source.md).
 
 ## Workflow
 
 - Step 1: Write the configuration according to the usage requirements, and then execute `sudo systemctl start baetyl`(you should install Baetyl first, more detailed contents can refer to [How-to-quick-install-Baetyl](../setup/Quick-Install.md)) to start the Baetyl in Docker container mode. Then execute the command `sudo systemctl status baetyl` to check whether baetyl is running.
 - Step 2: Configure the MQTT Client according to the connection protocol selected.
-    - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
-    - If SSL protocol was selected, username, private key, certificate and CA should be need. then fill in the corresponding port;
-    - If WS protocol was selected, you only need to configure the username, password, and corresponding port.
+  - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
+  - If SSL protocol was selected, username, private key, certificate and CA should be need. then fill in the corresponding port;
+  - If WS protocol was selected, you only need to configure the username, password, and corresponding port.
 - Step 3: Step 3: If all the above steps are normal and operations are correct, you can check the connection status through the log of Baetyl or MQTT Client.
 
 **NOTE**：In the latest version of Baetyl Hub Module, password has been changed to plaintext storage.
@@ -99,7 +99,7 @@ subscriptions:
       topic: 't/topic'
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
 ### Baetyl Startup

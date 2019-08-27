@@ -4,7 +4,7 @@
 
 ![图片](../images/faq/docker-engine-conf-miss.png)
 
-**参考方案**: 如上图所示，Baetyl启动缺少配置依赖文件，参考 [GitHub-Baetyl](https://github.com/baetyl/baetyl) example 文件夹补充相应配置文件即可（位于 `etc/baetyl/baetyl.yml`）。
+**参考方案**: 如上图所示，Baetyl 启动缺少配置依赖文件，参考 [GitHub-Baetyl](https://github.com/baetyl/baetyl) example 文件夹补充相应配置文件即可（位于 `etc/baetyl/baetyl.yml`）。
 
 **问题 2**: Ubuntu/Debian 下输入命令 `docker info` 后显示如下信息：
 
@@ -15,7 +15,8 @@ WARNING: No swap limit support
 **参考方案**:
 
 1. 修改 `/etc/default/grub` 文件，在其中，编辑或者添加 `GRUB_CMDLINE_LINUX` 为如下内容：
-> GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
+
+   > GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
 
 2. 保存后执行命令 `sudo update-grub`，完成后重启系统生效。
 
@@ -30,7 +31,7 @@ WARNING: No swap limit support
 **参考方案**：
 
 1. 提供管理员权限
-2. 通过以下命令添加当前用户到docker用户组
+2. 通过以下命令添加当前用户到 docker 用户组
 
 ```shell
 sudo usermod -aG docker ${USER}
@@ -67,11 +68,11 @@ source ~/.bash_profile
 
 **问题 7**: Baetyl 如何使用 NB-IoT 连接百度云管理套件或者物接入?
 
-**参考方案**：NB-IoT是一种网络制式，和 2/3/4G 类似，带宽窄功耗低。NB-IoT 支持基于 TCP 的 MQTT 通信协议，因此可以使用 NB-IoT 卡连接百度云物接入，部署 Baetyl 应用和 BIE 云管理通信。但国内三大运营商中，电信对他们的 NB 卡做了限制，仅允许连接电信的云服务 IP，所以目前只能使用移动 NB 卡和联通 NB 卡连接百度云服务。
+**参考方案**：NB-IoT 是一种网络制式，和 2/3/4G 类似，带宽窄功耗低。NB-IoT 支持基于 TCP 的 MQTT 通信协议，因此可以使用 NB-IoT 卡连接百度云物接入，部署 Baetyl 应用和 BIE 云管理通信。但国内三大运营商中，电信对他们的 NB 卡做了限制，仅允许连接电信的云服务 IP，所以目前只能使用移动 NB 卡和联通 NB 卡连接百度云服务。
 
 **问题 8**: Baetyl 支持数据计算后将计算结果推送 Kafka 吗？
 
-**参考方案**：支持，您可以参考 [如何针对 Python 运行时编写 Python 脚本](https://github.com/baetyl/baetyl/blob/master/doc/zh-cn/customize/How-to-write-a-python-script-for-python-runtime.md) 一文，向 Hub 订阅消息，并将消息逐个写入 Kafka。您也可以参考 [如何开发一个 Baetyl 自定义模块](customize/How-to-develop-a-customize-module.md)，该模块用于向 Hub 订阅消息，然后批量写入 Kafka。
+**参考方案**：支持，您可以参考 [如何针对 Python 运行时编写 Python 脚本](./customize/How-to-write-a-python-script-for-python-runtime.md) 一文，向 Hub 订阅消息，并将消息逐个写入 Kafka。您也可以参考 [如何开发一个 Baetyl 自定义模块](./customize/How-to-develop-a-customize-module.md)，该模块用于向 Hub 订阅消息，然后批量写入 Kafka。
 
 **问题 9**: Baetyl 配置更改的方式有哪些？只能通过 [云端管理套件](https://cloud.baidu.com/product/bie.html) 进行配置更改吗？
 
@@ -93,7 +94,7 @@ source ~/.bash_profile
 **参考方案**：如果是使用智能边缘 BIE 云端管理套件下发配置，有如下几个点需要注意：
 
 - 云端下发配置目前只支持容器模式
-- 如果是云端下发配置，`localfunc` 里配置的hub地址应为 `localhub` 而非 `0.0.0.0`
+- 如果是云端下发配置，`localfunc` 里配置的 hub 地址应为 `localhub` 而非 `0.0.0.0`
 
 根据以上信息结合实际报错进行判断，根据需要重新从云端进行配置下发，或者参考 [配置解析文档](./tutorials/Config-interpretation.md) 进行核对及配置。
 
@@ -131,14 +132,13 @@ source ~/.bash_profile
 需要满足下如下两个条件:
 
 - 发送给本地 Hub 的消息的 QoS 必须是 1，保证消息在本地持久化。
-- Remote 向本地 Hub 订阅消息的 QoS 和向云端 Hub 发布消息的 QoS 也必须都为1，保证消息成功上云。请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
+- Remote 向本地 Hub 订阅消息的 QoS 和向云端 Hub 发布消息的 QoS 也必须都为 1，保证消息成功上云。请参考 [配置文件解读文档](./tutorials/Config-interpretation.md)。
 
 **问题 18**：从云端下发配置到边缘后，默认都是 `docker` 模式启动，修改 `mode: native` 之后，启动报错类似下述内容： `failed to update system: open /Users/xxx/baetyl_native/var/run/baetyl/services/agent/lib/baetyl/hub.baidubce.com/baetyl/baetyl-agent:0.1.2/package.yml: no such file or directory`。
 
 **参考方案**： 目前我们的云管理不支持进程模式，如果需要在本地以进程模式启动 `Baetyl` 请参考 `example/native` 中的配置内容，执行命令 `make install-native` 来进行安装，并通过命令 `sudo baetyl start` 以进程方式来启动。
 
-**问题19**：下载镜像时有类似报错 `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" baetyl=master
-`
+**问题 19**：下载镜像时有类似报错 `error="Error response from daemon: Get https://hub.baidubce.com/v2/: x509: failed to load system roots and no roots provided" baetyl=master`
 
 **参考方案**：这种情况是因为系统中缺少 `ca-certificates` 包，安装即可。
 例如，如宿主机系统为 debian ，可使用以下命令操作

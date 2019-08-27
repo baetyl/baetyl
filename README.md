@@ -36,12 +36,8 @@ As an edge computing platform, **Baetyl** not only provides features such as und
 
 ## Installation
 
-- [Install Baetyl on CentOS](./doc/us-en/setup/Install-Baetyl-on-CentOS.md)
-- [Install Baetyl on Debian](./doc/us-en/setup/Install-Baetyl-on-Debian.md)
-- [Install Baetyl on Raspbian](./doc/us-en/setup/Install-Baetyl-on-Raspbian.md)
-- [Install Baetyl on Ubuntu](./doc/us-en/setup/Install-Baetyl-on-Ubuntu.md)
-- [Install Baetyl on Darwin](./doc/us-en/setup/Install-Baetyl-on-Darwin.md)
-- [Build Baetyl from Source](./doc/us-en/setup/Build-Baetyl-from-Source.md)
+- [Quick Install Baetyl](./doc/us-en/setup/Quick-Install.md)
+- [Build Baetyl From Source](./doc/us-en/setup/Build-from-Source.md)
 
 ## Documents
 

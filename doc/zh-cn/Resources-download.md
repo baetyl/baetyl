@@ -4,29 +4,29 @@
 
 源站：[https://golang.org/dl/](https://golang.org/dl/)
 
-[百度云 BOS](https://cloud.baidu.com/product/bos.html) Golang安装包下载链接：
+[百度云 BOS](https://cloud.baidu.com/product/bos.html) Golang 安装包下载链接：
 
-| 系统         | 平台   | SHA256编码                                                       | 下载链接                                                                       |
-| ------------ | ------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Linux        | 386    | cecd2da1849043237d5f0756a93d601db6798fa3bb27a14563d201088aa415f3 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.linux-386.tar.gz)    |
-| Linux        | amd64  | fb26c30e6a04ad937bbc657a1b5bba92f80096af1e8ee6da6430c045a8db3a5b | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.linux-amd64.tar.gz)  |
-| Linux        | armv6l | 9f7a71d27fef69f654a93e265560c8d9db1a2ca3f1dcdbe5288c46facfde5821 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.linux-armv6l.tar.gz) |
-| Linux        | arm64  | b76df430ba8caff197b8558921deef782cdb20b62fa36fa93f81a8c08ab7c8e7 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.linux-arm64.tar.gz)  |
-| Windows(msi) | 386    | b95cd1d1e961e823c0d3245a75f7a78180fb720c3618aff2c3f7c7364867d4fa | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.windows-386.msi)     |
-| Windows(zip) | 386    | bc25ea25406878986f91c92ae802f25f033cb0163b4aeac7e7185f71d0ede788 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.windows-386.zip)     |
-| Windows(msi) | amd64  | d967f97504e7038b4afab8014e7039e69c58ab2e7805e35889ec39ded6b70892 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.windows-amd64.msi)   |
-| Windows(zip) | amd64  | eeb20e21702f2b9469d9381df5de85e2f731b64a1f54effe196d0f7d0227fe14 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.windows-amd64.zip)   |
-| Darwin(pkg)  | amd64  | cc2b872aa1341ebe37bf65b9008a1aff7715ff9bde8b6503fb12c94dfe31b145 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.darwin-amd64.pkg)    |
-| Darwin(src)  | amd64  | 48ea987fb610894b3108ecf42e7a4fd1c1e3eabcaeb570e388c75af1f1375f80 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.darwin-amd64.tar.gz) |
-| Source       | -      | 4cfd42720a6b1e79a8024895fa6607b69972e8e32446df76d6ce79801bbadb15 | [点击下载](https://baetyl.bj.bcebos.com/Golang/go1.11.4.src.tar.gz)          |
+| 系统         | 平台   | SHA256 编码                                                      | 下载链接                                                                      |
+| ------------ | ------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Linux        | 386    | c40824a3e6c948b8ecad8fe9095b620c488b3d8d6694bdd48084a4798db4799a | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-386.tar.gz)    |
+| Linux        | amd64  | ac2a6efcc1f5ec8bdc0db0a988bb1d301d64b6d61b7e8d9e42f662fbb75a2b9b | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-amd64.tar.gz)  |
+| Linux        | armv6l | 0d9be0efa9cd296d6f8ab47de45356ba45cb82102bc5df2614f7af52e3fb5842 | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-armv6l.tar.gz) |
+| Linux        | arm64  | 3606dc6ce8b4a5faad81d7365714a86b3162df041a32f44568418c9efbd7f646 | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-arm64.tar.gz)  |
+| Windows(msi) | 386    | ba5b57d3752d45953e8f616f2371f65ef4c953cf8c6e2e0e64d6a1496df3ab08 | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-386.msi)     |
+| Windows(zip) | 386    | 96e54c9801973a255417d9827d470fd0fae14ad8c9274577012c01f97cd534dd | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-386.zip)     |
+| Windows(msi) | amd64  | da2fc362c7afcab611709ef56e1bb145c92dfaf361cafdd75634ac8172ded245 | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-amd64.msi)   |
+| Windows(zip) | amd64  | ec7550b32ff080b17060b9d4fde7bee94d9cf3c42e846e3a62fe4a3047ec79e3 | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-amd64.zip)   |
+| Darwin(pkg)  | amd64  | 4f5478e6d985f4f68099e03f4485149efa697cf81610e514974291a29ee7e21b | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.darwin-amd64.pkg)    |
+| Darwin(src)  | amd64  | 4f189102b15de0be1852d03a764acb7ac5ea2c67672a6ad3a340bd18d0e04bb4 | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.darwin-amd64.tar.gz) |
+| Source       | -      | ab0e56ed9c4732a653ed22e232652709afbf573e710f56a07f7fdeca578d62fc | [点击下载](https://baetyl.cdn.bcebos.com/golang/go1.12.9.src.tar.gz)          |
 
 ## MQTT 相关资源下载
 
 ### 下载 MQTT 客户端代码示例
 
-C代码示例：下载 [MQTT-C-MQTT-client](https://baetyl.bj.bcebos.com/MQTT-client-example/MQTT-c.tar.gz)
+C 代码示例：下载 [MQTT-C-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-c.tar.gz)
 
-Python代码示例：下载 [MQTT-Python-MQTT-client](https://baetyl.bj.bcebos.com/MQTT-client-example/MQTT-python.tar.gz)
+Python 代码示例：下载 [MQTT-Python-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-python.tar.gz)
 
 ### 下载 MQTT.fx 客户端
 
@@ -34,15 +34,15 @@ Python代码示例：下载 [MQTT-Python-MQTT-client](https://baetyl.bj.bcebos.c
 
 百度云 BOS MQTT.fx 安装包下载链接：
 
-| 系统         | 平台    | SHA256编码                                                       | 下载链接                                                                        |
-| ------------ | ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Linux(rpm)   | x86     | b3301ef2f1abad4e8298766f43060e5ce9906099da096c4e0b601485dcca849d | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-1.i386.rpm)      |
-| Linux(rpm)   | x86\_64 | f665a6a97ff5ecd77ceb713a38c0aa2bb1af281a3ebe647d06579d1489845d6a | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-1.x86_64.rpm)    |
-| Linux(deb)   | x86     | 252ae7bfb621eebfcab2d47c500896b44d6f23ce82c33e0217ac43a4c735acfa | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-32bit.deb)       |
-| Linux(deb)   | x86\_64 | 6fb14c739cbf8b54a373a0c5c173ef3657c01c675374ded8f0a292c610e549c2 | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-64bit.deb)       |
-| Windows(exe) | x86     | aa3902a2b76e427c4ba90b2b49dd337e95e614ba59f8cd64b5a95b5080766965 | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-windows.exe)     |
-| Windows(exe) | x86\_64 | 4adfbb0eee65273bead6ce9885cf064de72d00d437bbaf3b9ff5236634fb6057 | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-windows-x64.exe) |
-| Darwin(dmg)  | x86\_64 | 544b6ac0afefb80b5a56c2a6f2411f999862fb8f0f20502c912f28a9d1aa3b4a | [点击下载](https://baetyl.bj.bcebos.com/MQTT.fx/mqttfx-1.7.1-macos.dmg)       |
+| 系统         | 平台   | SHA256 编码                                                      | 下载链接                                                                      |
+| ------------ | ------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Linux(rpm)   | x86    | b3301ef2f1abad4e8298766f43060e5ce9906099da096c4e0b601485dcca849d | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-1.i386.rpm)      |
+| Linux(rpm)   | x86_64 | f665a6a97ff5ecd77ceb713a38c0aa2bb1af281a3ebe647d06579d1489845d6a | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-1.x86_64.rpm)    |
+| Linux(deb)   | x86    | 252ae7bfb621eebfcab2d47c500896b44d6f23ce82c33e0217ac43a4c735acfa | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-32bit.deb)       |
+| Linux(deb)   | x86_64 | 6fb14c739cbf8b54a373a0c5c173ef3657c01c675374ded8f0a292c610e549c2 | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-64bit.deb)       |
+| Windows(exe) | x86    | aa3902a2b76e427c4ba90b2b49dd337e95e614ba59f8cd64b5a95b5080766965 | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-windows.exe)     |
+| Windows(exe) | x86_64 | 4adfbb0eee65273bead6ce9885cf064de72d00d437bbaf3b9ff5236634fb6057 | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-windows-x64.exe) |
+| Darwin(dmg)  | x86_64 | 544b6ac0afefb80b5a56c2a6f2411f999862fb8f0f20502c912f28a9d1aa3b4a | [点击下载](https://baetyl.cdn.bcebos.com/mqttfx/mqttfx-1.7.1-macos.dmg)       |
 
 ### 下载 MQTTBOX 客户端
 
@@ -50,17 +50,17 @@ Python代码示例：下载 [MQTT-Python-MQTT-client](https://baetyl.bj.bcebos.c
 
 百度云 BOS MQTTBOX 安装包下载链接：
 
-| 系统          | SHA256编码                                                       | 下载链接                                                           |
-| ------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Linux(deb)    | 15ff821634d7c2dbef3cbc3e7252bc86e3890a2c3c094842405cb442902d467d | [点击下载](https://baetyl.bj.bcebos.com/MQTTBOX/MQTTBox.deb)     |
-| Linux(tar.gz) | 0ea0566f40fdf544510090441faaba745816ad1d438f3efe72197eb630f0e1f7 | [点击下载](https://baetyl.bj.bcebos.com/MQTTBOX/MQTTBox.tar.gz)  |
-| Darwin(dmg)   | 5ebd95c8bd29bea5974f2e38662d0b85cc2d0015fd4bbcdc777ffa3fe09d1c94 | [点击下载](https://baetyl.bj.bcebos.com/MQTTBOX/MQTTBox.dmg)     |
-| Darwin(zip)   | dda9549dbf35e6ad2dfbdb640020a0153ab62d6b27fbbe86da9ef0a8b997b4b9 | [点击下载](https://baetyl.bj.bcebos.com/MQTTBOX/MQTTBox-mac.zip) |
-| Windows(exe)  | 86ab9beb3e1241119f8a4e36550da755fead40be84a91eff3c0eb96ce4e4621e | [点击下载](https://baetyl.bj.bcebos.com/MQTTBOX/MQTTBox-win.exe) |
+| 系统             | SHA256 编码                                                      | 下载链接                                                          |
+| ---------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Linux(deb)       | 15ff821634d7c2dbef3cbc3e7252bc86e3890a2c3c094842405cb442902d467d | [点击下载](https://baetyl.cdn.bcebos.com/mqttbox/MQTTBox.deb)     |
+| Linux(tar.gz)    | 0ea0566f40fdf544510090441faaba745816ad1d438f3efe72197eb630f0e1f7 | [点击下载](https://baetyl.cdn.bcebos.com/mqttbox/MQTTBox.tar.gz)  |
+| Darwin(mac-dmg)  | 5ebd95c8bd29bea5974f2e38662d0b85cc2d0015fd4bbcdc777ffa3fe09d1c94 | [点击下载](https://baetyl.cdn.bcebos.com/mqttbox/MQTTBox.dmg)     |
+| Darwin(mac-zip)  | dda9549dbf35e6ad2dfbdb640020a0153ab62d6b27fbbe86da9ef0a8b997b4b9 | [点击下载](https://baetyl.cdn.bcebos.com/mqttbox/MQTTBox-mac.zip) |
+| Windows(win-exe) | 86ab9beb3e1241119f8a4e36550da755fead40be84a91eff3c0eb96ce4e4621e | [点击下载](https://baetyl.cdn.bcebos.com/mqttbox/MQTTBox-win.exe) |
 
 ### 下载 MQTT Client SDK
 
-物接入与 Paho（即MQTT Client SDK）完全兼容，如果开发者需要开发MQTT客户端，可到 [Paho 官方网站](http://www.eclipse.org/paho/) 下载 SDK 并获取帮助文档，详情如下：
+物接入与 Paho（即 MQTT Client SDK）完全兼容，如果开发者需要开发 MQTT 客户端，可到 [Paho 官方网站](http://www.eclipse.org/paho/) 下载 SDK 并获取帮助文档，详情如下：
 
 | Client                                                            | MQTT 3.1 | MQTT 3.1.1 | MQTT 5.0 | LWT | SSL/TLS | Automatic Reconnect | Offline Buffering | Message Persistence | WebSocket Support | Standard MQTT Support | Blocking API | Non-Blocking API | High Availability |
 | ----------------------------------------------------------------- | -------- | ---------- | -------- | --- | ------- | ------------------- | ----------------- | ------------------- | ----------------- | --------------------- | ------------ | ---------------- | ----------------- |

@@ -6,10 +6,10 @@
 - It should be installed for Baetyl when you read this document, more details please refer to [How-to-quick-install-Baetyl](../setup/Quick-Install.md)
 - The MQTT client toolkit as mentioned in this document are [MQTTBOX](../Resources-download.md) and [MQTT.fx](../Resources-download.md).
 - The hub and remote module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
-- Docker images compiled from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../setup/Build-Baetyl-from-Source.md)
+- Docker images compiled from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../setup/Build-from-Source.md)
 - The Remote Hub as mentioned in this document is [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-Baetyl-from-Source.md).
+**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-from-Source.md).
 
 The Remote Module was developed to meet the needs of the IoT scenario. The Baetyl(via Local Hub Module) can synchronize message with Remote Hub services([Baidu IoT Hub](https://cloud.baidu.com/product/iot.html)) via the Remote Module. That is to say, through the Remote Module, we can either subscribe the message from Remote Hub and publish it to the Local Hub Module or subscribe the message from Local Hub Module and publish it to Remote Hub service. The configuration of Remote Module can refer to [Remote Module Configuration](./Config-interpretation.md).
 
@@ -23,8 +23,8 @@ The Remote Module was developed to meet the needs of the IoT scenario. The Baety
   - If the Local Hub Module and Remote Module start successfully, then do the following next.
   - If the Local Hub Module and Remote Module start unsuccessfully, then retry `Step 3` until they start successfully.
 - Step 4：Select MQTTBOX as the MQTT client that used to connect to the Local Hub.
-    - If connect successfully, then do the following next.
-    - If connect unsuccessfully, then retry `Step 4` until it connect successfully.
+  - If connect successfully, then do the following next.
+  - If connect unsuccessfully, then retry `Step 4` until it connect successfully.
 - Step 5：Due to the configuration of Remote Module, using MQTTBOX publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBOX.
 - Step 6：If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
 
@@ -116,7 +116,7 @@ rules:
           qos: 1
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
 According to the configuration of the above, it means that the Remote module subscribes the topic `t1` from the Local Hub module, subscribes the topic `t2` from Baidu IoT Hub. When MQTTBOX publishes a message to the topic `t1`, the Local Hub module will receive this message and forward it to Baidu IoT Hub via Remote module, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoT Hub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoT Hub will receive it and forward it to the Local Hub module via Remote module. Finally, MQTTBOX will receive this message(suppose MQTTBOX has already subscribed the topic `t2` before).
@@ -155,7 +155,7 @@ As described in `Step 3`, the Local Hub Module and Remote Module also loaded whe
 
 ![Baetyl successfully load Hub、Remote](../../images/tutorials/remote/remote-start.png)
 
-In addition, we can execute the command `docker ps` to view the list of docker containers currently running on the system.
+In addition, we can execute the command `docker stats` to view the list of docker containers currently running on the system.
 
 ![View the list of docker containers currently running](../../images/tutorials/remote/docker-ps-after-remote-start.png)
 

@@ -7,7 +7,7 @@
 - The MQTT client toolkit as mentioned in this document is [MQTTBOX](../Resources-download.md#mqttbox-download).
 - In this article, the service created based on the Hub module is called `localhub` service.
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-Baetyl-from-Source.md).
+**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../setup/Build-from-Source.md).
 
 Different from [Device connect to Baetyl with Hub module](./Device-connect-to-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.md#local-hub-configuration).
 
@@ -17,8 +17,8 @@ This document uses the TCP connection method as an example to test the message r
 
 - Step 1：Startup Baetyl in docker container mode.
 - Step 2：MQTTBOX connect to `localhub` Service by TCP connection method, more detailed contents please refer to [Device connect to Baetyl with Hub module](./Device-connect-to-hub-module.md).
-    - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service.
-    - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
+  - If connect successfully, then subscribe the MQTT topic due to the configuration of `localhub` Service.
+  - If connect unsuccessfully, then retry `Step 2` operation until it connect successfully.
 - Step 3：Check the publishing and receiving messages via MQTTBOX.
 
 ## Message Routing Test
@@ -77,7 +77,7 @@ subscriptions:
       topic: 't/topic'
 logger:
   path: var/log/baetyl/service.log
-  level: "debug"
+  level: 'debug'
 ```
 
 The directory of configuration tree are as follows:
