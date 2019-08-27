@@ -1,0 +1,13 @@
+listen:
+  - tcp://0.0.0.0:1883
+principals:
+  - username: test
+    password: hahaha
+    permissions:
+      - action: 'pub'
+        permit: ['#']
+      - action: 'sub'
+        permit: ['#']
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"

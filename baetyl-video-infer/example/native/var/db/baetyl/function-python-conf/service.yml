@@ -1,0 +1,10 @@
+functions:
+  - name: 'analyse'
+    handler: 'analyse.handler'
+    codedir: 'var/db/baetyl/code'
+  - name: 'mark'
+    handler: 'mark.handler'
+    codedir: 'var/db/baetyl/code'
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"

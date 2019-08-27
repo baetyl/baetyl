@@ -1,0 +1,28 @@
+hub:
+  address: tcp://localhub:1883
+  username: test
+  password: hahaha
+  clientid: baetyl-video-infer
+video:
+  uri: "var/db/baetyl/model/test.mp4"
+  limit:
+    fps: 1
+infer:
+  model: var/db/baetyl/model/frozen_inference_graph.pb
+  config: var/db/baetyl/model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt
+  # backend: openvino
+  # device: fp16
+process:
+  before:
+    swaprb: true
+    width: 853
+    hight: 480
+  after:
+    function: 
+      name: analyse
+functions:
+  - name: analyse
+    address: function-manager:50051
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"
