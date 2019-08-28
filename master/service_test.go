@@ -189,7 +189,9 @@ func Test_diffServices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := diffServices(tt.args.cur, tt.args.old); !reflect.DeepEqual(got, tt.want) {
+      ccur := baetyl.ToComposeAppConfig(tt.args.cur)
+      cold := baetyl.ToComposeAppConfig(tt.args.old)
+			if got := diffServices(ccur, cold); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("diffServices() = %v, want %v", got, tt.want)
 			}
 		})

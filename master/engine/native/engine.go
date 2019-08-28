@@ -52,7 +52,7 @@ func (e *nativeEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *nativeEngine) Prepare(baetyl.AppConfig) {
+func (e *nativeEngine) Prepare(baetyl.ComposeAppConfig) {
 	// do nothing in native mode
 }
 
@@ -94,13 +94,13 @@ func (e *nativeEngine) clean() {
 }
 
 // Run new service
-func (e *nativeEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeInfo) (engine.Service, error) {
-	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", cfg.Name)
+func (e *nativeEngine) Run(name string, cfg baetyl.ComposeServiceInfo, vs map[string]baetyl.ComposeVolumeInfo) (engine.Service, error) {
+	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", name)
 	err := os.RemoveAll(spwd)
 	if err != nil {
 		return nil, err
 	}
-	err = mountAll(e.pwd, spwd, cfg.Mounts, vs)
+	err = mountAll(e.pwd, spwd, cfg.Volumes, vs)
 	if err != nil {
 		os.RemoveAll(spwd)
 		return nil, err
@@ -115,16 +115,17 @@ func (e *nativeEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeIn
 	}
 	params := processConfigs{
 		exec: path.Join(pkgDir, pkg.Entry),
-		env:  utils.AppendEnv(cfg.Env, true),
-		argv: cfg.Args,
+		env:  utils.AppendEnv(cfg.Environment.Envs, true),
+		argv: cfg.Command.Cmd,
 		pwd:  spwd,
 	}
 	s := &nativeService{
+		name:      name,
 		cfg:       cfg,
 		engine:    e,
 		params:    params,
 		instances: cmap.New(),
-		log:       e.log.WithField("service", cfg.Name),
+		log:       e.log.WithField("service", name),
 	}
 	err = s.Start()
 	if err != nil {
@@ -139,13 +140,18 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
-func mountAll(epwd, spwd string, ms []baetyl.MountInfo, vs map[string]baetyl.VolumeInfo) error {
+func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume, vs map[string]baetyl.ComposeVolumeInfo) error {
 	for _, m := range ms {
-		v, ok := vs[m.Name]
-		if !ok {
-			return fmt.Errorf("volume '%s' not found", m.Name)
+		v, ok := vs[m.Source]
+		var err error
+		if ok {
+			err = mount(v.DriverOpts["device"], path.Join(spwd, strings.TrimSpace(m.Target)))
+		} else {
+			if !utils.PathExists(m.Source) {
+				return fmt.Errorf("volume '%s' not found", m.Source)
+			}
+			err = mount(m.Source, path.Join(spwd, strings.TrimSpace(m.Target)))
 		}
-		err := mount(v.Path, path.Join(spwd, strings.TrimSpace(m.Path)))
 		if err != nil {
 			return err
 		}

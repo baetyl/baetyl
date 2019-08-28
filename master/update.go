@@ -77,18 +77,18 @@ func (m *Master) UpdateAPP(trace, target string) error {
 			log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).WithError(rberr).Errorf("failed to roll back")
 			return fmt.Errorf("failed to restart old app: %s; failed to roll back: %s", err.Error(), rberr.Error())
 		}
-		m.commitAPP(old.Version)
+		m.commitAPP(old.AppVersion)
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTARolledBack).Infof("app is rolled back")
 		return fmt.Errorf("failed to start app: %s", err.Error())
 	}
-	m.commitAPP(cur.Version)
+	m.commitAPP(cur.AppVersion)
 	if isOTA {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdated).Infof("app is updated")
 	}
 	return nil
 }
 
-func (m *Master) loadAPPConfig(target string) (cur, old baetyl.AppConfig, err error) {
+func (m *Master) loadAPPConfig(target string) (cur, old baetyl.ComposeAppConfig, err error) {
 	if target != "" {
 		// backup
 		if utils.FileExists(appConfigFile) {
@@ -121,13 +121,23 @@ func (m *Master) loadAPPConfig(target string) (cur, old baetyl.AppConfig, err er
 	if utils.FileExists(appConfigFile) {
 		err = utils.LoadYAML(appConfigFile, &cur)
 		if err != nil {
-			return
+			var cfg baetyl.AppConfig
+			err = utils.LoadYAML(appConfigFile, &cfg)
+			if err != nil {
+				return
+			}
+			cur = baetyl.ToComposeAppConfig(cfg)
 		}
 	}
 	if utils.FileExists(appBackupFile) {
 		err = utils.LoadYAML(appBackupFile, &old)
 		if err != nil {
-			return
+			var cfg baetyl.AppConfig
+			err = utils.LoadYAML(appBackupFile, &cfg)
+			if err != nil {
+				return
+			}
+			old = baetyl.ToComposeAppConfig(cfg)
 		}
 	}
 	return

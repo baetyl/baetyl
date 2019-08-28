@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"runtime"
 	"time"
+	"path"
 
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -18,6 +19,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/pkg/stdcopy"
+	volumetypes "github.com/docker/docker/api/types/volume"
 )
 
 const defaultNetworkName = "baetyl"
@@ -26,6 +28,48 @@ type containerConfigs struct {
 	config        container.Config
 	hostConfig    container.HostConfig
 	networkConfig network.NetworkingConfig
+}
+
+func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolumeInfo) error {
+	ctx := context.Background()
+	vlBody, err := e.cli.VolumeList(ctx, filters.Args{})
+	if err != nil {
+		e.log.WithError(err).Errorf("failed to list volumes")
+	}
+	if vlBody.Warnings != nil {
+		e.log.Warnln(vlBody.Warnings)
+	}
+	vs := vlBody.Volumes
+	vsMap := map[string]*types.Volume{}
+	for _, v := range vs {
+		vsMap[v.Name] = v
+	}
+	for name, volumeInfo := range volumeInfos {
+		if _, ok := vsMap[name]; ok {
+			e.log.Debugf("volume %s already exists", name)
+			continue
+		}
+		// avoid modifying network driver options
+		driverOpts := map[string]string{}
+		for k, v := range volumeInfo.DriverOpts {
+			driverOpts[k] = v
+			if _, ok := volumeInfo.DriverOpts["device"]; ok {
+				driverOpts["device"] = path.Join(e.pwd, volumeInfo.DriverOpts["device"])
+			}
+		}
+		volumeParams := volumetypes.VolumeCreateBody{
+			Name: name,
+			Driver: volumeInfo.Driver,
+			DriverOpts: driverOpts,
+			Labels: volumeInfo.Labels,
+		}
+		_, err := e.cli.VolumeCreate(ctx, volumeParams)
+		if err != nil {
+			e.log.WithError(err).Errorf("failed to create volume %s", name)
+		}
+		e.log.Debugf("volume %s created", name)
+	}
+	return nil
 }
 
 func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) error {

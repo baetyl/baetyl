@@ -27,11 +27,11 @@ type Engine interface {
 	io.Closer
 	Name() string
 	Recover()
-	Prepare(baetyl.AppConfig)
+	Prepare(baetyl.ComposeAppConfig)
 	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
 	DelInstanceStats(serviceName, instanceName string, persist bool)
 	DelServiceStats(serviceName string, persist bool)
-	Run(baetyl.ServiceInfo, map[string]baetyl.VolumeInfo) (Service, error)
+	Run(string, baetyl.ComposeServiceInfo, map[string]baetyl.ComposeVolumeInfo) (Service, error)
 }
 
 // New engine by given name

@@ -38,7 +38,15 @@ func (a *agent) processEvent(e *Event) {
 }
 
 func (a *agent) processOTA(eo *EventOTA) error {
-	hostDir, containerDir, err := a.downloadVolume(eo.Volume)
+	// transform volume format to compose volume format
+	v := baetyl.ComposeVolumeInfo{
+		DriverOpts: map[string]string{
+			"device": eo.Volume.Path,
+		},
+		Meta: eo.Volume.Meta,
+	}
+
+	hostDir, containerDir, err := a.downloadVolume(eo.Volume.Name, v)
 	if err != nil {
 		return fmt.Errorf("failed to download volume: %s", err.Error())
 	}
@@ -46,7 +54,18 @@ func (a *agent) processOTA(eo *EventOTA) error {
 	if eo.Type == baetyl.OTAAPP {
 		hostTarget = path.Join(hostDir, baetyl.AppConfFileName)
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
-		var cfg baetyl.AppConfig
+
+		var cfg baetyl.ComposeAppConfig
+		err = utils.LoadYAML(containerAppFile, &cfg)
+		if err != nil {
+			var c baetyl.AppConfig
+			err = utils.LoadYAML(containerAppFile, &c)
+			if err != nil {
+				return err
+			}
+			cfg = baetyl.ToComposeAppConfig(c)
+		}
+
 		err := utils.LoadYAML(containerAppFile, &cfg)
 		if err != nil {
 			return err
@@ -59,7 +78,7 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		if err != nil {
 			return fmt.Errorf("failed to download app volumes: %s", err.Error())
 		}
-		a.cleaner.set(cfg.Version, cfg.Volumes)
+		a.cleaner.set(cfg.AppVersion, cfg.Volumes)
 	} else if eo.Type == baetyl.OTAMST {
 		hostTarget = path.Join(hostDir, baetyl.DefaultBinFile)
 	}

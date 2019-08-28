@@ -21,28 +21,32 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) startServices(cur baetyl.AppConfig) error {
-	volumes := map[string]baetyl.VolumeInfo{}
-	for _, v := range cur.Volumes {
-		// for preventing path escape
-		v.Path = path.Join(m.pwd, path.Join("/", v.Path))
-		volumes[v.Name] = v
+func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
+	vs := cur.Volumes
+	for name := range vs {
+		if _, ok := vs[name].DriverOpts["device"]; ok {
+			vs[name].DriverOpts["device"] = path.Join(m.pwd, vs[name].DriverOpts["device"])
+		}
 	}
-	for _, s := range cur.Services {
-		if _, ok := m.services.Get(s.Name); ok {
+	volumes := cur.Volumes
+	for name, s := range cur.Services {
+		if _, ok := m.services.Get(name); ok {
 			continue
 		}
+		if s.ContainerName != "" {
+			name = s.ContainerName
+		}
 		token := uuid.Generate().String()
-		m.accounts.Set(s.Name, token)
-		s.Env[baetyl.EnvServiceNameKey] = s.Name
-		s.Env[baetyl.EnvServiceTokenKey] = token
-		nxt, err := m.engine.Run(s, volumes)
+		m.accounts.Set(name, token)
+		s.Environment.Envs[baetyl.EnvServiceNameKey] = name
+		s.Environment.Envs[baetyl.EnvServiceTokenKey] = token
+		nxt, err := m.engine.Run(name, s, volumes)
 		if err != nil {
-			m.log.Infof("failed to start service (%s)", s.Name)
+			m.log.Infof("failed to start service (%s)", name)
 			return err
 		}
-		m.services.Set(s.Name, nxt)
-		m.log.Infof("service (%s) started", s.Name)
+		m.services.Set(name, nxt)
+		m.log.Infof("service (%s) started", name)
 	}
 	return nil
 }
@@ -101,28 +105,22 @@ func (m *Master) StopInstance(service, instance string) error {
 }
 
 // DiffServices returns the services not changed
-func diffServices(cur, old baetyl.AppConfig) map[string]struct{} {
-	oldVolumes := make(map[string]baetyl.VolumeInfo)
-	for _, o := range old.Volumes {
-		oldVolumes[o.Name] = o
-	}
+func diffServices(cur, old baetyl.ComposeAppConfig) map[string]struct{} {
+	oldVolumes := old.Volumes
 	// find the volumes updated
 	updateVolumes := make(map[string]struct{})
-	for _, c := range cur.Volumes {
-		if o, ok := oldVolumes[c.Name]; ok && o.Path != c.Path {
-			updateVolumes[c.Name] = struct{}{}
+	for name, c := range cur.Volumes {
+		if o, ok := oldVolumes[name]; ok && o.DriverOpts["device"] != c.DriverOpts["device"] {
+			updateVolumes[name] = struct{}{}
 		}
 	}
 
-	oldServices := make(map[string]baetyl.ServiceInfo)
-	for _, o := range old.Services {
-		oldServices[o.Name] = o
-	}
+	oldServices := old.Services
 
 	// find the services not changed
 	keepServices := map[string]struct{}{}
-	for _, c := range cur.Services {
-		o, ok := oldServices[c.Name]
+	for name, c := range cur.Services {
+		o, ok := oldServices[name]
 		if !ok {
 			continue
 		}
@@ -130,15 +128,15 @@ func diffServices(cur, old baetyl.AppConfig) map[string]struct{} {
 			continue
 		}
 		changed := false
-		for _, m := range c.Mounts {
-			if _, changed = updateVolumes[m.Name]; changed {
+		for _, m := range c.Volumes {
+			if _, changed = updateVolumes[m.Source]; changed {
 				break
 			}
 		}
 		if changed {
 			continue
 		}
-		keepServices[c.Name] = struct{}{}
+		keepServices[name] = struct{}{}
 	}
 	return keepServices
 }

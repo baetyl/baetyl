@@ -16,7 +16,7 @@ type cleaner struct {
 	prefix   string
 	target   string
 	lversion string                // ast version
-	lvolumes []baetyl.VolumeInfo // last volumes
+	lvolumes map[string]baetyl.ComposeVolumeInfo // last volumes
 	log      logger.Logger
 }
 
@@ -33,7 +33,7 @@ func (c *cleaner) reset() {
 	c.lvolumes = nil
 }
 
-func (c *cleaner) set(version string, volumes []baetyl.VolumeInfo) {
+func (c *cleaner) set(version string, volumes map[string]baetyl.ComposeVolumeInfo) {
 	c.lversion = version
 	c.lvolumes = volumes
 }
@@ -62,21 +62,21 @@ func (c *cleaner) do(version string) {
 	}
 }
 
-func list(prefix, target string, volumes []baetyl.VolumeInfo) ([]string, error) {
+func list(prefix, target string, volumes map[string]baetyl.ComposeVolumeInfo) ([]string, error) {
 	keep := map[string]bool{}
 	for _, v := range volumes {
 		// remove prefix from path
-		p, err := filepath.Rel(prefix, v.Path)
+		p, err := filepath.Rel(prefix, v.DriverOpts["device"])
 		if err != nil {
 			continue
 		}
 		ps := strings.Split(p, string(filepath.Separator))
 		if len(ps) == 0 {
-			// ignore the case that v.Path equals prefix
+			// ignore the case that path equals prefix
 			continue
 		}
 		if ps[0] == ".." {
-			// ignore the case that v.Path out of prefix
+			// ignore the case that path out of prefix
 			continue
 		}
 		keep[ps[0]] = len(ps) > 1
