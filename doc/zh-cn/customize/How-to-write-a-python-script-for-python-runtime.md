@@ -2,13 +2,14 @@
 
 **声明**：
 
-- 本文测试所用设备系统为 Darwin
+- 本文测试所用设备系统为 Ubuntu18.04
 - python 版本为 3.6，2.7 版本配置流程相同，但需要在 python 脚本中注意语言差异
 - 模拟 MQTT client 行为的客户端为 [MQTTBOX](../Resources-download.md#下载-MQTTBOX-客户端)
 - 本文中基于 Hub 模块创建的服务名称为 `localhub` 服务。并且针对本文的测试案例中，对应的 `localhub` 服务、函数计算服务以及其他服务的配置统一如下：
 
 ```yaml
 # 本地 Hub 配置
+# 配置文件位置: var/db/baetyl/localhub-conf/service.yml
 listen:
   - tcp://0.0.0.0:1883
 principals:
@@ -20,7 +21,8 @@ principals:
       - action: 'sub'
         permit: ['#']
 
-# 本地 openedge-function-manager 配置
+# 本地 baetyl-function-manager 配置
+# 配置文件位置: var/db/baetyl/function-manager-conf/service.yml
 hub:
   address: tcp://localhub:1883
   username: test
@@ -42,77 +44,79 @@ functions:
       idletime: 1m
 
 # python function 配置
+# 配置文件位置: var/db/baetyl/function-sayhi-conf/service.yml
 functions:
   - name: 'sayhi3'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 
 # application.yml配置
+# 配置文件位置: var/db/baetyl/application.yml
 version: v0
 services:
   - name: localhub
-    image: openedge-hub
+    image: baetyl-hub
     replica: 1
     ports:
       - 1883:1883
     mounts:
       - name: localhub-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: localhub-data
-        path: var/db/openedge/data
+        path: var/db/baetyl/data
       - name: localhub-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-manager
-    image: openedge-function-manager
+    image: baetyl-function-manager
     replica: 1
     mounts:
       - name: function-manager-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-manager-log
-        path: var/log/openedge
+        path: var/log/baetyl
   - name: function-sayhi3
-    image: openedge-function-python36
+    image: baetyl-function-python36
     replica: 0
     mounts:
       - name: function-sayhi-conf
-        path: etc/openedge
+        path: etc/baetyl
         readonly: true
       - name: function-sayhi-code
-        path: var/db/openedge/function-sayhi
+        path: var/db/baetyl/function-sayhi
         readonly: true
 volumes:
   # hub
   - name: localhub-conf
-    path: var/db/openedge/localhub-conf
+    path: var/db/baetyl/localhub-conf
   - name: localhub-data
-    path: var/db/openedge/localhub-data
+    path: var/db/baetyl/localhub-data
   - name: localhub-log
-    path: var/db/openedge/localhub-log
+    path: var/db/baetyl/localhub-log
   # function manager
   - name: function-manager-conf
-    path: var/db/openedge/function-manager-conf
+    path: var/db/baetyl/function-manager-conf
   - name: function-manager-log
-    path: var/db/openedge/function-manager-log
+    path: var/db/baetyl/function-manager-log
   # function python runtime sayhi
   - name: function-sayhi-conf
-    path: var/db/openedge/function-sayhi-conf
+    path: var/db/baetyl/function-sayhi-conf
   - name: function-sayhi-code
-    path: var/db/openedge/function-sayhi-code
+    path: var/db/baetyl/function-sayhi-code
 ```
 
-OpenEdge 官方提供了 Python 运行时，可以加载用户所编写的 Python 脚本。下文将针对 Python 脚本的名称，执行函数名称，输入，输出参数等内容分别进行说明。
+Baetyl 官方提供了 Python 运行时，可以加载用户所编写的 Python 脚本。下文将针对 Python 脚本的名称，执行函数名称，输入，输出参数等内容分别进行说明。
 
 ## 函数名约定
 
-Python 脚本的名称可以参照 Python 的通用命名规范，OpenEdge 并未对此做特别限制。如果要应用某 Python 脚本对某条 MQTT 消息做处理，则相应的函数运行时服务的配置如下：
+Python 脚本的名称可以参照 Python 的通用命名规范，Baetyl 并未对此做特别限制。如果要应用某 Python 脚本对某条 MQTT 消息做处理，则相应的函数运行时服务的配置如下：
 
 ```yaml
 functions:
   - name: 'sayhi3'
     handler: 'sayhi.handler'
-    codedir: 'var/db/openedge/function-sayhi'
+    codedir: 'var/db/baetyl/function-sayhi'
 ```
 
 这里，我们关注 `handler` 这一属性，其中 `sayhi` 代表脚本名称，后面的 `handler` 代表该文件中被调用的入口函数。
@@ -133,7 +137,7 @@ def handler(event, context):
     return event
 ```
 
-OpenEdge 官方提供的 Python 运行时支持 2 个参数: event 和 context，下面将分别介绍其用法。
+Baetyl 官方提供的 Python 运行时支持 2 个参数: event 和 context，下面将分别介绍其用法。
 
 - **event**：根据 MQTT 报文中的 Payload 传入不同参数
     - 若原始 Payload 为一个 Json 数据，则传入经过 json.loads(Payload) 处理后的数据;
@@ -145,7 +149,7 @@ OpenEdge 官方提供的 Python 运行时支持 2 个参数: event 和 context�
     - context.functionInvokeID //MQTT function invokeID
     - context.invokeid // 同上，用于兼容 [CFC](https://cloud.baidu.com/product/cfc.html)
 
-_**提示**：在云端 CFC 测试时，请注意不要直接使用 OpenEdge 定义的上下文信息。推荐做法是先判断字段是否在 context 中存在，如果存在再读取。_
+_**提示**：在云端 CFC 测试时，请注意不要直接使用 Baetyl 定义的上下文信息。推荐做法是先判断字段是否在 context 中存在，如果存在再读取。_
 
 ## Hello World!
 

@@ -14,9 +14,11 @@ before_install:
 
 install: true
 script:
-  - echo "openedge build begin"
+  - echo "baetyl build begin"
   - make
-  - echo "openedge build end"
-  - echo "openedge uint test begin"
+  - echo "baetyl build end"
+  - echo "baetyl uint test begin"
   - make test
-  - echo "openedge unit test end"
+  - echo "baetyl unit test end"
+
+  

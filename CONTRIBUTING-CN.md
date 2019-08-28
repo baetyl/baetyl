@@ -1,10 +1,10 @@
 # 贡献
 
-欢迎来到 OpenEdge 百度开源边缘计算项目，如果您想要向 OpenEdge 贡献代码或文档，请遵循以下流程。
+欢迎来到 Baetyl 百度开源边缘计算项目，如果您想要向 Baetyl 贡献代码或文档，请遵循以下流程。
 
 ## 贡献流程
 
-OpenEdge 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-successful-git-branching-model/)。下面将为您提供通用的 Github 代码贡献方式。
+Baetyl 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-successful-git-branching-model/)。下面将为您提供通用的 Github 代码贡献方式。
 
 1. Fork 代码库
 
@@ -12,13 +12,13 @@ OpenEdge 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-succes
 
 2. 准备开发环境
 
-   如果您想要向 OpenEdge 贡献代码，请参考如下命令准备相关本地开发环境：
+   如果您想要向 Baetyl 贡献代码，请参考如下命令准备相关本地开发环境：
 
    ```bash
-   go get github.com/baidu/openedge # 获取 openedge 代码库
-   cd $GOPATH/src/github.com/baidu/openedge # 进入 openedge 代码库目录
+   go get github.com/baetyl/baetyl # 获取 baetyl 代码库
+   cd $GOPATH/src/github.com/baetyl/baetyl # 进入 baetyl 代码库目录
    git checkout master  # 校验当前处于 master 主分支
-   git remote add fork https://github.com/<your_github_account>/openedge  # 指定远程提交代码仓库
+   git remote add fork https://github.com/<your_github_account>/baetyl  # 指定远程提交代码仓库
    ```
 
 3. 提交代码到 fork 仓库
@@ -34,7 +34,7 @@ OpenEdge 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-succes
 
 4. 创建代码合入请求
 
-   基于 fork 的仓库地址直接向 OpenEdge 官方仓库 [https://github.com/baidu/openedge](https://github.com/baidu/openedge) 提交 **pull request**（具体请参考[如何创建一个提交请求](https://help.github.com/articles/creating-a-pull-request/)），即可完成向 OpenEdge 官方仓库的代码合入请求。一旦 OpenEdge 代码仓库评审人员通过了您的代码提交、合入请求，您即可在 OpenEdge 官方代码仓库中看到您贡献的代码。
+   基于 fork 的仓库地址直接向 Baetyl 官方仓库 [https://github.com/baetyl/baetyl](https://github.com/baetyl/baetyl) 提交 **pull request**（具体请参考[如何创建一个提交请求](https://help.github.com/articles/creating-a-pull-request/)），即可完成向 Baetyl 官方仓库的代码合入请求。一旦 Baetyl 代码仓库评审人员通过了您的代码提交、合入请求，您即可在 Baetyl 官方代码仓库中看到您贡献的代码。
 
 ## 代码评审规范
 
@@ -46,11 +46,11 @@ OpenEdge 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-succes
 
 ## 代码合入规范
 
-无规矩不成方圆。这里规定，凡是提交 OpenEdge 代码合入请求的代码，一律要求遵循以下规范：
+无规矩不成方圆。这里规定，凡是提交 Baetyl 代码合入请求的代码，一律要求遵循以下规范：
 
 - 建议您提交代码前再次执行命令 `govendor fmt +local`，具体请参考 [govendor](https://github.com/kardianos/govendor)
 - 代码提交前 **必须** 进行单元测试（提交代码应包含）和竞争检测，参考执行命令 `make test`
-- 仅有提交代码通过单元测试和竞争检测，才允许向 OpenEdge 官方仓库提交
-- 所有向 OpenEdge 官方仓库提交的代码，**必须至少** 有 **1** 个代码评审员评审通过后，才可以将提交代码合入 OpenEdge 官方代码仓库
+- 仅有提交代码通过单元测试和竞争检测，才允许向 Baetyl 官方仓库提交
+- 所有向 Baetyl 官方仓库提交的代码，**必须至少** 有 **1** 个代码评审员评审通过后，才可以将提交代码合入 Baetyl 官方代码仓库
 
 **注意**：以上所有代码提交步骤要求及规范，同样适用文档贡献。

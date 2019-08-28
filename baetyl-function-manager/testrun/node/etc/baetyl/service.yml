@@ -1,0 +1,8 @@
+functions:
+  - name: 'node85-sayhi'
+    handler: 'index.handler'
+    codedir: 'var/db/baetyl/function-sayjs'
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"
+

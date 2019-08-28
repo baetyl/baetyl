@@ -1,0 +1,4 @@
+mode: docker
+logger:
+  path: var/db/baetyl/baetyl-log/baetyl.log
+  level: debug

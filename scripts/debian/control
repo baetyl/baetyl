@@ -1,17 +1,17 @@
-Source: openedge
+Source: baetyl
 Section: admin
 Priority: extra
-Maintainer: OpenEdge Devs
+Maintainer: Baetyl Devs
 Build-Depends: build-essential, 
                debhelper (>= 9), 
                dh-systemd
 
-Package: openedge
+Package: baetyl
 Architecture: any
 Depends: libc6 (>= 2.3.2), init-system-helpers (>= 1.13~)
-Description: OpenEdge
- OpenEdge is an open edge computing framework 
+Description: Baetyl
+ Baetyl is an open edge computing framework 
  that extends cloud computing, data and service seamlessly to edge devices. 
  .
- You can visit https://github.com/baidu/openedge to learn more!
+ You can visit https://github.com/baetyl/baetyl to learn more!
 

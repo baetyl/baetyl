@@ -6,7 +6,7 @@
 /.idea
 /.vscode
 /output*
-/openedge
+/baetyl
 /**/*.zip
 /**/.DS_Store
 /**/libexec

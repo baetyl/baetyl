@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -16,7 +16,7 @@ const (
 )
 
 type dockerService struct {
-	cfg       openedge.ServiceInfo
+	cfg       baetyl.ServiceInfo
 	params    containerConfigs
 	engine    *dockerEngine
 	instances cmap.ConcurrentMap
@@ -31,7 +31,7 @@ func (s *dockerService) Engine() engine.Engine {
 	return s.engine
 }
 
-func (s *dockerService) RestartPolicy() openedge.RestartPolicyInfo {
+func (s *dockerService) RestartPolicy() baetyl.RestartPolicyInfo {
 	return s.cfg.Restart
 }
 

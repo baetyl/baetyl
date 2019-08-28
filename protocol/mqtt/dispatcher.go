@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/jpillora/backoff"
 )
 

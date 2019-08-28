@@ -3,9 +3,9 @@ package native
 import (
 	"os"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/shirou/gopsutil/process"
 )
 

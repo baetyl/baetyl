@@ -1,0 +1,75 @@
+version: v0
+services:
+  - name: localhub
+    image: hub.baidubce.com/baetyl/baetyl-hub
+    replica: 1
+    mounts:
+      - name: localhub-conf
+        path: etc/baetyl
+        readonly: true
+      - name: localhub-data
+        path: var/db/baetyl/data
+      - name: localhub-log
+        path: var/log/baetyl
+  - name: function-manager
+    image: hub.baidubce.com/baetyl/baetyl-function-manager
+    replica: 1
+    mounts:
+      - name: function-manager-conf
+        path: etc/baetyl
+        readonly: true
+      - name: function-manager-log
+        path: var/log/baetyl
+  - name: video-infer
+    image: hub.baidubce.com/baetyl-beta/baetyl-video-infer
+    replica: 1
+    devices:
+      - /dev/dri
+    mounts:
+      - name: video-infer-conf
+        path: etc/baetyl
+        readonly: true
+      - name: video-infer-model
+        path: var/db/baetyl/model
+        readonly: true
+      - name: video-infer-image
+        path: var/db/baetyl/image
+      - name: video-infer-log
+        path: var/log/baetyl
+  - name: function-python
+    image: hub.baidubce.com/baetyl/baetyl-function-python36:0.1.6-opencv41
+    replica: 0
+    mounts:
+      - name: function-python-conf
+        path: etc/baetyl
+        readonly: true
+      - name: function-python-code
+        path: var/db/baetyl/code
+      - name: video-infer-image
+        path: var/db/baetyl/image
+volumes:
+  # hub
+  - name: localhub-conf
+    path: var/db/baetyl/localhub-conf
+  - name: localhub-data
+    path: var/db/baetyl/localhub-data
+  - name: localhub-log
+    path: var/db/baetyl/localhub-log
+  # function
+  - name: function-manager-conf
+    path: var/db/baetyl/function-manager-conf
+  - name: function-manager-log
+    path: var/db/baetyl/function-manager-log
+  - name: function-python-conf
+    path: var/db/baetyl/function-python-conf
+  - name: function-python-code
+    path: var/db/baetyl/function-python-code
+  # video infer
+  - name: video-infer-conf
+    path: var/db/baetyl/video-infer-conf
+  - name: video-infer-model
+    path: var/db/baetyl/video-infer-model
+  - name: video-infer-image
+    path: var/db/baetyl/video-infer-image
+  - name: video-infer-log
+    path: var/db/baetyl/video-infer-log

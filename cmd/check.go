@@ -7,13 +7,13 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/baidu/openedge/master"
-	"github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/master"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/spf13/cobra"
 )
 
-const defaultConfFile = "etc/openedge/openedge.yml"
+const defaultConfFile = "etc/baetyl/baetyl.yml"
 
 // compile variables
 var (
@@ -23,14 +23,14 @@ var (
 
 var checkCmd = &cobra.Command{
 	Use:   "check",
-	Short: "check openedge and its configuration",
+	Short: "check baetyl and its configuration",
 	Long:  ``,
 	Run:   check,
 }
 
 func init() {
-	checkCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "work directory of openedge")
-	checkCmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config path of openedge")
+	checkCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "work directory of baetyl")
+	checkCmd.Flags().StringVarP(&cfgFile, "config", "c", "", "config path of baetyl")
 	rootCmd.AddCommand(checkCmd)
 }
 
@@ -40,7 +40,7 @@ func check(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	log.Printf(openedge.CheckOK)
+	log.Printf(baetyl.CheckOK)
 }
 
 func checkInternal() (*master.Config, error) {

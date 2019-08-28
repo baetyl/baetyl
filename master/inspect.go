@@ -8,15 +8,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/baidu/openedge/logger"
-	"github.com/baidu/openedge/master/engine"
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	"gopkg.in/yaml.v2"
 )
 
 type infoStats struct {
-	openedge.Inspect
+	baetyl.Inspect
 	services engine.ServicesStats
 	file     string
 	sync.RWMutex
@@ -26,8 +26,8 @@ func newInfoStats(pwd, mode, version, file string) *infoStats {
 	return &infoStats{
 		file:     file,
 		services: engine.ServicesStats{},
-		Inspect: openedge.Inspect{
-			Software: openedge.Software{
+		Inspect: baetyl.Inspect{
+			Software: baetyl.Software{
 				OS:         runtime.GOOS,
 				Arch:       runtime.GOARCH,
 				GoVersion:  runtime.Version(),
@@ -35,7 +35,7 @@ func newInfoStats(pwd, mode, version, file string) *infoStats {
 				Mode:       mode,
 				BinVersion: version,
 			},
-			Hardware: openedge.Hardware{
+			Hardware: baetyl.Hardware{
 				HostInfo: utils.GetHostInfo(),
 				NetInfo:  utils.GetNetInfo(),
 			},
@@ -126,10 +126,10 @@ func (is *infoStats) getError() string {
 	return is.Inspect.Error
 }
 
-// func genVolumesStats(cfg []openedge.VolumeInfo) openedge.Volumes {
-// 	volumes := openedge.Volumes{}
+// func genVolumesStats(cfg []baetyl.VolumeInfo) baetyl.Volumes {
+// 	volumes := baetyl.Volumes{}
 // 	for _, item := range cfg {
-// 		volumes = append(volumes, openedge.VolumeStatus{
+// 		volumes = append(volumes, baetyl.VolumeStatus{
 // 			Name:    item.Name,
 // 			Version: item.Meta.Version,
 // 		})
@@ -184,8 +184,8 @@ func (is *infoStats) stats() {
 	is.Unlock()
 }
 
-// InspectSystem inspects info and stats of openedge system
-func (m *Master) InspectSystem() *openedge.Inspect {
+// InspectSystem inspects info and stats of baetyl system
+func (m *Master) InspectSystem() *baetyl.Inspect {
 	defer utils.Trace("InspectSystem", logger.Global.Debugf)()
 	var wg sync.WaitGroup
 	for item := range m.services.IterBuffered() {
@@ -203,9 +203,9 @@ func (m *Master) InspectSystem() *openedge.Inspect {
 	wg.Wait()
 
 	result := m.infostats.Inspect
-	result.Services = openedge.Services{}
+	result.Services = baetyl.Services{}
 	for serviceName, serviceStats := range m.infostats.services {
-		service := openedge.NewServiceStatus(serviceName)
+		service := baetyl.NewServiceStatus(serviceName)
 		for _, instanceStats := range serviceStats {
 			service.Instances = append(service.Instances, map[string]interface{}(instanceStats))
 		}

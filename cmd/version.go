@@ -15,7 +15,7 @@ var (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "show the version of openedge",
+	Short: "show the version of baetyl",
 	Long:  ``,
 	Run:   version,
 }
@@ -25,5 +25,5 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	log.Printf("\nopenedge version %s\n%s\n\n", Version, GoVersion)
+	log.Printf("\nbaetyl version %s\n%s\n\n", Version, GoVersion)
 }

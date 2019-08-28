@@ -1,0 +1,8 @@
+FROM ubuntu:18.04
+
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install \
+        build-essential python-dev python-setuptools \
+        python-pip && \
+    pip install pyyaml protobuf grpcio && \
+    rm -rf /var/lib/apt/lists/*

@@ -1,0 +1,26 @@
+hub:
+  address: tcp://0.0.0.0:1883
+  username: test
+  password: hahaha
+  clientid: baetyl-video-infer
+video:
+  uri: "0"
+  limit:
+    fps: 1
+infer:
+  model: var/db/baetyl/model/frozen_inference_graph.pb
+  config: var/db/baetyl/model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt
+process:
+  before:
+    swaprb: true
+    width: 300
+    hight: 300
+  after:
+    function: 
+      name: analyse
+functions:
+  - name: analyse
+    address: 0.0.0.0:50051
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"

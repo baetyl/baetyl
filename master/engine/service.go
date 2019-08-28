@@ -1,12 +1,12 @@
 package engine
 
-import openedge "github.com/baidu/openedge/sdk/openedge-go"
+import baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 
 // Service interfaces of service
 type Service interface {
 	Name() string
 	Engine() Engine
-	RestartPolicy() openedge.RestartPolicyInfo
+	RestartPolicy() baetyl.RestartPolicyInfo
 	Start() error
 	Stop()
 	Stats()

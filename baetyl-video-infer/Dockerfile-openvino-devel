@@ -1,0 +1,31 @@
+FROM ubuntu:16.04
+
+ARG INSTALL_DIR=/opt/intel/openvino
+ARG TEMP_DIR=/tmp/openvino_installer
+ARG OPENVINO_VERSION=2019.2.242
+ARG OPENVINO_TGZ=https://baetyl.cdn.bcebos.com/openvino/linux/l_openvino_toolkit_p_${OPENVINO_VERSION}.tgz
+
+RUN apt-get update -y && \
+    apt-get -y --no-install-recommends install curl ca-certificates cpio lsb-release && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p $TEMP_DIR && \
+    cd $TEMP_DIR && \
+    curl -Lo openvino_toolkit.tgz ${OPENVINO_TGZ} && \
+    tar xf openvino_toolkit.tgz && \
+    cd l_openvino_toolkit* && \
+    sed -i 's/decline/accept/g' silent.cfg && \
+    ./install.sh -s silent.cfg && \
+    rm -rf $TEMP_DIR
+
+RUN cd ${INSTALL_DIR}/install_dependencies && \
+    ./install_openvino_dependencies.sh && \
+    ./install_NEO_OCL_driver.sh
+
+ENV INTEL_OPENVINO_DIR "${INSTALL_DIR}"
+ENV INTEL_CVSDK_DIR "${INTEL_OPENVINO_DIR}"
+ENV HDDL_INSTALL_DIR "${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/hddl"
+ENV LD_LIBRARY_PATH "${INTEL_CVSDK_DIR}/opencv/lib:/opt/intel/opencl:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/hddl/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/gna/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/mkltiny_lnx/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/tbb/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/intel64:${INTEL_OPENVINO_DIR}/openvx/lib"
+ENV PATH "${INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer:${PATH}"
+ENV OpenCV_DIR "${INTEL_CVSDK_DIR}/opencv/cmake"
+

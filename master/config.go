@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 
-	openedge "github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 )
 
 // Validate validates config
@@ -37,28 +37,28 @@ func (c *Config) Validate() error {
 		if err != nil {
 			return err
 		}
-		utils.SetEnv(openedge.EnvMasterHostSocket, sock)
+		utils.SetEnv(baetyl.EnvMasterHostSocket, sock)
 		if c.Mode == "native" {
-			utils.SetEnv(openedge.EnvMasterAPIKey, "unix://"+openedge.DefaultSockFile)
+			utils.SetEnv(baetyl.EnvMasterAPIKey, "unix://"+baetyl.DefaultSockFile)
 		} else {
-			utils.SetEnv(openedge.EnvMasterAPIKey, "unix:///"+openedge.DefaultSockFile)
+			utils.SetEnv(baetyl.EnvMasterAPIKey, "unix:///"+baetyl.DefaultSockFile)
 		}
 	} else {
 		if c.Mode == "native" {
-			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
+			utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
 		} else {
 			parts := strings.SplitN(url.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
-			utils.SetEnv(openedge.EnvMasterAPIKey, addr)
+			utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
 		}
 	}
-	utils.SetEnv(openedge.EnvMasterAPIVersionKey, "v1")
-	utils.SetEnv(openedge.EnvHostOSKey, runtime.GOOS)
-	utils.SetEnv(openedge.EnvRunningModeKey, c.Mode)
+	utils.SetEnv(baetyl.EnvMasterAPIVersionKey, "v1")
+	utils.SetEnv(baetyl.EnvHostOSKey, runtime.GOOS)
+	utils.SetEnv(baetyl.EnvRunningModeKey, c.Mode)
 
 	hi := utils.GetHostInfo()
 	if hi.HostID != "" {
-		utils.SetEnv(openedge.EnvHostID, hi.HostID)
+		utils.SetEnv(baetyl.EnvHostID, hi.HostID)
 	}
 	return nil
 }

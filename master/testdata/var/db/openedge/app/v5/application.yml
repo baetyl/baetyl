@@ -1,8 +1,0 @@
-version: v5
-services:
-  - name: wait_exit_5
-    image: cmd
-    replica: 1
-    mounts:
-      - name: cmd-bin
-        path: lib/openedge/cmd

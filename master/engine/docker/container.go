@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/baidu/openedge/master/engine"
-	"github.com/baidu/openedge/sdk/openedge-go"
-	"github.com/baidu/openedge/utils"
+	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -20,7 +20,7 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 )
 
-const defaultNetworkName = "openedge"
+const defaultNetworkName = "baetyl"
 
 type containerConfigs struct {
 	config        container.Config
@@ -28,7 +28,7 @@ type containerConfigs struct {
 	networkConfig network.NetworkingConfig
 }
 
-func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) error {
+func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) error {
 	ctx := context.Background()
 	args := filters.NewArgs()
 	args.Add("type", "custom")
@@ -41,11 +41,11 @@ func (e *dockerEngine) initNetworks(networks map[string]openedge.NetworkInfo) er
 	for _, val := range nws {
 		nwMap[val.Name] = val
 	}
-	// add openedge as default network
+	// add baetyl as default network
 	if networks == nil{
-		networks = make(map[string]openedge.NetworkInfo)
+		networks = make(map[string]baetyl.NetworkInfo)
 	}
-	networks[defaultNetworkName] = openedge.NetworkInfo {
+	networks[defaultNetworkName] = baetyl.NetworkInfo {
 		Driver: "bridge",
 	}
 	for networkName, network := range networks {
@@ -268,8 +268,8 @@ func (e *dockerEngine) statsContainer(cid string) engine.PartialStats {
 func (e *dockerEngine) logsContainer(cid string, since time.Time) error {
 	ctx := context.Background()
 	r, err := e.cli.ContainerLogs(ctx, cid, types.ContainerLogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
+		ShowStdout: false,
+		ShowStderr: true, // only read error message
 		Since:      since.Format("2006-01-02T15:04:05"),
 	})
 	if err != nil {
@@ -287,9 +287,9 @@ func (e *dockerEngine) logsContainer(cid string, since time.Time) error {
 		case stdcopy.Stderr:
 			e.log.Errorf("container (%s) %s", cid[:12], string(line[8:]))
 		case stdcopy.Stdin, stdcopy.Stdout:
-			e.log.Infof("container (%s) %s", cid[:12], string(line[8:]))
+			e.log.Debugf("container (%s) %s", cid[:12], string(line[8:]))
 		default:
-			e.log.Infof("container (%s) %s", cid[:12], string(line))
+			e.log.Debugf("container (%s) %s", cid[:12], string(line))
 		}
 	}
 	return nil

@@ -1,9 +1,0 @@
-# OpenEdge Control
-
-OpenEdge controllable design mainly includes 2 aspects, the essence of which is OpenEdge together with [BIE](https://cloud.baidu.com/product/bie.html)(Baidu-IntelliEdge) cloud management suite generate OpenEdge configuration file by **one-click configuration, one-click delivery**, update configuration(include update docker images in docker container mode) by **one-click update, automatic reloading**.
-
-Among them, **one-click configuration, one-click delivery** means that BIE cloud console supports users to establish edge core devices in the cloud, create volumes and services, write function scripts through [CFC](https://cloud.baidu.com/product/cfc.html) for `Python2.7` or `Python3.6` runtime(also can write `sql` expression through [Rule Engine](https://cloud.baidu.com/product/re.html) for `sql` runtime), generate and delivery configuration files. In addition, through BIE console users can update configuration at any time. Not only the design can meet actual demands of users to update the configuration, but also reduce the loss once found a wrong configuration.
-
-In addition, OpenEdge update and load configuration by **one-click update, automatic reloading** as Nginx. That is to say, users does not have to manually shut down and restart OpenEdge. At present, the hot load adopts the method of full update, which stops all the old application modules and then starts all new application modules, so the service provided by the module will be interrupted. In addition, decompressing the new application package will directly overwrite the old application files, and the redundant old application files will not be cleaned up.
-
-In particular, for the docker container mode, OpenEdge can also support to update docker images by simply modifying the configuration, and achieve **one-click update, switch at any time** effect.

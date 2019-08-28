@@ -1,13 +1,13 @@
-# OpenEdge 配置文件释义
+# Baetyl 配置文件释义
 
 - [说在前头](#说在前头)
 - [主程序配置](#主程序配置)
 - [应用配置](#应用配置)
-- [openedge-agent 配置](#openedge-agent-配置)
-- [openedge-hub 配置](#openedge-hub-配置)
-- [openedge-function-manager 配置](#openedge-function-manager-配置)
-- [openedge-function-python27、openedge-function-python36 配置](#openedge-function-python27-配置-openedge-function-python36-配置)
-- [openedge-remote-mqtt 配置](#openedge-remote-mqtt-配置)
+- [baetyl-agent 配置](#baetyl-agent-配置)
+- [baetyl-hub 配置](#baetyl-hub-配置)
+- [baetyl-function-manager 配置](#baetyl-function-manager-配置)
+- [baetyl-function-python27、baetyl-function-python36 配置](#baetyl-function-python27-配置-baetyl-function-python36-配置)
+- [baetyl-remote-mqtt 配置](#baetyl-remote-mqtt-配置)
 
 ## 说在前头
 
@@ -20,7 +20,7 @@
 
 ## 主程序配置
 
-主程序的配置和应用配置是分离的，默认配置文件是工作目录下的`etc/openedge/openedge.yml`，配置解读如下：
+主程序的配置和应用配置是分离的，默认配置文件是工作目录下的`etc/baetyl/baetyl.yml`，配置解读如下：
 
 ```yaml
 mode: 默认值：docker，服务运行模式。docker：容器模式；native：进程模式
@@ -42,7 +42,7 @@ logger: 日志配置项
 
 ## 应用配置
 
-应用配置的默认配置文件是工作目录下的 `var/db/openedge/application.yml`，配置解读如下：
+应用配置的默认配置文件是工作目录下的 `var/db/baetyl/application.yml`，配置解读如下：
 
 ```yaml
 version: 应用版本
@@ -89,7 +89,7 @@ volumes: 存储卷列表
     path: [必须]存储卷在宿主机上的路径，相对于主程序的工作目录而言
 ```
 
-## openedge-agent 配置
+## baetyl-agent 配置
 
 ```yaml
 remote: Agent 模块对接 BIE 云端管理套件的配置项
@@ -117,7 +117,7 @@ remote: Agent 模块对接 BIE 云端管理套件的配置项
     topic: 下发主题模板，无需配置
 ```
 
-## openedge-hub 配置
+## baetyl-hub 配置
 
 ```yaml
 listen: [必须]监听地址，例如：
@@ -192,12 +192,12 @@ status: Hub 状态配置项
     enable: 默认值：false，是否打印Hub的状态信息
     interval: 默认值：1m，状态信息打印时间间隔
 storage: 数据库存储配置项
-  dir: 默认值：`var/db/openedge/data`，数据库存储目录
+  dir: 默认值：`var/db/baetyl/data`，数据库存储目录
 shutdown: Hub 退出配置项
   timeout: 默认值：10m，Hub退出超时时间
 ```
 
-## openedge-function-manager 配置
+## baetyl-function-manager 配置
 
 ```yaml
 hub:
@@ -242,11 +242,11 @@ functions: 函数列表
     timeout: 默认值：30s，Client 连接函数实例超时时间
 ```
 
-## openedge-function-python27、openedge-function-python36 配置
+## baetyl-function-python27、baetyl-function-python36 配置
 
 ```yaml
 # 两个模块的配置方式相同，可参考下面一份配置
-server: 作为 GRPC Server 独立启动时配置；托管给 openedge-function-manager 无需配置
+server: 作为 GRPC Server 独立启动时配置；托管给 baetyl-function-manager 无需配置
   address: GRPC Server 监听的地址，<host>:<port>
   workers:
     max: 默认 CPU 核数乘以5，线程池最大容量
@@ -274,7 +274,7 @@ logger: 日志配置项
         max: 默认值：15，日志文件保留的最大数量
 ```
 
-## openedge-remote-mqtt 配置
+## baetyl-remote-mqtt 配置
 
 ```yaml
 hub:
@@ -334,7 +334,7 @@ logger: 日志配置项
     max: 默认值：15，日志文件保留的最大数量
 ```
 
-## openedge-timer 配置
+## baetyl-timer 配置
 
 ```yaml
 hub: 要连接的 Hub 信息
