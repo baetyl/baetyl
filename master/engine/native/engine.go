@@ -94,7 +94,7 @@ func (e *nativeEngine) clean() {
 }
 
 // Run new service
-func (e *nativeEngine) Run(name string, cfg baetyl.ComposeServiceInfo, vs map[string]baetyl.ComposeVolumeInfo) (engine.Service, error) {
+func (e *nativeEngine) Run(name string, cfg baetyl.ComposeService, vs map[string]baetyl.ComposeVolume) (engine.Service, error) {
 	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", name)
 	err := os.RemoveAll(spwd)
 	if err != nil {
@@ -140,7 +140,7 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
-func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume, vs map[string]baetyl.ComposeVolumeInfo) error {
+func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume, vs map[string]baetyl.ComposeVolume) error {
 	for _, m := range ms {
 		v, ok := vs[m.Source]
 		var err error

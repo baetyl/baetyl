@@ -22,7 +22,7 @@ func TestCleaner(t *testing.T) {
 	type args struct {
 		prefix  string
 		target  string
-		volumes map[string]baetyl.ComposeVolumeInfo
+		volumes map[string]baetyl.ComposeVolume
 	}
 	tests := []struct {
 		name    string
@@ -35,7 +35,7 @@ func TestCleaner(t *testing.T) {
 			args: args{
 				prefix:  prefix,
 				target:  target,
-				volumes: map[string]baetyl.ComposeVolumeInfo{},
+				volumes: map[string]baetyl.ComposeVolume{},
 			},
 			want: []string{
 				filepath.Join(target, "b"),
@@ -49,23 +49,23 @@ func TestCleaner(t *testing.T) {
 			args: args{
 				prefix: prefix,
 				target: target,
-				volumes: map[string]baetyl.ComposeVolumeInfo{
-					"no-exists": baetyl.ComposeVolumeInfo{
+				volumes: map[string]baetyl.ComposeVolume{
+					"no-exists": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": "no-exists",
 						},
 					},
-					"b": baetyl.ComposeVolumeInfo{
+					"b": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "b"),
 						},
 					},
-					"cc1": baetyl.ComposeVolumeInfo{
+					"cc1": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "c", "c1"),
 						},
 					},
-					"dd1d1i": baetyl.ComposeVolumeInfo{
+					"dd1d1i": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "d", "d1", "d1i"),
 						},
@@ -82,18 +82,18 @@ func TestCleaner(t *testing.T) {
 			args: args{
 				prefix: prefix,
 				target: target,
-				volumes: map[string]baetyl.ComposeVolumeInfo{
-					target: baetyl.ComposeVolumeInfo{
+				volumes: map[string]baetyl.ComposeVolume{
+					target: baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": target,
 						},
 					},
-					"c": baetyl.ComposeVolumeInfo{
+					"c": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "c"),
 						},
 					},
-					"dd1": baetyl.ComposeVolumeInfo{
+					"dd1": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "d", "d1"),
 						},
@@ -128,7 +128,7 @@ func TestCleaner(t *testing.T) {
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]version (v1) is ignored"}, log.records)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.ComposeVolumeInfo{
+	c.set("v1", prepareConfig(baetyl.ComposeVolume{
 		DriverOpts: map[string]string{
 			"device": prefix,
 		},
@@ -150,7 +150,7 @@ func TestCleaner(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 2)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.ComposeVolumeInfo{
+	c.set("v1", prepareConfig(baetyl.ComposeVolume{
 		DriverOpts: map[string]string{
 			"device": target,
 		},
@@ -174,7 +174,7 @@ func TestCleaner2(t *testing.T) {
 	type args struct {
 		prefix  string
 		target  string
-		volumes map[string]baetyl.ComposeVolumeInfo
+		volumes map[string]baetyl.ComposeVolume
 	}
 	tests := []struct {
 		name    string
@@ -187,7 +187,7 @@ func TestCleaner2(t *testing.T) {
 			args: args{
 				prefix:  prefix,
 				target:  target,
-				volumes: map[string]baetyl.ComposeVolumeInfo{},
+				volumes: map[string]baetyl.ComposeVolume{},
 			},
 			want: []string{
 				filepath.Join(target, "b"),
@@ -201,23 +201,23 @@ func TestCleaner2(t *testing.T) {
 			args: args{
 				prefix: prefix,
 				target: target,
-				volumes: map[string]baetyl.ComposeVolumeInfo{
-					"no-exists": baetyl.ComposeVolumeInfo{
+				volumes: map[string]baetyl.ComposeVolume{
+					"no-exists": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": "no-exists",
 						},
 					},
-					"b": baetyl.ComposeVolumeInfo{
+					"b": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "b"),
 						},
 					},
-					"cc1": baetyl.ComposeVolumeInfo{
+					"cc1": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "c", "c1"),
 						},
 					},
-					"dd1d1i": baetyl.ComposeVolumeInfo{
+					"dd1d1i": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "d", "d1", "d1i"),
 						},
@@ -234,18 +234,18 @@ func TestCleaner2(t *testing.T) {
 			args: args{
 				prefix: prefix,
 				target: target,
-				volumes: map[string]baetyl.ComposeVolumeInfo{
-					prefix: baetyl.ComposeVolumeInfo{
+				volumes: map[string]baetyl.ComposeVolume{
+					prefix: baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": prefix,
 						},
 					},
-					"c": baetyl.ComposeVolumeInfo{
+					"c": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "c"),
 						},
 					},
-					"dd1": baetyl.ComposeVolumeInfo{
+					"dd1": baetyl.ComposeVolume{
 						DriverOpts: map[string]string{
 							"device": filepath.Join(prefix, "d", "d1"),
 						},
@@ -280,7 +280,7 @@ func TestCleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]version (v1) is ignored"}, log.records)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.ComposeVolumeInfo{
+	c.set("v1", prepareConfig(baetyl.ComposeVolume{
 		DriverOpts: map[string]string{
 			"device": prefix,
 		},
@@ -301,7 +301,7 @@ func TestCleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 2)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.ComposeVolumeInfo{}).Volumes)
+	c.set("v1", prepareConfig(baetyl.ComposeVolume{}).Volumes)
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
@@ -391,21 +391,21 @@ func (l *mackLogger) Fatalln(args ...interface{}) {
 	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
 }
 
-func prepareConfig(v baetyl.ComposeVolumeInfo) *baetyl.ComposeAppConfig {
+func prepareConfig(v baetyl.ComposeVolume) *baetyl.ComposeAppConfig {
 	return &baetyl.ComposeAppConfig{
 		Version: "v1",
-		Volumes: map[string]baetyl.ComposeVolumeInfo{
-			"no-exists": baetyl.ComposeVolumeInfo{
+		Volumes: map[string]baetyl.ComposeVolume{
+			"no-exists": baetyl.ComposeVolume{
 				DriverOpts: map[string]string{
 					"device": "no-exists",
 				},
 			},
-			"b": baetyl.ComposeVolumeInfo{
+			"b": baetyl.ComposeVolume{
 				DriverOpts: map[string]string{
 					"device": filepath.Join(v.DriverOpts["device"], "b"),
 				},
 			},
-			"cd1": baetyl.ComposeVolumeInfo{
+			"cd1": baetyl.ComposeVolume{
 				DriverOpts: map[string]string{
 					"device": filepath.Join(v.DriverOpts["device"], "c", "c1"),
 				},

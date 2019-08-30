@@ -19,7 +19,7 @@ type packageConfig struct {
 
 type nativeService struct {
 	name      string
-	cfg       baetyl.ComposeServiceInfo
+	cfg       baetyl.ComposeService
 	params    processConfigs
 	engine    *nativeEngine
 	instances cmap.ConcurrentMap

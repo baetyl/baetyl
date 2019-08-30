@@ -12,7 +12,7 @@ import (
 	"github.com/mholt/archiver"
 )
 
-func (a *agent) downloadVolumes(volumes map[string]baetyl.ComposeVolumeInfo) error {
+func (a *agent) downloadVolumes(volumes map[string]baetyl.ComposeVolume) error {
 	for name, v := range volumes {
 		if v.Meta.URL == "" {
 			continue
@@ -25,7 +25,7 @@ func (a *agent) downloadVolumes(volumes map[string]baetyl.ComposeVolumeInfo) err
 	return nil
 }
 
-func (a *agent) downloadVolume(name string, v baetyl.ComposeVolumeInfo) (string, string, error) {
+func (a *agent) downloadVolume(name string, v baetyl.ComposeVolume) (string, string, error) {
 	rp, err := filepath.Rel(baetyl.DefaultDBDir, v.DriverOpts["device"])
 	if err != nil {
 		return "", "", fmt.Errorf("path of volume (%s) invalid: %s", name, err.Error())

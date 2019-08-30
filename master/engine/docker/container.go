@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path"
 	"runtime"
 	"time"
-	"path"
 
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -18,8 +18,8 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/pkg/stdcopy"
 	volumetypes "github.com/docker/docker/api/types/volume"
+	"github.com/docker/docker/pkg/stdcopy"
 )
 
 const defaultNetworkName = "baetyl"
@@ -30,7 +30,7 @@ type containerConfigs struct {
 	networkConfig network.NetworkingConfig
 }
 
-func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolumeInfo) error {
+func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolume) error {
 	ctx := context.Background()
 	vlBody, err := e.cli.VolumeList(ctx, filters.Args{})
 	if err != nil {
@@ -58,10 +58,10 @@ func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolumeIn
 			}
 		}
 		volumeParams := volumetypes.VolumeCreateBody{
-			Name: name,
-			Driver: volumeInfo.Driver,
+			Name:       name,
+			Driver:     volumeInfo.Driver,
 			DriverOpts: driverOpts,
-			Labels: volumeInfo.Labels,
+			Labels:     volumeInfo.Labels,
 		}
 		_, err := e.cli.VolumeCreate(ctx, volumeParams)
 		if err != nil {
@@ -72,7 +72,7 @@ func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolumeIn
 	return nil
 }
 
-func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) error {
+func (e *dockerEngine) initNetworks(networks map[string]baetyl.ComposeNetwork) error {
 	ctx := context.Background()
 	args := filters.NewArgs()
 	args.Add("type", "custom")
@@ -86,10 +86,10 @@ func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) erro
 		nwMap[val.Name] = val
 	}
 	// add baetyl as default network
-	if networks == nil{
-		networks = make(map[string]baetyl.NetworkInfo)
+	if networks == nil {
+		networks = make(map[string]baetyl.ComposeNetwork)
 	}
-	networks[defaultNetworkName] = baetyl.NetworkInfo {
+	networks[defaultNetworkName] = baetyl.ComposeNetwork{
 		Driver: "bridge",
 	}
 	for networkName, network := range networks {
@@ -100,11 +100,11 @@ func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) erro
 			e.networks[networkName] = nw.ID
 			e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
 		} else {
-			networkParams := types.NetworkCreate {
-				Driver: network.Driver,
+			networkParams := types.NetworkCreate{
+				Driver:  network.Driver,
 				Options: network.DriverOpts,
-				Scope: "local",
-				Labels: network.Labels,
+				Scope:   "local",
+				Labels:  network.Labels,
 			}
 			nw, err := e.cli.NetworkCreate(ctx, networkName, networkParams)
 			if err != nil {

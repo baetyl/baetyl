@@ -76,13 +76,13 @@ func (e *dockerEngine) Prepare(cfg baetyl.ComposeAppConfig) {
 		}(s.Image, &wg)
 	}
 	wg.Add(1)
-	go func(nw map[string]baetyl.NetworkInfo, w *sync.WaitGroup) {
+	go func(nw map[string]baetyl.ComposeNetwork, w *sync.WaitGroup) {
 		defer w.Done()
 		e.initNetworks(nw)
 	}(cfg.Networks, &wg)
 
 	wg.Add(1)
-	go func(vs map[string]baetyl.ComposeVolumeInfo, w *sync.WaitGroup) {
+	go func(vs map[string]baetyl.ComposeVolume, w *sync.WaitGroup) {
 		defer w.Done()
 		e.initVolumes(vs)
 	}(cfg.Volumes, &wg)
@@ -118,7 +118,7 @@ func (e *dockerEngine) clean() {
 }
 
 // Run a new service
-func (e *dockerEngine) Run(name string, cfg baetyl.ComposeServiceInfo, vs map[string]baetyl.ComposeVolumeInfo) (engine.Service, error) {
+func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string]baetyl.ComposeVolume) (engine.Service, error) {
 	if runtime.GOOS == "linux" && cfg.Resources.CPU.Cpus > 0 {
 		sysInfo := sysinfo.New(true)
 		if !sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota {
@@ -167,11 +167,11 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeServiceInfo, vs map[st
 	}
 	endpointsConfig := map[string]*network.EndpointSettings{}
 	if cfg.NetworkMode != "" {
-		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
+		if len(cfg.Networks.ServiceNetworks) > 0 {
 			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
 		}
 	} else {
-		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+		for networkName, networkInfo := range cfg.Networks.ServiceNetworks {
 			cfg.NetworkMode = networkName
 			endpointsConfig[networkName] = &network.EndpointSettings{
 				NetworkID: e.networks[networkName],

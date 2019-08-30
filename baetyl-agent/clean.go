@@ -15,8 +15,8 @@ import (
 type cleaner struct {
 	prefix   string
 	target   string
-	lversion string                // ast version
-	lvolumes map[string]baetyl.ComposeVolumeInfo // last volumes
+	lversion string                          // ast version
+	lvolumes map[string]baetyl.ComposeVolume // last volumes
 	log      logger.Logger
 }
 
@@ -33,7 +33,7 @@ func (c *cleaner) reset() {
 	c.lvolumes = nil
 }
 
-func (c *cleaner) set(version string, volumes map[string]baetyl.ComposeVolumeInfo) {
+func (c *cleaner) set(version string, volumes map[string]baetyl.ComposeVolume) {
 	c.lversion = version
 	c.lvolumes = volumes
 }
@@ -62,7 +62,7 @@ func (c *cleaner) do(version string) {
 	}
 }
 
-func list(prefix, target string, volumes map[string]baetyl.ComposeVolumeInfo) ([]string, error) {
+func list(prefix, target string, volumes map[string]baetyl.ComposeVolume) ([]string, error) {
 	keep := map[string]bool{}
 	for _, v := range volumes {
 		// remove prefix from path

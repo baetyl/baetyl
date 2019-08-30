@@ -39,7 +39,7 @@ func (a *agent) processEvent(e *Event) {
 
 func (a *agent) processOTA(eo *EventOTA) error {
 	// transform volume format to compose volume format
-	v := baetyl.ComposeVolumeInfo{
+	v := baetyl.ComposeVolume{
 		DriverOpts: map[string]string{
 			"device": eo.Volume.Path,
 		},

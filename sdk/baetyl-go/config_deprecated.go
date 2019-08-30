@@ -1,0 +1,129 @@
+package baetyl
+
+import (
+	"path"
+)
+
+// deprecated
+
+// AppConfig application configuration
+type AppConfig struct {
+	// specifies the version of the application configuration
+	Version string `yaml:"version" json:"version"`
+	// specifies the service information of the application
+	Services []ServiceInfo `yaml:"services" json:"services" default:"[]"`
+	// specifies the storage volume information of the application
+	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
+	// specifies the network information of the application
+	Networks map[string]ComposeNetwork `yaml:"networks" json:"networks" default:"{}"`
+}
+
+// ServiceInfo service configuration
+type ServiceInfo struct {
+	// specifies the unique name of the service
+	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the image of the service, usually using the Docker image name
+	Image string `yaml:"image" json:"image" validate:"nonzero"`
+	// specifies the number of instances started
+	Replica int `yaml:"replica" json:"replica" validate:"min=0"`
+	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
+	Mounts []MountInfo `yaml:"mounts" json:"mounts" default:"[]"`
+	// specifies the network that the service used
+	Networks NetworksInfo `yaml:"networks" json:"networks"`
+	// specifies the network mode of the service
+	NetworkMode string `yaml:"network_mode" json:"network_mode" validate:"regexp=^(bridge|host|none)?$"`
+	// specifies the port bindings which exposed by the service, only for Docker container mode
+	Ports []string `yaml:"ports" json:"ports" default:"[]"`
+	// specifies the device bindings which used by the service, only for Docker container mode
+	Devices []string `yaml:"devices" json:"devices" default:"[]"`
+	// specifies the startup arguments of the service program, but does not include `arg[0]`
+	Args []string `yaml:"args" json:"args" default:"[]"`
+	// specifies the environment variable of the service program
+	Env map[string]string `yaml:"env" json:"env" default:"{}"`
+	// specifies the restart policy of the instance of the service
+	Restart RestartPolicyInfo `yaml:"restart" json:"restart"`
+	// specifies resource limits for a single instance of the service,  only for Docker container mode
+	Resources Resources `yaml:"resources" json:"resources"`
+	// specifies runtime to use, only for Docker container mode
+	Runtime string `yaml:"runtime" json:"runtime"`
+}
+
+// VolumeInfo storage volume configuration
+type VolumeInfo struct {
+	// specifies a unique name for the storage volume
+	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the directory where the storage volume is on the host
+	Path string `yaml:"path" json:"path" validate:"nonzero"`
+	// specifies the metadata of the storage volume
+	Meta struct {
+		URL     string `yaml:"url" json:"url"`
+		MD5     string `yaml:"md5" json:"md5"`
+		Version string `yaml:"version" json:"version"`
+	} `yaml:"meta" json:"meta"`
+}
+
+// MountInfo storage volume mapping configuration
+type MountInfo struct {
+	// specifies the name of the mapped storage volume
+	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the directory where the storage volume is in the container
+	Path string `yaml:"path" json:"path" validate:"nonzero"`
+	// specifies the operation permission of the storage volume, read-only or writable
+	ReadOnly bool `yaml:"readonly" json:"readonly"`
+}
+
+// ToComposeAppConfig transform AppConfig into ComposeAppConfig
+func ToComposeAppConfig(cfg AppConfig) ComposeAppConfig {
+	composeCfg := ComposeAppConfig{
+		Version:    "3",
+		AppVersion: cfg.Version,
+		Networks:   cfg.Networks,
+	}
+	volumes := map[string]ComposeVolume{}
+	for _, volume := range cfg.Volumes {
+		v := ComposeVolume{
+			Meta: volume.Meta,
+		}
+		v.DriverOpts = map[string]string{
+			"device": volume.Path,
+			"type":   "none",
+			"o":      "bind",
+		}
+		volumes[volume.Name] = v
+	}
+	composeCfg.Volumes = volumes
+	services := map[string]ComposeService{}
+	for _, service := range cfg.Services {
+		info := ComposeService{
+			Image:       service.Image,
+			NetworkMode: service.NetworkMode,
+			Networks:    service.Networks,
+			Ports:       service.Ports,
+			Devices:     service.Devices,
+			Command: Command{
+				Cmd: service.Args,
+			},
+			Environment: Environment{
+				Envs: service.Env,
+			},
+			Replica:   service.Replica,
+			Restart:   service.Restart,
+			Resources: service.Resources,
+			Runtime:   service.Runtime,
+		}
+		vs := make([]ServiceVolume, 0)
+		for _, mount := range service.Mounts {
+			v := ServiceVolume{
+				Type:     "bind",
+				Source:   mount.Name,
+				Target:   path.Join("/", mount.Path),
+				ReadOnly: mount.ReadOnly,
+			}
+			vs = append(vs, v)
+		}
+		info.Volumes = vs
+		services[service.Name] = info
+	}
+	composeCfg.Services = services
+	return composeCfg
+}

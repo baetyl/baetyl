@@ -119,25 +119,15 @@ func (m *Master) loadAPPConfig(target string) (cur, old baetyl.ComposeAppConfig,
 		}
 	}
 	if utils.FileExists(appConfigFile) {
-		err = utils.LoadYAML(appConfigFile, &cur)
+		err = LoadConfig(appConfigFile, &cur)
 		if err != nil {
-			var cfg baetyl.AppConfig
-			err = utils.LoadYAML(appConfigFile, &cfg)
-			if err != nil {
-				return
-			}
-			cur = baetyl.ToComposeAppConfig(cfg)
+			return
 		}
 	}
 	if utils.FileExists(appBackupFile) {
-		err = utils.LoadYAML(appBackupFile, &old)
+		err = LoadConfig(appBackupFile, &old)
 		if err != nil {
-			var cfg baetyl.AppConfig
-			err = utils.LoadYAML(appBackupFile, &cfg)
-			if err != nil {
-				return
-			}
-			old = baetyl.ToComposeAppConfig(cfg)
+			return
 		}
 	}
 	return
@@ -239,6 +229,20 @@ func (m *Master) check(target string) error {
 	}
 	if !strings.Contains(string(out), baetyl.CheckOK) {
 		return fmt.Errorf("check result: OK expected, but get %s", string(out))
+	}
+	return nil
+}
+
+// LoadConfig load app configuration
+func LoadConfig(configFile string, cfg *baetyl.ComposeAppConfig) error {
+	err := utils.LoadYAML(configFile, cfg)
+	if err != nil {
+		var c baetyl.AppConfig
+		err = utils.LoadYAML(configFile, &c)
+		if err != nil {
+			return err
+		}
+		*cfg = baetyl.ToComposeAppConfig(c)
 	}
 	return nil
 }

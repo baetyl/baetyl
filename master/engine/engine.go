@@ -31,7 +31,7 @@ type Engine interface {
 	SetInstanceStats(serviceName, instanceName string, partialStats PartialStats, persist bool)
 	DelInstanceStats(serviceName, instanceName string, persist bool)
 	DelServiceStats(serviceName string, persist bool)
-	Run(string, baetyl.ComposeServiceInfo, map[string]baetyl.ComposeVolumeInfo) (Service, error)
+	Run(string, baetyl.ComposeService, map[string]baetyl.ComposeVolume) (Service, error)
 }
 
 // New engine by given name

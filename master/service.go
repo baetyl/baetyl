@@ -22,13 +22,12 @@ func (m *Master) Auth(username, password string) bool {
 }
 
 func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
-	vs := cur.Volumes
-	for name := range vs {
-		if _, ok := vs[name].DriverOpts["device"]; ok {
-			vs[name].DriverOpts["device"] = path.Join(m.pwd, vs[name].DriverOpts["device"])
+	for _, v := range cur.Volumes {
+		if _, ok := v.DriverOpts["device"]; ok {
+			// for preventing path escape
+			v.DriverOpts["device"] = path.Join(m.pwd, path.Join("/", v.DriverOpts["device"]))
 		}
 	}
-	volumes := cur.Volumes
 	for name, s := range cur.Services {
 		if _, ok := m.services.Get(name); ok {
 			continue
@@ -40,7 +39,7 @@ func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
 		m.accounts.Set(name, token)
 		s.Environment.Envs[baetyl.EnvServiceNameKey] = name
 		s.Environment.Envs[baetyl.EnvServiceTokenKey] = token
-		nxt, err := m.engine.Run(name, s, volumes)
+		nxt, err := m.engine.Run(name, s, cur.Volumes)
 		if err != nil {
 			m.log.Infof("failed to start service (%s)", name)
 			return err
@@ -106,21 +105,23 @@ func (m *Master) StopInstance(service, instance string) error {
 
 // DiffServices returns the services not changed
 func diffServices(cur, old baetyl.ComposeAppConfig) map[string]struct{} {
-	oldVolumes := old.Volumes
 	// find the volumes updated
 	updateVolumes := make(map[string]struct{})
 	for name, c := range cur.Volumes {
-		if o, ok := oldVolumes[name]; ok && o.DriverOpts["device"] != c.DriverOpts["device"] {
+		if !reflect.DeepEqual(c, old.Volumes[name]) {
 			updateVolumes[name] = struct{}{}
 		}
 	}
-
-	oldServices := old.Services
-
+	updateNetworks := make(map[string]struct{})
+	for name, c := range cur.Networks {
+		if !reflect.DeepEqual(c, old.Networks[name]) {
+			updateNetworks[name] = struct{}{}
+		}
+	}
 	// find the services not changed
 	keepServices := map[string]struct{}{}
 	for name, c := range cur.Services {
-		o, ok := oldServices[name]
+		o, ok := old.Services[name]
 		if !ok {
 			continue
 		}
@@ -130,6 +131,11 @@ func diffServices(cur, old baetyl.ComposeAppConfig) map[string]struct{} {
 		changed := false
 		for _, m := range c.Volumes {
 			if _, changed = updateVolumes[m.Source]; changed {
+				break
+			}
+		}
+		for name := range c.Networks.ServiceNetworks {
+			if _, changed = updateNetworks[name]; changed {
 				break
 			}
 		}

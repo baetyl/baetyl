@@ -17,7 +17,7 @@ const (
 
 type dockerService struct {
 	name      string
-	cfg       baetyl.ComposeServiceInfo
+	cfg       baetyl.ComposeService
 	params    containerConfigs
 	engine    *dockerEngine
 	instances cmap.ConcurrentMap
