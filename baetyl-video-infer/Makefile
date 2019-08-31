@@ -28,11 +28,17 @@ rebuild: clean all
 
 install:
 	tar cf - -C example/docker etc var | tar xvf - -C ${PREFIX}/
+	curl -Lo ${PREFIX}/var/db/baetyl/video-infer-model/frozen_inference_graph.pb https://baetyl.cdn.bcebos.com/ai/video-infer-model/frozen_inference_graph.pb
+	curl -Lo ${PREFIX}/var/db/baetyl/video-infer-model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt https://baetyl.cdn.bcebos.com/ai/video-infer-model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt
+
 
 install-native: package.zip
 	install -d -m 0755 ${PREFIX}/var/db/baetyl/baetyl-video-infer
 	unzip -o package.zip -d ${PREFIX}/var/db/baetyl/baetyl-video-infer
 	tar cf - -C example/native etc var | tar xvf - -C ${PREFIX}/
+	curl -Lo ${PREFIX}/var/db/baetyl/video-infer-model/frozen_inference_graph.pb https://baetyl.cdn.bcebos.com/ai/video-infer-model/frozen_inference_graph.pb
+	curl -Lo ${PREFIX}/var/db/baetyl/video-infer-model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt https://baetyl.cdn.bcebos.com/ai/video-infer-model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt
+
 
 uninstall-native:
 	rm -rf ${PREFIX}/var/db/baetyl/baetyl-video-infer
