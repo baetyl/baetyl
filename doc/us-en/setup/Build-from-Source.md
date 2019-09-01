@@ -113,6 +113,7 @@ In container mode, docker starts the module by running the image corresponding t
 
 ```shell
 cd $GOPATH/src/github.com/baetyl/baetyl
+make clean
 make image # build image
 ```
 
