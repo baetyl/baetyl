@@ -113,6 +113,7 @@ go get github.com/baetyl/baetyl
 
 ```shell
 cd $GOPATH/src/github.com/baetyl/baetyl
+make clean
 make image # 在本地生成模块镜像
 ```
 
