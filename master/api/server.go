@@ -103,7 +103,7 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 		return nil, fmt.Errorf("request body invalid")
 	}
 	args := make(map[string]string)
-	err := json.Unmarshal(reqBody, args)
+	err := json.Unmarshal(reqBody, &args)
 	if err != nil {
 		return nil, err
 	}
