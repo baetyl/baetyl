@@ -46,7 +46,7 @@ WaitChan() <-chan os.Signal
 // 主程序 RESTful API
 
 // 更新系统服务
-UpdateSystem(string, bool) error
+UpdateSystem(string, string, string, bool) error
 // 查看系统状态
 InspectSystem() (*Inspect, error)
 // 获取一个宿主机的空闲端口

@@ -49,7 +49,7 @@ WaitChan() <-chan os.Signal
 // Master RESTful API
 
 // updates system and
-UpdateSystem(string, bool) error
+UpdateSystem(string, string, string, bool) error
 // inspects system stats
 InspectSystem() (*Inspect, error)
 // gets an available port of the host

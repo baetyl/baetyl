@@ -68,7 +68,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 	// Now it will stop all old services
 	m.engine.Recover()
 	// start application
-	err = m.UpdateAPP("", "")
+	err = m.UpdateAPP("", "", true)
 	if err != nil {
 		m.Close()
 		return nil, err

@@ -63,7 +63,7 @@ func (a *agent) processOTA(eo *EventOTA) error {
 	} else if eo.Type == baetyl.OTAMST {
 		hostTarget = path.Join(hostDir, baetyl.DefaultBinFile)
 	}
-	err = a.ctx.UpdateSystem(eo.Trace, eo.Type, hostTarget)
+	err = a.ctx.UpdateSystem(eo.Trace, eo.Type, hostTarget, true)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}

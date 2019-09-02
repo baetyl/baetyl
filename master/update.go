@@ -18,12 +18,12 @@ var appConfigFile = path.Join(appDir, baetyl.AppConfFileName)
 var appBackupFile = path.Join(appDir, baetyl.AppBackupFileName)
 
 // UpdateSystem updates application or master
-func (m *Master) UpdateSystem(trace, tp, target string) (err error) {
+func (m *Master) UpdateSystem(trace, tp, target string, rollback bool) (err error) {
 	switch tp {
 	case baetyl.OTAMST:
-		err = m.UpdateMST(trace, target, baetyl.DefaultBinBackupFile)
+		err = m.UpdateMST(trace, target, baetyl.DefaultBinBackupFile, rollback)
 	default:
-		err = m.UpdateAPP(trace, target)
+		err = m.UpdateAPP(trace, target, rollback)
 	}
 	if err != nil {
 		err = fmt.Errorf("failed to update system: %s", err.Error())
@@ -34,7 +34,7 @@ func (m *Master) UpdateSystem(trace, tp, target string) (err error) {
 }
 
 // UpdateAPP updates application
-func (m *Master) UpdateAPP(trace, target string) error {
+func (m *Master) UpdateAPP(trace, target string, rollback bool) error {
 	log := m.log
 	isOTA := target != "" || utils.FileExists(m.cfg.OTALog.Path)
 	if isOTA {
@@ -42,16 +42,22 @@ func (m *Master) UpdateAPP(trace, target string) error {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdating).Infof("app is updating")
 	}
 
+	isFailed := false
 	cur, old, err := m.loadAPPConfig(target)
 	if err != nil {
-		log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to reload config")
-		rberr := m.rollBackAPP()
-		if rberr != nil {
-			log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).WithError(rberr).Errorf("failed to roll back")
-			return fmt.Errorf("failed to reload config: %s; failed to roll back: %s", err.Error(), rberr.Error())
+		isFailed = true
+		if rollback {
+			log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to reload config")
+			rberr := m.rollBackAPP()
+			if rberr != nil {
+				log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).WithError(rberr).Errorf("failed to roll back")
+				return fmt.Errorf("failed to reload config: %s; failed to roll back: %s", err.Error(), rberr.Error())
+			}
+			log.WithField(baetyl.OTAKeyStep, baetyl.OTARolledBack).Infof("app is rolled back")
+			return fmt.Errorf("failed to reload config: %s", err.Error())
+		} else {
+			log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).Infof("failed to reload config and not rollback, all services are closed : %s", err.Error())
 		}
-		log.WithField(baetyl.OTAKeyStep, baetyl.OTARolledBack).Infof("app is rolled back")
-		return fmt.Errorf("failed to reload config: %s", err.Error())
 	}
 
 	// prepare services
@@ -82,7 +88,7 @@ func (m *Master) UpdateAPP(trace, target string) error {
 		return fmt.Errorf("failed to start app: %s", err.Error())
 	}
 	m.commitAPP(cur.Version)
-	if isOTA {
+	if !isFailed && isOTA {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdated).Infof("app is updated")
 	}
 	return nil
@@ -154,7 +160,7 @@ func (m *Master) commitAPP(ver string) {
 }
 
 // UpdateMST updates master
-func (m *Master) UpdateMST(trace, target, backup string) (err error) {
+func (m *Master) UpdateMST(trace, target, backup string, rollback bool) (err error) {
 	log := logger.New(m.cfg.OTALog, baetyl.OTAKeyTrace, trace, baetyl.OTAKeyType, baetyl.OTAMST)
 
 	if err = m.check(target); err != nil {
@@ -164,14 +170,19 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 
 	log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdating).Infof("master is updating")
 	if err = apply(target, backup); err != nil {
-		log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to apply master")
-		rberr := RollBackMST()
-		if rberr != nil {
-			log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).WithError(rberr).Errorf("failed to roll back")
-			return fmt.Errorf("failed to apply master: %s; failed to roll back: %s", err.Error(), rberr.Error())
+		if rollback {
+			log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to apply master")
+			rberr := RollBackMST()
+			if rberr != nil {
+				log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).WithError(rberr).Errorf("failed to roll back")
+				return fmt.Errorf("failed to apply master: %s; failed to roll back: %s", err.Error(), rberr.Error())
+			}
+			log.WithField(baetyl.OTAKeyStep, baetyl.OTARolledBack).Infof("master is rolled back")
+			return fmt.Errorf("failed to apply master: %s", err.Error())
+		} else {
+			log.WithField(baetyl.OTAKeyStep, baetyl.OTAFailure).WithError(err).Errorf("failed to update master and not rollback")
+			return fmt.Errorf("failed to apply master: %s", err.Error())
 		}
-		log.WithField(baetyl.OTAKeyStep, baetyl.OTARolledBack).Infof("master is rolled back")
-		return fmt.Errorf("failed to apply master: %s", err.Error())
 	}
 
 	log.WithField(baetyl.OTAKeyStep, baetyl.OTARestarting).Infof("master is restarting")

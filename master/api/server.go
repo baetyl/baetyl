@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/baetyl/baetyl/master/engine"
@@ -18,7 +19,7 @@ type Master interface {
 
 	// for system
 	InspectSystem() *baetyl.Inspect
-	UpdateSystem(trace, tp, target string) error
+	UpdateSystem(trace, tp, target string, rollback bool) error
 
 	// for instance
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
@@ -102,7 +103,7 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 		return nil, fmt.Errorf("request body invalid")
 	}
 	args := make(map[string]string)
-	err := json.Unmarshal(reqBody, &args)
+	err := json.Unmarshal(reqBody, args)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +117,11 @@ func (s *Server) updateSystem(_ http.Params, reqBody []byte) ([]byte, error) {
 		target = args["file"]
 	}
 	trace, _ := args["trace"]
-	go s.m.UpdateSystem(trace, tp, target)
+	rollback := true
+	if rb, ok := args["rollback"]; ok && strings.ToLower(rb) == "false" {
+		rollback = false
+	}
+	go s.m.UpdateSystem(trace, tp, target, rollback)
 	return nil, nil
 }
 

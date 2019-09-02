@@ -53,7 +53,7 @@ func TestUpdateAPP(t *testing.T) {
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	err = m.UpdateAPP("", "")
+	err = m.UpdateAPP("", "", true)
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
@@ -71,7 +71,7 @@ func TestUpdateAPP(t *testing.T) {
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	err = m.UpdateAPP("", "")
+	err = m.UpdateAPP("", "", true)
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
@@ -88,7 +88,7 @@ func TestUpdateAPP(t *testing.T) {
 	utils.CopyFile(badapp, appBackupFile)
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 
-	err = m.UpdateAPP("", "")
+	err = m.UpdateAPP("", "", true)
 	assert.NoError(t, err)
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -130,7 +130,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	defer m.Close()
 
 	target := path.Join("var", "db", "baetyl", "app")
-	err = m.UpdateSystem("", "APP", path.Join(target, "v4"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v4"), true)
 	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory")
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -138,7 +138,14 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Equal(t, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v5"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v4"), false)
+	assert.NoError(t, err)
+	assert.Equal(t, "", m.infostats.getVersion())
+	assert.False(t, utils.FileExists(appConfigFile))
+	assert.False(t, utils.FileExists(appBackupFile))
+	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAFailure)
+
+	err = m.UpdateSystem("", "APP", path.Join(target, "v5"), true)
 	assert.EqualError(t, err, "failed to update system: failed to start app: volume 'cmd-bin' not found")
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -146,7 +153,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Equal(t, "failed to update system: failed to start app: volume 'cmd-bin' not found", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v6"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v6"), true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "", m.infostats.getVersion())
@@ -155,7 +162,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v1"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v1"), true)
 	assert.NoError(t, err)
 	assert.Equal(t, "v1", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -163,7 +170,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Equal(t, "", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v4"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v4"), true)
 	assert.EqualError(t, err, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory")
 	assert.Equal(t, "v1", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -171,14 +178,14 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Equal(t, "failed to update system: failed to reload config: open var/db/baetyl/app/v4/application.yml: no such file or directory", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v2"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v2"), true)
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v5", "application.yml"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v5", "application.yml"), true)
 	assert.EqualError(t, err, "failed to update system: failed to start app: volume 'cmd-bin' not found")
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
@@ -186,14 +193,14 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Equal(t, "failed to update system: failed to start app: volume 'cmd-bin' not found", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v3", "application.yml"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v3", "application.yml"), true)
 	assert.Equal(t, "v3", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
 	assert.Equal(t, "", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v6", "application.yml"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v6", "application.yml"), true)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
 	assert.Equal(t, "v3", m.infostats.getVersion())
@@ -202,7 +209,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	assert.Contains(t, m.infostats.getError(), "wait_exit_5/lib/baetyl/cmd-nonexist/package.yml: no such file or directory")
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
-	err = m.UpdateSystem("", "APP", path.Join(target, "v2", "application.yml"))
+	err = m.UpdateSystem("", "APP", path.Join(target, "v2", "application.yml"), true)
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
@@ -354,7 +361,7 @@ func TestUpdateSystemAPP2(t *testing.T) {
 			utils.CopyFile(tt.pold, appBackupFile)
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			err := m.UpdateSystem("", "APP", tt.target)
+			err := m.UpdateSystem("", "APP", tt.target, true)
 			assert.Equal(t, (tt.wantErr == ""), (err == nil))
 			assert.Equal(t, tt.wantErr, m.infostats.getError())
 			assert.Equal(t, tt.wantVersion, m.infostats.getVersion())
