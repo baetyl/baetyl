@@ -110,8 +110,9 @@ func (p *Process) After(img gocv.Mat, results gocv.Mat, elapsedTime float64, cap
 		s = time.Now()
 		if !gocv.IMWrite(location, img) {
 			os.MkdirAll(path.Dir(location), 0755)
-		} else if !gocv.IMWrite(location, img) {
-			return fmt.Errorf("failed to save image: %s", location)
+			if !gocv.IMWrite(location, img) {
+				return fmt.Errorf("failed to save image: %s", location)
+			}
 		}
 		logger.Global.Debugf("[After ][Write    ] elapsed time: %v", time.Since(s))
 	}
