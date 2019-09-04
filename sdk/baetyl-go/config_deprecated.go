@@ -1,10 +1,12 @@
 package baetyl
 
+// deprecated
+
 import (
 	"path"
-)
 
-// deprecated
+	"github.com/baetyl/baetyl/utils"
+)
 
 // AppConfig application configuration
 type AppConfig struct {
@@ -49,18 +51,18 @@ type ServiceInfo struct {
 }
 
 // VolumeInfo storage volume configuration
-type VolumeInfo struct {
-	// specifies a unique name for the storage volume
-	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
-	// specifies the directory where the storage volume is on the host
-	Path string `yaml:"path" json:"path" validate:"nonzero"`
-	// specifies the metadata of the storage volume
-	Meta struct {
-		URL     string `yaml:"url" json:"url"`
-		MD5     string `yaml:"md5" json:"md5"`
-		Version string `yaml:"version" json:"version"`
-	} `yaml:"meta" json:"meta"`
-}
+// type VolumeInfo struct {
+// 	// specifies a unique name for the storage volume
+// 	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+// 	// specifies the directory where the storage volume is on the host
+// 	Path string `yaml:"path" json:"path" validate:"nonzero"`
+// 	// specifies the metadata of the storage volume
+// 	Meta struct {
+// 		URL     string `yaml:"url" json:"url"`
+// 		MD5     string `yaml:"md5" json:"md5"`
+// 		Version string `yaml:"version" json:"version"`
+// 	} `yaml:"meta" json:"meta"`
+// }
 
 // MountInfo storage volume mapping configuration
 type MountInfo struct {
@@ -73,26 +75,18 @@ type MountInfo struct {
 }
 
 // ToComposeAppConfig transform AppConfig into ComposeAppConfig
-func ToComposeAppConfig(cfg AppConfig) ComposeAppConfig {
+func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 	composeCfg := ComposeAppConfig{
 		Version:    "3",
 		AppVersion: cfg.Version,
 		Networks:   cfg.Networks,
 	}
-	volumes := map[string]ComposeVolume{}
-	for _, volume := range cfg.Volumes {
-		v := ComposeVolume{
-			Meta: volume.Meta,
-		}
-		v.DriverOpts = map[string]string{
-			"device": volume.Path,
-			"type":   "none",
-			"o":      "bind",
-		}
-		volumes[volume.Name] = v
-	}
-	composeCfg.Volumes = volumes
+	composeCfg.Volumes = map[string]ComposeVolume{}
+	utils.SetDefaults(&composeCfg.Volumes)
 	services := map[string]ComposeService{}
+	utils.SetDefaults(&services)
+	var previous string
+	first := true
 	for _, service := range cfg.Services {
 		info := ComposeService{
 			Image:       service.Image,
@@ -111,11 +105,23 @@ func ToComposeAppConfig(cfg AppConfig) ComposeAppConfig {
 			Resources: service.Resources,
 			Runtime:   service.Runtime,
 		}
+		if first {
+			first = false
+		} else {
+			info.DependsOn = []string{previous}
+		}
+		previous = service.Name
 		vs := make([]ServiceVolume, 0)
 		for _, mount := range service.Mounts {
+			var p string
+			for _, v := range cfg.Volumes {
+				if v.Name == mount.Name {
+					p = v.Path
+				}
+			}
 			v := ServiceVolume{
 				Type:     "bind",
-				Source:   mount.Name,
+				Source:   p,
 				Target:   path.Join("/", mount.Path),
 				ReadOnly: mount.ReadOnly,
 			}

@@ -94,13 +94,13 @@ func (e *nativeEngine) clean() {
 }
 
 // Run new service
-func (e *nativeEngine) Run(name string, cfg baetyl.ComposeService, vs map[string]baetyl.ComposeVolume) (engine.Service, error) {
+func (e *nativeEngine) Run(name string, cfg baetyl.ComposeService, _ map[string]baetyl.ComposeVolume) (engine.Service, error) {
 	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", name)
 	err := os.RemoveAll(spwd)
 	if err != nil {
 		return nil, err
 	}
-	err = mountAll(e.pwd, spwd, cfg.Volumes, vs)
+	err = mountAll(e.pwd, spwd, cfg.Volumes)
 	if err != nil {
 		os.RemoveAll(spwd)
 		return nil, err
@@ -140,18 +140,14 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
-func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume, vs map[string]baetyl.ComposeVolume) error {
+func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume) error {
 	for _, m := range ms {
-		v, ok := vs[m.Source]
-		var err error
-		if ok {
-			err = mount(v.DriverOpts["device"], path.Join(spwd, strings.TrimSpace(m.Target)))
-		} else {
-			if !utils.PathExists(m.Source) {
-				return fmt.Errorf("volume '%s' not found", m.Source)
-			}
-			err = mount(m.Source, path.Join(spwd, strings.TrimSpace(m.Target)))
+		if !utils.PathExists(m.Source) {
+			return fmt.Errorf("path '%s' does not exist", m.Source)
 		}
+		// for preventing path escape
+		m.Source = path.Join(epwd, path.Join("/", m.Source))
+		err := mount(m.Source, path.Join(spwd, strings.TrimSpace(m.Target)))
 		if err != nil {
 			return err
 		}

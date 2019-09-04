@@ -192,7 +192,7 @@ type ComposeService struct {
 	Ports []string `yaml:"ports" json:"ports" default:"[]"`
 	// specifies the device bindings which used by the service, only for Docker container mode
 	Devices []string `yaml:"devices" json:"devices" default:"[]"`
-	// specified other services that the service needs
+	// specified other depended services
 	DependsOn []string `yaml:"depends_on" json:"depends_on"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Command Command `yaml:"command" json:"command"`
@@ -209,17 +209,11 @@ type ComposeService struct {
 // ComposeVolume volume configuration of compose
 type ComposeVolume struct {
 	// specified driver for the storage volume
-	Driver string `yaml:"driver" json:"driver"`
+	Driver string `yaml:"driver" json:"driver" default:"local"`
 	// specified driver options for the storage volume
-	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts"`
+	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts" default:"{}"`
 	// specified labels for the storage volume
-	Labels map[string]string `yaml:"labels" json:"labels"`
-	// specifies the metadata of the storage volume
-	Meta struct {
-		URL     string `yaml:"url" json:"url"`
-		MD5     string `yaml:"md5" json:"md5"`
-		Version string `yaml:"version" json:"version"`
-	} `yaml:"meta" json:"meta"`
+	Labels map[string]string `yaml:"labels" json:"labels" default:"{}"`
 }
 
 // ComposeNetwork network configuration
@@ -227,9 +221,9 @@ type ComposeNetwork struct {
 	// specifies driver for network
 	Driver string `yaml:"driver" json:"driver" default:"bridge"`
 	// specified driver options for network
-	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts"`
+	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts" default:"{}"`
 	// specifies labels to add metadata
-	Labels map[string]string `yaml:"labels" json:"labels"`
+	Labels map[string]string `yaml:"labels" json:"labels" default:"{}"`
 }
 
 // Environment environment
@@ -338,10 +332,44 @@ func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 	switch reflect.ValueOf(cmd).Kind() {
-		case reflect.String:
-			c.Cmd = strings.Split(cmd.(string), " ")
-		case reflect.Slice:
-			return unmarshal(&c.Cmd)
+	case reflect.String:
+		c.Cmd = strings.Split(cmd.(string), " ")
+	case reflect.Slice:
+		return unmarshal(&c.Cmd)
+	}
+	return nil
+}
+
+// Metadata meta data of volume
+type Metadata struct {
+	Version string       `yaml:"version" json:"version"`
+	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
+}
+
+// VolumeInfo volume info of metadata
+type VolumeInfo struct {
+	// specifies a unique name for the storage volume
+	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the directory where the storage volume is on the host
+	Path string `yaml:"path" json:"path" validate:"nonzero"`
+	// specifies the metadata of the storage volume
+	Meta struct {
+		URL     string `yaml:"url" json:"url"`
+		MD5     string `yaml:"md5" json:"md5"`
+		Version string `yaml:"version" json:"version"`
+	} `yaml:"meta" json:"meta"`
+}
+
+// LoadComposeAppConfigCompatible load compose app config or old compatible config
+func LoadComposeAppConfigCompatible(configFile string, cfg *ComposeAppConfig) error {
+	err := utils.LoadYAML(configFile, cfg)
+	if err != nil {
+		var c AppConfig
+		err = utils.LoadYAML(configFile, &c)
+		if err != nil {
+			return err
+		}
+		*cfg = c.ToComposeAppConfig()
 	}
 	return nil
 }

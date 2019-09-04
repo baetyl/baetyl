@@ -6,3 +6,6 @@ services:
     mounts:
       - name: cmd-bin
         path: lib/baetyl/cmd
+volumes:
+  - name: cmd-bin
+    path: cmd-bin

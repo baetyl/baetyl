@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"path"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -24,13 +24,19 @@ import (
 
 const defaultNetworkName = "baetyl"
 
+// ComposeNetworks alias of map[string]baetyl.ComposeNetwork
+type ComposeNetworks map[string]baetyl.ComposeNetwork
+
+// ComposeVolumes alias of map[string]baetyl.ComposeVolume
+type ComposeVolumes map[string]baetyl.ComposeVolume
+
 type containerConfigs struct {
 	config        container.Config
 	hostConfig    container.HostConfig
 	networkConfig network.NetworkingConfig
 }
 
-func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolume) error {
+func (e *dockerEngine) initVolumes(volumeInfos ComposeVolumes) error {
 	ctx := context.Background()
 	vlBody, err := e.cli.VolumeList(ctx, filters.Args{})
 	if err != nil {
@@ -39,28 +45,28 @@ func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolume) 
 	if vlBody.Warnings != nil {
 		e.log.Warnln(vlBody.Warnings)
 	}
-	vs := vlBody.Volumes
 	vsMap := map[string]*types.Volume{}
-	for _, v := range vs {
+	for _, v := range vlBody.Volumes {
 		vsMap[v.Name] = v
 	}
 	for name, volumeInfo := range volumeInfos {
-		if _, ok := vsMap[name]; ok {
+		volumeInfo.Labels["baetyl"] = "baetyl"
+		if vl, ok := vsMap[name]; ok {
+			t := baetyl.ComposeVolume{
+				Driver:     vl.Driver,
+				DriverOpts: vl.Options,
+				Labels:     vl.Labels,
+			}
+			if !reflect.DeepEqual(t, volumeInfo) {
+				return fmt.Errorf("volume (%s) with different properties exists", name)
+			}
 			e.log.Debugf("volume %s already exists", name)
 			continue
-		}
-		// avoid modifying network driver options
-		driverOpts := map[string]string{}
-		for k, v := range volumeInfo.DriverOpts {
-			driverOpts[k] = v
-			if _, ok := volumeInfo.DriverOpts["device"]; ok {
-				driverOpts["device"] = path.Join(e.pwd, volumeInfo.DriverOpts["device"])
-			}
 		}
 		volumeParams := volumetypes.VolumeCreateBody{
 			Name:       name,
 			Driver:     volumeInfo.Driver,
-			DriverOpts: driverOpts,
+			DriverOpts: volumeInfo.DriverOpts,
 			Labels:     volumeInfo.Labels,
 		}
 		_, err := e.cli.VolumeCreate(ctx, volumeParams)
@@ -72,7 +78,7 @@ func (e *dockerEngine) initVolumes(volumeInfos map[string]baetyl.ComposeVolume) 
 	return nil
 }
 
-func (e *dockerEngine) initNetworks(networks map[string]baetyl.ComposeNetwork) error {
+func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 	ctx := context.Background()
 	args := filters.NewArgs()
 	args.Add("type", "custom")
@@ -86,16 +92,21 @@ func (e *dockerEngine) initNetworks(networks map[string]baetyl.ComposeNetwork) e
 		nwMap[val.Name] = val
 	}
 	// add baetyl as default network
-	if networks == nil {
-		networks = make(map[string]baetyl.ComposeNetwork)
-	}
 	networks[defaultNetworkName] = baetyl.ComposeNetwork{
-		Driver: "bridge",
+		Driver:     "bridge",
+		DriverOpts: make(map[string]string),
+		Labels:     make(map[string]string),
 	}
 	for networkName, network := range networks {
+		network.Labels["baetyl"] = "baetyl"
 		if nw, ok := nwMap[networkName]; ok {
-			if nw.Driver != network.Driver {
-				return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
+			t := baetyl.ComposeNetwork{
+				Driver:     nw.Driver,
+				DriverOpts: nw.Options,
+				Labels:     nw.Labels,
+			}
+			if !reflect.DeepEqual(t, network) {
+				return fmt.Errorf("network (%s:%s) with different properties exists", nw.ID[:12], networkName)
 			}
 			e.networks[networkName] = nw.ID
 			e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)

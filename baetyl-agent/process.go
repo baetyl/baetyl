@@ -38,15 +38,7 @@ func (a *agent) processEvent(e *Event) {
 }
 
 func (a *agent) processOTA(eo *EventOTA) error {
-	// transform volume format to compose volume format
-	v := baetyl.ComposeVolume{
-		DriverOpts: map[string]string{
-			"device": eo.Volume.Path,
-		},
-		Meta: eo.Volume.Meta,
-	}
-
-	hostDir, containerDir, err := a.downloadVolume(eo.Volume.Name, v)
+	hostDir, containerDir, err := a.downloadVolume(eo.Volume)
 	if err != nil {
 		return fmt.Errorf("failed to download volume: %s", err.Error())
 	}
@@ -54,19 +46,18 @@ func (a *agent) processOTA(eo *EventOTA) error {
 	if eo.Type == baetyl.OTAAPP {
 		hostTarget = path.Join(hostDir, baetyl.AppConfFileName)
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
-
-		var cfg baetyl.ComposeAppConfig
-		err = utils.LoadYAML(containerAppFile, &cfg)
-		if err != nil {
-			var c baetyl.AppConfig
-			err = utils.LoadYAML(containerAppFile, &c)
-			if err != nil {
-				return err
-			}
-			cfg = baetyl.ToComposeAppConfig(c)
+		metadataFile := path.Join(containerDir, baetyl.MetadataFileName)
+		var meta baetyl.Metadata
+		if utils.FileExists(metadataFile) {
+			err = utils.LoadYAML(metadataFile, &meta)
+		} else {
+			err = utils.LoadYAML(containerAppFile, &meta)
 		}
-
-		err := utils.LoadYAML(containerAppFile, &cfg)
+		if err != nil {
+			return err
+		}
+		var cfg baetyl.ComposeAppConfig
+		err = baetyl.LoadComposeAppConfigCompatible(containerAppFile, &cfg)
 		if err != nil {
 			return err
 		}
@@ -74,11 +65,11 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		if len(cfg.Services) == 0 {
 			return fmt.Errorf("app config invalid: service list is empty")
 		}
-		err = a.downloadVolumes(cfg.Volumes)
+		err = a.downloadVolumes(meta.Volumes)
 		if err != nil {
 			return fmt.Errorf("failed to download app volumes: %s", err.Error())
 		}
-		a.cleaner.set(cfg.AppVersion, cfg.Volumes)
+		a.cleaner.set(meta.Version, meta.Volumes)
 	} else if eo.Type == baetyl.OTAMST {
 		hostTarget = path.Join(hostDir, baetyl.DefaultBinFile)
 	}

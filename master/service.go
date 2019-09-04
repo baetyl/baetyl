@@ -2,7 +2,6 @@ package master
 
 import (
 	"fmt"
-	"path"
 	"reflect"
 	"sync"
 
@@ -22,13 +21,9 @@ func (m *Master) Auth(username, password string) bool {
 }
 
 func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
-	for _, v := range cur.Volumes {
-		if _, ok := v.DriverOpts["device"]; ok {
-			// for preventing path escape
-			v.DriverOpts["device"] = path.Join(m.pwd, path.Join("/", v.DriverOpts["device"]))
-		}
-	}
-	for name, s := range cur.Services {
+	order := ServiceSort(cur.Services)
+	for _, name := range order {
+		s := cur.Services[name]
 		if _, ok := m.services.Get(name); ok {
 			continue
 		}
@@ -145,4 +140,40 @@ func diffServices(cur, old baetyl.ComposeAppConfig) map[string]struct{} {
 		keepServices[name] = struct{}{}
 	}
 	return keepServices
+}
+
+// ServiceSort sort service
+func ServiceSort(services map[string]baetyl.ComposeService) []string {
+	g := map[string][]string{}
+	inDegrees := map[string]int{}
+	res := []string{}
+	for name, s := range services {
+		for _, r := range s.DependsOn {
+			if g[r] == nil {
+				g[r] = []string{}
+			}
+			g[r] = append(g[r], name)
+		}
+		inDegrees[name] = len(s.DependsOn)
+	}
+	queue := []string{}
+	for n, i := range inDegrees {
+		if i == 0 {
+			queue = append(queue, n)
+			inDegrees[n] = -1
+		}
+	}
+	for len(queue) > 0 {
+		i := queue[0]
+		res = append(res, i)
+		queue = queue[1:]
+		for _, v := range g[i] {
+			inDegrees[v]--
+			if inDegrees[v] == 0 {
+				inDegrees[v] = -1
+				queue = append(queue, v)
+			}
+		}
+	}
+	return res
 }

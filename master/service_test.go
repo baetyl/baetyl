@@ -189,11 +189,32 @@ func Test_diffServices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-      ccur := baetyl.ToComposeAppConfig(tt.args.cur)
-      cold := baetyl.ToComposeAppConfig(tt.args.old)
+			ccur := tt.args.cur.ToComposeAppConfig()
+			cold := tt.args.old.ToComposeAppConfig()
 			if got := diffServices(ccur, cold); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("diffServices() = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+func TestServiceSort(t *testing.T) {
+	services := map[string]baetyl.ComposeService{}
+	services["a"] = baetyl.ComposeService{
+		DependsOn: []string{},
+	}
+	services["b"] = baetyl.ComposeService{
+		DependsOn: []string{"a"},
+	}
+	services["c"] = baetyl.ComposeService{
+		DependsOn: []string{"a", "b"},
+	}
+	order := ServiceSort(services)
+	om := map[string]int{}
+	for i, o := range order {
+		om[o] = i
+	}
+	assert.True(t, om["a"] < om["b"])
+	assert.True(t, om["a"] < om["c"])
+	assert.True(t, om["b"] < om["c"])
 }
