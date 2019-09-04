@@ -108,9 +108,10 @@ func (p *Process) After(img gocv.Mat, results gocv.Mat, elapsedTime float64, cap
 	location := cnt.location()
 	if !discard && location != "" {
 		s = time.Now()
-		if !gocv.IMWrite(location, img) {
+		if _, err := os.Stat(location); os.IsNotExist(err) {
 			os.MkdirAll(path.Dir(location), 0755)
-		} else if !gocv.IMWrite(location, img) {
+		}
+		if !gocv.IMWrite(location, img) {
 			return fmt.Errorf("failed to save image: %s", location)
 		}
 		logger.Global.Debugf("[After ][Write    ] elapsed time: %v", time.Since(s))
