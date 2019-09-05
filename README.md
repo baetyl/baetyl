@@ -1,8 +1,8 @@
 # Baetyl
 
-[![Baetyl Status](https://travis-ci.com/baidu/baetyl.svg?branch=master)](https://travis-ci.com/baidu/baetyl)  [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://baetyl.io/en)    [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&include_prereleases&label=pre-release)](https://github.com/baetyl/baetyl/releases)    [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
+[![Baetyl Status](https://travis-ci.com/baidu/baetyl.svg?branch=master)](https://travis-ci.com/baidu/baetyl) [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://baetyl.io/en) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&include_prereleases&label=pre-release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
 
-![Baetyl-logo](./doc/images/logo/logo-with-name.png)
+![Baetyl-logo](./docs/images/logo/logo-with-name.png)
 
 [README 中文版](./README-CN.md)
 
@@ -20,35 +20,35 @@
 
 As an edge computing platform, **Baetyl** not only provides features such as underlying service management, but also provides some basic functional modules, as follows:
 
-- Baetyl [Master](./doc/us-en/overview/Design.md#master) is responsible for the management of service instances, such as start, stop, supervise, etc., consisting of Engine, API, Command Line. And supports two modes of running service: **native** process mode and **docker** container mode
-- The official module [baetyl-agent](./doc/us-en/overview/Design.md#baetyl-agent) is responsible for communication with the BIE cloud management suite, which can be used for application delivery, device information reporting, etc. Mandatory certificate authentication to ensure transmission security;
-- The official module [baetyl-hub](./doc/us-en/overview/Design.md#baetyl-hub) provides message subscription and publishing functions based on the [MQTT protocol](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html), and supports four access methods: TCP, SSL, WS, and WSS;
-- The official module [baetyl-remote-mqtt](./doc/us-en/overview/Design.md#baetyl-remote-mqtt) is used to bridge two MQTT Servers for message synchronization and supports configuration of multiple message route rules. ;
-- The official module [baetyl-function-manager](./doc/us-en/overview/Design.md#baetyl-function-manager) provides computing power based on MQTT message mechanism, flexible, high availability, good scalability, and fast response;
-- The official module [baetyl-function-python27](./doc/us-en/overview/Design.md#baetyl-function-python27) provides the Python2.7 function runtime, which can be dynamically started by `baetyl-function-manager`;
-- The official module [baetyl-function-python36](./doc/us-en/overview/Design.md#baetyl-function-python36) provides the Python3.6 function runtime, which can be dynamically started by `baetyl-function-manager`;
-- The official module [baetyl-function-node85](./doc/us-en/overview/Design.md#baetyl-function-node85) provides the Node 8.5 function runtime, which can be dynamically started by `baetyl-function-manager`;
+- Baetyl [Master](./docs/us-en/overview/Design.md#master) is responsible for the management of service instances, such as start, stop, supervise, etc., consisting of Engine, API, Command Line. And supports two modes of running service: **native** process mode and **docker** container mode
+- The official module [baetyl-agent](./docs/us-en/overview/Design.md#baetyl-agent) is responsible for communication with the BIE cloud management suite, which can be used for application delivery, device information reporting, etc. Mandatory certificate authentication to ensure transmission security;
+- The official module [baetyl-hub](./docs/us-en/overview/Design.md#baetyl-hub) provides message subscription and publishing functions based on the [MQTT protocol](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html), and supports four access methods: TCP, SSL, WS, and WSS;
+- The official module [baetyl-remote-mqtt](./docs/us-en/overview/Design.md#baetyl-remote-mqtt) is used to bridge two MQTT Servers for message synchronization and supports configuration of multiple message route rules. ;
+- The official module [baetyl-function-manager](./docs/us-en/overview/Design.md#baetyl-function-manager) provides computing power based on MQTT message mechanism, flexible, high availability, good scalability, and fast response;
+- The official module [baetyl-function-python27](./docs/us-en/overview/Design.md#baetyl-function-python27) provides the Python2.7 function runtime, which can be dynamically started by `baetyl-function-manager`;
+- The official module [baetyl-function-python36](./docs/us-en/overview/Design.md#baetyl-function-python36) provides the Python3.6 function runtime, which can be dynamically started by `baetyl-function-manager`;
+- The official module [baetyl-function-node85](./docs/us-en/overview/Design.md#baetyl-function-node85) provides the Node 8.5 function runtime, which can be dynamically started by `baetyl-function-manager`;
 - SDK (Golang) can be used to develop custom modules.
 
 ### Architecture
 
-![Architecture](./doc/images/overview/design/design_overview.png)
+![Architecture](./docs/images/overview/design/design_overview.png)
 
 ## Installation
 
-- [Quick Install Baetyl](./doc/us-en/setup/Quick-Install.md)
-- [Build Baetyl From Source](./doc/us-en/setup/Build-from-Source.md)
+- [Quick Install Baetyl](./docs/us-en/setup/Quick-Install.md)
+- [Build Baetyl From Source](./docs/us-en/setup/Build-from-Source.md)
 
 ## Documents
 
-- [Baetyl design](./doc/us-en/overview/Design.md)
-- [Baetyl config interpretation](./doc/us-en/tutorials/Config-interpretation.md)
-- [How to write Python script for Python runtime](./doc/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
-- [How to write Node script for Node runtime](./doc/us-en/customize/How-to-write-a-node-script-for-node-runtime.md)
-- [How to import third-party libraries for Python runtime](./doc/us-en/customize/How-to-import-third-party-libraries-for-python-runtime.md)
-- [How to import third-party libraries for Node runtime](./doc/us-en/customize/How-to-import-third-party-libraries-for-node-runtime.md)
-- [How to develop a customize runtime for function](./doc/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
-- [How to develop a customize module for Baetyl](./doc/us-en/customize/How-to-develop-a-customize-module.md)
+- [Baetyl design](./docs/us-en/overview/Design.md)
+- [Baetyl config interpretation](./docs/us-en/tutorials/Config-interpretation.md)
+- [How to write Python script for Python runtime](./docs/us-en/customize/How-to-write-a-python-script-for-python-runtime.md)
+- [How to write Node script for Node runtime](./docs/us-en/customize/How-to-write-a-node-script-for-node-runtime.md)
+- [How to import third-party libraries for Python runtime](./docs/us-en/customize/How-to-import-third-party-libraries-for-python-runtime.md)
+- [How to import third-party libraries for Node runtime](./docs/us-en/customize/How-to-import-third-party-libraries-for-node-runtime.md)
+- [How to develop a customize runtime for function](./docs/us-en/customize/How-to-develop-a-customize-runtime-for-function.md)
+- [How to develop a customize module for Baetyl](./docs/us-en/customize/How-to-develop-a-customize-module.md)
 
 ## Contributing
 
