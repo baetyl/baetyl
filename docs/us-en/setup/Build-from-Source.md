@@ -147,7 +147,9 @@ cd $GOPATH/src/github.com/baetyl/baetyl
 make rebuild
 ```
 
-After the compilation is completed, the following five executable files will be generated in the root directory and each module directory, respectively:
+**Note**: You need to install `node` and `npm` beforehand because the Node 8.5 runtime module will call `npm install` command to install dependencies during `make`. For details, please refer to [Nodejs official website] (https://nodejs.org/en/download /).
+
+After the compilation is completed, the following executable files will be generated in the root directory and each module directory, respectively:
 
 ```shell
 baetyl
@@ -155,9 +157,10 @@ baetyl-agent/baetyl-agent
 baetyl-hub/baetyl-hub
 baetyl-function-manager/baetyl-function-manager
 baetyl-remote-mqtt/baetyl-remote-mqtt
+baetyl-timer/baetyl-timer
 ```
 
-In addition, a total of five files named `package.zip` are generated in each module directory.
+In addition, `package.zip` files are generated in each module directory.
 
 ### Install
 
