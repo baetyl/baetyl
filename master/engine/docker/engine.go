@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"regexp"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/engine"
@@ -130,7 +129,7 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string
 	binds := make([]string, 0)
 	volumes := map[string]struct{}{}
 	for _, m := range cfg.Volumes {
-		if match, _ :=  regexp.MatchString("^[a-zA-Z0-9][a-zA-Z0-9_.-]+$", m.Source); match {
+		if m.Type == "volume" {
 			if _, ok := vs[m.Source]; !ok {
 				return nil, fmt.Errorf("volume '%s' not found", m.Source)
 			}
