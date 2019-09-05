@@ -142,8 +142,8 @@ func (e *nativeEngine) Close() error {
 
 func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume) error {
 	for _, m := range ms {
-		if !utils.PathExists(m.Source) {
-			return fmt.Errorf("path '%s' does not exist", m.Source)
+		if len(m.Source) == 0 {
+			return fmt.Errorf("host path is empty")
 		}
 		// for preventing path escape
 		m.Source = path.Join(epwd, path.Join("/", m.Source))

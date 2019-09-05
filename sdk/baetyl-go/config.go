@@ -193,7 +193,7 @@ type ComposeService struct {
 	// specifies the device bindings which used by the service, only for Docker container mode
 	Devices []string `yaml:"devices" json:"devices" default:"[]"`
 	// specified other depended services
-	DependsOn []string `yaml:"depends_on" json:"depends_on"`
+	DependsOn []string `yaml:"depends_on" json:"depends_on" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Command Command `yaml:"command" json:"command"`
 	// specifies the environment variable of the service program
@@ -340,13 +340,7 @@ func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-// Metadata meta data of volume
-type Metadata struct {
-	Version string       `yaml:"version" json:"version"`
-	Volumes []VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
-}
-
-// VolumeInfo volume info of metadata
+// VolumeInfo storage volume configuration
 type VolumeInfo struct {
 	// specifies a unique name for the storage volume
 	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
@@ -361,15 +355,16 @@ type VolumeInfo struct {
 }
 
 // LoadComposeAppConfigCompatible load compose app config or old compatible config
-func LoadComposeAppConfigCompatible(configFile string, cfg *ComposeAppConfig) error {
-	err := utils.LoadYAML(configFile, cfg)
+func LoadComposeAppConfigCompatible(configFile string) (ComposeAppConfig, error) {
+	var cfg ComposeAppConfig
+	err := utils.LoadYAML(configFile, &cfg)
 	if err != nil {
 		var c AppConfig
 		err = utils.LoadYAML(configFile, &c)
 		if err != nil {
-			return err
+			return cfg, err
 		}
-		*cfg = c.ToComposeAppConfig()
+		cfg = c.ToComposeAppConfig()
 	}
-	return nil
+	return cfg, nil
 }

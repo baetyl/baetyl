@@ -57,7 +57,7 @@ func TestUpdateAPP(t *testing.T) {
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.EqualError(t, err, "failed to start app: path 'cmd-bin' does not exist")
+	assert.EqualError(t, err, "failed to start app: host path is empty")
 	m.Close()
 	m.Wait()
 
@@ -75,7 +75,7 @@ func TestUpdateAPP(t *testing.T) {
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.EqualError(t, err, "failed to restart old app: path 'cmd-bin' does not exist; failed to roll back: path 'cmd-bin' does not exist")
+	assert.EqualError(t, err, "failed to restart old app: host path is empty; failed to roll back: host path is empty")
 	m.Close()
 	m.Wait()
 
@@ -139,11 +139,11 @@ func TestUpdateSystemAPP(t *testing.T) {
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v5"))
-	assert.EqualError(t, err, "failed to update system: failed to start app: path 'cmd-bin' does not exist")
+	assert.EqualError(t, err, "failed to update system: failed to start app: host path is empty")
 	assert.Equal(t, "", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: failed to start app: path 'cmd-bin' does not exist", m.infostats.getError())
+	assert.Equal(t, "failed to update system: failed to start app: host path is empty", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v6"))
@@ -179,11 +179,11 @@ func TestUpdateSystemAPP(t *testing.T) {
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTAUpdated)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v5", "application.yml"))
-	assert.EqualError(t, err, "failed to update system: failed to start app: path 'cmd-bin' does not exist")
+	assert.EqualError(t, err, "failed to update system: failed to start app: host path is empty")
 	assert.Equal(t, "v2", m.infostats.getVersion())
 	assert.True(t, utils.FileExists(appConfigFile))
 	assert.False(t, utils.FileExists(appBackupFile))
-	assert.Equal(t, "failed to update system: failed to start app: path 'cmd-bin' does not exist", m.infostats.getError())
+	assert.Equal(t, "failed to update system: failed to start app: host path is empty", m.infostats.getError())
 	checkOTALog(t, baetyl.OTAUpdating, baetyl.OTARollingBack, baetyl.OTARolledBack)
 
 	err = m.UpdateSystem("", "APP", path.Join(target, "v3", "application.yml"))
@@ -245,8 +245,8 @@ func TestUpdateSystemAPP2(t *testing.T) {
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
 	assert.NoError(t, err)
 
-	wantErr := "failed to update system: failed to start app: path 'cmd-bin' does not exist"
-	wantErrRB := "failed to update system: failed to restart old app: path 'cmd-bin' does not exist; failed to roll back: path 'cmd-bin' does not exist"
+	wantErr := "failed to update system: failed to start app: host path is empty"
+	wantErrRB := "failed to update system: failed to restart old app: host path is empty; failed to roll back: host path is empty"
 	tests := []struct {
 		name        string
 		target      string

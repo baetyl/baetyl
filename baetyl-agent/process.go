@@ -46,18 +46,17 @@ func (a *agent) processOTA(eo *EventOTA) error {
 	if eo.Type == baetyl.OTAAPP {
 		hostTarget = path.Join(hostDir, baetyl.AppConfFileName)
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
-		metadataFile := path.Join(containerDir, baetyl.MetadataFileName)
-		var meta baetyl.Metadata
-		if utils.FileExists(metadataFile) {
-			err = utils.LoadYAML(metadataFile, &meta)
+		containerMetadataFile := path.Join(containerDir, baetyl.MetadataFileName)
+		var meta Metadata
+		if utils.FileExists(containerMetadataFile) {
+			err = utils.LoadYAML(containerMetadataFile, &meta)
 		} else {
 			err = utils.LoadYAML(containerAppFile, &meta)
 		}
 		if err != nil {
 			return err
 		}
-		var cfg baetyl.ComposeAppConfig
-		err = baetyl.LoadComposeAppConfigCompatible(containerAppFile, &cfg)
+		cfg, err := baetyl.LoadComposeAppConfigCompatible(containerAppFile)
 		if err != nil {
 			return err
 		}

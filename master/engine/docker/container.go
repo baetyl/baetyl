@@ -38,7 +38,9 @@ type containerConfigs struct {
 
 func (e *dockerEngine) initVolumes(volumeInfos ComposeVolumes) error {
 	ctx := context.Background()
-	vlBody, err := e.cli.VolumeList(ctx, filters.Args{})
+	args := filters.NewArgs()
+	args.Add("label", "baetyl=baetyl")
+	vlBody, err := e.cli.VolumeList(ctx, args)
 	if err != nil {
 		e.log.WithError(err).Errorf("failed to list volumes")
 	}
@@ -57,6 +59,7 @@ func (e *dockerEngine) initVolumes(volumeInfos ComposeVolumes) error {
 				DriverOpts: vl.Options,
 				Labels:     vl.Labels,
 			}
+			// it is recommanded to add version info into volume name to avoid duplicate name conflict
 			if !reflect.DeepEqual(t, volumeInfo) {
 				return fmt.Errorf("volume (%s) with different properties exists", name)
 			}
@@ -82,6 +85,7 @@ func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 	ctx := context.Background()
 	args := filters.NewArgs()
 	args.Add("type", "custom")
+	args.Add("label", "baetyl=baetyl")
 	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
 	if err != nil {
 		e.log.WithError(err).Errorf("failed to list custom networks")
@@ -105,6 +109,7 @@ func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 				DriverOpts: nw.Options,
 				Labels:     nw.Labels,
 			}
+			// it is recommanded to add version info into network name to avoid duplicate name conflict
 			if !reflect.DeepEqual(t, network) {
 				return fmt.Errorf("network (%s:%s) with different properties exists", nw.ID[:12], networkName)
 			}

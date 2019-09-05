@@ -50,20 +50,6 @@ type ServiceInfo struct {
 	Runtime string `yaml:"runtime" json:"runtime"`
 }
 
-// VolumeInfo storage volume configuration
-// type VolumeInfo struct {
-// 	// specifies a unique name for the storage volume
-// 	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
-// 	// specifies the directory where the storage volume is on the host
-// 	Path string `yaml:"path" json:"path" validate:"nonzero"`
-// 	// specifies the metadata of the storage volume
-// 	Meta struct {
-// 		URL     string `yaml:"url" json:"url"`
-// 		MD5     string `yaml:"md5" json:"md5"`
-// 		Version string `yaml:"version" json:"version"`
-// 	} `yaml:"meta" json:"meta"`
-// }
-
 // MountInfo storage volume mapping configuration
 type MountInfo struct {
 	// specifies the name of the mapped storage volume
@@ -107,6 +93,7 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 		}
 		if first {
 			first = false
+			info.DependsOn = []string{}
 		} else {
 			info.DependsOn = []string{previous}
 		}

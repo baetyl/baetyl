@@ -21,8 +21,7 @@ func (m *Master) Auth(username, password string) bool {
 }
 
 func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
-	order := ServiceSort(cur.Services)
-	for _, name := range order {
+	for _, name := range ServiceSort(cur.Services) {
 		s := cur.Services[name]
 		if _, ok := m.services.Get(name); ok {
 			continue

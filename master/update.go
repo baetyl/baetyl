@@ -119,13 +119,13 @@ func (m *Master) loadAPPConfig(target string) (cur, old baetyl.ComposeAppConfig,
 		}
 	}
 	if utils.FileExists(appConfigFile) {
-		err = baetyl.LoadComposeAppConfigCompatible(appConfigFile, &cur)
+		cur, err = baetyl.LoadComposeAppConfigCompatible(appConfigFile)
 		if err != nil {
 			return
 		}
 	}
 	if utils.FileExists(appBackupFile) {
-		err = baetyl.LoadComposeAppConfigCompatible(appBackupFile, &old)
+		old, err = baetyl.LoadComposeAppConfigCompatible(appBackupFile)
 		if err != nil {
 			return
 		}
