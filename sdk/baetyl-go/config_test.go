@@ -40,7 +40,6 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				},
 				Volumes: []ServiceVolume{
 					ServiceVolume{
-						Type:     "bind",
 						Source:   "var/db/baetyl/test-hub-conf",
 						Target:   "/etc/baetyl",
 						ReadOnly: false,
@@ -73,7 +72,6 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				},
 				Volumes: []ServiceVolume{
 					ServiceVolume{
-						Type:     "bind",
 						Source:   "var/db/baetyl/test-timer-conf",
 						Target:   "/etc/baetyl",
 						ReadOnly: true,
@@ -131,8 +129,7 @@ services:
     networks:
       - test-network
     volumes:
-      - type: bind
-        source: var/db/baetyl/test-timer-conf
+      - source: var/db/baetyl/test-timer-conf
         target: /etc/baetyl
         read_only: true
     environment:

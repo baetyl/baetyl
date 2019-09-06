@@ -265,7 +265,7 @@ func (e *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error {
 // ServiceVolume specific volume configuration of service
 type ServiceVolume struct {
 	// specifies type of volume
-	Type string `yaml:"type" json:"type"`
+	Type string `yaml:"type" json:"type" validate:"regexp=^(volume|bind)?$"`
 	// specifies source of volume
 	Source string `yaml:"source" json:"source"`
 	// specifies target of volume

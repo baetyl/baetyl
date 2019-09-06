@@ -107,7 +107,6 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 				}
 			}
 			v := ServiceVolume{
-				Type:     "bind",
 				Source:   p,
 				Target:   path.Join("/", mount.Path),
 				ReadOnly: mount.ReadOnly,
