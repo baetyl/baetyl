@@ -48,12 +48,11 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
 		containerMetadataFile := path.Join(containerDir, baetyl.MetadataFileName)
 		var meta Metadata
-		if utils.FileExists(containerMetadataFile) {
-			err = utils.LoadYAML(containerMetadataFile, &meta)
-		} else {
-			err = utils.LoadYAML(containerAppFile, &meta)
+		file := containerMetadataFile
+		if !utils.FileExists(containerMetadataFile) {
+			file = containerAppFile
 		}
-		if err != nil {
+		if err = utils.LoadYAML(file, &meta); err != nil {
 			return err
 		}
 		cfg, err := baetyl.LoadComposeAppConfigCompatible(containerAppFile)

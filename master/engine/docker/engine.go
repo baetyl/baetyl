@@ -129,11 +129,10 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string
 	binds := make([]string, 0)
 	volumes := map[string]struct{}{}
 	for _, m := range cfg.Volumes {
-		if m.Type == "volume" {
-			if _, ok := vs[m.Source]; !ok {
+		if _, ok := vs[m.Source]; !ok {
+			if m.Type != "" && m.Type == "volume" {
 				return nil, fmt.Errorf("volume '%s' not found", m.Source)
-			}
-		} else {
+			} 	
 			// for preventing path escape
 			m.Source = path.Join(e.pwd, path.Join("/", m.Source))
 		}

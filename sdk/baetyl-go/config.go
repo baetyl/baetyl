@@ -3,7 +3,6 @@ package baetyl
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 	"time"
 
@@ -266,7 +265,7 @@ func (e *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error {
 // ServiceVolume specific volume configuration of service
 type ServiceVolume struct {
 	// specifies type of volume
-	Type string `yaml:"type" json:"type" validate:"regexp=^(bind|volume)$"`
+	Type string `yaml:"type" json:"type"`
 	// specifies source of volume
 	Source string `yaml:"source" json:"source"`
 	// specifies target of volume
@@ -297,11 +296,6 @@ func (sv *ServiceVolume) UnmarshalYAML(unmarshal func(interface{}) error) error 
 		sv.Target = info[1]
 		if length == 3 && info[2] == "ro" {
 			sv.ReadOnly = true
-		}
-		if match, _ := regexp.MatchString("^[a-zA-Z0-9][a-zA-Z0-9_.-]+$", sv.Source); match {
-			sv.Type = "volume"
-		} else {
-			sv.Type = "bind"
 		}
 	case reflect.Map:
 		type VolumeInfo ServiceVolume
