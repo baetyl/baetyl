@@ -46,8 +46,16 @@ func (a *agent) processOTA(eo *EventOTA) error {
 	if eo.Type == baetyl.OTAAPP {
 		hostTarget = path.Join(hostDir, baetyl.AppConfFileName)
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
-		var cfg baetyl.AppConfig
-		err := utils.LoadYAML(containerAppFile, &cfg)
+		containerMetadataFile := path.Join(containerDir, baetyl.MetadataFileName)
+		var meta Metadata
+		file := containerMetadataFile
+		if !utils.FileExists(containerMetadataFile) {
+			file = containerAppFile
+		}
+		if err = utils.LoadYAML(file, &meta); err != nil {
+			return err
+		}
+		cfg, err := baetyl.LoadComposeAppConfigCompatible(containerAppFile)
 		if err != nil {
 			return err
 		}
@@ -55,11 +63,11 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		if len(cfg.Services) == 0 {
 			return fmt.Errorf("app config invalid: service list is empty")
 		}
-		err = a.downloadVolumes(cfg.Volumes)
+		err = a.downloadVolumes(meta.Volumes)
 		if err != nil {
 			return fmt.Errorf("failed to download app volumes: %s", err.Error())
 		}
-		a.cleaner.set(cfg.Version, cfg.Volumes)
+		a.cleaner.set(meta.Version, meta.Volumes)
 	} else if eo.Type == baetyl.OTAMST {
 		hostTarget = path.Join(hostDir, baetyl.DefaultBinFile)
 	}

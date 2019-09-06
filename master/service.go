@@ -2,7 +2,6 @@ package master
 
 import (
 	"fmt"
-	"path"
 	"reflect"
 	"sync"
 
@@ -21,28 +20,26 @@ func (m *Master) Auth(username, password string) bool {
 	return ok && p == password
 }
 
-func (m *Master) startServices(cur baetyl.AppConfig) error {
-	volumes := map[string]baetyl.VolumeInfo{}
-	for _, v := range cur.Volumes {
-		// for preventing path escape
-		v.Path = path.Join(m.pwd, path.Join("/", v.Path))
-		volumes[v.Name] = v
-	}
-	for _, s := range cur.Services {
-		if _, ok := m.services.Get(s.Name); ok {
+func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
+	for _, name := range ServiceSort(cur.Services) {
+		s := cur.Services[name]
+		if _, ok := m.services.Get(name); ok {
 			continue
 		}
+		if s.ContainerName != "" {
+			name = s.ContainerName
+		}
 		token := uuid.Generate().String()
-		m.accounts.Set(s.Name, token)
-		s.Env[baetyl.EnvServiceNameKey] = s.Name
-		s.Env[baetyl.EnvServiceTokenKey] = token
-		nxt, err := m.engine.Run(s, volumes)
+		m.accounts.Set(name, token)
+		s.Environment.Envs[baetyl.EnvServiceNameKey] = name
+		s.Environment.Envs[baetyl.EnvServiceTokenKey] = token
+		nxt, err := m.engine.Run(name, s, cur.Volumes)
 		if err != nil {
-			m.log.Infof("failed to start service (%s)", s.Name)
+			m.log.Infof("failed to start service (%s)", name)
 			return err
 		}
-		m.services.Set(s.Name, nxt)
-		m.log.Infof("service (%s) started", s.Name)
+		m.services.Set(name, nxt)
+		m.log.Infof("service (%s) started", name)
 	}
 	return nil
 }
@@ -101,28 +98,24 @@ func (m *Master) StopInstance(service, instance string) error {
 }
 
 // DiffServices returns the services not changed
-func diffServices(cur, old baetyl.AppConfig) map[string]struct{} {
-	oldVolumes := make(map[string]baetyl.VolumeInfo)
-	for _, o := range old.Volumes {
-		oldVolumes[o.Name] = o
-	}
+func diffServices(cur, old baetyl.ComposeAppConfig) map[string]struct{} {
 	// find the volumes updated
 	updateVolumes := make(map[string]struct{})
-	for _, c := range cur.Volumes {
-		if o, ok := oldVolumes[c.Name]; ok && o.Path != c.Path {
-			updateVolumes[c.Name] = struct{}{}
+	for name, c := range cur.Volumes {
+		if !reflect.DeepEqual(c, old.Volumes[name]) {
+			updateVolumes[name] = struct{}{}
 		}
 	}
-
-	oldServices := make(map[string]baetyl.ServiceInfo)
-	for _, o := range old.Services {
-		oldServices[o.Name] = o
+	updateNetworks := make(map[string]struct{})
+	for name, c := range cur.Networks {
+		if !reflect.DeepEqual(c, old.Networks[name]) {
+			updateNetworks[name] = struct{}{}
+		}
 	}
-
 	// find the services not changed
 	keepServices := map[string]struct{}{}
-	for _, c := range cur.Services {
-		o, ok := oldServices[c.Name]
+	for name, c := range cur.Services {
+		o, ok := old.Services[name]
 		if !ok {
 			continue
 		}
@@ -130,15 +123,56 @@ func diffServices(cur, old baetyl.AppConfig) map[string]struct{} {
 			continue
 		}
 		changed := false
-		for _, m := range c.Mounts {
-			if _, changed = updateVolumes[m.Name]; changed {
+		for _, m := range c.Volumes {
+			if _, changed = updateVolumes[m.Source]; changed {
+				break
+			}
+		}
+		for name := range c.Networks.ServiceNetworks {
+			if _, changed = updateNetworks[name]; changed {
 				break
 			}
 		}
 		if changed {
 			continue
 		}
-		keepServices[c.Name] = struct{}{}
+		keepServices[name] = struct{}{}
 	}
 	return keepServices
+}
+
+// ServiceSort sort service
+func ServiceSort(services map[string]baetyl.ComposeService) []string {
+	g := map[string][]string{}
+	inDegrees := map[string]int{}
+	res := []string{}
+	for name, s := range services {
+		for _, r := range s.DependsOn {
+			if g[r] == nil {
+				g[r] = []string{}
+			}
+			g[r] = append(g[r], name)
+		}
+		inDegrees[name] = len(s.DependsOn)
+	}
+	queue := []string{}
+	for n, i := range inDegrees {
+		if i == 0 {
+			queue = append(queue, n)
+			inDegrees[n] = -1
+		}
+	}
+	for len(queue) > 0 {
+		i := queue[0]
+		res = append(res, i)
+		queue = queue[1:]
+		for _, v := range g[i] {
+			inDegrees[v]--
+			if inDegrees[v] == 0 {
+				inDegrees[v] = -1
+				queue = append(queue, v)
+			}
+		}
+	}
+	return res
 }

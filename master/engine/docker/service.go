@@ -11,12 +11,13 @@ import (
 )
 
 const (
-	fmtVolume   = "%s:/%s"
-	fmtVolumeRO = "%s:/%s:ro"
+	fmtVolumeRW = "%s:%s:rw"
+	fmtVolumeRO = "%s:%s:ro"
 )
 
 type dockerService struct {
-	cfg       baetyl.ServiceInfo
+	name      string
+	cfg       baetyl.ComposeService
 	params    containerConfigs
 	engine    *dockerEngine
 	instances cmap.ConcurrentMap
@@ -24,7 +25,7 @@ type dockerService struct {
 }
 
 func (s *dockerService) Name() string {
-	return s.cfg.Name
+	return s.name
 }
 
 func (s *dockerService) Engine() engine.Engine {
@@ -36,13 +37,13 @@ func (s *dockerService) RestartPolicy() baetyl.RestartPolicyInfo {
 }
 
 func (s *dockerService) Start() error {
-	s.log.Debugf("%s replica: %d", s.cfg.Name, s.cfg.Replica)
+	s.log.Debugf("%s replica: %d", s.name, s.cfg.Replica)
 	var instanceName string
 	for i := 0; i < s.cfg.Replica; i++ {
 		if i == 0 {
-			instanceName = s.cfg.Name
+			instanceName = s.name
 		} else {
-			instanceName = fmt.Sprintf("%s.i%d", s.cfg.Name, i)
+			instanceName = fmt.Sprintf("%s.i%d", s.name, i)
 		}
 		err := s.startInstance(instanceName, nil)
 		if err != nil {

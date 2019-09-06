@@ -46,12 +46,12 @@ func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine
 
 type dockerEngine struct {
 	engine.InfoStats
-	cli   *client.Client
+	cli      *client.Client
 	networks map[string]string
-	pwd   string // work directory
-	grace time.Duration
-	tomb  utils.Tomb
-	log   logger.Logger
+	pwd      string // work directory
+	grace    time.Duration
+	tomb     utils.Tomb
+	log      logger.Logger
 }
 
 func (e *dockerEngine) Name() string {
@@ -65,7 +65,7 @@ func (e *dockerEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *dockerEngine) Prepare(cfg baetyl.AppConfig) {
+func (e *dockerEngine) Prepare(cfg baetyl.ComposeAppConfig) {
 	var wg sync.WaitGroup
 	ss := cfg.Services
 	for _, s := range ss {
@@ -76,10 +76,16 @@ func (e *dockerEngine) Prepare(cfg baetyl.AppConfig) {
 		}(s.Image, &wg)
 	}
 	wg.Add(1)
-	go func(nw map[string]baetyl.NetworkInfo, w *sync.WaitGroup) {
+	go func(nw map[string]baetyl.ComposeNetwork, w *sync.WaitGroup) {
 		defer w.Done()
 		e.initNetworks(nw)
 	}(cfg.Networks, &wg)
+
+	wg.Add(1)
+	go func(vs map[string]baetyl.ComposeVolume, w *sync.WaitGroup) {
+		defer w.Done()
+		e.initVolumes(vs)
+	}(cfg.Volumes, &wg)
 	wg.Wait()
 }
 
@@ -112,31 +118,35 @@ func (e *dockerEngine) clean() {
 }
 
 // Run a new service
-func (e *dockerEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeInfo) (engine.Service, error) {
-
+func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string]baetyl.ComposeVolume) (engine.Service, error) {
 	if runtime.GOOS == "linux" && cfg.Resources.CPU.Cpus > 0 {
 		sysInfo := sysinfo.New(true)
 		if !sysInfo.CPUCfsPeriod || !sysInfo.CPUCfsQuota {
-			e.log.Warnf("configuration 'resources.cpu.cpus' of service (%s) is ignored, because host kernel does not support CPU cfs period/quota or the cgroup is not mounted.", cfg.Name)
+			e.log.Warnf("configuration 'resources.cpu.cpus' of service (%s) is ignored, because host kernel does not support CPU cfs period/quota or the cgroup is not mounted.", name)
 			cfg.Resources.CPU.Cpus = 0
 		}
 	}
-
-	volumes := make([]string, 0)
-	for _, m := range cfg.Mounts {
-		v, ok := vs[m.Name]
-		if !ok {
-			return nil, fmt.Errorf("volume '%s' not found", m.Name)
+	binds := make([]string, 0)
+	volumes := map[string]struct{}{}
+	for _, m := range cfg.Volumes {
+		if _, ok := vs[m.Source]; !ok {
+			if m.Type == "volume" {
+				return nil, fmt.Errorf("volume '%s' not found", m.Source)
+			} 	
+			// for preventing path escape
+			m.Source = path.Join(e.pwd, path.Join("/", m.Source))
 		}
-		f := fmtVolume
+		f := fmtVolumeRW
 		if m.ReadOnly {
 			f = fmtVolumeRO
 		}
-		volumes = append(volumes, fmt.Sprintf(f, v.Path, path.Clean(m.Path)))
+		binds = append(binds, fmt.Sprintf(f, m.Source, path.Clean(m.Target)))
+		volumes[m.Target] = struct{}{}
 	}
+
 	sock := utils.GetEnv(baetyl.EnvMasterHostSocket)
 	if sock != "" {
-		volumes = append(volumes, fmt.Sprintf(fmtVolumeRO, sock, baetyl.DefaultSockFile))
+		binds = append(binds, fmt.Sprintf(fmtVolumeRO, sock, path.Join("/", baetyl.DefaultSockFile)))
 	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
 	if err != nil {
@@ -149,22 +159,24 @@ func (e *dockerEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeIn
 	var params containerConfigs
 	params.config = container.Config{
 		Image:        strings.TrimSpace(cfg.Image),
-		Env:          utils.AppendEnv(cfg.Env, false),
-		Cmd:          cfg.Args,
+		Env:          utils.AppendEnv(cfg.Environment.Envs, false),
+		Cmd:          cfg.Command.Cmd,
+		Hostname:     cfg.Hostname,
 		ExposedPorts: exposedPorts,
-		Labels:       map[string]string{"baetyl": "baetyl", "service": cfg.Name},
+		Volumes:      volumes,
+		Labels:       map[string]string{"baetyl": "baetyl", "service": name},
 	}
 	endpointsConfig := map[string]*network.EndpointSettings{}
 	if cfg.NetworkMode != "" {
-		if len(cfg.Networks.ServiceNetworkInfos) > 0 {
+		if len(cfg.Networks.ServiceNetworks) > 0 {
 			return nil, fmt.Errorf("'network_mode' and 'networks' cannot be combined")
 		}
 	} else {
-		for networkName, networkInfo := range cfg.Networks.ServiceNetworkInfos {
+		for networkName, networkInfo := range cfg.Networks.ServiceNetworks {
 			cfg.NetworkMode = networkName
 			endpointsConfig[networkName] = &network.EndpointSettings{
 				NetworkID: e.networks[networkName],
-				Aliases: networkInfo.Aliases,
+				Aliases:   networkInfo.Aliases,
 				IPAddress: networkInfo.Ipv4Address,
 			}
 		}
@@ -176,7 +188,7 @@ func (e *dockerEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeIn
 		EndpointsConfig: endpointsConfig,
 	}
 	params.hostConfig = container.HostConfig{
-		Binds:        volumes,
+		Binds:        binds,
 		Runtime:      cfg.Runtime,
 		PortBindings: portBindings,
 		NetworkMode:  container.NetworkMode(cfg.NetworkMode),
@@ -192,11 +204,12 @@ func (e *dockerEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeIn
 		},
 	}
 	s := &dockerService{
+		name:      name,
 		cfg:       cfg,
 		engine:    e,
 		params:    params,
 		instances: cmap.New(),
-		log:       e.log.WithField("service", cfg.Name),
+		log:       e.log.WithField("service", name),
 	}
 	err = s.Start()
 	if err != nil {

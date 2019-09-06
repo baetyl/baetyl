@@ -67,6 +67,8 @@ const (
 	AppBackupFileName = "application.yml.old"
 	// AppStatsFileName application stats file name
 	AppStatsFileName = "application.stats"
+	// MetadataFileName application metadata file name
+	MetadataFileName = "metadata.yml"
 
 	// BinFile the file path of master binary
 	DefaultBinFile = "bin/baetyl"

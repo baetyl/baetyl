@@ -132,7 +132,9 @@ func TestCleaner(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 2)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.VolumeInfo{Path: target}).Volumes)
+	c.set("v1", prepareConfig(baetyl.VolumeInfo{
+		Path: target,
+	}).Volumes)
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
@@ -244,7 +246,9 @@ func TestCleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Equal(t, []string{"[Debugf]version (v1) is ignored"}, log.records)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.VolumeInfo{Path: prefix}).Volumes)
+	c.set("v1", prepareConfig(baetyl.VolumeInfo{
+		Path: prefix,
+	}).Volumes)
 	c.do("v2")
 	assert.Equal(t, []string{"[Debugf]version (v2) is ignored"}, log.records)
 	log.records = []string{}
@@ -261,7 +265,7 @@ func TestCleaner2(t *testing.T) {
 	c.do("v1")
 	assert.Len(t, log.records, 2)
 	log.records = []string{}
-	c.set("v1", prepareConfig(baetyl.VolumeInfo{Path: target}).Volumes)
+	c.set("v1", prepareConfig(baetyl.VolumeInfo{}).Volumes)
 	c.do("v1")
 	assert.Len(t, log.records, 4)
 	assert.Equal(t, "[Infof]start to clean '"+target+"'", log.records[0])
