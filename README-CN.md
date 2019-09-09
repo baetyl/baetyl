@@ -1,17 +1,17 @@
 # Baetyl
 
-[![Baetyl Status](https://travis-ci.com/baidu/baetyl.svg?branch=master)](https://travis-ci.com/baidu/baetyl) [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://baetyl.io/en) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&include_prereleases&label=pre-release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
+ [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://baetyl.io/en) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&include_prereleases&label=pre-release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
 
 ![Baetyl-logo](./docs/images/logo/logo-with-name.png)
 
 [README in English](./README.md)
 
-[Baetyl](https://baetyl.io) 是开放的边缘计算平台，可将云计算能力拓展至用户现场，提供临时离线、低延时的计算服务，包括设备接入、消息路由、消息远程同步、函数计算、视频接入预处理、AI 推断等功能。Baetyl 和[智能边缘 BIE](https://cloud.baidu.com/product/bie.html)（Baidu-IntelliEdge）云端管理套件配合使用，通过在云端进行智能边缘核心设备的建立、身份制定、策略规则制定、函数编写，然后生成配置文件下发至 Baetyl 本地运行包，可达到云端管理和应用下发，边缘设备上运行应用的效果，满足各种边缘计算场景。
+[Baetyl](https://baetyl.io) 是开放的边缘计算平台，可将云计算能力拓展至用户现场，提供临时离线、低延时的计算服务，包括设备接入、消息路由、消息远程同步、函数计算、视频接入预处理、AI 推断等功能。Baetyl 和云端管理套件配合使用，通过在云端进行智能边缘核心设备的建立、身份制定、策略规则制定、函数编写，然后生成配置文件下发至 Baetyl 本地运行包，可达到云端管理和应用下发，边缘设备上运行应用的效果，满足各种边缘计算场景。
 
 ## 优势
 
 - **屏蔽计算框架**：Baetyl 提供主流运行时支持的同时，提供各类运行时转换服务，基于任意语言编写、基于任意框架训练的函数或模型，都可以在 Baetyl 中执行
-- **简化应用生产**：[智能边缘 BIE](https://cloud.baidu.com/product/bie.html)云端管理套件配合 Baetyl，联合百度云，一起为 Baetyl 提供强大的应用生产环境，通过 [CFC](https://cloud.baidu.com/product/cfc.html)、[Infinite](https://cloud.baidu.com/product/infinite.html)、[Jarvis](http://di.baidu.com/product/jarvis)、[IoT EasyInsight](https://cloud.baidu.com/product/ist.html)、[TSDB](https://cloud.baidu.com/product/tsdb.html)、[IoT Visualization](https://cloud.baidu.com/product/iotviz.html) 等产品，可以在云端轻松生产各类函数、AI 模型，及将数据写入百度云天工云端 TSDB 及物可视进行展示
+- **简化应用生产**：云端管理套件配合 Baetyl，可以在云端轻松生产各类函数、AI 模型，及将数据写入云端时序数据库进行存储和后续的展示
 - **简化运行环境部署**：Baetyl 推行 Docker 容器化，开发者可以根据 Baetyl 源码包中各模块的 DockerFile 快速构建 Baetyl 运行环境
 - **按需部署**：Baetyl 推行功能模块化，各模块独立运行互相隔离，开发者完全可以根据自己的需求选择部署
 - **丰富配置**：Baetyl 支持 X86、ARM 等多种硬件以及 Linux、Darwin 和 Windows 等主流操作系统
@@ -60,5 +60,4 @@ Baetyl 作为中国首发的开源边缘计算框架，我们旨在打造一个*
 
 - 如果您想参与 Baetyl 的日常开发交流，欢迎您加入 [Baetyl 开发交流群](https://baetyl.bj.bcebos.com/Wechat/Wechat-Baetyl.png)
 - 如果您有更多关于 Baetyl 的功能需求或 Bug 反馈，欢迎您直接[提交 Issue](https://github.com/baetyl/baetyl/issues)
-- 如果您想了解更多关于 Baetyl 与百度云其他服务的相关内容，欢迎您加入[百度云开发者论坛](https://cloud.baidu.com/forum/bce)
 - 如果您有更好的关于 Baetyl 的发展建议，欢迎您通过电子邮件方式与我们联系：<baetyl@lists.lfedge.org>
