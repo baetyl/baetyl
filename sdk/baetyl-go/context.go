@@ -80,6 +80,8 @@ const (
 	DefaultConfFile = "etc/baetyl/service.yml"
 	// DefaultDBDir db dir of the service by default
 	DefaultDBDir = "var/db/baetyl"
+	// PreviousDBDir previous db dir of the service
+	PreviousDBDir = "var/db/openedge"
 	// DefaultRunDir  run dir of the service by default
 	DefaultRunDir = "var/run/baetyl"
 	// DefaultLogDir  log dir of the service by default

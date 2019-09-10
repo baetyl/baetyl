@@ -2,6 +2,7 @@ package master
 
 import (
 	"fmt"
+	"github.com/baetyl/baetyl/utils"
 	"os"
 	"os/signal"
 	"path"
@@ -35,6 +36,15 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
+	// backward compatibility
+	symLink := path.Join(pwd, baetyl.PreviousDBDir)
+	if !utils.PathExists(symLink) {
+		err := os.Symlink(path.Join(pwd, baetyl.DefaultDBDir), symLink)
+		if err != nil {
+			return nil, fmt.Errorf("failed to make db symlink: %s", err.Error())
+		}
+	}
+
 	log := logger.InitLogger(cfg.Logger, "baetyl", "master")
 	m := &Master{
 		cfg:       cfg,
