@@ -2,7 +2,6 @@ package master
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl/utils"
 	"os"
 	"os/signal"
 	"path"
@@ -13,6 +12,7 @@ import (
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -32,19 +32,11 @@ type Master struct {
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
-	err := os.MkdirAll(baetyl.DefaultDBDir, 0755)
+	// init dir and create symlink for backward compatibility
+	err := initDir(pwd)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
+		return nil, err
 	}
-	// backward compatibility
-	symLink := path.Join(pwd, baetyl.PreviousDBDir)
-	if !utils.PathExists(symLink) {
-		err := os.Symlink(path.Join(pwd, baetyl.DefaultDBDir), symLink)
-		if err != nil {
-			return nil, fmt.Errorf("failed to make db symlink: %s", err.Error())
-		}
-	}
-
 	log := logger.InitLogger(cfg.Logger, "baetyl", "master")
 	m := &Master{
 		cfg:       cfg,
@@ -111,4 +103,40 @@ func (m *Master) Wait() error {
 	signal.Ignore(syscall.SIGPIPE)
 	<-m.sig
 	return nil
+}
+
+func createDirAndSymlink(pwd, current, previous string) error {
+	var err error
+	if !utils.PathExists(previous) {
+		err = os.MkdirAll(current, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to make directory: %s", err.Error())
+		}
+		err = utils.CreateCwdSymlink(pwd, current, previous)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = utils.CreateCwdSymlink(pwd, previous, current)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func initDir(pwd string) (err error) {
+	err = createDirAndSymlink(pwd, baetyl.DefaultDBDir, baetyl.PreviousDBDir)
+	if err != nil {
+		return
+	}
+	err = createDirAndSymlink(pwd, baetyl.DefaultLogDir, baetyl.PreviousLogDir)
+	if err != nil {
+		return
+	}
+	err = createDirAndSymlink(pwd, baetyl.DefaultRunDir, baetyl.PreviousRunDir)
+	if err != nil {
+		return
+	}
+	return
 }
