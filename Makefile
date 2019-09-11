@@ -1,8 +1,9 @@
 PREFIX?=/usr/local
 VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
 GOFLAG?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.GoVersion=`go version`' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
-DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
 GOTESTFLAG?=
+GOTESTPKGS?=$(shell go list ./... | grep -v baetyl-video-infer)
+DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
 
 all: baetyl package
 
@@ -40,7 +41,7 @@ baetyl-timer/package.zip:
 	make -C baetyl-timer
 
 test:
-	go test ${GOTESTFLAG} -coverpkg=./... -coverprofile=coverage.out ./...
+	go test ${GOTESTFLAG} -coverprofile=coverage.out ${GOTESTPKGS}
 	go tool cover -func=coverage.out | grep total
 
 install: baetyl
