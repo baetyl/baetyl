@@ -6,6 +6,7 @@ import (
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/protocol/mqtt"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 // Config agent config
@@ -29,4 +30,10 @@ type Config struct {
 type OTAInfo struct {
 	Timeout time.Duration  `yaml:"timeout" json:"timeout" default:"5m"`
 	Logger  logger.LogInfo `yaml:"logger" json:"logger" default:"{\"path\":\"var/db/baetyl/volumes/ota.log\",\"format\":\"json\"}"`
+}
+
+// Metadata meta data of volume
+type Metadata struct {
+	Version string              `yaml:"version" json:"version"`
+	Volumes []baetyl.VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
 }

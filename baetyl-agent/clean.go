@@ -15,7 +15,7 @@ import (
 type cleaner struct {
 	prefix   string
 	target   string
-	lversion string                // ast version
+	lversion string              // ast version
 	lvolumes []baetyl.VolumeInfo // last volumes
 	log      logger.Logger
 }
@@ -72,11 +72,11 @@ func list(prefix, target string, volumes []baetyl.VolumeInfo) ([]string, error) 
 		}
 		ps := strings.Split(p, string(filepath.Separator))
 		if len(ps) == 0 {
-			// ignore the case that v.Path equals prefix
+			// ignore the case that path equals prefix
 			continue
 		}
 		if ps[0] == ".." {
-			// ignore the case that v.Path out of prefix
+			// ignore the case that path out of prefix
 			continue
 		}
 		keep[ps[0]] = len(ps) > 1

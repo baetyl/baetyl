@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const defaultConfFile = "etc/baetyl/baetyl.yml"
+const defaultConfFile = "etc/baetyl/conf.yml"
 
 // compile variables
 var (
@@ -44,7 +44,7 @@ func check(cmd *cobra.Command, args []string) {
 }
 
 func checkInternal() (*master.Config, error) {
-	cfg := &master.Config{File:defaultConfFile}
+	cfg := &master.Config{File: defaultConfFile}
 	utils.UnmarshalYAML(nil, cfg) // default config
 	exe, err := os.Executable()
 	if err != nil {
@@ -65,6 +65,13 @@ func checkInternal() (*master.Config, error) {
 	if err = os.Chdir(workDir); err != nil {
 		return cfg, fmt.Errorf("failed to change work directory: %s", err.Error())
 	}
+
+	// init dir and create symlink for backward compatibility
+	err = initDir(workDir)
+	if err != nil {
+		return cfg, fmt.Errorf("failed to init directory: %s", err.Error())
+	}
+
 	if cfgFile != "" {
 		cfg.File = cfgFile
 	}
@@ -81,4 +88,30 @@ func checkInternal() (*master.Config, error) {
 		return cfg, fmt.Errorf("config invalid: %s", err.Error())
 	}
 	return cfg, nil
+}
+
+func initDir(pwd string) (err error) {
+	if utils.PathExists(baetyl.PreviousMasterConfDir) {
+		err = utils.CreateCwdSymlink(pwd, baetyl.PreviousMasterConfDir, baetyl.DefaultMasterConfDir)
+		if err != nil {
+			return err
+		}
+		err = utils.CreateCwdSymlink(pwd, baetyl.PreviousMasterConfFile, baetyl.DefaultMasterConfFile)
+		if err != nil {
+			return err
+		}
+	}
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultDBDir, baetyl.PreviousDBDir)
+	if err != nil {
+		return
+	}
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultLogDir, baetyl.PreviousLogDir)
+	if err != nil {
+		return
+	}
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultRunDir, baetyl.PreviousRunDir)
+	if err != nil {
+		return
+	}
+	return
 }

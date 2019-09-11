@@ -52,7 +52,7 @@ func (e *nativeEngine) Recover() {
 }
 
 // Prepare prepares all images
-func (e *nativeEngine) Prepare(baetyl.AppConfig) {
+func (e *nativeEngine) Prepare(baetyl.ComposeAppConfig) {
 	// do nothing in native mode
 }
 
@@ -94,13 +94,13 @@ func (e *nativeEngine) clean() {
 }
 
 // Run new service
-func (e *nativeEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeInfo) (engine.Service, error) {
-	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", cfg.Name)
+func (e *nativeEngine) Run(name string, cfg baetyl.ComposeService, _ map[string]baetyl.ComposeVolume) (engine.Service, error) {
+	spwd := path.Join(e.pwd, "var", "run", "baetyl", "services", name)
 	err := os.RemoveAll(spwd)
 	if err != nil {
 		return nil, err
 	}
-	err = mountAll(e.pwd, spwd, cfg.Mounts, vs)
+	err = mountAll(e.pwd, spwd, cfg.Volumes)
 	if err != nil {
 		os.RemoveAll(spwd)
 		return nil, err
@@ -115,16 +115,17 @@ func (e *nativeEngine) Run(cfg baetyl.ServiceInfo, vs map[string]baetyl.VolumeIn
 	}
 	params := processConfigs{
 		exec: path.Join(pkgDir, pkg.Entry),
-		env:  utils.AppendEnv(cfg.Env, true),
-		argv: cfg.Args,
+		env:  utils.AppendEnv(cfg.Environment.Envs, true),
+		argv: cfg.Command.Cmd,
 		pwd:  spwd,
 	}
 	s := &nativeService{
+		name:      name,
 		cfg:       cfg,
 		engine:    e,
 		params:    params,
 		instances: cmap.New(),
-		log:       e.log.WithField("service", cfg.Name),
+		log:       e.log.WithField("service", name),
 	}
 	err = s.Start()
 	if err != nil {
@@ -139,13 +140,14 @@ func (e *nativeEngine) Close() error {
 	return nil
 }
 
-func mountAll(epwd, spwd string, ms []baetyl.MountInfo, vs map[string]baetyl.VolumeInfo) error {
+func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume) error {
 	for _, m := range ms {
-		v, ok := vs[m.Name]
-		if !ok {
-			return fmt.Errorf("volume '%s' not found", m.Name)
+		if len(m.Source) == 0 {
+			return fmt.Errorf("host path is empty")
 		}
-		err := mount(v.Path, path.Join(spwd, strings.TrimSpace(m.Path)))
+		// for preventing path escape
+		m.Source = path.Join(epwd, path.Join("/", m.Source))
+		err := mount(m.Source, path.Join(spwd, strings.TrimSpace(m.Target)))
 		if err != nil {
 			return err
 		}

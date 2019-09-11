@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -17,10 +18,17 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
+	volumetypes "github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/pkg/stdcopy"
 )
 
 const defaultNetworkName = "baetyl"
+
+// ComposeNetworks alias of map[string]baetyl.ComposeNetwork
+type ComposeNetworks map[string]baetyl.ComposeNetwork
+
+// ComposeVolumes alias of map[string]baetyl.ComposeVolume
+type ComposeVolumes map[string]baetyl.ComposeVolume
 
 type containerConfigs struct {
 	config        container.Config
@@ -28,10 +36,56 @@ type containerConfigs struct {
 	networkConfig network.NetworkingConfig
 }
 
-func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) error {
+func (e *dockerEngine) initVolumes(volumeInfos ComposeVolumes) error {
+	ctx := context.Background()
+	args := filters.NewArgs()
+	args.Add("label", "baetyl=baetyl")
+	vlBody, err := e.cli.VolumeList(ctx, args)
+	if err != nil {
+		e.log.WithError(err).Errorf("failed to list volumes")
+	}
+	if vlBody.Warnings != nil {
+		e.log.Warnln(vlBody.Warnings)
+	}
+	vsMap := map[string]*types.Volume{}
+	for _, v := range vlBody.Volumes {
+		vsMap[v.Name] = v
+	}
+	for name, volumeInfo := range volumeInfos {
+		volumeInfo.Labels["baetyl"] = "baetyl"
+		if vl, ok := vsMap[name]; ok {
+			t := baetyl.ComposeVolume{
+				Driver:     vl.Driver,
+				DriverOpts: vl.Options,
+				Labels:     vl.Labels,
+			}
+			// it is recommanded to add version info into volume name to avoid duplicate name conflict
+			if !reflect.DeepEqual(t, volumeInfo) {
+				return fmt.Errorf("volume (%s) with different properties exists", name)
+			}
+			e.log.Debugf("volume %s already exists", name)
+			continue
+		}
+		volumeParams := volumetypes.VolumeCreateBody{
+			Name:       name,
+			Driver:     volumeInfo.Driver,
+			DriverOpts: volumeInfo.DriverOpts,
+			Labels:     volumeInfo.Labels,
+		}
+		_, err := e.cli.VolumeCreate(ctx, volumeParams)
+		if err != nil {
+			e.log.WithError(err).Errorf("failed to create volume %s", name)
+		}
+		e.log.Debugf("volume %s created", name)
+	}
+	return nil
+}
+
+func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 	ctx := context.Background()
 	args := filters.NewArgs()
 	args.Add("type", "custom")
+	args.Add("label", "baetyl=baetyl")
 	nws, err := e.cli.NetworkList(ctx, types.NetworkListOptions{Filters: args})
 	if err != nil {
 		e.log.WithError(err).Errorf("failed to list custom networks")
@@ -42,25 +96,31 @@ func (e *dockerEngine) initNetworks(networks map[string]baetyl.NetworkInfo) erro
 		nwMap[val.Name] = val
 	}
 	// add baetyl as default network
-	if networks == nil{
-		networks = make(map[string]baetyl.NetworkInfo)
-	}
-	networks[defaultNetworkName] = baetyl.NetworkInfo {
-		Driver: "bridge",
+	networks[defaultNetworkName] = baetyl.ComposeNetwork{
+		Driver:     "bridge",
+		DriverOpts: make(map[string]string),
+		Labels:     make(map[string]string),
 	}
 	for networkName, network := range networks {
+		network.Labels["baetyl"] = "baetyl"
 		if nw, ok := nwMap[networkName]; ok {
-			if nw.Driver != network.Driver {
-				return fmt.Errorf("network (%s:%s) with different driver exists", nw.ID[:12], networkName)
+			t := baetyl.ComposeNetwork{
+				Driver:     nw.Driver,
+				DriverOpts: nw.Options,
+				Labels:     nw.Labels,
+			}
+			// it is recommanded to add version info into network name to avoid duplicate name conflict
+			if !reflect.DeepEqual(t, network) {
+				return fmt.Errorf("network (%s:%s) with different properties exists", nw.ID[:12], networkName)
 			}
 			e.networks[networkName] = nw.ID
 			e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
 		} else {
-			networkParams := types.NetworkCreate {
-				Driver: network.Driver,
+			networkParams := types.NetworkCreate{
+				Driver:  network.Driver,
 				Options: network.DriverOpts,
-				Scope: "local",
-				Labels: network.Labels,
+				Scope:   "local",
+				Labels:  network.Labels,
 			}
 			nw, err := e.cli.NetworkCreate(ctx, networkName, networkParams)
 			if err != nil {

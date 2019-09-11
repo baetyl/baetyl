@@ -20,7 +20,7 @@
 
 ## 功能
 
-- [#199](https://github.com/baetyl/baetyl/issues/199) 支持上报服务实例的自定义状态信息，同时采集更多系统状态信息，具体参考 [Baetyl 系统信息采集](./doc/zh-cn/overview/Design.md#system-inspect)
+- [#199](https://github.com/baetyl/baetyl/issues/199) 支持上报服务实例的自定义状态信息，同时采集更多系统状态信息，具体参考 [Baetyl 系统信息采集](./docs/zh-cn/overview/Design.md#system-inspect)
 - [#209](https://github.com/baetyl/baetyl/issues/209) 当 baetyl 启动时，会清理旧实例（残留实例一般由于 baetyl 异常退出造成）
 - [#211](https://github.com/baetyl/baetyl/issues/211) 增加了 Python3.6 版本的函数运行时，使用 Ubuntu16.04 作为基础镜像
 - [#222](https://github.com/baetyl/baetyl/issues/222) Docker 容器模式支持 runtime 和 args 配置
@@ -29,7 +29,7 @@
 ## Bug 修复
 
 - [#201](https://github.com/baetyl/baetyl/issues/201) 函数实例池销毁函数实例时，确保停止函数实例
-- [#208](https://github.com/baetyl/baetyl/issues/208) baetyl stop 命令等待 baetyl 停止运行后退出，确保清理pid文件
+- [#208](https://github.com/baetyl/baetyl/issues/208) baetyl stop 命令等待 baetyl 停止运行后退出，确保清理 pid 文件
 - [#234](https://github.com/baetyl/baetyl/issues/234) hub 模块发布消息等待 ack 超时，快速重发消息
 - 解决当 atomic.addUint64() 的参数未按照 64 位对齐导致退出异常的问题。参考：https://github.com/golang/go/issues/23345
 

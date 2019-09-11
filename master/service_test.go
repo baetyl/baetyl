@@ -189,9 +189,54 @@ func Test_diffServices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := diffServices(tt.args.cur, tt.args.old); !reflect.DeepEqual(got, tt.want) {
+			ccur := tt.args.cur.ToComposeAppConfig()
+			cold := tt.args.old.ToComposeAppConfig()
+			if got := diffServices(ccur, cold); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("diffServices() = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+func TestServiceSort(t *testing.T) {
+	services := map[string]baetyl.ComposeService{}
+	services["a"] = baetyl.ComposeService{
+		DependsOn: []string{},
+	}
+	services["b"] = baetyl.ComposeService{
+		DependsOn: []string{"a"},
+	}
+	services["c"] = baetyl.ComposeService{
+		DependsOn: []string{"a", "b"},
+	}
+	services["d"] = baetyl.ComposeService {
+		DependsOn: []string{"b", "c"},
+	}
+	services["e"] = baetyl.ComposeService {
+		DependsOn: []string{"c", "a", "b"},
+	}
+	services["f"] = baetyl.ComposeService {
+		DependsOn: []string{"b", "c"},
+	}
+	services["h"] = baetyl.ComposeService {
+		DependsOn: []string{"d", "f"},
+	}
+	order := ServiceSort(services)
+	om := map[string]int{}
+	for i, o := range order {
+		om[o] = i
+	}
+	// order of depended services are less than the service
+	assert.True(t, om["a"] < om["b"])
+	assert.True(t, om["a"] < om["c"])
+	assert.True(t, om["b"] < om["c"])
+	assert.True(t, om["b"] < om["d"])
+	assert.True(t, om["c"] < om["d"])
+	assert.True(t, om["a"] < om["e"])
+	assert.True(t, om["b"] < om["e"])
+	assert.True(t, om["c"] < om["e"])
+	assert.True(t, om["b"] < om["f"])
+	assert.True(t, om["c"] < om["f"])
+	assert.True(t, om["d"] < om["h"])
+	assert.True(t, om["f"] < om["h"])
 }

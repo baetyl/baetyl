@@ -147,7 +147,9 @@ cd $GOPATH/src/github.com/baetyl/baetyl
 make rebuild
 ```
 
-编译完成后会在根目录及各个模块目录下生成如下五个可执行文件:
+**注意**: 因为 Node 8.5 运行时模块在 `make` 时候会调用 `npm install` 命令安装依赖，所以需要事先安装 `node` 和 `npm`, 具体可以参考 [Nodejs 官网](https://nodejs.org/en/download/) 。
+
+编译完成后会在根目录及各个模块目录下生成如下六个可执行文件:
 
 ```shell
 baetyl
@@ -155,9 +157,10 @@ baetyl-agent/baetyl-agent
 baetyl-hub/baetyl-hub
 baetyl-function-manager/baetyl-function-manager
 baetyl-remote-mqtt/baetyl-remote-mqtt
+baetyl-timer/baetyl-timer
 ```
 
-除此之外,会在各个模块目录下共生成五个名为 `package.zip` 文件。
+除此之外,还会在各个模块目录下生成 `package.zip` 文件。
 
 ### 安装
 
