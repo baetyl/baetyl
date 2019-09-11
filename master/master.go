@@ -1,7 +1,6 @@
 package master
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"path"
@@ -105,36 +104,16 @@ func (m *Master) Wait() error {
 	return nil
 }
 
-func createDirAndSymlink(pwd, current, previous string) error {
-	var err error
-	if !utils.PathExists(previous) {
-		err = os.MkdirAll(current, 0755)
-		if err != nil {
-			return fmt.Errorf("failed to make directory: %s", err.Error())
-		}
-		err = utils.CreateCwdSymlink(pwd, current, previous)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = utils.CreateCwdSymlink(pwd, previous, current)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func initDir(pwd string) (err error) {
-	err = createDirAndSymlink(pwd, baetyl.DefaultDBDir, baetyl.PreviousDBDir)
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultDBDir, baetyl.PreviousDBDir)
 	if err != nil {
 		return
 	}
-	err = createDirAndSymlink(pwd, baetyl.DefaultLogDir, baetyl.PreviousLogDir)
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultLogDir, baetyl.PreviousLogDir)
 	if err != nil {
 		return
 	}
-	err = createDirAndSymlink(pwd, baetyl.DefaultRunDir, baetyl.PreviousRunDir)
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultRunDir, baetyl.PreviousRunDir)
 	if err != nil {
 		return
 	}

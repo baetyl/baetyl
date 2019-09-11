@@ -68,3 +68,43 @@ func TestPathJoin(t *testing.T) {
 	assert.Equal(t, "/usr/local/bin", path.Join("/usr/local/", path.Join("/", "../../../../bin")))
 	assert.Equal(t, "/mnt/data0", path.Join("/", path.Join("/", "/mnt/data0")))
 }
+
+func TestCreateCwdSymlink(t *testing.T) {
+	dir, err := ioutil.TempDir("", "")
+	assert.NoError(t, err)
+	filename := "file"
+	f, err := os.Create(path.Join(dir, filename))
+	assert.NoError(t, err)
+	defer f.Close()
+	content := "test"
+	_, err = io.WriteString(f, content)
+	assert.NoError(t, err)
+	symlink := "symlink"
+	CreateCwdSymlink(dir, filename, symlink)
+	res, err := ioutil.ReadFile(path.Join(dir, symlink))
+	assert.NoError(t, err)
+	assert.Equal(t, content, string(res))
+}
+
+func TestCreateDirAndSymlink(t *testing.T) {
+	dir, err := ioutil.TempDir("", "")
+	assert.NoError(t, err)
+	previous := "a"
+	current := "b"
+	err = CreateDirAndSymlink(dir, current, previous)
+	assert.True(t, PathExists(path.Join(dir, current)))
+	assert.True(t, PathExists(path.Join(dir, previous)))
+	fmt.Println(dir)
+	origin, err := os.Readlink(path.Join(dir, previous))
+	assert.Equal(t, origin, path.Join(dir, current))
+
+	err = os.RemoveAll(path.Join(dir, previous))
+	assert.NoError(t, err)
+	err = os.RemoveAll(path.Join(dir, current))
+	assert.NoError(t, err)
+
+	os.MkdirAll(path.Join(dir, previous), 0755)
+	err = CreateDirAndSymlink(dir, current, previous)
+	origin, err = os.Readlink(path.Join(dir, current))
+	assert.Equal(t, origin, path.Join(dir, previous))
+}
