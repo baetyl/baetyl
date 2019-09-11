@@ -162,17 +162,6 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 		return fmt.Errorf("failed to check master: %s", err.Error())
 	}
 
-	if utils.PathExists(baetyl.PreviousMasterConfDir) {
-		err = utils.CreateCwdSymlink(m.pwd, baetyl.PreviousMasterConfDir, baetyl.DefaultMasterConfDir)
-		if err != nil {
-			return err
-		}
-		err = utils.CreateCwdSymlink(m.pwd, baetyl.PreviousMasterConfFile, baetyl.DefaultMasterConfFile)
-		if err != nil {
-			return err
-		}
-	}
-
 	log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdating).Infof("master is updating")
 	if err = apply(target, backup); err != nil {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to apply master")
