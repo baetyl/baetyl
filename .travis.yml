@@ -3,7 +3,7 @@ sudo: false
 language: go
 
 go:
-  - 1.10.1
+  - 1.12
 
 before_install:
   - pyenv local 2.7.15 3.7
@@ -18,7 +18,7 @@ script:
   - make
   - echo "baetyl build end"
   - echo "baetyl uint test begin"
-  - make test
+  - make test GOTESTFLAG=--race
   - echo "baetyl unit test end"
 
   
