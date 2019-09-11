@@ -84,6 +84,22 @@ const (
 	DefaultRunDir = "var/run/baetyl"
 	// DefaultLogDir  log dir of the service by default
 	DefaultLogDir = "var/log/baetyl"
+
+	// backward compatibility
+	// PreviousDBDir previous db dir of the service
+	PreviousDBDir = "var/db/openedge"
+	// PreviousRunDir  previous run dir of the service
+	PreviousRunDir = "var/run/openedge"
+	// PreviousLogDir previous log dir of the service
+	PreviousLogDir = "var/log/openedge"
+	// DefaultMasterConfDir master config dir by default
+	DefaultMasterConfDir = "etc/baetyl"
+	// PreviousMasterConfDir previous master config dir
+	PreviousMasterConfDir = "etc/openedge"
+	// DefaultMasterConfFile master config file by default
+	DefaultMasterConfFile = "etc/baetyl/conf.yml"
+	// PreviousMasterConfFile previous master config file
+	PreviousMasterConfFile = "etc/openedge/openedge.yml"
 )
 
 // Context of service

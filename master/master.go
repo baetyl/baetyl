@@ -1,7 +1,6 @@
 package master
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"path"
@@ -12,6 +11,7 @@ import (
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -31,9 +31,10 @@ type Master struct {
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
-	err := os.MkdirAll(baetyl.DefaultDBDir, 0755)
+	// init dir and create symlink for backward compatibility
+	err := initDir(pwd)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
+		return nil, err
 	}
 	log := logger.InitLogger(cfg.Logger, "baetyl", "master")
 	m := &Master{
@@ -101,4 +102,20 @@ func (m *Master) Wait() error {
 	signal.Ignore(syscall.SIGPIPE)
 	<-m.sig
 	return nil
+}
+
+func initDir(pwd string) (err error) {
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultDBDir, baetyl.PreviousDBDir)
+	if err != nil {
+		return
+	}
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultLogDir, baetyl.PreviousLogDir)
+	if err != nil {
+		return
+	}
+	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultRunDir, baetyl.PreviousRunDir)
+	if err != nil {
+		return
+	}
+	return
 }
