@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	headerKeyUsername = "x-baetyl-username"
-	headerKeyPassword = "x-baetyl-password"
+	headerKeyUsername = "x-openedge-username"
+	headerKeyPassword = "x-openedge-password"
 )
 
 var errAccountUnauthorized = errors.New("account unauthorized")
