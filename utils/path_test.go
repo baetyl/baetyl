@@ -74,18 +74,22 @@ func TestPathJoin(t *testing.T) {
 func TestCreateCwdSymlink(t *testing.T) {
 	dir, err := ioutil.TempDir("", "")
 	assert.NoError(t, err)
+	cwd, err := os.Getwd()
+	assert.NoError(t, err)
+	os.Chdir(dir)
 	filename := "file"
-	f, err := os.Create(path.Join(dir, filename))
+	f, err := os.Create(filename)
 	assert.NoError(t, err)
 	defer f.Close()
 	content := "test"
 	_, err = io.WriteString(f, content)
 	assert.NoError(t, err)
 	symlink := "symlink"
-	CreateCwdSymlink(dir, filename, symlink)
-	res, err := ioutil.ReadFile(path.Join(dir, symlink))
+	CreateSymlink(filename, symlink)
+	res, err := ioutil.ReadFile(symlink)
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(res))
+	os.Chdir(cwd)
 }
 
 func TestCreateDirAndSymlink(t *testing.T) {
@@ -93,20 +97,22 @@ func TestCreateDirAndSymlink(t *testing.T) {
 	assert.NoError(t, err)
 	previous := "a"
 	current := "b"
-	err = CreateDirAndSymlink(dir, current, previous)
-	assert.True(t, PathExists(path.Join(dir, current)))
-	assert.True(t, PathExists(path.Join(dir, previous)))
+	cwd, err := os.Getwd()
+	assert.NoError(t, err)
+	os.Chdir(dir)
+	err = CreateDirAndSymlink(current, previous)
+	assert.True(t, PathExists(current))
+	assert.True(t, PathExists(previous))
 	fmt.Println(dir)
-	origin, err := os.Readlink(path.Join(dir, previous))
-	assert.Equal(t, origin, path.Join(dir, current))
-
-	err = os.RemoveAll(path.Join(dir, previous))
+	origin, err := os.Readlink(previous)
+	assert.Equal(t, origin, current)
+	err = os.RemoveAll(previous)
 	assert.NoError(t, err)
-	err = os.RemoveAll(path.Join(dir, current))
+	err = os.RemoveAll(current)
 	assert.NoError(t, err)
-
-	os.MkdirAll(path.Join(dir, previous), 0755)
-	err = CreateDirAndSymlink(dir, current, previous)
-	origin, err = os.Readlink(path.Join(dir, current))
-	assert.Equal(t, origin, path.Join(dir, previous))
+	os.MkdirAll(previous, 0755)
+	err = CreateDirAndSymlink(current, previous)
+	origin, err = os.Readlink(current)
+	assert.Equal(t, origin, previous)
+	os.Chdir(cwd)
 }
