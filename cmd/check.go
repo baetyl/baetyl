@@ -67,7 +67,7 @@ func checkInternal() (*master.Config, error) {
 	}
 
 	// init dir and create symlink for backward compatibility
-	err = initDir(workDir)
+	err = initDir()
 	if err != nil {
 		return cfg, fmt.Errorf("failed to init directory: %s", err.Error())
 	}
@@ -90,26 +90,26 @@ func checkInternal() (*master.Config, error) {
 	return cfg, nil
 }
 
-func initDir(pwd string) (err error) {
+func initDir() (err error) {
 	if utils.PathExists(baetyl.PreviousMasterConfDir) {
-		err = utils.CreateCwdSymlink(pwd, baetyl.PreviousMasterConfDir, baetyl.DefaultMasterConfDir)
+		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfDir), baetyl.DefaultMasterConfDir)
 		if err != nil {
 			return err
 		}
-		err = utils.CreateCwdSymlink(pwd, baetyl.PreviousMasterConfFile, baetyl.DefaultMasterConfFile)
+		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfFile), baetyl.DefaultMasterConfFile)
 		if err != nil {
 			return err
 		}
 	}
-	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultDBDir, baetyl.PreviousDBDir)
+	err = utils.CreateDirAndSymlink(baetyl.DefaultDBDir, baetyl.PreviousDBDir)
 	if err != nil {
 		return
 	}
-	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultLogDir, baetyl.PreviousLogDir)
+	err = utils.CreateDirAndSymlink(baetyl.DefaultLogDir, baetyl.PreviousLogDir)
 	if err != nil {
 		return
 	}
-	err = utils.CreateDirAndSymlink(pwd, baetyl.DefaultRunDir, baetyl.PreviousRunDir)
+	err = utils.CreateDirAndSymlink(baetyl.DefaultRunDir, baetyl.PreviousRunDir)
 	if err != nil {
 		return
 	}

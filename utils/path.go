@@ -90,31 +90,20 @@ func CreateSymlink(target, symlink string) error {
 	return nil
 }
 
-// CreateCwdSymlink create symlink of target in current work directory
-func CreateCwdSymlink(pwd, target, symlink string) error {
-	t := path.Join(pwd, target)
-	s := path.Join(pwd, symlink)
-	err := CreateSymlink(t, s)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // CreateDirAndSymlink Create Dir and related symlink
-func CreateDirAndSymlink(pwd, current, previous string) error {
+func CreateDirAndSymlink(current, previous string) error {
 	var err error
-	if !PathExists(path.Join(pwd, previous)) {
-		err = os.MkdirAll(path.Join(pwd, current), 0755)
+	if !PathExists(previous) {
+		err = os.MkdirAll(current, 0755)
 		if err != nil {
 			return fmt.Errorf("failed to make directory: %s", err.Error())
 		}
-		err = CreateCwdSymlink(pwd, current, previous)
+		err = CreateSymlink(path.Base(current), previous)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = CreateCwdSymlink(pwd, previous, current)
+		err = CreateSymlink(path.Base(previous), current)
 		if err != nil {
 			return err
 		}
