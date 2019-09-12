@@ -100,6 +100,8 @@ const (
 	DefaultMasterConfDir = "etc/baetyl"
 	// DefaultMasterConfFile master config file by default
 	DefaultMasterConfFile = "etc/baetyl/conf.yml"
+	// DefaultConfFile config path of the service by default
+	DefaultFilebeatConfFile = "etc/baetyl/filebeat.yml"
 
 	// backward compatibility
 	// PreviousDBDir previous db dir of the service
