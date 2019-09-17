@@ -1,6 +1,7 @@
 package master
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"path"
@@ -30,6 +31,10 @@ type Master struct {
 
 // New creates a new master
 func New(pwd string, cfg Config, ver string) (*Master, error) {
+	err := os.MkdirAll(baetyl.DefaultDBDir, 0755)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
+	}
 	log := logger.InitLogger(cfg.Logger, "baetyl", "master")
 	m := &Master{
 		cfg:       cfg,
@@ -42,7 +47,6 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(baetyl.DefaultDBDir, baetyl.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
-	var err error
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)
 	if err != nil {
 		m.Close()

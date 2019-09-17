@@ -162,6 +162,12 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 		return fmt.Errorf("failed to check master: %s", err.Error())
 	}
 
+	// backward compatibility
+	err = addSymlink()
+	if err != nil {
+		return fmt.Errorf("failed to add symlink: %s", err.Error())
+	}
+
 	log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdating).Infof("master is updating")
 	if err = apply(target, backup); err != nil {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to apply master")
@@ -215,6 +221,26 @@ func apply(target, backup string) error {
 	err = update.Apply(f, update.Options{OldSavePath: backup})
 	if err != nil {
 		return fmt.Errorf("failed to apply binary: %s", err.Error())
+	}
+	return nil
+}
+
+func addSymlink() error {
+	if utils.PathExists(baetyl.PreviousMasterConfDir) {
+		err := utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfDir), baetyl.DefaultMasterConfDir)
+		if err != nil {
+			return err
+		}
+		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfFile), baetyl.DefaultMasterConfFile)
+		if err != nil {
+			return err
+		}
+	}
+	if utils.PathExists(baetyl.PreviousDBDir) {
+		err := utils.CreateSymlink(path.Base(baetyl.PreviousDBDir), baetyl.DefaultDBDir)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

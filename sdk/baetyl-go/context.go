@@ -92,10 +92,6 @@ const (
 	// backward compatibility
 	// PreviousDBDir previous db dir of the service
 	PreviousDBDir = "var/db/openedge"
-	// PreviousRunDir  previous run dir of the service
-	PreviousRunDir = "var/run/openedge"
-	// PreviousLogDir previous log dir of the service
-	PreviousLogDir = "var/log/openedge"
 	// PreviousMasterConfDir previous master config dir
 	PreviousMasterConfDir = "etc/openedge"
 	// PreviousMasterConfFile previous master config file

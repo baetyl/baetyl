@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 )
 
 // PathExists checks path exists
@@ -86,27 +85,6 @@ func CreateSymlink(target, symlink string) error {
 	err := os.Symlink(target, symlink)
 	if err != nil {
 		return fmt.Errorf("failed to make symlink %s of %s: %s", target, symlink, err.Error())
-	}
-	return nil
-}
-
-// CreateDirAndSymlink Create Dir and related symlink
-func CreateDirAndSymlink(current, previous string) error {
-	var err error
-	if !PathExists(previous) {
-		err = os.MkdirAll(current, 0755)
-		if err != nil {
-			return fmt.Errorf("failed to make directory: %s", err.Error())
-		}
-		err = CreateSymlink(path.Base(current), previous)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = CreateSymlink(path.Base(previous), current)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
