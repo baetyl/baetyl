@@ -168,7 +168,7 @@ type ComposeAppConfig struct {
 	Services map[string]ComposeService `yaml:"services" json:"services" default:"{}"`
 	// specifies the storage volume information of the application
 	Volumes map[string]ComposeVolume `yaml:"volumes" json:"volumes" default:"{}"`
-	// specifies the network information of the applicaiton
+	// specifies the network information of the application
 	Networks map[string]ComposeNetwork `yaml:"networks" json:"networks" default:"{}"`
 }
 
