@@ -95,6 +95,9 @@ func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 	for _, val := range nws {
 		nwMap[val.Name] = val
 	}
+	if networks == nil {
+		networks = make(map[string]baetyl.ComposeNetwork)
+	}
 	// add baetyl as default network
 	networks[defaultNetworkName] = baetyl.ComposeNetwork{
 		Driver:     "bridge",
