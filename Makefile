@@ -1,6 +1,7 @@
 PREFIX?=/usr/local
-VERSION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
-GOFLAG?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.GoVersion=`go version`' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
+REVISION?=git-$(shell git rev-list HEAD|head -1|cut -c 1-6)
+VERSION?=$(REVISION)
+GOFLAG?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.Revision=$(REVISION)' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
 GOTESTFLAG?=
 GOTESTPKGS?=$(shell go list ./... | grep -v baetyl-video-infer)
 DEPLOY_TARGET=agent hub function-manager remote-mqtt timer function-python function-node
