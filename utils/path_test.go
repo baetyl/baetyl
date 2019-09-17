@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -71,7 +70,7 @@ func TestPathJoin(t *testing.T) {
 	assert.Equal(t, "/mnt/data0", path.Join("/", path.Join("/", "/mnt/data0")))
 }
 
-func TestCreateCwdSymlink(t *testing.T) {
+func TestCreateSymlink(t *testing.T) {
 	dir, err := ioutil.TempDir("", "")
 	assert.NoError(t, err)
 	cwd, err := os.Getwd()
@@ -89,30 +88,5 @@ func TestCreateCwdSymlink(t *testing.T) {
 	res, err := ioutil.ReadFile(symlink)
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(res))
-	os.Chdir(cwd)
-}
-
-func TestCreateDirAndSymlink(t *testing.T) {
-	dir, err := ioutil.TempDir("", "")
-	assert.NoError(t, err)
-	previous := "a"
-	current := "b"
-	cwd, err := os.Getwd()
-	assert.NoError(t, err)
-	os.Chdir(dir)
-	err = CreateDirAndSymlink(current, previous)
-	assert.True(t, PathExists(current))
-	assert.True(t, PathExists(previous))
-	fmt.Println(dir)
-	origin, err := os.Readlink(previous)
-	assert.Equal(t, origin, current)
-	err = os.RemoveAll(previous)
-	assert.NoError(t, err)
-	err = os.RemoveAll(current)
-	assert.NoError(t, err)
-	os.MkdirAll(previous, 0755)
-	err = CreateDirAndSymlink(current, previous)
-	origin, err = os.Readlink(current)
-	assert.Equal(t, origin, previous)
 	os.Chdir(cwd)
 }

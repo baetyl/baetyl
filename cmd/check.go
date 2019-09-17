@@ -66,12 +66,6 @@ func checkInternal() (*master.Config, error) {
 		return cfg, fmt.Errorf("failed to change work directory: %s", err.Error())
 	}
 
-	// init dir and create symlink for backward compatibility
-	err = initDir()
-	if err != nil {
-		return cfg, fmt.Errorf("failed to init directory: %s", err.Error())
-	}
-
 	if cfgFile != "" {
 		cfg.File = cfgFile
 	}
@@ -88,30 +82,4 @@ func checkInternal() (*master.Config, error) {
 		return cfg, fmt.Errorf("config invalid: %s", err.Error())
 	}
 	return cfg, nil
-}
-
-func initDir() (err error) {
-	if utils.PathExists(baetyl.PreviousMasterConfDir) {
-		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfDir), baetyl.DefaultMasterConfDir)
-		if err != nil {
-			return err
-		}
-		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfFile), baetyl.DefaultMasterConfFile)
-		if err != nil {
-			return err
-		}
-	}
-	err = utils.CreateDirAndSymlink(baetyl.DefaultDBDir, baetyl.PreviousDBDir)
-	if err != nil {
-		return
-	}
-	err = utils.CreateDirAndSymlink(baetyl.DefaultLogDir, baetyl.PreviousLogDir)
-	if err != nil {
-		return
-	}
-	err = utils.CreateDirAndSymlink(baetyl.DefaultRunDir, baetyl.PreviousRunDir)
-	if err != nil {
-		return
-	}
-	return
 }
