@@ -60,7 +60,7 @@ func (c *Client) UpdateSystem(trace, tp, path string) error {
 	data, err := json.Marshal(map[string]string{
 		"type":  tp,
 		"path":  path,
-		"file":  path, // backward compatibility, baetyl master version < 0.1.4
+		"file":  path, // backward compatibility, master version < 0.1.4
 		"trace": trace,
 	})
 	if err != nil {
