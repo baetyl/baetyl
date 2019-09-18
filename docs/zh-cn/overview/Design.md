@@ -193,7 +193,7 @@ type Software struct {
     // Baetyl 发布版本
     BinVersion  string `json:"bin_version,omitempty"`
     // Baetyl git 提交版本
-	GitRevision string `json:"git_revision,omitempty"`
+    GitRevision string `json:"git_revision,omitempty"`
     // Baetyl 加载的应用配置版本
     ConfVersion string `json:"conf_version,omitempty"`
 }

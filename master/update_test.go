@@ -47,7 +47,7 @@ func TestUpdateAPP(t *testing.T) {
 		pwd:       pwd,
 		accounts:  cmap.New(),
 		services:  cmap.New(),
-		infostats: newInfoStats(pwd, "native", "", "var/run/baetyl.stats"),
+		infostats: newInfoStats(pwd, "native", "", "", "var/run/baetyl.stats"),
 		log:       logger.WithField("baetyl", "master"),
 	}
 	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
@@ -119,7 +119,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
-		infostats: newInfoStats(pwd, "native", "", "var/run/baetyl.stats"),
+		infostats: newInfoStats(pwd, "native", "", "", "var/run/baetyl.stats"),
 		log:       logger.WithField("baetyl", "master"),
 	}
 	err = utils.UnmarshalYAML(nil, &m.cfg)
@@ -235,7 +235,7 @@ func TestUpdateSystemAPP2(t *testing.T) {
 		sig:       make(chan os.Signal, 1),
 		accounts:  cmap.New(),
 		services:  cmap.New(),
-		infostats: newInfoStats(pwd, "native", "", "var/run/baetyl.stats"),
+		infostats: newInfoStats(pwd, "native", "", "", "var/run/baetyl.stats"),
 		log:       logger.WithField("baetyl", "master"),
 	}
 	err = utils.UnmarshalYAML(nil, &m.cfg)
