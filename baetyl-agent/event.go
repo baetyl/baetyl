@@ -53,17 +53,17 @@ func NewEvent(v []byte) (*Event, error) {
 
 // EventOTA OTA event
 type EventOTA struct {
-	Type    string              `json:"type,omitempty"`
-	Trace   string              `json:"trace,omitempty"`
-	Version string              `json:"version,omitempty"`
+	Type    string            `json:"type,omitempty"`
+	Trace   string            `json:"trace,omitempty"`
+	Version string            `json:"version,omitempty"`
 	Volume  baetyl.VolumeInfo `json:"volume,omitempty"`
 }
 
 // UpdateEvent update event
 // TODO: deprecate
 type UpdateEvent struct {
-	Trace   string              `json:"trace,omitempty"`
-	Version string              `json:"version,omitempty"`
+	Trace   string            `json:"trace,omitempty"`
+	Version string            `json:"version,omitempty"`
 	Config  baetyl.VolumeInfo `json:"config,omitempty"`
 }
 

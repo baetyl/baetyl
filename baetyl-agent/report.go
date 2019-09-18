@@ -12,7 +12,7 @@ import (
 
 type inspect struct {
 	*baetyl.Inspect `json:",inline"`
-	OTA               map[string][]*record `json:"ota,omitempty"`
+	OTA             map[string][]*record `json:"ota,omitempty"`
 }
 
 func (a *agent) reporting() error {

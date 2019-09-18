@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/config"
 	"github.com/baetyl/baetyl/baetyl-hub/persist"
 	"github.com/baetyl/baetyl/baetyl-hub/utils"
+	"github.com/baetyl/baetyl/logger"
 )
 
-var errBrokerClosed = fmt.Errorf("broker alreay closed")
+var errBrokerClosed = fmt.Errorf("broker already closed")
 
 // Report reports stats
 type Report func(map[string]interface{}) error

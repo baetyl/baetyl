@@ -209,16 +209,16 @@ func TestServiceSort(t *testing.T) {
 	services["c"] = baetyl.ComposeService{
 		DependsOn: []string{"a", "b"},
 	}
-	services["d"] = baetyl.ComposeService {
+	services["d"] = baetyl.ComposeService{
 		DependsOn: []string{"b", "c"},
 	}
-	services["e"] = baetyl.ComposeService {
+	services["e"] = baetyl.ComposeService{
 		DependsOn: []string{"c", "a", "b"},
 	}
-	services["f"] = baetyl.ComposeService {
+	services["f"] = baetyl.ComposeService{
 		DependsOn: []string{"b", "c"},
 	}
-	services["h"] = baetyl.ComposeService {
+	services["h"] = baetyl.ComposeService{
 		DependsOn: []string{"d", "f"},
 	}
 	order := ServiceSort(services)

@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/256dpi/gomqtt/packet"
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/persist"
+	"github.com/baetyl/baetyl/logger"
 )
 
 // recorder records session info

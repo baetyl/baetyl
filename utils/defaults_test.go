@@ -13,9 +13,9 @@ type testDefaultsModule struct {
 }
 
 type testDefaultsStruct struct {
-	Others  string               `yaml:"others"`
-	Timeout time.Duration        `yaml:"timeout" default:"1m"`
-	Modules []testDefaultsModule `yaml:"modules" default:"[]"`
+	Others   string                        `yaml:"others"`
+	Timeout  time.Duration                 `yaml:"timeout" default:"1m"`
+	Modules  []testDefaultsModule          `yaml:"modules" default:"[]"`
 	Services map[string]testDefaultsModule `yaml:"modules" default:"{}"`
 }
 

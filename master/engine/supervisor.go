@@ -29,8 +29,8 @@ func Supervising(instance Instance) error {
 	s := make(chan error, 1)
 	for {
 		instanceInfo := instance.Info()
-		instanceInfo[KeyStatus]=Running
-		instanceInfo[KeyStartTime]=time.Now().UTC()
+		instanceInfo[KeyStatus] = Running
+		instanceInfo[KeyStartTime] = time.Now().UTC()
 		_engine.SetInstanceStats(serviceName, instanceName, instanceInfo, true)
 		go instance.Wait(s)
 		select {

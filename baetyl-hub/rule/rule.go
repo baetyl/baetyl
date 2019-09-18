@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/router"
+	"github.com/baetyl/baetyl/logger"
 )
 
 type base interface {

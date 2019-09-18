@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/broker"
 	"github.com/baetyl/baetyl/baetyl-hub/config"
 	"github.com/baetyl/baetyl/baetyl-hub/persist"
 	"github.com/baetyl/baetyl/baetyl-hub/rule"
 	"github.com/baetyl/baetyl/baetyl-hub/server"
 	"github.com/baetyl/baetyl/baetyl-hub/session"
+	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
