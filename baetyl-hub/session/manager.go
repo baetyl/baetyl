@@ -2,12 +2,12 @@ package session
 
 import (
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/auth"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/config"
 	"github.com/baetyl/baetyl/baetyl-hub/persist"
 	"github.com/baetyl/baetyl/baetyl-hub/rule"
+	"github.com/baetyl/baetyl/logger"
 	cmap "github.com/orcaman/concurrent-map"
 )
 

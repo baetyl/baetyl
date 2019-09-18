@@ -77,7 +77,7 @@ modules:
 func TestParseEnv(t *testing.T) {
 	const EnvHostIdKey = "OPENEDGE_HOST_ID"
 	hostId := "test_host_id"
-	err :=  os.Setenv(EnvHostIdKey, hostId)
+	err := os.Setenv(EnvHostIdKey, hostId)
 	assert.NoError(t, err)
 	confString := `
 id: id
@@ -98,7 +98,7 @@ modules:
 	assert.NoError(t, err)
 
 	// env not exist, env of parsed string would be empty
-	confString2 :=`
+	confString2 := `
 id: id
 name: name
 others: others
@@ -130,7 +130,6 @@ modules:
 	assert.Equal(t, []byte(nil), res3)
 	assert.Error(t, err3)
 }
-
 
 func TestUnmarshalJSON(t *testing.T) {
 	confString := `{
@@ -280,4 +279,3 @@ func TestUnmarshalYAML(t *testing.T) {
 	err = l.UnmarshalYAML(unmarshal2)
 	assert.Error(t, err)
 }
-

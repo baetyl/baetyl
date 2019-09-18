@@ -22,18 +22,19 @@ type infoStats struct {
 	sync.RWMutex
 }
 
-func newInfoStats(pwd, mode, version, file string) *infoStats {
+func newInfoStats(pwd, mode, version, revision, file string) *infoStats {
 	return &infoStats{
 		file:     file,
 		services: engine.ServicesStats{},
 		Inspect: baetyl.Inspect{
 			Software: baetyl.Software{
-				OS:         runtime.GOOS,
-				Arch:       runtime.GOARCH,
-				GoVersion:  runtime.Version(),
-				PWD:        pwd,
-				Mode:       mode,
-				BinVersion: version,
+				OS:          runtime.GOOS,
+				Arch:        runtime.GOARCH,
+				GoVersion:   runtime.Version(),
+				PWD:         pwd,
+				Mode:        mode,
+				BinVersion:  version,
+				GitRevision: revision,
 			},
 			Hardware: baetyl.Hardware{
 				HostInfo: utils.GetHostInfo(),

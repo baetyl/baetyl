@@ -30,7 +30,7 @@ type Master struct {
 }
 
 // New creates a new master
-func New(pwd string, cfg Config, ver string) (*Master, error) {
+func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	err := os.MkdirAll(baetyl.DefaultDBDir, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
@@ -44,7 +44,7 @@ func New(pwd string, cfg Config, ver string) (*Master, error) {
 		sig:       make(chan os.Signal, 1),
 		services:  cmap.New(),
 		accounts:  cmap.New(),
-		infostats: newInfoStats(pwd, cfg.Mode, ver, path.Join(baetyl.DefaultDBDir, baetyl.AppStatsFileName)),
+		infostats: newInfoStats(pwd, cfg.Mode, ver, revision, path.Join(baetyl.DefaultDBDir, baetyl.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
 	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats)

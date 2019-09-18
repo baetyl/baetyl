@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/utils"
+	"github.com/baetyl/baetyl/logger"
 	"github.com/jpillora/backoff"
 )
 

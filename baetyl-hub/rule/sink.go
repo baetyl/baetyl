@@ -4,10 +4,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/router"
 	"github.com/baetyl/baetyl/baetyl-hub/utils"
+	"github.com/baetyl/baetyl/logger"
 )
 
 type sink struct {

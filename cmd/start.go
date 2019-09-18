@@ -50,7 +50,7 @@ func startInternal() error {
 		return fmt.Errorf("failed to start master: %s", err.Error())
 	}
 
-	m, err := master.New(workDir, *cfg, Version)
+	m, err := master.New(workDir, *cfg, Version, Revision)
 	if err != nil {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to start master")
 		rberr := master.RollBackMST()

@@ -11,8 +11,8 @@ import (
 // Config function service config
 type Config struct {
 	Server    baetyl.FunctionServerConfig `yaml:"server" json:"server"`
-	Rules     []RuleInfo                    `yaml:"rules" json:"rules" default:"[]"`
-	Functions []FunctionInfo                `yaml:"functions" json:"functions" default:"[]"`
+	Rules     []RuleInfo                  `yaml:"rules" json:"rules" default:"[]"`
+	Functions []FunctionInfo              `yaml:"functions" json:"functions" default:"[]"`
 }
 
 // RuleInfo function rule config

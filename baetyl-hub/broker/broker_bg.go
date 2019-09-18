@@ -22,9 +22,9 @@ func (b *Broker) reporting() error {
 		case <-t.C:
 			stats := map[string]interface{}{
 				"broker_stats": map[string]interface{}{
-					"ingress_buffered_message_qos0":  len(b.msgQ0Chan),
-					"ingress_buffered_message_qos1":  len(b.msgQ1Chan),
-					"egress_buffered_offset": len(b.offsetChan),
+					"ingress_buffered_message_qos0": len(b.msgQ0Chan),
+					"ingress_buffered_message_qos1": len(b.msgQ1Chan),
+					"egress_buffered_offset":        len(b.offsetChan),
 				},
 			}
 			err = b.report(stats)

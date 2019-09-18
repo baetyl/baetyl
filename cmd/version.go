@@ -1,15 +1,16 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
 
 // Compile parameter
 var (
-	Version   string
-	GoVersion string
+	Version  string
+	Revision string
 )
 
 // versionCmd represents the version command
@@ -25,5 +26,5 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	log.Printf("\nbaetyl version %s\n%s\n\n", Version, GoVersion)
+	fmt.Printf("Version:      %s\nGit revision: %s\nGO version:   %s\n\n", Version, Revision, runtime.Version())
 }

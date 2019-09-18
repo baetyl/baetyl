@@ -186,14 +186,16 @@ type Software struct {
 	OS          string `json:"os,omitempty"`
 	// CPU information of host
 	Arch        string `json:"arch,omitempty"`
+	// Baetyl process work directory
+	PWD         string `json:"pwd,omitempty"`
 	// Baetyl running mode of application services
-    Mode        string `json:"mode,omitempty"`
-    // Baetyl work directory
-	PWD string `json:"pwd,omitempty"`
-    // Baetyl compiled Golang version
+	Mode        string `json:"mode,omitempty"`
+	// Baetyl compiled Golang version
 	GoVersion   string `json:"go_version,omitempty"`
 	// Baetyl release version
 	BinVersion  string `json:"bin_version,omitempty"`
+	// Baetyl git revision
+	GitRevision string `json:"git_revision,omitempty"`
 	// Baetyl loaded application configuration version
 	ConfVersion string `json:"conf_version,omitempty"`
 }

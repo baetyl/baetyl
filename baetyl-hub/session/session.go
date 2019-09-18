@@ -6,10 +6,10 @@ import (
 
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/256dpi/gomqtt/transport"
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/baetyl-hub/auth"
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/router"
+	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/utils"
 )
 
