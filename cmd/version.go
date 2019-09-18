@@ -26,5 +26,5 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	fmt.Printf("Version:      %s\nGit revision: %s\nGO version:   %s\n\n", Version, Revision, runtime.Version())
+	fmt.Printf("Version:      %s\nGit revision: %s\nGo version:   %s\n\n", Version, Revision, runtime.Version())
 }
