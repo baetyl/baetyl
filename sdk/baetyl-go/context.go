@@ -96,6 +96,8 @@ const (
 	PreviousMasterConfDir = "etc/openedge"
 	// PreviousMasterConfFile previous master config file
 	PreviousMasterConfFile = "etc/openedge/openedge.yml"
+	// DefaultBinBackupFile the backup file path of master binary
+	PreviousBinBackupFile = "bin/openedge.old"
 )
 
 // Context of service

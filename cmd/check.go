@@ -35,7 +35,13 @@ func init() {
 }
 
 func check(cmd *cobra.Command, args []string) {
-	_, err := checkInternal()
+	// backward compatibility
+	err := addSymlinkCompatible()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	_, err = checkInternal()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -82,4 +88,24 @@ func checkInternal() (*master.Config, error) {
 		return cfg, fmt.Errorf("config invalid: %s", err.Error())
 	}
 	return cfg, nil
+}
+
+func addSymlinkCompatible() error {
+	if utils.PathExists(baetyl.PreviousMasterConfDir) {
+		err := utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfDir), baetyl.DefaultMasterConfDir)
+		if err != nil {
+			return err
+		}
+		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfFile), baetyl.DefaultMasterConfFile)
+		if err != nil {
+			return err
+		}
+	}
+	if utils.PathExists(baetyl.PreviousDBDir) {
+		err := utils.CreateSymlink(path.Base(baetyl.PreviousDBDir), baetyl.DefaultDBDir)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
