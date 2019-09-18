@@ -184,14 +184,16 @@ type Software struct {
     OS          string `json:"os,omitempty"`
     // 宿主机 CPU 型号
     Arch        string `json:"arch,omitempty"`
-    // Baetyl 服务运行模式
-    Mode        string `json:"mode,omitempty"`
     // Baetyl 工作路径
 	PWD string `json:"pwd,omitempty"`
+    // Baetyl 服务运行模式
+    Mode        string `json:"mode,omitempty"`
     // Baetyl 编译的 Golang 版本
     GoVersion   string `json:"go_version,omitempty"`
     // Baetyl 发布版本
     BinVersion  string `json:"bin_version,omitempty"`
+    // Baetyl git 提交版本
+	GitRevision string `json:"git_revision,omitempty"`
     // Baetyl 加载的应用配置版本
     ConfVersion string `json:"conf_version,omitempty"`
 }

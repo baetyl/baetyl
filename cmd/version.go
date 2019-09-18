@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 
 	"github.com/spf13/cobra"
@@ -10,9 +9,8 @@ import (
 
 // Compile parameter
 var (
-	Version   string
-	Revision  string
-	GoVersion string
+	Version  string
+	Revision string
 )
 
 // versionCmd represents the version command
@@ -28,8 +26,5 @@ func init() {
 }
 
 func version(cmd *cobra.Command, args []string) {
-	version := fmt.Sprintf("Version:      %s\n", Version)
-	version += fmt.Sprintf("Git revision: %s\n", Revision)
-	version += fmt.Sprintf("GO version:   %s\n", runtime.Version())
-	log.Printf("\n%s", version)
+	fmt.Printf("Version:      %s\nGit revision: %s\nGO version:   %s\n\n", Version, Revision, runtime.Version())
 }

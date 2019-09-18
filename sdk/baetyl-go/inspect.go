@@ -36,6 +36,8 @@ type Software struct {
 	GoVersion string `json:"go_version,omitempty"`
 	// Baetyl release version
 	BinVersion string `json:"bin_version,omitempty"`
+	// Baetyl git revision
+	GitRevision string `json:"git_revision,omitempty"`
 	// Baetyl loaded application configuration version
 	ConfVersion string `json:"conf_version,omitempty"`
 }
