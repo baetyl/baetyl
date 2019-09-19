@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// TODO: to improve or remove
 type s struct {
 	kvs map[string]string
 	sync.RWMutex

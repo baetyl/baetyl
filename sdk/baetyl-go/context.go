@@ -45,6 +45,8 @@ const CheckOK = "OK!"
 
 // Env keys
 const (
+	// deprecated
+	EnvHostID                    = "OPENEDGE_HOST_ID"
 	EnvHostOSKey                 = "OPENEDGE_HOST_OS"
 	EnvMasterAPIKey              = "OPENEDGE_MASTER_API"
 	EnvMasterAPIVersionKey       = "OPENEDGE_MASTER_API_VERSION"
@@ -55,8 +57,17 @@ const (
 	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
 	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
 
-	EnvHostID           = "OPENEDGE_HOST_ID"
-	EnvMasterHostSocket = "OPENEDGE_MASTER_HOST_SOCKET"
+	// new envs
+	EnvKeyHostID                 = "BAETYL_HOST_ID"
+	EnvKeyHostOS                 = "BAETYL_HOST_OS"
+	EnvKeyMasterAPISocket        = "BAETYL_MASTER_API_SOCKET"
+	EnvKeyMasterAPIAddress       = "BAETYL_MASTER_API_ADDRESS"
+	EnvKeyMasterAPIVersion       = "BAETYL_MASTER_API_VERSION"
+	EnvKeyServiceMode            = "BAETYL_SERVICE_MODE"
+	EnvKeyServiceName            = "BAETYL_SERVICE_NAME"
+	EnvKeyServiceToken           = "BAETYL_SERVICE_TOKEN"
+	EnvKeyServiceInstanceName    = "BAETYL_SERVICE_INSTANCE_NAME"
+	EnvKeyServiceInstanceAddress = "BAETYL_SERVICE_INSTANCE_ADDRESS"
 )
 
 // Path keys
@@ -145,9 +156,15 @@ type ctx struct {
 
 func newContext() (*ctx, error) {
 	var cfg ServiceConfig
-	sn := os.Getenv(EnvServiceNameKey)
-	in := os.Getenv(EnvServiceInstanceNameKey)
-	md := os.Getenv(EnvRunningModeKey)
+	md := os.Getenv(EnvKeyServiceMode)
+	sn := os.Getenv(EnvKeyServiceName)
+	in := os.Getenv(EnvKeyServiceInstanceName)
+	if md == "" {
+		md = os.Getenv(EnvRunningModeKey)
+		sn = os.Getenv(EnvServiceNameKey)
+		in = os.Getenv(EnvServiceInstanceNameKey)
+	}
+
 	err := utils.LoadYAML(DefaultConfFile, &cfg)
 	if err != nil && !os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "[%s][%s] failed to load config: %s\n", sn, in, err.Error())

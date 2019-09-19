@@ -152,7 +152,7 @@ func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume) error {
 			return err
 		}
 	}
-	sock := utils.GetEnv(baetyl.EnvMasterHostSocket)
+	sock := utils.GetEnv(baetyl.EnvKeyMasterAPISocket)
 	if sock != "" {
 		return mount(sock, path.Join(spwd, baetyl.DefaultSockFile))
 	}
