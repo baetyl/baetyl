@@ -11,8 +11,6 @@ import (
 	"github.com/baetyl/baetyl/protocol/mqtt"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
-	"github.com/elastic/beats/filebeat/beater"
-	"github.com/elastic/beats/libbeat/beat"
 )
 
 // agent agent module
@@ -30,10 +28,8 @@ type agent struct {
 	http    *http.Client
 	// clean
 	cleaner *cleaner
-	//filebeat conf
-	beat *beat.Beat
-	//filebeat
-	beater beat.Beater
+	// filebeat
+	filebeat *filebeat
 }
 
 func main() {
@@ -76,25 +72,20 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	if err != nil {
 		return nil, err
 	}
-	beat, err := newFilebeat()
-	if err != nil {
-		return nil, err
-	}
-	beater, err := beater.New(beat, beat.BeatConfig)
+	filebeat, err := newFilebeat()
 	if err != nil {
 		return nil, err
 	}
 	return &agent{
-		cfg:     cfg,
-		ctx:     ctx,
-		http:    cli,
-		events:  make(chan *Event, 1),
-		certSN:  sn,
-		certKey: key,
-		mqtt:    mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
-		cleaner: newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
-		beat:    beat,
-		beater:  beater,
+		cfg:      cfg,
+		ctx:      ctx,
+		http:     cli,
+		events:   make(chan *Event, 1),
+		certSN:   sn,
+		certKey:  key,
+		mqtt:     mqtt.NewDispatcher(cfg.Remote.MQTT, ctx.Log()),
+		cleaner:  newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
+		filebeat: filebeat,
 	}, nil
 }
 
@@ -103,7 +94,7 @@ func (a *agent) start(ctx baetyl.Context) error {
 	if err != nil {
 		return err
 	}
-	return a.tomb.Go(a.reporting, a.processing, a.filebeting)
+	return a.tomb.Go(a.reporting, a.processing, a.filebeating)
 }
 
 func (a *agent) clean(version string) {
@@ -115,7 +106,7 @@ func (a *agent) dying() <-chan struct{} {
 }
 
 func (a *agent) close() {
-	a.beater.Stop()
+	a.filebeat.beater.Stop()
 	a.tomb.Kill(nil)
 	a.tomb.Wait()
 	a.mqtt.Close()

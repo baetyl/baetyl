@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/elastic/beats/filebeat/beater"
 	"github.com/elastic/beats/libbeat/beat"
+
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/elastic/beats/libbeat/cfgfile"
 	"github.com/elastic/beats/libbeat/cmd/instance"
 	"github.com/elastic/beats/libbeat/common"
@@ -21,29 +23,50 @@ const (
 	FILEBEATNAME = "filebeat"
 )
 
-func newFilebeat() (*beat.Beat, error) {
+type filebeat struct {
+	//filebeat conf
+	beat *beat.Beat
+	//filebeat
+	beater beat.Beater
+}
+
+func newFilebeat() (*filebeat, error) {
+	beat, err := newBeat()
+	if err != nil {
+		return nil, err
+	}
+	beater, err := beater.New(beat, beat.BeatConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &filebeat{
+		beat:   beat,
+		beater: beater,
+	}, nil
+}
+
+func newBeat() (*beat.Beat, error) {
 	b, err := instance.NewBeat(FILEBEATNAME, FILEBEATNAME, version.GetDefaultVersion())
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("failed to creates a new beat instance: %v", err)
 	}
 
-	cfg, err := cfgfile.Load(baetyl.DefaultFilebeatConfFile)
-	b.RawConfig = cfg
-	err = cfg.Unpack(&b.Config)
+	b.RawConfig, err = cfgfile.Load(baetyl.DefaultFilebeatConfFile)
+	err = b.RawConfig.Unpack(&b.Config)
 	if err != nil {
-		return nil, fmt.Errorf("error loading config file: %v", err)
+		return nil, fmt.Errorf("failed to loading config file: %v", err)
 	}
 
 	b.Beat.Config = &b.Config.BeatConfig
 
 	err = paths.InitPaths(&b.Config.Path)
 	if err != nil {
-		return nil, fmt.Errorf("error setting default paths: %v", err)
+		return nil, fmt.Errorf("failed to setting default paths: %v", err)
 	}
 
 	var Logging *common.Config
 	if err := configure.Logging(b.Beat.Info.Beat, Logging); err != nil {
-		return nil, fmt.Errorf("error initializing logging: %v", err)
+		return nil, fmt.Errorf("failed to initializing logging: %v", err)
 	}
 
 	logp.Info(paths.Paths.String())
@@ -53,20 +76,19 @@ func newFilebeat() (*beat.Beat, error) {
 		return nil, err
 	}
 
-	pipeline, err := pipeline.Load(b.Beat.Info, nil, b.Config.Pipeline, b.Config.Output)
+	b.Beat.Publisher, err = pipeline.Load(b.Beat.Info, nil, b.Config.Pipeline, b.Config.Output)
 	if err != nil {
-		return nil, fmt.Errorf("error initializing publisher: %v", err)
+		return nil, fmt.Errorf("failed to initializing publisher: %v", err)
 	}
 
-	b.Beat.Publisher = pipeline
 	return &b.Beat, nil
 }
 
-func (a *agent) filebeting() error {
-	a.ctx.Log().Infof("%s start running.", a.beat.Info.Beat)
-	err := a.beater.Run(a.beat)
+func (a *agent) filebeating() error {
+	a.ctx.Log().Infof("%s start running, version is %s.", a.filebeat.beat.Info.Beat, a.filebeat.beat.Info.Version)
+	err := a.filebeat.beater.Run(a.filebeat.beat)
 	if err != nil {
-		a.ctx.Log().Errorf("failed to start filebeat", err)
+		a.ctx.Log().Errorf("failed to start filebeat: %v", err)
 	}
 	return nil
 }
