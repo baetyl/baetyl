@@ -162,12 +162,6 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 		return fmt.Errorf("failed to check master: %s", err.Error())
 	}
 
-	// backward compatibility
-	err = addSymlink()
-	if err != nil {
-		return fmt.Errorf("failed to add symlink: %s", err.Error())
-	}
-
 	log.WithField(baetyl.OTAKeyStep, baetyl.OTAUpdating).Infof("master is updating")
 	if err = apply(target, backup); err != nil {
 		log.WithField(baetyl.OTAKeyStep, baetyl.OTARollingBack).WithError(err).Errorf("failed to apply master")
@@ -186,29 +180,42 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 
 // RollBackMST rolls back master
 func RollBackMST() error {
-	if !utils.FileExists(baetyl.DefaultBinBackupFile) {
-		return nil
+	// backward compatibility
+	backup := baetyl.DefaultBinBackupFile
+	if !utils.FileExists(backup) {
+		if !utils.FileExists(baetyl.PreviousBinBackupFile) {
+			return nil
+		} else {
+			backup = baetyl.PreviousBinBackupFile
+		}
 	}
-	err := apply(baetyl.DefaultBinBackupFile, "")
+	err := apply(backup, "")
 	if err != nil {
 		logger.WithError(err).Errorf("failed to apply backup master")
 	}
-	err = os.RemoveAll(baetyl.DefaultBinBackupFile)
+	err = os.RemoveAll(backup)
 	if err != nil {
-		logger.WithError(err).Errorf("failed to remove backup file (%s)", baetyl.DefaultBinBackupFile)
+		logger.WithError(err).Errorf("failed to remove backup file (%s)", backup)
 	}
 	return nil
 }
 
 // CommitMST commits master
 func CommitMST() bool {
-	if !utils.FileExists(baetyl.DefaultBinBackupFile) {
+	var backup string
+	if utils.PathExists(baetyl.PreviousBinBackupFile) {
+		backup = baetyl.PreviousBinBackupFile
+	} else {
+		backup = baetyl.DefaultBinBackupFile
+	}
+	if !utils.FileExists(backup) {
 		return false
 	}
-	err := os.RemoveAll(baetyl.DefaultBinBackupFile)
+	err := os.RemoveAll(backup)
 	if err != nil {
-		logger.WithError(err).Errorf("failed to remove backup file (%s)", baetyl.DefaultBinBackupFile)
+		logger.WithError(err).Errorf("failed to remove backup file (%s)", backup)
 	}
+
 	return true
 }
 
@@ -221,26 +228,6 @@ func apply(target, backup string) error {
 	err = update.Apply(f, update.Options{OldSavePath: backup})
 	if err != nil {
 		return fmt.Errorf("failed to apply binary: %s", err.Error())
-	}
-	return nil
-}
-
-func addSymlink() error {
-	if utils.PathExists(baetyl.PreviousMasterConfDir) {
-		err := utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfDir), baetyl.DefaultMasterConfDir)
-		if err != nil {
-			return err
-		}
-		err = utils.CreateSymlink(path.Base(baetyl.PreviousMasterConfFile), baetyl.DefaultMasterConfFile)
-		if err != nil {
-			return err
-		}
-	}
-	if utils.PathExists(baetyl.PreviousDBDir) {
-		err := utils.CreateSymlink(path.Base(baetyl.PreviousDBDir), baetyl.DefaultDBDir)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
