@@ -55,14 +55,14 @@ const getLogger = config => {
             file: {
                 type: 'file',
                 filename: config.logger.path,
-                layout: {type: 'baetyl'},
+                layout: { type: 'baetyl' },
                 backups: backupCount,
                 compress: true,
                 encoding: 'utf-8'
             }
         },
         categories: {
-            default: {appenders: ['file'], level}
+            default: { appenders: ['file'], level }
         }
     });
     const logger = log4js.getLogger(config.name);
@@ -73,12 +73,12 @@ const getFunctions = functions => {
 
     functionsHandle = {};
 
-    functions.forEach(function(ele){
-        
-        if (ele.name == undefined || ele.handler == undefined || ele.codedir == undefined){
+    functions.forEach(function (ele) {
+
+        if (ele.name == undefined || ele.handler == undefined || ele.codedir == undefined) {
             throw new Error('config invalid, missing function name, handler or codedir');
         }
-        
+
         const codedir = ele.codedir;
         const moduleHandler = ele.handler.split('.');
         const handlerName = moduleHandler[1];
@@ -86,7 +86,7 @@ const getFunctions = functions => {
         const functionHandle = moduleName[handlerName];
         functionsHandle[ele.name] = functionHandle;
     });
-    
+
     return functionsHandle;
 };
 
@@ -104,17 +104,17 @@ const getGrpcServer = config => {
     });
 
     let credentials = undefined;
-    
-    if (hasAttr(config.server, 'ca') 
-        && hasAttr(config.server, 'key') 
+
+    if (hasAttr(config.server, 'ca')
+        && hasAttr(config.server, 'key')
         && hasAttr(config.server, 'cert')) {
-            
+
         credentials = grpc.ServerCredentials.createSsl(
             fs.readFileSync(config['server']['ca']), [{
-            cert_chain: fs.readFileSync(config['server']['cert']),
-            private_key: fs.readFileSync(config['server']['key'])
-        }], true);
-    }else {
+                cert_chain: fs.readFileSync(config['server']['cert']),
+                private_key: fs.readFileSync(config['server']['key'])
+            }], true);
+    } else {
         credentials = grpc.ServerCredentials.createInsecure();
     }
 
@@ -124,21 +124,28 @@ const getGrpcServer = config => {
 
 class NodeRuntimeModule {
     Load(confpath) {
-        this.config = YAML.parse(fs.readFileSync(confpath).toString()); 
+        this.config = YAML.parse(fs.readFileSync(confpath).toString());
 
-        if(hasAttr(process.env, 'OPENEDGE_SERVICE_INSTANCE_NAME')){
+        if (hasAttr(process.env, 'BAETYL_SERVICE_INSTANCE_NAME')) {
+            this.config['name'] = process.env['BAETYL_SERVICE_INSTANCE_NAME']
+        } else if (hasAttr(process.env, 'OPENEDGE_SERVICE_INSTANCE_NAME')) {
             this.config['name'] = process.env['OPENEDGE_SERVICE_INSTANCE_NAME']
-        }else if(hasAttr(process.env, 'OPENEDGE_SERVICE_NAME')){
+        } else if (hasAttr(process.env, 'OPENEDGE_SERVICE_NAME')) {
             this.config['name'] = process.env['OPENEDGE_SERVICE_NAME']
         }
 
-        if(hasAttr(process.env, 'OPENEDGE_SERVICE_INSTANCE_ADDRESS')){
-            if(!hasAttr(this.config, 'server')){
+        if (hasAttr(process.env, 'BAETYL_SERVICE_INSTANCE_ADDRESS')) {
+            if (!hasAttr(this.config, 'server')) {
+                this.config['server'] = {}
+            }
+            this.config['server']['address'] = process.env['BAETYL_SERVICE_INSTANCE_ADDRESS'];
+        } else if (hasAttr(process.env, 'OPENEDGE_SERVICE_INSTANCE_ADDRESS')) {
+            if (!hasAttr(this.config, 'server')) {
                 this.config['server'] = {}
             }
             this.config['server']['address'] = process.env['OPENEDGE_SERVICE_INSTANCE_ADDRESS'];
-        }else if(hasAttr(process.env, 'OPENEDGE_SERVICE_NAME')){
-            if(!hasAttr(this.config, 'server')){
+        } else if (hasAttr(process.env, 'OPENEDGE_SERVICE_NAME')) {
+            if (!hasAttr(this.config, 'server')) {
                 this.config['server'] = {}
             }
             this.config['server']['address'] = process.env['OPENEDGE_SERVICE_NAME'];
@@ -156,11 +163,11 @@ class NodeRuntimeModule {
         if (!hasAttr(this.config, 'functions')) {
             throw new Error('Module config invalid, missing functions');
         }
-        
+
         this.logger = getLogger(this.config);
         const functionsHandle = getFunctions(this.config['functions']);
         this.server = getGrpcServer(this.config);
-        
+
         this.server.addService(services.FunctionService, {
             call: (call, callback) => (this.Call(functionsHandle, call, callback))
         });
@@ -177,7 +184,7 @@ class NodeRuntimeModule {
                 this.logger.info('service closed');
                 callback();
             }, timeout);
-        }else{
+        } else {
             this.server.forceShutdown();
             this.logger.info('service closed');
         }
@@ -205,7 +212,7 @@ class NodeRuntimeModule {
             }
         }
 
-        if (functionsHandle[ctx.functionName] == undefined){
+        if (functionsHandle[ctx.functionName] == undefined) {
             return callback(new Error(util.format(errFormat, "function not found")));
         }
 
@@ -219,9 +226,9 @@ class NodeRuntimeModule {
                     return callback(new Error(util.format(errFormat, err)));
                 }
 
-                if (respMsg == "" || respMsg == undefined || respMsg == null){
+                if (respMsg == "" || respMsg == undefined || respMsg == null) {
                     call.request.setPayload("");
-                }else if (Buffer.isBuffer(respMsg)) {
+                } else if (Buffer.isBuffer(respMsg)) {
                     call.request.setPayload(respMsg);
                 }
                 else {

@@ -67,8 +67,8 @@ func Test_FunctionInstance(t *testing.T) {
 			address := fmt.Sprintf("%s:%d", hostName, port)
 
 			env := os.Environ()
-			env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_ADDRESS", address))
-			env = append(env, fmt.Sprintf("%s=%s", "OPENEDGE_SERVICE_INSTANCE_NAME", instanceName))
+			env = append(env, fmt.Sprintf("%s=%s", "BAETYL_SERVICE_INSTANCE_ADDRESS", address))
+			env = append(env, fmt.Sprintf("%s=%s", "BAETYL_SERVICE_INSTANCE_NAME", instanceName))
 			filePath := path.Join(tt.filePath...)
 
 			p, err := os.StartProcess(
