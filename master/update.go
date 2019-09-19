@@ -180,15 +180,14 @@ func (m *Master) UpdateMST(trace, target, backup string) (err error) {
 
 // RollBackMST rolls back master
 func RollBackMST() error {
-	var backup string
-	if !utils.FileExists(baetyl.DefaultBinBackupFile) {
+	// backward compatibility
+	backup := baetyl.DefaultBinBackupFile
+	if !utils.FileExists(backup) {
 		if !utils.FileExists(baetyl.PreviousBinBackupFile) {
 			return nil
 		} else {
 			backup = baetyl.PreviousBinBackupFile
 		}
-	} else {
-		backup = baetyl.DefaultBinBackupFile
 	}
 	err := apply(backup, "")
 	if err != nil {
