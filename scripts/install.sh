@@ -5,9 +5,8 @@ set -e
 PACKAGE_NAME=baetyl
 URL_PACKAGE=dl.baetyl.io
 URL_KEY=http://${URL_PACKAGE}/key.public
+LSB_DIST=$(. /etc/os-release && echo "$ID")
 PRE_INSTALL_PKGS=""
-SYSTEM_NAME=$(lsb_release -is | tr 'A-Z' 'a-z')
-DISTRO=$(lsb_release -cs)
 
 print_status() {
     echo
@@ -15,19 +14,11 @@ print_status() {
     echo
 }
 
-if [ ! -x /usr/bin/lsb_release ]; then
-    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
-fi
-
-if [ ! -x /usr/bin/curl ]; then
-    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
-fi
-
 if [ ! -x /usr/bin/gpg ]; then
     PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} gnupg"
 fi
 
-if [ $SYSTEM_NAME = centos ]; then
+if [ $LSB_DIST = centos ]; then
 
     if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
         yum install -y ${PRE_INSTALL_PKGS} >/dev/null 2>&1
@@ -46,6 +37,14 @@ if [ $SYSTEM_NAME = centos ]; then
     systemctl enable $PACKAGE_NAME
 else
 
+    if [ ! -x /usr/bin/lsb_release ]; then
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
+    fi
+
+    if [ ! -x /usr/bin/curl ]; then
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
+    fi
+
     if [ ! -e /usr/lib/apt/methods/https ]; then
         PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} apt-transport-https"
     fi
@@ -55,10 +54,10 @@ else
         apt-get install -y ${PRE_INSTALL_PKGS} >/dev/null 2>&1
     fi
 
-    echo "deb http://${URL_PACKAGE}/linux/${SYSTEM_NAME} $DISTRO main" |
-        sudo tee /etc/apt/sources.list.d/${PACKAGE_NAME}.list
+    echo "deb http://${URL_PACKAGE}/linux/$(lsb_release -is | tr 'A-Z' 'a-z') $(lsb_release -cs) main" |
+        tee /etc/apt/sources.list.d/${PACKAGE_NAME}.list
 
-    curl -fsSL $URL_KEY | sudo apt-key add -
+    curl -fsSL $URL_KEY | apt-key add -
 
     print_status "Added sign key!"
 
@@ -69,4 +68,3 @@ fi
 print_status "Install $PACKAGE_NAME Successfully!"
 
 exit 0
-
