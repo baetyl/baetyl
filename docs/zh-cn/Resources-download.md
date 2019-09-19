@@ -24,9 +24,9 @@
 
 ### 下载 MQTT 客户端代码示例
 
-C 代码示例：下载 [MQTT-C-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-c.tar.gz)
+C 代码示例：下载 [MQTT-C-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-c-example.tar.gz)
 
-Python 代码示例：下载 [MQTT-Python-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-python.tar.gz)
+Python 代码示例：下载 [MQTT-Python-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-python-example.tar.gz)
 
 ### 下载 MQTT.fx 客户端
 

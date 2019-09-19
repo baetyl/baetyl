@@ -24,9 +24,9 @@ Golang download link of BOS([Baidu-Object-Storage](https://cloud.baidu.com/produ
 
 ### MQTT client sample
 
-C sample of MQTT client：[C-sample-of-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-c.tar.gz)
+C sample of MQTT client：[C-sample-of-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-c-example.tar.gz)
 
-Python sample of MQTT client：[Python-sample-of-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-python.tar.gz)
+Python sample of MQTT client：[Python-sample-of-MQTT-client](https://baetyl.cdn.bcebos.com/mqtt-example/MQTT-python-example.tar.gz)
 
 ### MQTT.fx download
 

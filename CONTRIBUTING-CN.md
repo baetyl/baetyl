@@ -1,6 +1,6 @@
 # 贡献
 
-欢迎来到 Baetyl 百度开源边缘计算项目，如果您想要向 Baetyl 贡献代码或文档，请遵循以下流程。
+欢迎来到 Baetyl 开源边缘计算项目，如果您想要向 Baetyl 贡献代码或文档，请遵循以下流程。
 
 ## 贡献流程
 
@@ -54,3 +54,7 @@ Baetyl 使用通用的 [Git 分支构建模型](http://nvie.com/posts/a-successf
 - 所有向 Baetyl 官方仓库提交的代码，**必须至少** 有 **1** 个代码评审员评审通过后，才可以将提交代码合入 Baetyl 官方代码仓库
 
 **注意**：以上所有代码提交步骤要求及规范，同样适用文档贡献。
+- [英文文档主页](https://baetyl.readthedocs.io/en/latest)
+- [中文文档主页](https://baetyl.readthedocs.io/zh_CN/latest)
+- [英文文档仓库](https://github.com/baetyl/docs.baetyl.io)
+- [中文文档仓库](https://github.com/baetyl/cn.docs.baetyl.io)
