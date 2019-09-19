@@ -31,6 +31,9 @@ func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
 		}
 		token := uuid.Generate().String()
 		m.accounts.Set(name, token)
+		s.Environment.Envs[baetyl.EnvKeyServiceName] = name
+		s.Environment.Envs[baetyl.EnvKeyServiceToken] = token
+		// TODO: remove, backward compatibility
 		s.Environment.Envs[baetyl.EnvServiceNameKey] = name
 		s.Environment.Envs[baetyl.EnvServiceTokenKey] = token
 		nxt, err := m.engine.Run(name, s, cur.Volumes)

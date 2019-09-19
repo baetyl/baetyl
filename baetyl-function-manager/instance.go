@@ -37,7 +37,8 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 	port := "50051"
 	serverHost := "0.0.0.0"
 	clientHost := name
-	if os.Getenv(baetyl.EnvRunningModeKey) == "native" {
+	if os.Getenv(baetyl.EnvKeyServiceMode) == "native" ||
+		/*backward compatibility*/ os.Getenv(baetyl.EnvRunningModeKey) == "native" {
 		var err error
 		port, err = p.ctx.GetAvailablePort()
 		if err != nil {
@@ -50,7 +51,8 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 	address := fmt.Sprintf("%s:%s", serverHost, port)
 	dc := map[string]string{
 		baetyl.EnvServiceAddressKey:         address, // deprecated, for v0.1.2
-		baetyl.EnvServiceInstanceAddressKey: address,
+		baetyl.EnvServiceInstanceAddressKey: address, // deprecated, for v0.1.3~5
+		baetyl.EnvKeyServiceInstanceAddress: address,
 	}
 	err := p.ctx.StartInstance(p.cfg.Service, name, dc)
 	if err != nil {

@@ -37,27 +37,36 @@ func (c *Config) Validate() error {
 		if err != nil {
 			return err
 		}
-		utils.SetEnv(baetyl.EnvMasterHostSocket, sock)
-		if c.Mode == "native" {
-			utils.SetEnv(baetyl.EnvMasterAPIKey, "unix://"+baetyl.DefaultSockFile)
-		} else {
-			utils.SetEnv(baetyl.EnvMasterAPIKey, "unix:///"+baetyl.DefaultSockFile)
+		utils.SetEnv(baetyl.EnvKeyMasterAPISocket, sock)
+		unixPrefix := "unix://"
+		if c.Mode != "native" {
+			unixPrefix += "/"
 		}
+		utils.SetEnv(baetyl.EnvKeyMasterAPIAddress, unixPrefix+baetyl.DefaultSockFile)
+		// TODO: remove, backward compatibility
+		utils.SetEnv(baetyl.EnvMasterAPIKey, unixPrefix+baetyl.DefaultSockFile)
 	} else {
-		if c.Mode == "native" {
-			utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
-		} else {
+		if c.Mode != "native" {
 			parts := strings.SplitN(url.Host, ":", 2)
 			addr = fmt.Sprintf("tcp://host.docker.internal:%s", parts[1])
-			utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
 		}
+		utils.SetEnv(baetyl.EnvKeyMasterAPIAddress, addr)
+		// TODO: remove, backward compatibility
+		utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
 	}
+
+	utils.SetEnv(baetyl.EnvKeyMasterAPIVersion, "v1")
+	utils.SetEnv(baetyl.EnvKeyHostOS, runtime.GOOS)
+	utils.SetEnv(baetyl.EnvKeyServiceMode, c.Mode)
+	// TODO: remove, backward compatibility
 	utils.SetEnv(baetyl.EnvMasterAPIVersionKey, "v1")
 	utils.SetEnv(baetyl.EnvHostOSKey, runtime.GOOS)
 	utils.SetEnv(baetyl.EnvRunningModeKey, c.Mode)
 
 	hi := utils.GetHostInfo()
 	if hi.HostID != "" {
+		utils.SetEnv(baetyl.EnvKeyHostID, hi.HostID)
+		// TODO: remove, backward compatibility
 		utils.SetEnv(baetyl.EnvHostID, hi.HostID)
 	}
 	return nil
