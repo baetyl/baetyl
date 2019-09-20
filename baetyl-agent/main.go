@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -30,6 +31,12 @@ type agent struct {
 }
 
 func main() {
+	// backward compatibility
+	err := addSymlinkCompatible()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 	baetyl.Run(func(ctx baetyl.Context) error {
 		a, err := newAgent(ctx)
 		if err != nil {
@@ -120,5 +127,35 @@ func defaults(c *Config) error {
 	c.Remote.Desire.Topic = fmt.Sprintf(c.Remote.Desire.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.Report.Topic = fmt.Sprintf(c.Remote.Report.Topic, c.Remote.MQTT.ClientID)
 	c.Remote.MQTT.Subscriptions = append(c.Remote.MQTT.Subscriptions, mqtt.TopicInfo{QOS: 1, Topic: c.Remote.Desire.Topic})
+	return nil
+}
+
+func addSymlinkCompatible() error {
+	list := map[string]string{
+		// openedge -> baetyl
+		baetyl.DefaultMasterConfDir: baetyl.PreviousMasterConfDir,
+		baetyl.DefaultDBDir:         baetyl.PreviousDBDir,
+		baetyl.DefaultLogDir:        baetyl.PreviousLogDir,
+		// baetyl -> openedge
+		baetyl.PreviousMasterConfDir: baetyl.DefaultMasterConfDir,
+		baetyl.PreviousDBDir:         baetyl.DefaultDBDir,
+		baetyl.PreviousLogDir:        baetyl.DefaultLogDir,
+	}
+	for k, v := range list {
+		err := addSymlink(k, v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func addSymlink(src, desc string) error {
+	if utils.PathExists(src) {
+		err := utils.CreateSymlink(path.Base(src), desc)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
