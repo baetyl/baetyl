@@ -35,7 +35,6 @@ func main() {
 	err := addSymlinkCompatible()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
 	}
 	baetyl.Run(func(ctx baetyl.Context) error {
 		a, err := newAgent(ctx)
