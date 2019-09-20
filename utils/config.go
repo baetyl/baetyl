@@ -28,6 +28,7 @@ func LoadYAML(path string, out interface{}) error {
 	return UnmarshalYAML(res, out)
 }
 
+// ParseEnv pasre env
 func ParseEnv(data []byte) ([]byte, error) {
 	text := string(data)
 	envs := os.Environ()

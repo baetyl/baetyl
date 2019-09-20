@@ -144,7 +144,7 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string
 		volumes[m.Target] = struct{}{}
 	}
 
-	sock := utils.GetEnv(baetyl.EnvMasterHostSocket)
+	sock := utils.GetEnv(baetyl.EnvKeyMasterAPISocket)
 	if sock != "" {
 		binds = append(binds, fmt.Sprintf(fmtVolumeRO, sock, path.Join("/", baetyl.DefaultSockFile)))
 	}

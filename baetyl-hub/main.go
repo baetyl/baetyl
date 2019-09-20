@@ -11,11 +11,6 @@ import (
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
-// "net/http"
-// _ "net/http/pprof"
-// "path/filepath"
-// "runtime/trace"
-
 type mo struct {
 	ctx      baetyl.Context
 	cfg      config.Config

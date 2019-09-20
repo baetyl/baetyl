@@ -1,6 +1,6 @@
 # Contributing
 
-Welcome to Baetyl of Baidu Open Source Project. To contribute to Baetyl, please follow the process below.
+Welcome to Baetyl Open Source Project. To contribute to Baetyl, please follow the process below.
 
 We sincerely appreciate your contribution. This document explains our workflow and work style.
 
@@ -48,3 +48,9 @@ Baetyl use this [Git branching model](https://nvie.com/posts/a-successful-git-br
 - Must run command `make test` before push changes(unit test should be contained), and make sure all unit test and data race test passed
 - Only the passed(unit test and data race test) code can be allowed to submit to Baetyl official repository
 - At least one reviewer approved code can be merged into Baetyl official repository
+
+**Note**: The document's contribution rules are the same as the rules above.
+- [English document homepage](https://baetyl.readthedocs.io/en/latest)
+- [Chinese document homepage](https://baetyl.readthedocs.io/zh_CN/latest)
+- [English Document Project](https://github.com/baetyl/docs.baetyl.io)
+- [Chinese Document Project](https://github.com/baetyl/cn.docs.baetyl.io)
