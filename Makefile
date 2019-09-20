@@ -174,7 +174,7 @@ release-manifest-latest:
 	mkdir tmp
 	for target in $(DEPLOY_TARGET) ; do \
 		sed "s?__IMAGE_PREFIX__/?$(IMAGE_PREFIX)?g; s?__TAG__?latest?g; s?__VERSION__?$(VERSION)?g; s?__TARGET__?baetyl-$$target?g;" manifest.yml.template > tmp/manifest-$$target-latest.yml;\
-		./bin/manifest-tool-linux-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-$(VERSION).yml;\
+		./bin/manifest-tool-linux-amd64 --insecure --username=$(USERNAME) --password=$(PASSWORD) push from-spec tmp/manifest-$$target-latest.yml;\
 	done
 	rm -rf tmp
 
