@@ -35,13 +35,7 @@ func init() {
 }
 
 func check(cmd *cobra.Command, args []string) {
-	// backward compatibility
-	err := addSymlinkCompatible()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	_, err = checkInternal()
+	_, err := checkInternal()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -50,6 +44,12 @@ func check(cmd *cobra.Command, args []string) {
 }
 
 func checkInternal() (*master.Config, error) {
+	// backward compatibility
+	err := addSymlinkCompatible()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
 	cfg := &master.Config{File: defaultConfFile}
 	utils.UnmarshalYAML(nil, cfg) // default config
 	exe, err := os.Executable()
