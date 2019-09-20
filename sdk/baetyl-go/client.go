@@ -17,16 +17,26 @@ type Client struct {
 
 // NewEnvClient creates a new client by env
 func NewEnvClient() (*Client, error) {
-	addr := os.Getenv(EnvMasterAPIKey)
+	addr := os.Getenv(EnvKeyMasterAPIAddress)
+	name := os.Getenv(EnvKeyServiceName)
+	token := os.Getenv(EnvKeyServiceToken)
+	version := os.Getenv(EnvKeyMasterAPIVersion)
 	if len(addr) == 0 {
-		return nil, fmt.Errorf("Env (%s) not found", EnvMasterAPIKey)
+		// TODO: remove, backward compatibility
+		addr = os.Getenv(EnvMasterAPIKey)
+		if len(addr) == 0 {
+			return nil, fmt.Errorf("Env (%s) not found", EnvKeyMasterAPIAddress)
+		}
+		name = os.Getenv(EnvServiceNameKey)
+		token = os.Getenv(EnvServiceTokenKey)
+		version = os.Getenv(EnvMasterAPIVersionKey)
 	}
 	c := http.ClientInfo{
 		Address:  addr,
-		Username: os.Getenv(EnvServiceNameKey),
-		Password: os.Getenv(EnvServiceTokenKey),
+		Username: name,
+		Password: token,
 	}
-	return NewClient(c, os.Getenv(EnvMasterAPIVersionKey))
+	return NewClient(c, version)
 }
 
 // NewClient creates a new client

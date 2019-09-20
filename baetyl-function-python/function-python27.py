@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-#-*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 """
 grpc server for python2.7 function
 """
@@ -34,16 +34,22 @@ class mo(function_pb2_grpc.FunctionServicer):
         self.config = yaml.load(open(conf, 'r').read(), Loader=yaml.FullLoader)
 
         # overwrite config from env
-        if 'OPENEDGE_SERVICE_INSTANCE_NAME' in os.environ:
+        if 'BAETYL_SERVICE_INSTANCE_NAME' in os.environ:
+            self.config['name'] = os.environ['BAETYL_SERVICE_INSTANCE_NAME']
+        elif 'OPENEDGE_SERVICE_INSTANCE_NAME' in os.environ:
             self.config['name'] = os.environ['OPENEDGE_SERVICE_INSTANCE_NAME']
-        elif 'OPENEDGE_SERVICE_NAME' in os.environ: # deprecated
+        elif 'OPENEDGE_SERVICE_NAME' in os.environ:  # deprecated
             self.config['name'] = os.environ['OPENEDGE_SERVICE_NAME']
 
-        if 'OPENEDGE_SERVICE_INSTANCE_ADDRESS' in os.environ:
+        if 'BAETYL_SERVICE_INSTANCE_ADDRESS' in os.environ:
+            if 'server' not in self.config:
+                self.config['server'] = {}
+            self.config['server']['address'] = os.environ['BAETYL_SERVICE_INSTANCE_ADDRESS']
+        elif 'OPENEDGE_SERVICE_INSTANCE_ADDRESS' in os.environ:
             if 'server' not in self.config:
                 self.config['server'] = {}
             self.config['server']['address'] = os.environ['OPENEDGE_SERVICE_INSTANCE_ADDRESS']
-        elif 'OPENEDGE_SERVICE_ADDRESS' in os.environ: # deprecated
+        elif 'OPENEDGE_SERVICE_ADDRESS' in os.environ:  # deprecated
             if 'server' not in self.config:
                 self.config['server'] = {}
             self.config['server']['address'] = os.environ['OPENEDGE_SERVICE_ADDRESS']
@@ -134,7 +140,8 @@ def get_functions(c):
     fs = {}
     for fc in c:
         if 'name' not in fc or 'handler' not in fc or 'codedir' not in fc:
-            raise Exception('config invalid, missing function name, handler or codedir')
+            raise Exception(
+                'config invalid, missing function name, handler or codedir')
         sys.path.append(fc['codedir'])
         module_handler = fc['handler'].split('.')
         handler_name = module_handler.pop()

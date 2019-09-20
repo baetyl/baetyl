@@ -1,13 +1,14 @@
 package utils
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type testEncodeStruct struct {
@@ -75,15 +76,15 @@ modules:
 }
 
 func TestParseEnv(t *testing.T) {
-	const EnvHostIdKey = "OPENEDGE_HOST_ID"
-	hostId := "test_host_id"
-	err := os.Setenv(EnvHostIdKey, hostId)
+	const EnvHostIDKey = "BAETYL_HOST_ID"
+	hostID := "test_host_id"
+	err := os.Setenv(EnvHostIDKey, hostID)
 	assert.NoError(t, err)
 	confString := `
 id: id
 name: name
 others: others
-env: {{.OPENEDGE_HOST_ID}}
+env: {{.BAETYL_HOST_ID}}
 modules:
   - name: m1
   - name: m2
@@ -91,7 +92,7 @@ modules:
       - arg1
       - arg2
 `
-	expectedString := strings.Replace(confString, "{{.OPENEDGE_HOST_ID}}", hostId, 1)
+	expectedString := strings.Replace(confString, "{{.BAETYL_HOST_ID}}", hostID, 1)
 	res, err := ParseEnv([]byte(confString))
 	resString := string(res)
 	assert.Equal(t, expectedString, resString)
@@ -102,7 +103,7 @@ modules:
 id: id
 name: name
 others: others
-env: {{.OPENEDGE_NOT_EXIST}}
+env: {{.BAETYL_NOT_EXIST}}
 modules:
   - name: m1
   - name: m2
@@ -118,7 +119,7 @@ modules:
 id: id
 name: name
 others: others
-env: {{OPENEDGE_HOST_ID}}
+env: {{BAETYL_HOST_ID}}
 modules:
   - name: m1
   - name: m2
@@ -237,7 +238,7 @@ modules:
 id: id
 name: name
 others: others
-env: {{OPENEDGE_HOST_ID}}
+env: {{BAETYL_HOST_ID}}
 modules:
   - name: m1
   - name: m2

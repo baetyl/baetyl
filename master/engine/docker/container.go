@@ -114,7 +114,7 @@ func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 			}
 			// it is recommanded to add version info into network name to avoid duplicate name conflict
 			if !reflect.DeepEqual(t, network) {
-				return fmt.Errorf("network (%s:%s) with different properties exists", nw.ID[:12], networkName)
+				e.log.Warnf("network (%s:%s) exists with different properties", nw.ID[:12], networkName)
 			}
 			e.networks[networkName] = nw.ID
 			e.log.Debugf("network (%s:%s) exists", nw.ID[:12], networkName)
