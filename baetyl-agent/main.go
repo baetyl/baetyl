@@ -32,10 +32,7 @@ type agent struct {
 
 func main() {
 	// backward compatibility
-	err := addSymlinkCompatible()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	addSymlinkCompatible()
 	baetyl.Run(func(ctx baetyl.Context) error {
 		a, err := newAgent(ctx)
 		if err != nil {
@@ -129,7 +126,7 @@ func defaults(c *Config) error {
 	return nil
 }
 
-func addSymlinkCompatible() error {
+func addSymlinkCompatible() {
 	list := map[string]string{
 		// openedge -> baetyl
 		baetyl.DefaultMasterConfDir: baetyl.PreviousMasterConfDir,
@@ -143,10 +140,9 @@ func addSymlinkCompatible() error {
 	for k, v := range list {
 		err := addSymlink(k, v)
 		if err != nil {
-			return err
+			fmt.Fprintln(os.Stderr, err)
 		}
 	}
-	return nil
 }
 
 func addSymlink(src, desc string) error {
