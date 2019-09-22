@@ -6,6 +6,7 @@ RUN apt-get update && \
         libavcodec-dev libavformat-dev libswscale-dev \
         libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev \
         python3 && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     rm -rf /var/lib/apt/lists/*
 
 # copy OpenCV 4.1.0 libs
@@ -19,4 +20,5 @@ ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig
 ENV LD_LIBRARY_PATH /usr/local/lib
 
 COPY function-python36.py function_pb2.py function_pb2_grpc.py /bin/
+RUN chmod +x /bin/function-python36.py
 ENTRYPOINT ["function-python36.py"]
