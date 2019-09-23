@@ -1,4 +1,4 @@
-FROM hub.baidubce.com/baetyl-beta/baetyl-function-python36:0.1.5-opencv41-devel as devel
+FROM hub.baidubce.com/baetyl/baetyl-function-python36:0.1.6-opencv41-devel as devel
 
 FROM ubuntu:18.04
 RUN apt-get update && \
