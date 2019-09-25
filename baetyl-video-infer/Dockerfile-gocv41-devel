@@ -9,7 +9,7 @@ ENV GOPATH /root/go
 RUN go get -u -d gocv.io/x/gocv && \
     cd $GOPATH/src/gocv.io/x/gocv && \
     sed -i "s/sudo //g" Makefile && \
-    sed -i "s/github.com/baetyl-resources.cdn.bcebos.com/g" Makefile && \
+    sed -i "s/github.com/baetyl.cdn.bcebos.com/g" Makefile && \
     make download && \
     make build && \
     make sudo_install && \

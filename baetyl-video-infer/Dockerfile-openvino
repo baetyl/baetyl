@@ -1,4 +1,4 @@
-FROM hub.baidubce.com/baetyl-beta/baetyl-openvino:0.1.5-gocv41-devel as devel
+FROM hub.baidubce.com/baetyl-beta/baetyl-openvino:0.1.6-gocv41-devel as devel
 
 FROM ubuntu:16.04
 
