@@ -1,6 +1,6 @@
 # baetyl-video-infer
 
-Baetyl-video-infer module is the newest module of [BAETYL](https://baetyl.io) framework, which is used for capturing video frame and AI model inference. For capturing video frame, baetyl-video-infer module can support IP-network camera, USB camera and video files. And the supported DL(Deep Learning) frameworks and layers are keeping in sync with OpenCV, more detailed can be found [here](https://github.com/opencv/opencv/wiki/Deep-Learning-in-OpenCV).
+The baetyl-video-infer module is an official module of [BAETYL](https://baetyl.io), which is used for capturing video frame and AI model inference. For capturing video frame, baetyl-video-infer module can support IP-network camera, USB camera and video files. And the supported DL(Deep Learning) frameworks and layers are keeping in sync with OpenCV, more detailed can be found [here](https://github.com/opencv/opencv/wiki/Deep-Learning-in-OpenCV).
 
 In addition, baetyl-video-infer module is highly integrated with other modules of BAETYL framework empowering the edge AI and some industry scenes. Besides, baetyl-video-infer also provides accelerated processing support for AI models based on CPU and specific hardware (such as OpenCL(OpenVINO, INFERENCE_ENGINE)).
 
