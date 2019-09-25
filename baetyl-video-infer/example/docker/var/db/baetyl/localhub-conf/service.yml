@@ -9,5 +9,5 @@ principals:
       - action: 'sub'
         permit: ['#']
 logger:
-  path: var/log/baetyl/service.log
+  path: var/log/baetyl/localhub-service.log
   level: "debug"

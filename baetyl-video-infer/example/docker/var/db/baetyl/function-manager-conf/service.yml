@@ -49,5 +49,5 @@ rules:
     publish:
       topic: video/infer/mark
 logger:
-  path: var/log/baetyl/service.log
+  path: var/log/baetyl/func-service.log
   level: "debug"

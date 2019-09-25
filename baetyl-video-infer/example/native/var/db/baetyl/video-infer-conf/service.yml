@@ -4,12 +4,16 @@ hub:
   password: hahaha
   clientid: baetyl-video-infer
 video:
-  uri: "0"
+  uri: "rtsp://admin:admin@192.168.1.2:554/Streaming/channels/1/" # for IP-Camera, the format is 'rtsp://${username}:${password}@${ip_address}:${rtsp_port}/Streamming/channels/${stream_number}/'
+  # uri: "0" # for USB-Camera, besides, you need to add device-mapper to container
+  # uri: "var/db/baetyl/data/test.mp4" # for video file, you need to mount the video file to container
   limit:
     fps: 1
 infer:
   model: var/db/baetyl/model/frozen_inference_graph.pb
   config: var/db/baetyl/model/ssd_mobilenet_v1_coco_2017_11_17.pbtxt
+  # backend: openvino
+  # device: fp16
 process:
   before:
     swaprb: true
@@ -22,5 +26,5 @@ functions:
   - name: analyse
     address: 0.0.0.0:50051
 logger:
-  path: var/log/baetyl/service.log
+  path: var/log/baetyl/infer-service.log
   level: "debug"

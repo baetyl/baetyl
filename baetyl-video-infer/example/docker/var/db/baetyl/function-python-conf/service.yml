@@ -6,5 +6,5 @@ functions:
     handler: 'mark.handler'
     codedir: 'var/db/baetyl/code'
 logger:
-  path: var/log/baetyl/service.log
+  path: var/log/baetyl/python-service.log
   level: "debug"

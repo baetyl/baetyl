@@ -1,4 +1,4 @@
-FROM  hub.baidubce.com/baetyl-beta/baetyl-openvino:0.1.5-devel
+FROM  hub.baidubce.com/baetyl-beta/baetyl-openvino:0.1.6-devel
 
 ARG TEMP_DIR=/tmp/golang
 ARG GOLANG_TGZ=https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-amd64.tar.gz
