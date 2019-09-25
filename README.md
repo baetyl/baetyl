@@ -19,7 +19,7 @@ About architecture design, Baetyl takes **modularization** and **containerizatio
 
 ## Contributing
 
-If you are passionate about contributing to open source community, Baetyl will provide you with both code contributions and document contributions. More details, please see: [How to contribute code or document to Baetyl](./Contributing.md).
+If you are passionate about contributing to open source community, Baetyl will provide you with both code contributions and document contributions. More details, please see: [How to contribute code or document to Baetyl](./CONTRIBUTING.md).
 
 ## Contact us
 
