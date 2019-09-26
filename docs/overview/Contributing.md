@@ -50,7 +50,3 @@ Baetyl use this [Git branching model](https://nvie.com/posts/a-successful-git-br
 - At least one reviewer approved code can be merged into Baetyl official repository
 
 **Note**: The document's contribution rules are the same as the rules above.
-- [English document homepage](https://docs.baetyl.io/en/latest)
-- [Chinese document homepage](https://docs.baetyl.io/zh_CN/latest)
-- [English Document Project](https://github.com/baetyl/docs.baetyl.io)
-- [Chinese Document Project](https://github.com/baetyl/cn.docs.baetyl.io)
