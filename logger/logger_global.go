@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"io/ioutil"
+	"os"
 
 	"github.com/sirupsen/logrus"
 )
@@ -12,7 +12,7 @@ var Global Logger
 func init() {
 	entry := logrus.NewEntry(logrus.New())
 	entry.Level = logrus.InfoLevel
-	entry.Logger.Out = ioutil.Discard
+	entry.Logger.Out = os.Stdout
 	entry.Logger.Level = logrus.InfoLevel
 	entry.Logger.Formatter = newFormatter("text")
 	Global = &logger{entry}
