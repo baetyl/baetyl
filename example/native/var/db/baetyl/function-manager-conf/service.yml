@@ -39,24 +39,12 @@ functions:
     instance:
       min: 0
       max: 10
-      idletime: 1m
   # - name: sql-filter
   #   service: function-sql-filter
-  #   instance:
-  #     min: 1
-  #     max: 10
   - name: python36-sayhi
     service: function-python36-sayhi
-    instance:
-      min: 0
-      max: 10
-      idletime: 1m
   - name: node85-sayhi
     service: function-node85-sayhi
-    instance:
-      min: 0
-      max: 10
-      idletime: 1m
 logger:
   path: var/log/baetyl/service.log
   level: "debug"

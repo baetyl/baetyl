@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
@@ -43,16 +44,18 @@ func main() {
 			select {
 			case t := <-ticker.C:
 				cfg.Publish.Payload["time"] = t.Unix()
-				pld, _ := json.Marshal(cfg.Publish.Payload)
+				pld, err := json.Marshal(cfg.Publish.Payload)
+				if err != nil {
+					return fmt.Errorf("Failed to marshal: %s", err.Error())
+				}
 				pkt := packet.NewPublish()
 				pkt.Message.Topic = cfg.Publish.Topic
 				pkt.Message.QOS = packet.QOS(cfg.Publish.QOS)
 				pkt.Message.Payload = pld
 				// send a message to hub triggered by timer
-				err := cli.Send(pkt)
+				err = cli.Send(pkt)
 				if err != nil {
-					// log error message
-					ctx.Log().Errorf(err.Error())
+					return fmt.Errorf("Failed to publish: %s", err.Error())
 				}
 			case <-ctx.WaitChan():
 				// wait until service is stopped
