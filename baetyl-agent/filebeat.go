@@ -52,9 +52,13 @@ func newBeat() (*beat.Beat, error) {
 	}
 
 	b.RawConfig, err = cfgfile.Load(baetyl.DefaultFilebeatConfFile)
-	err = b.RawConfig.Unpack(&b.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to loading config file: %v", err)
+	}
+
+	err = b.RawConfig.Unpack(&b.Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack config: %v", err)
 	}
 
 	b.Beat.Config = &b.Config.BeatConfig
