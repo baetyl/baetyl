@@ -1,23 +1,24 @@
 PREFIX?=/usr/local
-TAG?=latest
+VERSION?=latest
 SRC=$(wildcard *.go)
 
 all: baetyl-video-infer package.zip
 
 baetyl-video-infer: $(SRC)
-	echo "BUILD $@"
-	go build ${GOFLAG} .
+	@echo "BUILD $@"
+	@go build ${GO_FLAGS} .
 
 package.zip: baetyl-video-infer
-	install -d -m 0755 __package/bin
-	cp $< __package/bin
-	cp package.yml __package/
-	cd __package && zip -q -r ../package.zip bin/ package.yml
-	rm -rf __package
+	@echo "PACKAGE $<"
+	@install -d -m 0755 __package/bin
+	@cp $< __package/bin
+	@cp package.yml __package/
+	@cd __package && zip -q -r ../package.zip bin/ package.yml
+	@rm -rf __package
 
-image: baetyl-video-infer
-	echo "IMAGE $<"
-	docker build -t $(IMAGE_PREFIX)$<$(IMAGE_SUFFIX):$(TAG) .
+buildx: baetyl-video-infer
+	@echo "BUILDX $<"
+	@docker build -t $(DOCKER_REPO)$<$(IMAGE_SUFFIX):$(VERSION) .
 
 .PHONY: clean
 clean:
