@@ -1,9 +1,0 @@
-FROM ubuntu:18.04
-
-RUN apt-get update && \
-    apt-get -y --no-install-recommends install \
-        build-essential python3-dev python3-setuptools \
-        python3-pip && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    pip3 install pyyaml protobuf grpcio && \
-    rm -rf /var/lib/apt/lists/*

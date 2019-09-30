@@ -1,4 +1,4 @@
 functions:
-  - name: 'node85-sayhi'
+  - name: 'node8-sayhi'
     handler: 'index.handler'
     codedir: 'var/db/baetyl/function-sayhi'
