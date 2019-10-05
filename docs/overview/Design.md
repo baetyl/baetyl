@@ -109,7 +109,7 @@ The docker engine interprets the service Image as a docker image address and sta
 
 #### Native Engine
 
-On platforms that do not provide container services (such as older versions of Windows), the Native engine simulates the container's experience as much as possible. The engine interprets the service image as the package name. The package is provided by the storage volume and contains the program required by the service, but the dependencies of this program (such as Python interpreter, Node interpreter, lib, etc.) need to be installed on the host in advance. All services use the host network directly, all ports are exposed, and users need to be careful to avoid port conflicts. Each instance of the service corresponds to a process, and the engine is responsible for starting and stopping the process.
+On platforms that do not provide container services (such as older versions of Windows), the Native engine simulates the container's experience as much as possible. The engine interprets the service image as the package name. The package is provided by the storage volume and contains the program required by the service,but the dependencies of this program (such as Python interpreter, Node interpreter,lib, etc.) need to be installed on the host in advance. All services use the host network directly, all ports are exposed, and users need to be careful to avoid port conflicts. Each instance of the service corresponds to a process, and the engine is responsible for starting and stopping the process.
 
 _**NOTE**: Process mode does not support resource restrictions, no need to expose ports, map devices._
 

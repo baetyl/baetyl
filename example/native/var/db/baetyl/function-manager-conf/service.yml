@@ -3,13 +3,6 @@ hub:
   username: test
   password: hahaha
 rules:
-  - clientid: func-python27-sayhi-1
-    subscribe:
-      topic: t
-    function:
-      name: python27-sayhi
-    publish:
-      topic: t/py2hi
 #  - clientid: func-sql-filter-1
 #    subscribe:
 #      topic: t
@@ -19,32 +12,39 @@ rules:
 #    publish:
 #      topic: t/sqlfilter
 #      qos: 1
-  - clientid: func-python36-sayhi-1
+  - clientid: func-node8-sayhi-1
     subscribe:
       topic: t
     function:
-      name: python36-sayhi
-    publish:
-      topic: t/py3hi
-  - clientid: func-node85-sayhi-1
-    subscribe:
-      topic: t
-    function:
-      name: node85-sayhi
+      name: node8-sayhi
     publish:
       topic: t/node8hi
+  - clientid: func-python3-sayhi-1
+    subscribe:
+      topic: t
+    function:
+      name: python3-sayhi
+    publish:
+      topic: t/py3hi
+  - clientid: func-python2-sayhi-1
+    subscribe:
+      topic: t
+    function:
+      name: python2-sayhi
+    publish:
+      topic: t/py2hi
 functions:
-  - name: python27-sayhi
-    service: function-python27-sayhi
+  # - name: sql-filter
+  #   service: function-sql-filter
+  - name: node8-sayhi
+    service: function-node8-sayhi
+  - name: python3-sayhi
+    service: function-python3-sayhi
+  - name: python2-sayhi
+    service: function-python2-sayhi
     instance:
       min: 0
       max: 10
-  # - name: sql-filter
-  #   service: function-sql-filter
-  - name: python36-sayhi
-    service: function-python36-sayhi
-  - name: node85-sayhi
-    service: function-node85-sayhi
 logger:
   path: var/log/baetyl/service.log
   level: "debug"

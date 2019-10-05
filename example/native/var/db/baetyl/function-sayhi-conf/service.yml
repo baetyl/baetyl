@@ -1,8 +1,8 @@
 functions:
-  - name: 'python27-sayhi'
+  - name: 'python2-sayhi'
     handler: 'index.handler'
     codedir: 'var/db/baetyl/function-sayhi'
-  - name: 'python36-sayhi'
+  - name: 'python3-sayhi'
     handler: 'index.handler'
     codedir: 'var/db/baetyl/function-sayhi'
 logger:

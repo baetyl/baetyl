@@ -67,8 +67,8 @@ services:
       - name: baetyl-function-manager-bin
         path: lib/baetyl/baetyl-function-manager
         readonly: true
-  - name: function-python27-sayhi
-    image: baetyl-function-python27
+  - name: function-python2-sayhi
+    image: baetyl-function-python2
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -78,11 +78,11 @@ services:
         path: var/db/baetyl/function-sayhi
         readonly: true
       # native process mode only
-      - name: baetyl-function-python27-bin
-        path: lib/baetyl/baetyl-function-python27
+      - name: baetyl-function-python2-bin
+        path: lib/baetyl/baetyl-function-python2
         readonly: true
-  - name: function-python36-sayhi
-    image: baetyl-function-python36
+  - name: function-python3-sayhi
+    image: baetyl-function-python3
     replica: 0
     mounts:
       - name: function-sayhi-conf
@@ -92,11 +92,11 @@ services:
         path: var/db/baetyl/function-sayhi
         readonly: true
       # native process mode only
-      - name: baetyl-function-python36-bin
-        path: lib/baetyl/baetyl-function-python36
+      - name: baetyl-function-python3-bin
+        path: lib/baetyl/baetyl-function-python3
         readonly: true
-  - name: function-node85-sayhi
-    image: baetyl-function-node85
+  - name: function-node8-sayhi
+    image: baetyl-function-node8
     replica: 0
     mounts:
       - name: function-sayjs-conf
@@ -106,8 +106,8 @@ services:
         path: var/db/baetyl/function-sayhi
         readonly: true
       # native process mode only
-      - name: baetyl-function-node85-bin
-        path: lib/baetyl/baetyl-function-node85
+      - name: baetyl-function-node8-bin
+        path: lib/baetyl/baetyl-function-node8
         readonly: true
   # - name: function-sql-filter
   #   image: baetyl-function-sql
@@ -184,12 +184,12 @@ volumes:
     path: var/db/baetyl/baetyl-remote-mqtt
   - name: baetyl-function-manager-bin
     path: var/db/baetyl/baetyl-function-manager
-  - name: baetyl-function-python27-bin
-    path: var/db/baetyl/baetyl-function-python27
-  - name: baetyl-function-python36-bin
-    path: var/db/baetyl/baetyl-function-python36
-  - name: baetyl-function-node85-bin
-    path: var/db/baetyl/baetyl-function-node85
+  - name: baetyl-function-python2-bin
+    path: var/db/baetyl/baetyl-function-python2
+  - name: baetyl-function-python3-bin
+    path: var/db/baetyl/baetyl-function-python3
+  - name: baetyl-function-node8-bin
+    path: var/db/baetyl/baetyl-function-node8
   - name: baetyl-function-sql-bin
     path: var/db/baetyl/baetyl-function-sql
   - name: baetyl-timer-bin

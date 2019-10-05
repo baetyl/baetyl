@@ -1,12 +1,12 @@
 {
-  "name": "baetyl-function-node85",
-  "description": "An Baetyl Function Runtime",
+  "name": "baetyl-function-node8",
+  "description": "The Node8 Function Runtime",
   "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/baetyl/baetyl.git"
   },
-  "author": "xxxx",
+  "author": "baetyl",
   "dependencies": {
     "@grpc/proto-loader": "0.5.1",
     "google-protobuf": "3.6.1",

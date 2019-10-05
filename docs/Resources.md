@@ -1,24 +1,4 @@
-# Download
-
-## Golang download
-
-Official website：[https://golang.org/dl/](https://golang.org/dl/)
-
-Golang download link of BOS([Baidu-Object-Storage](https://cloud.baidu.com/product/bos.html))：
-
-| OS           | CPU    | SHA256                                                           | Download link                                                                 |
-| ------------ | ------ | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Linux        | 386    | c40824a3e6c948b8ecad8fe9095b620c488b3d8d6694bdd48084a4798db4799a | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-386.tar.gz)    |
-| Linux        | amd64  | ac2a6efcc1f5ec8bdc0db0a988bb1d301d64b6d61b7e8d9e42f662fbb75a2b9b | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-amd64.tar.gz)  |
-| Linux        | armv6l | 0d9be0efa9cd296d6f8ab47de45356ba45cb82102bc5df2614f7af52e3fb5842 | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-armv6l.tar.gz) |
-| Linux        | arm64  | 3606dc6ce8b4a5faad81d7365714a86b3162df041a32f44568418c9efbd7f646 | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.linux-arm64.tar.gz)  |
-| Windows(msi) | 386    | ba5b57d3752d45953e8f616f2371f65ef4c953cf8c6e2e0e64d6a1496df3ab08 | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-386.msi)     |
-| Windows(zip) | 386    | 96e54c9801973a255417d9827d470fd0fae14ad8c9274577012c01f97cd534dd | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-386.zip)     |
-| Windows(msi) | amd64  | da2fc362c7afcab611709ef56e1bb145c92dfaf361cafdd75634ac8172ded245 | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-amd64.msi)   |
-| Windows(zip) | amd64  | ec7550b32ff080b17060b9d4fde7bee94d9cf3c42e846e3a62fe4a3047ec79e3 | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.windows-amd64.zip)   |
-| Darwin(pkg)  | amd64  | 4f5478e6d985f4f68099e03f4485149efa697cf81610e514974291a29ee7e21b | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.darwin-amd64.pkg)    |
-| Darwin(src)  | amd64  | 4f189102b15de0be1852d03a764acb7ac5ea2c67672a6ad3a340bd18d0e04bb4 | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.darwin-amd64.tar.gz) |
-| Source       | -      | ab0e56ed9c4732a653ed22e232652709afbf573e710f56a07f7fdeca578d62fc | [Download](https://baetyl.cdn.bcebos.com/golang/go1.12.9.src.tar.gz)          |
+# Resources Download
 
 ## MQTT download
 

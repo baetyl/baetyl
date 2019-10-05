@@ -29,23 +29,23 @@ func Test_FunctionInstance(t *testing.T) {
 		{
 			name:         "test python3 runtime",
 			exec:         "python3",
-			functionName: "python36-sayhi",
+			functionName: "python3-sayhi",
 			workPath:     "testrun/python",
-			filePath:     []string{"..", "..", "..", "baetyl-function-python", "function-python36.py"},
+			filePath:     []string{"..", "..", "..", "baetyl-function-python3", "function-python3.py"},
 		},
 		{
 			name:         "test node8 runtime",
 			exec:         "node",
-			functionName: "node85-sayhi",
+			functionName: "node8-sayhi",
 			workPath:     "testrun/node",
-			filePath:     []string{"..", "..", "..", "baetyl-function-node", "function-node85.js"},
+			filePath:     []string{"..", "..", "..", "baetyl-function-node8", "function-node8.js"},
 		},
 		{
-			name:         "test python2.7 runtime",
-			exec:         "python2.7",
-			functionName: "python27-sayhi",
+			name:         "test python2 runtime",
+			exec:         "python2",
+			functionName: "python2-sayhi",
 			workPath:     "testrun/python",
-			filePath:     []string{"..", "..", "..", "baetyl-function-python", "function-python27.py"},
+			filePath:     []string{"..", "..", "..", "baetyl-function-python2", "function-python2.py"},
 		},
 	}
 	for _, tt := range tests {

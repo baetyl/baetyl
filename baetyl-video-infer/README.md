@@ -6,12 +6,12 @@ In addition, baetyl-video-infer module is highly integrated with other modules o
 
 ## Build
 
-Baetyl-video-infer module compiles depend on [GoCV](https://github.com/hybridgroup/gocv). Please make sure GoCV works properly before compiling.
+The baetyl-video-infer module is depend on [GoCV](https://github.com/hybridgroup/gocv). Please make sure GoCV works properly before build.
 
 ```shell
 go get github.com/baetyl/baetyl
 cd $GOPATH/src/github.com/baetyl/baetyl
-make rebuild # compile baetyl-video-infer
+make rebuild # build baetyl-video-infer
 ```
 
 ## Docker support

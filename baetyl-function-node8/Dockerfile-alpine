@@ -1,0 +1,4 @@
+FROM --platform=$TARGETPLATFORM node:8-alpine
+COPY *.js *.json /bin/
+RUN cd /bin/ && chmod +x function-node8.js && npm install
+ENTRYPOINT ["function-node8.js"]

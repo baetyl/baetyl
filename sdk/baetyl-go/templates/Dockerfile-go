@@ -3,6 +3,6 @@
 
 FROM --platform=$TARGETPLATFORM busybox
 ARG TARGETPLATFORM
-ARG MODULE=baetyl-agent
+ARG MODULE=baetyl-{{.MODULE}}
 COPY $TARGETPLATFORM/$MODULE/bin/$MODULE /bin/
-ENTRYPOINT ["baetyl-agent"]
+ENTRYPOINT ["baetyl-{{.MODULE}}"]
