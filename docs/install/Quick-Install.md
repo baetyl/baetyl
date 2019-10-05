@@ -36,7 +36,7 @@ If everything is ok, Baetyl will be installed on the `/usr/local` directory afte
 
 ## Import the example configuration (optional)
 
-As an edge computing framework, Baetyl provides MQTT connect service through hub module, provides local functional service through function manager module and some runtime modules like python27, python36, nodejs85, sql and so on. What's more, all the modules are started by Baetyl main program through a configuration file. More detailed contents about the module's configuration please refer to [Configuration Interpretation](../guides/Config-interpretation.md) for further information.
+As an edge computing framework, Baetyl provides MQTT connect service through hub module, provides local functional service through function manager module and some runtime modules like python27, python36, nodejs85, sql and so on. What's more, all the modules are started by Baetyl master through a configuration file. More detailed contents about the module's configuration please refer to [Configuration Interpretation](../guides/Config-interpretation.md) for further information.
 
 Baetyl officially provides an example configuration for some module which can be imported using following command:
 
@@ -82,8 +82,8 @@ After installation, users can verify whether Baetyl is successfully installed or
 
 ![Baetyl](../images/install/systemctl-status.png)
 
-- Executing the command `docker stats` to view the running status of docker containers. Since the main program baetyl will first pull required images from docker mirror repository, it will take 2~5 minutes to see the baetyl starts successfully. Take the example configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
+- Executing the command `docker stats` to view the running status of docker containers. Since the Baetyl master will first pull required images from docker mirror repository, it will take 2~5 minutes to see the baetyl starts successfully. Take the example configurations as above, the running status of containers are as shown below. If some containers are missing, it means they failed to start.
 
 ![docker stats](../images/install/docker-stats.png)
 
-- Under the condition of two above failures, you need to view the log of main program. And the log file which is stored in /usr/local/var/log/baetyl/baetyl.log by default. Once found errors in the log file, users can refer to [FAQ](../FAQ.md). If necessary, just [Submit an issue](https://github.com/baetyl/baetyl/issues).
+- Under the condition of two above failures, you need to view the log of the Baetyl master. And the log file which is stored in /usr/local/var/log/baetyl/baetyl.log by default. Once found errors in the log file, users can refer to [FAQ](../FAQ.md). If necessary, just [Submit an issue](https://github.com/baetyl/baetyl/issues).

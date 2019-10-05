@@ -7,7 +7,7 @@
 - The MQTT client toolkit which is used to connect to Baidu IoTHub is [MQTT.fx](../Resources.html#mqtt-fx-download)
 - The MQTT client toolkit which is used to connect to Baetyl-Hub is [MQTTBox](../Resources.html#mqttbox-download).
 - The hub and Baetyl-Remote-MQTT module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
-- Docker images compiled from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../install/Build-from-Source.md)
+- Docker images built from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../install/Build-from-Source.md)
 - The Remote Hub as mentioned in this document is [Baidu IoTHub](https://cloud.baidu.com/product/iot.html)
 
 The Baetyl-Remote-MQTT module was developed to meet the needs of the IoT scenario. The Baetyl(via Baetyl-Hub module) can synchronize message with Remote Hub services([Baidu IoTHub](https://cloud.baidu.com/product/iot.html)) via the Baetyl-Remote-MQTT module. That is to say, through the Baetyl-Remote-MQTT module, we can either subscribe the message from Remote Hub and publish it to the Baetyl-Hub module or subscribe the message from Baetyl-Hub module and publish it to Remote Hub service. The configuration of Baetyl-Remote-MQTT module can refer to [Baetyl-Remote-MQTT module Configuration](./Config-interpretation.md).
@@ -33,9 +33,7 @@ The workflow diagram are as follows.
 
 ## Message Synchronize via Baetyl-Remote-MQTT module
 
-Configuration file location for the Baetyl main program is: `var/db/baetyl/application.yml`.
-
-The configuration of Baetyl Master are as follows:
+The application configuration in `var/db/baetyl/application.yml` are as follows:
 
 ```yaml
 version: v0

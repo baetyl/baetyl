@@ -1,6 +1,6 @@
 # Install From Source
 
-Compared to the quick installation of Baetyl, you can compile Baetyl from source to get the latest features.
+Compared to the quick installation of Baetyl, you can build Baetyl from source to get the latest features.
 
 ## Prerequisites
 
@@ -122,7 +122,7 @@ If the Baetyl is already installed to the default path: `/usr/local`.
 sudo baetyl start
 ```
 
-If the program has been installed to the specified path, such as installing into the `output` directory:
+If the Baetyl has been installed to the specified path, such as installing into the `output` directory:
 
 ```shell
 sudo ./output/bin/baetyl start

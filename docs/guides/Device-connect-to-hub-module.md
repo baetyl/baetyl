@@ -5,7 +5,7 @@
 - The device system used in this test is Ubuntu 18.04
 - MQTT.fx and MQTTBox are MQTT Clients in this test, which [MQTT.fx](../Resources.md) used for TCP and SSL connection test and [MQTTBox](../Resources.md) used for WS (Websocket) connection test.
 - The hub service image used is the official image published in the Baetyl Cloud Management Suite: `hub.baidubce.com/baetyl/baetyl-hub`
-- You can also compile the required Hub service image by using Baetyl source code. Please see [How to build image from source code](../install/Build-from-Source.md)
+- You can also build the required Hub service image by using Baetyl source code. Please see [How to build image from source code](../install/Build-from-Source.md)
 
 The complete configuration reference for [Hub Module Configuration](./Config-interpretation.md).
 
@@ -114,7 +114,7 @@ As you can see, the image of Hub service has been loaded after Baetyl starts up 
 
 ![docker ps](../images/guides/connect/docker-ps.png)
 
-Container mode requires port mapping, allowing external access to the container, the configuration item is the `ports` field in the main program configuration file.
+Container mode requires port mapping, allowing external access to the container, the configuration item is the `ports` field in the application configuration file.
 
 As mentioned above, when the Hub Module starts, it will open ports 1883, 8883 and 8080 at the same time, which are used for TCP, SSL, WS (Websocket) protocol. Then we will use MQTTBox and MQTT.fx as MQTT client to check the connection between MQTT client and Baetyl.
 
