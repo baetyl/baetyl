@@ -68,6 +68,7 @@ rebuild: clean all
 
 .PHONY: test
 test:
+	@cd baetyl-function-node8 && npm install && cd -
 	@go test ${GO_TEST_FLAGS} -coverprofile=coverage.out ${GO_TEST_PKGS}
 	@go tool cover -func=coverage.out | grep total
 
@@ -107,4 +108,5 @@ generate:
 
 .PHONY: clean
 clean:
+	@-rm -rf ./baetyl-function-node8/node_modules
 	@-rm -rf $(OUTPUT)
