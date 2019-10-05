@@ -12,7 +12,6 @@ ALLPLATS:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
 GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
-CHANGES:=$(if $(shell git status -s),true,false)
 
 ifndef PLATFORMS
 	GO_OS:=$(shell go env GOOS)
@@ -41,9 +40,6 @@ OUTPUT_PKGS:=$(OUTPUT_MODS:%=%/$(MODULE)-$(VERSION).zip) # TODO: switch to tar
 all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
-ifeq ($(CHANGES),true)
-	$(error "Please commit or discard local changes")
-endif
 	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
 	@$(BIN_CMD)
@@ -55,9 +51,6 @@ $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 
 .PHONY: image
 image: $(OUTPUT_BINS)
-ifeq ($(CHANGES),true)
-	$(error "Please commit or discard local changes")
-endif
 	@echo "BUILDX: $(REGISTRY)$(MODULE):$(VERSION)"
 	@-docker buildx create --name baetyl
 	@docker buildx use baetyl

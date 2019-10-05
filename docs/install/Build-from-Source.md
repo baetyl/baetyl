@@ -52,7 +52,7 @@ make rebuild PLATFORMS=all
 make rebuild PLATFORMS="linux/amd64 linux/arm64" MODULES="agent hub"
 ```
 
-**NOTE**: the build command will read the git revision and tag as the binary version, so you must commit or discard local changes before running the build commands.
+**NOTE**: the build command will read the git revision and tag as the binary version, so you should commit or discard local changes before running the build commands.
 
 ### Build module images
 

@@ -7,7 +7,7 @@ ALLPLATS:=linux/amd64 linux/arm64 linux/386 linux/arm/v7
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 GIT_TAG:=$(shell git tag --contains HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
-CHANGES:=$(if $(shell git status -s),true,false)
+# CHANGES:=$(if $(shell git status -s),true,false)
 
 GO_OS:=$(shell go env GOOS)
 GO_ARCH:=$(shell go env GOARCH)
@@ -43,9 +43,6 @@ all: baetyl $(OUTPUT_MODS)
 baetyl: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
-ifeq ($(CHANGES),true)
-	$(error "Please commit or discard local changes")
-endif
 	@echo "BUILD $@"
 	@mkdir -p $(dir $@)
 	@$(shell echo $(@:$(OUTPUT)/%/baetyl/bin/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
