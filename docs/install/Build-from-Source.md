@@ -1,228 +1,150 @@
-# Build Baetyl From Source
+# Install From Source
 
-Compared to the quick installation of Baetyl, users can compile Baetyl from source to get the latest features.
+Compared to the quick installation of Baetyl, you can compile Baetyl from source to get the latest features.
 
-Before compiling, users should configure the build environment. So this article consist of two parts: **environment configuration** and **source code compilation**.
+## Prerequisites
 
-## Environment Configuration
+- The Go tools
 
-### Linux Platform
+The minimum required go version is 1.12. Refer to https://golang.org/dl/ or https://golang.google.cn/dl/ to download and install the Go tools.
 
-#### Install Go
+- The Docker Engine
 
-Go to [related resources](../Resources.md) to complete the download, then:
+The minimum required docker version is 19.03, because the docker buildx feature is introduced to build multi-platform images. Refer to https://docs.docker.com/install/ to install the Docker Engine and refer to https://docs.docker.com/buildx/working-with-buildx/ to enable the docker buildx.
 
-```shell
-tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz  # Decompress the Go archive to the /usr/local directory
-export PATH=$PATH:/usr/local/go/bin # Configuring environment variables
-export GOPATH=yourpath  # GOPATH setting
-go env  # View Go's environment variables
-go version # View Go's version
-```
+## Download source code
 
-**NOTE**: Baetyl requires that the compiled version of Go should be above 1.10.0.
-
-#### Install the container runtime
-
-In **docker** container mode, Baetyl relies on docker container runtime. If `docker` is not installed yet, users can install the latest version of docker (for Linux-like systems) with the following command:
-
-```shell
-curl -sSL https://get.docker.com | sh
-```
-
-View the version of installed docker:
-
-```shell
-docker version
-```
-
-**NOTE**：According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
-
-**For more details, please see the [official documentation](https://docs.docker.com/install/).**
-
-### Darwin Platform
-
-#### Install Go
-
-- Install by using HomeBrew
-
-```shell
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"  # install homebrew
-brew install go
-```
-
-Modify the environment configuration file after the installation is complete.(e.g: ~/.bash_profile)：
-
-```shell
-export GOPATH="${HOME}/go"
-export GOROOT="$(brew --prefix golang)/libexec"
-export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin"
-```
-
-Make the environment variable take effect:
-
-```shell
-source yourfile
-```
-
-Create the GOPATH specified directory:
-
-```shell
-test -d "${GOPATH}" || mkdir "${GOPATH}"
-```
-
-- Install by using binary file
-
-Go to [related resources](../Resources.md) to complete the download, then:
-
-```shell
-tar -C /usr/local -zxf go$VERSION.$OS-$ARCH.tar.gz  # Decompress the Go archive to the /usr/local directory
-export PATH=$PATH:/usr/local/go/bin # Configuring environment variables
-export GOPATH=yourpath  # GOPATH setting
-go env  # View Go's environment variables
-go version # View Go's version
-```
-
-**NOTE**: Baetyl requires that the compiled version of Go should be above 1.10.0.
-
-#### Install the container runtime
-
-Go to [official page](https://hub.docker.com/editions/community/docker-ce-desktop-mac) to download the .dmg file you need. Once done, double-click to open and drag docker into the application folder.
-
-![Install On Darwin](../images/install/docker-install-on-mac.png)
-
-View the version of installed docker:
-
-```shell
-docker version
-```
-
-## Source Code Compilation
-
-### Download Source Code
-
-After completing the compilation environment configuration according to the corresponding environment, go to the [Baetyl Github Page](https://github.com/baetyl/baetyl) to download source code of baetyl.
+Download the source code from [Baetyl Github](https://github.com/baetyl/baetyl).
 
 ```shell
 go get github.com/baetyl/baetyl
 ```
 
-### Build Docker Image
+## Build Baetyl and modules
 
-In container mode, docker starts the module by running the image corresponding to each module, so build the mirror first with the following command:
+Go into Baetyl project directory and build the Baetyl and all modules for build machine.
 
 ```shell
 cd $GOPATH/src/github.com/baetyl/baetyl
-make clean
-make image # build image
+# default platform and all modules
+make # make all
 ```
 
-**Note**: Under the Darwin system, users need to specify the compilation parameters because the compiled images themselves are based on Linux system:
+After the build command is completed, the Baetyl and modules will be generated in `output` directory.
+
+If you want to specify the platforms and the modules, use the following command:
 
 ```shell
-env GOOS=linux GOARCH=amd64 make image
+# all platforms and all modules
+make PLATFORMS=all
+# specify platforms and modules
+make PLATFORMS="linux/amd64 linux/arm64" MODULES="agent hub"
 ```
 
-The following docker images are generated by the above command:
+Rebuild the Baetyl and the modules:
 
 ```shell
-baetyl-agent:latest
-baetyl-hub:latest
-baetyl-function-manager:latest
-baetyl-remote-mqtt:latest
-baetyl-timer:latest
-baetyl-function-python27:latest
-baetyl-function-python36:latest
-baetyl-function-node85:latest
+# default platform and all modules
+make rebuild
+# all platforms and all modules:
+make rebuild PLATFORMS=all
+# specify platforms and modules
+make rebuild PLATFORMS="linux/amd64 linux/arm64" MODULES="agent hub"
 ```
 
-View the generated images with the following command:
+**NOTE**: the build command will read the git revision and tag as the binary version, so you must commit or discard local changes before running the build commands.
+
+### Build module images
+
+It is recommended use of officially released images in container mode. If you want to build the images by yourself, the docker buildx must be enabled according to prerequisites.
+
+Go into Baetyl project directory and build the module images for build machine.
+
+```shell
+cd $GOPATH/src/github.com/baetyl/baetyl
+# default platform and all modules
+make image
+# specify some modules
+make image MODULES="agent hub"
+```
+Then you can find the images by running `docker images`.
 
 ```shell
 docker images
+
+REPOSITORY                TAG                 IMAGE ID            CREATED             SIZE
+baetyl-function-python3   git-e8fe527         12b669a36a9c        54 minutes ago      202MB
+baetyl-function-python2   git-e8fe527         278e5c465e17        About an hour ago   162MB
+baetyl-hub                git-e8fe527         abd5bef8ba92        2 hours ago         16.9MB
+baetyl-agent              git-e8fe527         7ac8dfecdb63        2 hours ago         18MB
+baetyl-function-manager   git-e8fe527         e6564cd87768        2 hours ago         16.7MB
+baetyl-remote-mqtt        git-e8fe527         0daa114b968d        2 hours ago         16MB
+baetyl-timer              git-e8fe527         88a408e4512a        2 hours ago         16MB
+baetyl-function-node8     git-e8fe527         d7bf1abb6d24        4 days ago          221MB
 ```
 
-### Compile
+If you want to build multi-platform images, you must specify the docker image register and push flag, because docker buildx not support to load the manifest of images now.
+
+```shell
+# all platform and all modules
+make image PLATFORMS=all XFLAGS=--push REGISTRY=<your docker image register>/
+# specify platforms and modules
+make image PLATFORMS="linux/amd64 linux/arm64" MODULES="agent hub" XFLAGS=--push REGISTRY=<your docker image register>/ 
+```
+
+### Install Baetyl and example
+
+Use the following command to install the Baetyl and example configuration to default path: `/usr/local`.
 
 ```shell
 cd $GOPATH/src/github.com/baetyl/baetyl
-make rebuild
+sudo make install # install for docker mode with example configuration
+sudo make install MODE=native # install for native mode with example configuration
 ```
 
-**Note**: You need to install `node` and `npm` beforehand because the Node 8.5 runtime module will call `npm install` command to install dependencies during `make`. For details, please refer to [Nodejs official website] (https://nodejs.org/en/download /).
-
-After the compilation is completed, the following executable files will be generated in the root directory and each module directory, respectively:
-
-```shell
-baetyl
-baetyl-agent/baetyl-agent
-baetyl-hub/baetyl-hub
-baetyl-function-manager/baetyl-function-manager
-baetyl-remote-mqtt/baetyl-remote-mqtt
-baetyl-timer/baetyl-timer
-```
-
-In addition, `package.zip` files are generated in each module directory.
-
-### Install
-
-Install to default path: `/usr/local`。
+Specify the installation path, such as installing into the `output` directory:
 
 ```shell
 cd $GOPATH/src/github.com/baetyl/baetyl
-make install # install for docker mode with example configuration
-make install-native # install for native mode with example configuration
-```
-
-Specify the installation path, such as installing into the output directory:
-
-```shell
-cd $GOPATH/src/github.com/baetyl/baetyl
-make install PREFIX=output
+make install PREFIX=output # for docker mode 
+make install MODE=native PREFIX=output # for native mode
 ```
 
 On the Darwin platform, you need to set the `/usr/local/var` directory to make it (and it's subdirectories) can be bind mounted into Docker containers which would be used by Baetyl.
 
 ![Mount path on Mac](../images/install/docker-path-mount-on-mac.png) 
 
-### Run
+### Run Baetyl and example
 
-If the program is already installed to the default path: `/usr/local`。
+If the Baetyl is already installed to the default path: `/usr/local`.
 
 ```shell
 sudo baetyl start
 ```
 
-If the program has been installed to the specified path, such as installing into the output directory:
+If the program has been installed to the specified path, such as installing into the `output` directory:
 
 ```shell
-cd $GOPATH/src/github.com/baetyl/baetyl
 sudo ./output/bin/baetyl start
 ```
 
 **NOTE**:
 
 1. After the baetyl is started, you can check if the baetyl has run successfully by `ps -ef | grep "baetyl"` and determine the parameters used at startup. And you can check the log file for details. Log files are stored by default in the `var/log/baetyl` directory of the working directory.
-2. If run in docker container mode, the container runtime status can be viewed via the `docker stats` command.
+2. If run in docker container mode, the container runtime status can be viewed via the `docker ps` or `docker stats` command.
 3. To use your own image, you need to modify the **image** of the modules and functions in the application configuration to specify your own image.
 4. For custom configuration, follow the instructions in [Configuration Interpretation](../guides/Config-interpretation.md) to make the relevant settings.
 
-### Uninstall
+### Uninstall Baetyl and example
 
-If it is the default installation:
+If the Baetyl is already installed to the default path: `/usr/local`.
 
 ```shell
-cd $GOPATH/src/github.com/baetyl/baetyl
-make clean # Can be used to clean executable files generated by compilation
-make uninstall # Uninstall if you install in docker mode
-make uninstall-native # Uninstall if you install in native mode
+sudo make uninstall
 ```
 
-If the installation path is specified, for example, it is installed into the output directory.
+If the installation path is specified, for example, it is installed into the `output` directory.
 
 ```shell
-cd $GOPATH/src/github.com/baetyl/baetyl
-make clean # Can be used to clean executable files generated by compilation
-make uninstall PREFIX=output # Uninstall if you install in docker mode
-make uninstall-native PREFIX=output # Uninstall if you install in native mode
+make uninstall PREFIX=output
 ```

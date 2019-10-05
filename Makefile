@@ -69,7 +69,7 @@ rebuild: clean all
 .PHONY: test
 test:
 	@go test ${GO_TEST_FLAGS} -coverprofile=coverage.out ${GO_TEST_PKGS}
-	go tool cover -func=coverage.out | grep total
+	@go tool cover -func=coverage.out | grep total
 
 .PHONY: install $(NATIVE_MODS)
 install: all
