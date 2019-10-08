@@ -69,6 +69,7 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 		return nil, err
 	}
 	return &instance{
+		id:      id,
 		name:    name,
 		FClient: cli,
 	}, nil
