@@ -1,3 +1,4 @@
+SHELL:=/bin/bash
 PREFIX?=/usr/local
 MODE?=docker
 MODULES?=agent hub timer remote-mqtt function-manager function-node8 function-python3 function-python2
