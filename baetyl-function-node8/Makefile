@@ -6,7 +6,7 @@ SRC_FILES:=$(wildcard *.js *.json)
 BIN_FILE:=function-node8.js
 BIN_CMD=install -m 0755 $(SRC_FILES) $(dir $@) && cd $(dir $@)
 COPY_DIR:=.
-ALLPLATS:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
 
 
 GIT_TAG:=$(shell git tag --contains HEAD)
@@ -22,7 +22,7 @@ ifndef PLATFORMS
 		PLATFORMS+=linux/amd64
 	endif
 else ifeq ($(PLATFORMS),all)
-	override PLATFORMS:=$(ALLPLATS)
+	override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
 REGISTRY?=
@@ -40,9 +40,9 @@ OUTPUT_PKGS:=$(OUTPUT_MODS:%=%/$(MODULE)-$(VERSION).zip) # TODO: switch to tar
 all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
-	@echo "BUILD $@"
+	@echo "BUILD $@ <-- $(SRC_FILES)"
 	@install -d -m 0755 $(dir $@)
-	@$(BIN_CMD)
+	$(BIN_CMD)
 
 $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@echo "PACKAGE $@"
