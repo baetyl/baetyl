@@ -66,6 +66,8 @@ rebuild: clean all
 .PHONY: test
 test:
 	@cd baetyl-function-node8 && npm install && cd -
+	@cd baetyl-function-python2 && pip install -r requirements.txt && cd -
+	@cd baetyl-function-python3 && pip3 install -r requirements.txt && cd -
 	@go test ${GO_TEST_FLAGS} -coverprofile=coverage.out ${GO_TEST_PKGS}
 	@go tool cover -func=coverage.out | grep total
 
