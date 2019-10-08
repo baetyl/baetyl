@@ -2,7 +2,7 @@ PREFIX?=/usr/local
 MODE?=docker
 MODULES?=agent hub timer remote-mqtt function-manager function-node8 function-python3 function-python2
 SRC_FILES:=$(shell find main.go cmd master logger sdk protocol utils -type f -name '*.go') # TODO use vpath
-ALLPLATS:=linux/amd64 linux/arm64 linux/386 linux/arm/v7
+PLATFORM_ALL:=linux/amd64 linux/arm64 linux/386 linux/arm/v7
 
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 GIT_TAG:=$(shell git tag --contains HEAD)
@@ -25,7 +25,7 @@ ifndef PLATFORMS
 		PLATFORMS+=linux/amd64
 	endif
 else ifeq ($(PLATFORMS),all)
-	override PLATFORMS:=$(ALLPLATS)
+	override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
 OUTPUT:=output

@@ -2,11 +2,11 @@
 # source: github.com/baetyl/baetyl/sdk/baetyl-go/templates/Makefile-go
 
 MODULE:=baetyl-agent
-SRC_FILES:=$(wildcard *.go)
+SRC_FILES:=$(shell find . ../logger ../sdk ../protocol ../utils -type f -name '*.go')
 BIN_FILE:=baetyl-agent
-BIN_CMD=$(shell echo $($@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
+BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
 COPY_DIR:=../output
-ALLPLATS:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
 
 
 GIT_TAG:=$(shell git tag --contains HEAD)
@@ -22,7 +22,7 @@ ifndef PLATFORMS
 		PLATFORMS+=linux/amd64
 	endif
 else ifeq ($(PLATFORMS),all)
-	override PLATFORMS:=$(ALLPLATS)
+	override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
 REGISTRY?=
@@ -42,7 +42,7 @@ all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
-	@$(BIN_CMD)
+	$(BIN_CMD)
 
 $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@echo "PACKAGE $@"
