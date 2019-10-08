@@ -40,7 +40,7 @@ OUTPUT_PKGS:=$(OUTPUT_MODS:%=%/$(MODULE)-$(VERSION).zip) # TODO: switch to tar
 all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
-	@echo "BUILD $@ <-- $(SRC_FILES)"
+	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
 	$(BIN_CMD)
 

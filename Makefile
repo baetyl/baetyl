@@ -43,7 +43,7 @@ all: baetyl $(OUTPUT_MODS)
 baetyl: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
-	@echo "BUILD $@ <-- $(SRC_FILES)"
+	@echo "BUILD $@"
 	@mkdir -p $(dir $@)
 	@$(shell echo $(@:$(OUTPUT)/%/baetyl/bin/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
 

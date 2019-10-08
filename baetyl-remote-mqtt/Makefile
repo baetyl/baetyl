@@ -2,7 +2,7 @@
 # source: github.com/baetyl/baetyl/sdk/baetyl-go/templates/Makefile-go
 
 MODULE:=baetyl-remote-mqtt
-SRC_FILES:=$(wildcard *.go **/*.go)
+SRC_FILES:=$(shell find . ../logger ../sdk ../protocol ../utils -type f -name '*.go')
 BIN_FILE:=baetyl-remote-mqtt
 BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
 COPY_DIR:=../output
@@ -40,7 +40,7 @@ OUTPUT_PKGS:=$(OUTPUT_MODS:%=%/$(MODULE)-$(VERSION).zip) # TODO: switch to tar
 all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
-	@echo "BUILD $@ <-- $(SRC_FILES)"
+	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
 	$(BIN_CMD)
 
