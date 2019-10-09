@@ -1,6 +1,7 @@
 package master
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -185,8 +186,24 @@ func (is *infoStats) stats() {
 	is.Unlock()
 }
 
+func (is *infoStats) serializeStats() ([]byte, error) {
+	is.Lock()
+	defer is.Unlock()
+
+	result := is.Inspect
+	result.Services = baetyl.Services{}
+	for serviceName, serviceStats := range is.services {
+		service := baetyl.NewServiceStatus(serviceName)
+		for _, instanceStats := range serviceStats {
+			service.Instances = append(service.Instances, map[string]interface{}(instanceStats))
+		}
+		result.Services = append(result.Services, service)
+	}
+	return json.Marshal(result)
+}
+
 // InspectSystem inspects info and stats of baetyl system
-func (m *Master) InspectSystem() *baetyl.Inspect {
+func (m *Master) InspectSystem() ([]byte, error) {
 	defer utils.Trace("InspectSystem", logger.Global.Debugf)()
 	var wg sync.WaitGroup
 	for item := range m.services.IterBuffered() {
@@ -203,14 +220,5 @@ func (m *Master) InspectSystem() *baetyl.Inspect {
 	}()
 	wg.Wait()
 
-	result := m.infostats.Inspect
-	result.Services = baetyl.Services{}
-	for serviceName, serviceStats := range m.infostats.services {
-		service := baetyl.NewServiceStatus(serviceName)
-		for _, instanceStats := range serviceStats {
-			service.Instances = append(service.Instances, map[string]interface{}(instanceStats))
-		}
-		result.Services = append(result.Services, service)
-	}
-	return &result
+	return m.infostats.serializeStats()
 }
