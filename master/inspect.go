@@ -186,6 +186,22 @@ func (is *infoStats) stats() {
 	is.Unlock()
 }
 
+func (is *infoStats) serializeStats() ([]byte, error) {
+	is.Lock()
+	defer is.Unlock()
+
+	result := is.Inspect
+	result.Services = baetyl.Services{}
+	for serviceName, serviceStats := range is.services {
+		service := baetyl.NewServiceStatus(serviceName)
+		for _, instanceStats := range serviceStats {
+			service.Instances = append(service.Instances, map[string]interface{}(instanceStats))
+		}
+		result.Services = append(result.Services, service)
+	}
+	return json.Marshal(result)
+}
+
 // InspectSystem inspects info and stats of baetyl system
 func (m *Master) InspectSystem() ([]byte, error) {
 	defer utils.Trace("InspectSystem", logger.Global.Debugf)()
@@ -204,16 +220,5 @@ func (m *Master) InspectSystem() ([]byte, error) {
 	}()
 	wg.Wait()
 
-	result := m.infostats.Inspect
-	result.Services = baetyl.Services{}
-	for serviceName, serviceStats := range m.infostats.services {
-		service := baetyl.NewServiceStatus(serviceName)
-		for _, instanceStats := range serviceStats {
-			service.Instances = append(service.Instances, map[string]interface{}(instanceStats))
-		}
-		result.Services = append(result.Services, service)
-	}
-	m.infostats.Lock()
-	defer m.infostats.Unlock()
-	return json.Marshal(&result)
+	return m.infostats.serializeStats()
 }

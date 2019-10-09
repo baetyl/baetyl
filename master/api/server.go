@@ -185,11 +185,12 @@ func (s *Server) stopInstance(params http.Params, _ []byte) ([]byte, error) {
 // deprecated
 
 func (s *Server) inspectSystemV0(_ http.Params, reqBody []byte) ([]byte, error) {
-	v1 := &baetyl.Inspect{}
 	data, err := s.m.InspectSystem()
 	if err != nil {
 		return nil, err
 	}
+
+	v1 := &baetyl.Inspect{}
 	err = json.Unmarshal(data, v1)
 	if err != nil {
 		return nil, err
