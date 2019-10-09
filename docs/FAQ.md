@@ -109,7 +109,7 @@ According to the above information, the actual error is judged, and the configur
 
 1. ports: Port exposed configuration in docker container mode.
 2. listen: Which address the hub module will listen on. In docker container mode, it's means container address. In native process mode, it's means host address.
-3. By referring to [Configuration Analysis Document](guides/Config-interpretation.md)
+3. By referring to [Configuration Analysis Document](guides/Config-interpretation.html#baetyl-hub)
 
 **Q14: How to process data in the cloud platform after message send to [Baidu IoT Hub](https://cloud.baidu.com/product/iot.html) by Baetyl?**
 
@@ -119,7 +119,7 @@ In the cloud platform, [the Rule Engine](https://cloud.baidu.com/product/re.html
 **Q15: How to connect the [Device management](https://cloud.baidu.com/doc/IOT/GettingStarted.html#.E5.88.9B.E5.BB.BA.E7.89.A9.E6.A8.A1.E5.9E.8B) of Baidu IoT Hub?**
 
 **Suggested Solution**:
-The Device management of Baidu IoT Hub does not support ssl authentication. As a temporary solution, you can configure [Remote Feature](guides/Message-synchronize-with-iothub-through-remote-module.md) to connect the Device management with username and password authentication manually.
+The Device management of Baidu IoT Hub does not support ssl authentication. As a temporary solution, you can configure [Remote Feature](guides/Message-synchronize-with-iothub-through-remote-service.md) to connect the Device management with username and password authentication manually.
 
 **Q16：If I don't want to lose messages and want to ensure all messages are synchronized to cloud, how can I do?**
 

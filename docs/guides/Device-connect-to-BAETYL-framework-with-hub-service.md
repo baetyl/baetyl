@@ -1,19 +1,19 @@
-# Device connect to Baetyl with Hub service
+# Device connect to BAETYL framework with Hub Service
 
 **Statement**:
 
 - The device system used in this test is Ubuntu 18.04
-- MQTT.fx and MQTTBox are MQTT Clients in this test, which [MQTT.fx](../Resources.md) used for TCP and SSL connection test and [MQTTBox](../Resources.md) used for WS (Websocket) connection test.
+- MQTT.fx and MQTTBox are MQTT Clients in this test, which [MQTT.fx](../Resources.html#mqtt-fx-download) used for TCP and SSL connection test and [MQTTBox](../Resources.html#mqttbox-download) used for WS (Websocket) connection test
 - The hub service image used is the official image published in the Baetyl Cloud Management Suite: `hub.baidubce.com/baetyl/baetyl-hub`
 - You can also build the required Hub service image by using Baetyl source code. Please see [How to build image from source code](../install/Build-from-Source.md)
 
-The complete configuration reference for [Hub Module Configuration](./Config-interpretation.md).
+The complete configuration reference for [Hub Module Configuration](Config-interpretation.html#baetyl-hub).
 
 **NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../install/Build-from-Source.md).
 
 ## Workflow
 
-- Step 1: Install Baetyl and its example configuration, more details please refer to [How-to-quick-install-Baetyl](../install/Quick-Install.md)
+- Step 1: Install Baetyl and its example configuration, more details please refer to [Quick-install-Baetyl](../install/Quick-Install.md)
 - Step 2: Modify the configuration according to the usage requirements, and then execute `sudo systemctl start baetyl` to start the Baetyl in Docker container mode, or execute `sudo systemctl restart baetyl` to restart the Baetyl. Then execute the command `sudo systemctl status baetyl` to check whether baetyl is running.
 - Step 3: Configure the MQTT Client according to the connection protocol selected.
   - If TCP protocol was selected, you only need to configure the username and password(see the configuration option username and password of principals) and fill in the corresponding port.
@@ -150,4 +150,4 @@ Once the above operation is correct, you can see the sign of successful connecti
 
 ![WS（Websocket）connection success](../images/guides/connect/mqttbox-ws-connect-success.png)
 
-In summary, we successfully completed the connection test for the Baetyl Hub service through MQTT.fx and MQTTBox. In addition, we can also write test scripts to connect to Baetyl Hub through Paho MQTT. For details, please refer to [Related Resources Download](../Resources.md).
+In summary, we successfully completed the connection test for the Baetyl Hub service through MQTT.fx and MQTTBox. In addition, we can also write test scripts to connect to Baetyl Hub through Paho MQTT. For details, please refer to [Related Resources Download](../Resources.html#paho-mqtt-client-sdk).
