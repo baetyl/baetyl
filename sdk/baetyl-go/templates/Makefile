@@ -11,7 +11,7 @@ ifndef PLATFORMS
 		PLATFORMS+=linux/amd64
 	endif
 else ifeq ($(PLATFORMS),all)
-	override PLATFORMS:=$(ALLPLATS)
+	override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
 REGISTRY?=
@@ -31,7 +31,7 @@ all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
-	@$(BIN_CMD)
+	$(BIN_CMD)
 
 $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@echo "PACKAGE $@"

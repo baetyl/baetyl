@@ -101,6 +101,10 @@ func (f *Function) MakeObject(_ context.Context) (*pool.PooledObject, error) {
 		f.log.Infof("instance created")
 		i, err := f.p.StartInstance(id)
 		if err != nil {
+			select {
+			case f.ids <- id:
+			case <-f.tomb.Dying():
+			}
 			return nil, err
 		}
 		return pool.NewPooledObject(i), nil
