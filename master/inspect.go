@@ -1,6 +1,7 @@
 package master
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -186,7 +187,7 @@ func (is *infoStats) stats() {
 }
 
 // InspectSystem inspects info and stats of baetyl system
-func (m *Master) InspectSystem() *baetyl.Inspect {
+func (m *Master) InspectSystem() ([]byte, error) {
 	defer utils.Trace("InspectSystem", logger.Global.Debugf)()
 	var wg sync.WaitGroup
 	for item := range m.services.IterBuffered() {
@@ -212,5 +213,7 @@ func (m *Master) InspectSystem() *baetyl.Inspect {
 		}
 		result.Services = append(result.Services, service)
 	}
-	return &result
+	m.infostats.Lock()
+	defer m.infostats.Unlock()
+	return json.Marshal(&result)
 }

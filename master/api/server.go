@@ -17,7 +17,7 @@ type Master interface {
 	Auth(u, p string) bool
 
 	// for system
-	InspectSystem() *baetyl.Inspect
+	InspectSystem() ([]byte, error)
 	UpdateSystem(trace, tp, target string) error
 
 	// for instance
@@ -65,7 +65,7 @@ func (s *Server) Close() error {
 }
 
 func (s *Server) inspectSystem(_ http.Params, reqBody []byte) ([]byte, error) {
-	return json.Marshal(s.m.InspectSystem())
+	return s.m.InspectSystem()
 }
 
 /**********************************
@@ -185,7 +185,16 @@ func (s *Server) stopInstance(params http.Params, _ []byte) ([]byte, error) {
 // deprecated
 
 func (s *Server) inspectSystemV0(_ http.Params, reqBody []byte) ([]byte, error) {
-	return toInspectSystemV0(s.m.InspectSystem())
+	v1 := &baetyl.Inspect{}
+	data, err := s.m.InspectSystem()
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, v1)
+	if err != nil {
+		return nil, err
+	}
+	return toInspectSystemV0(v1)
 }
 
 func toInspectSystemV0(v1 *baetyl.Inspect) ([]byte, error) {
