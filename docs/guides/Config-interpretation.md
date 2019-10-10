@@ -244,7 +244,7 @@ functions:
 ## baetyl-function-python
 
 ```yaml
-# the configurations of the two modules are the same, so we can follow this sample below
+# the configurations of the two modules(python27 and python36) are the same, so we can follow this sample below
 server: GRPC Server configuration; Do not configure if the instances of this service are managed by baetyl-function-manager
   address: GRPC Server address, <host>:<port>
   workers:
@@ -261,6 +261,94 @@ functions: function list
   - name: [MUST] The function name, must be unique in the function list.
     handler: [MUST] The function of Python code to handle message, for example, 'sayhi.handler'
     codedir: [MUST] The path of Python code
+logger: Logger configuration
+  path: The default is `empty` (none configuration), that is, it does not write to the file. If the path is specified, it writes to the file.
+  level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
+  age:
+    max: The default value is `15`, means maximum number of days the log file is kept.
+  backup:
+    max: The default value is `15`, the maximum number of log files to keep.
+```
+
+## baetyl-function-node
+
+```yaml
+server: GRPC Server configuration; Do not configure if the instances of this service are managed by baetyl-function-manager
+  address: GRPC Server address, <host>:<port>
+  message:
+    length:
+      max: The default value is `4m`, the maximum message length allowed for function instances to receive and send
+  ca: Server CA certificate path
+  key: Server private key path
+  cert: Server public key path
+functions: function list
+  - name: [MUST] The function name, must be unique in the function list.
+    handler: [MUST] The function of Node code to handle message, for example, 'sayjs.handler'
+    codedir: [MUST] The path of Node code
+logger: Logger configuration
+  path: The default is `empty` (none configuration), that is, it does not write to the file. If the path is specified, it writes to the file.
+  level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
+  backupCount:
+    max: The default value is `15`, the maximum number of log files to keep.
+```
+
+## baetyl-video-infer
+
+```yaml
+hub:
+  clientid: [MUST] The Client ID for the client to connect with the local Hub.
+  address: [MUST] The endpoint address for the client to connect with the local Hub.
+  username: The username for the client to connect with the local hub.
+  password: The password for the client to connect with the local hub.
+  ca: The CA path for the client to connect with the local hub.
+  key: The private key path for the client to connect with the local hub.
+  cert: The public key path for the client to connect with the local hub.
+  timeout: The default value is `30s`, means timeout of the client connection with the local hub.
+  interval: The default value is `1m`, means maximum interval of client reconnection, doubled from 500 microseconds to maximum.
+  keepalive: The default value is `1m`, means keep alive time between the client and the local hub after connection has been established.
+  cleansession: The default value is `false`, , means whether keep session in the local Hub after client disconnected.
+  validatesubs: The default value is `false`, means whether the client checks the subscription result. If it is true, client exits and return errors when subscription is failure.
+  buffersize: The default value is `10`, means the size of the memory queue sent by the client to the local Hub. If found exception, the client will exit and lose messages.
+video:
+  uri: [MUST] The video file path or camera address. 
+    # For IP camera, the configuration just like `rtsp://<username>:<password>@<ip>:<port>/Streaming/channels/<stream_number>/`
+      # `<username>` and `<password>` are the login authentication element
+      # `<ip>` is the IP-address of camera
+      # `<port>` is the port number of RTSP protocol, the default value is `554`
+      # `<stream_number>` is the channel number, if it is equal to `1`, it indicates that the main stream is being captured; if it is equal to `2`, it indicates that the secondary stream is being captured
+    # For USB camera, the configuration just like "0"(represents mapping device `/dev/video0` into container, also should be mounted on video infer service)
+    # For video file, the configuration just like `var/db/baetyl/data/test.mp4`(mount the volume(store the video file) on video infer service)
+  limit:
+    fps: [MUST] The max number of video frames handled by inference per second. If the video fps is N, limit.fps is M, then Ceil(N/M) - 1 frames will be skipped.
+infer:
+  model: [MUST] The path of model file, more detailed contents please refer to https://docs.opencv.org/4.1.1/d6/d0f/group__dnn.html#ga3b34fe7a29494a6a4295c169a7d32422.
+  config: [MUST] The path of model config file, more detailed contents please refer to https://docs.opencv.org/4.1.1/d6/d0f/group__dnn.html#ga3b34fe7a29494a6a4295c169a7d32422.
+  backend: [Optional] The network backend which is used to improve inference efficiency. Now support `halide`, `openvino`, `opencv`, `vulkan` and `default`. More detailed contents please refer to https://docs.opencv.org/4.1.1/d6/d0f/group__dnn.html#ga186f7d9bfacac8b0ff2e26e2eab02625.
+  device: [Optional] The target device of DNN processing. Now support `cpu`(default), `fp32`, `fp16`, `vpu`, `vulkan` and `fpga`. More detailed contents please refer to https://docs.opencv.org/4.1.1/d6/d0f/group__dnn.html#ga709af7692ba29788182cf573531b0ff5.
+process: 
+  before: creates 4-dimensional blob from image. Optionally resizes and crops image from center, subtract mean values, scales values by scalefactor, swap Blue and Red channels. More detailed contents please refer to https://docs.opencv.org/4.1.1/d6/d0f/group__dnn.html#ga29f34df9376379a603acd8df581ac8d7.
+    scale: multiplier for image values.
+    swaprb: flag which indicates that swap first and last channels in 3-channel image is necessary. 
+    width: width of spatial size for output image.
+    hight: hight of spatial size for output image.
+    mean: scalar with mean values which are subtracted from channels. Values are intended to be in (mean-R, mean-G, mean-B) order if image has BGR ordering and swapRB is true.
+      v1: blue component of type Scalar(Scalar is a 4-element(v1, v2, v3, v4) vector widely used in OpenCV to pass pixel values).
+      v2: green component of type Scalar.
+      v3: red component of type Scalar.
+      v4: alpha component of type Scalar.
+    crop: flag which indicates whether image will be cropped after resize or not.
+  after:
+    function: 
+      name: [MUST] The name of the function that handle the inference result.
+functions:
+  - name: [MUST] The function name, must be unique in the function list.
+    address: The function manager/server address, <host>:<port>, such as `function-manager:50051`
+    message:
+      length:
+        max: The default value is `4m`, means the maximum message length allowed for function instances to be received and publish.
+    backoff:
+      max: The default value is `1m`, the maximum reconnection interval of the client connection function instance
+    timeout: The default value is `30s`, Client connection function instance timeout
 logger: Logger configuration
   path: The default is `empty` (none configuration), that is, it does not write to the file. If the path is specified, it writes to the file.
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.

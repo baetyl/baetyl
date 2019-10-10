@@ -1,21 +1,21 @@
-# Message transferring among devices with Local Hub Service
+# Message transferring among devices with Hub Service
 
 **Statement**
 
-- The operating system as mentioned in this document is Ubuntu 18.04.
-- The MQTT client toolkit as mentioned in this document is [MQTTBox](../Resources.html#mqttbox-download).
+- The operating system as mentioned in this document is Ubuntu 18.04
+- The MQTT client toolkit as mentioned in this document is [MQTTBox](../Resources.html#mqttbox-download)
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../install/Build-from-Source.md).
+**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [Build Baetyl from source](../install/Build-from-Source.md).
 
-Different from [Device connect to Baetyl with Hub service](./Device-connect-to-hub-module.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](./Config-interpretation.html#local-hub-configuration).
+Different from [Device connect to Hub Service](Device-connect-to-hub-service.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](Config-interpretation.html#baetyl-hub).
 
 This document uses the TCP connection method as an example to test the message routing and forwarding capabilities of the Hub service.
 
 ## Workflow
 
-- Step 1: Install Baetyl and its example configuration, more details please refer to [How-to-quick-install-Baetyl](../install/Quick-Install.md)
+- Step 1: Install Baetyl and its example configuration, more details please refer to [Quickly install Baetyl](../install/Quick-Install.md)
 - Step 2: Modify the configuration according to the usage requirements, and then execute `sudo systemctl start baetyl` to start the Baetyl in Docker container mode, or execute `sudo systemctl restart baetyl` to restart the Baetyl. Then execute the command `sudo systemctl status baetyl` to check whether baetyl is running.
-- Step 3：MQTTBox connect to Hub Service by TCP connection method, more detailed contents please refer to [Device connect to Baetyl with Hub service](./Device-connect-to-hub-module.md).
+- Step 3：MQTTBox connect to Hub Service by TCP connection method, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md).
   - If connect successfully, then subscribe the MQTT topic due to the configuration of Hub Service.
   - If connect unsuccessfully, then retry `Step 3` operation until it connect successfully.
 - Step 4：Check the publishing and receiving messages via MQTTBox.

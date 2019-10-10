@@ -126,7 +126,7 @@ function-sayjs-code/
 └── index.js
 ```
 
-More detailed configuration of Node runtime, please refer to [Node runtime configuration](../guides/Config-interpretation.md).
+More detailed configuration of Node runtime, please refer to [Node runtime configuration](../guides/Config-interpretation.html#baetyl-function-node).
 
 ## Parameter Convention
 
@@ -182,4 +182,4 @@ exports.handler = (event, context, callback) => {
 
 ![发送非字典类数据](../images/develop/write-node-script-none-dict.png)
 
-As above, for some general needs, we can implement it through the Node Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Node runtime](./How-to-import-third-party-libraries-for-node-runtime.md).
+As above, for some general needs, we can implement it through the Node Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Node runtime](How-to-import-third-party-libraries-for-node-runtime.md).

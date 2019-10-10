@@ -1,37 +1,37 @@
-# Message Synchronize between Baetyl-Hub and Baidu IoTHub via Baetyl-Remote-MQTT module
+# Message Synchronize between baetyl-hub and Baidu IoTHub via Remote Service
 
 **Statement**
 
-- The operating system as mentioned in this document is Ubuntu18.04.
-- It should be installed for Baetyl when you read this document, more details please refer to [Quick-install-Baetyl](../install/Quick-Install.md)
+- The operating system as mentioned in this document is Ubuntu18.04
+- It should be installed for Baetyl when you read this document, more details please refer to [Quickly install Baetyl](../install/Quick-Install.md)
 - The MQTT client toolkit which is used to connect to Baidu IoTHub is [MQTT.fx](../Resources.html#mqtt-fx-download)
-- The MQTT client toolkit which is used to connect to Baetyl-Hub is [MQTTBox](../Resources.html#mqttbox-download).
-- The hub and Baetyl-Remote-MQTT module images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
+- The MQTT client toolkit which is used to connect to baetyl-hub is [MQTTBox](../Resources.html#mqttbox-download)
+- The baetyl-hub and baetyl-remote-mqtt service images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
 - Docker images built from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../install/Build-from-Source.md)
 - The Remote Hub as mentioned in this document is [Baidu IoTHub](https://cloud.baidu.com/product/iot.html)
 
-The Baetyl-Remote-MQTT module was developed to meet the needs of the IoT scenario. The Baetyl(via Baetyl-Hub module) can synchronize message with Remote Hub services([Baidu IoTHub](https://cloud.baidu.com/product/iot.html)) via the Baetyl-Remote-MQTT module. That is to say, through the Baetyl-Remote-MQTT module, we can either subscribe the message from Remote Hub and publish it to the Baetyl-Hub module or subscribe the message from Baetyl-Hub module and publish it to Remote Hub service. The configuration of Baetyl-Remote-MQTT module can refer to [Baetyl-Remote-MQTT module Configuration](./Config-interpretation.md).
+The baetyl-remote-mqtt service was developed to meet the needs of the IoT scenario. The Baetyl(via baetyl-hub service) can synchronize message with remote hub platform([Baidu IoTHub](https://cloud.baidu.com/product/iot.html)) via the baetyl-remote-mqtt service. That is to say, through the baetyl-remote-mqtt service, we can either subscribe the message from Remote Hub and publish it to the baetyl-hub service or subscribe the message from baetyl-hub service and publish it to remote hub platform. The configuration of baetyl-remote-mqtt service can refer to [Remote service configuration](Config-interpretation.html#baetyl-remote-mqtt).
 
 ## Workflow
 
 - Step 1：Create device(MQTT client) connection info(include `endpoint`, `user`, `principal`, `policy`, etc.) via Baidu IoTHub.
 - Step 2：Select MQTT.fx as the MQTT client that used to connect to Baidu IoTHub.
   - If connect successfully, then do the following next.
-  - If connect unsuccessfully, then retry it until it connect successfully. More detailed contents can refer to [How to connect to Baidu IoTHub via MQTT.fx](https://cloud.baidu.com/doc/IOT/s/Sjwvy72aq)。
+  - If connect unsuccessfully, then retry it until it connect successfully. More detailed contents can refer to [Connect to Baidu IoTHub with MQTT.fx](https://cloud.baidu.com/doc/IOT/s/Sjwvy72aq)。
 - Step 3：Startup Baetyl in docker container mode, and observe the log of Baetyl.
-  - If the Baetyl-Hub module and Baetyl-Remote-MQTT module start successfully, then do the following next.
-  - If the Baetyl-Hub module and Baetyl-Remote-MQTT module start unsuccessfully, then retry `Step 3` until they start successfully.
-- Step 4：Select MQTTBox as the MQTT client that used to [connect to the Baetyl-Hub](Device-connect-to-hub-module.md).
+  - If the baetyl-hub service and baetyl-remote-mqtt service start successfully, then do the following next.
+  - If the baetyl-hub service and baetyl-remote-mqtt service start unsuccessfully, then retry `Step 3` until they start successfully.
+- Step 4：Select MQTTBox as the MQTT client that connect to BAETYL framework, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md).
   - If connect successfully, then do the following next.
   - If connect unsuccessfully, then retry `Step 4` until it connect successfully.
-- Step 5：Due to the configuration of Baetyl-Remote-MQTT module, using MQTTBox publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBox.
+- Step 5：Due to the configuration of baetyl-remote-mqtt service, using MQTTBox publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBox.
 - Step 6：If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
 
 The workflow diagram are as follows.
 
-![using Baetyl-Remote-MQTT module to synchronize message](../images/guides/remote/remote-flow.png)
+![using baetyl-remote-mqtt service to synchronize message](../images/guides/remote/remote-flow.png)
 
-## Message Synchronize via Baetyl-Remote-MQTT module
+## Message Synchronize via baetyl-remote-mqtt service
 
 The application configuration in `var/db/baetyl/application.yml` are as follows:
 
@@ -80,9 +80,9 @@ volumes:
     path: var/db/baetyl/remote-iothub-log
 ```
 
-Configuration file location for Baetyl-Hub module is: `var/db/baetyl/localhub-conf/service.yml`.
+Configuration file location for baetyl-hub service is: `var/db/baetyl/localhub-conf/service.yml`.
 
-The configuration of Baetyl-Hub module is as follow:
+The configuration of baetyl-hub service is as follow:
 ```yaml
 listen:
   - tcp://0.0.0.0:1883
@@ -99,9 +99,9 @@ logger:
   level: "debug"
 ```
 
-Configuration file location for Baetyl-Remote-MQTT module is: `var/db/baetyl/remote-iothub-conf/service.yml`.
+Configuration file location for baetyl-remote-mqtt service is: `var/db/baetyl/remote-iothub-conf/service.yml`.
 
-The configuration of Baetyl-Remote-MQTT module is as follow:
+The configuration of baetyl-remote-mqtt service is as follow:
 
 ```yaml
 name: remote-iothub
@@ -111,9 +111,9 @@ hub:
   password: hahaha
 remotes:
   - name: iothub
-    address: 'ssl://xxxxxx.mqtt.iot.bj.baidubce.com:1884'
+    address: '<iothub_endpoint>' # copy the ssl address from Baidu IoTHub endpoint list, then replace <iothub_endpoint>, such as ssl://xxxxxx.mqtt.iot.gz.baidubce.com:1884, and the xxxxxx represents for endpoint name.
     clientid: remote-iothub-1
-    username: xxxx/test
+    username: '<username>' # copy the username which supports ssl connect authentication from the above(address) endpoint's user list, such as xxxxxx/test, and the xxxxxx represents for endpoint name.
     ca: var/db/baetyl/cert/ca.pem
     cert: var/db/baetyl/cert/client.pem
     key: var/db/baetyl/cert/client.key
@@ -131,15 +131,15 @@ logger:
   level: 'debug'
 ```
 
-According to the configuration of the above, it means that the Baetyl-Remote-MQTT module subscribes the topic `t1` from the Baetyl-Hub module, subscribes the topic `t2` from Baidu IoTHub. When MQTTBox publishes a message to the topic `t1`, the Baetyl-Hub module will receive this message and forward it to Baidu IoTHub via Baetyl-Remote-MQTT module, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoTHub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoTHub will receive it and forward it to the Baetyl-Hub module via Baetyl-Remote-MQTT module. Finally, MQTTBox will receive this message(suppose MQTTBox has already subscribed the topic `t2` before).
+According to the configuration of the above, it means that the baetyl-remote-mqtt service subscribes the topic `t1` from the baetyl-hub service, subscribes the topic `t2` from Baidu IoTHub. When MQTTBox publishes a message to the topic `t1`, the baetyl-hub service will receive this message and forward it to Baidu IoTHub via baetyl-remote-mqtt service, and MQTT.fx will also receive this message(suppose MQTT.fx has already subscribed the topic `t1` before) from Baidu IoTHub. Similarly, When we use MQTT.fx to publish a message to the topic `t2`, then Baidu IoTHub will receive it and forward it to the baetyl-hub service via baetyl-remote-mqtt service. Finally, MQTTBox will receive this message(suppose MQTTBox has already subscribed the topic `t2` before).
 
 In a word, from MQTTBox publishes a message to the topic `t1`, to MQTT.fx receives the message, the routing path of the message are as follows.
 
-> **MQTTBox -> Baetyl-Hub module -> Baetyl-Remote-MQTT module -> Baidu IoTHub -> MQTT.fx**
+> **MQTTBox -> baetyl-hub service -> baetyl-remote-mqtt service -> Baidu IoTHub -> MQTT.fx**
 
 Similarly, from MQTT.fx publishes a message to the topic `t2`, to MQTTBox receives the message, the routing path of the message are as follows.
 
-> **MQTT.fx -> Baidu IoTHub -> Baetyl-Remote-MQTT module -> Baetyl-Hub module -> MQTTBox**
+> **MQTT.fx -> Baidu IoTHub -> baetyl-remote-mqtt service -> baetyl-hub service -> MQTTBox**
 
 ### Establish a Connection between MQTT.fx and Baidu IoTHub
 
@@ -153,9 +153,9 @@ After set the configuration of MQTT.fx, click `OK` or `Apply` button, then click
 
 ![Successfully establish a connection between MQTT.fx and Baidu IoTHub](../images/guides/remote/mqttfx-connect-success.png)
 
-### Establish a Connection between MQTTBox and the Baetyl-Hub module
+### Establish a Connection between MQTTBox and the baetyl-hub service
 
-As described in `Step 3`, the Baetyl-Hub module and Baetyl-Remote-MQTT module also loaded when Baetyl started. Also, we can lookup the running status of Baetyl through the command `sudo systemctl status baetyl`.
+As described in `Step 3`, the baetyl-hub service and baetyl-remote-mqtt service also loaded when Baetyl started. Also, we can lookup the running status of Baetyl through the command `sudo systemctl status baetyl`.
 
 ![lookup the running status of Baetyl](../images/install/systemctl-status.png)
 
@@ -163,7 +163,7 @@ In addition, we can execute the command `docker stats` to view the list of docke
 
 ![View the list of docker containers currently running](../images/guides/remote/docker-ps-after-remote-start.png)
 
-After Baetyl successfully startup, set the configuration of connection, then establish the connection with the Baetyl-Hub module and subscribe the topic `t2`.
+After Baetyl successfully startup, set the configuration of connection, then establish the connection with the baetyl-hub service and subscribe the topic `t2`.
 
 ![MQTTBox successfully subscribe the topic t2](../images/guides/remote/mqttbox-sub-t2-success.png)
 

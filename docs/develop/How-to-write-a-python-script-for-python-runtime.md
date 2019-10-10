@@ -127,7 +127,7 @@ function-sayhi-code/
 └── sayhi.py
 ```
 
-More detailed configuration of Python runtime, please refer to [Python runtime configuration](../guides/Config-interpretation.md).
+More detailed configuration of Python runtime, please refer to [Python runtime configuration](../guides/Config-interpretation.html#baetyl-function-python).
 
 ## Parameter Convention
 
@@ -181,4 +181,4 @@ def handler(event, context):
 
 ![Publish an non-dict format message](../images/develop/write-python-script-none-dict.png)
 
-As above, for some general needs, we can implement it through the Python Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Python runtime](./How-to-import-third-party-libraries-for-python-runtime.md).
+As above, for some general needs, we can implement it through the Python Standard Library. However, for some more complex demands, it is often necessary to import third-party libraries to complete. How to solve the problem? We've provided a general solution in [How to import third-party libraries for Python runtime](How-to-import-third-party-libraries-for-python-runtime.md).

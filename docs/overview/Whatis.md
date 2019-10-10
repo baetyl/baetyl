@@ -47,7 +47,7 @@ As an edge computing platform, **Baetyl** not only provides features such as und
 
 ## Contributing
 
-If you are passionate about contributing to open source community, Baetyl will provide you with both code contributions and document contributions. More details, please see: [How to contribute code or document to Baetyl](./Contributing.md).
+If you are passionate about contributing to open source community, Baetyl will provide you with both code contributions and document contributions. More details, please see: [How to contribute code or document to Baetyl](Contributing.md).
 
 ## Contact us
 
