@@ -126,7 +126,7 @@ function-sayjs-code/
 └── index.js
 ```
 
-More detailed configuration of Node runtime, please refer to [Node runtime configuration](../guides/Config-interpretation.html#baetyl-function-nodejs).
+More detailed configuration of Node runtime, please refer to [Node runtime configuration](../guides/Config-interpretation.html#baetyl-function-node).
 
 ## Parameter Convention
 

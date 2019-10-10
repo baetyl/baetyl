@@ -36,7 +36,7 @@ Baetyl, extend cloud computing, data and service seamlessly to edge devices.
    :caption: Guides
 
    guides/Config-interpretation.md
-   guides/Device-connect-to-BAETYL-framework-with-hub-service.md
+   guides/Device-connect-to-hub-service.md
    guides/Message-transfer-among-devices-with-hub-service.md
    guides/Message-handling-with-function-service.md
    guides/Message-synchronize-with-iothub-through-remote-service.md

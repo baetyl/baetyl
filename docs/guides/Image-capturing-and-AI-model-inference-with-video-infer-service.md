@@ -11,9 +11,9 @@
 
 ## Workflow
 
-- Step 1: Install Baetyl on Ubuntu18.04, more detailed contents please refer to [Qick-install-Baetyl](../install/Quick-Install.md)
+- Step 1: Install Baetyl on Ubuntu18.04, more detailed contents please refer to [Qickly install Baetyl](../install/Quick-Install.md)
 - Step 2: Write all services configuration file, and start Baetyl with command `sudo systemctl start baetyl`. Also, we can view the Baetyl's running status and all running containers through command `sudo systemctl status baetyl` and `docker ps`. More detailed contents of all services configuration please refer to [Configuration](#configuration)
-- Step 3: Select MQTTBox as the MQTT client that connect to BAETYL framework, more detailed contents please refer to [Device connect to BAETYL framework with Hub Service](Device-connect-to-BAETYL-framework-with-hub-service.md)
+- Step 3: Select MQTTBox as the MQTT client that connect to BAETYL framework, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md)
 - Step 4: Subscribe topic `video/infer/result` and observe whether it can be received normally
 
 The workflow of above operation is as follow:

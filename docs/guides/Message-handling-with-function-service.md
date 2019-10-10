@@ -8,7 +8,7 @@
 - The docker image used in this document is built from the Baetyl source code. More detailed contents please refer to [Build Baetyl from source](../install/Build-from-Source.md)
 - In this article, the service created based on the Hub service is called Hub service
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [How to build image from source code](../install/Build-from-Source.md).
+**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [Build Baetyl from source](../install/Build-from-Source.md).
 
 Different from the Hub service to transfer message among devices(mqtt clients), this document describes the message handling with Local Function Manager service(also include Hub service and Python3.6 runtime service). In the document, Hub service is used to establish connection between Baetyl and mqtt client, Python3.6 runtime service is used to handle MQTT messages, and the Local Function Manager service is used to combine Hub service with Python3.6 runtime service with message context.
 
@@ -16,9 +16,9 @@ This document will take the TCP connection method as an example to show the mess
 
 ## Workflow
 
-- Step 1: Install Baetyl and its example configuration, more details please refer to [How-to-quick-install-Baetyl](../install/Quick-Install.md)
+- Step 1: Install Baetyl and its example configuration, more details please refer to [Quickly install Baetyl](../install/Quick-Install.md)
 - Step 2: Modify the configuration according to the usage requirements, and then execute `sudo systemctl start baetyl` to start the Baetyl in Docker container mode, or execute `sudo systemctl restart baetyl` to restart the Baetyl. Then execute the command `sudo systemctl status baetyl` to check whether baetyl is running.
-- Step 3：MQTTBox connect to Hub Service by TCP connection method, more detailed contents please refer to [Device connect to BAETYL framework with Hub Service](Device-connect-to-BAETYL-framework-with-hub-service.md)
+- Step 3：MQTTBox connect to Hub Service by TCP connection method, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md)
   - If connect successfully, then subscribe the MQTT topic due to the configuration of Hub Service, and observe the log of Baetyl.
     - If the Baetyl's log shows that the Python Runtime Service has been started, it indicates that the published message was handled by the specified function.
     - If the Baetyl's log shows that the Python Runtime Service has not been started, then retry it until the Python Runtime Service has been started.
