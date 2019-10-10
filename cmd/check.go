@@ -44,12 +44,6 @@ func check(cmd *cobra.Command, args []string) {
 }
 
 func checkInternal() (*master.Config, error) {
-	// backward compatibility
-	err := addSymlinkCompatible()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-
 	cfg := &master.Config{File: defaultConfFile}
 	utils.UnmarshalYAML(nil, cfg) // default config
 	exe, err := os.Executable()
@@ -67,9 +61,14 @@ func checkInternal() (*master.Config, error) {
 	if err != nil {
 		return cfg, fmt.Errorf("failed to get absolute path of work directory: %s", err.Error())
 	}
-
 	if err = os.Chdir(workDir); err != nil {
 		return cfg, fmt.Errorf("failed to change work directory: %s", err.Error())
+	}
+
+	// backward compatibility
+	err = addSymlinkCompatible()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 	}
 
 	if cfgFile != "" {
