@@ -2,16 +2,15 @@
 
 **Statement**
 
-- In this document, the used operating system is Ubuntu18.04
-- In this document, the selected camera is Hikvision DS-IPC-B12-1
-- In this document, image cpaturing and AI model inference both depend on CPU with video infer service
-- In this document, the selected AI model is [ssd_mobilenet_v1_coco_2017_11_17](https://baetyl.cdn.bcebos.com/example/guides/ssd_mobilenet_v1_coco_2017_11_17.tar.gz)
-- In this document, the MQTT client toolkit which is used to connect to baetyl-hub service is [MQTTBox](../Resources.html#mqttbox-download)
-- In this document, the connection method between other service and baetyl-hub service is TCP
+- The operating system used in this test is Ubuntu 18.04
+- The camera used in this test is Hikvision DS-IPC-B12-1
+- The AI model inference is running on CPU with video infer service
+- The AI model used in this test is [ssd_mobilenet_v1_coco_2017_11_17](https://baetyl.cdn.bcebos.com/example/guides/ssd_mobilenet_v1_coco_2017_11_17.tar.gz)
+- The [MQTTBox](../Resources.html#mqttbox-download) is used as MQTT client in this test
 
 ## Workflow
 
-- Step 1: Install Baetyl on Ubuntu18.04, more detailed contents please refer to [Qickly install Baetyl](../install/Quick-Install.md)
+- Step 1: Install Baetyl on Ubuntu18.04, more detailed contents please refer to [Quickly install Baetyl](../install/Quick-Install.md)
 - Step 2: Write all services configuration file, and start Baetyl with command `sudo systemctl start baetyl`. Also, we can view the Baetyl's running status and all running containers through command `sudo systemctl status baetyl` and `docker ps`. More detailed contents of all services configuration please refer to [Configuration](#configuration)
 - Step 3: Select MQTTBox as the MQTT client that connect to BAETYL framework, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md)
 - Step 4: Subscribe topic `video/infer/result` and observe whether it can be received normally
