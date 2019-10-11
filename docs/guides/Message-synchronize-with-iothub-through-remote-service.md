@@ -12,18 +12,18 @@ The baetyl-remote-mqtt service was developed to meet the needs of the IoT scenar
 
 ## Workflow
 
-- Step 1：Create device(MQTT client) connection info(include `endpoint`, `user`, `principal`, `policy`, etc.) via Baidu IoTHub.
-- Step 2：Select MQTT.fx as the MQTT client that used to connect to Baidu IoTHub.
+- Step 1: Create device(MQTT client) connection info(include `endpoint`, `user`, `principal`, `policy`, etc.) via Baidu IoTHub.
+- Step 2: Select MQTT.fx as the MQTT client that used to connect to Baidu IoTHub.
   - If connect successfully, then do the following next.
   - If connect unsuccessfully, then retry it until it connect successfully. More detailed contents can refer to [Connect to Baidu IoTHub with MQTT.fx](https://cloud.baidu.com/doc/IOT/s/Sjwvy72aq)。
-- Step 3：Startup Baetyl in docker container mode, and observe the log of Baetyl.
+- Step 3: Startup Baetyl in docker container mode, and observe the log of Baetyl.
   - If the baetyl-hub service and baetyl-remote-mqtt service start successfully, then do the following next.
   - If the baetyl-hub service and baetyl-remote-mqtt service start unsuccessfully, then retry `Step 3` until they start successfully.
-- Step 4：Select MQTTBox as the MQTT client that connect to BAETYL framework, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md).
+- Step 4: Select MQTTBox as the MQTT client that connect to BAETYL framework, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md).
   - If connect successfully, then do the following next.
   - If connect unsuccessfully, then retry `Step 4` until it connect successfully.
-- Step 5：Due to the configuration of baetyl-remote-mqtt service, using MQTTBox publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBox.
-- Step 6：If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
+- Step 5: Due to the configuration of baetyl-remote-mqtt service, using MQTTBox publish message to the specified topic, and observing the receiving message via MQTT.fx. Similarly, using MQTT.fx publish message to the specified topic, and observing the receiving message via MQTTBox.
+- Step 6: If both parties in `Step 5` can receive the message content posted by the other one, it indicates the Remote function test passes smoothly.
 
 The workflow diagram are as follows.
 

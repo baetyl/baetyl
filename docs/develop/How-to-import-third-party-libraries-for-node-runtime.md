@@ -1,6 +1,6 @@
 # How to import third-party libraries for Node runtime
 
-**Statement**：
+**Statement**: 
 
 - The operating system as mentioned in this document is Ubuntu16.04.
 - The version of runtime is Node8.5

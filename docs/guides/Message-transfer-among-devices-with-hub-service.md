@@ -13,10 +13,10 @@ This document uses the TCP connection method as an example to test the message r
 
 - Step 1: Install Baetyl and its example configuration, more details please refer to [Quickly install Baetyl](../install/Quick-Install.md)
 - Step 2: Modify the configuration according to the usage requirements, and then execute `sudo systemctl start baetyl` to start the Baetyl in Docker container mode, or execute `sudo systemctl restart baetyl` to restart the Baetyl. Then execute the command `sudo systemctl status baetyl` to check whether baetyl is running.
-- Step 3：MQTTBox connect to Hub Service by TCP connection method, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md).
+- Step 3: MQTTBox connect to Hub Service by TCP connection method, more detailed contents please refer to [Device connect to Hub Service](Device-connect-to-hub-service.md).
   - If connect successfully, then subscribe the MQTT topic due to the configuration of Hub Service.
   - If connect unsuccessfully, then retry `Step 3` operation until it connect successfully.
-- Step 4：Check the publishing and receiving messages via MQTTBox.
+- Step 4: Check the publishing and receiving messages via MQTTBox.
 
 ## Message Routing Test
 

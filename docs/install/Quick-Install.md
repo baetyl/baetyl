@@ -20,7 +20,7 @@ View the version of installed docker:
 docker version
 ```
 
-**NOTE**：According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
+**NOTE**: According to the [Official Release Log](https://docs.docker.com/engine/release-notes/#18092), the version of docker lower than 18.09.2 has some security implications. It is recommended to install/update the docker to 18.09.2 and above.
 
 **For more details, please see the [official documentation](https://docs.docker.com/install/).**
 

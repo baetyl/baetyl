@@ -139,10 +139,10 @@ def handler(event, context):
 
 The Python runtime provided by Baetyl supports two parameters: `event` and `context`, which are described separately below.
 
-- **event**：Depend on the `Payload` in the MQTT message
+- **event**: Depend on the `Payload` in the MQTT message
     - If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
     - If the original `Payload` is Byte, string(not Json), then pass in the original `Payload`。
-- **context**：MQTT message context
+- **context**: MQTT message context
     - context.messageQOS // MQTT QoS
     - context.messageTopic // MQTT Topic
     - context.functionName // MQTT functionName

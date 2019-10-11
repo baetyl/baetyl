@@ -7,7 +7,7 @@
 
 The complete configuration reference for [Hub Module Configuration](Config-interpretation.html#baetyl-hub).
 
-**NOTE**：You can install Baetyl from source on Darwin. Please refer to [Install Baetyl from source](../install/Install-from-source.md) for more information.
+**NOTE**: You can install Baetyl from source on Darwin. Please refer to [Install Baetyl from source](../install/Install-from-source.md) for more information.
 
 ## Workflow
 
@@ -102,7 +102,7 @@ According to `Step 2`, execute `sudo systemctl start baetyl` to start Baetyl in 
 
 ![Baetyl status](../images/install/systemctl-status.png)
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code, and excute `sudo baetyl start` to start the Baetyl in Docker container mode.
+**NOTE**: Darwin can install Baetyl by using Baetyl source code, and excute `sudo baetyl start` to start the Baetyl in Docker container mode.
 
 Look at the log of the Baetyl master by executing `sudo tail -f /usr/local/var/log/baetyl/baetyl.log` as shown below:
 

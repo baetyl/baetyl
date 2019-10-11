@@ -1,6 +1,6 @@
 # How to write a javascript for Node runtime
 
-**Statement**：
+**Statement**: 
 
 - The operating system as mentioned in this document is Ubuntu16.04.
 - The version of runtime is Node8.5
@@ -138,10 +138,10 @@ exports.handler = (event, context, callback) => {
 
 The Node runtime provided by Baetyl supports two parameters: `event` and `context`, which are described separately below.
 
-- **event**：Depend on the `Payload` in the MQTT message
+- **event**: Depend on the `Payload` in the MQTT message
     - If the original `Payload` is a json format data, then pass in the data handled by `json.loads(Payload)`
     - If the original `Payload` is Byte, string(not Json), then pass in the original `Payload`。
-- **context**：MQTT message context
+- **context**: MQTT message context
     - context.messageQOS // MQTT QoS
     - context.messageTopic // MQTT Topic
     - context.functionName // MQTT functionName

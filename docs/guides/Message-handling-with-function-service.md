@@ -3,7 +3,7 @@
 **Statement**
 
 - The operating system used in this test is Ubuntu 18.04
-- The function runtime used in this test is Python3.6
+- The function runtime used in this test is Python3
 - The [MQTTBox](../Resources.html#mqttbox-download) is used as MQTT client in this test
 
 **NOTE**: You can install Baetyl from source. Please refer to [Install Baetyl from source](../install/Install-from-source.md) for more details.
