@@ -17,7 +17,7 @@ Baetyl, extend cloud computing, data and service seamlessly to edge devices.
    BAETYL Home <https://baetyl.io/en/>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Overview
 
    overview/Whatis.md
@@ -25,14 +25,14 @@ Baetyl, extend cloud computing, data and service seamlessly to edge devices.
    overview/Contributing.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Installation
 
    install/Quick-Install.md
-   install/Build-from-Source.md
+   install/Install-from-source.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Guides
 
    guides/Config-interpretation.md
@@ -43,7 +43,7 @@ Baetyl, extend cloud computing, data and service seamlessly to edge devices.
    guides/Image-capturing-and-AI-model-inference-with-video-infer-service.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Development
 
    develop/How-to-write-a-python-script-for-python-runtime.md
@@ -54,19 +54,19 @@ Baetyl, extend cloud computing, data and service seamlessly to edge devices.
    develop/How-to-develop-a-customize-module.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Troubleshooting
 
    FAQ.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Resources
 
    Resources.md
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Release Information
 
    releasenotes/Baetyl-0.1.6.md

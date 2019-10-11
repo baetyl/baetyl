@@ -39,7 +39,7 @@ As an edge computing platform, **Baetyl** not only provides features such as und
 ## Installation
 
 - [Quick Install Baetyl](./docs/install/Quick-Install.md)
-- [Build Baetyl From Source](./docs/install/Build-from-Source.md)
+- [Install Baetyl From source](./docs/install/Install-from-source.md)
 
 ## Development
 
