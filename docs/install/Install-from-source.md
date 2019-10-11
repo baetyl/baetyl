@@ -1,4 +1,4 @@
-# Install From Source
+# Install from source
 
 Compared to the quick installation of Baetyl, you can build Baetyl from source to get the latest features.
 
@@ -6,11 +6,11 @@ Compared to the quick installation of Baetyl, you can build Baetyl from source t
 
 - The Go tools
 
-The minimum required go version is 1.12. Refer to https://golang.org/dl/ or https://golang.google.cn/dl/ to download and install the Go tools.
+The minimum required go version is 1.12. Refer to [golang.org](https://golang.org/dl/) or [golang.google.cn](https://golang.google.cn/dl/) to download and install the Go tools.
 
-- The Docker Engine
+- The Docker Engine and Buildx
 
-The minimum required docker version is 19.03, because the docker buildx feature is introduced to build multi-platform images. Refer to https://docs.docker.com/install/ to install the Docker Engine and refer to https://docs.docker.com/buildx/working-with-buildx/ to enable the docker buildx.
+The minimum required docker version is 19.03, because the docker buildx feature is introduced to build multi-platform images. Refer to [docker.com/install](https://docs.docker.com/install/) to install the Docker Engine and refer to [github.com/docker/buildx](https://github.com/docker/buildx) to enable the docker buildx.
 
 ## Download source code
 

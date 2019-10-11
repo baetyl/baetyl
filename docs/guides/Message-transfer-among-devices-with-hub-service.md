@@ -2,10 +2,8 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Ubuntu 18.04
-- The MQTT client toolkit as mentioned in this document is [MQTTBox](../Resources.html#mqttbox-download)
-
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [Build Baetyl from source](../install/Build-from-Source.md).
+- The operating system used in this test is Ubuntu 18.04
+- The [MQTTBox](../Resources.html#mqttbox-download) is used as MQTT client in this test
 
 Different from [Device connect to Hub Service](Device-connect-to-hub-service.md), if you want to transfer MQTT messages among multiple MQTT clients, you need to configure the connect information, topic permission, and router rules. More detailed configuration of Hub service, please refer to [Hub service configuration](Config-interpretation.html#baetyl-hub).
 

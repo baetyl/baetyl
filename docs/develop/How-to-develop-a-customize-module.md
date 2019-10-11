@@ -1,6 +1,6 @@
 # Customize Module
 
-Read [Build Baetyl From Source](../install/Build-from-Source.md) before developing custom modules to understand Baetyl's build environment requirements.
+Read [Install Baetyl from source](../install/Install-from-source.md) before developing custom modules to understand the build environment of Baetyl.
 
 Custom modules do not limit the development language. Understand these conventions below to integrate custom modules better and faster.
 

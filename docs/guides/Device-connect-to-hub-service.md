@@ -2,14 +2,12 @@
 
 **Statement**:
 
-- The device system used in this test is Ubuntu 18.04
-- MQTT.fx and MQTTBox are MQTT Clients in this test, which [MQTT.fx](../Resources.html#mqtt-fx-download) used for TCP and SSL connection test and [MQTTBox](../Resources.html#mqttbox-download) used for WS (Websocket) connection test
-- The hub service image used is the official image published in the Baetyl Cloud Management Suite: `hub.baidubce.com/baetyl/baetyl-hub`
-- You can also build the required Hub service image by using Baetyl source code. Please see [Build Baetyl from source](../install/Build-from-Source.md)
+- The operating system used in this test is Ubuntu 18.04
+- The MQTT.fx and MQTTBox are used as MQTT Clients, [MQTT.fx](../Resources.html#mqtt-fx-download) for TCP and SSL connection test and [MQTTBox](../Resources.html#mqttbox-download) for WS (Websocket) connection test
 
 The complete configuration reference for [Hub Module Configuration](Config-interpretation.html#baetyl-hub).
 
-**NOTE**：Darwin can install Baetyl by using Baetyl source code. Please see [Build Baetyl from source](../install/Build-from-Source.md).
+**NOTE**：You can install Baetyl from source on Darwin. Please refer to [Install Baetyl from source](../install/Install-from-source.md) for more information.
 
 ## Workflow
 

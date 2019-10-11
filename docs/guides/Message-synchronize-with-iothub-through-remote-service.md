@@ -2,15 +2,13 @@
 
 **Statement**
 
-- The operating system as mentioned in this document is Ubuntu18.04
-- It should be installed for Baetyl when you read this document, more details please refer to [Quickly install Baetyl](../install/Quick-Install.md)
+- The operating system used in this test is Ubuntu 18.04
+- The Baetyl and example configuration should be installed firstly, refer to [Quick Install](../install/Quick-Install.md)
 - The MQTT client toolkit which is used to connect to Baidu IoTHub is [MQTT.fx](../Resources.html#mqtt-fx-download)
 - The MQTT client toolkit which is used to connect to baetyl-hub is [MQTTBox](../Resources.html#mqttbox-download)
-- The baetyl-hub and baetyl-remote-mqtt service images used have published by [BIE Cloud Management Suite](https://cloud.baidu.com/product/bie.html): `hub.baidubce.com/baetyl/baetyl-hub:latest`、`hub.baidubce.com/baetyl/baetyl-remote-mqtt:latest`
-- Docker images built from the Baetyl source code also can be used. More detailed contents please refer to [Build Baetyl from source](../install/Build-from-Source.md)
-- The Remote Hub as mentioned in this document is [Baidu IoTHub](https://cloud.baidu.com/product/iot.html)
+- The Remote Hub used in this test is [Baidu IoTHub](https://cloud.baidu.com/product/iot.html)
 
-The baetyl-remote-mqtt service was developed to meet the needs of the IoT scenario. The Baetyl(via baetyl-hub service) can synchronize message with remote hub platform([Baidu IoTHub](https://cloud.baidu.com/product/iot.html)) via the baetyl-remote-mqtt service. That is to say, through the baetyl-remote-mqtt service, we can either subscribe the message from Remote Hub and publish it to the baetyl-hub service or subscribe the message from baetyl-hub service and publish it to remote hub platform. The configuration of baetyl-remote-mqtt service can refer to [Remote service configuration](Config-interpretation.html#baetyl-remote-mqtt).
+The baetyl-remote-mqtt service was developed to meet the needs of the IoT scenario. The Baetyl(via baetyl-hub service) can synchronize message with remote hub, such as [Baidu IoTHub](https://cloud.baidu.com/product/iot.html) via the baetyl-remote-mqtt service. That is to say, through the baetyl-remote-mqtt service, we can either subscribe the message from Remote Hub and publish it to the baetyl-hub service or subscribe the message from baetyl-hub service and publish it to remote hub platform. The configuration of baetyl-remote-mqtt service can refer to [Remote service configuration](Config-interpretation.html#baetyl-remote-mqtt).
 
 ## Workflow
 
