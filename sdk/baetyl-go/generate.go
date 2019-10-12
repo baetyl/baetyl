@@ -12,6 +12,7 @@ package baetyl
 //go:generate ./templates/gen.sh hub
 //go:generate ./templates/gen.sh remote-mqtt
 //go:generate ./templates/gen.sh timer
+//go:generate ./templates/gen.sh modbus
 //go:generate ./templates/gen.sh function-manager
 //go:generate ./templates/gen.sh function-node8
 //go:generate ./templates/gen.sh function-python2
