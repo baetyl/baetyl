@@ -23,7 +23,7 @@ print_status() {
 }
 
 exec_cmd_nobail() {
-    echo "+ sh -c '$1'"
+    echo "+ bash -c '$1'"
     bash -c "$1"
 }
 
