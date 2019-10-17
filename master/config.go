@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 )
 
