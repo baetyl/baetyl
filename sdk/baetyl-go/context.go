@@ -60,6 +60,7 @@ const (
 	// new envs
 	EnvKeyHostID                 = "BAETYL_HOST_ID"
 	EnvKeyHostOS                 = "BAETYL_HOST_OS"
+	EnvKeyHostSN				 = "BAETYL_HOST_SN"
 	EnvKeyMasterAPISocket        = "BAETYL_MASTER_API_SOCKET"
 	EnvKeyMasterAPIAddress       = "BAETYL_MASTER_API_ADDRESS"
 	EnvKeyMasterAPIVersion       = "BAETYL_MASTER_API_VERSION"
@@ -99,6 +100,8 @@ const (
 	DefaultMasterConfDir = "etc/baetyl"
 	// DefaultMasterConfFile master config file by default
 	DefaultMasterConfFile = "etc/baetyl/conf.yml"
+	// DefaultHostSNFile host serial number file by default
+	DefaultHostSNFile = "var/db/baetyl/hostSN"
 
 	// backward compatibility
 	// PreviousDBDir previous db dir of the service

@@ -52,6 +52,7 @@ func TestConfig(t *testing.T) {
 			assert.Equal(t, 15, cfg.Logger.Backup.Max)
 
 			assert.Equal(t, time.Duration(30*1000*1000000), cfg.Grace)
+			assert.Equal(t, "var/db/baetyl/hostSN", cfg.HostSN)
 		})
 	}
 }

@@ -2,12 +2,13 @@ package master
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 )
 
@@ -53,6 +54,18 @@ func (c *Config) Validate() error {
 		utils.SetEnv(baetyl.EnvKeyMasterAPIAddress, addr)
 		// TODO: remove, backward compatibility
 		utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
+	}
+
+	snPath, err := filepath.Abs(c.HostSN)
+	if err != nil {
+		return err
+	}
+	snByte, err := ioutil.ReadFile(snPath)
+	if err != nil {
+		fmt.Printf("failed to load host sn: %s", err.Error())
+	}else {
+		sn := strings.TrimSpace(string(snByte))
+		utils.SetEnv(baetyl.EnvKeyHostSN, sn)
 	}
 
 	utils.SetEnv(baetyl.EnvKeyMasterAPIVersion, "v1")
