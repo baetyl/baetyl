@@ -199,7 +199,7 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string
 			NanoCPUs:   int64(cfg.Resources.CPU.Cpus * 1e9),
 			Memory:     cfg.Resources.Memory.Limit,
 			MemorySwap: cfg.Resources.Memory.Swap,
-			PidsLimit:  cfg.Resources.Pids.Limit,
+			PidsLimit:  &cfg.Resources.Pids.Limit,
 			Devices:    deviceBindings,
 		},
 	}

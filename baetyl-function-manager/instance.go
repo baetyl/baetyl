@@ -60,7 +60,7 @@ func (p *producer) StartInstance(id uint32) (Instance, error) {
 	}
 	fcc := baetyl.FunctionClientConfig{}
 	fcc.Address = fmt.Sprintf("%s:%s", clientHost, port)
-	fcc.Message = p.cfg.Message
+	fcc.Message.Length.Max = p.cfg.Message.Length.Max
 	fcc.Timeout = p.cfg.Timeout
 	fcc.Backoff = p.cfg.Backoff
 	cli, err := baetyl.NewFClient(fcc)

@@ -11,8 +11,8 @@ import (
 func TestZip(t *testing.T) {
 	os.MkdirAll("var", 0755)
 	defer os.RemoveAll("var")
-	err := archiver.Zip.Make("var/tmp.zip", []string{"tomb.go"})
+	err := archiver.DefaultZip.Archive([]string{"tomb.go"}, "var/tmp.zip")
 	assert.NoError(t, err)
-	err = archiver.Zip.Open("var/tmp.zip", "var/code")
+	err = archiver.DefaultZip.Unarchive("var/tmp.zip", "var/code")
 	assert.NoError(t, err)
 }
