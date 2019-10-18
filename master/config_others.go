@@ -16,6 +16,7 @@ type Config struct {
 	Logger logger.LogInfo  `yaml:"logger" json:"logger" default:"{\"path\":\"var/log/baetyl/baetyl.log\"}"`
 	OTALog logger.LogInfo  `yaml:"otalog" json:"otalog" default:"{\"path\":\"var/db/baetyl/ota.log\",\"format\":\"json\"}"`
 	Grace  time.Duration   `yaml:"grace" json:"grace" default:"30s"`
+	SNFile string          `yaml:"snfile" json:"snfile"`
 
 	// cache config file path
 	File string

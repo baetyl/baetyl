@@ -2,6 +2,7 @@ package master
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -53,6 +54,16 @@ func (c *Config) Validate() error {
 		utils.SetEnv(baetyl.EnvKeyMasterAPIAddress, addr)
 		// TODO: remove, backward compatibility
 		utils.SetEnv(baetyl.EnvMasterAPIKey, addr)
+	}
+
+	if c.SNFile != "" {
+		snByte, err := ioutil.ReadFile(c.SNFile)
+		if err != nil {
+			fmt.Printf("failed to load SN file: %s", err.Error())
+		} else {
+			sn := strings.TrimSpace(string(snByte))
+			utils.SetEnv(baetyl.EnvKeyHostSN, sn)
+		}
 	}
 
 	utils.SetEnv(baetyl.EnvKeyMasterAPIVersion, "v1")
