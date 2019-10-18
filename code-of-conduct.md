@@ -2,7 +2,7 @@
 # Baetyl community Code of Conduct v1.0
 
 Other languages available:
-- [Chinese/中文](code-of-conduct-languages/zh.md)
+- [Chinese/中文](code-of-conduct-cn.md)
 
 ## Our Pledge
 
