@@ -59,7 +59,7 @@ func (c *Config) Validate() error {
 	if c.SNFile != "" {
 		snByte, err := ioutil.ReadFile(c.SNFile)
 		if err != nil {
-			fmt.Printf("failed to load SN file")
+			fmt.Printf("failed to load SN file: %s", err.Error())
 		} else {
 			sn := strings.TrimSpace(string(snByte))
 			utils.SetEnv(baetyl.EnvKeyHostSN, sn)
