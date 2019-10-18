@@ -100,8 +100,6 @@ const (
 	DefaultMasterConfDir = "etc/baetyl"
 	// DefaultMasterConfFile master config file by default
 	DefaultMasterConfFile = "etc/baetyl/conf.yml"
-	// DefaultHostSNFile host serial number file by default
-	DefaultHostSNFile = "var/db/baetyl/hostSN"
 
 	// backward compatibility
 	// PreviousDBDir previous db dir of the service
