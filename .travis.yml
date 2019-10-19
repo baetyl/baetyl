@@ -3,7 +3,7 @@ sudo: false
 language: go
 
 go:
-  - 1.12
+  - "1.13"
 
 env:
   - DOCKER_API_VERSION=1.38
@@ -13,13 +13,13 @@ before_install:
   - sudo apt-get install python3-pip
   - sudo apt-get install python-pip
   - pip3 install grpcio protobuf pyyaml
-  - pip2 install grpcio protobuf pyyaml
+  - pip2 install grpcio protobuf pyyaml gevent grpcio-tools
 
 install: true
 script:
   - echo "baetyl build begin"
-  - make
+  - env GO111MODULE=on GOPROXY=https://goproxy.io make
   - echo "baetyl build end"
   - echo "baetyl uint test begin"
-  - make test GOTESTFLAG=--race
+  - env GO111MODULE=on GOPROXY=https://goproxy.io make test GOTESTFLAG=--race
   - echo "baetyl unit test end"
