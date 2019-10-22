@@ -177,7 +177,6 @@ Copyright (c) 2017 Baidu, Inc. All Rights Reserved.
 
    END OF TERMS AND CONDITIONS
 
-<<<<<<< HEAD:LICENSE
    APPENDIX: How to apply the Apache License to your work.
 
       To apply the Apache License to your work, attach the following
@@ -190,9 +189,6 @@ Copyright (c) 2017 Baidu, Inc. All Rights Reserved.
       identification within third-party archives.
 
    Copyright (c) 2017 Baidu, Inc. All Rights Reserved.
-=======
-   Copyright 2013-2017 Docker, Inc.
->>>>>>> add filebeat:vendor/github.com/docker/docker/LICENSE
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
