@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/containerd/containerd/platforms"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
@@ -26,6 +27,8 @@ type HostInfo struct {
 	Platform        string    `json:"platform,omitempty"`
 	PlatformFamily  string    `json:"platform_family,omitempty"`
 	PlatformVersion string    `json:"platform_version,omitempty"`
+	Architecture    string    `json:"architecture,omitempty"`
+	Variant         string    `json:"variant,omitempty"`
 	KernelVersion   string    `json:"kernel_version,omitempty"`
 	HostID          string    `json:"host_id,omitempty"`
 	Error           string    `json:"error,omitempty"`
@@ -33,7 +36,8 @@ type HostInfo struct {
 
 // GetHostInfo returns host information
 func GetHostInfo() *HostInfo {
-	hi := &HostInfo{Time: time.Now().UTC()}
+	pl := platforms.DefaultSpec()
+	hi := &HostInfo{Time: time.Now().UTC(), Architecture: pl.Architecture, Variant: pl.Variant}
 	raw, err := host.Info()
 	if err != nil {
 		hi.Error = err.Error()
@@ -50,6 +54,17 @@ func GetHostInfo() *HostInfo {
 	hi.KernelVersion = raw.KernelVersion
 	hi.HostID = raw.HostID
 	return hi
+}
+
+// FormatPlatformInfo format a brief platform information
+func (hi *HostInfo) FormatPlatformInfo() string {
+	if hi.OS == "" {
+		return "unknown"
+	} else if hi.Variant == "" {
+		return fmt.Sprintf("%s/%s", hi.OS, hi.Architecture)
+	} else {
+		return fmt.Sprintf("%s/%s/%s", hi.OS, hi.Architecture, hi.Variant)
+	}
 }
 
 // DiskInfo disk information

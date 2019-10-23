@@ -9,6 +9,46 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_FormatPlatformInfo(t *testing.T) {
+	tests := []struct {
+		name     string
+		hostinfo HostInfo
+		result   string
+	}{
+		{
+			name: "os empty",
+			hostinfo: HostInfo{
+				OS: "",
+			},
+			result: "unknown",
+		},
+		{
+			name: "os not arm",
+			hostinfo: HostInfo{
+				OS:           "darwin",
+				Architecture: "amd64",
+			},
+			result: "darwin/amd64",
+		},
+		{
+			name: "os arm",
+			hostinfo: HostInfo{
+				OS:           "linux",
+				Architecture: "arm",
+				Variant:      "v7",
+			},
+			result: "linux/arm/v7",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.hostinfo.FormatPlatformInfo()
+			assert.Equal(t, res, tt.result)
+		})
+	}
+}
+
 func Test_parseGPUInfo(t *testing.T) {
 	type args struct {
 		in string
