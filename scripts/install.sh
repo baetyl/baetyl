@@ -39,11 +39,6 @@ if [ ${OS} = Darwin ]; then
     TARGET=http://${URL_PACKAGE}/mac/static/x86_64/${NAME}-latest-darwin-amd64.tar.gz
     url_safe_check $TARGET
     exec_cmd_nobail "curl $TARGET | tar xvzf - -C /usr/local"
-    VERSION=$(curl -s "https://api.github.com/repos/baetyl/baetyl/releases" | grep tag_name | sed "s/\"//g" | sed 's/.*tag_name:\(.*\),/\1/g' | head -1 | xargs echo)
-    DOWNLOAD_VERSION=$(baetyl version | grep Version | sed 's/.*Version:\(.*\)/\1/g' | head -1 | xargs echo)
-    if [[ $VERSION != $DOWNLOAD_VERSION ]]; then
-        print_status "ERROR: Baetyl is not with the latest version."
-    fi
 else
     LSB_DIST=$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')
 
@@ -101,6 +96,12 @@ else
     esac
 fi
 
-print_status "Install ${NAME} successfully!"
+VERSION=$(curl -s "https://api.github.com/repos/baetyl/baetyl/releases" | grep tag_name | sed "s/\"//g" | sed 's/.*tag_name:\(.*\),/\1/g' | head -1 | xargs echo)
+DOWNLOAD_VERSION=$(baetyl version | grep Version | sed 's/.*Version:\(.*\)/\1/g' | head -1 | xargs echo)
+if [[ $VERSION != $DOWNLOAD_VERSION ]]; then
+    print_status "ERROR: The current installed version of Baetyl is not the latest."
+else
+    print_status "Install ${NAME} successfully!"
+fi
 
 exit 0
