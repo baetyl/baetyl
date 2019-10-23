@@ -1,16 +1,7 @@
 #!/bin/bash
 
 set -e
-
-workdir=$(
-    cd $(dirname $0)
-    pwd
-)
-cd $workdir
-
-PACKAGE_NAME=baetyl
-VERSION=0.1.6
-EXAMPLE_PATH=http://dl.baetyl.io/example/${VERSION}/docker
+EXAMPLE_PATH=http://dl.baetyl.io/example/latest/docker
 OS=$(uname)
 
 print_status() {
@@ -25,9 +16,9 @@ exec_cmd_nobail() {
 }
 
 if ls /usr/local/var/db/baetyl >/dev/null 2>&1; then
-    read -p "There are outdated configurations. Do you want to remove or not (y/n, default: y): " v
+    read -p "Configurations already exist. Are you sure you want to override? Yes/No: " v
     if [[ "${v}" == "n" || "${v}" == "N" || "${v}" == "no" || "${v}" == "NO" || "${v}" == "No" ]]; then
-        print_status "This script will exit now..."
+        print_status "Exit and abort installtion!"
         exit 1
     fi
     exec_cmd_nobail "rm -rf /usr/local/etc/baetyl /usr/local/var/db/baetyl" "sudo"
@@ -43,18 +34,18 @@ else
     exec_cmd_nobail "curl $EXAMPLE_PATH/docker_example.tar.gz | tar xvzf - -C /usr/local/" "sudo"
 fi
 
-print_status "Import the example configuration Successfully!"
+print_status "Import the example configuration successfully!"
 
-read -p "Baetyl functional modules are released as docker images. Do you want to pull required images now (y/n, default: y): " v
+read -p "Baetyl functional modules are released as docker images. Do you want to pull required images in advance? Yes/No: " v
 if [[ "${v}" == "n" || "${v}" == "N" || "${v}" == "no" || "${v}" == "NO" || "${v}" == "No" ]]; then
     exit 0
 fi
 
-TARGETS=(hub function-manager function-python27 function-python36 function-node85 function-sql timer)
-for target in ${TARGETS[@]}; do
-    docker pull hub.baidubce.com/baetyl/baetyl-${target}
+IMAGES=$(cat /usr/local/var/db/baetyl/application.yml | grep 'image:' | grep -v grep | grep -v '#' | sed 's/.*image:\(.*\)/\1/g')
+for image in ${IMAGES[@]}; do
+    docker pull ${image}
 done
 
-print_status "Pulled required images Successfully!"
+print_status "Pull required images successfully!"
 
 exit 0

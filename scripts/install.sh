@@ -2,15 +2,8 @@
 
 set -e
 
-workdir=$(
-    cd $(dirname $0)
-    pwd
-)
-cd $workdir
-
-PACKAGE_NAME=baetyl
-VERSION=0.1.6
-URL_PACKAGE=dl.baetyl.io
+NAME=baetyl
+URL_PACKAGE=dl.${NAME}.io
 URL_KEY=http://${URL_PACKAGE}/key.public
 OS=$(uname)
 PRE_INSTALL_PKGS="ca-certificates"
@@ -37,29 +30,12 @@ if [ -x "$(command -v gpg)" ]; then
 fi
 
 if [ ${OS} = Darwin ]; then
-    exec_cmd_nobail "curl http://${URL_PACKAGE}/mac/static/x86_64/baetyl-${VERSION}-darwin-amd64.tar.gz | tar xvzf - -C /usr/local"
+    exec_cmd_nobail "curl http://${URL_PACKAGE}/mac/static/x86_64/${NAME}-latest-darwin-amd64.tar.gz | tar xvzf - -C /usr/local"
 else
-    LSB_DIST=$(. /etc/os-release && echo "$ID")
+    LSB_DIST=$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')
 
-    if [ ${LSB_DIST} = centos ]; then
-        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} yum-utils"
-        YUM_REPO="http://${URL_PACKAGE}/linux/$LSB_DIST/baetyl.repo"
-
-        if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
-            exec_cmd_nobail "yum install -y ${PRE_INSTALL_PKGS}"
-        fi
-
-        if ! curl -Ifs "$YUM_REPO" >/dev/null; then
-            print_status "Error: Unable to curl repository file $YUM_REPO, is it valid?"
-            exit 1
-        fi
-
-        exec_cmd_nobail "yum-config-manager --add-repo $YUM_REPO"
-        exec_cmd_nobail "yum makecache"
-
-        exec_cmd_nobail "yum install -y ${PACKAGE_NAME}"
-        exec_cmd_nobail "systemctl enable ${PACKAGE_NAME}"
-    else
+    case "$LSB_DIST" in
+    ubuntu | debian | raspbian)
         if [ -x "$(command -v lsb_release)" ]; then
             PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
         fi
@@ -78,17 +54,40 @@ else
         fi
 
         exec_cmd_nobail "echo \"deb http://${URL_PACKAGE}/linux/${LSB_DIST} $(lsb_release -cs) main\" |
-        tee /etc/apt/sources.list.d/${PACKAGE_NAME}.list"
+        tee /etc/apt/sources.list.d/${NAME}.list"
 
         exec_cmd_nobail "curl -fsSL ${URL_KEY} | apt-key add -"
 
         print_status "Added sign key!"
 
         exec_cmd_nobail "apt update"
-        exec_cmd_nobail "apt install ${PACKAGE_NAME}"
-    fi
+        exec_cmd_nobail "apt install ${NAME}"
+        ;;
+    centos)
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} yum-utils"
+        YUM_REPO="http://${URL_PACKAGE}/linux/$LSB_DIST/${NAME}.repo"
+
+        if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
+            exec_cmd_nobail "yum install -y ${PRE_INSTALL_PKGS}"
+        fi
+
+        if ! curl -Ifs "$YUM_REPO" >/dev/null; then
+            print_status "Error: Unable to curl repository file $YUM_REPO, is it valid?"
+            exit 1
+        fi
+
+        exec_cmd_nobail "yum-config-manager --add-repo $YUM_REPO"
+        exec_cmd_nobail "yum makecache"
+
+        exec_cmd_nobail "yum install -y ${NAME}"
+        exec_cmd_nobail "systemctl enable ${NAME}"
+        ;;
+    *)
+        print_status "Your OS is not supported!"
+        ;;
+    esac
 fi
 
-print_status "Install ${PACKAGE_NAME} Successfully!"
+print_status "Install ${NAME} successfully!"
 
 exit 0
