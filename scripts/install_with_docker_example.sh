@@ -15,12 +15,6 @@ exec_cmd_nobail() {
     $2 bash -c "$1"
 }
 
-url_safe_check() {
-    if ! curl -Ifs $1 >/dev/null; then
-        print_status "ERROR: $1 is invalid!"
-    fi
-}
-
 if ls /usr/local/var/db/baetyl >/dev/null 2>&1; then
     read -p "Configurations already exist. Are you sure you want to override? Yes/No (default: Yes): " v
     if [[ "${v}" == "n" || "${v}" == "N" || "${v}" == "no" || "${v}" == "NO" || "${v}" == "No" ]]; then
@@ -31,8 +25,6 @@ if ls /usr/local/var/db/baetyl >/dev/null 2>&1; then
 fi
 
 TARGET=$EXAMPLE_PATH/docker_example.tar.gz
-url_safe_check $TARGET
-
 if [ ${OS} = Darwin ]; then
     # docker for mac runs as a non-root user
     TEMPDIR=$(mktemp -d)

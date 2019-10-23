@@ -20,12 +20,6 @@ exec_cmd_nobail() {
     bash -c "$1"
 }
 
-url_safe_check() {
-    if ! curl -Ifs $1 >/dev/null; then
-        print_status "ERROR: $1 is invalid!"
-    fi
-}
-
 if [ $EFFECTIVE_UID -ne 0 ]; then
     print_status "The script needs to be run as root."
     exit 1
@@ -37,7 +31,6 @@ fi
 
 if [ ${OS} = Darwin ]; then
     TARGET=http://${URL_PACKAGE}/mac/static/x86_64/${NAME}-latest-darwin-amd64.tar.gz
-    url_safe_check $TARGET
     exec_cmd_nobail "curl $TARGET | tar xvzf - -C /usr/local"
 else
     LSB_DIST=$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')
