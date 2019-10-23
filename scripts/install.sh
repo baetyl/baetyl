@@ -20,6 +20,12 @@ exec_cmd_nobail() {
     bash -c "$1"
 }
 
+url_safe_check() {
+    if ! curl -Ifs $1 >/dev/null; then
+        print_status "ERROR: $1 is invalid!"
+    fi
+}
+
 if [ $EFFECTIVE_UID -ne 0 ]; then
     print_status "The script needs to be run as root."
     exit 1
@@ -30,7 +36,14 @@ if [ -x "$(command -v gpg)" ]; then
 fi
 
 if [ ${OS} = Darwin ]; then
-    exec_cmd_nobail "curl http://${URL_PACKAGE}/mac/static/x86_64/${NAME}-latest-darwin-amd64.tar.gz | tar xvzf - -C /usr/local"
+    TARGET=http://${URL_PACKAGE}/mac/static/x86_64/${NAME}-latest-darwin-amd64.tar.gz
+    url_safe_check $TARGET
+    exec_cmd_nobail "curl $TARGET | tar xvzf - -C /usr/local"
+    VERSION=$(curl -s "https://api.github.com/repos/baetyl/baetyl/releases" | grep tag_name | sed "s/\"//g" | sed 's/.*tag_name:\(.*\),/\1/g' | head -1 | xargs echo)
+    DOWNLOAD_VERSION=$(baetyl version | grep Version | sed 's/.*Version:\(.*\)/\1/g' | head -1 | xargs echo)
+    if [[ $VERSION != $DOWNLOAD_VERSION ]]; then
+        print_status "ERROR: Baetyl is not with the latest version."
+    fi
 else
     LSB_DIST=$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')
 
