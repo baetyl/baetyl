@@ -1,12 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
-PACKAGE_NAME=baetyl
-URL_PACKAGE=dl.baetyl.io
+NAME=baetyl
+URL_PACKAGE=dl.${NAME}.io
 URL_KEY=http://${URL_PACKAGE}/key.public
-LSB_DIST=$(. /etc/os-release && echo "$ID")
-PRE_INSTALL_PKGS=""
+OS=$(uname)
+PRE_INSTALL_PKGS="ca-certificates"
+EFFECTIVE_UID=$("id" | grep -o "uid=[0-9]*" | cut -d= -f2)
 
 print_status() {
     echo
@@ -14,57 +15,80 @@ print_status() {
     echo
 }
 
-if [ ! -x /usr/bin/gpg ]; then
+exec_cmd_nobail() {
+    echo "+ bash -c '$1'"
+    bash -c "$1"
+}
+
+if [ $EFFECTIVE_UID -ne 0 ]; then
+    print_status "The script needs to be run as root."
+    exit 1
+fi
+
+if [ -x "$(command -v gpg)" ]; then
     PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} gnupg"
 fi
 
-if [ $LSB_DIST = centos ]; then
-
-    if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
-        yum install -y ${PRE_INSTALL_PKGS} >/dev/null 2>&1
-    fi
-
-    {
-        echo '[baetyl]'
-        echo 'name=baetyl'
-        echo "baseurl=http://${URL_PACKAGE}/linux/centos/7/x86_64"
-        echo 'gpgcheck=1'
-        echo 'enabled=1'
-        echo "gpgkey=$URL_KEY"
-    } >>/etc/yum.repos.d/baetyl.repo
-
-    yum install -y $PACKAGE_NAME
-    systemctl enable $PACKAGE_NAME
+if [ ${OS} = Darwin ]; then
+    TARGET=http://${URL_PACKAGE}/mac/static/x86_64/${NAME}-latest-darwin-amd64.tar.gz
+    exec_cmd_nobail "curl $TARGET | tar xvzf - -C /usr/local"
 else
+    LSB_DIST=$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')
 
-    if [ ! -x /usr/bin/lsb_release ]; then
-        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
-    fi
+    case "$LSB_DIST" in
+    ubuntu | debian | raspbian)
+        if [ -x "$(command -v lsb_release)" ]; then
+            PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
+        fi
 
-    if [ ! -x /usr/bin/curl ]; then
-        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
-    fi
+        if [ -x "$(command -v curl)" ]; then
+            PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
+        fi
 
-    if [ ! -e /usr/lib/apt/methods/https ]; then
-        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} apt-transport-https"
-    fi
+        if [ ! -e /usr/lib/apt/methods/https ]; then
+            PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} apt-transport-https"
+        fi
 
-    if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
-        apt-get update
-        apt-get install -y ${PRE_INSTALL_PKGS} >/dev/null 2>&1
-    fi
+        if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
+            exec_cmd_nobail "apt-get update"
+            exec_cmd_nobail "apt-get install -y ${PRE_INSTALL_PKGS} >/dev/null 2>&1"
+        fi
 
-    echo "deb http://${URL_PACKAGE}/linux/$(lsb_release -is | tr 'A-Z' 'a-z') $(lsb_release -cs) main" |
-        tee /etc/apt/sources.list.d/${PACKAGE_NAME}.list
+        exec_cmd_nobail "echo \"deb http://${URL_PACKAGE}/linux/${LSB_DIST} $(lsb_release -cs) main\" |
+        tee /etc/apt/sources.list.d/${NAME}.list"
 
-    curl -fsSL $URL_KEY | apt-key add -
+        exec_cmd_nobail "curl -fsSL ${URL_KEY} | apt-key add -"
 
-    print_status "Added sign key!"
+        print_status "Added sign key!"
 
-    apt update
-    apt install $PACKAGE_NAME
+        exec_cmd_nobail "apt update"
+        exec_cmd_nobail "apt install ${NAME}"
+        ;;
+    centos)
+        PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} yum-utils"
+        YUM_REPO="http://${URL_PACKAGE}/linux/$LSB_DIST/${NAME}.repo"
+
+        if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
+            exec_cmd_nobail "yum install -y ${PRE_INSTALL_PKGS}"
+        fi
+
+        if ! curl -Ifs "$YUM_REPO" >/dev/null; then
+            print_status "Error: Unable to curl repository file $YUM_REPO, is it valid?"
+            exit 1
+        fi
+
+        exec_cmd_nobail "yum-config-manager --add-repo $YUM_REPO"
+        exec_cmd_nobail "yum makecache"
+
+        exec_cmd_nobail "yum install -y ${NAME}"
+        exec_cmd_nobail "systemctl enable ${NAME}"
+        ;;
+    *)
+        print_status "Your OS is not supported!"
+        ;;
+    esac
 fi
 
-print_status "Install $PACKAGE_NAME Successfully!"
+print_status "Install ${NAME} successfully!"
 
 exit 0
