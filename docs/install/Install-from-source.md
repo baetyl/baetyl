@@ -4,9 +4,9 @@ Compared to the quick installation of Baetyl, you can build Baetyl from source t
 
 ## Prerequisites
 
-- The Go tools
+- The Go tools and modules
 
-The minimum required go version is 1.12. Refer to [golang.org](https://golang.org/dl/) or [golang.google.cn](https://golang.google.cn/dl/) to download and install the Go tools.
+The minimum required go version is 1.12. Refer to [golang.org](https://golang.org/dl/) or [golang.google.cn](https://golang.google.cn/dl/) to download and install the Go tools. Now we use Go Modules to manage packages, you can refer [goproxy.io](https://goproxy.io/) to enable the Go Modules.
 
 - The Docker Engine and Buildx
 
