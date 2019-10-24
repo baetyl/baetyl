@@ -9,7 +9,7 @@ replace (
 
 require (
 	github.com/256dpi/gomqtt v0.12.2
-	github.com/containerd/containerd v1.3.0 // indirect
+	github.com/containerd/containerd v1.3.0
 	github.com/creasty/defaults v1.3.0
 	github.com/deckarep/golang-set v1.7.1
 	github.com/docker/distribution v2.7.1+incompatible
@@ -30,9 +30,9 @@ require (
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
-	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/opencontainers/image-spec v1.0.1
 	github.com/opencontainers/runc v0.0.0-00010101000000-000000000000 // indirect
-	github.com/opencontainers/runtime-spec v1.0.1 // indirect
+	github.com/opencontainers/runtime-spec v1.0.1
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
