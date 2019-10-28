@@ -6,7 +6,7 @@ SRC_FILES:=$(shell find . ../logger ../sdk ../protocol ../utils -type f -name '*
 BIN_FILE:=baetyl-hub
 BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
 COPY_DIR:=../output
-PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x
 
 
 GIT_TAG:=$(shell git tag --contains HEAD)
