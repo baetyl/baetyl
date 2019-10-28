@@ -23,7 +23,7 @@ func init() {
 }
 
 // New native engine
-func New(grace time.Duration, pwd string, stats engine.InfoStats) (engine.Engine, error) {
+func New(grace time.Duration, pwd string, stats engine.InfoStats, APIVersion string) (engine.Engine, error) {
 	e := &nativeEngine{
 		InfoStats: stats,
 		pwd:       pwd,

@@ -9,7 +9,7 @@ import (
 )
 
 // Factory create engine by given config
-type Factory func(grace time.Duration, pwd string, is InfoStats) (Engine, error)
+type Factory func(grace time.Duration, pwd string, is InfoStats, APIVersion string) (Engine, error)
 
 var factories map[string]Factory
 
@@ -35,9 +35,9 @@ type Engine interface {
 }
 
 // New engine by given name
-func New(name string, grace time.Duration, pwd string, is InfoStats) (Engine, error) {
+func New(name string, grace time.Duration, pwd string, is InfoStats, APIVersion string) (Engine, error) {
 	if f, ok := factories[name]; ok {
-		return f(grace, pwd, is)
+		return f(grace, pwd, is, APIVersion)
 	}
 	return nil, errors.New("no such engine")
 }
