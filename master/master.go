@@ -48,9 +48,11 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
 	opts := engine.Options{
+		Grace: cfg.Grace,
+		Pwd: pwd,
 		APIVersion: cfg.Docker.APIVersion,
 	}
-	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats, opts)
+	m.engine, err = engine.New(cfg.Mode, m.infostats, opts)
 	if err != nil {
 		m.Close()
 		return nil, err
