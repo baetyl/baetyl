@@ -24,6 +24,9 @@ grace: The default value is `30s`, the timeout for waiting services to gracefull
 server: API Server configuration of Master.
   address: The default value can be read from environment variable `BAETYL_MASTER_API_ADDRESS`, address of API Server.
   timeout: The default value is `30s`, timeout of API Server.
+snfile: The serial number (SN) file for master to read as device fingerprint. If set, the content can be read from environment variable `BAETYL_HOST_SN`.
+docker:
+  api_version: The default value is `1.38`, the api version for client to call Docker Engine server.
 logger: Logger configuration
   path: The default is `empty` (none configuration), that is, it does not write to the file. If the path is specified, it writes to the file.
   level: The default value is `info`, log level, support `debug`、`info`、`warn` and `error`.
