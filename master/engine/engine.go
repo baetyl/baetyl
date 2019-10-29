@@ -9,7 +9,7 @@ import (
 )
 
 // Factory create engine by given config
-type Factory func(grace time.Duration, pwd string, is InfoStats) (Engine, error)
+type Factory func(is InfoStats, opts Options) (Engine, error)
 
 var factories map[string]Factory
 
@@ -34,10 +34,17 @@ type Engine interface {
 	Run(string, baetyl.ComposeService, map[string]baetyl.ComposeVolume) (Service, error)
 }
 
+// Options engine options
+type Options struct {
+	Grace time.Duration
+	Pwd string
+	APIVersion string
+}
+
 // New engine by given name
-func New(name string, grace time.Duration, pwd string, is InfoStats) (Engine, error) {
+func New(name string, is InfoStats, opts Options) (Engine, error) {
 	if f, ok := factories[name]; ok {
-		return f(grace, pwd, is)
+		return f(is, opts)
 	}
 	return nil, errors.New("no such engine")
 }

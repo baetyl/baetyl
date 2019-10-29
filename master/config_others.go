@@ -17,6 +17,9 @@ type Config struct {
 	OTALog logger.LogInfo  `yaml:"otalog" json:"otalog" default:"{\"path\":\"var/db/baetyl/ota.log\",\"format\":\"json\"}"`
 	Grace  time.Duration   `yaml:"grace" json:"grace" default:"30s"`
 	SNFile string          `yaml:"snfile" json:"snfile"`
+	Docker struct {
+		APIVersion string `yaml:"api_version" json:"api_version" default:"1.38"`
+	} `yaml:"docker" json:"docker"`
 
 	// cache config file path
 	File string
