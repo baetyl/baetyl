@@ -36,7 +36,6 @@ type Engine interface {
 
 // Options engine options
 type Options struct {
-	Name string
 	Grace time.Duration
 	Pwd string
 	APIVersion string
