@@ -51,11 +51,15 @@ systemctl start docker
 
 **Q6: Found "failed to create master: Error response from daemon: client version 1.39 is too new. Maximum supported API version is 1.38" when Baetyl start.**
 
-**Suggested Solution**: Workaround is to pass API version via environment variable:
+**Suggested Solution**: 
 
-`DOCKER_API_VERSION=1.38`
+- If the version of Baetyl is equal to or greater than 1.0.0, to set API version in the configuration file (`etc/baetyl/conf.yml`) of Baetyl:
 
-For example:
+```yaml
+docker:
+  api_version: 1.38
+```
+- If less than 1.0.0, to set environment variable `DOCKER_API_VERSION=1.38`, for example:
 
 ```shell
 sudo vim ~/.bash_profile

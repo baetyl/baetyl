@@ -10,7 +10,7 @@ The minimum required go version is 1.12. Refer to [golang.org](https://golang.or
 
 - The Docker Engine and Buildx
 
-The minimum required docker version is 19.03, because the docker buildx feature is introduced to build multi-platform images. Refer to [docker.com/install](https://docs.docker.com/install/) to install the Docker Engine and refer to [github.com/docker/buildx](https://github.com/docker/buildx) to enable the docker buildx.
+The minimum required Docker version is 19.03, because the Docker Buildx feature is introduced to build multi-platform images. Refer to [docker.com/install](https://docs.docker.com/install/) to install the Docker Engine and refer to [github.com/docker/buildx](https://github.com/docker/buildx) to enable the Docker Buildx.
 
 ## Download source code
 
@@ -56,7 +56,7 @@ make rebuild PLATFORMS="linux/amd64 linux/arm64" MODULES="agent hub"
 
 ### Build module images
 
-It is recommended use of officially released images in container mode. If you want to build the images by yourself, the docker buildx must be enabled according to prerequisites.
+It is recommended use of officially released images in container mode. If you want to build the images by yourself, the Docker Buildx must be enabled according to prerequisites.
 
 Go into Baetyl project directory and build the module images for build machine.
 
@@ -83,7 +83,7 @@ baetyl-timer              git-e8fe527         88a408e4512a        2 hours ago   
 baetyl-function-node8     git-e8fe527         d7bf1abb6d24        4 days ago          221MB
 ```
 
-If you want to build multi-platform images, you must specify the docker image register and push flag, because docker buildx not support to load the manifest of images now.
+If you want to build multi-platform images, you must specify the Docker image register and push flag, because Docker Buildx not support to load the manifest of images now.
 
 ```shell
 # all platform and all modules
@@ -131,7 +131,7 @@ sudo ./output/bin/baetyl start
 **NOTE**:
 
 1. After the baetyl is started, you can check if the baetyl has run successfully by `ps -ef | grep "baetyl"` and determine the parameters used at startup. And you can check the log file for details. Log files are stored by default in the `var/log/baetyl` directory of the working directory.
-2. If run in docker container mode, the container runtime status can be viewed via the `docker ps` or `docker stats` command.
+2. If run in **docker** container mode, the container runtime status can be viewed via the `docker ps` or `docker stats` command.
 3. To use your own image, you need to modify the **image** of the modules and functions in the application configuration to specify your own image.
 4. For custom configuration, follow the instructions in [Configuration Interpretation](../guides/Config-interpretation.md) to make the relevant settings.
 
