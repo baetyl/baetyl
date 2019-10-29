@@ -50,7 +50,7 @@ func TestUpdateAPP(t *testing.T) {
 		infostats: newInfoStats(pwd, "native", "", "", "var/run/baetyl.stats"),
 		log:       logger.WithField("baetyl", "master"),
 	}
-	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats, engine.Options{})
 	assert.NoError(t, err)
 
 	err = m.UpdateAPP("", "")
@@ -68,7 +68,7 @@ func TestUpdateAPP(t *testing.T) {
 	// round 2: failed to reload
 	utils.CopyFile(badapp, appConfigFile)
 	utils.CopyFile(badapp, appBackupFile)
-	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats, engine.Options{})
 	assert.NoError(t, err)
 
 	err = m.UpdateAPP("", "")
@@ -86,7 +86,7 @@ func TestUpdateAPP(t *testing.T) {
 	// round 2: success to reload
 	utils.CopyFile(goodapp, appConfigFile)
 	utils.CopyFile(badapp, appBackupFile)
-	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats, engine.Options{})
 
 	err = m.UpdateAPP("", "")
 	assert.NoError(t, err)
@@ -124,7 +124,7 @@ func TestUpdateSystemAPP(t *testing.T) {
 	}
 	err = utils.UnmarshalYAML(nil, &m.cfg)
 	assert.NoError(t, err)
-	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats, engine.Options{})
 	assert.NoError(t, err)
 	defer m.Wait()
 	defer m.Close()
@@ -242,7 +242,7 @@ func TestUpdateSystemAPP2(t *testing.T) {
 	assert.NoError(t, err)
 	defer m.Wait()
 	defer m.Close()
-	m.engine, err = engine.New("native", time.Second, pwd, m.infostats)
+	m.engine, err = engine.New("native", time.Second, pwd, m.infostats, engine.Options{})
 	assert.NoError(t, err)
 
 	wantErr := "failed to update system: failed to start app: host path is empty"

@@ -47,7 +47,10 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		infostats: newInfoStats(pwd, cfg.Mode, ver, revision, path.Join(baetyl.DefaultDBDir, baetyl.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
-	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats, cfg.APIVersion)
+	opts := engine.Options{
+		APIVersion: cfg.Docker.APIVersion,
+	}
+	m.engine, err = engine.New(cfg.Mode, cfg.Grace, pwd, m.infostats, opts)
 	if err != nil {
 		m.Close()
 		return nil, err

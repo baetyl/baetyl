@@ -28,8 +28,8 @@ func init() {
 }
 
 // New docker engine
-func New(grace time.Duration, pwd string, stats engine.InfoStats, APIVersion string) (engine.Engine, error) {
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(APIVersion))
+func New(grace time.Duration, pwd string, stats engine.InfoStats, opts engine.Options) (engine.Engine, error) {
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithVersion(opts.APIVersion))
 	if err != nil {
 		return nil, err
 	}
