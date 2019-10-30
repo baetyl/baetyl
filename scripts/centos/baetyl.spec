@@ -24,7 +24,7 @@ This package contains the IoT Edge daemon and CLI tool.
 
 %install
 rm -rf %{buildroot}
-make baetyl
+make binary
 install -d -m 0755 %{buildroot}/usr/local/bin
 install -m 0755 baetyl %{buildroot}/usr/local/bin/
 tar cf - -C example/docker etc | tar xvf - -C %{buildroot}/usr/local
@@ -71,11 +71,12 @@ echo "==========================================================================
 echo ""
 echo "                              Baetyl"
 echo "  Baetyl is started and supervised by systemd. Use the following commands "
-echo "  to start, restart or stop baetyl:"
+echo "  to start, stop, restart or status baetyl:"
 echo ""
 echo "    'sudo systemctl start baetyl'"
-echo "    'sudo systemctl restart baetyl'"
 echo "    'sudo systemctl stop baetyl'"
+echo "    'sudo systemctl restart baetyl'"
+echo "    'sudo systemctl status baetyl'"
 echo ""
 echo "  About design or configurations of Baetyl, please visit "
 echo ""

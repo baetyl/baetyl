@@ -60,6 +60,10 @@ image: $(IMAGE_MODS)
 $(IMAGE_MODS):
 	@make -C $(notdir $@) image
 
+binary: $(SRC_FILES)
+	@echo "BUILD baetyl"
+	@CGO_ENABLED=0 go build -o baetyl ${GO_FLAGS} .
+
 .PHONY: rebuild
 rebuild: clean all
 
