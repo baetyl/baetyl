@@ -64,15 +64,3 @@ Baetyl, extend cloud computing, data and service seamlessly to edge devices.
    :caption: Resources
 
    Resources.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Release Information
-
-   releasenotes/Baetyl-0.1.6.md
-   releasenotes/Baetyl-0.1.5.md
-   releasenotes/Baetyl-0.1.4.md
-   releasenotes/Baetyl-0.1.3.md
-   releasenotes/Baetyl-0.1.2.md
-   releasenotes/Baetyl-0.1.1.md
-   releasenotes/Baetyl-0.1.0.md
