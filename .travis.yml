@@ -20,6 +20,6 @@ script:
   - echo "baetyl build begin"
   - env GO111MODULE=on GOPROXY=https://goproxy.io make
   - echo "baetyl build end"
-  - echo "baetyl uint test begin"
-  - env GO111MODULE=on GOPROXY=https://goproxy.io make test GOTESTFLAG=--race
+  - echo "baetyl unit test begin"
+  - env GO111MODULE=on GOPROXY=https://goproxy.io make test GO_TEST_FLAGS=--race
   - echo "baetyl unit test end"
