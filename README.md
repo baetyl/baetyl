@@ -2,7 +2,7 @@
 
 ![Baetyl-logo](./docs/images/logo/logo-with-name.png)
 
-![Travis (.org) branch](https://img.shields.io/travis/baetyl/baetyl/master) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&include_prereleases&label=pre-release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
+![Travis (.org) branch](https://img.shields.io/travis/baetyl/baetyl/master) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&label=release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
 
 [![Documentation in Endglish](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://docs.baetyl.io/en/latest/) [![中文文档](https://img.shields.io/badge/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3-%E6%9C%80%E6%96%B0-brightgreen.svg?style=flat)](https://docs.baetyl.io/zh_CN/latest/)
 
