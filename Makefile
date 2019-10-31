@@ -109,3 +109,8 @@ generate:
 clean:
 	@-rm -rf ./baetyl-function-node8/node_modules
 	@-rm -rf $(OUTPUT)
+
+
+.PHONY: fmt
+fmt:
+	go fmt  ./...

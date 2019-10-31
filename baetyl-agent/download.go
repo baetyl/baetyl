@@ -9,7 +9,6 @@ import (
 
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
-	"github.com/mholt/archiver"
 )
 
 func (a *agent) downloadVolumes(volumes []baetyl.VolumeInfo) error {
@@ -75,7 +74,7 @@ func (a *agent) downloadVolume(v baetyl.VolumeInfo) (string, string, error) {
 		return "", "", fmt.Errorf("MD5 of volume (%s) invalid", v.Name)
 	}
 
-	err = archiver.DefaultZip.Unarchive(containerZipFile, containerDir)
+	err = utils.Unzip(containerZipFile, containerDir)
 	if err != nil {
 		os.RemoveAll(containerDir)
 		return "", "", fmt.Errorf("failed to unzip volume (%s): %s", v.Name, err.Error())

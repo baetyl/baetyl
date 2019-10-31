@@ -257,7 +257,6 @@ func TestClientKeepAliveNone(t *testing.T) {
 	safeReceive(done)
 }
 
-
 func TestClientPublishSubscribeQOS0(t *testing.T) {
 	subscribe := packet.NewSubscribe()
 	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
