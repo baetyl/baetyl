@@ -3,6 +3,7 @@ hub:
   address: tcp://localhub:1883
   username: test
   password: hahaha
+  keepalive: -1 # no ping/pong
 rules:
   - clientid: func-python27-sayhi-1
     subscribe:

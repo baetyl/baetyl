@@ -22,7 +22,7 @@ type ClientInfo struct {
 	CleanSession      bool          `yaml:"cleansession" json:"cleansession"`
 	Timeout           time.Duration `yaml:"timeout" json:"timeout" default:"30s"`
 	Interval          time.Duration `yaml:"interval" json:"interval" default:"1m"`
-	KeepAlive         time.Duration `yaml:"keepalive" json:"keepalive" default:"1m"`
+	KeepAlive         time.Duration `yaml:"keepalive" json:"keepalive" default:"10m"`
 	BufferSize        int           `yaml:"buffersize" json:"buffersize" default:"10"`
 	ValidateSubs      bool          `yaml:"validatesubs" json:"validatesubs"`
 	Subscriptions     []TopicInfo   `yaml:"subscriptions" json:"subscriptions" default:"[]"`

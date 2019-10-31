@@ -106,7 +106,7 @@ remote:
     cert: [MUST] The public key path for client to connect with cloud management suit.
     timeout: The default value is `30s`, means timeout of the client connects to cloud.
     interval: The default value is `1m`, means maximum interval of client reconnection, doubled from 500 microseconds to maximum.
-    keepalive: The default value is `1m`, means keep alive time between the client and cloud after connection has been established.
+    keepalive: The default value is `10m`, means keep alive time between the client and cloud after connection has been established.
     cleansession: The default value is `false`, , means whether keep session in cloud after client disconnected.
     validatesubs: The default value is `false`, means whether the client checks the subscription result. If it is true, client exits and return errors when subscription is failure.
     buffersize: The default value is `10`, means the size of the memory queue sent by the client to the cloud management suit. If found exception, the client will exit and lose message.
@@ -214,7 +214,7 @@ hub:
   cert: The public key path for the client to connect with the local hub.
   timeout: The default value is `30s`, means timeout of the client connection with the local hub.
   interval: The default value is `1m`, means maximum interval of client reconnection, doubled from 500 microseconds to maximum.
-  keepalive: The default value is `1m`, means keep alive time between the client and the local hub after connection has been established.
+  keepalive: The default value is `10m`, means keep alive time between the client and the local hub after connection has been established.
   cleansession: The default value is `false`, , means whether keep session in the local Hub after client disconnected.
   validatesubs: The default value is `false`, means whether the client checks the subscription result. If it is true, client exits and return errors when subscription is failure.
   buffersize: The default value is `10`, means the size of the memory queue sent by the client to the local Hub. If found exception, the client will exit and lose messages.
@@ -308,7 +308,7 @@ hub:
   cert: The public key path for the client to connect with the local hub.
   timeout: The default value is `30s`, means timeout of the client connection with the local hub.
   interval: The default value is `1m`, means maximum interval of client reconnection, doubled from 500 microseconds to maximum.
-  keepalive: The default value is `1m`, means keep alive time between the client and the local hub after connection has been established.
+  keepalive: The default value is `10m`, means keep alive time between the client and the local hub after connection has been established.
   cleansession: The default value is `false`, , means whether keep session in the local Hub after client disconnected.
   validatesubs: The default value is `false`, means whether the client checks the subscription result. If it is true, client exits and return errors when subscription is failure.
   buffersize: The default value is `10`, means the size of the memory queue sent by the client to the local Hub. If found exception, the client will exit and lose messages.
@@ -377,7 +377,7 @@ hub:
   cert: The public key path for the client to connect with the local hub.
   timeout: The default value is `30s`, means timeout of the client connection with the local hub.
   interval: The default value is `1m`, means maximum interval of client reconnection, doubled from 500 microseconds to maximum.
-  keepalive: The default value is `1m`, means keep alive time between the client and the local hub after connection has been established.
+  keepalive: The default value is `10m`, means keep alive time between the client and the local hub after connection has been established.
   cleansession: The default value is `false`, , means whether keep session in the local Hub after client disconnected.
   validatesubs: The default value is `false`, means whether the client checks the subscription result. If it is true, client exits and return errors when subscription is failure.
   buffersize: The default value is `10`, means the size of the memory queue sent by the client to the local Hub. If found exception, the client will exit and lose messages.
@@ -408,7 +408,7 @@ remotes: The remote list
     cert: The public key path for the client connect with the remote Hub.
     timeout: The default value is `30s`, means timeout of the client connect to the remote Hub.
     interval: The default value is `1m`, means maximum interval of client reconnection, doubled from 500 microseconds to maximum.
-    keepalive: The default value is `1m`, means keep alive time between the client and the local hub after connection has been established.
+    keepalive: The default value is `10m`, means keep alive time between the client and the local hub after connection has been established.
     cleansession: The default value is `false`, , means whether keep session in the local Hub after client disconnected.
     validatesubs: The default value is `false`, means whether the client checks the subscription result. If it is true, client exits and return errors when subscription is failure.
     buffersize: The default value is `10`, means the size of the memory queue sent by the client to the local Hub. If found exception, the client will exit and lose messages.

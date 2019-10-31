@@ -56,7 +56,7 @@ func fakeBroker(t *testing.T, testFlows ...*flow.Flow) (chan struct{}, string) {
 func connectPacket() *packet.Connect {
 	pkt := packet.NewConnect()
 	pkt.CleanSession = true
-	pkt.KeepAlive = 60
+	pkt.KeepAlive = 600
 	return pkt
 }
 

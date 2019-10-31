@@ -2,6 +2,7 @@ hub:
   address: tcp://0.0.0.0:1883
   username: test
   password: hahaha
+  keepalive: -1 # no ping/pong
 rules:
 #  - clientid: func-sql-filter-1
 #    subscribe:

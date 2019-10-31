@@ -14,7 +14,7 @@ GO_ARCH:=$(shell go env GOARCH)
 GO_ARM:=$(shell go env GOARM)
 GO_FLAGS?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.Revision=$(GIT_REV)' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
 GO_TEST_FLAGS?=
-GO_TEST_PKGS?=$(shell go list ./... | grep -v baetyl-video-infer | grep -v baetyl-modbus)
+GO_TEST_PKGS?=$(shell go list ./... | grep -v baetyl-video-infer)
 
 ifndef PLATFORMS
 	GO_OS:=$(shell go env GOOS)

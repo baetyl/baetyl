@@ -232,6 +232,32 @@ func TestClientKeepAliveTimeout(t *testing.T) {
 	assert.EqualError(t, err, "client missing pong")
 }
 
+func TestClientKeepAliveNone(t *testing.T) {
+	connect := connectPacket()
+	connect.KeepAlive = 0
+
+	broker := flow.New().Debug().
+		Receive(connect).
+		Send(connackPacket()).
+		Receive(disconnectPacket()).
+		End()
+
+	done, port := fakeBroker(t, broker)
+
+	cc := newConfig(t, port)
+	cc.KeepAlive = -1
+	c, err := NewClient(cc, &mackHandler{t: t}, nil)
+	assert.NoError(t, err)
+
+	<-time.After(250 * time.Millisecond)
+
+	err = c.Close()
+	assert.NoError(t, err)
+
+	safeReceive(done)
+}
+
+
 func TestClientPublishSubscribeQOS0(t *testing.T) {
 	subscribe := packet.NewSubscribe()
 	subscribe.Subscriptions = []packet.Subscription{{Topic: "test"}}
@@ -419,10 +445,10 @@ func TestClientSubscribeFutureTimeout(t *testing.T) {
 	cc := newConfig(t, port)
 	cc.Timeout = time.Millisecond * 50
 	cc.Subscriptions = []TopicInfo{TopicInfo{Topic: "test"}}
-	ch := &mackHandler{t: t, expectedError: "future timeout"}
+	ch := &mackHandler{t: t, expectedError: "failed to wait subscribe ack: future timeout"}
 	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
-	assert.EqualError(t, err, "future timeout")
+	assert.EqualError(t, err, "failed to wait subscribe ack: future timeout")
 
 	safeReceive(done)
 }
@@ -451,7 +477,7 @@ func TestClientSubscribeValidate(t *testing.T) {
 	ch := &mackHandler{t: t, expectedError: "failed subscription"}
 	c, err := NewClient(cc, ch, nil)
 	assert.Nil(t, c)
-	assert.EqualError(t, err, "failed subscription")
+	assert.EqualError(t, err, "failed to wait subscribe ack: failed subscription")
 
 	safeReceive(done)
 }
