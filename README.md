@@ -1,10 +1,10 @@
 # Baetyl
 
-![Baetyl-logo](./docs/images/logo/logo-with-name.png)
+[![Baetyl-logo](./docs/images/logo/logo-with-name.png)](https://baetyl.io)
 
 ![Travis (.org) branch](https://img.shields.io/travis/baetyl/baetyl/master) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&label=release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
 
-[![Documentation in Endglish](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://docs.baetyl.io/en/latest/) [![中文文档](https://img.shields.io/badge/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3-%E6%9C%80%E6%96%B0-brightgreen.svg?style=flat)](https://docs.baetyl.io/zh_CN/latest/)
+[![Documentation in English](https://img.shields.io/badge/docs%20in%20English-latest-brightgreen)](https://docs.baetyl.io/en/latest/) [![中文文档](https://img.shields.io/badge/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3-%E6%9C%80%E6%96%B0-brightgreen)](https://docs.baetyl.io/zh_CN/latest/)
 
 
 **[Baetyl](https://baetyl.io) is an open edge computing framework of [Linux Foundation Edge](https://www.lfedge.org) that extends cloud computing, data and service seamlessly to edge devices.** It can provide temporary offline, low-latency computing services, and include device connect, message routing, remote synchronization, function computing, video access pre-processing, AI inference, device resources report etc. The combination of Baetyl and the **Cloud Management Suite** of [BIE](https://cloud.baidu.com/product/bie.html)(Baidu IntelliEdge) will achieve cloud management and application distribution, enable applications running on edge devices and meet all kinds of edge computing scenario.
@@ -38,19 +38,28 @@ As an edge computing platform, **Baetyl** not only provides features such as und
 
 ## Installation
 
-- [Quick Install Baetyl](./docs/install/Quick-Install.md)
-- [Install Baetyl From source](./docs/install/Install-from-source.md)
+- [Quick Install Baetyl](https://docs.baetyl.io/en/latest/install/Quick-Install.html)
+- [Install Baetyl From source](https://docs.baetyl.io/en/latest/install/Install-from-source.html)
+
+
+## Guides
+
+- [Baetyl configuration interpretation](https://docs.baetyl.io/en/latest/guides/Config-interpretation.html)
+- [Device connect to Hub Service](https://docs.baetyl.io/en/latest/guides/Device-connect-to-hub-service.html)
+- [Message transferring among devices with Hub Service](https://docs.baetyl.io/en/latest/guides/Message-transfer-among-devices-with-hub-service.html)
+- [Message handling with Function Service](https://docs.baetyl.io/en/latest/guides/Message-handling-with-function-service.html)
+- [Message Synchronize between baetyl-hub and Baidu IoTHub via Remote Service](https://docs.baetyl.io/en/latest/guides/Message-synchronize-with-iothub-through-remote-service.html)
+- [Image capturing and AI model inference with Video infer Service](https://docs.baetyl.io/en/latest/guides/Image-capturing-and-AI-model-inference-with-video-infer-service.html)
 
 ## Development
 
 - [Baetyl design](./docs/overview/Design.md)
-- [Baetyl config interpretation](./docs/guides/Config-interpretation.md)
-- [How to write Python script for Python runtime](./docs/develop/How-to-write-a-python-script-for-python-runtime.md)
-- [How to write Node script for Node runtime](./docs/develop/How-to-write-a-node-script-for-node-runtime.md)
-- [How to import third-party libraries for Python runtime](./docs/develop/How-to-import-third-party-libraries-for-python-runtime.md)
-- [How to import third-party libraries for Node runtime](./docs/develop/How-to-import-third-party-libraries-for-node-runtime.md)
-- [How to develop a customize runtime for function](./docs/develop/How-to-develop-a-customize-runtime-for-function.md)
-- [How to develop a customize module for Baetyl](./docs/develop/How-to-develop-a-customize-module.md)
+- [How to write Python script for Python runtime](https://docs.baetyl.io/en/latest/develop/How-to-write-a-python-script-for-python-runtime.html)
+- [How to write Node script for Node runtime](https://docs.baetyl.io/en/latest/develop/How-to-write-a-node-script-for-node-runtime.html)
+- [How to import third-party libraries for Python runtime](https://docs.baetyl.io/en/latest/develop/How-to-import-third-party-libraries-for-python-runtime.md)
+- [How to import third-party libraries for Node runtime](https://docs.baetyl.io/en/latest/develop/How-to-import-third-party-libraries-for-node-runtime.md)
+- [How to develop a customize runtime for function](https://docs.baetyl.io/en/latest/develop/How-to-develop-a-customize-runtime-for-function.md)
+- [How to develop a customize module for Baetyl](https://docs.baetyl.io/en/latest/develop/How-to-develop-a-customize-module.md)
 
 ## Contributing
 
