@@ -124,7 +124,6 @@ func (p *Process) After(img gocv.Mat, results gocv.Mat, elapsedTime float64, cap
 	cnt["imageWidth"] = img.Cols()
 	cnt["imageHight"] = img.Rows()
 	cnt["imageCaptureTime"] = captureTime
-	cnt["imageCaptureTime"] = captureTime
 	cnt["imageInferenceTime"] = elapsedTime
 	cnt["imageProcessTime"] = (time.Since(s)).Seconds() + elapsedTime
 	if !discard && location == "" {
