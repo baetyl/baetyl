@@ -36,4 +36,4 @@ docker build -t hub.baidubce.com/baetyl-beta/baetyl-video-infer:0.1.6-openvino -
 
 ## How to use
 
-Please refer to the example we provide.
+Please refer to [Image-capuring-and-AI-model-inference-with-video-infer-service](https://docs.baetyl.io/en/latest/guides/Image-capturing-and-AI-model-inference-with-video-infer-service.html).
