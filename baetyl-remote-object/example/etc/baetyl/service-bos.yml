@@ -1,0 +1,32 @@
+hub:
+  address: tcp://127.0.0.1:1883
+  username: test
+  password: hahaha
+clients:
+  - name: baidu-bos
+    address: http://bos.gz.qasandbox.bcetest.baidu.com
+    ak: b7c301685f244b05b44ff0d73878bb8f
+    sk: 5a094f41a7ab4ed49a98f955ed5dcff7
+    kind: BOS
+    multipart:
+      partsize: 10m
+      concurrency: 10
+    pool:
+      worker: 1000
+      idletime: 30s
+    bucket: bos-remote-demo
+    temppath: var/db/baetyl/tmp
+    # max 1000g
+    limit:
+      data: 9g
+      path: var/db/baetyl/data/stats.yml
+rules:
+  - clientid: remote-write-bos
+    subscribe:
+      # hub topic
+      topic: t
+    client:
+      name: baidu-bos
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"

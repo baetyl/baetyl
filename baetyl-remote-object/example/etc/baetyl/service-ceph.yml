@@ -1,0 +1,32 @@
+hub:
+  address: tcp://127.0.0.1:1883
+  username: test
+  password: hahaha
+clients:
+  - name: baidu-bos
+    address: http://10.190.77.26:8080
+    ak: xxx
+    sk: xxx
+    kind: CEPH
+    multipart:
+      partsize: 10m
+      concurrency: 10
+    pool:
+      worker: 1000
+      idletime: 30s
+    bucket: bos-remote-demo
+    temppath: var/db/baetyl/tmp
+    # max 1000g
+    limit:
+      data: 9g
+      path: var/db/baetyl/data/stats.yml
+rules:
+  - clientid: remote-write-bos
+    subscribe:
+      # hub topic
+      topic: t
+    client:
+      name: baidu-bos
+logger:
+  path: var/log/baetyl/service.log
+  level: "debug"

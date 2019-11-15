@@ -1,6 +1,6 @@
 PREFIX?=/usr/local
 MODE?=docker
-MODULES?=agent hub timer remote-mqtt function-manager function-node8 function-python3 function-python2
+MODULES?=agent hub timer remote-mqtt remote-object function-manager function-node8 function-python3 function-python2
 SRC_FILES:=$(shell find main.go cmd master logger sdk protocol utils -type f -name '*.go') # TODO use vpath
 PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x
 

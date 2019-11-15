@@ -12,6 +12,8 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
+	github.com/aws/aws-sdk-go v1.25.35
+	github.com/baidubce/bce-sdk-go v0.9.5
 	github.com/containerd/containerd v1.3.0
 	github.com/creasty/defaults v1.3.0
 	github.com/deckarep/golang-set v1.7.1
@@ -39,6 +41,7 @@ require (
 	github.com/opencontainers/runc v0.0.0-00010101000000-000000000000 // indirect
 	github.com/opencontainers/runtime-spec v1.0.1 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
+	github.com/panjf2000/ants v1.3.0
 	github.com/pierrec/lz4 v2.3.0+incompatible // indirect
 	github.com/shirou/gopsutil v2.19.9+incompatible
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
