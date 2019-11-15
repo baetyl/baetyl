@@ -4,9 +4,9 @@ hub:
   password: hahaha
 clients:
   - name: baidu-bos
-    address: http://10.190.77.26:8080
-    ak: xxx
-    sk: xxx
+    address: http://127.0.0.1:8080
+    ak: XXXXXXXXXXXXXXXXXXXXXXXXXX
+    sk: XXXXXXXXXXXXXXXXXXXXXXXXXX
     kind: CEPH
     multipart:
       partsize: 10m
@@ -18,6 +18,7 @@ clients:
     temppath: var/db/baetyl/tmp
     # max 1000g
     limit:
+      switch: true
       data: 9g
       path: var/db/baetyl/data/stats.yml
 rules:

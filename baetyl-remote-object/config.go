@@ -23,6 +23,7 @@ const (
 type Config struct {
 	Clients []ClientInfo `yaml:"clients" json:"clients" default:"[]"`
 	Rules   []RuleInfo   `yaml:"rules" json:"rules" default:"[]"`
+	Storage Storage      `yaml:"storage" json:"storage"`
 }
 
 // Retry policy
@@ -50,7 +51,7 @@ type ClientInfo struct {
 	Retry     Retry         `yaml:"retry" json:"retry"`
 	Pool      Pool          `yaml:"pool" json:"pool"`
 	Bucket    string        `yaml:"bucket" json:"bucket" validate:"nonzero"`
-	TempPath  string        `yaml:"temppath" json:"temppath" default:"var/db/openedge/tmp"`
+	TempPath  string        `yaml:"temppath" json:"temppath" default:"var/db/baetyl/tmp"`
 	MultiPart MultiPart     `yaml:"multipart" json:"multipart"`
 	Limit     Limit         `yaml:"limit" json:"limit"`
 	Report    struct {
@@ -80,8 +81,9 @@ type multipart struct {
 
 // Limit limit config
 type Limit struct {
-	Data int64  `yaml:"data" json:"data"`
-	Path string `yaml:"path" json:"path" default:"var/db/openedge/data/stats.yml"`
+	Switch bool   `yaml:"switch" json:"switch" default:"false"`
+	Data   int64  `yaml:"data" json:"data" default:"1g"`
+	Path   string `yaml:"path" json:"path" default:"var/db/baetyl/data/stats.yml"`
 }
 
 type limit struct {
@@ -150,4 +152,9 @@ func DumpYAML(path string, in interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// Storage storage the failed object message
+type Storage struct {
+	Dir string `yaml:"dir" json:"dir" default:"var/db/baetyl/data"`
 }

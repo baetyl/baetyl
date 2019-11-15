@@ -60,7 +60,7 @@ func (r *Ruler) ProcessPublish(pkt *packet.Publish) error {
 }
 
 func (r *Ruler) processEvent(pkt *packet.Publish) (*Event, error) {
-	r.log.Debugln("event:", string(pkt.Message.Payload))
+	r.log.Debugln("event: ", string(pkt.Message.Payload))
 	e, err := NewEvent(pkt.Message.Payload)
 	if err != nil {
 		return nil, fmt.Errorf("event invalid: %s", err.Error())

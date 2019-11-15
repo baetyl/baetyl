@@ -10,26 +10,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/docker/distribution/uuid"
-
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/utils"
-	archiver "github.com/mholt/archiver"
+	"github.com/docker/distribution/uuid"
 	"github.com/panjf2000/ants"
 )
-
-type arch interface {
-	// Make makes an archive file on disk.
-	Make(destination string, sources []string) error
-}
-
-// nonArch origin file
-type nonArch struct{}
-
-// Make no action
-func (a *nonArch) Make(destination string, sources []string) error {
-	return nil
-}
 
 // Task StorageClient
 type Task struct {
@@ -83,7 +68,7 @@ func NewStorageClient(cfg ClientInfo, r report) (*StorageClient, error) {
 	return b, nil
 }
 
-// CallAsync  submit task
+// CallAsync submit task
 func (cli *StorageClient) CallAsync(msg *EventMessage, cb func(msg *EventMessage, err error)) error {
 	if !cli.tomb.Alive() {
 		return fmt.Errorf("client (%s) closed", cli.cfg.Name)
@@ -128,6 +113,7 @@ func (cli *StorageClient) call(task interface{}) {
 	}
 }
 
+// upload upload object to service(BOS, CEPH or AWS S3)
 func (cli *StorageClient) upload(f, remotePath string, meta map[string]string) error {
 	fi, err := os.Stat(f)
 	if err != nil {
@@ -137,19 +123,28 @@ func (cli *StorageClient) upload(f, remotePath string, meta map[string]string) e
 	fsize := fi.Size()
 	md5, err := utils.CalculateFileMD5(f)
 	if err != nil {
-		cli.log.Errorf("failed to calculate file MD5: %s", err.Error())
+		cli.log.Errorf("failed to calculate file[%s] MD5: %s", f, err.Error())
 		return nil
 	}
 	saved := cli.checkFile(remotePath, md5)
 	if saved {
 		return nil
 	}
-	month := time.Unix(0, time.Now().UnixNano()).Format("2006-01")
-	err = cli.checkData(fsize, month)
-	if err != nil {
-		cli.log.Errorf("failed to pass data check: %s", err.Error())
-		atomic.AddUint64(&cli.fs.limit, 1)
-		return nil
+	if cli.cfg.Limit.Switch {
+		month := time.Unix(0, time.Now().UnixNano()).Format("2006-01")
+		err = cli.checkData(fsize, month)
+		if err != nil {
+			cli.log.Errorf("failed to pass data check: %s", err.Error())
+			atomic.AddUint64(&cli.fs.limit, 1)
+			return nil
+		}
+		err = cli.sh.PutObjectFromFile(cli.cfg.Bucket, remotePath, f, meta)
+		if err != nil {
+			atomic.AddUint64(&cli.fs.fail, 1)
+			return err
+		}
+		atomic.AddUint64(&cli.fs.success, 1)
+		return cli.increaseData(fsize, month)
 	}
 	err = cli.sh.PutObjectFromFile(cli.cfg.Bucket, remotePath, f, meta)
 	if err != nil {
@@ -157,7 +152,7 @@ func (cli *StorageClient) upload(f, remotePath string, meta map[string]string) e
 		return err
 	}
 	atomic.AddUint64(&cli.fs.success, 1)
-	return cli.increaseData(fsize, month)
+	return nil
 }
 
 func (cli *StorageClient) handleUploadEvent(e *UploadEvent) error {
@@ -172,32 +167,35 @@ func (cli *StorageClient) handleUploadEvent(e *UploadEvent) error {
 		atomic.AddUint64(&cli.fs.deleted, 1)
 		return nil
 	}
-	var a arch
 	if ok := utils.FileExists(p); ok {
 		if e.Zip {
 			t = path.Join(cli.cfg.TempPath, uuid.Generate().String())
-			a = archiver.Zip
+			err = utils.Zip([]string{p}, t)
+			if err != nil {
+				return fmt.Errorf("failed to zip dir %s: %s", t, err.Error())
+			}
 		} else {
 			t = p
-			a = &nonArch{}
 		}
 	} else if ok = utils.DirExists(p); ok {
 		t = path.Join(cli.cfg.TempPath, uuid.Generate().String())
 		if e.Zip {
-			a = archiver.Zip
+			err = utils.Zip([]string{p}, t)
+			if err != nil {
+				return fmt.Errorf("failed to zip dir %s: %s", t, err.Error())
+			}
 		} else {
-			a = archiver.Tar
+			err = utils.Tar([]string{p}, t)
+			if err != nil {
+				return fmt.Errorf("failed to tar dir %s: %s", t, err.Error())
+			}
 		}
 	} else {
 		atomic.AddUint64(&cli.fs.deleted, 1)
 		return fmt.Errorf("failed to find path: %s", p)
 	}
-	err = a.Make(t, []string{p})
 	if t != p {
 		defer os.RemoveAll(t)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to zip/tar dir %s : %s", t, err.Error())
 	}
 	return cli.upload(t, e.RemotePath, e.Meta)
 }
@@ -283,7 +281,7 @@ func (cli *StorageClient) Start() error {
 		}
 	}
 	utils.LoadYAML(cli.cfg.Limit.Path, &cli.stats)
-	p, err := ants.NewTimingPoolWithFunc(cli.cfg.Pool.Worker, (int)(cli.cfg.Pool.Idletime.Seconds()), cli.call)
+	p, err := ants.NewPoolWithFunc(cli.cfg.Pool.Worker, cli.call, ants.WithExpiryDuration(cli.cfg.Pool.Idletime))
 	if err != nil {
 		cli.log.Errorf("failed to create a pool: %s", err.Error())
 		return err
