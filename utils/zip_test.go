@@ -14,7 +14,6 @@ func TestZip(t *testing.T) {
 	defer os.RemoveAll(tmpdir)
 	tmpfile, err := ioutil.TempFile(tmpdir, "test")
 	assert.NoError(t, err)
-	defer os.Remove(tmpfile.Name())
 	zipPath := tmpfile.Name() + ".zip"
 	err = Zip([]string{tmpfile.Name()}, zipPath)
 	assert.NoError(t, err)

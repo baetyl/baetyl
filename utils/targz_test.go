@@ -14,7 +14,6 @@ func TestTar(t *testing.T) {
 	defer os.RemoveAll(tmpdir)
 	tmpfile, err := ioutil.TempFile(tmpdir, "test")
 	assert.NoError(t, err)
-	defer os.Remove(tmpfile.Name())
 	tgzPath := tmpfile.Name() + ".tar.gz"
 	err = TarGz([]string{tmpfile.Name()}, tgzPath)
 	assert.NoError(t, err)
