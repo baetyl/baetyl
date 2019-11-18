@@ -18,8 +18,8 @@ before_install:
 install: true
 script:
   - echo "baetyl build begin"
-  - env GO111MODULE=on make
+  - env GO111MODULE=on GOPROXY=https://goproxy.cn make
   - echo "baetyl build end"
   - echo "baetyl unit test begin"
-  - env GO111MODULE=on make test GO_TEST_FLAGS=--race
+  - env GO111MODULE=on GOPROXY=https://goproxy.cn make test GO_TEST_FLAGS=--race
   - echo "baetyl unit test end"
