@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -8,12 +9,17 @@ import (
 )
 
 func TestTar(t *testing.T) {
-	os.MkdirAll("var", 0755)
-	defer os.RemoveAll("var")
-	err := TarGz([]string{"tomb.go"}, "var/tmp.tar.gz")
+	tmpdir, err := ioutil.TempDir("", "example")
 	assert.NoError(t, err)
-	err = UntarGz("var/tmp.tar.gz", "var/code")
+	defer os.RemoveAll(tmpdir)
+	tmpfile, err := ioutil.TempFile(tmpdir, "test")
 	assert.NoError(t, err)
-	err = UntarGz("var/tmp.tar.gz", "var/code")
+	defer os.Remove(tmpfile.Name())
+	tgzPath := tmpfile.Name() + ".tar.gz"
+	err = TarGz([]string{tmpfile.Name()}, tgzPath)
+	assert.NoError(t, err)
+	err = UntarGz(tgzPath, tmpdir)
+	assert.NoError(t, err)
+	err = UntarGz(tgzPath, tmpdir)
 	assert.NoError(t, err)
 }

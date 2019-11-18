@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -8,12 +9,17 @@ import (
 )
 
 func TestZip(t *testing.T) {
-	os.MkdirAll("var", 0755)
-	defer os.RemoveAll("var")
-	err := Zip([]string{"tomb.go"}, "var/tmp.zip")
+	tmpdir, err := ioutil.TempDir("", "example")
 	assert.NoError(t, err)
-	err = Unzip("var/tmp.zip", "var/code")
+	defer os.RemoveAll(tmpdir)
+	tmpfile, err := ioutil.TempFile(tmpdir, "test")
 	assert.NoError(t, err)
-	err = Unzip("var/tmp.zip", "var/code")
+	defer os.Remove(tmpfile.Name())
+	zipPath := tmpfile.Name() + ".zip"
+	err = Zip([]string{tmpfile.Name()}, zipPath)
+	assert.NoError(t, err)
+	err = Unzip(zipPath, tmpdir)
+	assert.NoError(t, err)
+	err = Unzip(zipPath, tmpdir)
 	assert.NoError(t, err)
 }
