@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -24,12 +25,19 @@ type Master interface {
 	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
 	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
 	StopInstance(serviceName, instanceName string) error
+
+	// for db
+	PutKV(key string, value []byte) error
+	GetKV(key string) (result database.KV, err error)
+	DelKV(key string) error
+	ListKV(prefix string) (results []database.KV, err error)
 }
 
 // Server master api server
 type Server struct {
-	m Master
-	s *http.Server
+	m  Master
+	s  *http.Server
+	db *database.DB
 }
 
 // New creates new api server
@@ -56,6 +64,10 @@ func New(c http.ServerInfo, m Master) (*Server, error) {
 	s.s.Handle(s.reportInstance, "PUT", "/v1/services/{serviceName}/instances/{instanceName}/report")
 	s.s.Handle(s.startInstance, "PUT", "/v1/services/{serviceName}/instances/{instanceName}/start")
 	s.s.Handle(s.stopInstance, "PUT", "/v1/services/{serviceName}/instances/{instanceName}/stop")
+	s.s.Handle(s.getKV, "GET", "/v1/storage/kv/{namespace}/{resource}/{name}")
+	s.s.Handle(s.listKV, "GET", "/v1/storage/kv/{namespace}/{resource}")
+	s.s.Handle(s.putKV, "POST", "/v1/storage/kv/{namespace}/{resource}/{name}")
+	s.s.Handle(s.deleteKV, "DELETE", "/v1/storage/kv/{namespace}/{resource}/{name}")
 	return s, s.s.Start()
 }
 
@@ -180,6 +192,87 @@ func (s *Server) stopInstance(params http.Params, _ []byte) ([]byte, error) {
 		return nil, fmt.Errorf("request params invalid, missing instance name")
 	}
 	return nil, s.m.StopInstance(serviceName, instanceName)
+}
+
+func (s *Server) getKV(params http.Params, _ []byte) ([]byte, error) {
+	namespace, ok := params["namespace"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing namespace")
+	}
+	resource, ok := params["resource"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing resource")
+	}
+	name, ok := params["name"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing name")
+	}
+
+	key := fmt.Sprintf("/%s/%s/%s", namespace, resource, name)
+	v, err := s.m.GetKV(key)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(v)
+}
+
+func (s *Server) listKV(params http.Params, _ []byte) ([]byte, error) {
+	namespace, ok := params["namespace"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing namespace")
+	}
+	resource, ok := params["resource"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing resource")
+	}
+
+	prefix := fmt.Sprintf("/%s/%s", namespace, resource)
+	v, err := s.m.ListKV(prefix)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(v)
+}
+
+func (s *Server) putKV(params http.Params, reqBody []byte) ([]byte, error) {
+	namespace, ok := params["namespace"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing namespace")
+	}
+	resource, ok := params["resource"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing resource")
+	}
+	name, ok := params["name"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing name")
+	}
+	if reqBody == nil {
+		return nil, fmt.Errorf("request body invalid")
+	}
+
+	key := fmt.Sprintf("/%s/%s/%s", namespace, resource, name)
+	err := s.m.PutKV(key, reqBody)
+	return nil, err
+}
+
+func (s *Server) deleteKV(params http.Params, _ []byte) ([]byte, error) {
+	namespace, ok := params["namespace"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing namespace")
+	}
+	resource, ok := params["resource"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing resource")
+	}
+	name, ok := params["name"]
+	if !ok {
+		return nil, fmt.Errorf("request params invalid, missing name")
+	}
+
+	key := fmt.Sprintf("/%s/%s/%s", namespace, resource, name)
+	err := s.m.DelKV(key)
+	return nil, err
 }
 
 // deprecated

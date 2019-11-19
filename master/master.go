@@ -9,9 +9,11 @@ import (
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/api"
+	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	_ "github.com/mattn/go-sqlite3"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -22,6 +24,7 @@ type Master struct {
 	pwd       string
 	server    *api.Server
 	engine    engine.Engine
+	db        database.DB
 	services  cmap.ConcurrentMap
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
@@ -58,6 +61,12 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
+	m.db, err = database.New(database.Conf{Driver: "sqlite3", Source: path.Join(".", "kv.db")})
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
+	log.Infoln("db inited")
 	sc := http.ServerInfo{
 		Address:     m.cfg.Server.Address,
 		Timeout:     m.cfg.Server.Timeout,
