@@ -37,7 +37,6 @@ type Master interface {
 type Server struct {
 	m  Master
 	s  *http.Server
-	db *database.DB
 }
 
 // New creates new api server
