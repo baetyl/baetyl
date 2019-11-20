@@ -1,8 +1,9 @@
 package database
 
 import (
-	"bytes"
 	"database/sql"
+
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 var placeholderValue = "(?)"
@@ -46,59 +47,54 @@ func (d *sqldb) Conf() Conf {
 	return d.conf
 }
 
-// PutKV put key and value into SQL DB
-func (d *sqldb) PutKV(key, value []byte) error {
-	if len(key) == 0 {
-		return nil
-	}
-
+// Set put key and value into SQL DB
+func (d *sqldb) Set(kv *baetyl.KV) error {
 	stmt, err := d.Prepare("insert into kv(key,value) values (?,?) on conflict(key) do update set value=excluded.value")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(key, value)
+	_, err = stmt.Exec(kv.Key, kv.Value)
 	return err
 }
 
-// GetKV gets value by key from SQL DB
-func (d *sqldb) GetKV(key []byte) (result KV, err error) {
+// Get gets value by key from SQL DB
+func (d *sqldb) Get(key []byte) (*baetyl.KV, error) {
 	rows, err := d.Query("select value from kv where key=?", key)
-	if err != nil {
-		return result, err
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		var value []byte
-		err = rows.Scan(&value)
-		if err != nil {
-			return result, err
-		}
-		result = KV{Key: key, Value: value}
-		return result, nil
-	}
-	return result, nil
-}
-
-// Del deletes key and value from SQL DB
-func (d *sqldb) DelKV(key []byte) error {
-	_, err := d.Exec("delete from kv where key=?", key)
-	return err
-}
-
-// ListKV list kvs under the prefix
-func (d *sqldb) ListKV(prefix []byte) (results []KV, err error) {
-	if !bytes.HasSuffix(prefix, []byte("/")) {
-		prefix = bytes.Join([][]byte{prefix, []byte("/")}, []byte(""))
-	}
-
-	rows, err := d.Query("select key, value from kv where key like ?", bytes.Join([][]byte{prefix, []byte("%")}, []byte("")))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	kv := &baetyl.KV{}
+	if rows.Next() {
+		var value []byte
+		err = rows.Scan(&value)
+		if err != nil {
+			return nil, err
+		}
+		kv.Key = key
+		kv.Value = value
+		return kv, nil
+	}
+	return kv, nil
+}
+
+// Del deletes key and value from SQL DB
+func (d *sqldb) Del(key []byte) error {
+	_, err := d.Exec("delete from kv where key=?", key)
+	return err
+}
+
+// List list kvs with the prefix
+func (d *sqldb) List(prefix []byte) (*baetyl.KVs, error) {
+	rows, err := d.Query("select key, value from kv where key like ?", append(prefix, byte('%')))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	kvs := &baetyl.KVs{}
 	for rows.Next() {
 		var key []byte
 		var value []byte
@@ -106,7 +102,7 @@ func (d *sqldb) ListKV(prefix []byte) (results []KV, err error) {
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, KV{Key: key, Value: value})
+		kvs.Kvs = append(kvs.Kvs, &baetyl.KV{Key: key, Value: value})
 	}
-	return results, nil
+	return kvs, nil
 }

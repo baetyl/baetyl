@@ -8,11 +8,11 @@ import (
 	"path"
 	"testing"
 
-	"github.com/baetyl/baetyl/logger"
-	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"google.golang.org/grpc"
 
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/database"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,97 +27,90 @@ func Test_KVServer(t *testing.T) {
 	defer db.Close()
 
 	log := newMockLogger()
-	err = NewKVServer(log, db)
+	conf := Conf{Address: "baetyl"}
+	_, err = NewKVServer(conf, db, log)
+	assert.Error(t, err)
+
+	conf = Conf{Address: "tcp://127.0.0.1:10000000"}
+	kvServer, err := NewKVServer(conf, db, log)
+	assert.Error(t, err)
+
+	conf = Conf{Address: "tcp://127.0.0.1:50060"}
+	kvServer, err = NewKVServer(conf, db, log)
 	assert.NoError(t, err)
-	assert.Equal(t, []string{"[Infoln]kv server is listening at: tcp://127.0.0.1:50060\n"}, log.records)
+	assert.Equal(t, []string{fmt.Sprintf("[Infof]kv server is listening at: %s", conf.Address)}, log.records)
+	defer kvServer.Close()
 
 	conn, err := grpc.Dial("127.0.0.1:50060", grpc.WithInsecure())
 	assert.NoError(t, err)
 	defer conn.Close()
-	client := baetyl.NewKVClient(conn)
+	client := baetyl.NewKVServiceClient(conn)
 	assert.NotEmpty(t, client)
 
 	ctx := context.Background()
-	// GetKV empty
-	_, err = client.GetKV(ctx, &baetyl.KVMessage{Key: []byte("")})
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = key is empty")
+	_, err = client.Get(ctx, &baetyl.KV{Key: []byte("")})
+	assert.NoError(t, err)
 
-	// GetKV empty
-	resp, err := client.GetKV(ctx, &baetyl.KVMessage{Key: []byte("aa")})
+	resp, err := client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{})
+	resp, err = client.Set(ctx, &baetyl.KV{})
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = key is empty")
 
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("")})
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("")})
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = key is empty")
 
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("aa")})
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = value is empty")
-
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("aa"), Value: []byte("")})
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = value is empty")
-
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("aa"), Value: []byte("aadata")})
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// GetKV
-	resp, err = client.GetKV(ctx, &baetyl.KVMessage{Key: []byte("aa")})
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("")})
+	assert.NoError(t, err)
+	assert.Empty(t, resp.Key)
+	assert.Empty(t, resp.Value)
+
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("aadata")})
+	assert.NoError(t, err)
+	assert.Empty(t, resp.Key)
+	assert.Empty(t, resp.Value)
+
+	resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Equal(t, resp.Key, []byte("aa"))
 	assert.Equal(t, resp.Value, []byte("aadata"))
 
-	// DelKV
-	resp, err = client.DelKV(ctx, &baetyl.KVMessage{Key: []byte("aa")})
+	resp, err = client.Del(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// DelKV
-	resp, err = client.DelKV(ctx, &baetyl.KVMessage{Key: []byte("")})
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = key is empty")
+	resp, err = client.Del(ctx, &baetyl.KV{Key: []byte("")})
+	assert.NoError(t, err)
 
-	// GetKV empty
-	resp, err = client.GetKV(ctx, &baetyl.KVMessage{Key: []byte("aa")})
+	resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("/root/a"), Value: []byte("/root/ax")})
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/a"), Value: []byte("/root/ax")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("/root/b"), Value: []byte("/root/bx")})
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/b"), Value: []byte("/root/bx")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// PutKV
-	resp, err = client.PutKV(ctx, &baetyl.KVMessage{Key: []byte("/rootx/a"), Value: []byte("/rootx/ax")})
+	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/roox/a"), Value: []byte("/roox/ax")})
 	assert.NoError(t, err)
 	assert.Empty(t, resp.Key)
 	assert.Empty(t, resp.Value)
 
-	// ListKV
-	respa, err := client.ListKV(ctx, &baetyl.KVMessage{Key: []byte("/root")})
+	respa, err := client.List(ctx, &baetyl.KV{Key: []byte("/root")})
 	assert.NoError(t, err)
 	assert.Len(t, respa.Kvs, 2)
 	assert.Equal(t, respa.Kvs[0].Key, []byte("/root/a"))
@@ -125,17 +118,11 @@ func Test_KVServer(t *testing.T) {
 	assert.Equal(t, respa.Kvs[0].Value, []byte("/root/ax"))
 	assert.Equal(t, respa.Kvs[1].Value, []byte("/root/bx"))
 
-	// ListKV
-	respa, err = client.ListKV(ctx, &baetyl.KVMessage{Key: []byte("/rootx")})
+	respa, err = client.List(ctx, &baetyl.KV{Key: []byte("/roox")})
 	assert.NoError(t, err)
 	assert.Len(t, respa.Kvs, 1)
-	assert.Equal(t, respa.Kvs[0].Key, []byte("/rootx/a"))
-	assert.Equal(t, respa.Kvs[0].Value, []byte("/rootx/ax"))
-
-	// ListKV
-	respa, err = client.ListKV(ctx, &baetyl.KVMessage{Key: []byte("")})
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "rpc error: code = Unknown desc = key is empty")
+	assert.Equal(t, respa.Kvs[0].Key, []byte("/roox/a"))
+	assert.Equal(t, respa.Kvs[0].Value, []byte("/roox/ax"))
 }
 
 type mackLogger struct {

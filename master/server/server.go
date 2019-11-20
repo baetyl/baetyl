@@ -1,11 +1,10 @@
 package server
 
 import (
-	"fmt"
 	"net"
-	"net/url"
 
 	"github.com/baetyl/baetyl/master/database"
+	"github.com/baetyl/baetyl/utils"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -14,92 +13,65 @@ import (
 	context "golang.org/x/net/context"
 )
 
+// Conf the configuration of database
+type Conf struct {
+	Address string `yaml:"address" json:"address"`
+}
+
 // KVServer kv server to handle message
 type KVServer struct {
-	db database.DB
+	db  database.DB
+	svr *grpc.Server
 }
 
 // NewKVServer creates a new kv server
-func NewKVServer(log logger.Logger, db database.DB) error {
-	uri := &url.URL{
-		Scheme: "tcp",
-		Host:   "127.0.0.1:50060",
+func NewKVServer(conf Conf, db database.DB, log logger.Logger) (*KVServer, error) {
+	uri, err := utils.ParseURL(conf.Address)
+	if err != nil {
+		return nil, err
 	}
+
 	listener, err := net.Listen(uri.Scheme, uri.Host)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Infoln("kv server is listening at: " + uri.Scheme + "://" + uri.Host)
+	log.Infof("kv server is listening at: %s://%s", uri.Scheme, uri.Host)
 
-	rpcServer := grpc.NewServer()
-	baetyl.RegisterKVServer(rpcServer, &KVServer{db: db})
-	reflection.Register(rpcServer)
+	svr := grpc.NewServer()
+	kvServer := &KVServer{db: db, svr: svr}
+	baetyl.RegisterKVServiceServer(svr, kvServer)
+	reflection.Register(svr)
 	go func() {
-		if err := rpcServer.Serve(listener); err != nil {
-			log.Infoln("kv server shutdown: %v", err)
+		if err := svr.Serve(listener); err != nil {
+			log.Infof("kv server shutdown: %v", err)
 		}
-		rpcServer.GracefulStop()
 	}()
-	return nil
+	return kvServer, nil
 }
 
-// GetKV get kv
-func (s *KVServer) GetKV(ctx context.Context, msg *baetyl.KVMessage) (*baetyl.KVMessage, error) {
-	if len(msg.Key) == 0 {
-		return nil, fmt.Errorf("key is empty")
-	}
-
-	v, err := s.db.GetKV(msg.Key)
-	if err != nil {
-		return nil, err
-	}
-	return &baetyl.KVMessage{
-		Key:   v.Key,
-		Value: v.Value,
-	}, nil
+// Set put kv
+func (s *KVServer) Set(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
+	return &baetyl.KV{}, s.db.Set(kv)
 }
 
-// ListKV list kvs with prefix
-func (s *KVServer) ListKV(ctx context.Context, msg *baetyl.KVMessage) (*baetyl.ArrayKVMessage, error) {
-	if len(msg.Key) == 0 {
-		return nil, fmt.Errorf("key is empty")
-	}
-
-	vs, err := s.db.ListKV(msg.Key)
-	if err != nil {
-		return nil, err
-	}
-	var kvs []*baetyl.KVMessage
-	for _, kv := range vs {
-		kvs = append(kvs, &baetyl.KVMessage{
-			Key:   kv.Key,
-			Value: kv.Value,
-		})
-	}
-	return &baetyl.ArrayKVMessage{
-		Kvs: kvs,
-	}, nil
+// Get get kv
+func (s *KVServer) Get(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
+	return s.db.Get(kv.Key)
 }
 
-// PutKV put kv
-func (s *KVServer) PutKV(ctx context.Context, msg *baetyl.KVMessage) (*baetyl.KVMessage, error) {
-	if len(msg.Key) == 0 {
-		return nil, fmt.Errorf("key is empty")
-	}
-	if len(msg.Value) == 0 {
-		return nil, fmt.Errorf("value is empty")
-	}
-
-	err := s.db.PutKV(msg.Key, msg.Value)
-	return &baetyl.KVMessage{}, err
+// Del del kv
+func (s *KVServer) Del(ctx context.Context, msg *baetyl.KV) (*baetyl.KV, error) {
+	return &baetyl.KV{}, s.db.Del(msg.Key)
 }
 
-// DelKV del kv
-func (s *KVServer) DelKV(ctx context.Context, msg *baetyl.KVMessage) (*baetyl.KVMessage, error) {
-	if len(msg.Key) == 0 {
-		return nil, fmt.Errorf("key is empty")
-	}
+// List list kvs with prefix
+func (s *KVServer) List(ctx context.Context, kv *baetyl.KV) (*baetyl.KVs, error) {
+	return s.db.List(kv.Key)
+}
 
-	err := s.db.DelKV(msg.Key)
-	return &baetyl.KVMessage{}, err
+// Close closes server
+func (s *KVServer) Close() {
+	if s.svr != nil {
+		s.svr.GracefulStop()
+	}
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/baetyl/baetyl/master/server"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/baetyl/baetyl/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -26,6 +26,7 @@ type Master struct {
 	server    *api.Server
 	engine    engine.Engine
 	db        database.DB
+	kvserver  *server.KVServer
 	services  cmap.ConcurrentMap
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
@@ -62,17 +63,19 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
-	err = os.MkdirAll(baetyl.DefaultKVDBDir, 0755)
+	err = os.MkdirAll(utils.Dir(cfg.DB.Source), 0755)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make kv db directory: %s", err.Error())
 	}
-	m.db, err = database.New(database.Conf{Driver: "sqlite3", Source: path.Join(baetyl.DefaultKVDBDir, "kv.db")})
+	m.db, err = database.New(cfg.DB)
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
 	log.Infoln("kv db inited")
-	if err = server.NewKVServer(log, m.db); err != nil {
+	m.kvserver, err = server.NewKVServer(cfg.KVServer, m.db, log)
+
+	if err != nil {
 		return nil, err
 	}
 	log.Infoln("kv server started")
@@ -102,9 +105,17 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 
 // Close closes agent
 func (m *Master) Close() error {
+	if m.db != nil {
+		m.db.Close()
+		m.log.Infoln("kv db closed")
+	}
 	if m.server != nil {
 		m.server.Close()
 		m.log.Infoln("server stopped")
+	}
+	if m.kvserver != nil {
+		m.kvserver.Close()
+		m.log.Infoln("kv server stopped")
 	}
 	m.stopServices(map[string]struct{}{})
 	if m.engine != nil {

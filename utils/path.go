@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // PathExists checks path exists
@@ -87,4 +88,9 @@ func CreateSymlink(target, symlink string) error {
 		return fmt.Errorf("failed to make symlink %s of %s: %s", target, symlink, err.Error())
 	}
 	return nil
+}
+
+// Dir get dir of path
+func Dir(path string) string {
+	return filepath.Dir(path)
 }
