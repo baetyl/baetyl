@@ -23,13 +23,13 @@ type Master struct {
 	pwd       string
 	server    *api.Server
 	engine    engine.Engine
-	db        database.DB
 	apiserver *api.APIServer
 	services  cmap.ConcurrentMap
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
 	sig       chan os.Signal
 	log       logger.Logger
+	database.DB
 }
 
 // New creates a new master
@@ -66,13 +66,13 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
 
-	m.db, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
+	m.DB, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
 	log.Infoln("db inited")
-	m.apiserver, err = api.NewAPIServer(cfg.API, m.db, log)
+	m.apiserver, err = api.NewAPIServer(cfg.API, m)
 
 	if err != nil {
 		return nil, err
@@ -112,8 +112,8 @@ func (m *Master) Close() error {
 		m.apiserver.Close()
 		m.log.Infoln("api server stopped")
 	}
-	if m.db != nil {
-		m.db.Close()
+	if m.DB != nil {
+		m.DB.Close()
 		m.log.Infoln("db closed")
 	}
 	m.stopServices(map[string]struct{}{})
@@ -134,4 +134,9 @@ func (m *Master) Wait() error {
 	signal.Ignore(syscall.SIGPIPE)
 	<-m.sig
 	return nil
+}
+
+// Logger get log
+func (m *Master) Logger() logger.Logger {
+	return m.log
 }

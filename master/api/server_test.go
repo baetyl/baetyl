@@ -8,13 +8,13 @@ import (
 	"path"
 	"testing"
 
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"google.golang.org/grpc"
-
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/database"
+	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 )
 
 func Test_APIServer(t *testing.T) {
@@ -28,15 +28,17 @@ func Test_APIServer(t *testing.T) {
 
 	log := newMockLogger()
 	conf := Conf{Address: "baetyl"}
-	_, err = NewAPIServer(conf, db, log)
+	m := mockMaster{DB: db, l: log}
+
+	_, err = NewAPIServer(conf, &m)
 	assert.Error(t, err)
 
 	conf = Conf{Address: "tcp://127.0.0.1:10000000"}
-	apiServer, err := NewAPIServer(conf, db, log)
+	apiServer, err := NewAPIServer(conf, &m)
 	assert.Error(t, err)
 
 	conf = Conf{Address: "tcp://127.0.0.1:50060"}
-	apiServer, err = NewAPIServer(conf, db, log)
+	apiServer, err = NewAPIServer(conf, &m)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{fmt.Sprintf("[Infof]api server is listening at: %s", conf.Address)}, log.records)
 	defer apiServer.Close()
@@ -125,54 +127,86 @@ func Test_APIServer(t *testing.T) {
 	assert.Equal(t, respa.Kvs[0].Value, []byte("/roox/ax"))
 }
 
-type mackLogger struct {
+type mockMaster struct {
+	database.DB
+	l *mockLogger
+}
+
+func (m *mockMaster) Auth(u, p string) bool {
+	return false
+}
+
+func (m *mockMaster) InspectSystem() ([]byte, error) {
+	return nil, nil
+}
+
+func (m *mockMaster) UpdateSystem(trace, tp, target string) error {
+	return nil
+}
+
+func (m *mockMaster) ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error {
+	return nil
+}
+
+func (m *mockMaster) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
+	return nil
+}
+func (m *mockMaster) StopInstance(serviceName, instanceName string) error {
+	return nil
+}
+
+func (m *mockMaster) Logger() logger.Logger {
+	return m.l
+}
+
+type mockLogger struct {
 	records []string
 	data    map[string]interface{}
 	err     error
 }
 
-func newMockLogger() *mackLogger {
-	return &mackLogger{
+func newMockLogger() *mockLogger {
+	return &mockLogger{
 		data:    map[string]interface{}{},
 		records: []string{},
 	}
 }
 
-func (l *mackLogger) WithField(key string, value interface{}) logger.Logger {
+func (l *mockLogger) WithField(key string, value interface{}) logger.Logger {
 	l.data[key] = value
 	return l
 }
-func (l *mackLogger) WithError(err error) logger.Logger {
+func (l *mockLogger) WithError(err error) logger.Logger {
 	l.err = err
 	return l
 }
-func (l *mackLogger) Debugf(format string, args ...interface{}) {
+func (l *mockLogger) Debugf(format string, args ...interface{}) {
 	l.records = append(l.records, "[Debugf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Infof(format string, args ...interface{}) {
+func (l *mockLogger) Infof(format string, args ...interface{}) {
 	l.records = append(l.records, "[Infof]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Warnf(format string, args ...interface{}) {
+func (l *mockLogger) Warnf(format string, args ...interface{}) {
 	l.records = append(l.records, "[Warnf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Errorf(format string, args ...interface{}) {
+func (l *mockLogger) Errorf(format string, args ...interface{}) {
 	l.records = append(l.records, "[Errorf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Fatalf(format string, args ...interface{}) {
+func (l *mockLogger) Fatalf(format string, args ...interface{}) {
 	l.records = append(l.records, "[Fatalf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Debugln(args ...interface{}) {
+func (l *mockLogger) Debugln(args ...interface{}) {
 	l.records = append(l.records, "[Debugln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Infoln(args ...interface{}) {
+func (l *mockLogger) Infoln(args ...interface{}) {
 	l.records = append(l.records, "[Infoln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Warnln(args ...interface{}) {
+func (l *mockLogger) Warnln(args ...interface{}) {
 	l.records = append(l.records, "[Warnln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Errorln(args ...interface{}) {
+func (l *mockLogger) Errorln(args ...interface{}) {
 	l.records = append(l.records, "[Errorln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Fatalln(args ...interface{}) {
+func (l *mockLogger) Fatalln(args ...interface{}) {
 	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
 }

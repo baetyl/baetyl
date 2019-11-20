@@ -4,15 +4,36 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/baetyl/baetyl/master/database"
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
+	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/baetyl/baetyl/logger"
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
-	context "golang.org/x/net/context"
 )
+
+// Master master interface
+type Master interface {
+	Auth(u, p string) bool
+
+	// for system
+	InspectSystem() ([]byte, error)
+	UpdateSystem(trace, tp, target string) error
+
+	// for instance
+	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
+	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	StopInstance(serviceName, instanceName string) error
+
+	// for db
+	Set(kv *baetyl.KV) error
+	Get(key []byte) (*baetyl.KV, error)
+	Del(key []byte) error
+	List(prefix []byte) (*baetyl.KVs, error)
+
+	Logger() logger.Logger
+}
 
 // Conf the configuration of database
 type Conf struct {
@@ -21,12 +42,12 @@ type Conf struct {
 
 // APIServer api server to handle grpc message
 type APIServer struct {
-	db  database.DB
+	m   Master
 	svr *grpc.Server
 }
 
 // NewAPIServer creates a new api server
-func NewAPIServer(conf Conf, db database.DB, log logger.Logger) (*APIServer, error) {
+func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 	uri, err := utils.ParseURL(conf.Address)
 	if err != nil {
 		return nil, err
@@ -34,7 +55,7 @@ func NewAPIServer(conf Conf, db database.DB, log logger.Logger) (*APIServer, err
 
 	if uri.Scheme == "unix" {
 		if err := syscall.Unlink(uri.Host); err != nil {
-			log.Errorf(err.Error())
+			m.Logger().Errorf(err.Error())
 		}
 	}
 
@@ -42,15 +63,15 @@ func NewAPIServer(conf Conf, db database.DB, log logger.Logger) (*APIServer, err
 	if err != nil {
 		return nil, err
 	}
-	log.Infof("api server is listening at: %s", uri.String())
+	m.Logger().Infof("api server is listening at: %s", uri.String())
 
 	svr := grpc.NewServer()
-	apiServer := &APIServer{db: db, svr: svr}
+	apiServer := &APIServer{m: m, svr: svr}
 	baetyl.RegisterKVServiceServer(svr, apiServer)
 	reflection.Register(svr)
 	go func() {
 		if err := svr.Serve(listener); err != nil {
-			log.Infof("api server shutdown: %v", err)
+			m.Logger().Infof("api server shutdown: %v", err)
 		}
 	}()
 	return apiServer, nil
@@ -58,22 +79,22 @@ func NewAPIServer(conf Conf, db database.DB, log logger.Logger) (*APIServer, err
 
 // Set set kv
 func (s *APIServer) Set(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
-	return &baetyl.KV{}, s.db.Set(kv)
+	return &baetyl.KV{}, s.m.Set(kv)
 }
 
 // Get get kv
 func (s *APIServer) Get(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
-	return s.db.Get(kv.Key)
+	return s.m.Get(kv.Key)
 }
 
 // Del del kv
 func (s *APIServer) Del(ctx context.Context, msg *baetyl.KV) (*baetyl.KV, error) {
-	return &baetyl.KV{}, s.db.Del(msg.Key)
+	return &baetyl.KV{}, s.m.Del(msg.Key)
 }
 
 // List list kvs with prefix
 func (s *APIServer) List(ctx context.Context, kv *baetyl.KV) (*baetyl.KVs, error) {
-	return s.db.List(kv.Key)
+	return s.m.List(kv.Key)
 }
 
 // Close closes server
