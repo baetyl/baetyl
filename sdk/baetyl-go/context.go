@@ -100,6 +100,8 @@ const (
 	DefaultMasterConfDir = "etc/baetyl"
 	// DefaultMasterConfFile master config file by default
 	DefaultMasterConfFile = "etc/baetyl/conf.yml"
+	// DefaultKVDBDir db dir of kv by default
+	DefaultKVDBDir = "/var/lib/baetyl/db"
 
 	// backward compatibility
 	// PreviousDBDir previous db dir of the service

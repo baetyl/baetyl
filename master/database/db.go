@@ -10,7 +10,7 @@ var Factories = map[string]func(conf Conf) (DB, error){}
 
 // KV kv object
 type KV struct {
-	Key   string
+	Key   []byte
 	Value []byte
 }
 
@@ -18,10 +18,10 @@ type KV struct {
 type DB interface {
 	Conf() Conf
 
-	PutKV(key string, value []byte) error
-	GetKV(key string) (result KV, err error)
-	DelKV(key string) error
-	ListKV(prefix string) (results []KV, err error)
+	PutKV(key, value []byte) error
+	GetKV(key []byte) (result KV, err error)
+	DelKV(key []byte) error
+	ListKV(prefix []byte) (results []KV, err error)
 
 	io.Closer
 }

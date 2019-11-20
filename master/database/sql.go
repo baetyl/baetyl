@@ -1,8 +1,8 @@
 package database
 
 import (
+	"bytes"
 	"database/sql"
-	"strings"
 )
 
 var placeholderValue = "(?)"
@@ -11,7 +11,7 @@ var schema = map[string][]string{
 	"sqlite3": []string{
 		`CREATE TABLE IF NOT EXISTS kv (
 			key TEXT PRIMARY KEY,
-			value TEXT,
+			value BLOB,
 			ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP) WITHOUT ROWID`,
 	},
 }
@@ -47,7 +47,7 @@ func (d *sqldb) Conf() Conf {
 }
 
 // PutKV put key and value into SQL DB
-func (d *sqldb) PutKV(key string, value []byte) error {
+func (d *sqldb) PutKV(key, value []byte) error {
 	if len(key) == 0 {
 		return nil
 	}
@@ -62,7 +62,7 @@ func (d *sqldb) PutKV(key string, value []byte) error {
 }
 
 // GetKV gets value by key from SQL DB
-func (d *sqldb) GetKV(key string) (result KV, err error) {
+func (d *sqldb) GetKV(key []byte) (result KV, err error) {
 	rows, err := d.Query("select value from kv where key=?", key)
 	if err != nil {
 		return result, err
@@ -82,24 +82,25 @@ func (d *sqldb) GetKV(key string) (result KV, err error) {
 }
 
 // Del deletes key and value from SQL DB
-func (d *sqldb) DelKV(key string) error {
+func (d *sqldb) DelKV(key []byte) error {
 	_, err := d.Exec("delete from kv where key=?", key)
 	return err
 }
 
 // ListKV list kvs under the prefix
-func (d *sqldb) ListKV(prefix string) (results []KV, err error) {
-	if !strings.HasSuffix(prefix, "/") {
-		prefix = prefix + "/"
+func (d *sqldb) ListKV(prefix []byte) (results []KV, err error) {
+	if !bytes.HasSuffix(prefix, []byte("/")) {
+		prefix = bytes.Join([][]byte{prefix, []byte("/")}, []byte(""))
 	}
-	rows, err := d.Query("select key, value from kv where key like ?", prefix+"%")
+
+	rows, err := d.Query("select key, value from kv where key like ?", bytes.Join([][]byte{prefix, []byte("%")}, []byte("")))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var key string
+		var key []byte
 		var value []byte
 		err = rows.Scan(&key, &value)
 		if err != nil {

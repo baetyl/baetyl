@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package baetyl;
+
+// The function server definition.
+service KV {
+  rpc GetKV(KVMessage)  returns (KVMessage)      {}
+  rpc ListKV(KVMessage) returns (ArrayKVMessage) {}
+  rpc PutKV(KVMessage)  returns (KVMessage)      {}
+  rpc DelKV(KVMessage)  returns (KVMessage)      {}
+}
+
+// KV kv message
+message KVMessage {
+  // key is the key, in bytes, to put into the key-value store.
+  bytes key   = 1;
+  // value is the value, in bytes, to associate with the key in the key-value store.
+  bytes value = 2;
+}
+
+message ArrayKVMessage {
+  repeated KVMessage kvs = 1;
+}

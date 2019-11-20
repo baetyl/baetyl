@@ -11,6 +11,7 @@ import (
 	"github.com/baetyl/baetyl/master/api"
 	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/master/server"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	_ "github.com/mattn/go-sqlite3"
@@ -61,12 +62,20 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
-	m.db, err = database.New(database.Conf{Driver: "sqlite3", Source: path.Join(".", "kv.db")})
+	err = os.MkdirAll(baetyl.DefaultKVDBDir, 0755)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make kv db directory: %s", err.Error())
+	}
+	m.db, err = database.New(database.Conf{Driver: "sqlite3", Source: path.Join(baetyl.DefaultKVDBDir, "kv.db")})
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
-	log.Infoln("db inited")
+	log.Infoln("kv db inited")
+	if err = server.NewKVServer(log, m.db); err != nil {
+		return nil, err
+	}
+	log.Infoln("kv server started")
 	sc := http.ServerInfo{
 		Address:     m.cfg.Server.Address,
 		Timeout:     m.cfg.Server.Timeout,
