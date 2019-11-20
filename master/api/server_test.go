@@ -1,4 +1,4 @@
-package server
+package api
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_KVServer(t *testing.T) {
+func Test_APIServer(t *testing.T) {
 	dir, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
 	defer os.RemoveAll(dir)
@@ -28,18 +28,18 @@ func Test_KVServer(t *testing.T) {
 
 	log := newMockLogger()
 	conf := Conf{Address: "baetyl"}
-	_, err = NewKVServer(conf, db, log)
+	_, err = NewAPIServer(conf, db, log)
 	assert.Error(t, err)
 
 	conf = Conf{Address: "tcp://127.0.0.1:10000000"}
-	kvServer, err := NewKVServer(conf, db, log)
+	apiServer, err := NewAPIServer(conf, db, log)
 	assert.Error(t, err)
 
 	conf = Conf{Address: "tcp://127.0.0.1:50060"}
-	kvServer, err = NewKVServer(conf, db, log)
+	apiServer, err = NewAPIServer(conf, db, log)
 	assert.NoError(t, err)
-	assert.Equal(t, []string{fmt.Sprintf("[Infof]kv server is listening at: %s", conf.Address)}, log.records)
-	defer kvServer.Close()
+	assert.Equal(t, []string{fmt.Sprintf("[Infof]api server is listening at: %s", conf.Address)}, log.records)
+	defer apiServer.Close()
 
 	conn, err := grpc.Dial("127.0.0.1:50060", grpc.WithInsecure())
 	assert.NoError(t, err)
@@ -53,7 +53,7 @@ func Test_KVServer(t *testing.T) {
 
 	resp, err := client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
+	assert.Equal(t, resp.Key, []byte("aa"))
 	assert.Empty(t, resp.Value)
 
 	resp, err = client.Set(ctx, &baetyl.KV{})
@@ -92,7 +92,7 @@ func Test_KVServer(t *testing.T) {
 
 	resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
+	assert.Equal(t, resp.Key, []byte("aa"))
 	assert.Empty(t, resp.Value)
 
 	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/a"), Value: []byte("/root/ax")})

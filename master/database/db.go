@@ -24,8 +24,8 @@ type DB interface {
 
 // Conf the configuration of database
 type Conf struct {
-	Driver string `yaml:"driver" json:"driver"`
-	Source string `yaml:"source" json:"source"`
+	Driver string
+	Source string
 }
 
 // New KV database by given name

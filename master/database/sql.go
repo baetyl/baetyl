@@ -66,15 +66,12 @@ func (d *sqldb) Get(key []byte) (*baetyl.KV, error) {
 	}
 	defer rows.Close()
 
-	kv := &baetyl.KV{}
+	kv := &baetyl.KV{Key: key}
 	if rows.Next() {
-		var value []byte
-		err = rows.Scan(&value)
+		err = rows.Scan(&kv.Value)
 		if err != nil {
 			return nil, err
 		}
-		kv.Key = key
-		kv.Value = value
 		return kv, nil
 	}
 	return kv, nil
@@ -96,13 +93,12 @@ func (d *sqldb) List(prefix []byte) (*baetyl.KVs, error) {
 
 	kvs := &baetyl.KVs{}
 	for rows.Next() {
-		var key []byte
-		var value []byte
-		err = rows.Scan(&key, &value)
+		kv := new(baetyl.KV)
+		err = rows.Scan(&kv.Key, &kv.Value)
 		if err != nil {
 			return nil, err
 		}
-		kvs.Kvs = append(kvs.Kvs, &baetyl.KV{Key: key, Value: value})
+		kvs.Kvs = append(kvs.Kvs, kv)
 	}
 	return kvs, nil
 }

@@ -11,10 +11,8 @@ import (
 	"github.com/baetyl/baetyl/master/api"
 	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
-	"github.com/baetyl/baetyl/master/server"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
-	"github.com/baetyl/baetyl/utils"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -26,7 +24,7 @@ type Master struct {
 	server    *api.Server
 	engine    engine.Engine
 	db        database.DB
-	kvserver  *server.KVServer
+	apiserver *api.APIServer
 	services  cmap.ConcurrentMap
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
@@ -63,22 +61,23 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
-	err = os.MkdirAll(utils.Dir(cfg.DB.Source), 0755)
+	err = os.MkdirAll(cfg.Database.Path, 0755)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make kv db directory: %s", err.Error())
+		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
-	m.db, err = database.New(cfg.DB)
+
+	m.db, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
 	if err != nil {
 		m.Close()
 		return nil, err
 	}
-	log.Infoln("kv db inited")
-	m.kvserver, err = server.NewKVServer(cfg.KVServer, m.db, log)
+	log.Infoln("db inited")
+	m.apiserver, err = api.NewAPIServer(cfg.API, m.db, log)
 
 	if err != nil {
 		return nil, err
 	}
-	log.Infoln("kv server started")
+	log.Infoln("api server started")
 	sc := http.ServerInfo{
 		Address:     m.cfg.Server.Address,
 		Timeout:     m.cfg.Server.Timeout,
@@ -105,17 +104,17 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 
 // Close closes agent
 func (m *Master) Close() error {
-	if m.db != nil {
-		m.db.Close()
-		m.log.Infoln("kv db closed")
-	}
 	if m.server != nil {
 		m.server.Close()
 		m.log.Infoln("server stopped")
 	}
-	if m.kvserver != nil {
-		m.kvserver.Close()
-		m.log.Infoln("kv server stopped")
+	if m.apiserver != nil {
+		m.apiserver.Close()
+		m.log.Infoln("api server stopped")
+	}
+	if m.db != nil {
+		m.db.Close()
+		m.log.Infoln("db closed")
 	}
 	m.stopServices(map[string]struct{}{})
 	if m.engine != nil {

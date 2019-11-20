@@ -50,7 +50,7 @@ func TestDatabaseSQLiteKV(t *testing.T) {
 	// Get: k1 does not exist
 	v, err := db.Get(k1.Key)
 	assert.NoError(t, err)
-	assert.Empty(t, v.Key)
+	assert.Equal(t, k1.Key, v.Key)
 	assert.Empty(t, v.Value)
 
 	// Put: k1 does not exist
