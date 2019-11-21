@@ -12,7 +12,7 @@ import (
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -28,9 +28,9 @@ func Test_APIServer(t *testing.T) {
 	defer db.Close()
 
 	log := newMockLogger()
-	conf := Conf{Address: "baetyl"}
-	m := mockMaster{DB: db, l: log}
+	m := mockMaster{database: db, l: log}
 
+	conf := Conf{Address: "baetyl"}
 	apiServer, err := NewAPIServer(conf, &m)
 	assert.Error(t, err)
 	if apiServer != nil {
@@ -44,89 +44,105 @@ func Test_APIServer(t *testing.T) {
 		apiServer.Close()
 	}
 
-	conf = Conf{Address: "unix:///tmp/baetyl/api.sock"}
-	apiServer, err = NewAPIServer(conf, &m)
-	assert.NoError(t, err)
-	apiServer.Close()
+	confs := []struct {
+		server string
+		client string
+	}{
+		{
+			server: "tcp://127.0.0.1:50060",
+			client: "127.0.0.1:50060",
+		}, {
+			server: "unix:///tmp/baetyl/api.sock",
+			client: "unix:///tmp/baetyl/api.sock",
+		},
+	}
+	for _, conf := range confs {
+		apiServer, err = NewAPIServer(Conf{conf.server}, &m)
+		assert.NoError(t, err)
+		assert.Contains(t, log.GetRecords(), fmt.Sprintf("[Infof]api server is listening at: %s", conf.server))
 
-	log.records = nil
-	conf = Conf{Address: "tcp://127.0.0.1:50060"}
-	apiServer, err = NewAPIServer(conf, &m)
-	assert.NoError(t, err)
-	assert.Equal(t, []string{fmt.Sprintf("[Infof]api server is listening at: %s", conf.Address)}, log.GetRecords())
-	defer apiServer.Close()
+		conn, err := grpc.Dial(conf.client, grpc.WithInsecure())
+		assert.NoError(t, err)
+		client := baetyl.NewKVServiceClient(conn)
+		assert.NotEmpty(t, client)
 
-	conn, err := grpc.Dial("127.0.0.1:50060", grpc.WithInsecure())
-	assert.NoError(t, err)
-	defer conn.Close()
-	client := baetyl.NewKVServiceClient(conn)
-	assert.NotEmpty(t, client)
+		ctx := context.Background()
+		_, err = client.Get(ctx, &baetyl.KV{Key: []byte("")})
+		assert.NoError(t, err)
 
-	ctx := context.Background()
-	_, err = client.Get(ctx, &baetyl.Key{Key: []byte("")})
-	assert.NoError(t, err)
+		resp, err := client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
+		assert.NoError(t, err)
 
-	resp, err := client.Get(ctx, &baetyl.Key{Key: []byte("aa")})
-	assert.NoError(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{})
+		assert.Error(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{})
-	assert.Error(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("")})
+		assert.Error(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("")})
-	assert.Error(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa")})
+		assert.NoError(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa")})
-	assert.NoError(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("")})
+		assert.NoError(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("")})
-	assert.NoError(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("aadata")})
+		assert.NoError(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("aadata")})
-	assert.NoError(t, err)
+		resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
+		assert.NoError(t, err)
+		assert.Equal(t, resp.Key, []byte("aa"))
+		assert.Equal(t, resp.Value, []byte("aadata"))
 
-	resp, err = client.Get(ctx, &baetyl.Key{Key: []byte("aa")})
-	assert.NoError(t, err)
-	assert.Equal(t, resp.Key, []byte("aa"))
-	assert.Equal(t, resp.Value, []byte("aadata"))
+		_, err = client.Del(ctx, &baetyl.KV{Key: []byte("aa")})
+		assert.NoError(t, err)
 
-	_, err = client.Del(ctx, &baetyl.Key{Key: []byte("aa")})
-	assert.NoError(t, err)
+		_, err = client.Del(ctx, &baetyl.KV{Key: []byte("")})
+		assert.NoError(t, err)
 
-	_, err = client.Del(ctx, &baetyl.Key{Key: []byte("")})
-	assert.NoError(t, err)
+		resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
+		assert.NoError(t, err)
+		assert.Equal(t, resp.Key, []byte("aa"))
+		assert.Empty(t, resp.Value)
 
-	resp, err = client.Get(ctx, &baetyl.Key{Key: []byte("aa")})
-	assert.NoError(t, err)
-	assert.Equal(t, resp.Key, []byte("aa"))
-	assert.Empty(t, resp.Value)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/a"), Value: []byte("/root/ax")})
+		assert.NoError(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/a"), Value: []byte("/root/ax")})
-	assert.NoError(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/b"), Value: []byte("/root/bx")})
+		assert.NoError(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/b"), Value: []byte("/root/bx")})
-	assert.NoError(t, err)
+		_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/roox/a"), Value: []byte("/roox/ax")})
+		assert.NoError(t, err)
 
-	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/roox/a"), Value: []byte("/roox/ax")})
-	assert.NoError(t, err)
+		respa, err := client.List(ctx, &baetyl.KV{Key: []byte("/root")})
+		assert.NoError(t, err)
+		assert.Len(t, respa.Kvs, 2)
+		assert.Equal(t, respa.Kvs[0].Key, []byte("/root/a"))
+		assert.Equal(t, respa.Kvs[1].Key, []byte("/root/b"))
+		assert.Equal(t, respa.Kvs[0].Value, []byte("/root/ax"))
+		assert.Equal(t, respa.Kvs[1].Value, []byte("/root/bx"))
 
-	respa, err := client.List(ctx, &baetyl.Key{Key: []byte("/root")})
-	assert.NoError(t, err)
-	assert.Len(t, respa.Kvs, 2)
-	assert.Equal(t, respa.Kvs[0].Key, []byte("/root/a"))
-	assert.Equal(t, respa.Kvs[1].Key, []byte("/root/b"))
-	assert.Equal(t, respa.Kvs[0].Value, []byte("/root/ax"))
-	assert.Equal(t, respa.Kvs[1].Value, []byte("/root/bx"))
+		respa, err = client.List(ctx, &baetyl.KV{Key: []byte("/roox")})
+		assert.NoError(t, err)
+		assert.Len(t, respa.Kvs, 1)
+		assert.Equal(t, respa.Kvs[0].Key, []byte("/roox/a"))
+		assert.Equal(t, respa.Kvs[0].Value, []byte("/roox/ax"))
 
-	respa, err = client.List(ctx, &baetyl.Key{Key: []byte("/roox")})
-	assert.NoError(t, err)
-	assert.Len(t, respa.Kvs, 1)
-	assert.Equal(t, respa.Kvs[0].Key, []byte("/roox/a"))
-	assert.Equal(t, respa.Kvs[0].Value, []byte("/roox/ax"))
+		_, err = client.Del(ctx, &baetyl.KV{Key: []byte("/root/a")})
+		assert.NoError(t, err)
+
+		_, err = client.Del(ctx, &baetyl.KV{Key: []byte("/root/b")})
+		assert.NoError(t, err)
+
+		_, err = client.Del(ctx, &baetyl.KV{Key: []byte("/roox/a")})
+		assert.NoError(t, err)
+
+		apiServer.Close()
+	}
 }
 
 type mockMaster struct {
-	database.DB
-	l *mockLogger
+	database database.DB
+	l        *mockLogger
 }
 
 func (m *mockMaster) Auth(u, p string) bool {
@@ -154,6 +170,19 @@ func (m *mockMaster) StopInstance(serviceName, instanceName string) error {
 
 func (m *mockMaster) Logger() logger.Logger {
 	return m.l
+}
+
+func (m *mockMaster) SetKV(kv *baetyl.KV) error {
+	return m.database.Set(kv)
+}
+func (m *mockMaster) GetKV(key []byte) (*baetyl.KV, error) {
+	return m.database.Get(key)
+}
+func (m *mockMaster) DelKV(key []byte) error {
+	return m.database.Del(key)
+}
+func (m *mockMaster) ListKV(prefix []byte) (*baetyl.KVs, error) {
+	return m.database.List(prefix)
 }
 
 type mockLogger struct {

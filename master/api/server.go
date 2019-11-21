@@ -30,10 +30,10 @@ type Master interface {
 	StopInstance(serviceName, instanceName string) error
 
 	// for db
-	Set(kv *baetyl.KV) error
-	Get(key []byte) (*baetyl.KV, error)
-	Del(key []byte) error
-	List(prefix []byte) (*baetyl.KVs, error)
+	SetKV(kv *baetyl.KV) error
+	GetKV(key []byte) (*baetyl.KV, error)
+	DelKV(key []byte) error
+	ListKV(prefix []byte) (*baetyl.KVs, error)
 
 	Logger() logger.Logger
 }
@@ -63,7 +63,7 @@ func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 		dir := filepath.Dir(uri.Host)
 		err := os.MkdirAll(dir, 0755)
 		if err != nil {
-			m.Logger().Errorf("failed to make directory $s : %s", dir, err.Error())
+			m.Logger().Errorf("failed to make directory %s : %s", dir, err.Error())
 		}
 	}
 
@@ -71,7 +71,7 @@ func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	m.Logger().Infof("api server is listening at: %s", uri.String())
+	m.Logger().Infof("api server is listening at: %s://%s", uri.Scheme, uri.Host)
 
 	svr := grpc.NewServer()
 	apiServer := &APIServer{m: m, svr: svr}
@@ -87,22 +87,22 @@ func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 
 // Set set kv
 func (s *APIServer) Set(ctx context.Context, kv *baetyl.KV) (*empty.Empty, error) {
-	return new(empty.Empty), s.m.Set(kv)
+	return new(empty.Empty), s.m.SetKV(kv)
 }
 
 // Get get kv
-func (s *APIServer) Get(ctx context.Context, kv *baetyl.Key) (*baetyl.KV, error) {
-	return s.m.Get(kv.Key)
+func (s *APIServer) Get(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
+	return s.m.GetKV(kv.Key)
 }
 
 // Del del kv
-func (s *APIServer) Del(ctx context.Context, msg *baetyl.Key) (*empty.Empty, error) {
-	return new(empty.Empty), s.m.Del(msg.Key)
+func (s *APIServer) Del(ctx context.Context, kv *baetyl.KV) (*empty.Empty, error) {
+	return new(empty.Empty), s.m.DelKV(kv.Key)
 }
 
 // List list kvs with prefix
-func (s *APIServer) List(ctx context.Context, kv *baetyl.Key) (*baetyl.KVs, error) {
-	return s.m.List(kv.Key)
+func (s *APIServer) List(ctx context.Context, kv *baetyl.KV) (*baetyl.KVs, error) {
+	return s.m.ListKV(kv.Key)
 }
 
 // Close closes server

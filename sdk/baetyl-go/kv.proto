@@ -5,19 +5,13 @@ package baetyl;
 
 // The function server definition.
 service KVService {
-  rpc Set(KV)   returns (google.protobuf.Empty)      {}
-  rpc Get(Key)  returns (KV)                         {}
-  rpc Del(Key)  returns (google.protobuf.Empty)      {}
-  rpc List(Key) returns (KVs)                        {}
+  rpc Set(KV)  returns (google.protobuf.Empty)      {}
+  rpc Get(KV)  returns (KV)                         {}
+  rpc Del(KV)  returns (google.protobuf.Empty)      {}
+  rpc List(KV) returns (KVs)                        {}
 }
 
-// Key key
-message Key {
-  // key is the key, in bytes, to put into the key-value store.
-  bytes key   = 1;
-}
-
-// KV kv 
+// KV kv message
 message KV {
   // key is the key, in bytes, to put into the key-value store.
   bytes key   = 1;

@@ -25,11 +25,11 @@ type Master struct {
 	engine    engine.Engine
 	apiserver *api.APIServer
 	services  cmap.ConcurrentMap
+	database  database.DB
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
 	sig       chan os.Signal
 	log       logger.Logger
-	database.DB
 }
 
 // New creates a new master
@@ -66,7 +66,7 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
 
-	m.DB, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
+	m.database, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
 	if err != nil {
 		m.Close()
 		return nil, err
@@ -112,8 +112,8 @@ func (m *Master) Close() error {
 		m.apiserver.Close()
 		m.log.Infoln("api server stopped")
 	}
-	if m.DB != nil {
-		m.DB.Close()
+	if m.database != nil {
+		m.database.Close()
 		m.log.Infoln("db closed")
 	}
 	m.stopServices(map[string]struct{}{})
