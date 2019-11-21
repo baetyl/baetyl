@@ -20,7 +20,7 @@ type DBConf struct {
 type Config struct {
 	Mode     string          `yaml:"mode" json:"mode" default:"docker" validate:"regexp=^(native|docker)$"`
 	Server   http.ServerInfo `yaml:"server" json:"server" default:"{\"address\":\"unix:///var/run/baetyl.sock\"}"`
-	Database DBConf          `yaml:"db" json:"db" default:"{\"driver\":\"sqlite3\",\"path\":\"/var/lib/baetyl/db\"}"`
+	Database DBConf          `yaml:"database" json:"database" default:"{\"driver\":\"sqlite3\",\"path\":\"/var/lib/baetyl/db\"}"`
 	API      api.Conf        `yaml:"api" json:"api" default:"{\"address\":\"unix:///var/run/baetyl/api.sock\"}"`
 	Logger   logger.LogInfo  `yaml:"logger" json:"logger" default:"{\"path\":\"var/log/baetyl/baetyl.log\"}"`
 	OTALog   logger.LogInfo  `yaml:"otalog" json:"otalog" default:"{\"path\":\"var/db/baetyl/ota.log\",\"format\":\"json\"}"`

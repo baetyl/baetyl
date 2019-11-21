@@ -2,12 +2,15 @@ package api
 
 import (
 	"net"
+	"os"
+	"path/filepath"
 	"syscall"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/engine"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
+	"github.com/golang/protobuf/ptypes/empty"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -57,6 +60,11 @@ func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 		if err := syscall.Unlink(uri.Host); err != nil {
 			m.Logger().Errorf(err.Error())
 		}
+		dir := filepath.Dir(uri.Host)
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			m.Logger().Errorf("failed to make directory $s : %s", dir, err.Error())
+		}
 	}
 
 	listener, err := net.Listen(uri.Scheme, uri.Host)
@@ -78,22 +86,22 @@ func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 }
 
 // Set set kv
-func (s *APIServer) Set(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
-	return &baetyl.KV{}, s.m.Set(kv)
+func (s *APIServer) Set(ctx context.Context, kv *baetyl.KV) (*empty.Empty, error) {
+	return new(empty.Empty), s.m.Set(kv)
 }
 
 // Get get kv
-func (s *APIServer) Get(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
+func (s *APIServer) Get(ctx context.Context, kv *baetyl.Key) (*baetyl.KV, error) {
 	return s.m.Get(kv.Key)
 }
 
 // Del del kv
-func (s *APIServer) Del(ctx context.Context, msg *baetyl.KV) (*baetyl.KV, error) {
-	return &baetyl.KV{}, s.m.Del(msg.Key)
+func (s *APIServer) Del(ctx context.Context, msg *baetyl.Key) (*empty.Empty, error) {
+	return new(empty.Empty), s.m.Del(msg.Key)
 }
 
 // List list kvs with prefix
-func (s *APIServer) List(ctx context.Context, kv *baetyl.KV) (*baetyl.KVs, error) {
+func (s *APIServer) List(ctx context.Context, kv *baetyl.Key) (*baetyl.KVs, error) {
 	return s.m.List(kv.Key)
 }
 

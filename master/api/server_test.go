@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sync"
 	"testing"
 
 	"github.com/baetyl/baetyl/logger"
@@ -30,17 +31,29 @@ func Test_APIServer(t *testing.T) {
 	conf := Conf{Address: "baetyl"}
 	m := mockMaster{DB: db, l: log}
 
-	_, err = NewAPIServer(conf, &m)
-	assert.Error(t, err)
-
-	conf = Conf{Address: "tcp://127.0.0.1:10000000"}
 	apiServer, err := NewAPIServer(conf, &m)
 	assert.Error(t, err)
+	if apiServer != nil {
+		apiServer.Close()
+	}
 
+	conf = Conf{Address: "tcp://127.0.0.1:10000000"}
+	apiServer, err = NewAPIServer(conf, &m)
+	assert.Error(t, err)
+	if apiServer != nil {
+		apiServer.Close()
+	}
+
+	conf = Conf{Address: "unix:///tmp/baetyl/api.sock"}
+	apiServer, err = NewAPIServer(conf, &m)
+	assert.NoError(t, err)
+	apiServer.Close()
+
+	log.records = nil
 	conf = Conf{Address: "tcp://127.0.0.1:50060"}
 	apiServer, err = NewAPIServer(conf, &m)
 	assert.NoError(t, err)
-	assert.Equal(t, []string{fmt.Sprintf("[Infof]api server is listening at: %s", conf.Address)}, log.records)
+	assert.Equal(t, []string{fmt.Sprintf("[Infof]api server is listening at: %s", conf.Address)}, log.GetRecords())
 	defer apiServer.Close()
 
 	conn, err := grpc.Dial("127.0.0.1:50060", grpc.WithInsecure())
@@ -50,69 +63,53 @@ func Test_APIServer(t *testing.T) {
 	assert.NotEmpty(t, client)
 
 	ctx := context.Background()
-	_, err = client.Get(ctx, &baetyl.KV{Key: []byte("")})
+	_, err = client.Get(ctx, &baetyl.Key{Key: []byte("")})
 	assert.NoError(t, err)
 
-	resp, err := client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
+	resp, err := client.Get(ctx, &baetyl.Key{Key: []byte("aa")})
 	assert.NoError(t, err)
-	assert.Equal(t, resp.Key, []byte("aa"))
-	assert.Empty(t, resp.Value)
 
-	resp, err = client.Set(ctx, &baetyl.KV{})
+	_, err = client.Set(ctx, &baetyl.KV{})
 	assert.Error(t, err)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("")})
 	assert.Error(t, err)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("aadata")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("aa"), Value: []byte("aadata")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
 
-	resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
+	resp, err = client.Get(ctx, &baetyl.Key{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Equal(t, resp.Key, []byte("aa"))
 	assert.Equal(t, resp.Value, []byte("aadata"))
 
-	resp, err = client.Del(ctx, &baetyl.KV{Key: []byte("aa")})
-	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
-
-	resp, err = client.Del(ctx, &baetyl.KV{Key: []byte("")})
+	_, err = client.Del(ctx, &baetyl.Key{Key: []byte("aa")})
 	assert.NoError(t, err)
 
-	resp, err = client.Get(ctx, &baetyl.KV{Key: []byte("aa")})
+	_, err = client.Del(ctx, &baetyl.Key{Key: []byte("")})
+	assert.NoError(t, err)
+
+	resp, err = client.Get(ctx, &baetyl.Key{Key: []byte("aa")})
 	assert.NoError(t, err)
 	assert.Equal(t, resp.Key, []byte("aa"))
 	assert.Empty(t, resp.Value)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/a"), Value: []byte("/root/ax")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/a"), Value: []byte("/root/ax")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/b"), Value: []byte("/root/bx")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/root/b"), Value: []byte("/root/bx")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
 
-	resp, err = client.Set(ctx, &baetyl.KV{Key: []byte("/roox/a"), Value: []byte("/roox/ax")})
+	_, err = client.Set(ctx, &baetyl.KV{Key: []byte("/roox/a"), Value: []byte("/roox/ax")})
 	assert.NoError(t, err)
-	assert.Empty(t, resp.Key)
-	assert.Empty(t, resp.Value)
 
-	respa, err := client.List(ctx, &baetyl.KV{Key: []byte("/root")})
+	respa, err := client.List(ctx, &baetyl.Key{Key: []byte("/root")})
 	assert.NoError(t, err)
 	assert.Len(t, respa.Kvs, 2)
 	assert.Equal(t, respa.Kvs[0].Key, []byte("/root/a"))
@@ -120,7 +117,7 @@ func Test_APIServer(t *testing.T) {
 	assert.Equal(t, respa.Kvs[0].Value, []byte("/root/ax"))
 	assert.Equal(t, respa.Kvs[1].Value, []byte("/root/bx"))
 
-	respa, err = client.List(ctx, &baetyl.KV{Key: []byte("/roox")})
+	respa, err = client.List(ctx, &baetyl.Key{Key: []byte("/roox")})
 	assert.NoError(t, err)
 	assert.Len(t, respa.Kvs, 1)
 	assert.Equal(t, respa.Kvs[0].Key, []byte("/roox/a"))
@@ -163,6 +160,7 @@ type mockLogger struct {
 	records []string
 	data    map[string]interface{}
 	err     error
+	sync.RWMutex
 }
 
 func newMockLogger() *mockLogger {
@@ -173,40 +171,69 @@ func newMockLogger() *mockLogger {
 }
 
 func (l *mockLogger) WithField(key string, value interface{}) logger.Logger {
+	l.Lock()
+	defer l.Unlock()
 	l.data[key] = value
 	return l
 }
 func (l *mockLogger) WithError(err error) logger.Logger {
+	l.Lock()
+	defer l.Unlock()
 	l.err = err
 	return l
 }
 func (l *mockLogger) Debugf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Debugf]"+fmt.Sprintf(format, args...))
 }
 func (l *mockLogger) Infof(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Infof]"+fmt.Sprintf(format, args...))
 }
 func (l *mockLogger) Warnf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Warnf]"+fmt.Sprintf(format, args...))
 }
 func (l *mockLogger) Errorf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Errorf]"+fmt.Sprintf(format, args...))
 }
 func (l *mockLogger) Fatalf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Fatalf]"+fmt.Sprintf(format, args...))
 }
 func (l *mockLogger) Debugln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Debugln]"+fmt.Sprintln(args...))
 }
 func (l *mockLogger) Infoln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Infoln]"+fmt.Sprintln(args...))
 }
 func (l *mockLogger) Warnln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Warnln]"+fmt.Sprintln(args...))
 }
 func (l *mockLogger) Errorln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Errorln]"+fmt.Sprintln(args...))
 }
 func (l *mockLogger) Fatalln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
+}
+func (l *mockLogger) GetRecords() []string {
+	l.Lock()
+	defer l.Unlock()
+	return l.records
 }

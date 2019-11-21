@@ -1,16 +1,23 @@
 syntax = "proto3";
+import "google/protobuf/empty.proto";
 
 package baetyl;
 
 // The function server definition.
 service KVService {
-  rpc Set(KV)  returns (KV)      {}
-  rpc Get(KV)  returns (KV)      {}
-  rpc Del(KV)  returns (KV)      {}
-  rpc List(KV) returns (KVs)     {}
+  rpc Set(KV)   returns (google.protobuf.Empty)      {}
+  rpc Get(Key)  returns (KV)                         {}
+  rpc Del(Key)  returns (google.protobuf.Empty)      {}
+  rpc List(Key) returns (KVs)                        {}
 }
 
-// KV kv message
+// Key key
+message Key {
+  // key is the key, in bytes, to put into the key-value store.
+  bytes key   = 1;
+}
+
+// KV kv 
 message KV {
   // key is the key, in bytes, to put into the key-value store.
   bytes key   = 1;
@@ -18,6 +25,7 @@ message KV {
   bytes value = 2;
 }
 
+// KVs kvs
 message KVs {
   repeated KV kvs = 1;
 }
