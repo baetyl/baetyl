@@ -24,10 +24,8 @@ type APIServer struct {
 }
 
 // NewAPIServer creates a new api server
-func NewAPIServer(conf Conf) (*APIServer, error) {
-	svr := grpc.NewServer()
-	apiServer := &APIServer{conf: conf, svr: svr}
-	return apiServer, nil
+func NewAPIServer(conf Conf) *APIServer {
+	return &APIServer{conf: conf, svr: grpc.NewServer()}
 }
 
 // Start start api server

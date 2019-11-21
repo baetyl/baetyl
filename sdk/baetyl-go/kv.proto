@@ -3,7 +3,7 @@ import "google/protobuf/empty.proto";
 
 package baetyl;
 
-// The function server definition.
+// KVService the function server definition.
 service KVService {
   rpc Set(KV)  returns (google.protobuf.Empty)      {}
   rpc Get(KV)  returns (KV)                         {}
@@ -19,7 +19,7 @@ message KV {
   bytes value = 2;
 }
 
-// KVs kvs
+// KVs kvs message
 message KVs {
   repeated KV kvs = 1;
 }

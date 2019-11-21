@@ -75,7 +75,7 @@ func (m *KV) GetValue() []byte {
 	return nil
 }
 
-// KVs kvs
+// KVs kvs message
 type KVs struct {
 	Kvs                  []*KV    `protobuf:"bytes,1,rep,name=kvs,proto3" json:"kvs,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`

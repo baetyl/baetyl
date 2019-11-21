@@ -66,6 +66,7 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 
 	err = os.MkdirAll(cfg.Database.Path, 0755)
 	if err != nil {
+		m.Close()
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
 	m.database, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
@@ -75,13 +76,13 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	}
 	log.Infoln("db inited")
 
-	kvService := api.NewKVService(m.database)
-	m.apiserver, err = api.NewAPIServer(cfg.API)
+	m.apiserver = api.NewAPIServer(cfg.API)
+	m.apiserver.RegisterKVService(api.NewKVService(m.database))
+	err = m.apiserver.Start()
 	if err != nil {
+		m.Close()
 		return nil, err
 	}
-	m.apiserver.RegisterKVService(kvService)
-	m.apiserver.Start()
 	log.Infoln("api server started")
 
 	sc := http.ServerInfo{
@@ -142,9 +143,4 @@ func (m *Master) Wait() error {
 	signal.Ignore(syscall.SIGPIPE)
 	<-m.sig
 	return nil
-}
-
-// Logger get log
-func (m *Master) Logger() logger.Logger {
-	return m.log
 }
