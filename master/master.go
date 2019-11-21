@@ -9,6 +9,7 @@ import (
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/api"
+	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -22,7 +23,9 @@ type Master struct {
 	pwd       string
 	server    *api.Server
 	engine    engine.Engine
+	apiserver *api.APIServer
 	services  cmap.ConcurrentMap
+	database  database.DB
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
 	sig       chan os.Signal
@@ -35,6 +38,7 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
 	}
+
 	log := logger.InitLogger(cfg.Logger, "baetyl", "master")
 	m := &Master{
 		cfg:       cfg,
@@ -47,6 +51,7 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		infostats: newInfoStats(pwd, cfg.Mode, ver, revision, path.Join(baetyl.DefaultDBDir, baetyl.AppStatsFileName)),
 	}
 	log.Infof("mode: %s; grace: %d; pwd: %s; api: %s", cfg.Mode, cfg.Grace, pwd, cfg.Server.Address)
+
 	opts := engine.Options{
 		Grace:      cfg.Grace,
 		Pwd:        pwd,
@@ -58,6 +63,28 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
+
+	err = os.MkdirAll(cfg.Database.Path, 0755)
+	if err != nil {
+		m.Close()
+		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
+	}
+	m.database, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
+	log.Infoln("db inited")
+
+	m.apiserver = api.NewAPIServer(cfg.API)
+	m.apiserver.RegisterKVService(api.NewKVService(m.database))
+	err = m.apiserver.Start()
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
+	log.Infoln("api server started")
+
 	sc := http.ServerInfo{
 		Address:     m.cfg.Server.Address,
 		Timeout:     m.cfg.Server.Timeout,
@@ -69,9 +96,11 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("server started")
+
 	// TODO: implement recover logic when master restarts
 	// Now it will stop all old services
 	m.engine.Recover()
+
 	// start application
 	err = m.UpdateAPP("", "")
 	if err != nil {
@@ -87,6 +116,14 @@ func (m *Master) Close() error {
 	if m.server != nil {
 		m.server.Close()
 		m.log.Infoln("server stopped")
+	}
+	if m.apiserver != nil {
+		m.apiserver.Close()
+		m.log.Infoln("api server stopped")
+	}
+	if m.database != nil {
+		m.database.Close()
+		m.log.Infoln("db closed")
 	}
 	m.stopServices(map[string]struct{}{})
 	if m.engine != nil {
