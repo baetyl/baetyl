@@ -31,6 +31,7 @@ require (
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
 	github.com/jolestar/go-commons-pool v2.0.0+incompatible
 	github.com/jpillora/backoff v1.0.0
+	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/nwaples/rardecode v1.0.0 // indirect
