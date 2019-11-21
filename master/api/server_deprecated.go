@@ -6,10 +6,25 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/baetyl/baetyl/master/engine"
 	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 )
+
+// Master master interface
+type Master interface {
+	Auth(u, p string) bool
+
+	// for system
+	InspectSystem() ([]byte, error)
+	UpdateSystem(trace, tp, target string) error
+
+	// for instance
+	ReportInstance(serviceName, instanceName string, partialStats engine.PartialStats) error
+	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
+	StopInstance(serviceName, instanceName string) error
+}
 
 // Server master api server
 type Server struct {

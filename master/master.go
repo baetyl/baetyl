@@ -75,8 +75,8 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	}
 	log.Infoln("db inited")
 
-	kvService := api.NewKVService(m)
-	m.apiserver, err = api.NewAPIServer(cfg.API, m)
+	kvService := api.NewKVService(m.database)
+	m.apiserver, err = api.NewAPIServer(cfg.API)
 	if err != nil {
 		return nil, err
 	}

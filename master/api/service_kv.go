@@ -6,34 +6,42 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 )
 
+// KV kv interface
+type KV interface {
+	Set(kv *baetyl.KV) error
+	Get(key []byte) (*baetyl.KV, error)
+	Del(key []byte) error
+	List(prefix []byte) (*baetyl.KVs, error)
+}
+
 // KVService kv server
 type KVService struct {
-	m Master
+	kv KV
 }
 
 // NewKVService new kv service
-func NewKVService(m Master) *KVService {
-	return &KVService{m: m}
+func NewKVService(kv KV) baetyl.KVServiceServer {
+	return &KVService{kv: kv}
 }
 
 // Set set kv
 func (s *KVService) Set(ctx context.Context, kv *baetyl.KV) (*empty.Empty, error) {
-	return new(empty.Empty), s.m.SetKV(kv)
+	return new(empty.Empty), s.kv.Set(kv)
 }
 
 // Get get kv
 func (s *KVService) Get(ctx context.Context, kv *baetyl.KV) (*baetyl.KV, error) {
-	return s.m.GetKV(kv.Key)
+	return s.kv.Get(kv.Key)
 }
 
 // Del del kv
 func (s *KVService) Del(ctx context.Context, kv *baetyl.KV) (*empty.Empty, error) {
-	return new(empty.Empty), s.m.DelKV(kv.Key)
+	return new(empty.Empty), s.kv.Del(kv.Key)
 }
 
 // List list kvs with prefix
 func (s *KVService) List(ctx context.Context, kv *baetyl.KV) (*baetyl.KVs, error) {
-	return s.m.ListKV(kv.Key)
+	return s.kv.List(kv.Key)
 }
 
 // RegisterKVService register kv service
