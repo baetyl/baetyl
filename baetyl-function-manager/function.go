@@ -70,14 +70,12 @@ func (f *Function) BorrowObjectWithRetry() (interface{}, error) {
 		Max:    f.cfg.Backoff.Max,
 		Factor: 2,
 	}
-	i := 0
-	for {
+	for i := 1; ; i++ {
 		ctx, cancel := context.WithTimeout(context.Background(), bf.Duration())
 		defer cancel()
 		item, err := f.pool.BorrowObject(ctx)
-		i++
 		if err != nil && strings.Contains(err.Error(), "Timeout") {
-			f.log.Infof("function (%s) retried %d time(s)", f.cfg.Name, i)
+			f.log.Debugf("function (%s) retried %d time(s)", f.cfg.Name, i)
 			continue
 		}
 		return item, err
