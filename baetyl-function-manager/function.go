@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 	pool "github.com/jolestar/go-commons-pool"
+	"github.com/jpillora/backoff"
 )
 
 // Function function
@@ -43,7 +46,7 @@ func NewFunction(cfg FunctionInfo, p Producer) *Function {
 
 // Call calls function to handle message and return result message
 func (f *Function) Call(msg *baetyl.FunctionMessage) (*baetyl.FunctionMessage, error) {
-	item, err := f.pool.BorrowObject(context.Background())
+	item, err := f.BorrowObjectWithRetry()
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +55,31 @@ func (f *Function) Call(msg *baetyl.FunctionMessage) (*baetyl.FunctionMessage, e
 
 // CallAsync calls function to handle message and return result message
 func (f *Function) CallAsync(msg *baetyl.FunctionMessage, cb func(in, out *baetyl.FunctionMessage, err error)) error {
-	item, err := f.pool.BorrowObject(context.Background())
+	item, err := f.BorrowObjectWithRetry()
 	if err != nil {
 		return err
 	}
 	go f.call(item.(Instance), msg, cb)
 	return nil
+}
+
+//BorrowObjectWithRetry obtains an instance from pool by retry mode
+func (f *Function) BorrowObjectWithRetry() (interface{}, error) {
+	bf := backoff.Backoff{
+		Min:    time.Millisecond * 10,
+		Max:    f.cfg.Backoff.Max,
+		Factor: 2,
+	}
+	for i := 1; ; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), bf.Duration())
+		defer cancel()
+		item, err := f.pool.BorrowObject(ctx)
+		if err != nil && strings.Contains(err.Error(), "Timeout") {
+			f.log.Debugf("function (%s) retried %d time(s)", f.cfg.Name, i)
+			continue
+		}
+		return item, err
+	}
 }
 
 func (f *Function) call(i Instance, in *baetyl.FunctionMessage, c func(in, out *baetyl.FunctionMessage, err error)) (*baetyl.FunctionMessage, error) {
