@@ -18,6 +18,7 @@ func (s *session) publish(msg common.Message) {
 	if err := s.send(pub, true); err != nil {
 		s.close(true)
 	}
+	s.log.Debugf("message (pid=%d) sent", pub.ID)
 }
 
 func (s *session) republish(msg common.Message) {
