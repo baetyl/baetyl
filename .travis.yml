@@ -1,14 +1,18 @@
-sudo: false
+sudo: required
 
 language: go
 
 go:
   - "1.13"
 
+services:
+  - docker
+
 env:
   - DOCKER_API_VERSION=1.38
 
 before_install:
+  - docker version
   - pyenv local 2.7.15 3.7
   - sudo apt-get install python3-pip
   - sudo apt-get install python-pip
