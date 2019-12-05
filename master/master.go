@@ -11,7 +11,6 @@ import (
 	"github.com/baetyl/baetyl/master/api"
 	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
-	"github.com/baetyl/baetyl/protocol/http"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	cmap "github.com/orcaman/concurrent-map"
 )
@@ -76,7 +75,11 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	}
 	log.Infoln("db inited")
 
-	m.apiserver = api.NewAPIServer(cfg.API)
+	m.apiserver, err = api.NewAPIServer(cfg.API, m)
+	if err != nil {
+		m.Close()
+		return nil, err
+	}
 	m.apiserver.RegisterKVService(api.NewKVService(m.database))
 	err = m.apiserver.Start()
 	if err != nil {
@@ -85,12 +88,7 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	}
 	log.Infoln("api server started")
 
-	sc := http.ServerInfo{
-		Address:     m.cfg.Server.Address,
-		Timeout:     m.cfg.Server.Timeout,
-		Certificate: m.cfg.Server.Certificate,
-	}
-	m.server, err = api.New(sc, m)
+	m.server, err = api.New(m.cfg.Server, m)
 	if err != nil {
 		m.Close()
 		return nil, err

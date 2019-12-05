@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net"
 	"os"
 	"path/filepath"
@@ -8,13 +9,18 @@ import (
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/utils"
-	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 // Conf the configuration of database
 type Conf struct {
-	Address string
+	Address           string `yaml:"address" json:"address"`
+	utils.Certificate `yaml:",inline" json:",inline"`
 }
 
 // APIServer api server to handle grpc message
@@ -24,8 +30,36 @@ type APIServer struct {
 }
 
 // NewAPIServer creates a new api server
-func NewAPIServer(conf Conf) *APIServer {
-	return &APIServer{conf: conf, svr: grpc.NewServer()}
+func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
+	var opts []grpc.ServerOption
+	tlsCfg, err := utils.NewTLSServerConfig(conf.Certificate)
+	if err != nil {
+		return nil, err
+	}
+	if tlsCfg != nil {
+		creds := credentials.NewTLS(tlsCfg)
+		opts = append(opts, grpc.Creds(creds))
+	}
+	interceptor := func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return false, status.Errorf(codes.Unauthenticated, "no metadata")
+		}
+		var u, p string
+		if val, ok := md["username"]; ok {
+			u = val[0]
+		}
+		if val, ok := md["password"]; ok {
+			p = val[0]
+		}
+		ok = m.Auth(u, p)
+		if !ok {
+			return false, status.Errorf(codes.Unauthenticated, "username or password not match")
+		}
+		return handler(ctx, req)
+	}
+	opts = append(opts, grpc.UnaryInterceptor(interceptor))
+	return &APIServer{conf: conf, svr: grpc.NewServer(opts...)}, nil
 }
 
 // Start start api server
