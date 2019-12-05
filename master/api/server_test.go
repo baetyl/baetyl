@@ -79,8 +79,8 @@ func Test_APIServer(t *testing.T) {
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithPerRPCCredentials(&customCred{
 		Data: map[string]string{
-			"username": "baetyl",
-			"password": "unknown",
+			headerKeyUsername: "baetyl",
+			headerKeyPassword: "unknown",
 		},
 	}))
 	conn, err = grpc.Dial("127.0.0.1:50062", opts...)
@@ -164,8 +164,8 @@ func Test_APIServer(t *testing.T) {
 		}
 		opts = append(opts, grpc.WithPerRPCCredentials(&customCred{
 			Data: map[string]string{
-				"username": "baetyl",
-				"password": "baetyl",
+				headerKeyUsername: "baetyl",
+				headerKeyPassword: "baetyl",
 			},
 		}))
 		conn, err := grpc.Dial(conf.client, opts...)

@@ -17,6 +17,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	headerKeyUsername = "x-baetyl-username"
+	headerKeyPassword = "x-baetyl-password"
+)
+
 // Conf the configuration of database
 type Conf struct {
 	Address           string `yaml:"address" json:"address"`
@@ -46,10 +51,10 @@ func NewAPIServer(conf Conf, m Master) (*APIServer, error) {
 			return false, status.Errorf(codes.Unauthenticated, "no metadata")
 		}
 		var u, p string
-		if val, ok := md["username"]; ok {
+		if val, ok := md[headerKeyUsername]; ok {
 			u = val[0]
 		}
-		if val, ok := md["password"]; ok {
+		if val, ok := md[headerKeyPassword]; ok {
 			p = val[0]
 		}
 		ok = m.Auth(u, p)
