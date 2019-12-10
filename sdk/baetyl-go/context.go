@@ -62,7 +62,9 @@ const (
 	EnvKeyHostOS                 = "BAETYL_HOST_OS"
 	EnvKeyHostSN                 = "BAETYL_HOST_SN"
 	EnvKeyMasterAPISocket        = "BAETYL_MASTER_API_SOCKET"
+	EnvKeyMasterGRPCAPISocket    = "BAETYL_MASTER_GRPC_API_SOCKET"
 	EnvKeyMasterAPIAddress       = "BAETYL_MASTER_API_ADDRESS"
+	EnvKeyMasterGRPCAPIAddress   = "BAETYL_MASTER_GRPC_API_ADDRESS"
 	EnvKeyMasterAPIVersion       = "BAETYL_MASTER_API_VERSION"
 	EnvKeyServiceMode            = "BAETYL_SERVICE_MODE"
 	EnvKeyServiceName            = "BAETYL_SERVICE_NAME"
@@ -88,6 +90,8 @@ const (
 	DefaultBinBackupFile = "bin/baetyl.old"
 	// DefaultSockFile sock file of baetyl by default
 	DefaultSockFile = "var/run/baetyl.sock"
+	// DefaultGRPCSockFile sock file of grpc api by default
+	DefaultGRPCSockFile = "var/run/baetyl/api.sock"
 	// DefaultConfFile config path of the service by default
 	DefaultConfFile = "etc/baetyl/service.yml"
 	// DefaultDBDir db dir of the service by default
@@ -146,6 +150,17 @@ type Context interface {
 	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
 	// stop the instance of the service
 	StopInstance(serviceName, instanceName string) error
+
+	// Master KV API
+
+	// set kv
+	SetKV(key, value []byte) error
+	// get kv
+	GetKV(key []byte) (value []byte, err error)
+	// del kv
+	DelKV(key []byte) error
+	// list kv with prefix
+	ListKV(key []byte) (values [][]byte, err error)
 }
 
 type ctx struct {
@@ -216,6 +231,7 @@ func (c *ctx) Log() logger.Logger {
 
 func (c *ctx) Wait() {
 	<-c.WaitChan()
+	c.cli.Close()
 }
 
 func (c *ctx) IsNative() bool {
@@ -257,4 +273,24 @@ func (c *ctx) StartInstance(serviceName, instanceName string, dynamicConfig map[
 // StopInstance stops a service instance
 func (c *ctx) StopInstance(serviceName, instanceName string) error {
 	return c.cli.StopInstance(serviceName, instanceName)
+}
+
+// SetKV set kv
+func (c *ctx) SetKV(key, value []byte) error {
+	return c.cli.SetKV(key, value)
+}
+
+// GetKV get kv
+func (c *ctx) GetKV(key []byte) (value []byte, err error) {
+	return c.cli.GetKV(key)
+}
+
+// DelKV del kv
+func (c *ctx) DelKV(key []byte) error {
+	return c.cli.DelKV(key)
+}
+
+// ListKV list kv with prefix
+func (c *ctx) ListKV(key []byte) (values [][]byte, err error) {
+	return c.cli.ListKV(key)
 }

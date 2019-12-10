@@ -12,6 +12,7 @@ import (
 	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	grpcapi "github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -22,7 +23,7 @@ type Master struct {
 	pwd       string
 	server    *api.Server
 	engine    engine.Engine
-	apiserver *api.APIServer
+	apiserver *grpcapi.Server
 	services  cmap.ConcurrentMap
 	database  database.DB
 	accounts  cmap.ConcurrentMap
@@ -75,7 +76,7 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 	}
 	log.Infoln("db inited")
 
-	m.apiserver, err = api.NewAPIServer(cfg.API, m)
+	m.apiserver, err = grpcapi.NewServer(cfg.API, m)
 	if err != nil {
 		m.Close()
 		return nil, err

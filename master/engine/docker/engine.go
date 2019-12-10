@@ -148,6 +148,10 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string
 	if sock != "" {
 		binds = append(binds, fmt.Sprintf(fmtVolumeRO, sock, path.Join("/", baetyl.DefaultSockFile)))
 	}
+	grpcSock := utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket)
+	if grpcSock != "" {
+		binds = append(binds, fmt.Sprintf(fmtVolumeRO, grpcSock, path.Join("/", baetyl.DefaultGRPCSockFile)))
+	}
 	exposedPorts, portBindings, err := nat.ParsePortSpecs(cfg.Ports)
 	if err != nil {
 		return nil, err

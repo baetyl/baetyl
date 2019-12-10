@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 )
 
 // Factories of database
@@ -14,10 +14,10 @@ var Factories = map[string]func(conf Conf) (DB, error){}
 type DB interface {
 	Conf() Conf
 
-	Set(kv *baetyl.KV) error
-	Get(key []byte) (*baetyl.KV, error)
+	Set(kv *api.KV) error
+	Get(key []byte) (*api.KV, error)
 	Del(key []byte) error
-	List(prefix []byte) (*baetyl.KVs, error)
+	List(prefix []byte) (*api.KVs, error)
 
 	io.Closer
 }
