@@ -4,19 +4,20 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
-	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEnvClient(t *testing.T) {
-	got, err := NewEnvClient()
+	cli, err := NewEnvClient()
 	assert.EqualError(t, err, "Env (BAETYL_MASTER_API_ADDRESS) not found")
-	assert.Nil(t, got)
+	assert.Nil(t, cli)
 
 	server, err := api.NewServer(api.ServerConfig{
-		Address: "tcp://127.0.0.1:50060",
+		Address: "tcp://127.0.0.1:52060",
 	}, &mockMaster{})
 	assert.NoError(t, err)
 	defer server.Close()
@@ -30,46 +31,155 @@ func TestNewEnvClient(t *testing.T) {
 	// old
 	os.Setenv(EnvMasterAPIKey, "0.0.0.0")
 	os.Setenv(EnvMasterAPIVersionKey, "v0")
-	os.Setenv(EnvKeyMasterGRPCAPIAddress, "127.0.0.1:50060")
-	got, err = NewEnvClient()
+	os.Setenv(EnvKeyMasterGRPCAPIAddress, "127.0.0.1:52060")
+	cli, err = NewEnvClient()
 	assert.NoError(t, err)
-	assert.NotNil(t, got)
-	assert.Equal(t, "/v0", got.ver)
+	assert.NotNil(t, cli)
+	assert.Equal(t, "/v0", cli.ver)
 
-	// new
-	os.Setenv(EnvKeyMasterAPIAddress, "0.0.0.1")
-	os.Setenv(EnvKeyMasterAPIVersion, "v1")
-	os.Setenv(EnvKeyMasterGRPCAPIAddress, "127.0.0.1:50060")
-	got, err = NewEnvClient()
-	assert.NoError(t, err)
-	assert.NotNil(t, got)
-	assert.Equal(t, "/v1", got.ver)
+	master := new(mockMaster)
+	confs := []struct {
+		serverConf api.ServerConfig
+		cliConf    api.ClientConfig
+	}{
+		{
+			serverConf: api.ServerConfig{
+				Address: "tcp://127.0.0.1:51060",
+			},
+			cliConf: api.ClientConfig{
+				Address:  "127.0.0.1:51060",
+				Timeout:  10 * time.Second,
+				Username: "baetyl",
+				Password: "baetyl",
+			},
+		},
+		{
+			serverConf: api.ServerConfig{
+				Address: "unix:///tmp/baetyl/run/api.sock",
+			},
+			cliConf: api.ClientConfig{
+				Address:  "unix:///tmp/baetyl/run/api.sock",
+				Timeout:  10 * time.Second,
+				Username: "baetyl",
+				Password: "baetyl",
+			},
+		},
+	}
+	for _, conf := range confs {
+		server, err := api.NewServer(api.ServerConfig{Address: conf.serverConf.Address, Certificate: conf.serverConf.Certificate}, master)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, server)
+		kvService.m = make(map[string][]byte)
+		server.RegisterKVService(kvService)
+		err = server.Start()
+		assert.NoError(t, err)
 
-	_, err = got.GetKV([]byte("aa"))
-	assert.NoError(t, err)
+		// new
+		os.Setenv(EnvKeyMasterAPIAddress, "0.0.0.1")
+		os.Setenv(EnvKeyMasterAPIVersion, "v1")
+		os.Setenv(EnvKeyMasterGRPCAPIAddress, conf.cliConf.Address)
+		cli, err := NewEnvClient()
+		assert.NoError(t, err)
+		assert.NotNil(t, cli)
+		assert.Equal(t, "/v1", cli.ver)
 
-	err = got.SetKV([]byte("aa"), []byte("aadata"))
-	assert.NoError(t, err)
+		a := api.KV{
+			Key:   []byte("name"),
+			Value: []byte("baetyl"),
+		}
+		_, err = cli.GetKV(a.Key)
+		assert.NoError(t, err)
 
-	resp, err := got.GetKV([]byte("aa"))
-	assert.NoError(t, err)
-	assert.Equal(t, resp, []byte("aadata"))
+		err = cli.SetKV(a)
+		assert.NoError(t, err)
 
-	err = got.DelKV([]byte("aa"))
-	assert.NoError(t, err)
+		resp, err := cli.GetKV(a.Key)
+		assert.NoError(t, err)
+		assert.Equal(t, resp.Value, a.Value)
 
-	err = got.SetKV([]byte("a"), []byte("aa"))
-	assert.NoError(t, err)
+		err = cli.DelKV(a.Key)
+		assert.NoError(t, err)
 
-	err = got.SetKV([]byte("b"), []byte("bb"))
-	assert.NoError(t, err)
+		err = cli.SetKV(a)
+		assert.NoError(t, err)
 
-	err = got.SetKV([]byte("c"), []byte("cc"))
-	assert.NoError(t, err)
+		a.Key = []byte("bb")
+		err = cli.SetKV(a)
+		assert.NoError(t, err)
 
-	respa, err := got.ListKV([]byte(""))
-	assert.NoError(t, err)
-	assert.Len(t, respa, 3)
+		respa, err := cli.ListKV([]byte(""))
+		assert.NoError(t, err)
+		assert.Len(t, respa, 2)
+
+		server.Close()
+
+		ctx, cel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cel()
+
+		_, err = cli.GetKVConext(ctx, a.Key)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		err = cli.SetKVConext(ctx, a)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		resp, err = cli.GetKVConext(ctx, a.Key)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		err = cli.DelKVConext(ctx, a.Key)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		err = cli.SetKVConext(ctx, a)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		a.Key = []byte("bb")
+		err = cli.SetKVConext(ctx, a)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		respa, err = cli.ListKVContext(ctx, []byte(""))
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
+
+		server, err = api.NewServer(api.ServerConfig{Address: conf.serverConf.Address, Certificate: conf.serverConf.Certificate}, master)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, server)
+		kvService.m = make(map[string][]byte)
+		server.RegisterKVService(kvService)
+		err = server.Start()
+		assert.NoError(t, err)
+
+		_, err = cli.GetKV(a.Key)
+		assert.NoError(t, err)
+
+		a.Key = []byte("aa")
+		err = cli.SetKV(a)
+		assert.NoError(t, err)
+
+		resp, err = cli.GetKV(a.Key)
+		assert.NoError(t, err)
+		assert.Equal(t, resp.Value, a.Value)
+
+		err = cli.DelKV(a.Key)
+		assert.NoError(t, err)
+
+		err = cli.SetKV(a)
+		assert.NoError(t, err)
+
+		a.Key = []byte("bb")
+		err = cli.SetKV(a)
+		assert.NoError(t, err)
+
+		respa, err = cli.ListKV([]byte(""))
+		assert.NoError(t, err)
+		assert.Len(t, respa, 2)
+
+		server.Close()
+		cli.Close()
+	}
 }
 
 type mockMaster struct{}
@@ -84,9 +194,9 @@ type mockKVService struct {
 }
 
 // Set set kv
-func (s *mockKVService) Set(ctx context.Context, kv *api.KV) (*empty.Empty, error) {
+func (s *mockKVService) Set(ctx context.Context, kv *api.KV) (*types.Empty, error) {
 	s.m[string(kv.Key)] = kv.Value
-	return new(empty.Empty), nil
+	return new(types.Empty), nil
 }
 
 // Get get kv
@@ -98,9 +208,9 @@ func (s *mockKVService) Get(ctx context.Context, kv *api.KV) (*api.KV, error) {
 }
 
 // Del del kv
-func (s *mockKVService) Del(ctx context.Context, kv *api.KV) (*empty.Empty, error) {
+func (s *mockKVService) Del(ctx context.Context, kv *api.KV) (*types.Empty, error) {
 	delete(s.m, string(kv.Key))
-	return new(empty.Empty), nil
+	return new(types.Empty), nil
 }
 
 // List list kvs with prefix

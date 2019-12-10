@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
@@ -83,7 +82,6 @@ func (s *Server) Start() error {
 		return err
 	}
 	logger.Infof("api server is listening at: %s", s.conf.Address)
-	reflection.Register(s.svr)
 	go func() {
 		if err := s.svr.Serve(listener); err != nil {
 			logger.Infof("api server shutdown: %v", err)

@@ -9,9 +9,10 @@ import (
 
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
+	"google.golang.org/grpc"
 )
 
-// HttpClient client of http server
+// HTTPClient client of http server
 // Deprecated: Use api.Client instead.
 type HTTPClient struct {
 	cli *http.Client
@@ -84,17 +85,6 @@ func NewClient(c http.ClientInfo, ver string) (*HTTPClient, error) {
 	}, nil
 }
 
-// InspectSystem inspect all stats
-func (c *Client) InspectSystem() (*Inspect, error) {
-	body, err := c.cli.Get(c.ver + "/system/inspect")
-	if err != nil {
-		return nil, err
-	}
-	s := new(Inspect)
-	err = json.Unmarshal(body, s)
-	return s, err
-}
-
 // UpdateSystem updates and reloads config
 func (c *Client) UpdateSystem(trace, tp, path string) error {
 	data, err := json.Marshal(map[string]string{
@@ -108,6 +98,17 @@ func (c *Client) UpdateSystem(trace, tp, path string) error {
 	}
 	_, err = c.cli.Put(data, c.ver+"/system/update")
 	return err
+}
+
+// InspectSystem inspect all stats
+func (c *Client) InspectSystem() (*Inspect, error) {
+	body, err := c.cli.Get(c.ver + "/system/inspect")
+	if err != nil {
+		return nil, err
+	}
+	s := new(Inspect)
+	err = json.Unmarshal(body, s)
+	return s, err
 }
 
 // GetAvailablePort gets available port
@@ -155,46 +156,53 @@ func (c *Client) StopInstance(serviceName, instanceName string) error {
 }
 
 // SetKV set kv
-func (c *Client) SetKV(key, value []byte) error {
-	ctx := context.Background()
-	kv := &api.KV{
-		Key:   key,
-		Value: value,
-	}
-	_, err := c.KV.Set(ctx, kv)
+func (c *Client) SetKV(kv api.KV) error {
+	_, err := c.KV.Set(context.Background(), &kv, grpc.WaitForReady(true))
+	return err
+}
+
+// SetKVConext set kv which supports context
+func (c *Client) SetKVConext(ctx context.Context, kv api.KV) error {
+	_, err := c.KV.Set(ctx, &kv, grpc.WaitForReady(true))
 	return err
 }
 
 // GetKV get kv
-func (c *Client) GetKV(key []byte) ([]byte, error) {
-	ctx := context.Background()
-	kv := &api.KV{
-		Key: key,
-	}
-	kv, err := c.KV.Get(ctx, kv)
-	return kv.Value, err
+func (c *Client) GetKV(k []byte) (*api.KV, error) {
+	return c.KV.Get(context.Background(), &api.KV{Key: k}, grpc.WaitForReady(true))
+}
+
+// GetKVConext get kv which supports context
+func (c *Client) GetKVConext(ctx context.Context, k []byte) (*api.KV, error) {
+	return c.KV.Get(ctx, &api.KV{Key: k}, grpc.WaitForReady(true))
 }
 
 // DelKV del kv
-func (c *Client) DelKV(key []byte) error {
-	ctx := context.Background()
-	kv := &api.KV{
-		Key: key,
-	}
-	_, err := c.KV.Del(ctx, kv)
+func (c *Client) DelKV(k []byte) error {
+	_, err := c.KV.Del(context.Background(), &api.KV{Key: k}, grpc.WaitForReady(true))
+	return err
+}
+
+// DelKVConext del kv which supports context
+func (c *Client) DelKVConext(ctx context.Context, k []byte) error {
+	_, err := c.KV.Del(ctx, &api.KV{Key: k}, grpc.WaitForReady(true))
 	return err
 }
 
 // ListKV list kv with prefix
-func (c *Client) ListKV(key []byte) ([][]byte, error) {
-	ctx := context.Background()
-	kv := &api.KV{
-		Key: key,
+func (c *Client) ListKV(p []byte) ([]*api.KV, error) {
+	kvs, err := c.KV.List(context.Background(), &api.KV{Key: p}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, err
 	}
-	var values [][]byte
-	kvs, err := c.KV.List(ctx, kv)
-	for _, v := range kvs.Kvs {
-		values = append(values, v.Value)
+	return kvs.Kvs, nil
+}
+
+// ListKVContext list kv with prefix which supports context
+func (c *Client) ListKVContext(ctx context.Context, p []byte) ([]*api.KV, error) {
+	kvs, err := c.KV.List(ctx, &api.KV{Key: p}, grpc.WaitForReady(true))
+	if err != nil {
+		return nil, err
 	}
-	return values, err
+	return kvs.Kvs, nil
 }

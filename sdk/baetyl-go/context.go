@@ -1,13 +1,15 @@
 package baetyl
 
 import (
-	fmt "fmt"
+	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/mqtt"
+	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	"github.com/baetyl/baetyl/utils"
 )
 
@@ -62,9 +64,9 @@ const (
 	EnvKeyHostOS                 = "BAETYL_HOST_OS"
 	EnvKeyHostSN                 = "BAETYL_HOST_SN"
 	EnvKeyMasterAPISocket        = "BAETYL_MASTER_API_SOCKET"
-	EnvKeyMasterGRPCAPISocket    = "BAETYL_MASTER_GRPC_API_SOCKET"
+	EnvKeyMasterGRPCAPISocket    = "BAETYL_API_SOCKET"
 	EnvKeyMasterAPIAddress       = "BAETYL_MASTER_API_ADDRESS"
-	EnvKeyMasterGRPCAPIAddress   = "BAETYL_MASTER_GRPC_API_ADDRESS"
+	EnvKeyMasterGRPCAPIAddress   = "BAETYL_API_ADDRESS"
 	EnvKeyMasterAPIVersion       = "BAETYL_MASTER_API_VERSION"
 	EnvKeyServiceMode            = "BAETYL_SERVICE_MODE"
 	EnvKeyServiceName            = "BAETYL_SERVICE_NAME"
@@ -154,22 +156,30 @@ type Context interface {
 	// Master KV API
 
 	// set kv
-	SetKV(key, value []byte) error
+	SetKV(kv api.KV) error
+	// set kv which supports context
+	SetKVConext(ctx context.Context, kv api.KV) error
 	// get kv
-	GetKV(key []byte) (value []byte, err error)
+	GetKV(k []byte) (*api.KV, error)
+	// get kv which supports context
+	GetKVConext(ctx context.Context, k []byte) (*api.KV, error)
 	// del kv
-	DelKV(key []byte) error
+	DelKV(k []byte) error
+	// del kv which supports context
+	DelKVConext(ctx context.Context, k []byte) error
 	// list kv with prefix
-	ListKV(key []byte) (values [][]byte, err error)
+	ListKV(p []byte) ([]*api.KV, error)
+	// list kv with prefix which supports context
+	ListKVContext(ctx context.Context, p []byte) ([]*api.KV, error)
 }
 
 type ctx struct {
 	sn  string // service name
 	in  string // instance name
 	md  string // running mode
-	cli *Client
 	cfg ServiceConfig
 	log logger.Logger
+	*Client
 }
 
 func newContext() (*ctx, error) {
@@ -194,12 +204,12 @@ func newContext() (*ctx, error) {
 		log.WithError(err).Errorf("failed to create master client")
 	}
 	return &ctx{
-		sn:  sn,
-		in:  in,
-		md:  md,
-		cfg: cfg,
-		cli: cli,
-		log: log,
+		sn:     sn,
+		in:     in,
+		md:     md,
+		cfg:    cfg,
+		log:    log,
+		Client: cli,
 	}, nil
 }
 
@@ -231,7 +241,7 @@ func (c *ctx) Log() logger.Logger {
 
 func (c *ctx) Wait() {
 	<-c.WaitChan()
-	c.cli.Close()
+	c.Close()
 }
 
 func (c *ctx) IsNative() bool {
@@ -245,52 +255,6 @@ func (c *ctx) WaitChan() <-chan os.Signal {
 	return sig
 }
 
-// InspectSystem inspect all stats
-func (c *ctx) InspectSystem() (*Inspect, error) {
-	return c.cli.InspectSystem()
-}
-
-// UpdateSystem updates and reloads config
-func (c *ctx) UpdateSystem(trace, tp, path string) error {
-	return c.cli.UpdateSystem(trace, tp, path)
-}
-
-// GetAvailablePort gets available port
-func (c *ctx) GetAvailablePort() (string, error) {
-	return c.cli.GetAvailablePort()
-}
-
-// ReportInstance reports the stats of the instance of the service
 func (c *ctx) ReportInstance(stats map[string]interface{}) error {
-	return c.cli.ReportInstance(c.sn, c.in, stats)
-}
-
-// StartInstance starts a new service instance with dynamic config
-func (c *ctx) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
-	return c.cli.StartInstance(serviceName, instanceName, dynamicConfig)
-}
-
-// StopInstance stops a service instance
-func (c *ctx) StopInstance(serviceName, instanceName string) error {
-	return c.cli.StopInstance(serviceName, instanceName)
-}
-
-// SetKV set kv
-func (c *ctx) SetKV(key, value []byte) error {
-	return c.cli.SetKV(key, value)
-}
-
-// GetKV get kv
-func (c *ctx) GetKV(key []byte) (value []byte, err error) {
-	return c.cli.GetKV(key)
-}
-
-// DelKV del kv
-func (c *ctx) DelKV(key []byte) error {
-	return c.cli.DelKV(key)
-}
-
-// ListKV list kv with prefix
-func (c *ctx) ListKV(key []byte) (values [][]byte, err error) {
-	return c.cli.ListKV(key)
+	return c.Client.ReportInstance(c.sn, c.in, stats)
 }

@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
-	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gogo/protobuf/types"
 )
 
 // KV kv interface
@@ -25,8 +25,8 @@ func NewKVService(kv KV) api.KVServiceServer {
 }
 
 // Set set kv
-func (s *KVService) Set(ctx context.Context, kv *api.KV) (*empty.Empty, error) {
-	return new(empty.Empty), s.kv.Set(kv)
+func (s *KVService) Set(ctx context.Context, kv *api.KV) (*types.Empty, error) {
+	return new(types.Empty), s.kv.Set(kv)
 }
 
 // Get get kv
@@ -35,8 +35,8 @@ func (s *KVService) Get(ctx context.Context, kv *api.KV) (*api.KV, error) {
 }
 
 // Del del kv
-func (s *KVService) Del(ctx context.Context, kv *api.KV) (*empty.Empty, error) {
-	return new(empty.Empty), s.kv.Del(kv.Key)
+func (s *KVService) Del(ctx context.Context, kv *api.KV) (*types.Empty, error) {
+	return new(types.Empty), s.kv.Del(kv.Key)
 }
 
 // List list kvs with prefix

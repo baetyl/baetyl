@@ -163,6 +163,7 @@ func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume) error {
 	if grpcSock != "" {
 		return mount(grpcSock, path.Join(spwd, baetyl.DefaultGRPCSockFile))
 	}
+	return nil
 }
 
 func mount(src, dst string) error {

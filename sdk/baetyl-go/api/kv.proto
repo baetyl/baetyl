@@ -1,7 +1,22 @@
 syntax = "proto3";
-import "google/protobuf/empty.proto";
 
-package baetyl;
+package api;
+
+option (gogoproto.sizer_all) = true;
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.testgen_all) = true;
+option (gogoproto.benchgen_all) = true;
+option (gogoproto.populate_all) = true;
+option (gogoproto.equal_all) = true;
+// option (gogoproto.gostring_all) = true;
+// option (gogoproto.verbose_equal_all) = true;
+// option (gogoproto.goproto_stringer_all) = false;
+// option (gogoproto.stringer_all) =  true;
+
+import "google/protobuf/empty.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
 
 // KVService the function server definition.
 service KVService {

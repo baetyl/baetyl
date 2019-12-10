@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/utils"
-	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -230,9 +230,9 @@ type mockKVService struct {
 }
 
 // Set set kv
-func (s *mockKVService) Set(ctx context.Context, kv *KV) (*empty.Empty, error) {
+func (s *mockKVService) Set(ctx context.Context, kv *KV) (*types.Empty, error) {
 	s.m[string(kv.Key)] = kv.Value
-	return new(empty.Empty), nil
+	return new(types.Empty), nil
 }
 
 // Get get kv
@@ -244,9 +244,9 @@ func (s *mockKVService) Get(ctx context.Context, kv *KV) (*KV, error) {
 }
 
 // Del del kv
-func (s *mockKVService) Del(ctx context.Context, kv *KV) (*empty.Empty, error) {
+func (s *mockKVService) Del(ctx context.Context, kv *KV) (*types.Empty, error) {
 	delete(s.m, string(kv.Key))
-	return new(empty.Empty), nil
+	return new(types.Empty), nil
 }
 
 // List list kvs with prefix
