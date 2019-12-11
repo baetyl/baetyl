@@ -8,7 +8,7 @@ import (
 	"path"
 	"testing"
 
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +42,7 @@ func TestDatabaseSQLiteKV(t *testing.T) {
 	assert.Equal(t, "sqlite3", db.Conf().Driver)
 	defer db.Close()
 
-	k1 := baetyl.KV{
+	k1 := api.KV{
 		Key:   []byte("k1"),
 		Value: []byte("k1data"),
 	}
@@ -68,11 +68,11 @@ func TestDatabaseSQLiteKV(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Put: key is empty
-	err = db.Set(&baetyl.KV{})
+	err = db.Set(&api.KV{})
 	assert.Error(t, err)
 
 	// Put: value is empty
-	err = db.Set(&baetyl.KV{Key: []byte("baetyl")})
+	err = db.Set(&api.KV{Key: []byte("baetyl")})
 	assert.NoError(t, err)
 
 	// Del: del k1
@@ -88,9 +88,9 @@ func TestDatabaseSQLiteKV(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, vs.Kvs, 0)
 
-	kv1 := &baetyl.KV{Key: []byte("/k/1"), Value: []byte("/k/1/data")}
-	kv2 := &baetyl.KV{Key: []byte("/k/2"), Value: []byte("/k/2/data")}
-	kv3 := &baetyl.KV{Key: []byte("/s/3"), Value: []byte("/d/3/data")}
+	kv1 := &api.KV{Key: []byte("/k/1"), Value: []byte("/k/1/data")}
+	kv2 := &api.KV{Key: []byte("/k/2"), Value: []byte("/k/2/data")}
+	kv3 := &api.KV{Key: []byte("/s/3"), Value: []byte("/d/3/data")}
 
 	// put url-like key
 	err = db.Set(kv1)
@@ -166,9 +166,9 @@ func TestDatabaseSQLiteKV(t *testing.T) {
 	assert.Len(t, vs.Kvs, 0)
 
 	// test Chinese
-	kvc1 := &baetyl.KV{Key: []byte("/陈/张"), Value: []byte("/陈/张里")}
-	kvc2 := &baetyl.KV{Key: []byte("/陈/王"), Value: []byte("/陈/王里")}
-	kvc3 := &baetyl.KV{Key: []byte("/李/王"), Value: []byte("/李/王里")}
+	kvc1 := &api.KV{Key: []byte("/陈/张"), Value: []byte("/陈/张里")}
+	kvc2 := &api.KV{Key: []byte("/陈/王"), Value: []byte("/陈/王里")}
+	kvc3 := &api.KV{Key: []byte("/李/王"), Value: []byte("/李/王里")}
 
 	// put url-like key
 	err = db.Set(kvc1)
@@ -257,7 +257,7 @@ func BenchmarkDatabaseSQLite(b *testing.B) {
 	b.Run("put", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			key := bytes.Join([][]byte{k1, []byte("/"), int32ToBytes(i)}, []byte(""))
-			db.Set(&baetyl.KV{Key: key, Value: key})
+			db.Set(&api.KV{Key: key, Value: key})
 		}
 	})
 	b.Run("get", func(b *testing.B) {

@@ -57,7 +57,7 @@ M:
 	v := 0
 	d.M[0].Min = &v
 	err = validator.Validate(d)
-	assert.EqualError(t, err, "M[0].Min: less than min ")
+	assert.EqualError(t, err, "M[0].Min: less than min")
 }
 
 func TestConfig(t *testing.T) {

@@ -154,7 +154,14 @@ func mountAll(epwd, spwd string, ms []baetyl.ServiceVolume) error {
 	}
 	sock := utils.GetEnv(baetyl.EnvKeyMasterAPISocket)
 	if sock != "" {
-		return mount(sock, path.Join(spwd, baetyl.DefaultSockFile))
+		err := mount(sock, path.Join(spwd, baetyl.DefaultSockFile))
+		if err != nil {
+			return err
+		}
+	}
+	grpcSock := utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket)
+	if grpcSock != "" {
+		return mount(grpcSock, path.Join(spwd, baetyl.DefaultGRPCSockFile))
 	}
 	return nil
 }

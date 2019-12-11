@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 )
 
 var placeholderValue = "(?)"
@@ -48,7 +48,7 @@ func (d *sqldb) Conf() Conf {
 }
 
 // Set put key and value into SQL DB
-func (d *sqldb) Set(kv *baetyl.KV) error {
+func (d *sqldb) Set(kv *api.KV) error {
 	stmt, err := d.Prepare("insert into kv(key,value) values (?,?) on conflict(key) do update set value=excluded.value")
 	if err != nil {
 		return err
@@ -59,14 +59,14 @@ func (d *sqldb) Set(kv *baetyl.KV) error {
 }
 
 // Get gets value by key from SQL DB
-func (d *sqldb) Get(key []byte) (*baetyl.KV, error) {
+func (d *sqldb) Get(key []byte) (*api.KV, error) {
 	rows, err := d.Query("select value from kv where key=?", key)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	kv := &baetyl.KV{Key: key}
+	kv := &api.KV{Key: key}
 	if rows.Next() {
 		err = rows.Scan(&kv.Value)
 		if err != nil {
@@ -84,16 +84,16 @@ func (d *sqldb) Del(key []byte) error {
 }
 
 // List list kvs with the prefix
-func (d *sqldb) List(prefix []byte) (*baetyl.KVs, error) {
+func (d *sqldb) List(prefix []byte) (*api.KVs, error) {
 	rows, err := d.Query("select key, value from kv where key like ?", append(prefix, byte('%')))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	kvs := &baetyl.KVs{}
+	kvs := &api.KVs{}
 	for rows.Next() {
-		kv := new(baetyl.KV)
+		kv := new(api.KV)
 		err = rows.Scan(&kv.Key, &kv.Value)
 		if err != nil {
 			return nil, err
