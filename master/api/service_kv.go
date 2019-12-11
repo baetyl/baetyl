@@ -25,21 +25,21 @@ func NewKVService(kv KV) api.KVServiceServer {
 }
 
 // Set set kv
-func (s *KVService) Set(ctx context.Context, kv *api.KV) (*types.Empty, error) {
+func (s *KVService) Set(_ context.Context, kv *api.KV) (*types.Empty, error) {
 	return new(types.Empty), s.kv.Set(kv)
 }
 
 // Get get kv
-func (s *KVService) Get(ctx context.Context, kv *api.KV) (*api.KV, error) {
+func (s *KVService) Get(_ context.Context, kv *api.KV) (*api.KV, error) {
 	return s.kv.Get(kv.Key)
 }
 
 // Del del kv
-func (s *KVService) Del(ctx context.Context, kv *api.KV) (*types.Empty, error) {
+func (s *KVService) Del(_ context.Context, kv *api.KV) (*types.Empty, error) {
 	return new(types.Empty), s.kv.Del(kv.Key)
 }
 
 // List list kvs with prefix
-func (s *KVService) List(ctx context.Context, kv *api.KV) (*api.KVs, error) {
+func (s *KVService) List(_ context.Context, kv *api.KV) (*api.KVs, error) {
 	return s.kv.List(kv.Key)
 }
