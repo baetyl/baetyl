@@ -113,34 +113,32 @@ func TestNewEnvClient(t *testing.T) {
 
 		server.Close()
 
-		ctx, cel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx1, cel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cel()
-
-		_, err = cli.GetKVConext(ctx, a.Key)
+		_, err = cli.GetKVConext(ctx1, a.Key)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
 
-		err = cli.SetKVConext(ctx, a)
+		ctx2, cel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cel()
+		err = cli.SetKVConext(ctx2, a)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
 
-		resp, err = cli.GetKVConext(ctx, a.Key)
+		ctx3, cel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cel()
+		resp, err = cli.GetKVConext(ctx3, a.Key)
 		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
 
-		err = cli.DelKVConext(ctx, a.Key)
+		ctx4, cel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cel()
+		err = cli.DelKVConext(ctx4, a.Key)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
 
-		err = cli.SetKVConext(ctx, a)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
-
-		a.Key = []byte("bb")
-		err = cli.SetKVConext(ctx, a)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
-
-		respa, err = cli.ListKVContext(ctx, []byte(""))
+		ctx5, cel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cel()
+		respa, err = cli.ListKVContext(ctx5, []byte(""))
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
 
