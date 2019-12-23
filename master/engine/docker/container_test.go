@@ -3,7 +3,6 @@ package docker
 import (
 	"testing"
 
-	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 	"github.com/docker/docker/client"
@@ -19,7 +18,7 @@ func TestInitVolumes(t *testing.T) {
 	e := &dockerEngine{
 		cli:      cli,
 		networks: map[string]string{},
-		log:      logger.WithField("test", "test"),
+		log:      newMockLogger(),
 	}
 	vs := make(map[string]baetyl.ComposeVolume)
 	opts := make(map[string]string)
@@ -47,7 +46,7 @@ func TestInitNetworks(t *testing.T) {
 	e := &dockerEngine{
 		cli:      cli,
 		networks: map[string]string{},
-		log:      logger.WithField("test", "test"),
+		log:      newMockLogger(),
 	}
 
 	err = e.initNetworks(nil)
@@ -81,7 +80,7 @@ func TestPullImage(t *testing.T) {
 	e := &dockerEngine{
 		cli:      cli,
 		networks: map[string]string{},
-		log:      logger.WithField("test", "test"),
+		log:      newMockLogger(),
 	}
 
 	image := "busybox"

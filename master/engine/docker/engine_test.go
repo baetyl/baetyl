@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -99,7 +100,9 @@ func TestRun(t *testing.T) {
 	go func() {
 		for {
 			s.Stats()
+			stats.Lock()
 			_, ok := stats.services[s.Name()]
+			stats.Unlock()
 			if ok {
 				ch <- 1
 				return
@@ -241,9 +244,12 @@ func Test_parseDeviceSpecs(t *testing.T) {
 type mockStats struct {
 	stats    map[string]map[string]attribute
 	services map[string]engine.InstancesStats
+	sync.Mutex
 }
 
 func (s *mockStats) LoadStats(sss interface{}) bool {
+	s.Lock()
+	defer s.Unlock()
 	var buf bytes.Buffer
 	gob.NewEncoder(&buf).Encode(s.stats)
 	gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(sss)
@@ -251,6 +257,8 @@ func (s *mockStats) LoadStats(sss interface{}) bool {
 }
 
 func (s *mockStats) SetInstanceStats(serviceName, instanceName string, partialStats engine.PartialStats, persist bool) {
+	s.Lock()
+	defer s.Unlock()
 	service, ok := s.services[serviceName]
 	if !ok {
 		service = engine.InstancesStats{}
@@ -275,54 +283,79 @@ func (*mockStats) DelServiceStats(serviceName string, persist bool) {
 	return
 }
 
-type mackLogger struct {
+type mockLogger struct {
 	records []string
 	data    map[string]interface{}
 	err     error
+	sync.Mutex
 }
 
-func newMockLogger() *mackLogger {
-	return &mackLogger{
+func newMockLogger() *mockLogger {
+	return &mockLogger{
 		data:    map[string]interface{}{},
 		records: []string{},
 	}
 }
 
-func (l *mackLogger) WithField(key string, value interface{}) logger.Logger {
+func (l *mockLogger) WithField(key string, value interface{}) logger.Logger {
+	l.Lock()
+	defer l.Unlock()
 	l.data[key] = value
 	return l
 }
-func (l *mackLogger) WithError(err error) logger.Logger {
+func (l *mockLogger) WithError(err error) logger.Logger {
+	l.Lock()
+	defer l.Unlock()
 	l.err = err
 	return l
 }
-func (l *mackLogger) Debugf(format string, args ...interface{}) {
+func (l *mockLogger) Debugf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Debugf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Infof(format string, args ...interface{}) {
+func (l *mockLogger) Infof(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Infof]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Warnf(format string, args ...interface{}) {
+func (l *mockLogger) Warnf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Warnf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Errorf(format string, args ...interface{}) {
+func (l *mockLogger) Errorf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Errorf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Fatalf(format string, args ...interface{}) {
+func (l *mockLogger) Fatalf(format string, args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Fatalf]"+fmt.Sprintf(format, args...))
 }
-func (l *mackLogger) Debugln(args ...interface{}) {
+func (l *mockLogger) Debugln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Debugln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Infoln(args ...interface{}) {
+func (l *mockLogger) Infoln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Infoln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Warnln(args ...interface{}) {
+func (l *mockLogger) Warnln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Warnln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Errorln(args ...interface{}) {
+func (l *mockLogger) Errorln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Errorln]"+fmt.Sprintln(args...))
 }
-func (l *mackLogger) Fatalln(args ...interface{}) {
+func (l *mockLogger) Fatalln(args ...interface{}) {
+	l.Lock()
+	defer l.Unlock()
 	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
 }

@@ -120,7 +120,6 @@ func TestConfig(t *testing.T) {
 			},
 			SNFile: filepath,
 		}
-
 		err = conf.Validate()
 		assert.NoError(t, err)
 		assert.Equal(t, "tcp://host.docker.internal:51150", utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
@@ -152,20 +151,61 @@ func TestConfig(t *testing.T) {
 		conf := Config{
 			Mode: "docker",
 			Server: http.ServerInfo{
-				Address: "unix:///var/run/test/baetyl.sock",
+				Address: "unix:///tmp/run/baetyl.sock",
 			},
 			API: api.ServerConfig{
-				Address: "unix:///var/run/test/baetyl_api.sock",
+				Address: "unix:///tmp/run/baetyl/api.sock",
 			},
 			SNFile: filepath,
 		}
-
 		err = conf.Validate()
 		assert.NoError(t, err)
-		assert.Equal(t, "unix:///"+baetyl.DefaultSockFile, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
-		assert.Equal(t, "unix:///"+baetyl.DefaultGRPCSockFile, utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
-		assert.Equal(t, "/var/run/test/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
-		assert.Equal(t, "/var/run/test/baetyl_api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
+
+		assert.Equal(t, "unix:///tmp/run/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "unix:///tmp/run/baetyl/api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
+		assert.Equal(t, "/tmp/run/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
+		assert.Equal(t, "/tmp/run/baetyl/api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
+		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
+		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
+		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
+		assert.Equal(t, conf.Mode, utils.GetEnv(baetyl.EnvKeyServiceMode))
+
+		conf = Config{
+			Mode: "native",
+			Server: http.ServerInfo{
+				Address: "unix:///tmp/run/baetyl.sock",
+			},
+			API: api.ServerConfig{
+				Address: "unix:///tmp/run/baetyl/api.sock",
+			},
+			SNFile: filepath,
+		}
+		err = conf.Validate()
+		assert.NoError(t, err)
+
+		assert.Equal(t, "unix://tmp/run/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "unix://tmp/run/baetyl/api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
+		assert.Equal(t, "/tmp/run/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
+		assert.Equal(t, "/tmp/run/baetyl/api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
+		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
+		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
+		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
+		assert.Equal(t, conf.Mode, utils.GetEnv(baetyl.EnvKeyServiceMode))
+
+		conf = Config{
+			Mode: "docker",
+			Server: http.ServerInfo{
+				Address: "tcp://127.0.0.1:51150",
+			},
+			API: api.ServerConfig{
+				Address: "tcp://127.0.0.1:51151",
+			},
+			SNFile: filepath,
+		}
+		err = conf.Validate()
+		assert.NoError(t, err)
+		assert.Equal(t, "tcp://host.docker.internal:51150", utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "host.docker.internal:51151", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
 		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
 		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
 		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
@@ -183,10 +223,8 @@ func TestConfig(t *testing.T) {
 		}
 		err = conf.Validate()
 		assert.NoError(t, err)
-		assert.Equal(t, "unix://"+baetyl.DefaultSockFile, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
-		assert.Equal(t, "unix://"+baetyl.DefaultGRPCSockFile, utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
-		assert.Equal(t, "/var/run/test/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
-		assert.Equal(t, "/var/run/test/baetyl_api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
+		assert.Equal(t, conf.Server.Address, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "127.0.0.1:51151", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
 		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
 		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
 		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
