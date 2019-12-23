@@ -1,6 +1,9 @@
 package logger
 
 import (
+	"errors"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -53,4 +56,59 @@ func TestInitLogger(t *testing.T) {
 			assert.EqualValues(t, l.(*logger).entry.Data, tt.want)
 		})
 	}
+}
+
+func TestLogger(t *testing.T) {
+	logger := WithField("name", "baetyl")
+	assert.NotEmpty(t, logger)
+
+	logger = WithError(errors.New("test error"))
+	assert.NotEmpty(t, logger)
+
+	logger.Debugf("%s debug", "baetyl")
+	logger.Infof("%s info", "baetyl")
+	logger.Warnf("%s debug", "baetyl")
+	logger.Errorf("%s errorf", "baetyl")
+
+	logger.Debugln("baetyl debug")
+	logger.Infoln("baetyl info")
+	logger.Warnln("baetyl debug")
+	logger.Errorln("baetyl errorf")
+
+	Debugf("%s debug", "baetyl")
+	Infof("%s info", "baetyl")
+	Warnf("%s debug", "baetyl")
+	Errorf("%s errorf", "baetyl")
+
+	Debugln("baetyl debug")
+	Infoln("baetyl info")
+	Warnln("baetyl debug")
+	Errorln("baetyl errorf")
+
+	dir, err := ioutil.TempDir("", t.Name())
+	assert.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	c := LogInfo{
+		Path:   dir,
+		Level:  "info",
+		Format: "",
+		Age: struct {
+			Max int `yaml:"max" json:"max" default:"15" validate:"min=1"`
+		}{
+			Max: 1,
+		},
+		Size: struct {
+			Max int `yaml:"max" json:"max" default:"50" validate:"min=1"`
+		}{
+			Max: 1,
+		},
+		Backup: struct {
+			Max int `yaml:"max" json:"max" default:"15" validate:"min=1"`
+		}{
+			Max: 1,
+		},
+	}
+	logger = New(c, "baetyl")
+	assert.NotEmpty(t, logger)
 }
