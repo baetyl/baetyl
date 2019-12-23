@@ -46,15 +46,13 @@ func (c *Config) Validate() error {
 			return err
 		}
 		utils.SetEnv(baetyl.EnvKeyMasterAPISocket, sock)
-		unixPrefix := "unix:"
-		if c.Mode == "native" {
+		unixPrefix := "unix://"
+		if c.Mode != "native" {
 			unixPrefix += "/"
-		} else {
-			unixPrefix += "//"
 		}
-		utils.SetEnv(baetyl.EnvKeyMasterAPIAddress, unixPrefix+sock)
+		utils.SetEnv(baetyl.EnvKeyMasterAPIAddress, unixPrefix+baetyl.DefaultSockFile)
 		// TODO: remove, backward compatibility
-		utils.SetEnv(baetyl.EnvMasterAPIKey, unixPrefix+sock)
+		utils.SetEnv(baetyl.EnvMasterAPIKey, unixPrefix+baetyl.DefaultSockFile)
 
 		// grpc
 		grpcSock, err := filepath.Abs(grpcUrl.Host)
@@ -66,7 +64,7 @@ func (c *Config) Validate() error {
 			return err
 		}
 		utils.SetEnv(baetyl.EnvKeyMasterGRPCAPISocket, grpcSock)
-		utils.SetEnv(baetyl.EnvKeyMasterGRPCAPIAddress, unixPrefix+grpcSock)
+		utils.SetEnv(baetyl.EnvKeyMasterGRPCAPIAddress, unixPrefix+baetyl.DefaultGRPCSockFile)
 	} else {
 		if c.Mode != "native" {
 			parts := strings.SplitN(url.Host, ":", 2)
