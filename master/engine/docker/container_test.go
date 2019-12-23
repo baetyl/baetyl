@@ -10,11 +10,40 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_dockerEngine_initNetworks(t *testing.T) {
+func TestInitVolumes(t *testing.T) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		t.Skip("docker not installed")
 	}
+	defer cli.Close()
+	e := &dockerEngine{
+		cli:      cli,
+		networks: map[string]string{},
+		log:      logger.WithField("test", "test"),
+	}
+	vs := make(map[string]baetyl.ComposeVolume)
+	opts := make(map[string]string)
+	labels := make(map[string]string)
+	vs["baetyl1"] = baetyl.ComposeVolume{
+		Driver:     "local",
+		DriverOpts: opts,
+		Labels:     labels,
+	}
+	vs["baetyl2"] = baetyl.ComposeVolume{
+		Driver:     "local",
+		DriverOpts: opts,
+		Labels:     labels,
+	}
+	err = e.initVolumes(vs)
+	assert.NoError(t, err)
+}
+
+func TestInitNetworks(t *testing.T) {
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		t.Skip("docker not installed")
+	}
+	defer cli.Close()
 	e := &dockerEngine{
 		cli:      cli,
 		networks: map[string]string{},
@@ -41,4 +70,21 @@ func Test_dockerEngine_initNetworks(t *testing.T) {
 	err = e.initNetworks(ComposeNetworks{"dummy": nw})
 	assert.NoError(t, err)
 	assert.Len(t, e.networks, 2)
+}
+
+func TestPullImage(t *testing.T) {
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		t.Skip("docker not installed")
+	}
+	defer cli.Close()
+	e := &dockerEngine{
+		cli:      cli,
+		networks: map[string]string{},
+		log:      logger.WithField("test", "test"),
+	}
+
+	image := "busybox"
+	err = e.pullImage(image)
+	assert.NoError(t, err)
 }

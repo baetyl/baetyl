@@ -1,17 +1,23 @@
 package master
 
 import (
+	"io"
+	"io/ioutil"
 	"os"
+	"path"
 	"runtime"
 	"testing"
 	"time"
 
 	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/protocol/http"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	"github.com/baetyl/baetyl/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfig(t *testing.T) {
+func TestDefaultConfig(t *testing.T) {
 	tests := []struct {
 		name string
 		args []byte
@@ -53,6 +59,138 @@ func TestConfig(t *testing.T) {
 
 			assert.Equal(t, time.Duration(30*1000*1000000), cfg.Grace)
 		})
+	}
+}
+
+func TestConfig(t *testing.T) {
+	dir, err := ioutil.TempDir("", t.Name())
+	assert.NoError(t, err)
+	defer os.RemoveAll(dir)
+
+	conf := Config{
+		Server: http.ServerInfo{
+			Address: "baetyl://127.0.0.1:51150",
+		},
+		API: api.ServerConfig{
+			Address: "baetyl://127.0.0.1:51150",
+		},
+	}
+
+	err = conf.Validate()
+	assert.Error(t, err)
+	assert.Equal(t, "only support unix domian socket or tcp socket", err.Error())
+
+	filepath := path.Join(dir, "sn")
+	sn := "baetyl"
+	f, err := os.Create(filepath)
+	assert.NoError(t, err)
+
+	n, err := io.WriteString(f, sn)
+	assert.NoError(t, err)
+	assert.Len(t, sn, n)
+	f.Sync()
+	f.Close()
+
+	if runtime.GOOS == "darwin" {
+		conf = Config{
+			Server: http.ServerInfo{
+				Address: "unix://127.0.0.1:51150",
+			},
+		}
+		err = conf.Validate()
+		assert.Error(t, err)
+		assert.Equal(t, "unix domain socket only support on linux, please to use tcp socket", err.Error())
+
+		conf = Config{
+			API: api.ServerConfig{
+				Address: "unix://127.0.0.1:51150",
+			},
+		}
+		err = conf.Validate()
+		assert.Error(t, err)
+		assert.Equal(t, "unix domain socket only support on linux, please to use tcp socket", err.Error())
+
+		conf := Config{
+			Mode: "docker",
+			Server: http.ServerInfo{
+				Address: "tcp://127.0.0.1:51150",
+			},
+			API: api.ServerConfig{
+				Address: "tcp://127.0.0.1:51151",
+			},
+			SNFile: filepath,
+		}
+
+		err = conf.Validate()
+		assert.NoError(t, err)
+		assert.Equal(t, "tcp://host.docker.internal:51150", utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "host.docker.internal:51151", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
+		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
+		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
+		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
+		assert.Equal(t, conf.Mode, utils.GetEnv(baetyl.EnvKeyServiceMode))
+
+		conf = Config{
+			Mode: "native",
+			Server: http.ServerInfo{
+				Address: "tcp://127.0.0.1:51150",
+			},
+			API: api.ServerConfig{
+				Address: "tcp://127.0.0.1:51151",
+			},
+			SNFile: filepath,
+		}
+		err = conf.Validate()
+		assert.NoError(t, err)
+		assert.Equal(t, conf.Server.Address, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "127.0.0.1:51151", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
+		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
+		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
+		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
+		assert.Equal(t, conf.Mode, utils.GetEnv(baetyl.EnvKeyServiceMode))
+	} else if runtime.GOOS == "linux" {
+		conf := Config{
+			Mode: "docker",
+			Server: http.ServerInfo{
+				Address: "unix:///var/run/test/baetyl.sock",
+			},
+			API: api.ServerConfig{
+				Address: "unix:///var/run/test/baetyl_api.sock",
+			},
+			SNFile: filepath,
+		}
+
+		err = conf.Validate()
+		assert.NoError(t, err)
+		assert.Equal(t, "unix:///"+baetyl.DefaultSockFile, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "unix:///"+baetyl.DefaultGRPCSockFile, utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
+		assert.Equal(t, "/var/run/test/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
+		assert.Equal(t, "/var/run/test/baetyl_api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
+		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
+		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
+		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
+		assert.Equal(t, conf.Mode, utils.GetEnv(baetyl.EnvKeyServiceMode))
+
+		conf = Config{
+			Mode: "native",
+			Server: http.ServerInfo{
+				Address: "tcp://127.0.0.1:51150",
+			},
+			API: api.ServerConfig{
+				Address: "tcp://127.0.0.1:51151",
+			},
+			SNFile: filepath,
+		}
+		err = conf.Validate()
+		assert.NoError(t, err)
+		assert.Equal(t, "unix://"+baetyl.DefaultSockFile, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
+		assert.Equal(t, "unix://"+baetyl.DefaultGRPCSockFile, utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
+		assert.Equal(t, "/var/run/test/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
+		assert.Equal(t, "/var/run/test/baetyl_api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
+		assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
+		assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
+		assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
+		assert.Equal(t, conf.Mode, utils.GetEnv(baetyl.EnvKeyServiceMode))
 	}
 }
 

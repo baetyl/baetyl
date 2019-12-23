@@ -1,12 +1,22 @@
 package native
 
 import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/baetyl/baetyl/logger"
+	"github.com/baetyl/baetyl/master/engine"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/shirou/gopsutil/process"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -96,4 +106,277 @@ func Test_mount(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNew(t *testing.T) {
+	opt := engine.Options{
+		Grace:      2 * time.Second,
+		Pwd:        "/var/db",
+		APIVersion: "1.38",
+	}
+	e, err := New(new(mockStats), opt)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, e)
+	defer e.Close()
+
+	assert.Equal(t, NAME, e.Name())
+	assert.Equal(t, "/var/db", e.(*nativeEngine).pwd)
+	assert.Equal(t, 2*time.Second, e.(*nativeEngine).grace)
+}
+
+func TestNative(t *testing.T) {
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	defer os.RemoveAll(path.Join(pwd, "testdata", "var", "run"))
+
+	name := t.Name()
+	stats := mockStats{services: map[string]engine.InstancesStats{}}
+	e := &nativeEngine{
+		pwd:       path.Join(pwd, "testdata"),
+		grace:     10 * time.Second,
+		InfoStats: &stats,
+		log:       newMockLogger(),
+	}
+	defer e.Close()
+	sv := baetyl.ServiceVolume{
+		Source: "var/db/baetyl/cmd",
+		Target: "/lib/baetyl/cmd",
+	}
+	cmd := baetyl.ComposeService{
+		Image:       "cmd",
+		Replica:     1,
+		Volumes:     []baetyl.ServiceVolume{sv},
+		Networks:    baetyl.NetworksInfo{},
+		Ports:       []string{"13883:13883"},
+		Command:     baetyl.Command{},
+		Environment: baetyl.Environment{},
+		Restart:     baetyl.RestartPolicyInfo{},
+		Resources:   baetyl.Resources{},
+	}
+	s, err := e.Run(name, cmd, nil)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, s)
+
+	ch := make(chan int, 1)
+	go func() {
+		for {
+			s.Stats()
+			_, ok := stats.services[s.Name()]
+			if ok {
+				ch <- 1
+				return
+			}
+		}
+	}()
+	<-ch
+	s.Stop()
+
+	sv = baetyl.ServiceVolume{
+		Source: "var/db/baetyl/unknown/cmd",
+		Target: "/lib/baetyl/cmd",
+	}
+	cmd = baetyl.ComposeService{
+		Image:       "cmd",
+		Replica:     1,
+		Volumes:     []baetyl.ServiceVolume{sv},
+		Networks:    baetyl.NetworksInfo{},
+		Ports:       []string{"14883:14883"},
+		Command:     baetyl.Command{},
+		Environment: baetyl.Environment{},
+		Restart:     baetyl.RestartPolicyInfo{},
+		Resources:   baetyl.Resources{},
+	}
+	s, err = e.Run(name, cmd, nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no such file or directory")
+	fmt.Println(err)
+}
+
+func TestRecover(t *testing.T) {
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+	defer os.RemoveAll(path.Join(pwd, "testdata", "var", "run"))
+
+	stats := mockStats{services: map[string]engine.InstancesStats{}}
+	stats.stats = map[string]map[string]attribute{
+		"test": {
+			"test": {
+				Name: "",
+				Process: struct {
+					ID   int    `yaml:"id" json:"id"`
+					Name string `yaml:"name" json:"name"`
+				}{},
+			},
+		},
+	}
+	logger := newMockLogger()
+	e := &nativeEngine{
+		pwd:       path.Join(pwd, "testdata"),
+		grace:     10 * time.Second,
+		InfoStats: &stats,
+		log:       logger,
+	}
+	defer e.Close()
+	logger.records = []string{}
+	e.Recover()
+	assert.Equal(t, []string{"[Warnf][test][test] process id not found, maybe running mode changed"}, logger.records)
+
+	var pid int
+	for {
+		rand.Seed(time.Now().Unix())
+		a := rand.Intn(100) + 50000
+		_, err := process.NewProcess(int32(a))
+		if err != nil {
+			pid = a
+			break
+		}
+	}
+	stats.stats = map[string]map[string]attribute{
+		"test": {
+			"test": {
+				Name: "",
+				Process: struct {
+					ID   int    `yaml:"id" json:"id"`
+					Name string `yaml:"name" json:"name"`
+				}{
+					ID: pid,
+				},
+			},
+		},
+	}
+	logger.records = []string{}
+	e.Recover()
+	assert.Equal(t, []string{fmt.Sprintf("[Warnf][test][test] failed to get old process (%d)", pid)}, logger.records)
+
+	sh, err := exec.LookPath("sh")
+	assert.NoError(t, err)
+	var procAttr os.ProcAttr
+	procAttr.Files = []*os.File{os.Stdin, os.Stdout, os.Stderr}
+	pid2, err := os.StartProcess(sh, nil, &procAttr)
+	assert.NoError(t, err)
+
+	stats.stats = map[string]map[string]attribute{
+		"test": {
+			"test": {
+				Name: "",
+				Process: struct {
+					ID   int    `yaml:"id" json:"id"`
+					Name string `yaml:"name" json:"name"`
+				}{
+					ID:   pid2.Pid,
+					Name: "test",
+				},
+			},
+		},
+	}
+	logger.records = []string{}
+	e.Recover()
+	assert.Equal(t, []string{fmt.Sprintf("[Debugf][test][test] name of old process (%d) not matched, test -> sh", pid2.Pid)}, logger.records)
+
+	stats.stats = map[string]map[string]attribute{
+		"test": {
+			"test": {
+				Name: "",
+				Process: struct {
+					ID   int    `yaml:"id" json:"id"`
+					Name string `yaml:"name" json:"name"`
+				}{
+					ID:   pid2.Pid,
+					Name: "sh",
+				},
+			},
+		},
+	}
+	logger.records = []string{}
+	e.Recover()
+	assert.Equal(t, []string{fmt.Sprintf("[Infof][test][test] old process (%d) stopped", pid2.Pid)}, logger.records)
+}
+
+type mockStats struct {
+	stats    map[string]map[string]attribute
+	services map[string]engine.InstancesStats
+}
+
+func (s *mockStats) LoadStats(sss interface{}) bool {
+	var buf bytes.Buffer
+	gob.NewEncoder(&buf).Encode(s.stats)
+	gob.NewDecoder(bytes.NewBuffer(buf.Bytes())).Decode(sss)
+	return true
+}
+
+func (s *mockStats) SetInstanceStats(serviceName, instanceName string, partialStats engine.PartialStats, persist bool) {
+	service, ok := s.services[serviceName]
+	if !ok {
+		service = engine.InstancesStats{}
+		s.services[serviceName] = service
+	}
+	instance, ok := service[instanceName]
+	if !ok {
+		instance = partialStats
+		service[instanceName] = instance
+	} else {
+		for k, v := range partialStats {
+			instance[k] = v
+		}
+	}
+}
+
+func (*mockStats) DelInstanceStats(serviceName, instanceName string, persist bool) {
+	return
+}
+
+func (*mockStats) DelServiceStats(serviceName string, persist bool) {
+	return
+}
+
+type mackLogger struct {
+	records []string
+	data    map[string]interface{}
+	err     error
+}
+
+func newMockLogger() *mackLogger {
+	return &mackLogger{
+		data:    map[string]interface{}{},
+		records: []string{},
+	}
+}
+
+func (l *mackLogger) WithField(key string, value interface{}) logger.Logger {
+	l.data[key] = value
+	return l
+}
+func (l *mackLogger) WithError(err error) logger.Logger {
+	l.err = err
+	return l
+}
+func (l *mackLogger) Debugf(format string, args ...interface{}) {
+	l.records = append(l.records, "[Debugf]"+fmt.Sprintf(format, args...))
+}
+func (l *mackLogger) Infof(format string, args ...interface{}) {
+	l.records = append(l.records, "[Infof]"+fmt.Sprintf(format, args...))
+}
+func (l *mackLogger) Warnf(format string, args ...interface{}) {
+	l.records = append(l.records, "[Warnf]"+fmt.Sprintf(format, args...))
+}
+func (l *mackLogger) Errorf(format string, args ...interface{}) {
+	l.records = append(l.records, "[Errorf]"+fmt.Sprintf(format, args...))
+}
+func (l *mackLogger) Fatalf(format string, args ...interface{}) {
+	l.records = append(l.records, "[Fatalf]"+fmt.Sprintf(format, args...))
+}
+func (l *mackLogger) Debugln(args ...interface{}) {
+	l.records = append(l.records, "[Debugln]"+fmt.Sprintln(args...))
+}
+func (l *mackLogger) Infoln(args ...interface{}) {
+	l.records = append(l.records, "[Infoln]"+fmt.Sprintln(args...))
+}
+func (l *mackLogger) Warnln(args ...interface{}) {
+	l.records = append(l.records, "[Warnln]"+fmt.Sprintln(args...))
+}
+func (l *mackLogger) Errorln(args ...interface{}) {
+	l.records = append(l.records, "[Errorln]"+fmt.Sprintln(args...))
+}
+func (l *mackLogger) Fatalln(args ...interface{}) {
+	l.records = append(l.records, "[Fatalln]"+fmt.Sprintln(args...))
 }
