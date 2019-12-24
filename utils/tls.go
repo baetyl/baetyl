@@ -24,5 +24,8 @@ func NewTLSServerConfig(c Certificate) (*tls.Config, error) {
 
 // NewTLSClientConfig loads tls config for client
 func NewTLSClientConfig(c Certificate) (*tls.Config, error) {
+	if c.Cert == "" && c.Key == "" {
+		return nil, nil
+	}
 	return tlsconfig.Client(tlsconfig.Options{CAFile: c.CA, KeyFile: c.Key, CertFile: c.Cert, InsecureSkipVerify: c.Insecure})
 }

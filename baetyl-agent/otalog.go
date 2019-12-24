@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/baetyl/baetyl/utils"
 	"os"
 	"time"
 
 	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
-	"github.com/baetyl/baetyl/utils"
 )
 
 type record struct {

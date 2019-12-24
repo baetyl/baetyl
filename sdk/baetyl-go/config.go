@@ -162,6 +162,8 @@ func (sn *NetworksInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type ComposeAppConfig struct {
 	// specifies the version of compose file
 	Version string `yaml:"version" json:"version"`
+	// specifies name of the application
+	Name string `yaml:"name" json:"name"`
 	// specifies the app version of the application configuration
 	AppVersion string `yaml:"app_version" json:"app_version"`
 	// specifies the service information of the application
