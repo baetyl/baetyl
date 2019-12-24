@@ -41,7 +41,7 @@ type Instance interface {
 
 // GenerateInstanceEnv generates new env of the instance
 func GenerateInstanceEnv(name string, static []string, dynamic map[string]string) []string {
-	env := []string{}
+	var env []string
 	dyn := dynamic != nil
 	for _, v := range static {
 		// remove auth token info for dynamic instances

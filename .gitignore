@@ -17,6 +17,7 @@
 /**/debug
 /**/*.log
 /cover*.out
+/cover*.html
 /example/**/*-cert
 /**/processes.history*
 /**/node_modules
