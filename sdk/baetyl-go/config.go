@@ -29,46 +29,46 @@ const (
 // RestartPolicyInfo holds the policy of a module
 type RestartPolicyInfo struct {
 	Retry struct {
-		Max int `yaml:"max,omitempty" json:"max"`
-	} `yaml:"retry,omitempty" json:"retry"`
-	Policy  string      `yaml:"policy,omitempty" json:"policy" default:"always"`
+		Max int `yaml:"max" json:"max"`
+	} `yaml:"retry" json:"retry"`
+	Policy  string      `yaml:"policy" json:"policy" default:"always"`
 	Backoff BackoffInfo `yaml:"backoff,omitempty" json:"backoff"`
 }
 
 // BackoffInfo holds backoff value
 type BackoffInfo struct {
-	Min    time.Duration `yaml:"min,omitempty" json:"min" default:"1s" validate:"min=1000000000"`
-	Max    time.Duration `yaml:"max,omitempty" json:"max" default:"5m" validate:"min=1000000000"`
-	Factor float64       `yaml:"factor,omitempty" json:"factor" default:"2" validate:"min=1"`
+	Min    time.Duration `yaml:"min" json:"min" default:"1s" validate:"min=1000000000"`
+	Max    time.Duration `yaml:"max" json:"max" default:"5m" validate:"min=1000000000"`
+	Factor float64       `yaml:"factor" json:"factor" default:"2" validate:"min=1"`
 }
 
 // Resources resources config
 type Resources struct {
-	CPU    CPU    `yaml:"cpu,omitempty" json:"cpu"`
-	Pids   Pids   `yaml:"pids,omitempty" json:"pids"`
-	Memory Memory `yaml:"memory,omitempty" json:"memory"`
+	CPU    CPU    `yaml:"cpu" json:"cpu"`
+	Pids   Pids   `yaml:"pids" json:"pids"`
+	Memory Memory `yaml:"memory" json:"memory"`
 }
 
 // CPU cpu config
 type CPU struct {
-	Cpus    float64 `yaml:"cpus,omitempty" json:"cpus"`
-	SetCPUs string  `yaml:"setcpus,omitempty" json:"setcpus"`
+	Cpus    float64 `yaml:"cpus" json:"cpus"`
+	SetCPUs string  `yaml:"setcpus" json:"setcpus"`
 }
 
 // Pids pids config
 type Pids struct {
-	Limit int64 `yaml:"limit,omitempty" json:"limit"`
+	Limit int64 `yaml:"limit" json:"limit"`
 }
 
 // Memory memory config
 type Memory struct {
-	Limit int64 `yaml:"limit,omitempty" json:"limit"`
-	Swap  int64 `yaml:"swap,omitempty" json:"swap"`
+	Limit int64 `yaml:"limit" json:"limit"`
+	Swap  int64 `yaml:"swap" json:"swap"`
 }
 
 type memory struct {
-	Limit string `yaml:"limit,omitempty" json:"limit"`
-	Swap  string `yaml:"swap,omitempty" json:"swap"`
+	Limit string `yaml:"limit" json:"limit"`
+	Swap  string `yaml:"swap" json:"swap"`
 }
 
 // UnmarshalYAML customizes unmarshal
