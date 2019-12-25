@@ -2,7 +2,11 @@ PREFIX?=/usr/local
 MODE?=docker
 MODULES?=agent hub timer remote-mqtt function-manager function-node8 function-python3 function-python2
 SRC_FILES:=$(shell find main.go cmd master logger sdk protocol utils -type f -name '*.go') # TODO use vpath
-PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x windows/amd64
+
+# for windows cross compile
+WINDOWS_CROSS_CC:=x86_64-w64-mingw32-gcc
+WINDOWS_CROSS_CXX:=x86_64-w64-mingw32-g++
 
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 GIT_TAG:=$(shell git tag --contains HEAD)
@@ -45,8 +49,13 @@ baetyl: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@mkdir -p $(dir $@)
+ifneq ($($(GO_OS),windows)_($(findstring windows,$(PLATFORMS))),0_0)
+	@# you must set 'CGO_ENABLED=1' while cross compiled baetyl for windows platform
+	@$(shell echo $(@:$(OUTPUT)/%/baetyl/bin/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3" CGO_ENABLED=1 CC=$(WINDOWS_CROSS_CC) CXX=$(WINDOWS_CROSS_CXX) go build"}') -o $@.exe ${GO_FLAGS} .
+else
 	@# baetyl failed to collect cpu related data on darwin if set 'CGO_ENABLED=0' in compilation
 	@$(shell echo $(@:$(OUTPUT)/%/baetyl/bin/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
+endif
 
 $(OUTPUT_PKGS):
 	@echo "PACKAGE $@"

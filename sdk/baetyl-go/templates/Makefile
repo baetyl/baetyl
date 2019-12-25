@@ -31,7 +31,11 @@ all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
+ifneq ($($(GO_OS),windows)_($(findstring windows,$(PLATFORMS))),0_0)
+	$(WINDOWS_BIN_CMD)
+else
 	$(BIN_CMD)
+endif
 
 $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@echo "PACKAGE $@"

@@ -2,10 +2,11 @@
 # source: github.com/baetyl/baetyl/sdk/baetyl-go/templates/Makefile-go
 
 MODULE:=baetyl-{{.MODULE}}
+WINDOWS_CROSS_CC:=x86_64-w64-mingw32-gcc
+WINDOWS_CROSS_CXX:=x86_64-w64-mingw32-g++
 SRC_FILES:=$(shell find . ../logger ../sdk ../protocol ../utils -type f -name '*.go')
 BIN_FILE:=baetyl-{{.MODULE}}
 BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
+WINDOWS_BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=1 CC=$(WINDOWS_CROSS_CC) CXX=$(WINDOWS_CROSS_CXX) GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@.exe ${GO_FLAGS} .
 COPY_DIR:=../output
-PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x
-
-
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x windows/amd64

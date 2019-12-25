@@ -2,13 +2,14 @@
 # source: github.com/baetyl/baetyl/sdk/baetyl-go/templates/Makefile-go
 
 MODULE:=baetyl-remote-mqtt
+WINDOWS_CROSS_CC:=x86_64-w64-mingw32-gcc
+WINDOWS_CROSS_CXX:=x86_64-w64-mingw32-g++
 SRC_FILES:=$(shell find . ../logger ../sdk ../protocol ../utils -type f -name '*.go')
 BIN_FILE:=baetyl-remote-mqtt
 BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
+WINDOWS_BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=1 CC=$(WINDOWS_CROSS_CC) CXX=$(WINDOWS_CROSS_CXX) GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@.exe ${GO_FLAGS} .
 COPY_DIR:=../output
-PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x
-
-
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7 linux/arm/v6 linux/arm/v5 linux/ppc64le linux/s390x windows/amd64
 GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
@@ -42,7 +43,11 @@ all: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@install -d -m 0755 $(dir $@)
+ifneq ($($(GO_OS),windows)_($(findstring windows,$(PLATFORMS))),0_0)
+	$(WINDOWS_BIN_CMD)
+else
 	$(BIN_CMD)
+endif
 
 $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@echo "PACKAGE $@"
