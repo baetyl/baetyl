@@ -46,7 +46,7 @@ type Metadata struct {
 
 type DeployConfig struct {
 	AppConfig baetyl.ComposeAppConfig      `yaml:"appConfig" json:"appConfig"`
-	MetaData  map[string]baetyl.VolumeInfo `yaml:"metaData" json:"metaData" default:"{}"`
+	Metadata  map[string]baetyl.VolumeInfo `yaml:"metadata" json:"metadata" default:"{}"`
 }
 
 type ForwardInfo struct {
