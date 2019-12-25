@@ -55,7 +55,7 @@ func TestRun(t *testing.T) {
 	assert.NoError(t, err)
 
 	dir, _ := os.Getwd()
-	sv := baetyl.ServiceVolume{
+	sv := &baetyl.ServiceVolume{
 		Type:     "",
 		Source:   path.Join(dir, "testrun/etc"),
 		Target:   "/etc/baetyl",
@@ -69,14 +69,14 @@ func TestRun(t *testing.T) {
 		Hostname:      "",
 		Image:         "hub.baidubce.com/baetyl-sandbox/baetyl-test:latest",
 		Replica:       1,
-		Volumes:       []baetyl.ServiceVolume{sv},
+		Volumes:       []*baetyl.ServiceVolume{sv},
 		NetworkMode:   "",
 		Networks:      baetyl.NetworksInfo{},
 		Ports:         []string{"12883:12883"},
 		Devices:       nil,
 		DependsOn:     nil,
 		Command:       baetyl.Command{},
-		Environment:   baetyl.Environment{},
+		Environment:   &baetyl.Environment{},
 		Restart:       baetyl.RestartPolicyInfo{},
 		Resources:     baetyl.Resources{},
 		Runtime:       "",

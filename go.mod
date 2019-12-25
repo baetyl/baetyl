@@ -33,6 +33,7 @@ require (
 	github.com/jpillora/backoff v1.0.0
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mholt/archiver v3.1.1+incompatible
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect

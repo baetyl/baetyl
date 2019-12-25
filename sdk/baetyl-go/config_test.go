@@ -38,8 +38,8 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						Factor: 2,
 					},
 				},
-				Volumes: []ServiceVolume{
-					ServiceVolume{
+				Volumes: []*ServiceVolume{
+					&ServiceVolume{
 						Source:   "var/db/baetyl/test-hub-conf",
 						Target:   "/etc/baetyl",
 						ReadOnly: false,
@@ -48,7 +48,7 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				Command: Command{
 					Cmd: []string{"-c", "conf/conf.yml"},
 				},
-				Environment: Environment{
+				Environment: &Environment{
 					Envs: map[string]string{
 						"version": "v1",
 					},
@@ -60,7 +60,7 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				Replica:   1,
 				Ports:     []string{},
 				Devices:   []string{},
-				Environment: Environment{
+				Environment: &Environment{
 					Envs: map[string]string{
 						"version": "v2",
 					},
@@ -70,8 +70,8 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						"test-network": ServiceNetwork{},
 					},
 				},
-				Volumes: []ServiceVolume{
-					ServiceVolume{
+				Volumes: []*ServiceVolume{
+					&ServiceVolume{
 						Source:   "var/db/baetyl/test-timer-conf",
 						Target:   "/etc/baetyl",
 						ReadOnly: true,

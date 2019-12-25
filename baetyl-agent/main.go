@@ -88,7 +88,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 
 	a.shadowName = os.Getenv(common.ShadowName)
 	a.shadowNamespace = os.Getenv(common.ShadowNamespace)
-	if a.shadowName == "" || a.shadowNamespace == "" {
+	if cfg.Remote.Link != nil && (a.shadowName == "" || a.shadowNamespace == "") {
 		return nil, fmt.Errorf("can not report info without shadow name or namespace: %s", err.Error())
 	}
 

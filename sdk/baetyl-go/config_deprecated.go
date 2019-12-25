@@ -83,7 +83,7 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 			Command: Command{
 				Cmd: service.Args,
 			},
-			Environment: Environment{
+			Environment: &Environment{
 				Envs: service.Env,
 			},
 			Replica:   service.Replica,
@@ -98,7 +98,7 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 			info.DependsOn = []string{previous}
 		}
 		previous = service.Name
-		vs := make([]ServiceVolume, 0)
+		vs := make([]*ServiceVolume, 0)
 		for _, mount := range service.Mounts {
 			var p string
 			for _, v := range cfg.Volumes {
@@ -106,7 +106,7 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 					p = v.Path
 				}
 			}
-			v := ServiceVolume{
+			v := &ServiceVolume{
 				Source:   p,
 				Target:   path.Join("/", mount.Path),
 				ReadOnly: mount.ReadOnly,

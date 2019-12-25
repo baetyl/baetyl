@@ -7,7 +7,7 @@ import (
 	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
-	"github.com/goinggo/mapstructure"
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -61,13 +61,12 @@ func (a *agent) processLinkOTA(info *BackwardInfo) error {
 	var res BackwardInfo
 	err = json.Unmarshal(resData, &res)
 	var dep Deployment
-	err = mapstructure.Decode(res.Response[common.ResourceName], &dep)
+	err = mapstructure.Decode(res.Response["deployment"], &dep)
 	if err != nil {
 		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
 	}
 	metaData, hostDir := a.processApplication(dep.Snapshot.Apps)
 
-	fmt.Println(hostDir)
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
 	for name, volume := range metaData {
@@ -112,7 +111,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 				var res BackwardInfo
 				err = json.Unmarshal(resData, &res)
 				var config ModuleConfig
-				err = mapstructure.Decode(res.Response[common.ResourceName], &config)
+				err = mapstructure.Decode(res.Response["config"], &config)
 				if err != nil {
 					return fmt.Errorf("error to transform from map to config: %s", err.Error())
 				}
@@ -201,13 +200,11 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 	}
 	var res BackwardInfo
 	err = json.Unmarshal(resData, &res)
-	var deployConfig DeployConfig
-	err = mapstructure.Decode(res.Response[common.ResourceName], &deployConfig)
+	deployConfig, err := getDeployConfig(&res)
 	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to transform map to app")
+		a.ctx.Log().WithError(err).Warnf("failed to get deploy config")
 		return nil, ""
 	}
-
 	appDir := deployConfig.AppConfig.Name
 	hostDir := path.Join(baetyl.DefaultDBDir, appDir, deployConfig.AppConfig.AppVersion)
 	containerDir := path.Join(baetyl.DefaultDBDir, "volumes", appDir, deployConfig.AppConfig.AppVersion)
@@ -217,6 +214,7 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 		a.ctx.Log().WithError(err).Warnf("failed to prepare app directory (%s): %s", containerDir, err.Error())
 		return nil, ""
 	}
+
 	data, err := yaml.Marshal(deployConfig.AppConfig)
 	if err != nil {
 		os.RemoveAll(containerDir)
@@ -230,6 +228,19 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 		return nil, ""
 	}
 	return deployConfig.MetaData, hostDir
+}
+
+func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
+	appData, err := json.Marshal(info.Response["application"])
+	if err != nil {
+		return nil, err
+	}
+	var deployConfig DeployConfig
+	err = json.Unmarshal(appData, &deployConfig)
+	if err != nil {
+		return nil, err
+	}
+	return &deployConfig, nil
 }
 
 func (a *agent) newRequest(resourceType, resourceName string) *ForwardInfo {

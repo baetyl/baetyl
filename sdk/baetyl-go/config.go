@@ -1,6 +1,7 @@
 package baetyl
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -28,46 +29,46 @@ const (
 // RestartPolicyInfo holds the policy of a module
 type RestartPolicyInfo struct {
 	Retry struct {
-		Max int `yaml:"max" json:"max"`
-	} `yaml:"retry" json:"retry"`
-	Policy  string      `yaml:"policy" json:"policy" default:"always"`
-	Backoff BackoffInfo `yaml:"backoff" json:"backoff"`
+		Max int `yaml:"max,omitempty" json:"max"`
+	} `yaml:"retry,omitempty" json:"retry"`
+	Policy  string      `yaml:"policy,omitempty" json:"policy" default:"always"`
+	Backoff BackoffInfo `yaml:"backoff,omitempty" json:"backoff"`
 }
 
 // BackoffInfo holds backoff value
 type BackoffInfo struct {
-	Min    time.Duration `yaml:"min" json:"min" default:"1s" validate:"min=1000000000"`
-	Max    time.Duration `yaml:"max" json:"max" default:"5m" validate:"min=1000000000"`
-	Factor float64       `yaml:"factor" json:"factor" default:"2" validate:"min=1"`
+	Min    time.Duration `yaml:"min,omitempty" json:"min" default:"1s" validate:"min=1000000000"`
+	Max    time.Duration `yaml:"max,omitempty" json:"max" default:"5m" validate:"min=1000000000"`
+	Factor float64       `yaml:"factor,omitempty" json:"factor" default:"2" validate:"min=1"`
 }
 
 // Resources resources config
 type Resources struct {
-	CPU    CPU    `yaml:"cpu" json:"cpu"`
-	Pids   Pids   `yaml:"pids" json:"pids"`
-	Memory Memory `yaml:"memory" json:"memory"`
+	CPU    CPU    `yaml:"cpu,omitempty" json:"cpu"`
+	Pids   Pids   `yaml:"pids,omitempty" json:"pids"`
+	Memory Memory `yaml:"memory,omitempty" json:"memory"`
 }
 
 // CPU cpu config
 type CPU struct {
-	Cpus    float64 `yaml:"cpus" json:"cpus"`
-	SetCPUs string  `yaml:"setcpus" json:"setcpus"`
+	Cpus    float64 `yaml:"cpus,omitempty" json:"cpus"`
+	SetCPUs string  `yaml:"setcpus,omitempty" json:"setcpus"`
 }
 
 // Pids pids config
 type Pids struct {
-	Limit int64 `yaml:"limit" json:"limit"`
+	Limit int64 `yaml:"limit,omitempty" json:"limit"`
 }
 
 // Memory memory config
 type Memory struct {
-	Limit int64 `yaml:"limit" json:"limit"`
-	Swap  int64 `yaml:"swap" json:"swap"`
+	Limit int64 `yaml:"limit,omitempty" json:"limit"`
+	Swap  int64 `yaml:"swap,omitempty" json:"swap"`
 }
 
 type memory struct {
-	Limit string `yaml:"limit" json:"limit"`
-	Swap  string `yaml:"swap" json:"swap"`
+	Limit string `yaml:"limit,omitempty" json:"limit"`
+	Swap  string `yaml:"swap,omitempty" json:"swap"`
 }
 
 // UnmarshalYAML customizes unmarshal
@@ -167,11 +168,11 @@ type ComposeAppConfig struct {
 	// specifies the app version of the application configuration
 	AppVersion string `yaml:"app_version" json:"app_version"`
 	// specifies the service information of the application
-	Services map[string]ComposeService `yaml:"services" json:"services" default:"{}"`
+	Services map[string]ComposeService `yaml:"services,omitempty" json:"services" default:"{}"`
 	// specifies the storage volume information of the application
-	Volumes map[string]ComposeVolume `yaml:"volumes" json:"volumes" default:"{}"`
+	Volumes map[string]ComposeVolume `yaml:"volumes,omitempty" json:"volumes" default:"{}"`
 	// specifies the network information of the application
-	Networks map[string]ComposeNetwork `yaml:"networks" json:"networks" default:"{}"`
+	Networks map[string]ComposeNetwork `yaml:"networks,omitempty" json:"networks" default:"{}"`
 }
 
 // ComposeService service configuration of compose
@@ -185,7 +186,7 @@ type ComposeService struct {
 	// specifies the number of instances started
 	Replica int `yaml:"replica" json:"replica" validate:"min=0"`
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
-	Volumes []ServiceVolume `yaml:"volumes" json:"volumes"`
+	Volumes []*ServiceVolume `yaml:"volumes" json:"volumes"`
 	// specifies the network mode of the service
 	NetworkMode string `yaml:"network_mode" json:"network_mode" validate:"regexp=^(bridge|host|none)?$"`
 	// specifies the network that the service needs
@@ -199,7 +200,7 @@ type ComposeService struct {
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Command Command `yaml:"command" json:"command"`
 	// specifies the environment variable of the service program
-	Environment Environment `yaml:"environment" json:"environment" default:"{}"`
+	Environment *Environment `yaml:"environment" json:"environment" default:"{}"`
 	// specifies the restart policy of the instance of the service
 	Restart RestartPolicyInfo `yaml:"restart" json:"restart"`
 	// specifies resource limits for a single instance of the service,  only for Docker container mode
@@ -264,6 +265,40 @@ func (e *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (e *Environment) MarshalYAML() (interface{}, error) {
+	return e.Envs, nil
+}
+
+func (e *Environment) UnmarshalJSON(b []byte) error {
+	if e.Envs == nil {
+		e.Envs = make(map[string]string)
+	}
+	var envs interface{}
+	err := json.Unmarshal(b, &envs)
+	if err != nil {
+		return err
+	}
+	if envs == nil {
+		return nil
+	}
+	switch reflect.ValueOf(envs).Kind() {
+	case reflect.Slice:
+		for _, env := range envs.([]interface{}) {
+			envStr := env.(string)
+			es := strings.Split(envStr, "=")
+			if len(es) != 2 {
+				return fmt.Errorf("environment format error")
+			}
+			e.Envs[es[0]] = es[1]
+		}
+	case reflect.Map:
+		return json.Unmarshal(b, &e.Envs)
+	default:
+		return fmt.Errorf("failed to parse environment: unexpected type")
+	}
+	return nil
+}
+
 // ServiceVolume specific volume configuration of service
 type ServiceVolume struct {
 	// specifies type of volume
@@ -313,6 +348,15 @@ func (sv *ServiceVolume) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	return nil
 }
 
+// MarshalYAML customize ServiceVolume marshal
+func (sv *ServiceVolume) MarshalYAML() (interface{}, error) {
+	res := sv.Source + ":" + sv.Target
+	if sv.ReadOnly {
+		res += ":ro"
+	}
+	return res, nil
+}
+
 // Command command configuration of the service
 type Command struct {
 	Cmd []string `yaml:"cmd" json:"cmd" default:"[]"`
@@ -333,6 +377,25 @@ func (c *Command) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		c.Cmd = strings.Split(cmd.(string), " ")
 	case reflect.Slice:
 		return unmarshal(&c.Cmd)
+	}
+	return nil
+}
+
+//UnmarshalJSON customize Command unmarshal
+func (c *Command) UnmarshalJSON(b []byte) error {
+	if c.Cmd == nil {
+		c.Cmd = make([]string, 0)
+	}
+	var cmd interface{}
+	err := json.Unmarshal(b, &cmd)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(cmd).Kind() {
+	case reflect.String:
+		c.Cmd = strings.Split(cmd.(string), " ")
+	case reflect.Slice:
+		return json.Unmarshal(b, &c.Cmd)
 	}
 	return nil
 }
