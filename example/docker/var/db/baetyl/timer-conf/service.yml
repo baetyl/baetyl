@@ -7,8 +7,7 @@ timer:
   interval: 10s
 publish:
   topic: t
-  payload:
-    id: 1
+  payload: {\"timestamp\": {{.Time.TE}},\"temperature\": {{.Rand.RD}},\"humidity\": {{.Frand.FD}},\"example\": \"anything\"}
 logger:
   path: var/log/baetyl/service.log
   level: "debug"
