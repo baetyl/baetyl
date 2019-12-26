@@ -1,0 +1,11 @@
+version: v1
+services:
+  - name: test
+    image: cmd
+    replica: 1
+    mounts:
+      - name: cmd-bin
+        path: lib/baetyl/cmd
+volumes:
+  - name: cmd-bin
+    path: var/db/baetyl/cmd

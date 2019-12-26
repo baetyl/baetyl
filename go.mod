@@ -5,7 +5,7 @@ go 1.13
 replace (
 	github.com/256dpi/gomqtt => github.com/256dpi/gomqtt v0.12.2
 	github.com/docker/docker => github.com/docker/engine v0.0.0-20191007211215-3e077fc8667a
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.1-0.20190307181833-2b18fe1d885e
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc6.0.20190307181833-2b18fe1d885e
 )
 
 require (
@@ -38,7 +38,7 @@ require (
 	github.com/opencontainers/runc v0.0.0-00010101000000-000000000000 // indirect
 	github.com/opencontainers/runtime-spec v1.0.1 // indirect
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6
-	github.com/shirou/gopsutil v2.19.9+incompatible
+	github.com/shirou/gopsutil v2.19.11+incompatible
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
@@ -46,6 +46,8 @@ require (
 	go.etcd.io/bbolt v1.3.3 // indirect
 	gocv.io/x/gocv v0.21.0
 	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914
+	golang.org/x/sys v0.0.0-20191223224216-5a3cf8467b4e // indirect
+	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
