@@ -2,7 +2,7 @@ name: Go
 on: [push]
 jobs:
 
-  amd64:
+  amd64_:
     runs-on: ubuntu-18.04
     name: Build on amd64 
     steps:
