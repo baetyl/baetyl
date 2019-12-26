@@ -16,7 +16,7 @@ jobs:
             uname -a >test.txt
             ls
             go version
-            go build -o testx .
+            go build -ldflags '-linkmode external -w -extldflags "-static"' -o testx .
             echo ::set-output name=uname::$(uname -a)
             echo ::set-output name=goversion::$(go version)
       - name: Get the output
