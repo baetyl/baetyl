@@ -53,13 +53,13 @@ $(OUTPUT_PKGS):
 	@cd $(dir $@) && zip -q -r $(notdir $@) bin 
 
 $(OUTPUT_MODS):
-	@make -C $@
+	@${MAKE} -C $@
 
 .PHONY: image $(IMAGE_MODS)
 image: $(IMAGE_MODS) 
 
 $(IMAGE_MODS):
-	@make -C $(notdir $@) image
+	@${MAKE} -C $(notdir $@) image
 
 .PHONY: rebuild
 rebuild: clean all
@@ -77,7 +77,7 @@ install: all
 	@install -d -m 0755 ${PREFIX}/bin
 	@install -m 0755 $(OUTPUT)/$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))/baetyl/bin/baetyl ${PREFIX}/bin/
 ifeq ($(MODE),native)
-	@make $(NATIVE_MODS)
+	@${MAKE} $(NATIVE_MODS)
 endif
 	@tar cf - -C example/$(MODE) etc var | tar xvf - -C ${PREFIX}/
 
