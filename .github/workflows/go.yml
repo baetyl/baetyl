@@ -2,27 +2,29 @@ name: Go
 on: [push]
 jobs:
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  amd64:
+    runs-on: ubuntu-18.04
+    name: Build on amd64 
     steps:
-
-    - name: Set up Go 1.13
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.13
-      id: go
-
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v1
-
-    - name: Get dependencies
-      run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-
-    - name: Build
-      run: go build -v .
+      - uses: actions/checkout@v1.0.0
+      - uses: chensheng0/run-on-arch-action@master
+        id: runcmd
+        with:
+          architecture: amd64
+          distribution: ubuntu18.04
+          run: |
+            uname -a >test.txt
+            ls
+            go version
+            go build -o testx .
+            echo ::set-output name=uname::$(uname -a)
+            echo ::set-output name=goversion::$(go version)
+      - name: Get the output
+        run: |
+            echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
+            echo "The goversion output was ${{ steps.runcmd.outputs.goversion }}"
+      - name: Get the output
+        run: |
+            pwd
+            ls
+            cat test.txt
