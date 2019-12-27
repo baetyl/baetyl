@@ -15,6 +15,12 @@ type inspect struct {
 	OTA             map[string][]*record `json:"ota,omitempty"`
 }
 
+type EventLink struct {
+	Info  map[string]interface{}
+	Trace string
+	Type  string
+}
+
 func (a *agent) reporting() error {
 	t := time.NewTicker(a.cfg.Remote.Report.Interval)
 	a.report()
@@ -48,25 +54,66 @@ func (a *agent) report(pgs ...*progress) *inspect {
 			io.OTA[pg.event.Trace] = pg.records
 		}
 	}
-
-	payload, err := json.Marshal(io)
-	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to marshal stats")
-		return nil
-	}
-	a.ctx.Log().Debugln("stats", string(payload))
-	// TODO: connect with device management on cloud
-	// p := packet.NewPublish()
-	// p.Message.Topic = a.cfg.Remote.Report.Topic
-	// p.Message.Payload = payload
-	// err = a.mqtt.Send(p)
-	// if err != nil {
-	// 	a.ctx.Log().WithError(err).Warnf("failed to report stats by mqtt")
-	// }
-	err = a.send(payload)
-	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to report stats by https")
-		return nil
+	if a.link != nil {
+		currentInfo, err := a.getCurrentDeployInfo(io.Inspect)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
+			return nil
+		}
+		info := ForwardInfo{
+			Namespace:  a.node.Namespace,
+			Name:       a.node.Name,
+			Status:     io,
+			DeployInfo: currentInfo,
+		}
+		var res BackwardInfo
+		resData, err := a.sendData(info)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("failed to send report data by link")
+			return nil
+		}
+		err = json.Unmarshal(resData, &res)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned by link")
+			return nil
+		}
+		if len(res.Delta) != 0 {
+			le := &EventLink{
+				Trace: res.Response["trace"].(string),
+				Type:  res.Response["type"].(string),
+			}
+			le.Info = res.Delta
+			e := &Event{
+				Time:    time.Time{},
+				Type:    EventType(le.Type),
+				Content: le,
+			}
+			select {
+			case a.events <- e:
+			default:
+				a.ctx.Log().Warnf("discard event: %+v", *e)
+			}
+		}
+	} else {
+		payload, err := json.Marshal(io)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("failed to marshal stats")
+			return nil
+		}
+		a.ctx.Log().Debugln("stats", string(payload))
+		// TODO: connect with device management on cloud
+		// p := packet.NewPublish()
+		// p.Message.Topic = a.cfg.Remote.Report.Topic
+		// p.Message.Payload = payload
+		// err = a.mqtt.Send(p)
+		// if err != nil {
+		// 	a.ctx.Log().WithError(err).Warnf("failed to report stats by mqtt")
+		// }
+		err = a.send(payload)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("failed to report stats by https")
+			return nil
+		}
 	}
 	return io
 }

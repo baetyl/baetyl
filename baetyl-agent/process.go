@@ -17,7 +17,11 @@ func (a *agent) processing() error {
 		select {
 		case e := <-a.events:
 			a.cleaner.reset()
-			a.processEvent(e)
+			if a.link != nil {
+				a.processLinkEvent(e)
+			} else {
+				a.processEvent(e)
+			}
 		case <-a.tomb.Dying():
 			return nil
 		}
