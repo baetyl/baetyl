@@ -123,8 +123,6 @@ github.com/opencontainers/image-spec v1.0.1 h1:JMemWkRwHx4Zj+fVxWoMCFm/8sYGGrUVo
 github.com/opencontainers/image-spec v1.0.1/go.mod h1:BtxoFyWECRxE4U/7sNtV5W15zMzWCbyJoFRP3s7yZA0=
 github.com/opencontainers/runc v1.0.0-rc6.0.20190307181833-2b18fe1d885e h1:9wcty7nGPPNkY8/VsiZkjmMB8x7SydrklJE+vCr4uDg=
 github.com/opencontainers/runc v1.0.0-rc6.0.20190307181833-2b18fe1d885e/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
-github.com/opencontainers/runc v1.0.1-0.20190307181833-2b18fe1d885e h1:+uPGJuuDl61O9GKN/rLHkUCf597mpxmJI06RqMQX81A=
-github.com/opencontainers/runc v1.0.1-0.20190307181833-2b18fe1d885e/go.mod h1:qT5XzbpPznkRYVz/mWwUaVBUv2rmF59PVA73FjuZG0U=
 github.com/opencontainers/runtime-spec v1.0.1 h1:wY4pOY8fBdSIvs9+IDHC55thBuEulhzfSgKeC1yFvzQ=
 github.com/opencontainers/runtime-spec v1.0.1/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/C5hL+LL3ko9hs6T5lQ0=
 github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6 h1:lNCW6THrCKBiJBpz8kbVGjC7MgdCGKwuvBgc7LoD6sw=

@@ -13,6 +13,7 @@ GO_OS:=$(shell go env GOOS)
 GO_ARCH:=$(shell go env GOARCH)
 GO_ARM:=$(shell go env GOARM)
 GO_FLAGS?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.Revision=$(GIT_REV)' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
+GO_FLAGS_STATIC=-ldflags '-X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)" -linkmode external -w -extldflags "-static"'
 GO_TEST_FLAGS?=
 GO_TEST_PKGS?=$(shell go list ./... | grep -v baetyl-video-infer)
 
@@ -54,6 +55,15 @@ $(OUTPUT_PKGS):
 
 $(OUTPUT_MODS):
 	@${MAKE} -C $@
+
+.PHONY: build
+build: $(SRC_FILES)
+	@echo "BUILD baetyl"
+ifneq ($(GO_OS),darwin)
+	@CGO_ENABLED=1 go build -o baetyl $(GO_FLAGS_STATIC) .
+else
+	@CGO_ENABLED=1 go build -o baetyl $(GO_FLAGS) .
+endif
 
 .PHONY: image $(IMAGE_MODS)
 image: $(IMAGE_MODS) 
