@@ -75,7 +75,7 @@ func TestRun(t *testing.T) {
 		Ports:         []string{"12883:12883"},
 		Devices:       nil,
 		DependsOn:     nil,
-		Command:       baetyl.Command{},
+		Command:       &baetyl.Command{},
 		Environment:   &baetyl.Environment{},
 		Restart:       baetyl.RestartPolicyInfo{},
 		Resources:     baetyl.Resources{},

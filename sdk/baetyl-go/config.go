@@ -32,7 +32,7 @@ type RestartPolicyInfo struct {
 		Max int `yaml:"max" json:"max"`
 	} `yaml:"retry" json:"retry"`
 	Policy  string      `yaml:"policy" json:"policy" default:"always"`
-	Backoff BackoffInfo `yaml:"backoff,omitempty" json:"backoff"`
+	Backoff BackoffInfo `yaml:"backoff" json:"backoff"`
 }
 
 // BackoffInfo holds backoff value
@@ -162,76 +162,80 @@ func (sn *NetworksInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 // ComposeAppConfig application configuration of compose
 type ComposeAppConfig struct {
 	// specifies the version of compose file
-	Version string `yaml:"version" json:"version"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 	// specifies name of the application
-	Name string `yaml:"name" json:"name"`
+	Name string `yaml:"name,omitempty" json:"name,omitempty"`
 	// specifies the app version of the application configuration
-	AppVersion string `yaml:"app_version" json:"app_version"`
+	AppVersion string `yaml:"app_version,omitempty" json:"app_version,omitempty"`
 	// specifies the service information of the application
-	Services map[string]ComposeService `yaml:"services,omitempty" json:"services" default:"{}"`
+	Services map[string]ComposeService `yaml:"services,omitempty" json:"services,omitempty" default:"{}"`
 	// specifies the storage volume information of the application
-	Volumes map[string]ComposeVolume `yaml:"volumes,omitempty" json:"volumes" default:"{}"`
+	Volumes map[string]ComposeVolume `yaml:"volumes,omitempty" json:"volumes,omitempty" default:"{}"`
 	// specifies the network information of the application
-	Networks map[string]ComposeNetwork `yaml:"networks,omitempty" json:"networks" default:"{}"`
+	Networks map[string]ComposeNetwork `yaml:"networks,omitempty" json:"networks,omitempty" default:"{}"`
 }
 
 // ComposeService service configuration of compose
 type ComposeService struct {
 	// specifies the unique name of the service
-	ContainerName string `yaml:"container_name" json:"container_name"`
+	ContainerName string `yaml:"container_name,omitempty" json:"container_name,omitempty"`
 	// specifies the hostname of the service
-	Hostname string `yaml:"hostname" json:"hostname"`
+	Hostname string `yaml:"hostname,omitempty" json:"hostname,omitempty"`
 	// specifies the image of the service, usually using the Docker image name
-	Image string `yaml:"image" json:"image" validate:"nonzero"`
+	Image string `yaml:"image,omitempty" json:"image,omitempty" validate:"nonzero"`
 	// specifies the number of instances started
-	Replica int `yaml:"replica" json:"replica" validate:"min=0"`
+	Replica int `yaml:"replica,omitempty" json:"replica,omitempty" validate:"min=0"`
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
-	Volumes []*ServiceVolume `yaml:"volumes" json:"volumes"`
+	Volumes []*ServiceVolume `yaml:"volumes,omitempty" json:"volumes,omitempty"`
 	// specifies the network mode of the service
-	NetworkMode string `yaml:"network_mode" json:"network_mode" validate:"regexp=^(bridge|host|none)?$"`
+	NetworkMode string `yaml:"network_mode,omitempty" json:"network_mode,omitempty" validate:"regexp=^(bridge|host|none)?$"`
 	// specifies the network that the service needs
-	Networks NetworksInfo `yaml:"networks" json:"networks"`
+	Networks NetworksInfo `yaml:"networks,omitempty" json:"networks,omitempty"`
 	// specifies the port bindings which exposed by the service, only for Docker container mode
-	Ports []string `yaml:"ports" json:"ports" default:"[]"`
+	Ports []string `yaml:"ports,omitempty" json:"ports,omitempty" default:"[]"`
 	// specifies the device bindings which used by the service, only for Docker container mode
-	Devices []string `yaml:"devices" json:"devices" default:"[]"`
+	Devices []string `yaml:"devices,omitempty" json:"devices,omitempty" default:"[]"`
 	// specified other depended services
-	DependsOn []string `yaml:"depends_on" json:"depends_on" default:"[]"`
+	DependsOn []string `yaml:"depends_on,omitempty" json:"depends_on,omitempty" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
-	Command Command `yaml:"command" json:"command"`
+	Command *Command `yaml:"command,omitempty" json:"command,omitempty"`
 	// specifies the environment variable of the service program
-	Environment *Environment `yaml:"environment" json:"environment" default:"{}"`
+	Environment *Environment `yaml:"environment,omitempty" json:"environment,omitempty" default:"{}"`
 	// specifies the restart policy of the instance of the service
-	Restart RestartPolicyInfo `yaml:"restart" json:"restart"`
+	Restart RestartPolicyInfo `yaml:"restart,omitempty" json:"restart,omitempty"`
 	// specifies resource limits for a single instance of the service,  only for Docker container mode
-	Resources Resources `yaml:"resources" json:"resources"`
+	Resources Resources `yaml:"resources,omitempty" json:"resources,omitempty"`
 	// specifies runtime to use, only for Docker container mode
-	Runtime string `yaml:"runtime" json:"runtime"`
+	Runtime string `yaml:"runtime,omitempty" json:"runtime,omitempty"`
 }
 
 // ComposeVolume volume configuration of compose
 type ComposeVolume struct {
 	// specified driver for the storage volume
-	Driver string `yaml:"driver" json:"driver" default:"local"`
+	Driver string `yaml:"driver,omitempty" json:"driver,omitempty" default:"local"`
 	// specified driver options for the storage volume
-	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts" default:"{}"`
+	DriverOpts map[string]string `yaml:"driver_opts,omitempty" json:"driver_opts,omitempty" default:"{}"`
 	// specified labels for the storage volume
-	Labels map[string]string `yaml:"labels" json:"labels" default:"{}"`
+	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty" default:"{}"`
 }
 
 // ComposeNetwork network configuration
 type ComposeNetwork struct {
 	// specifies driver for network
-	Driver string `yaml:"driver" json:"driver" default:"bridge"`
+	Driver string `yaml:"driver,omitempty" json:"driver,omitempty" default:"bridge"`
 	// specified driver options for network
-	DriverOpts map[string]string `yaml:"driver_opts" json:"driver_opts" default:"{}"`
+	DriverOpts map[string]string `yaml:"driver_opts,omitempty" json:"driver_opts,omitempty" default:"{}"`
 	// specifies labels to add metadata
-	Labels map[string]string `yaml:"labels" json:"labels" default:"{}"`
+	Labels map[string]string `yaml:"labels,omitempty" json:"labels,omitempty" default:"{}"`
 }
 
 // Environment environment
 type Environment struct {
 	Envs map[string]string `yaml:"envs" json:"envs" default:"{}"`
+}
+
+func (e *Environment) MarshalYAML() (interface{}, error) {
+	return e.Envs, nil
 }
 
 // UnmarshalYAML customize unmarshal
@@ -263,10 +267,6 @@ func (e *Environment) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return fmt.Errorf("failed to parse environment: unexpected type")
 	}
 	return nil
-}
-
-func (e *Environment) MarshalYAML() (interface{}, error) {
-	return e.Envs, nil
 }
 
 func (e *Environment) UnmarshalJSON(b []byte) error {
@@ -302,13 +302,13 @@ func (e *Environment) UnmarshalJSON(b []byte) error {
 // ServiceVolume specific volume configuration of service
 type ServiceVolume struct {
 	// specifies type of volume
-	Type string `yaml:"type" json:"type" validate:"regexp=^(volume|bind)?$"`
+	Type string `yaml:"type,omitempty" json:"type,omitempty" validate:"regexp=^(volume|bind)?$"`
 	// specifies source of volume
-	Source string `yaml:"source" json:"source"`
+	Source string `yaml:"source,omitempty" json:"source,omitempty"`
 	// specifies target of volume
-	Target string `yaml:"target" json:"target"`
+	Target string `yaml:"target,omitempty" json:"target,omitempty"`
 	// specifies if the volume is read-only
-	ReadOnly bool `yaml:"read_only" json:"read_only"`
+	ReadOnly bool `yaml:"read_only,omitempty" json:"read_only,omitempty"`
 }
 
 // UnmarshalYAML customize ServiceVolume unmarshal
@@ -360,6 +360,10 @@ func (sv *ServiceVolume) MarshalYAML() (interface{}, error) {
 // Command command configuration of the service
 type Command struct {
 	Cmd []string `yaml:"cmd" json:"cmd" default:"[]"`
+}
+
+func (c *Command) MarshalYAML() (interface{}, error) {
+	return c.Cmd, nil
 }
 
 //UnmarshalYAML customize Command unmarshal

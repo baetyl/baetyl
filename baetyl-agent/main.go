@@ -12,7 +12,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 )
 
 // agent agent module
@@ -24,16 +23,14 @@ type agent struct {
 	// process
 	mqtt   *mqtt.Dispatcher
 	events chan *Event
-	infos  chan *BackwardInfo
 	// report
 	certSN  string
 	certKey []byte
 	http    *http.Client
 	link    *link.Client
 	// clean
-	cleaner         *cleaner
-	shadowName      string
-	shadowNamespace string
+	cleaner *cleaner
+	node    *node
 }
 
 func main() {
@@ -62,6 +59,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	}
 	sn := ""
 	key := []byte{}
+	var dispatcher *mqtt.Dispatcher
 	if cfg.Remote.MQTT != nil {
 		err = defaults(&cfg)
 		if err != nil {
@@ -75,39 +73,39 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		if err != nil {
 			return nil, err
 		}
+		dispatcher = mqtt.NewDispatcher(*cfg.Remote.MQTT, ctx.Log())
+	}
+	var linkCli *link.Client
+	var no *node
+	if cfg.Remote.Link != nil {
+		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
+		if err != nil {
+			return nil, err
+		}
+		name := os.Getenv(common.NodeName)
+		namespace := os.Getenv(common.NodeNamespace)
+		if name == "" || namespace == "" {
+			return nil, fmt.Errorf("can not report info by link without node name or namespace")
+		}
+		no = &node{
+			Name:      name,
+			Namespace: namespace,
+		}
 	}
 	a := &agent{
 		cfg:     cfg,
 		ctx:     ctx,
 		events:  make(chan *Event, 1),
-		infos:   make(chan *BackwardInfo, 1),
 		certSN:  sn,
 		certKey: key,
+		node:    no,
+		mqtt:    dispatcher,
+		link:    linkCli,
 		cleaner: newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
 	}
-
-	a.shadowName = os.Getenv(common.ShadowName)
-	a.shadowNamespace = os.Getenv(common.ShadowNamespace)
-	if cfg.Remote.Link != nil && (a.shadowName == "" || a.shadowNamespace == "") {
-		return nil, fmt.Errorf("can not report info without shadow name or namespace: %s", err.Error())
-	}
-
-	if cfg.Remote.HTTP != nil {
-		a.http, err = http.NewClient(*cfg.Remote.HTTP)
-	} else {
-		a.http, err = http.NewClient(http.ClientInfo{Timeout: 5 * time.Minute, KeepAlive: 10 * time.Minute})
-	}
+	a.http, err = http.NewClient(*cfg.Remote.HTTP)
 	if err != nil {
 		return nil, err
-	}
-	if cfg.Remote.MQTT != nil {
-		a.mqtt = mqtt.NewDispatcher(*cfg.Remote.MQTT, ctx.Log())
-	}
-	if cfg.Remote.Link != nil {
-		a.link, err = link.NewClient(*cfg.Remote.Link, nil)
-		if err != nil {
-			return nil, err
-		}
 	}
 	return a, nil
 }
@@ -118,27 +116,11 @@ func (a *agent) start(ctx baetyl.Context) error {
 		if err != nil {
 			return err
 		}
-		err = a.tomb.Go(a.processing)
-		if err != nil {
-			return err
-		}
 	}
-	if a.link != nil {
-		err := a.tomb.Go(a.linkProcess)
-		if err != nil {
-			return err
-		}
-	}
-	err := a.tomb.Go(a.reporting)
+	err := a.tomb.Go(a.reporting, a.processing)
 	if err != nil {
 		return err
 	}
-	//if a.link != nil {
-	//	err := a.tomb.Go(a.linkReporting)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
 	return nil
 }
 

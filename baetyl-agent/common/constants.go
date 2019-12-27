@@ -5,10 +5,11 @@ type Resource string
 const (
 	Deployment  Resource = "deployment"
 	Application Resource = "application"
-	ConfigMap   Resource = "configMap"
+	Config      Resource = "config"
 
-	ShadowName      string = "BAETYL_SHADOW_NAME"
-	ShadowNamespace string = "BAETYL_SHADOW_NAMESPACE"
+	NodeName      string = "BAETYL_NODE_NAME"
+	NodeNamespace string = "BAETYL_NODE_NAMESPACE"
+	NodeID        string = "BAETYL_NODE_ID"
 
 	// ResourceType resource type
 	ResourceType = "resourceType"

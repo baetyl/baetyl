@@ -17,33 +17,21 @@ import (
 	"time"
 )
 
-func (a *agent) linkProcess() error {
-	ol := newOTALog(a.cfg.OTA, a, nil, a.ctx.Log().WithField("agent", "otalog"))
-	if ol != nil {
-		ol.wait()
-	}
-	for {
-		select {
-		case info := <-a.infos:
-			a.processInfo(info)
-		case <-a.tomb.Dying():
-			return nil
-		}
-	}
-}
 
-func (a *agent) processInfo(info *BackwardInfo) {
-	a.cleaner.reset()
-	ol := newOTALog(a.cfg.OTA, a, &EventOTA{}, a.ctx.Log().WithField("agent", "otalog"))
+func (a *agent) processLinkEvent(e *Event) {
+	le := e.Content.(*EventLink)
+	a.ctx.Log().Infof("process ota: type=%s, trace=%s", le.Type, le.Trace)
+	ol := newOTALog(a.cfg.OTA, a, &EventOTA{Type:le.Type, Trace:le.Trace}, a.ctx.Log().WithField("agent", "otalog"))
 	defer ol.wait()
-	err := a.processLinkOTA(info)
+	err := a.processLinkOTA(le)
 	if err != nil {
-		ol.write(baetyl.OTAFailure, "failed to process ota event", err)
+		a.ctx.Log().WithError(err).Warnf("failed to process ota event")
+		ol.write(baetyl.OTAFailure, "failed to process link ota event", err)
 	}
 }
 
-func (a *agent) processLinkOTA(info *BackwardInfo) error {
-	d, ok := info.Delta["deployment"]
+func (a *agent) processLinkOTA(le *EventLink) error {
+	d, ok := le.Info["deployment"]
 	if !ok {
 		return fmt.Errorf("no deployment info in delta info")
 	}
@@ -75,7 +63,7 @@ func (a *agent) processLinkOTA(info *BackwardInfo) error {
 		if metaVersion == "" {
 			delete(metaData, name)
 		}
-		if version, ok := dep.Snapshot.ConfigMaps[name]; ok {
+		if version, ok := dep.Snapshot.Configs[name]; ok {
 			if metaVersion == version {
 				delete(metaData, name)
 			}
@@ -86,7 +74,7 @@ func (a *agent) processLinkOTA(info *BackwardInfo) error {
 	if err != nil {
 		return err
 	}
-	err = a.ctx.UpdateSystem("", "", hostDir)
+	err = a.ctx.UpdateSystem(le.Trace, le.Type, hostDir)
 	if err != nil {
 		return fmt.Errorf("failed to update system: %s", err.Error())
 	}
@@ -227,7 +215,7 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 		a.ctx.Log().WithError(err).Warnf("failed to write applicationt config into file (%s): %s", baetyl.AppConfFileName, err.Error())
 		return nil, ""
 	}
-	return deployConfig.MetaData, hostDir
+	return deployConfig.Metadata, hostDir
 }
 
 func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
@@ -245,8 +233,8 @@ func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
 
 func (a *agent) newRequest(resourceType, resourceName string) *ForwardInfo {
 	return &ForwardInfo{
-		Namespace: a.shadowNamespace,
-		Name:      a.shadowName,
+		Namespace: a.node.Namespace,
+		Name:      a.node.Name,
 		Request: map[string]string{
 			common.ResourceType: resourceType,
 			common.ResourceName: resourceName,
@@ -275,24 +263,23 @@ func (a *agent) sendData(request interface{}) ([]byte, error) {
 	return resMsg.Content, nil
 }
 
-func (a *agent) getCurrentDeployInfo() (map[string]string, error) {
+func (a *agent) getCurrentDeployInfo(inspect *baetyl.Inspect) (map[string]string, error) {
 	var info deployInfo
 	err := utils.LoadYAML(path.Join(baetyl.DefaultDBDir, "volumes", baetyl.AppConfFileName), &info)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]string{
-		info.Name: info.AppVersion,
+		info.Name: inspect.Software.ConfVersion,
 	}, nil
-}
-
-type configMap struct {
-	Name    string            `yaml:"name" json:"name"`
-	Data    map[string]string `yaml:"data" json:"data" default:"{}"`
-	Version string            `yaml:"version" json:"version"`
 }
 
 type deployInfo struct {
 	Name       string `yaml:"name" json:"name"`
 	AppVersion string `yaml:"app_version" json:"app_version"`
+}
+
+type node struct {
+	Name string
+	Namespace string
 }

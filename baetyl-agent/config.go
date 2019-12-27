@@ -79,7 +79,7 @@ type Snapshot struct {
 	Apps map[string]string `yaml:"apps" json:"apps" default:"{}"`
 	// key = unique name of the volume
 	// value = version of the volume
-	ConfigMaps map[string]string `yaml:"configMaps" json:"configMaps" default:"{}"`
+	Configs map[string]string `yaml:"configs" json:"configs" default:"{}"`
 }
 
 type ModuleConfig struct {

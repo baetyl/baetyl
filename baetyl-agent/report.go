@@ -15,6 +15,12 @@ type inspect struct {
 	OTA             map[string][]*record `json:"ota,omitempty"`
 }
 
+type EventLink struct {
+	Info  map[string]interface{}
+	Trace string
+	Type  string
+}
+
 func (a *agent) reporting() error {
 	t := time.NewTicker(a.cfg.Remote.Report.Interval)
 	a.report()
@@ -49,14 +55,14 @@ func (a *agent) report(pgs ...*progress) *inspect {
 		}
 	}
 	if a.link != nil {
-		currentInfo, err := a.getCurrentDeployInfo()
+		currentInfo, err := a.getCurrentDeployInfo(io.Inspect)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
 			return nil
 		}
 		info := ForwardInfo{
-			Namespace:  a.shadowNamespace,
-			Name:       a.shadowName,
+			Namespace:  a.node.Namespace,
+			Name:       a.node.Name,
 			Status:     io,
 			DeployInfo: currentInfo,
 		}
@@ -72,7 +78,21 @@ func (a *agent) report(pgs ...*progress) *inspect {
 			return nil
 		}
 		if len(res.Delta) != 0 {
-			a.infos <- &res
+			le := &EventLink{
+				Trace: res.Response["trace"].(string),
+				Type:  res.Response["type"].(string),
+			}
+			le.Info = res.Delta
+			e := &Event{
+				Time:    time.Time{},
+				Type:    EventType(le.Type),
+				Content: le,
+			}
+			select {
+			case a.events <- e:
+			default:
+				a.ctx.Log().Warnf("discard event: %+v", *e)
+			}
 		}
 	} else {
 		payload, err := json.Marshal(io)

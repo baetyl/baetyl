@@ -45,7 +45,7 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						ReadOnly: false,
 					},
 				},
-				Command: Command{
+				Command: &Command{
 					Cmd: []string{"-c", "conf/conf.yml"},
 				},
 				Environment: &Environment{
@@ -85,8 +85,8 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						Factor: 2,
 					},
 				},
-				Command: Command{
-					Cmd: []string{},
+				Command: &Command{
+					Cmd: []string{"/bin/sh"},
 				},
 			},
 		},
@@ -134,6 +134,7 @@ services:
         read_only: true
     environment:
       version: v2
+    command: '/bin/sh'
 
 networks:
   test-network:
@@ -170,6 +171,8 @@ services:
         readonly: true
     env:
       version: v2
+    args:
+      - '/bin/sh'
 
 networks:
   test-network:

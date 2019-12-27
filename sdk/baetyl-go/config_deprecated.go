@@ -80,7 +80,7 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 			Networks:    service.Networks,
 			Ports:       service.Ports,
 			Devices:     service.Devices,
-			Command: Command{
+			Command: &Command{
 				Cmd: service.Args,
 			},
 			Environment: &Environment{

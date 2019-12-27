@@ -13,7 +13,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/baetyl/baetyl-go v0.0.0-20191218020428-5414115311d0
+	github.com/baetyl/baetyl-go v0.0.6
 	github.com/containerd/containerd v1.3.0
 	github.com/creasty/defaults v1.3.0
 	github.com/deckarep/golang-set v1.7.1

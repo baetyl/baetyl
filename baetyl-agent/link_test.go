@@ -16,8 +16,8 @@ func TestGetVolumeVersion(t *testing.T) {
 }
 
 type TestApp struct {
-	AppName    string `yaml:"appName"`
-	AppVersion string `yaml:"appVersion"`
+	AppName    string `yaml:"appName,omitempty"`
+	AppVersion string `yaml:"appVersion,omitempty"`
 }
 
 func TestTransform(t *testing.T) {
