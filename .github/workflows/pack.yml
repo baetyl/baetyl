@@ -1,13 +1,14 @@
 name: test
-on: push
+on: 
+  push:
+    tags:
 jobs:
   amd64:
     name: build on amd64
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: get version
-        id: version
+      - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
           echo ::set-output name=revision::$(git rev-parse --short HEAD)
