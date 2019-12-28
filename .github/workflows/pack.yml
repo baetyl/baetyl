@@ -18,6 +18,8 @@ jobs:
             sed -i "s/@version@/1.0.2/g; s/@revision@/34iosg9/g" debian/changelog
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
+            ls 
+            ls ..
       - id: path
         run: echo ::set-output name=path::$(pwd)/baetyl
       - uses: actions/upload-artifact@v1
