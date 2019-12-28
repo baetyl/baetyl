@@ -6,23 +6,16 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - uses: baetyl/run-on-arch-action@master
-        with:
-          architecture: amd64
-          run: |
-            apt update
-            apt-get install -y dh-make dh-systemd
-            cp -r scripts/debian/ debian/
-            pwd
-            ls
-            ls 
-            ls ..
-      - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl-*
-      - uses: actions/upload-artifact@v1
-        with:
-          name: baetyl-amd64
-          path: ${{ steps.path.outputs.path }}
+      - name: version
+        id: version
+        run: |
+          echo ::set-output name=revision::$(git rev-parse --short HEAD)
+          echo ::set-output name=version::$(git tag --contains HEAD)
+      - name:
+        run: |
+          echo ${{ steps.version.output.revision }}
+          echo ${{ steps.version.output.version }}
+     
 
   # i386:
   #   name: build on i386
