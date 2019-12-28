@@ -1,5 +1,12 @@
-name: BUILD
-on: [push]
+name: BUILD_ALL_PLATFORMS
+on:
+  push:
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/README.md'
+      - '*'
+      - '!main.go'
 jobs:
   amd64:
     runs-on: ubuntu-18.04

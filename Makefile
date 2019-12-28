@@ -14,7 +14,7 @@ GO_ARCH:=$(shell go env GOARCH)
 GO_ARM:=$(shell go env GOARM)
 GO_FLAGS?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.Revision=$(GIT_REV)' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
 GO_FLAGS_STATIC=-ldflags '-X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)" -linkmode external -w -extldflags "-static"'
-GO_TEST_FLAGS?=
+GO_TEST_FLAGS?=-race -short -covermode=atomic -coverprofile=coverage.out
 GO_TEST_PKGS?=$(shell go list ./... | grep -v baetyl-video-infer)
 
 ifndef PLATFORMS
@@ -79,7 +79,7 @@ test:
 	@cd baetyl-function-node8 && npm install && cd -
 	@cd baetyl-function-python2 && pip install -r requirements.txt && cd -
 	@cd baetyl-function-python3 && pip3 install -r requirements.txt && cd -
-	@go test ${GO_TEST_FLAGS} -coverprofile=coverage.out ${GO_TEST_PKGS}
+	@go test ${GO_TEST_FLAGS} ${GO_TEST_PKGS}
 	@go tool cover -func=coverage.out | grep total
 
 .PHONY: install $(NATIVE_MODS)

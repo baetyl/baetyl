@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 8.5
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           pip2 install grpcio protobuf pyyaml gevent grpcio-tools
           pip3 install grpcio protobuf pyyaml
@@ -34,14 +34,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v1
 
-      - name: Run Unit tests.
-        run: make test GO_TEST_FLAGS=--race
-
-      # - name: Upload Coverage report to CodeCov
-      #   uses: codecov/codecov-action@v1
-      #   with:
-      #     token: ${{secrets.CODECOV_TOKEN}}
-      #     file: ./coverage.txt
+      - name: Run unit tests.
+        run: make test
+        
+      - name: Upload coverage to Codecov  
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out
+          fail_ci_if_error: true
 
   build:
     name: Build
