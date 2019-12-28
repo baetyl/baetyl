@@ -6,6 +6,11 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
+      - name: get version
+        id: version
+        run: |
+          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=revision::$(git rev-parse --short HEAD)
       - uses: baetyl/run-on-arch-action@master
         with:
           architecture: amd64
@@ -15,7 +20,7 @@ jobs:
             cp -r scripts/debian/ debian/
             pwd
             ls
-            sed -i "s/@version@/1.0.2/g; s/@revision@/34iosg9/g" debian/changelog
+            sed -i "s/@version@/${{ steps.version.output.version }}/g; s/@revision@/${{ steps.version.output.revision }}/g" debian/changelog
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
             ls 
