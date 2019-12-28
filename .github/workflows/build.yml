@@ -3,40 +3,35 @@ on: push
 
 jobs:
   test:
-    name: Test
+    name: build
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Python 2.7
+      - name: Setup Python 2.7
         uses: actions/setup-python@v1
         with:
           python-version: 2.7
-
-      - name: Set up Python 3.6
+      - name: Setup Python 3.6
         uses: actions/setup-python@v1
         with:
           python-version: 3.6
-
-      - name: Use Node.js 8.5
+      - name: Setup Node.js 8.5
         uses: actions/setup-node@v1
         with:
           node-version: 8.5
-
       - name: Install dependencies
         run: |
           pip2 install grpcio protobuf pyyaml gevent grpcio-tools
           pip3 install grpcio protobuf pyyaml
-
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v1
         with:
           go-version: 1.13
-
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v1
-
-      - name: Run unit tests.
+      - name: Run unittest
         run: make test
-        
+      - name: Build
+        run: make build
       - name: Upload coverage to Codecov  
         uses: codecov/codecov-action@v1
         with:
@@ -44,18 +39,4 @@ jobs:
           file: ./coverage.out
           fail_ci_if_error: true
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest 
-    needs: [test]
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.13
-
-      - name: Check out code
-        uses: actions/checkout@v1
-
-      - name: Build
-        run: make build
+      
