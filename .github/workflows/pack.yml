@@ -20,7 +20,11 @@ jobs:
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
             pwd
+            echo ${{ steps.version.outputs.version }}
+            echo 
+            ${{ steps.version.outputs.revision }}
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g" debian/changelog
+            cat debian/changelog
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
             ls 
