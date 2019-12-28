@@ -20,16 +20,13 @@ jobs:
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
             pwd
-            ls
-            echo ${{ steps.version.outputs.version }}
-            echo ${{ steps.version.outputs.revision }}
-            sed -i "s/@version@/${{ steps.version.output.version }}/g; s/@revision@/${{ steps.version.output.revision }}/g" debian/changelog
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g" debian/changelog
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
             ls 
             ls ..
       - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl-*
+        run: echo ::set-output name=path::$(pwd)/../
       - uses: actions/upload-artifact@v1
         with:
           name: baetyl-amd64
