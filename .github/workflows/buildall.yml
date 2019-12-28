@@ -4,8 +4,8 @@ on:
     - cron:  '6 21 * * *'
 jobs:
   amd64:
+    name: build on amd64
     runs-on: ubuntu-18.04
-    name: Build on amd64
     steps:
       - uses: actions/checkout@v1
       - uses: baetyl/run-on-arch-action@master
@@ -21,8 +21,8 @@ jobs:
           path: ${{ steps.path.outputs.path }}
 
   i386:
+    name: build on i386
     runs-on: ubuntu-18.04
-    name: Build on i386
     steps:
       - uses: actions/checkout@v1
       - uses: baetyl/run-on-arch-action@master
@@ -40,8 +40,8 @@ jobs:
           path: ${{ steps.path.outputs.path }}
 
   arm64:
+    name: build on arm64
     runs-on: ubuntu-18.04
-    name: Build on arm64
     steps:
       - uses: actions/checkout@v1
       - uses: baetyl/run-on-arch-action@master
@@ -58,8 +58,8 @@ jobs:
           path: ${{ steps.path.outputs.path }}
 
   armv7:
+    name: build on armv7
     runs-on: ubuntu-18.04
-    name: Build on armv7
     steps:
       - uses: actions/checkout@v1
       - uses: baetyl/run-on-arch-action@master
@@ -76,8 +76,8 @@ jobs:
           path: ${{ steps.path.outputs.path }}
 
   mac:
+    name: build on mac
     runs-on: macos-latest
-    name: Build on mac
     steps:
       - uses: actions/setup-go@v1
         with:
