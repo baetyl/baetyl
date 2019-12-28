@@ -9,12 +9,8 @@ jobs:
       - name: version
         id: version
         run: |
-          echo ::set-output name=revision::$(git rev-parse --short HEAD)
-          echo ::set-output name=version::$(git tag --contains HEAD)
-      - name:
-        run: |
-          echo ${{ steps.version.output.revision }}
-          echo ${{ steps.version.output.version }}
+          echo $(git rev-parse --short HEAD)
+          echo $(git tag --contains HEAD)
      
 
   # i386:
