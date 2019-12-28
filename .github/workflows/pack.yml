@@ -33,6 +33,99 @@ jobs:
         with:
           name: baetyl-amd64
           path: ${{ steps.path.outputs.path }}
+          
+  armv7:
+      name: build on armv7
+      runs-on: ubuntu-18.04
+      steps:
+        - uses: actions/checkout@v1
+        - id: version
+          run: |
+            echo ::set-output name=version::$(git tag --contains HEAD)
+            echo ::set-output name=revision::$(git rev-parse --short HEAD)
+        - uses: baetyl/run-on-arch-action@master
+          with:
+            architecture: armv7
+            run: |
+              apt update
+              apt-get install -y dh-make dh-systemd
+              cp -r scripts/debian/ debian/
+              echo ${{ steps.version.outputs.version }}
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+              cat debian/changelog
+              sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+              dpkg-buildpackage -b -d -uc -us -i
+              ls 
+              ls ..
+              cp ../baetyl_${{ steps.version.outputs.version }}-1_amd64.deb .
+        - id: path
+          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_amd64.deb
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-armv7
+            path: ${{ steps.path.outputs.path }}
+  
+  i386:
+    name: build on i386
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=revision::$(git rev-parse --short HEAD)
+      - uses: baetyl/run-on-arch-action@master
+        with:
+          architecture: i386
+          run: |
+            apt update
+            apt-get install -y dh-make dh-systemd
+            cp -r scripts/debian/ debian/
+            echo ${{ steps.version.outputs.version }}
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+            cat debian/changelog
+            sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+            dpkg-buildpackage -b -d -uc -us -i
+            ls 
+            ls ..
+            cp ../baetyl_${{ steps.version.outputs.version }}-1_amd64.deb .
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_amd64.deb
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-i386
+          path: ${{ steps.path.outputs.path }}
+          
+  arm64:
+      name: build on arm64
+      runs-on: ubuntu-18.04
+      steps:
+        - uses: actions/checkout@v1
+        - id: version
+          run: |
+            echo ::set-output name=version::$(git tag --contains HEAD)
+            echo ::set-output name=revision::$(git rev-parse --short HEAD)
+        - uses: baetyl/run-on-arch-action@master
+          with:
+            architecture: arm64
+            run: |
+              apt update
+              apt-get install -y dh-make dh-systemd
+              cp -r scripts/debian/ debian/
+              echo ${{ steps.version.outputs.version }}
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+              cat debian/changelog
+              sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+              dpkg-buildpackage -b -d -uc -us -i
+              ls 
+              ls ..
+              cp ../baetyl_${{ steps.version.outputs.version }}-1_amd64.deb .
+        - id: path
+          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_amd64.deb
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-arm64
+            path: ${{ steps.path.outputs.path }}
 
   # i386:
   #   name: build on i386
