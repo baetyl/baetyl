@@ -1,4 +1,4 @@
-name: pack
+name: test
 on: push
 jobs:
   amd64:
