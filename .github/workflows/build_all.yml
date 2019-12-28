@@ -1,4 +1,4 @@
-name: BUILD_ALL_PLATFORMS
+name: build_all
 on:
   push:
     paths-ignore:
