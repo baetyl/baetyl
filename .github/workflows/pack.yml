@@ -26,8 +26,9 @@ jobs:
             dpkg-buildpackage -b -d -uc -us -i
             ls 
             ls ..
+            cp ../baetyl_${{ steps.version.outputs.version }}-1_amd64.deb .
       - id: path
-        run: echo ::set-output name=path::$(pwd)/../baetyl_${{ steps.version.outputs.version }}-1_amd64.deb
+        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_amd64.deb
       - uses: actions/upload-artifact@v1
         with:
           name: baetyl-amd64
