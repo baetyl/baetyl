@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 name: build
-=======
-name: build_test
->>>>>>> a80d94dfb1b694f32d8d921f9824c3fa46dd9d1e
 on: push
 
 jobs:
