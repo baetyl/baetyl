@@ -1,5 +1,5 @@
-name: build_test
-on: push
+name: ci
+on: [pull_request]
 
 jobs:
   test:
@@ -36,13 +36,6 @@ jobs:
 
       - name: Run unit tests.
         run: make test
-        
-      - name: Upload coverage to Codecov  
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.out
-          fail_ci_if_error: true
 
   build:
     name: Build

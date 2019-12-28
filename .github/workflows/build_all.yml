@@ -1,12 +1,7 @@
 name: build_all
 on:
-  push:
-    paths-ignore:
-      - '.github/**'
-      - 'docs/**'
-      - '**/README.md'
-      - '*'
-      - '!main.go'
+  schedule:
+    - cron:  '6 21 * * *'
 jobs:
   amd64:
     runs-on: ubuntu-18.04
