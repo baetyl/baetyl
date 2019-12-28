@@ -1,4 +1,4 @@
-name: build_all
+name: buildall
 on:
   schedule:
     - cron:  '6 21 * * *'
