@@ -1,99 +1,61 @@
-name: BUILD_ALL_PLATFORMS
-on:
-  push:
-    paths-ignore:
-      - '.github/**'
-      - 'docs/**'
-      - '**/README.md'
-      - '*'
-      - '!main.go'
+name: build_test
+on: push
+
 jobs:
-  amd64:
-    runs-on: ubuntu-18.04
-    name: Build on amd64
+  test:
+    name: Test
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: baetyl/run-on-arch-action@master
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v1
         with:
-          architecture: amd64
-          run: |
-            make build
-      - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl
-      - uses: actions/upload-artifact@v1
-        with:
-          name: baetyl-amd64
-          path: ${{ steps.path.outputs.path }}
+          python-version: 2.7
 
-  i386:
-    runs-on: ubuntu-18.04
-    name: Build on i386
-    steps:
-      - uses: actions/checkout@v1
-      - uses: baetyl/run-on-arch-action@master
-        id: build
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v1
         with:
-          architecture: i386
-          distribution: ubuntu18.04
-          run: |
-            make build
-      - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl
-      - uses: actions/upload-artifact@v1
-        with:
-          name: baetyl-i386
-          path: ${{ steps.path.outputs.path }}
+          python-version: 3.6
 
-  arm64:
-    runs-on: ubuntu-18.04
-    name: Build on arm64
-    steps:
-      - uses: actions/checkout@v1
-      - uses: baetyl/run-on-arch-action@master
-        id: build
+      - name: Use Node.js 8.5
+        uses: actions/setup-node@v1
         with:
-          architecture: arm64
-          run: |
-            make build
-      - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl
-      - uses: actions/upload-artifact@v1
-        with:
-          name: baetyl-arm64
-          path: ${{ steps.path.outputs.path }}
+          node-version: 8.5
 
-  armv7:
-    runs-on: ubuntu-18.04
-    name: Build on armv7
-    steps:
-      - uses: actions/checkout@v1
-      - uses: baetyl/run-on-arch-action@master
-        id: build
-        with:
-          architecture: armv7
-          run: |
-            make build
-      - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl
-      - uses: actions/upload-artifact@v1
-        with:
-          name: baetyl-armv7
-          path: ${{ steps.path.outputs.path }}
+      - name: Install dependencies
+        run: |
+          pip2 install grpcio protobuf pyyaml gevent grpcio-tools
+          pip3 install grpcio protobuf pyyaml
 
-  mac:
-    runs-on: macos-latest
-    name: Build on mac
-    steps:
-      - uses: actions/setup-go@v1
+      - name: Set up Go
+        uses: actions/setup-go@v1
         with:
           go-version: 1.13
-      - uses: actions/checkout@v1
-      - name: build baetyl
-        run: |
-          make build
-      - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl
-      - uses: actions/upload-artifact@v1
+
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Run unit tests.
+        run: make test
+        
+      - name: Upload coverage to Codecov  
+        uses: codecov/codecov-action@v1
         with:
-          name: baetyl-darwin
-          path: ${{ steps.path.outputs.path }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.out
+          fail_ci_if_error: true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest 
+    needs: [test]
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Build
+        run: make build
