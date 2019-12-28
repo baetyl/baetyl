@@ -92,8 +92,6 @@ func (a *agent) ProcessPublish(p *packet.Publish) error {
 	select {
 	case a.events <- e:
 	case <-a.tomb.Dying():
-	default:
-		a.ctx.Log().Warnf("discard event: %+v", *e)
 	}
 	return nil
 }
