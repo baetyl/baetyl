@@ -11,6 +11,7 @@ jobs:
       - uses: baetyl/run-on-arch-action@master
         with:
           architecture: amd64
+          distribution: stretch
           run: |
             make build
       - id: path
@@ -29,7 +30,7 @@ jobs:
         id: build
         with:
           architecture: i386
-          distribution: ubuntu18.04
+          distribution: stretch
           run: |
             make build
       - id: path
@@ -48,6 +49,7 @@ jobs:
         id: build
         with:
           architecture: arm64
+          distribution: stretch
           run: |
             make build
       - id: path
@@ -66,6 +68,7 @@ jobs:
         id: build
         with:
           architecture: armv7
+          distribution: stretch
           run: |
             make build
       - id: path
