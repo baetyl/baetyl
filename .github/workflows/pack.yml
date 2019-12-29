@@ -11,9 +11,10 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
-      - uses: baetyl/run-on-arch-action@master
+      - uses: chensheng0/run-on-arch-action@master
         with:
           architecture: amd64
+          distribution: stretch
           run: |
             apt update
             apt-get install -y dh-make dh-systemd
@@ -37,9 +38,10 @@ jobs:
         - id: version
           run: |
             echo ::set-output name=version::$(git tag --contains HEAD)
-        - uses: baetyl/run-on-arch-action@master
+        - uses: chenshneg0/run-on-arch-action@master
           with:
             architecture: armv7
+            distribution: stretch
             run: |
               apt update
               apt-get install -y dh-make dh-systemd
@@ -63,9 +65,10 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
-      - uses: baetyl/run-on-arch-action@master
+      - uses: chensheng0/run-on-arch-action@master
         with:
           architecture: i386
+          distribution: stretch
           run: |
             apt update
             apt-get install -y dh-make dh-systemd
@@ -89,9 +92,10 @@ jobs:
         - id: version
           run: |
             echo ::set-output name=version::$(git tag --contains HEAD)
-        - uses: baetyl/run-on-arch-action@master
+        - uses: chensheng0/run-on-arch-action@master
           with:
             architecture: arm64
+            distribution: stretch
             run: |
               apt update
               apt-get install -y dh-make dh-systemd
