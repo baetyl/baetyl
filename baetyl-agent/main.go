@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
+	"github.com/baetyl/baetyl/baetyl-agent/server"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/protocol/mqtt"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -16,7 +18,7 @@ import (
 
 // agent agent module
 type agent struct {
-	cfg  Config
+	cfg  config.Config
 	ctx  baetyl.Context
 	tomb utils.Tomb
 
@@ -28,6 +30,9 @@ type agent struct {
 	certKey []byte
 	http    *http.Client
 	link    *link.Client
+	// active
+	svr *server.Server
+	act bool
 	// clean
 	cleaner *cleaner
 	node    *node
@@ -42,9 +47,12 @@ func main() {
 			return err
 		}
 		defer a.close()
-		err = a.start(ctx)
+		err = a.start()
 		if err != nil {
 			return err
+		}
+		if a.svr != nil {
+			defer a.svr.Close()
 		}
 		ctx.Wait()
 		return nil
@@ -52,7 +60,7 @@ func main() {
 }
 
 func newAgent(ctx baetyl.Context) (*agent, error) {
-	var cfg Config
+	var cfg config.Config
 	err := ctx.LoadConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -77,6 +85,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	}
 	var linkCli *link.Client
 	var no *node
+	act := false
 	if cfg.Remote.Link != nil {
 		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
 		if err != nil {
@@ -85,11 +94,17 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		name := os.Getenv(common.NodeName)
 		namespace := os.Getenv(common.NodeNamespace)
 		if name == "" || namespace == "" {
-			return nil, fmt.Errorf("can not report info by link without node name or namespace")
-		}
-		no = &node{
-			Name:      name,
-			Namespace: namespace,
+			// active
+			if len(cfg.Active.Fingerprints) > 0 {
+				act = true
+			} else {
+				return nil, fmt.Errorf("can not report info by link without node name or namespace")
+			}
+		} else {
+			no = &node{
+				Name:      name,
+				Namespace: namespace,
+			}
 		}
 	}
 	a := &agent{
@@ -99,6 +114,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		certSN:  sn,
 		certKey: key,
 		node:    no,
+		act:     act,
 		mqtt:    dispatcher,
 		link:    linkCli,
 		cleaner: newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
@@ -110,7 +126,20 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	return a, nil
 }
 
-func (a *agent) start(ctx baetyl.Context) error {
+func (a *agent) start() error {
+	// for activation
+	if a.act {
+		if a.cfg.Server.Listen == "" {
+			// auto active
+
+		} else {
+			svr, err := server.NewServer(a.cfg.Server, a.cfg.Attributes, a.act, a.ctx.Log().WithField("local", "server"))
+			if err != nil {
+				return err
+			}
+			svr.Start()
+		}
+	}
 	if a.mqtt != nil {
 		err := a.mqtt.Start(a)
 		if err != nil {
@@ -143,7 +172,7 @@ func (a *agent) close() {
 	}
 }
 
-func defaults(c *Config) error {
+func defaults(c *config.Config) error {
 	if c.Remote.MQTT.Address == "" {
 		return fmt.Errorf("remote mqtt address missing")
 	}

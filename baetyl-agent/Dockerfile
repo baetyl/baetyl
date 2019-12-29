@@ -5,4 +5,5 @@ FROM --platform=$TARGETPLATFORM busybox
 ARG TARGETPLATFORM
 ARG MODULE=baetyl-agent
 COPY $TARGETPLATFORM/$MODULE/bin/$MODULE /bin/
+COPY $TARGETPLATFORM/$MODULE/server/*.template /var/lib/baetyl/page/
 ENTRYPOINT ["baetyl-agent"]
