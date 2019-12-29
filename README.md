@@ -2,7 +2,12 @@
 
 [![Baetyl-logo](./docs/images/logo/logo-with-name.png)](https://baetyl.io)
 
-![Travis (.org) branch](https://img.shields.io/travis/baetyl/baetyl/master) [![Go Report Card](https://goreportcard.com/badge/github.com/baetyl/baetyl)](https://goreportcard.com/report/github.com/baetyl/baetyl) [![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&label=release)](https://github.com/baetyl/baetyl/releases) [![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) [![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
+[![build](https://github.com/baetyl/baetyl/workflows/build/badge.svg)](https://github.com/baetyl/baetyl/actions?query=workflow%3Abuild)
+[![codecov](https://codecov.io/gh/baetyl/baetyl/branch/master/graph/badge.svg)](https://codecov.io/gh/baetyl/baetyl)
+[![Go Report Card](https://goreportcard.com/badge/github.com/baetyl/baetyl)](https://goreportcard.com/report/github.com/baetyl/baetyl) 
+[![Release](https://img.shields.io/github/v/release/baetyl/baetyl?color=blue&label=release)](https://github.com/baetyl/baetyl/releases) 
+[![License](https://img.shields.io/github/license/baetyl/baetyl?color=blue)](LICENSE) 
+[![Stars](https://img.shields.io/github/stars/baetyl/baetyl?style=social)](Stars)
 
 [![Documentation in English](https://img.shields.io/badge/docs%20in%20English-latest-brightgreen)](https://docs.baetyl.io/en/latest/) [![中文文档](https://img.shields.io/badge/%E4%B8%AD%E6%96%87%E6%96%87%E6%A1%A3-%E6%9C%80%E6%96%B0-brightgreen)](https://docs.baetyl.io/zh_CN/latest/)
 
