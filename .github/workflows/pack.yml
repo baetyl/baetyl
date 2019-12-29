@@ -166,20 +166,44 @@ jobs:
         with:
           name: baetyl-darwin
           path: ${{ steps.path.outputs.path }}
-
-#   pack:
-#       name: pack
-#       runs-on: ubuntu-18.04
-#       steps:
-#         - name: repo
-#           run: |
-#             sudo apt update
-#             sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
-#             echo "${{ secrets.KEY_PRIVATE }}" >private.key
-#             sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
-#             ./scripts/repo.sh
-            
-#         - uses: actions/upload-artifact@v1
-#           with:
-#             name: baetyl-centos
-#             path: ${{ steps.path.outputs.path }}
+  pack:
+    runs-on: ubuntu-16.04
+    needs: [amd64, armv7, i386, arm64, centos, mac]
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-amd64
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-armv7
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-i386
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-arm64
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-centos
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-mac
+      - name: ls pwd
+        run: ls
+      - id: version
+        run: |
+          echo ::set-output name=version::$(git tag --contains HEAD)
+      - uses: actions/checkout@v1
+      - name: repo
+        run: |
+          sudo apt update
+          sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
+          echo "${{ secrets.KEY_PRIVATE }}" >private.key
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
+          chmod +x scripts/repo.sh
+          sudo scripts/repo.sh
+          ls ~/.aptly/public
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-repo
+          path: /home/runner/.aptly/public/
