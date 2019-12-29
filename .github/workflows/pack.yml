@@ -170,30 +170,39 @@ jobs:
     runs-on: ubuntu-16.04
     needs: [amd64, i386, centos, mac]
     steps:
+      - uses: actions/checkout@v1
+      - id: path
+        run: echo ::set-output name=path::$(pwd)
+      - name: test
+        run: pwd
       - uses: actions/download-artifact@v1
         with:
           name: baetyl-amd64
+          path: ${{ steps.path.outputs.path }}
 #       - uses: actions/download-artifact@v1
 #         with:
 #           name: baetyl-armv7
       - uses: actions/download-artifact@v1
         with:
           name: baetyl-i386
+          path: ${{ steps.path.outputs.path }}
 #       - uses: actions/download-artifact@v1
 #         with:
 #           name: baetyl-arm64
       - uses: actions/download-artifact@v1
         with:
           name: baetyl-centos
+          path: ${{ steps.path.outputs.path }}
       - uses: actions/download-artifact@v1
         with:
           name: baetyl-darwin
+          path: ${{ steps.path.outputs.path }}
       - name: ls pwd
         run: ls
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
-      - uses: actions/checkout@v1
+      
       - name: repo
         run: |
           sudo apt update
