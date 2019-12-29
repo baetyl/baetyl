@@ -23,4 +23,4 @@ echo "yes" | setsid rpm \
 
 cp ~/rpmbuild/RPMS/x86_64/$(ls ~/rpmbuild/RPMS/x86_64/) .
 
-exit 0
+exit $?
