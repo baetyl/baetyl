@@ -132,11 +132,11 @@ jobs:
             tree baetyl-${{ steps.version.outputs.version }}
             tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
             ls
-#         - name: centos pack
-#           uses: docker://centos:7
-#           with:
-#             entrypoint: /bin/bash
-#             args: "pack.sh"
+        - name: centos pack
+          uses: docker://centos:7
+          with:
+            entrypoint: /bin/bash
+            args: "scripts/centos/pack.sh"
 #         - id: path
 #           run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_arm64.deb
 #         - uses: actions/upload-artifact@v1
