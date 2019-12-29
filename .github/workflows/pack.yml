@@ -2,7 +2,6 @@ name: test-pack
 on: 
   push:
     tags:
-      - (\d.)+
 jobs:
   amd64:
     name: build on amd64
