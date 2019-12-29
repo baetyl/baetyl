@@ -13,7 +13,7 @@ GO_OS:=$(shell go env GOOS)
 GO_ARCH:=$(shell go env GOARCH)
 GO_ARM:=$(shell go env GOARM)
 GO_FLAGS?=-ldflags "-X 'github.com/baetyl/baetyl/cmd.Revision=$(GIT_REV)' -X 'github.com/baetyl/baetyl/cmd.Version=$(VERSION)'"
-GO_FLAGS_STATIC=-ldflags '-X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)" -linkmode external -w -extldflags "-static"'
+GO_FLAGS_STATIC=-ldflags '-X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)"'
 GO_TEST_FLAGS?=-race -short -covermode=atomic -coverprofile=coverage.out
 GO_TEST_PKGS?=$(shell go list ./... | grep -v baetyl-video-infer)
 
