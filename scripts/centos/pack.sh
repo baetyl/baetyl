@@ -23,11 +23,4 @@ echo "yes" | setsid rpm \
 
 cp ~/rpmbuild/RPMS/x86_64/$(ls ~/rpmbuild/RPMS/x86_64/) .
 
-rpm --checksig ~/rpmbuild/RPMS/x86_64/$(ls ~/rpmbuild/RPMS/x86_64/)
-
-curl -O https://baetyl-repo-pre.gz.bcebos.com/linux/centos/7/x86_64/RPMS/baetyl-0.1.6-1.el7.x86_64.rpm
-
-rpm --checksig baetyl-0.1.6-1.el7.x86_64.rpm
-
 exit 0
-
