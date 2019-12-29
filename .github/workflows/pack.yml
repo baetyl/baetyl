@@ -112,44 +112,61 @@ jobs:
             path: ${{ steps.path.outputs.path }}
 
   centos:
-      name: build on centos
-      runs-on: ubuntu-18.04
-      steps:
-        - name: Setup Go
-          uses: actions/setup-go@v1
-          with:
-            go-version: 1.13
-        - name: Checkout code
-          uses: actions/checkout@v1
-        - name: Build
-          run: make build
-        - id: version
-          run: |
-            echo ::set-output name=version::$(git tag --contains HEAD)
-        - name: prepare
-          run: |
-            sudo apt update && sudo apt install -y tree
-            echo "${{ secrets.KEY_PUBLIC }}" >public.key
-            echo "${{ secrets.KEY_PRIVATE }}" >private.key
-            sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
-            sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
-            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
-            mkdir baetyl-${{ steps.version.outputs.version }}
-            cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
-            tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
-            
-        - name: centos pack
-          uses: docker://centos:7
-          with:
-            entrypoint: /bin/bash
-            args: "scripts/centos/pack.sh"
-        - id: path
-          run: echo ::set-output name=path::$(pwd)/$(ls *.rpm)
-        - uses: actions/upload-artifact@v1
-          with:
-            name: baetyl-centos
-            path: ${{ steps.path.outputs.path }}
-      
+    name: build on centos
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: Build
+        run: make build
+      - id: version
+        run: |
+          echo ::set-output name=version::$(git tag --contains HEAD)
+      - name: prepare
+        run: |
+          sudo apt update && sudo apt install -y tree
+          echo "${{ secrets.KEY_PUBLIC }}" >public.key
+          echo "${{ secrets.KEY_PRIVATE }}" >private.key
+          sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
+          mkdir baetyl-${{ steps.version.outputs.version }}
+          cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
+          tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
+      - name: centos pack
+        uses: docker://centos:7
+        with:
+          entrypoint: /bin/bash
+          args: "scripts/centos/pack.sh"
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/$(ls *.rpm)
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-centos
+          path: ${{ steps.path.outputs.path }}
+
+  mac:
+    name: build on mac
+    runs-on: macos-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - uses: actions/checkout@v1
+      - name: build baetyl
+        run: |
+          make build
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-darwin
+          path: ${{ steps.path.outputs.path }}
+
 #   pack:
 #       name: pack
 #       runs-on: ubuntu-18.04
