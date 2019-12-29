@@ -124,7 +124,7 @@ jobs:
             echo ::set-output name=version::$(git tag --contains HEAD)
         - name: prepare
           run: |
-            yum update && yum install -y tree
+            apt update && apt install -y tree
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
             mkdir baetyl-${{ steps.version.outputs.version }}
