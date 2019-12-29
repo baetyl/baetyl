@@ -125,8 +125,8 @@ jobs:
         - name: prepare
           run: |
             sudo apt update && sudo apt install -y tree
-            echo ${{ secrets.KEY_PUBLIC }} >public.key
-            echo ${{ secrets.KEY_PRIVATE }} >private.key
+            echo "${{ secrets.KEY_PUBLIC }}" >public.key
+            echo "${{ secrets.KEY_PRIVATE }}" >private.key
             cat public.key
             cat private.key
             
