@@ -90,8 +90,6 @@ func (a *agent) report(pgs ...*progress) *inspect {
 			}
 			select {
 			case a.events <- e:
-			default:
-				a.ctx.Log().Warnf("discard event: %+v", *e)
 			}
 		}
 	} else {

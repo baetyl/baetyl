@@ -17,11 +17,10 @@ import (
 	"time"
 )
 
-
 func (a *agent) processLinkEvent(e *Event) {
 	le := e.Content.(*EventLink)
 	a.ctx.Log().Infof("process ota: type=%s, trace=%s", le.Type, le.Trace)
-	ol := newOTALog(a.cfg.OTA, a, &EventOTA{Type:le.Type, Trace:le.Trace}, a.ctx.Log().WithField("agent", "otalog"))
+	ol := newOTALog(a.cfg.OTA, a, &EventOTA{Type: le.Type, Trace: le.Trace}, a.ctx.Log().WithField("agent", "otalog"))
 	defer ol.wait()
 	err := a.processLinkOTA(le)
 	if err != nil {
@@ -53,6 +52,10 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	if err != nil {
 		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
 	}
+	oldVolumeInfos, err := getCurrentVolumeInfo()
+	if err != nil {
+		return fmt.Errorf("failed to get old volume info: %s", err.Error())
+	}
 	metaData, hostDir := a.processApplication(dep.Snapshot.Apps)
 
 	// avoid duplicated resource synchronization
@@ -63,8 +66,8 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 		if metaVersion == "" {
 			delete(metaData, name)
 		}
-		if version, ok := dep.Snapshot.Configs[name]; ok {
-			if metaVersion == version {
+		if v, ok := oldVolumeInfos[name]; ok {
+			if metaVersion == v.Meta.Version {
 				delete(metaData, name)
 			}
 		}
@@ -242,12 +245,6 @@ func (a *agent) newRequest(resourceType, resourceName string) *ForwardInfo {
 	}
 }
 
-func getVolumeVersion(volumePath string) string {
-	volumePath = strings.TrimRight(volumePath, "/")
-	_, version := path.Split(volumePath)
-	return version
-}
-
 func (a *agent) sendData(request interface{}) ([]byte, error) {
 	content, err := json.Marshal(request)
 	if err != nil {
@@ -269,9 +266,40 @@ func (a *agent) getCurrentDeployInfo(inspect *baetyl.Inspect) (map[string]string
 	if err != nil {
 		return nil, err
 	}
+	if inspect.Software.ConfVersion == "" {
+		return nil, fmt.Errorf("app version is empty")
+	}
 	return map[string]string{
 		info.Name: inspect.Software.ConfVersion,
 	}, nil
+}
+
+func getCurrentVolumeInfo() (map[string]*baetyl.VolumeInfo, error) {
+	var cfg baetyl.ComposeAppConfig
+	err := utils.LoadYAML(path.Join(baetyl.DefaultDBDir, "volumes", baetyl.AppConfFileName), &cfg)
+	if err != nil {
+		return nil, err
+	}
+	volumes := map[string]*baetyl.VolumeInfo{}
+	for _, svc := range cfg.Services {
+		vs := svc.Volumes
+		for _, v := range vs {
+			volume := &baetyl.VolumeInfo{}
+			vp := v.Source
+			p, err := filepath.Rel(baetyl.DefaultDBDir, vp)
+			if err != nil {
+				continue
+			}
+			ps := strings.Split(p, string(filepath.Separator))
+			volume.Name = ps[0]
+			volume.Path = vp
+			if len(ps) > 1 {
+				volume.Meta.Version = ps[1]
+			}
+			volumes[volume.Name] = volume
+		}
+	}
+	return volumes, nil
 }
 
 type deployInfo struct {
@@ -280,6 +308,6 @@ type deployInfo struct {
 }
 
 type node struct {
-	Name string
+	Name      string
 	Namespace string
 }
