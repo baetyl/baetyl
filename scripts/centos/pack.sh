@@ -12,5 +12,5 @@ cp scripts/centos/baetyl.spec ~/rpmbuild/SPECS/baetyl.spec
 
 rpmbuild -v -bb --clean ~/rpmbuild/SPECS/baetyl.spec
 
-cp $(ls ~/rpmbuild/RPMS/x86_64/) .
+cp ~/rpmbuild/RPMS/x86_64/$(ls ~/rpmbuild/RPMS/x86_64/) .
 
