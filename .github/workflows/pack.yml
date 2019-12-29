@@ -138,9 +138,9 @@ jobs:
           with:
             entrypoint: /bin/bash
             args: "scripts/centos/pack.sh"
-#         - id: path
-#           run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_arm64.deb
-#         - uses: actions/upload-artifact@v1
-#           with:
-#             name: baetyl-arm64
-#             path: ${{ steps.path.outputs.path }}
+        - id: path
+          run: echo ::set-output name=path::$(pwd)/$(ls *.rpm)
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-centos
+            path: ${{ steps.path.outputs.path }}
