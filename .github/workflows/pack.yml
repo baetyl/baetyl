@@ -137,14 +137,14 @@ jobs:
             tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
             ls
             
-#         - name: centos pack
-#           uses: docker://centos:7
-#           with:
-#             entrypoint: /bin/bash
-#             args: "scripts/centos/pack.sh"
-#         - id: path
-#           run: echo ::set-output name=path::$(pwd)/$(ls *.rpm)
-#         - uses: actions/upload-artifact@v1
-#           with:
-#             name: baetyl-centos
-#             path: ${{ steps.path.outputs.path }}
+        - name: centos pack
+          uses: docker://centos:7
+          with:
+            entrypoint: /bin/bash
+            args: "scripts/centos/pack.sh"
+        - id: path
+          run: echo ::set-output name=path::$(pwd)/$(ls *.rpm)
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-centos
+            path: ${{ steps.path.outputs.path }}
