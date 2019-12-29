@@ -188,7 +188,7 @@ jobs:
           name: baetyl-centos
       - uses: actions/download-artifact@v1
         with:
-          name: baetyl-mac
+          name: baetyl-darwin
       - name: ls pwd
         run: ls
       - id: version
