@@ -125,9 +125,14 @@ jobs:
         - name: prepare
           run: |
             sudo apt update && sudo apt install -y tree
+            echo ${{ secrets.KEY_PUBLIC }} >public.key
+            echo ${{ secrets.KEY_PRIVATE }} >private.key
+            cat public.key
+            cat private.key
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
-            sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/pack.sh
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
+            cat scripts/centos/pack.sh
             mkdir baetyl-${{ steps.version.outputs.version }}
             cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
             tree baetyl-${{ steps.version.outputs.version }}
