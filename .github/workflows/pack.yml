@@ -130,12 +130,9 @@ jobs:
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
-            cat scripts/centos/pack.sh
             mkdir baetyl-${{ steps.version.outputs.version }}
             cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
-            tree baetyl-${{ steps.version.outputs.version }}
             tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
-            ls
             
         - name: centos pack
           uses: docker://centos:7
@@ -148,3 +145,20 @@ jobs:
           with:
             name: baetyl-centos
             path: ${{ steps.path.outputs.path }}
+      
+#   pack:
+#       name: pack
+#       runs-on: ubuntu-18.04
+#       steps:
+#         - name: repo
+#           run: |
+#             sudo apt update
+#             sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
+#             echo "${{ secrets.KEY_PRIVATE }}" >private.key
+#             sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
+#             ./scripts/repo.sh
+            
+#         - uses: actions/upload-artifact@v1
+#           with:
+#             name: baetyl-centos
+#             path: ${{ steps.path.outputs.path }}
