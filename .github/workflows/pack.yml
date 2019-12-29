@@ -11,7 +11,6 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
-          echo ::set-output name=revision::$(git rev-parse --short HEAD)
       - uses: baetyl/run-on-arch-action@master
         with:
           architecture: amd64
@@ -38,7 +37,6 @@ jobs:
         - id: version
           run: |
             echo ::set-output name=version::$(git tag --contains HEAD)
-            echo ::set-output name=revision::$(git rev-parse --short HEAD)
         - uses: baetyl/run-on-arch-action@master
           with:
             architecture: armv7
@@ -65,7 +63,6 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
-          echo ::set-output name=revision::$(git rev-parse --short HEAD)
       - uses: baetyl/run-on-arch-action@master
         with:
           architecture: i386
@@ -92,7 +89,6 @@ jobs:
         - id: version
           run: |
             echo ::set-output name=version::$(git tag --contains HEAD)
-            echo ::set-output name=revision::$(git rev-parse --short HEAD)
         - uses: baetyl/run-on-arch-action@master
           with:
             architecture: arm64
@@ -110,3 +106,39 @@ jobs:
           with:
             name: baetyl-arm64
             path: ${{ steps.path.outputs.path }}
+
+  centos:
+      name: build on centos
+      runs-on: ubuntu-18.04
+      steps:
+        - name: Setup Go
+          uses: actions/setup-go@v1
+          with:
+            go-version: 1.13
+        - name: Checkout code
+          uses: actions/checkout@v1
+        - name: Build
+          run: make build
+        - id: version
+          run: |
+            echo ::set-output name=version::$(git tag --contains HEAD)
+        - name: prepare
+          run: |
+            sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
+            mkdir baetyl-${{ steps.version.outputs.version }}
+            cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
+            tree baetyl-${{ steps.version.outputs.version }}
+            tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
+            ls
+#         - name: centos pack
+#           uses: docker://centos:7
+#           with:
+#             entrypoint: /bin/bash
+#             args: "pack.sh"
+#         - id: path
+#           run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_arm64.deb
+#         - uses: actions/upload-artifact@v1
+#           with:
+#             name: baetyl-arm64
+#             path: ${{ steps.path.outputs.path }}
