@@ -4,7 +4,7 @@ set -e
 
 yum update -y && yum install -y rpmdevtools rpm-sign
 
-mkdir -p ~/rpmbuild/RPMS ~/rpmbuild/SRPMS ~/rpmbuild/BUILD ~/rpmbuild/SOURCES
+mkdir -p ~/rpmbuild/RPMS ~/rpmbuild/SRPMS ~/rpmbuild/BUILD ~/rpmbuild/SOURCES ~/rpmbuild/SPECS
 
 cp baetyl-@version@.tar.gz ~/rpmbuild/SOURCES
 
