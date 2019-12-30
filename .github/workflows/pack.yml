@@ -134,9 +134,8 @@ jobs:
           echo ::set-output name=revision::1
       - name: prepare
         run: |
-          sudo apt update && sudo apt install -y tree
-          echo "${{ secrets.KEY_PUBLIC }}" >public.key
-          echo "${{ secrets.KEY_PRIVATE }}" >private.key
+          echo "${{ secrets.KEY_PRIVATE }}" >key.private
+          cp scripts/key.public key.public
           sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
           sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" scripts/centos/baetyl.spec
           sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
@@ -215,7 +214,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
-          echo "${{ secrets.KEY_PRIVATE }}" >private.key
+          echo "${{ secrets.KEY_PRIVATE }}" >key.private
           sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
           chmod +x scripts/repo.sh
           sudo ./scripts/repo.sh
