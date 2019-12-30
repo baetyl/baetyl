@@ -16,6 +16,8 @@ jobs:
           architecture: amd64
           distribution: stretch
           run: |
+            git version
+            git log
             apt update
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
@@ -43,6 +45,8 @@ jobs:
             architecture: armv7
             distribution: stretch
             run: |
+              git version
+              git log
               apt update
               apt-get install -y dh-make dh-systemd
               cp -r scripts/debian/ debian/
