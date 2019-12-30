@@ -30,32 +30,32 @@ jobs:
           name: baetyl-amd64
           path: ${{ steps.path.outputs.path }}
           
-#   armv7:
-#       name: build on armv7
-#       runs-on: ubuntu-18.04
-#       steps:
-#         - uses: actions/checkout@v1
-#         - id: version
-#           run: |
-#             echo ::set-output name=version::$(git tag --contains HEAD)
-#         - uses: chensheng0/run-on-arch-action@master
-#           with:
-#             architecture: armv7
-#             distribution: stretch
-#             run: |
-#               apt update
-#               apt-get install -y dh-make dh-systemd
-#               cp -r scripts/debian/ debian/
-#               sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
-#               sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
-#               dpkg-buildpackage -b -d -uc -us -i
-#               cp ../baetyl_${{ steps.version.outputs.version }}-1_armhf.deb .
-#         - id: path
-#           run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_armhf.deb
-#         - uses: actions/upload-artifact@v1
-#           with:
-#             name: baetyl-armv7
-#             path: ${{ steps.path.outputs.path }}
+  armv7:
+      name: build on armv7
+      runs-on: ubuntu-18.04
+      steps:
+        - uses: actions/checkout@v1
+        - id: version
+          run: |
+            echo ::set-output name=version::$(git tag --contains HEAD)
+        - uses: chensheng0/run-on-arch-action@master
+          with:
+            architecture: armv7
+            distribution: stretch
+            run: |
+              apt update
+              apt-get install -y dh-make dh-systemd
+              cp -r scripts/debian/ debian/
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+              sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+              dpkg-buildpackage -b -d -uc -us -i
+              cp ../baetyl_${{ steps.version.outputs.version }}-1_armhf.deb .
+        - id: path
+          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_armhf.deb
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-armv7
+            path: ${{ steps.path.outputs.path }}
   
   i386:
     name: build on i386
@@ -84,32 +84,32 @@ jobs:
           name: baetyl-i386
           path: ${{ steps.path.outputs.path }}
           
-#   arm64:
-#       name: build on arm64
-#       runs-on: ubuntu-18.04
-#       steps:
-#         - uses: actions/checkout@v1
-#         - id: version
-#           run: |
-#             echo ::set-output name=version::$(git tag --contains HEAD)
-#         - uses: chensheng0/run-on-arch-action@master
-#           with:
-#             architecture: arm64
-#             distribution: stretch
-#             run: |
-#               apt update
-#               apt-get install -y dh-make dh-systemd
-#               cp -r scripts/debian/ debian/
-#               sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
-#               sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
-#               dpkg-buildpackage -b -d -uc -us -i
-#               cp ../baetyl_${{ steps.version.outputs.version }}-1_arm64.deb .
-#         - id: path
-#           run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_arm64.deb
-#         - uses: actions/upload-artifact@v1
-#           with:
-#             name: baetyl-arm64
-#             path: ${{ steps.path.outputs.path }}
+  arm64:
+      name: build on arm64
+      runs-on: ubuntu-18.04
+      steps:
+        - uses: actions/checkout@v1
+        - id: version
+          run: |
+            echo ::set-output name=version::$(git tag --contains HEAD)
+        - uses: chensheng0/run-on-arch-action@master
+          with:
+            architecture: arm64
+            distribution: stretch
+            run: |
+              apt update
+              apt-get install -y dh-make dh-systemd
+              cp -r scripts/debian/ debian/
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+              sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+              dpkg-buildpackage -b -d -uc -us -i
+              cp ../baetyl_${{ steps.version.outputs.version }}-1_arm64.deb .
+        - id: path
+          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_arm64.deb
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-arm64
+            path: ${{ steps.path.outputs.path }}
 
   centos:
     name: build on centos
@@ -168,7 +168,7 @@ jobs:
           path: ${{ steps.path.outputs.path }}
   pack:
     runs-on: ubuntu-16.04
-    needs: [amd64, i386, centos, mac]
+    needs: [amd64, i386, armv7, arm64, centos, mac]
     steps:
       - uses: actions/checkout@v1
       - id: path
@@ -179,16 +179,18 @@ jobs:
         with:
           name: baetyl-amd64
           path: ${{ steps.path.outputs.path }}
-#       - uses: actions/download-artifact@v1
-#         with:
-#           name: baetyl-armv7
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-armv7
+          path: ${{ steps.path.outputs.path }}
       - uses: actions/download-artifact@v1
         with:
           name: baetyl-i386
           path: ${{ steps.path.outputs.path }}
-#       - uses: actions/download-artifact@v1
-#         with:
-#           name: baetyl-arm64
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-arm64
+          path: ${{ steps.path.outputs.path }}
       - uses: actions/download-artifact@v1
         with:
           name: baetyl-centos
