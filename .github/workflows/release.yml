@@ -171,7 +171,7 @@ jobs:
         with:
           name: baetyl-darwin
           path: ${{ steps.path.outputs.path }}
-  pack:
+  release:
     runs-on: ubuntu-16.04
     needs: [amd64, i386, armv7, arm64, centos, mac]
     steps:
@@ -210,7 +210,7 @@ jobs:
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
           echo ::set-output name=revision::1
-      - name: repo
+      - name: release
         run: |
           sudo apt update
           sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
@@ -221,5 +221,5 @@ jobs:
           ls ~/.aptly/public
       - uses: actions/upload-artifact@v1
         with:
-          name: baetyl-repo
+          name: baetyl-release
           path: /home/runner/.aptly/public/
