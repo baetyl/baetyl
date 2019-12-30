@@ -1,6 +1,6 @@
 Name:           baetyl
 Version:        @version@
-Release:        1%{?dist}
+Release:        @revision@%{?dist}
 
 License:        Proprietary
 Summary:        Baetyl rpm package
