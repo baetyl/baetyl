@@ -60,7 +60,6 @@ cp baetyl-$VERSION-darwin-amd64.tar.gz $PARENT_PATH/mac/static/x86_64/baetyl-lat
 
 # example
 cp scripts/baetyl.plist example/docker/etc/baetyl
-mkdir -p example/docker/var/log/baetyl example/docker/var/lib/baetyl
 tar cvzf docker_example.tar.gz -C example/docker etc var
 mkdir -p $PARENT_PATH/example/$VERSION/docker
 cp docker_example.tar.gz $PARENT_PATH/example/$VERSION/docker
