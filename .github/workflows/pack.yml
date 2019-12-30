@@ -2,7 +2,7 @@ name: test-pack
 on: 
   push:
     branches:
-      - 'refs/tags/*'
+      - refs/tags/*
 jobs:
   amd64:
     name: build on amd64
