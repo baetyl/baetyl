@@ -1,6 +1,6 @@
 [baetyl]
 name=baetyl
-baseurl=http://baetyl-repo-github-pre.gz.bcebos.com/linux/centos/7/$basearch
+baseurl=http://dl.baetyl.tech/linux/centos/7/$basearch
 enabled=1
 gpgcheck=1
-gpgkey=http://baetyl-repo-github-pre.gz.bcebos.com/key.public
+gpgkey=http://dl.baetyl.tech/key.public
