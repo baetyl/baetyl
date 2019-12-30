@@ -7,7 +7,7 @@ PARENT_PATH=~/.aptly/public
 VERSION=@version@
 REVERSION=@revision@
 
-gpg --import private.key
+gpg --import key.private
 echo 'personal-digest-preferences SHA512'>>~/.gnupg/gpg.conf
 echo 'cert-digest-algo SHA512'>>~/.gnupg/gpg.conf
 echo 'default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed'>>~/.gnupg/gpg.conf
