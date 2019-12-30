@@ -1,4 +1,4 @@
-name: pack
+name: release
 on: 
   push:
     tags:
