@@ -215,9 +215,9 @@ jobs:
           sudo apt update
           sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
           echo "${{ secrets.KEY_PRIVATE }}" >key.private
-          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
-          chmod +x scripts/repo.sh
-          sudo ./scripts/repo.sh
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/release.sh
+          chmod +x scripts/release.sh
+          sudo ./scripts/release.sh
           ls ~/.aptly/public
       - uses: actions/upload-artifact@v1
         with:
