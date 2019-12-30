@@ -2,8 +2,6 @@
 
 ## 2019 Goals
 
-xc
-
 Baetyl will embrace cloud native to edge creative, including:
 
 - Deliver a lightweight, immutable, all-in-memory edge computing operating system based on Linux kernel.
