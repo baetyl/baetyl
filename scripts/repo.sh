@@ -69,5 +69,6 @@ cp -r $PARENT_PATH/example/$VERSION $PARENT_PATH/example/latest
 # install
 cp scripts/install.sh $PARENT_PATH
 cp scripts/install_with_docker_example.sh $PARENT_PATH
+cp scripts/key.public $PARENT_PATH
 
 exit $?
