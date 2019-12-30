@@ -8,7 +8,6 @@ VERSION=@version@
 REVERSION=@revision@
 
 gpg --import private.key
-
 echo 'personal-digest-preferences SHA512'>>~/.gnupg/gpg.conf
 echo 'cert-digest-algo SHA512'>>~/.gnupg/gpg.conf
 echo 'default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed'>>~/.gnupg/gpg.conf
@@ -53,7 +52,8 @@ popd
 mkdir bin && cp baetyl bin
 mkdir -p etc/baetyl && cp example/docker/etc/baetyl/conf.yml etc/baetyl && cp scripts/baetyl.plist etc/baetyl
 sed -i "s/level: debug//g;" etc/baetyl/conf.yml
-tar cvzf baetyl-$VERSION-darwin-amd64.tar.gz bin etc
+mkdir -p var/db/baetyl var/log/baetyl var/lib/baetyl
+tar cvzf baetyl-$VERSION-darwin-amd64.tar.gz bin etc var
 mkdir -p $PARENT_PATH/mac/static/x86_64
 cp baetyl-$VERSION-darwin-amd64.tar.gz $PARENT_PATH/mac/static/x86_64
 cp baetyl-$VERSION-darwin-amd64.tar.gz $PARENT_PATH/mac/static/x86_64/baetyl-latest-darwin-amd64.tar.gz
