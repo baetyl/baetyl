@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-EXAMPLE_PATH=http://baetyl-repo-github-pre.gz.bcebos.com/example/latest/docker
+EXAMPLE_PATH=http://dl.baetyl.tech/example/latest/docker
 OS=$(uname)
 
 print_status() {
