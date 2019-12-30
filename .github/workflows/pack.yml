@@ -17,7 +17,8 @@ jobs:
           distribution: stretch
           run: |
             git version
-            git log
+            git rev-parse --short HEAD
+            git tag --contains HEAD
             apt update
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
@@ -46,7 +47,7 @@ jobs:
             distribution: stretch
             run: |
               git version
-              git log
+              git rev-parse --short HEAD
               apt update
               apt-get install -y dh-make dh-systemd
               cp -r scripts/debian/ debian/
@@ -74,6 +75,8 @@ jobs:
           architecture: i386
           distribution: stretch
           run: |
+            git version
+            git rev-parse --short HEAD
             apt update
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
