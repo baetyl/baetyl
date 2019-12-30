@@ -29,8 +29,6 @@ type agent struct {
 	certKey []byte
 	http    *http.Client
 	link    *link.Client
-	// active
-	act bool
 	// clean
 	cleaner *cleaner
 	node    *node
@@ -80,27 +78,10 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		dispatcher = mqtt.NewDispatcher(*cfg.Remote.MQTT, ctx.Log())
 	}
 	var linkCli *link.Client
-	var no *node
-	act := false
 	if cfg.Remote.Link != nil {
 		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
 		if err != nil {
 			return nil, err
-		}
-		name := os.Getenv(common.NodeName)
-		namespace := os.Getenv(common.NodeNamespace)
-		if name == "" || namespace == "" {
-			// active
-			if len(cfg.Active.Fingerprints) > 0 {
-				act = true
-			} else {
-				return nil, fmt.Errorf("can not report info by link without node name or namespace")
-			}
-		} else {
-			no = &node{
-				Name:      name,
-				Namespace: namespace,
-			}
 		}
 	}
 	a := &agent{
@@ -109,8 +90,6 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		events:  make(chan *Event, 1),
 		certSN:  sn,
 		certKey: key,
-		node:    no,
-		act:     act,
 		mqtt:    dispatcher,
 		link:    linkCli,
 		cleaner: newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
@@ -124,16 +103,28 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 
 func (a *agent) start() error {
 	// for activation
-	if a.act {
-		if a.cfg.Server.Listen == "" {
-			// auto active
-			err := a.tomb.Go(a.autoActive)
-			if err != nil {
-				return err
+	name := os.Getenv(common.NodeName)
+	namespace := os.Getenv(common.NodeNamespace)
+	if name == "" || namespace == "" {
+		// active
+		if a.cfg.Active.Fingerprints != nil && len(a.cfg.Active.Fingerprints) > 0 {
+			if a.cfg.Server.Listen == "" {
+				// auto active
+				err := a.tomb.Go(a.autoActive)
+				if err != nil {
+					return err
+				}
+			} else {
+				// todo
+				a.ctx.Log().Infof("todo active by server")
 			}
 		} else {
-			// todo
-			a.ctx.Log().Infof("todo active by server")
+			return fmt.Errorf("can not report info by link without node name or namespace")
+		}
+	} else {
+		a.node = &node{
+			Name:      name,
+			Namespace: namespace,
 		}
 	}
 	if a.mqtt != nil {

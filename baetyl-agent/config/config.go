@@ -56,12 +56,12 @@ type ForwardInfo struct {
 	Request    map[string]string `yaml:"request" json:"request" default:"{}"`
 	Status     *Inspect          `yaml:"status" json:"status"`                      // node update
 	DeployInfo map[string]string `yaml:"deployInfo" json:"deployInfo" default:"{}"` // shadow update
-	ActiveData ActiveData        `yaml:"activeData" json:"activeData"`
+	Activation Activation        `yaml:"activation" json:"activation"`
 }
 
-type ActiveData struct {
-	FingerprintValue string            `json:"fingerprintValue,omitempty" db:"fingerprint_value"`
-	PenetrateData    map[string]string `json:"penetrateData,omitempty" db:"penetrate_data"`
+type Activation struct {
+	FingerprintValue string            `yaml:"fingerprintValue" json:"fingerprintValue" default:""`
+	PenetrateData    map[string]string `yaml:"penetrateData" json:"penetrateData" default:"{}"`
 }
 
 type BackwardInfo struct {
@@ -101,7 +101,7 @@ type ModuleConfig struct {
 // Config active module config
 type Active struct {
 	Interval     time.Duration `yaml:"interval" json:"interval" default:"1m"  validate:"min=10000000000"`
-	Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints" validate:"nonzero"`
+	Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 	Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
 	Server       Server        `yaml:"server" json:"server"`
 }

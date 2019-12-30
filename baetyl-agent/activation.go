@@ -28,11 +28,10 @@ const (
 
 func (a *agent) autoActive() error {
 	t := time.NewTicker(a.cfg.Interval)
+	defer t.Stop()
 	err := a.active(nil)
 	if err != nil {
 		a.ctx.Log().Errorf("active error", err.Error())
-	} else {
-		a.ctx.Log().Infof("active success, ticker stop")
 	}
 	for {
 		select {
@@ -40,9 +39,6 @@ func (a *agent) autoActive() error {
 			err := a.active(nil)
 			if err != nil {
 				a.ctx.Log().Errorf("active error", err.Error())
-			} else {
-				a.ctx.Log().Infof("active success, ticker stop")
-				t.Stop()
 			}
 		case <-a.tomb.Dying():
 			return nil
@@ -82,13 +78,13 @@ func (a *agent) active(attrs map[string]string) (err error) {
 		common.ResourceType: string(common.Batch),
 		common.ResourceName: batchUuid,
 	}
-	activeData := config.ActiveData{
+	activation := config.Activation{
 		FingerprintValue: fp,
 		PenetrateData:    attrs,
 	}
 	reportInfo := config.ForwardInfo{
 		Request:    request,
-		ActiveData: activeData,
+		Activation: activation,
 	}
 
 	var res config.BackwardInfo
