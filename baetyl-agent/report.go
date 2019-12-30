@@ -51,6 +51,8 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		}
 	}
 	if a.link != nil {
+		a.ctx.Log().Debugf("report set agent ，point = %p", a)
+		a.ctx.Log().Debugf("report set agent = %+v", a)
 		if a.node == nil {
 			a.ctx.Log().WithError(err).Warnf("node nil")
 			return nil

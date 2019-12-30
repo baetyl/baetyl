@@ -5,7 +5,6 @@ import (
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/baetyl-agent/config"
-	"github.com/baetyl/baetyl/baetyl-agent/server"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/protocol/mqtt"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -31,7 +30,6 @@ type agent struct {
 	http    *http.Client
 	link    *link.Client
 	// active
-	svr *server.Server
 	act bool
 	// clean
 	cleaner *cleaner
@@ -51,9 +49,6 @@ func main() {
 		if err != nil {
 			return err
 		}
-		if a.svr != nil {
-			defer a.svr.Close()
-		}
 		ctx.Wait()
 		return nil
 	})
@@ -68,6 +63,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	sn := ""
 	key := []byte{}
 	var dispatcher *mqtt.Dispatcher
+	ctx.Log().Infof("config = %v", cfg)
 	if cfg.Remote.MQTT != nil {
 		err = defaults(&cfg)
 		if err != nil {
@@ -131,13 +127,13 @@ func (a *agent) start() error {
 	if a.act {
 		if a.cfg.Server.Listen == "" {
 			// auto active
-
-		} else {
-			svr, err := server.NewServer(a.cfg.Server, a.cfg.Attributes, a.act, a.ctx.Log().WithField("local", "server"))
+			err := a.tomb.Go(a.autoActive)
 			if err != nil {
 				return err
 			}
-			svr.Start()
+		} else {
+			// todo
+			a.ctx.Log().Infof("todo active by server")
 		}
 	}
 	if a.mqtt != nil {

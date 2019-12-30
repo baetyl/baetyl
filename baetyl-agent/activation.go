@@ -6,6 +6,7 @@ import (
 	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -29,17 +30,18 @@ func (a *agent) autoActive() error {
 	t := time.NewTicker(a.cfg.Interval)
 	err := a.active(nil)
 	if err != nil {
-		a.ctx.Log().WithError(err)
+		a.ctx.Log().Errorf("active error", err.Error())
 	} else {
-		t.Stop()
+		a.ctx.Log().Infof("active success, ticker stop")
 	}
 	for {
 		select {
 		case <-t.C:
 			err := a.active(nil)
 			if err != nil {
-				a.ctx.Log().WithError(err)
+				a.ctx.Log().Errorf("active error", err.Error())
 			} else {
+				a.ctx.Log().Infof("active success, ticker stop")
 				t.Stop()
 			}
 		case <-a.tomb.Dying():
@@ -60,7 +62,7 @@ func (a *agent) active(attrs map[string]string) (err error) {
 	if !ok {
 		return errors.New("batch uuid can't be null")
 	}
-	a.ctx.Log().Infof("batch uuid", batchUuid)
+	a.ctx.Log().Infof("batch uuid = %s", batchUuid)
 	inspect, err := a.ctx.InspectSystem()
 	if err != nil {
 		return err
@@ -100,6 +102,25 @@ func (a *agent) active(attrs map[string]string) (err error) {
 		a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned by link")
 		return nil
 	}
+	nodeName := res.Response["node"].(string)
+	ns := res.Response["namespace"].(string)
+	a.ctx.Log().Debugf("active node name = %s", nodeName)
+	a.ctx.Log().Debugf("active namespace = %s", ns)
+	if err := os.Setenv(common.NodeName, nodeName); err != nil {
+		a.ctx.Log().Errorf("set env node name error", err.Error())
+	}
+	if err := os.Setenv(common.NodeNamespace, ns); err != nil {
+		a.ctx.Log().Errorf("set env node namespace error", err.Error())
+	}
+	n := &node{
+		Name:      nodeName,
+		Namespace: ns,
+	}
+	a.node = n
+	a.ctx.Log().Debugf("active set agent node  = %v", *a.node)
+	a.ctx.Log().Debugf("active set agent ，point = %p", a)
+	a.ctx.Log().Debugf("active set agent = %+v", a)
+	a.ctx.Log().Debugf("active delta = %v", res.Delta)
 	if len(res.Delta) != 0 {
 		le := &EventLink{
 			Trace: res.Response["trace"].(string),
@@ -111,6 +132,7 @@ func (a *agent) active(attrs map[string]string) (err error) {
 			Type:    EventType(le.Type),
 			Content: le,
 		}
+		a.ctx.Log().Infof("active event: %+v", *e)
 		select {
 		case a.events <- e:
 		default:
