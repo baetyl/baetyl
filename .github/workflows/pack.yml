@@ -12,6 +12,7 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=revision::1
       - uses: chensheng0/run-on-arch-action@master
         with:
           architecture: amd64
@@ -20,12 +21,12 @@ jobs:
             apt update
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
-            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
-            cp ../baetyl_${{ steps.version.outputs.version }}-1_amd64.deb .
+            cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb .
       - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_amd64.deb
+        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
       - uses: actions/upload-artifact@v1
         with:
           name: baetyl-amd64
@@ -39,6 +40,7 @@ jobs:
         - id: version
           run: |
             echo ::set-output name=version::$(git tag --contains HEAD)
+            echo ::set-output name=revision::1
         - uses: chensheng0/run-on-arch-action@master
           with:
             architecture: armv7
@@ -47,12 +49,12 @@ jobs:
               apt update
               apt-get install -y dh-make dh-systemd
               cp -r scripts/debian/ debian/
-              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
               sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
               dpkg-buildpackage -b -d -uc -us -i
-              cp ../baetyl_${{ steps.version.outputs.version }}-1_armhf.deb .
+              cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb .
         - id: path
-          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_armhf.deb
+          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb
         - uses: actions/upload-artifact@v1
           with:
             name: baetyl-armv7
@@ -66,6 +68,7 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=revision::1
       - uses: chensheng0/run-on-arch-action@master
         with:
           architecture: i386
@@ -74,12 +77,12 @@ jobs:
             apt update
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
-            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
-            cp ../baetyl_${{ steps.version.outputs.version }}-1_i386.deb .
+            cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb .
       - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_i386.deb
+        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb
       - uses: actions/upload-artifact@v1
         with:
           name: baetyl-i386
@@ -93,6 +96,7 @@ jobs:
         - id: version
           run: |
             echo ::set-output name=version::$(git tag --contains HEAD)
+            echo ::set-output name=revision::1
         - uses: chensheng0/run-on-arch-action@master
           with:
             architecture: arm64
@@ -101,12 +105,12 @@ jobs:
               apt update
               apt-get install -y dh-make dh-systemd
               cp -r scripts/debian/ debian/
-              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g" debian/changelog
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
               sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
               dpkg-buildpackage -b -d -uc -us -i
-              cp ../baetyl_${{ steps.version.outputs.version }}-1_arm64.deb .
+              cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb .
         - id: path
-          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-1_arm64.deb
+          run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb
         - uses: actions/upload-artifact@v1
           with:
             name: baetyl-arm64
@@ -127,13 +131,14 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=revision::1
       - name: prepare
         run: |
           sudo apt update && sudo apt install -y tree
           echo "${{ secrets.KEY_PUBLIC }}" >public.key
           echo "${{ secrets.KEY_PRIVATE }}" >private.key
           sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
-          sed -i "s/@version@/${{ steps.version.outputs.version }}/g" scripts/centos/baetyl.spec
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" scripts/centos/baetyl.spec
           sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
           mkdir baetyl-${{ steps.version.outputs.version }}
           cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
@@ -205,13 +210,13 @@ jobs:
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
-      
+          echo ::set-output name=revision::1
       - name: repo
         run: |
           sudo apt update
           sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
           echo "${{ secrets.KEY_PRIVATE }}" >private.key
-          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/1/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/repo.sh
           chmod +x scripts/repo.sh
           sudo ./scripts/repo.sh
           ls ~/.aptly/public
