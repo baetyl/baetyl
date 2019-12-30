@@ -24,7 +24,6 @@ This package contains the IoT Edge daemon and CLI tool.
 
 %install
 rm -rf %{buildroot}
-make baetyl
 install -d -m 0755 %{buildroot}/usr/local/bin
 install -m 0755 baetyl %{buildroot}/usr/local/bin/
 tar cf - -C example/docker etc | tar xvf - -C %{buildroot}/usr/local
