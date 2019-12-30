@@ -43,6 +43,7 @@ repo_publish() {
 repo_publish
 
 mkdir -p $PARENT_PATH/linux/centos/7/x86_64/RPMS
+cp scripts/centos/baetyl.repo $PARENT_PATH/linux/centos/
 cp baetyl-$VERSION-$REVERSION.el7.x86_64.rpm $PARENT_PATH/linux/centos/7/x86_64/RPMS
 pushd $PARENT_PATH/linux/centos/7
 createrepo x86_64
