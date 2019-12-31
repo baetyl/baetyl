@@ -25,12 +25,22 @@ jobs:
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
             cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb .
+            ls
+            tar cvzf baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz baetyl
       - id: path
-        run: echo ::set-output name=path::$(pwd)/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
+        run: echo ::set-output name=path::$(pwd)
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.TOKEN }}
+          file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz
+          asset_name: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
       - uses: actions/upload-artifact@v1
         with:
           name: baetyl-amd64
-          path: ${{ steps.path.outputs.path }}
+          path: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
           
   armv7:
       name: build on armv7
