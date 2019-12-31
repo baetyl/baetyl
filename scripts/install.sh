@@ -3,7 +3,7 @@
 set -e
 
 NAME=baetyl
-URL_PACKAGE=dl.${NAME}.tech
+URL_PACKAGE=$1
 URL_KEY=http://${URL_PACKAGE}/key.public
 OS=$(uname)
 PRE_INSTALL_PKGS="ca-certificates"
