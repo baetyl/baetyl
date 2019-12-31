@@ -296,8 +296,6 @@ jobs:
         with:
           name: baetyl-darwin
           path: ${{ steps.path.outputs.path }}
-      - name: ls pwd
-        run: ls
       - id: version
         run: |
           echo ::set-output name=version::$(git tag --contains HEAD)
@@ -310,7 +308,6 @@ jobs:
           sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/release.sh
           chmod +x scripts/release.sh
           sudo ./scripts/release.sh
-          ls ~/.aptly/public
       - uses: actions/upload-artifact@v1
         with:
           name: baetyl-release
