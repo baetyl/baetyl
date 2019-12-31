@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"path"
 
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -51,7 +52,7 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		hostTarget = path.Join(hostDir, baetyl.AppConfFileName)
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
 		containerMetadataFile := path.Join(containerDir, baetyl.MetadataFileName)
-		var meta Metadata
+		var meta config.Metadata
 		file := containerMetadataFile
 		if !utils.FileExists(containerMetadataFile) {
 			file = containerAppFile

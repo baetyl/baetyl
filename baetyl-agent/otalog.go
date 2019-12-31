@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/utils"
 	"os"
 	"time"
@@ -11,15 +12,8 @@ import (
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
-type record struct {
-	Time  string `json:"time,omitempty"`
-	Step  string `json:"step,omitempty"`
-	Trace string `json:"trace,omitempty"`
-	Error string `json:"error,omitempty"`
-}
-
-func newRecord(data []byte) (*record, error) {
-	var r record
+func newRecord(data []byte) (*config.Record, error) {
+	var r config.Record
 	err := json.Unmarshal(data, &r)
 	if err != nil {
 		return nil, err
@@ -29,35 +23,35 @@ func newRecord(data []byte) (*record, error) {
 
 type progress struct {
 	event   *EventOTA
-	records []*record
+	records []*config.Record
 }
 
 func newProgress(event *EventOTA) *progress {
 	return &progress{
 		event:   event,
-		records: []*record{},
+		records: []*config.Record{},
 	}
 }
 
 func (p *progress) append(step, msg, err string) {
-	p.records = append(p.records, &record{Time: time.Now().UTC().String(), Step: step, Error: err})
+	p.records = append(p.records, &config.Record{Time: time.Now().UTC().String(), Step: step, Error: err})
 }
 
 type operator interface {
-	report(...*progress) *inspect
+	report(...*progress) *config.Inspect
 	dying() <-chan struct{}
 	clean(string)
 }
 
 type otalog struct {
-	cfg      OTAInfo
+	cfg      config.OTAInfo
 	opt      operator
 	progress *progress
 	rlog     logger.Logger
 	log      logger.Logger
 }
 
-func newOTALog(cfg OTAInfo, opt operator, event *EventOTA, log logger.Logger) *otalog {
+func newOTALog(cfg config.OTAInfo, opt operator, event *EventOTA, log logger.Logger) *otalog {
 	o := &otalog{
 		cfg:      cfg,
 		opt:      opt,
@@ -115,12 +109,12 @@ func (o *otalog) load() bool {
 	}
 	defer file.Close()
 
-	records := []*record{}
+	records := []*config.Record{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		r, err := newRecord(scanner.Bytes())
 		if err != nil {
-			o.log.WithError(err).Warnf("failed to parse record")
+			o.log.WithError(err).Warnf("failed to parse config.Record")
 			return false
 		}
 		if o.progress.event == nil && r.Trace != "" {

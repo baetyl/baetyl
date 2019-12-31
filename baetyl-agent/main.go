@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/protocol/mqtt"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -16,7 +17,7 @@ import (
 
 // agent agent module
 type agent struct {
-	cfg  Config
+	cfg  config.Config
 	ctx  baetyl.Context
 	tomb utils.Tomb
 
@@ -42,7 +43,7 @@ func main() {
 			return err
 		}
 		defer a.close()
-		err = a.start(ctx)
+		err = a.start()
 		if err != nil {
 			return err
 		}
@@ -52,7 +53,7 @@ func main() {
 }
 
 func newAgent(ctx baetyl.Context) (*agent, error) {
-	var cfg Config
+	var cfg config.Config
 	err := ctx.LoadConfig(&cfg)
 	if err != nil {
 		return nil, err
@@ -76,20 +77,10 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		dispatcher = mqtt.NewDispatcher(*cfg.Remote.MQTT, ctx.Log())
 	}
 	var linkCli *link.Client
-	var no *node
 	if cfg.Remote.Link.Address != "" {
 		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
 		if err != nil {
 			return nil, err
-		}
-		name := os.Getenv(common.NodeName)
-		namespace := os.Getenv(common.NodeNamespace)
-		if name == "" || namespace == "" {
-			return nil, fmt.Errorf("can not report info by link without node name or namespace")
-		}
-		no = &node{
-			Name:      name,
-			Namespace: namespace,
 		}
 	}
 	a := &agent{
@@ -98,7 +89,6 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		events:  make(chan *Event, 1),
 		certSN:  sn,
 		certKey: key,
-		node:    no,
 		mqtt:    dispatcher,
 		link:    linkCli,
 		cleaner: newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
@@ -110,7 +100,32 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	return a, nil
 }
 
-func (a *agent) start(ctx baetyl.Context) error {
+func (a *agent) start() error {
+	// for activation
+	name := os.Getenv(common.NodeName)
+	namespace := os.Getenv(common.NodeNamespace)
+	if name == "" || namespace == "" {
+		// active
+		if a.cfg.Active.Fingerprints != nil && len(a.cfg.Active.Fingerprints) > 0 {
+			if a.cfg.Server.Listen == "" {
+				// auto active
+				err := a.tomb.Go(a.autoActive)
+				if err != nil {
+					return err
+				}
+			} else {
+				// todo
+				a.ctx.Log().Infof("todo active by server")
+			}
+		} else {
+			return fmt.Errorf("can not report info by link without node name or namespace")
+		}
+	} else {
+		a.node = &node{
+			Name:      name,
+			Namespace: namespace,
+		}
+	}
 	if a.mqtt != nil {
 		err := a.mqtt.Start(a)
 		if err != nil {
@@ -143,7 +158,7 @@ func (a *agent) close() {
 	}
 }
 
-func defaults(c *Config) error {
+func defaults(c *config.Config) error {
 	if c.Remote.MQTT.Address == "" {
 		return fmt.Errorf("remote mqtt address missing")
 	}
