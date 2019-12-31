@@ -12,14 +12,10 @@ import (
 
 // Config agent config
 type Config struct {
-	Identity struct {
-		Namespace string `yaml:"namespace" json:"namespace"`
-		Name      string `yaml:"name" json:"name"`
-	} `yaml:"identity" json:"identity"`
 	Remote struct {
 		MQTT   *mqtt.ClientInfo   `yaml:"mqtt" json:"mqtt"`
-		HTTP   *http.ClientInfo   `yaml:"http" json:"http"`
-		Link   *link.ClientConfig `yaml:"link" json:"link"`
+		HTTP   *http.ClientInfo   `yaml:"http" json:"http" default:"{}"`
+		Link   *link.ClientConfig `yaml:"link" json:"link" default:"{}"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v3/edge/info"`
 			Topic    string        `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/forward"`
@@ -54,7 +50,7 @@ type ForwardInfo struct {
 	Name       string            `yaml:"name" json:"mame"`
 	Request    map[string]string `yaml:"request" json:"request" default:"{}"`
 	Status     *inspect          `yaml:"status" json:"status"`                      // node update
-	DeployInfo map[string]string `yaml:"deployInfo" json:"deployInfo" default:"{}"` // shadow update
+	Deployment map[string]string `yaml:"deployment" json:"deployment" default:"{}"` // shadow update
 }
 
 type BackwardInfo struct {

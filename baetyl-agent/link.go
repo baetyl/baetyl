@@ -13,7 +13,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -34,7 +33,7 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	if !ok {
 		return fmt.Errorf("no deployment info in delta info")
 	}
-	var deploy deployInfo
+	var deploy deployment
 	for k, v := range d.(map[string]interface{}) {
 		deploy.Name = k
 		deploy.AppVersion = v.(string)
@@ -52,28 +51,22 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	if err != nil {
 		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
 	}
-	oldVolumeInfos, err := getCurrentVolumeInfo()
-	if err != nil {
-		return fmt.Errorf("failed to get old volume info: %s", err.Error())
-	}
-	metaData, hostDir := a.processApplication(dep.Snapshot.Apps)
+	metadata, hostDir := a.processApplication(dep.Snapshot.Apps)
 
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
-	for name, volume := range metaData {
+	for name, volume := range metadata {
 		volumes = append(volumes, volume)
 		metaVersion := volume.Meta.Version
 		if metaVersion == "" {
-			delete(metaData, name)
+			delete(metadata, name)
 		}
-		if v, ok := oldVolumeInfos[name]; ok {
-			if metaVersion == v.Meta.Version {
-				delete(metaData, name)
-			}
+		if a.checkVolumeExists(volume) {
+			delete(metadata, name)
 		}
 	}
 	a.cleaner.set(deploy.AppVersion, volumes)
-	err = a.processVolumes(metaData)
+	err = a.processVolumes(metadata)
 	if err != nil {
 		return err
 	}
@@ -139,10 +132,14 @@ func (a *agent) processModuleConfig(rootDir string, volumePath string, config *M
 
 func (a *agent) processURL(rootDir string, name string, volume baetyl.VolumeInfo) error {
 	meta := volume.Meta
-	containerDir := path.Join(rootDir, volume.Path)
-	err := os.MkdirAll(containerDir, 0755)
+	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
 	if err != nil {
-		return fmt.Errorf("failed to prepare volume directory (%s): %s", containerDir, err.Error())
+		return fmt.Errorf("illegal path of volume %s", volume.Name)
+	}
+	containerDir := path.Join(rootDir, rp)
+	err = os.MkdirAll(containerDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to prepare volume directory (%s): %s", volume.Path, err.Error())
 	}
 	volumeFile := path.Join(containerDir, name)
 	if utils.FileExists(volumeFile) {
@@ -260,8 +257,9 @@ func (a *agent) sendData(request interface{}) ([]byte, error) {
 	return resMsg.Content, nil
 }
 
-func (a *agent) getCurrentDeployInfo(inspect *baetyl.Inspect) (map[string]string, error) {
-	var info deployInfo
+func (a *agent) getCurrentDeploy(inspect *baetyl.Inspect) (map[string]string, error) {
+	// TODO 理论上应该总是从inspect获取部署的名称和版本，但是主程序现在没有部署名称信息，临时从application.yml中获取
+	var info deployment
 	err := utils.LoadYAML(path.Join(baetyl.DefaultDBDir, "volumes", baetyl.AppConfFileName), &info)
 	if err != nil {
 		return nil, err
@@ -274,35 +272,29 @@ func (a *agent) getCurrentDeployInfo(inspect *baetyl.Inspect) (map[string]string
 	}, nil
 }
 
-func getCurrentVolumeInfo() (map[string]*baetyl.VolumeInfo, error) {
-	var cfg baetyl.ComposeAppConfig
-	err := utils.LoadYAML(path.Join(baetyl.DefaultDBDir, "volumes", baetyl.AppConfFileName), &cfg)
+func (a *agent) checkVolumeExists(volume baetyl.VolumeInfo) bool {
+	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
 	if err != nil {
-		return nil, err
+		a.ctx.Log().Warnf("illegal path of volume: %s", volume.Name)
+		return false
 	}
-	volumes := map[string]*baetyl.VolumeInfo{}
-	for _, svc := range cfg.Services {
-		vs := svc.Volumes
-		for _, v := range vs {
-			volume := &baetyl.VolumeInfo{}
-			vp := v.Source
-			p, err := filepath.Rel(baetyl.DefaultDBDir, vp)
-			if err != nil {
-				continue
-			}
-			ps := strings.Split(p, string(filepath.Separator))
-			volume.Name = ps[0]
-			volume.Path = vp
-			if len(ps) > 1 {
-				volume.Meta.Version = ps[1]
-			}
-			volumes[volume.Name] = volume
+	volumePath := path.Join(baetyl.DefaultDBDir, "volumes", rp)
+	if !utils.DirExists(volumePath) {
+		return false
+	}
+	if volume.Meta.MD5 != "" {
+		volumeFile := path.Join(volumePath, volume.Name)
+		md5, err := utils.CalculateFileMD5(volumeFile)
+		if err != nil {
+			a.ctx.Log().Warnf("failed to calculate md5 of volume file %s", volumeFile)
+			return false
 		}
+		return md5 == volume.Meta.MD5
 	}
-	return volumes, nil
+	return true
 }
 
-type deployInfo struct {
+type deployment struct {
 	Name       string `yaml:"name" json:"name"`
 	AppVersion string `yaml:"app_version" json:"app_version"`
 }
