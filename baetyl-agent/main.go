@@ -77,7 +77,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	}
 	var linkCli *link.Client
 	var no *node
-	if cfg.Remote.Link != nil {
+	if cfg.Remote.Link.Address != "" {
 		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
 		if err != nil {
 			return nil, err
