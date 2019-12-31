@@ -57,7 +57,7 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			a.ctx.Log().WithError(err).Warnf("node nil")
 			return nil
 		}
-		currentInfo, err := a.getCurrentDeployInfo(io.Inspect)
+		currentDeploy, err := a.getCurrentDeploy(io.Inspect)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
 			return nil
@@ -66,7 +66,7 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			Namespace:  a.node.Namespace,
 			Name:       a.node.Name,
 			Status:     io,
-			DeployInfo: currentInfo,
+			Deployment: currentDeploy,
 		}
 		var res config.BackwardInfo
 		resData, err := a.sendData(info)
@@ -91,9 +91,10 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 				Content: le,
 			}
 			select {
+			case oe := <-a.events:
+				a.ctx.Log().Warnf("discard old event: %+v", *oe)
+				a.events <- e
 			case a.events <- e:
-			default:
-				a.ctx.Log().Warnf("discard event: %+v", *e)
 			}
 		}
 	} else {

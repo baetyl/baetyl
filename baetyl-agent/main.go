@@ -61,7 +61,6 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 	sn := ""
 	key := []byte{}
 	var dispatcher *mqtt.Dispatcher
-	ctx.Log().Infof("config = %v", cfg)
 	if cfg.Remote.MQTT != nil {
 		err = defaults(&cfg)
 		if err != nil {
@@ -78,7 +77,7 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		dispatcher = mqtt.NewDispatcher(*cfg.Remote.MQTT, ctx.Log())
 	}
 	var linkCli *link.Client
-	if cfg.Remote.Link != nil {
+	if cfg.Remote.Link.Address != "" {
 		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
 		if err != nil {
 			return nil, err
