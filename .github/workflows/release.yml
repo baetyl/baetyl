@@ -13,7 +13,7 @@ jobs:
         run: |
           echo ::set-output name=version::$(echo ${GITHUB_REF:10})
           echo ::set-output name=revision::1
-      - uses: chensheng0/run-on-arch-action@master
+      - uses: baetyl/run-on-arch-action@master
         with:
           architecture: amd64
           distribution: stretch
@@ -59,7 +59,7 @@ jobs:
           run: |
             echo ::set-output name=version::$(echo ${GITHUB_REF:10})
             echo ::set-output name=revision::1
-        - uses: chensheng0/run-on-arch-action@master
+        - uses: baetyl/run-on-arch-action@master
           with:
             architecture: armv7
             distribution: stretch
@@ -105,7 +105,7 @@ jobs:
         run: |
           echo ::set-output name=version::$(echo ${GITHUB_REF:10})
           echo ::set-output name=revision::1
-      - uses: chensheng0/run-on-arch-action@master
+      - uses: baetyl/run-on-arch-action@master
         with:
           architecture: i386
           distribution: stretch
@@ -151,7 +151,7 @@ jobs:
           run: |
             echo ::set-output name=version::$(echo ${GITHUB_REF:10})
             echo ::set-output name=revision::1
-        - uses: chensheng0/run-on-arch-action@master
+        - uses: baetyl/run-on-arch-action@master
           with:
             architecture: arm64
             distribution: stretch
