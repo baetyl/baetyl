@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v1
       - id: version
         run: |
-          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
           echo ::set-output name=revision::1
       - uses: chensheng0/run-on-arch-action@master
         with:
@@ -22,6 +22,7 @@ jobs:
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+            sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
             cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb .
@@ -56,7 +57,7 @@ jobs:
         - uses: actions/checkout@v1
         - id: version
           run: |
-            echo ::set-output name=version::$(git tag --contains HEAD)
+            echo ::set-output name=version::$(echo ${GITHUB_REF:10})
             echo ::set-output name=revision::1
         - uses: chensheng0/run-on-arch-action@master
           with:
@@ -67,6 +68,7 @@ jobs:
               apt-get install -y dh-make dh-systemd
               cp -r scripts/debian/ debian/
               sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+              sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
               sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
               dpkg-buildpackage -b -d -uc -us -i
               cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb .
@@ -101,7 +103,7 @@ jobs:
       - uses: actions/checkout@v1
       - id: version
         run: |
-          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
           echo ::set-output name=revision::1
       - uses: chensheng0/run-on-arch-action@master
         with:
@@ -112,6 +114,7 @@ jobs:
             apt-get install -y dh-make dh-systemd
             cp -r scripts/debian/ debian/
             sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+            sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
             sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
             dpkg-buildpackage -b -d -uc -us -i
             cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb .
@@ -146,7 +149,7 @@ jobs:
         - uses: actions/checkout@v1
         - id: version
           run: |
-            echo ::set-output name=version::$(git tag --contains HEAD)
+            echo ::set-output name=version::$(echo ${GITHUB_REF:10})
             echo ::set-output name=revision::1
         - uses: chensheng0/run-on-arch-action@master
           with:
@@ -157,6 +160,7 @@ jobs:
               apt-get install -y dh-make dh-systemd
               cp -r scripts/debian/ debian/
               sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+              sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
               sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
               dpkg-buildpackage -b -d -uc -us -i
               cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb .
@@ -194,12 +198,12 @@ jobs:
           go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: Build
-        run: make build
       - id: version
         run: |
-          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
           echo ::set-output name=revision::1
+      - name: Build
+        run: make build GIT_TAG=${{ steps.version.outputs.version }}
       - name: prepare
         run: |
           echo "${{ secrets.KEY_PRIVATE }}" >key.private
@@ -242,10 +246,10 @@ jobs:
       - uses: actions/checkout@v1
       - id: version
         run: |
-          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
       - name: build baetyl
         run: |
-          make build
+          make build GIT_TAG=${{ steps.version.outputs.version }}
           tar cvzf baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz baetyl
       - id: path
         run: |
@@ -298,7 +302,7 @@ jobs:
           path: ${{ steps.path.outputs.path }}
       - id: version
         run: |
-          echo ::set-output name=version::$(git tag --contains HEAD)
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
           echo ::set-output name=revision::1
       - name: release
         run: |
