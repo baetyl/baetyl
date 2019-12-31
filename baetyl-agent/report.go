@@ -3,17 +3,13 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"time"
 
 	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 )
-
-type inspect struct {
-	*baetyl.Inspect `json:",inline"`
-	OTA             map[string][]*record `json:"ota,omitempty"`
-}
 
 type EventLink struct {
 	Info  map[string]interface{}
@@ -35,38 +31,44 @@ func (a *agent) reporting() error {
 }
 
 // Report reports info
-func (a *agent) report(pgs ...*progress) *inspect {
+func (a *agent) report(pgs ...*progress) *config.Inspect {
 	defer utils.Trace("report", logger.Debugf)()
 
 	i, err := a.ctx.InspectSystem()
 	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to inspect stats")
+		a.ctx.Log().WithError(err).Warnf("failed to config.Inspect stats")
 		i = baetyl.NewInspect()
 		i.Error = err.Error()
 	}
 
-	io := &inspect{Inspect: i}
+	io := &config.Inspect{Inspect: i}
 	for _, pg := range pgs {
 		if io.OTA == nil {
-			io.OTA = map[string][]*record{}
+			io.OTA = map[string][]*config.Record{}
 		}
 		if pg.event != nil && pg.event.Trace != "" {
 			io.OTA[pg.event.Trace] = pg.records
 		}
 	}
 	if a.link != nil {
-		currentInfo, err := a.getCurrentDeployInfo(io.Inspect)
+		a.ctx.Log().Debugf("report set agent ，point = %p", a)
+		a.ctx.Log().Debugf("report set agent = %+v", a)
+		if a.node == nil {
+			a.ctx.Log().WithError(err).Warnf("node nil")
+			return nil
+		}
+		currentDeploy, err := a.getCurrentDeploy(io.Inspect)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
 			return nil
 		}
-		info := ForwardInfo{
+		info := config.ForwardInfo{
 			Namespace:  a.node.Namespace,
 			Name:       a.node.Name,
 			Status:     io,
-			DeployInfo: currentInfo,
+			Deployment: currentDeploy,
 		}
-		var res BackwardInfo
+		var res config.BackwardInfo
 		resData, err := a.sendData(info)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to send report data by link")
@@ -89,9 +91,10 @@ func (a *agent) report(pgs ...*progress) *inspect {
 				Content: le,
 			}
 			select {
+			case oe := <-a.events:
+				a.ctx.Log().Warnf("discard old event: %+v", *oe)
+				a.events <- e
 			case a.events <- e:
-			default:
-				a.ctx.Log().Warnf("discard event: %+v", *e)
 			}
 		}
 	} else {

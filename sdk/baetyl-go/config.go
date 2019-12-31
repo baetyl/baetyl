@@ -198,7 +198,7 @@ type ComposeService struct {
 	// specified other depended services
 	DependsOn []string `yaml:"depends_on,omitempty" json:"depends_on,omitempty" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
-	Command *Command `yaml:"command,omitempty" json:"command,omitempty"`
+	Command *Command `yaml:"command,omitempty" json:"command,omitempty" default:"{}"`
 	// specifies the environment variable of the service program
 	Environment *Environment `yaml:"environment,omitempty" json:"environment,omitempty" default:"{}"`
 	// specifies the restart policy of the instance of the service

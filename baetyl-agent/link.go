@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 	"github.com/mitchellh/mapstructure"
@@ -13,15 +14,13 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
 )
-
 
 func (a *agent) processLinkEvent(e *Event) {
 	le := e.Content.(*EventLink)
 	a.ctx.Log().Infof("process ota: type=%s, trace=%s", le.Type, le.Trace)
-	ol := newOTALog(a.cfg.OTA, a, &EventOTA{Type:le.Type, Trace:le.Trace}, a.ctx.Log().WithField("agent", "otalog"))
+	ol := newOTALog(a.cfg.OTA, a, &EventOTA{Type: le.Type, Trace: le.Trace}, a.ctx.Log().WithField("agent", "otalog"))
 	defer ol.wait()
 	err := a.processLinkOTA(le)
 	if err != nil {
@@ -35,7 +34,7 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	if !ok {
 		return fmt.Errorf("no deployment info in delta info")
 	}
-	var deploy deployInfo
+	var deploy deployment
 	for k, v := range d.(map[string]interface{}) {
 		deploy.Name = k
 		deploy.AppVersion = v.(string)
@@ -46,31 +45,29 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	if err != nil {
 		return fmt.Errorf("failed to send request by link: %s", err.Error())
 	}
-	var res BackwardInfo
+	var res config.BackwardInfo
 	err = json.Unmarshal(resData, &res)
-	var dep Deployment
+	var dep config.Deployment
 	err = mapstructure.Decode(res.Response["deployment"], &dep)
 	if err != nil {
 		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
 	}
-	metaData, hostDir := a.processApplication(dep.Snapshot.Apps)
+	metadata, hostDir := a.processApplication(dep.Snapshot.Apps)
 
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
-	for name, volume := range metaData {
+	for name, volume := range metadata {
 		volumes = append(volumes, volume)
 		metaVersion := volume.Meta.Version
 		if metaVersion == "" {
-			delete(metaData, name)
+			delete(metadata, name)
 		}
-		if version, ok := dep.Snapshot.Configs[name]; ok {
-			if metaVersion == version {
-				delete(metaData, name)
-			}
+		if a.checkVolumeExists(volume) {
+			delete(metadata, name)
 		}
 	}
 	a.cleaner.set(deploy.AppVersion, volumes)
-	err = a.processVolumes(metaData)
+	err = a.processVolumes(metadata)
 	if err != nil {
 		return err
 	}
@@ -96,9 +93,9 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 				if err != nil {
 					return fmt.Errorf("failed to send request by link: %s", err.Error())
 				}
-				var res BackwardInfo
+				var res config.BackwardInfo
 				err = json.Unmarshal(resData, &res)
-				var config ModuleConfig
+				var config config.ModuleConfig
 				err = mapstructure.Decode(res.Response["config"], &config)
 				if err != nil {
 					return fmt.Errorf("error to transform from map to config: %s", err.Error())
@@ -113,7 +110,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 	return nil
 }
 
-func (a *agent) processModuleConfig(rootDir string, volumePath string, config *ModuleConfig) error {
+func (a *agent) processModuleConfig(rootDir string, volumePath string, config *config.ModuleConfig) error {
 	rp, err := filepath.Rel(baetyl.DefaultDBDir, volumePath)
 	if err != nil {
 		return fmt.Errorf("illegal path of config (%s): %s", config.Name, err.Error())
@@ -136,10 +133,14 @@ func (a *agent) processModuleConfig(rootDir string, volumePath string, config *M
 
 func (a *agent) processURL(rootDir string, name string, volume baetyl.VolumeInfo) error {
 	meta := volume.Meta
-	containerDir := path.Join(rootDir, volume.Path)
-	err := os.MkdirAll(containerDir, 0755)
+	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
 	if err != nil {
-		return fmt.Errorf("failed to prepare volume directory (%s): %s", containerDir, err.Error())
+		return fmt.Errorf("illegal path of volume %s", volume.Name)
+	}
+	containerDir := path.Join(rootDir, rp)
+	err = os.MkdirAll(containerDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to prepare volume directory (%s): %s", volume.Path, err.Error())
 	}
 	volumeFile := path.Join(containerDir, name)
 	if utils.FileExists(volumeFile) {
@@ -186,7 +187,7 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 		a.ctx.Log().WithError(err).Warnf("failed to get response by link")
 		return nil, ""
 	}
-	var res BackwardInfo
+	var res config.BackwardInfo
 	err = json.Unmarshal(resData, &res)
 	deployConfig, err := getDeployConfig(&res)
 	if err != nil {
@@ -218,12 +219,12 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 	return deployConfig.Metadata, hostDir
 }
 
-func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
+func getDeployConfig(info *config.BackwardInfo) (*config.DeployConfig, error) {
 	appData, err := json.Marshal(info.Response["application"])
 	if err != nil {
 		return nil, err
 	}
-	var deployConfig DeployConfig
+	var deployConfig config.DeployConfig
 	err = json.Unmarshal(appData, &deployConfig)
 	if err != nil {
 		return nil, err
@@ -231,8 +232,8 @@ func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
 	return &deployConfig, nil
 }
 
-func (a *agent) newRequest(resourceType, resourceName string) *ForwardInfo {
-	return &ForwardInfo{
+func (a *agent) newRequest(resourceType, resourceName string) *config.ForwardInfo {
+	return &config.ForwardInfo{
 		Namespace: a.node.Namespace,
 		Name:      a.node.Name,
 		Request: map[string]string{
@@ -240,12 +241,6 @@ func (a *agent) newRequest(resourceType, resourceName string) *ForwardInfo {
 			common.ResourceName: resourceName,
 		},
 	}
-}
-
-func getVolumeVersion(volumePath string) string {
-	volumePath = strings.TrimRight(volumePath, "/")
-	_, version := path.Split(volumePath)
-	return version
 }
 
 func (a *agent) sendData(request interface{}) ([]byte, error) {
@@ -263,23 +258,49 @@ func (a *agent) sendData(request interface{}) ([]byte, error) {
 	return resMsg.Content, nil
 }
 
-func (a *agent) getCurrentDeployInfo(inspect *baetyl.Inspect) (map[string]string, error) {
-	var info deployInfo
+func (a *agent) getCurrentDeploy(inspect *baetyl.Inspect) (map[string]string, error) {
+	// TODO 理论上应该总是从inspect获取部署的名称和版本，但是主程序现在没有部署名称信息，临时从application.yml中获取
+	var info deployment
 	err := utils.LoadYAML(path.Join(baetyl.DefaultDBDir, "volumes", baetyl.AppConfFileName), &info)
 	if err != nil {
 		return nil, err
+	}
+	if inspect.Software.ConfVersion == "" {
+		return nil, fmt.Errorf("app version is empty")
 	}
 	return map[string]string{
 		info.Name: inspect.Software.ConfVersion,
 	}, nil
 }
 
-type deployInfo struct {
+func (a *agent) checkVolumeExists(volume baetyl.VolumeInfo) bool {
+	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
+	if err != nil {
+		a.ctx.Log().Warnf("illegal path of volume: %s", volume.Name)
+		return false
+	}
+	volumePath := path.Join(baetyl.DefaultDBDir, "volumes", rp)
+	if !utils.DirExists(volumePath) {
+		return false
+	}
+	if volume.Meta.MD5 != "" {
+		volumeFile := path.Join(volumePath, volume.Name)
+		md5, err := utils.CalculateFileMD5(volumeFile)
+		if err != nil {
+			a.ctx.Log().Warnf("failed to calculate md5 of volume file %s", volumeFile)
+			return false
+		}
+		return md5 == volume.Meta.MD5
+	}
+	return true
+}
+
+type deployment struct {
 	Name       string `yaml:"name" json:"name"`
 	AppVersion string `yaml:"app_version" json:"app_version"`
 }
 
 type node struct {
-	Name string
+	Name      string
 	Namespace string
 }
