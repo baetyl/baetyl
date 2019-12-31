@@ -250,13 +250,13 @@ jobs:
       - id: path
         run: |
           echo ::set-output name=path::$(pwd)
-          echo ::set-output name=binary::baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
+          echo ::set-output name=binary::
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.TOKEN }}
-          file: ${{ steps.path.outputs.path }}/${{ steps.path.outputs.binary }}
-          asset_name: ${{ steps.path.outputs.binary }}
+          file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
+          asset_name: baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
       - uses: actions/upload-artifact@v1
