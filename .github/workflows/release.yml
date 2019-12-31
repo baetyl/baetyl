@@ -32,7 +32,7 @@ jobs:
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz
           asset_name: baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz
           tag: ${{ github.ref }}
@@ -40,7 +40,7 @@ jobs:
       - name: Upload deb to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
           asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
           tag: ${{ github.ref }}
@@ -78,7 +78,7 @@ jobs:
         - name: Upload binaries to release
           uses: svenstaro/upload-release-action@v1-release
           with:
-            repo_token: ${{ secrets.TOKEN }}
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
             file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-armv7.tar.gz
             asset_name: baetyl-${{ steps.version.outputs.version }}-linux-armv7.tar.gz
             tag: ${{ github.ref }}
@@ -86,7 +86,7 @@ jobs:
         - name: Upload deb to release
           uses: svenstaro/upload-release-action@v1-release
           with:
-            repo_token: ${{ secrets.TOKEN }}
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
             file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb
             asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb
             tag: ${{ github.ref }}
@@ -124,7 +124,7 @@ jobs:
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-i386.tar.gz
           asset_name: baetyl-${{ steps.version.outputs.version }}-linux-i386.tar.gz
           tag: ${{ github.ref }}
@@ -132,7 +132,7 @@ jobs:
       - name: Upload deb to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb
           asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb
           tag: ${{ github.ref }}
@@ -170,7 +170,7 @@ jobs:
         - name: Upload binaries to release
           uses: svenstaro/upload-release-action@v1-release
           with:
-            repo_token: ${{ secrets.TOKEN }}
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
             file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-arm64.tar.gz
             asset_name: baetyl-${{ steps.version.outputs.version }}-linux-arm64.tar.gz
             tag: ${{ github.ref }}
@@ -178,7 +178,7 @@ jobs:
         - name: Upload deb to release
           uses: svenstaro/upload-release-action@v1-release
           with:
-            repo_token: ${{ secrets.TOKEN }}
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
             file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb
             asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb
             tag: ${{ github.ref }}
@@ -226,7 +226,7 @@ jobs:
       - name: Upload rpm to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: ${{ steps.path.outputs.path }}/${{ steps.path.outputs.rpm }}
           asset_name: ${{ steps.path.outputs.rpm }}
           tag: ${{ github.ref }}
@@ -257,7 +257,7 @@ jobs:
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.TOKEN }}
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
           file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
           asset_name: baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
           tag: ${{ github.ref }}
