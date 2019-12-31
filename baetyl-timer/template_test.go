@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test__main_gen(test *testing.T) {
+func Test__template_gen(test *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -19,11 +19,11 @@ func Test__main_gen(test *testing.T) {
 			input: "{\"timestamp\": {{.Time.Now}}}",
 		},
 		{
-			name:  "Time.Now",
+			name:  "Time.NowUnix",
 			input: "{\"timestamp\": {{.Time.NowUnix}}}",
 		},
 		{
-			name:  "Time.Now",
+			name:  "Time.NowUnixNano",
 			input: "{\"timestamp\": {{.Time.NowUnixNano}}}",
 		},
 		{
@@ -45,6 +45,10 @@ func Test__main_gen(test *testing.T) {
 		{
 			name:  "Rand.Float64n",
 			input: "{\"Rand.Float64n\": {{.Rand.Float64n 60}}}",
+		},
+		{
+			name:  "anyString",
+			input: "{\"anyString\": \"inputString\"}",
 		},
 	}
 	for _, t := range tests {

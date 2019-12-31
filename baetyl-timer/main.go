@@ -40,14 +40,14 @@ func main() {
 		// create a timer
 		ticker := time.NewTicker(cfg.Timer.Interval)
 		defer ticker.Stop()
+		payload := cfg.Publish.Payload
+		temp, err := newTemplate(payload)
+		if err != nil {
+			return err
+		}
 		for {
 			select {
 			case <-ticker.C:
-				payload := cfg.Publish.Payload
-				temp, err := newTemplate(payload)
-				if err != nil {
-					return err
-				}
 				result, err := temp.gen()
 				if err != nil {
 					return err
@@ -55,8 +55,6 @@ func main() {
 				pkt := packet.NewPublish()
 				pkt.Message.Topic = cfg.Publish.Topic
 				pkt.Message.QOS = packet.QOS(cfg.Publish.QOS)
-				//pkt.Message.Payload = pld
-				// send a message to hub triggered by timer
 				pkt.Message.Payload = result
 				err = cli.Send(pkt)
 				if err != nil {
