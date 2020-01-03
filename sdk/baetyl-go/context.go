@@ -13,6 +13,8 @@ import (
 	"github.com/baetyl/baetyl/utils"
 )
 
+//go:generate mockgen -destination=mock/context.go -package=baetyl github.com/baetyl/baetyl/sdk/baetyl-go Context
+
 // Mode keys
 const (
 	ModeNative = "native"
