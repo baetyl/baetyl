@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	mock "github.com/baetyl/baetyl/sdk/baetyl-go/mock"
@@ -117,9 +118,9 @@ func TestProcessVolume(t *testing.T) {
 	content := "test"
 	configName := "hub-conf"
 	filename := "service.yml"
-	info := BackwardInfo{
+	info := config.BackwardInfo{
 		Metadata: map[string]interface{}{
-			string(common.Config): ModuleConfig{
+			string(common.Config): config.ModuleConfig{
 				Name: configName,
 				Data: map[string]string{
 					filename: content,
@@ -173,9 +174,9 @@ func TestProcessApplication(t *testing.T) {
 	appName := "app"
 	appVersion := "v1"
 	expected := baetyl.ComposeAppConfig{Name: appName, AppVersion: appVersion}
-	info := BackwardInfo{
+	info := config.BackwardInfo{
 		Metadata: map[string]interface{}{
-			string(common.Application): DeployConfig{
+			string(common.Application): config.DeployConfig{
 				AppConfig: expected,
 				Metadata:  nil,
 			},

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"github.com/baetyl/baetyl-go/link"
@@ -25,7 +25,8 @@ type Config struct {
 			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
 		} `yaml:"desire" json:"desire"`
 	} `yaml:"remote" json:"remote"`
-	OTA OTAInfo `yaml:"ota" json:"ota"`
+	OTA    OTAInfo `yaml:"ota" json:"ota"`
+	Active `yaml:",inline" json:",inline"`
 }
 
 // OTAInfo ota config
@@ -48,9 +49,15 @@ type DeployConfig struct {
 type ForwardInfo struct {
 	Namespace  string            `yaml:"namespace" json:"namespace"`
 	Name       string            `yaml:"name" json:"mame"`
-	Metadata    map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
-	Status     *inspect          `yaml:"status" json:"status"`                      // node update
+	Metadata   map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
+	Status     *Inspect          `yaml:"status" json:"status"`                      // node update
 	Deployment map[string]string `yaml:"deployment" json:"deployment" default:"{}"` // shadow update
+	Activation Activation        `yaml:"activation" json:"activation"`
+}
+
+type Activation struct {
+	FingerprintValue string            `yaml:"fingerprintValue" json:"fingerprintValue" default:""`
+	PenetrateData    map[string]string `yaml:"penetrateData" json:"penetrateData" default:"{}"`
 }
 
 type BackwardInfo struct {
@@ -84,4 +91,45 @@ type ModuleConfig struct {
 	Data      map[string]string `yaml:"data" json:"data" default:"{}"`
 	Version   string            `yaml:"version" json:"version"`
 	Labels    map[string]string `yaml:"labels" json:"labels"`
+}
+
+// Active
+// Config active module config
+type Active struct {
+	Interval     time.Duration `yaml:"interval" json:"interval" default:"1m"  validate:"min=10000000000"`
+	Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
+	Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
+	Server       Server        `yaml:"server" json:"server"`
+}
+
+// Server manually activated server configuration
+type Server struct {
+	Listen string `yaml:"listen" json:"listen"`
+	Pages  string `yaml:"pages" json:"pages" default:"etc/baetyl/pages"`
+}
+
+// Fingerprint type to be collected
+type Fingerprint struct {
+	Proof string `yaml:"proof" json:"proof"`
+	Value string `yaml:"value" json:"value"`
+}
+
+// Attribute field to be filled (masterKey, deviceType, deviceCompany)
+type Attribute struct {
+	Name  string `yaml:"name" json:"name" validate:"nonzero"`
+	Label string `yaml:"label" json:"label" validate:"nonzero"`
+	Value string `yaml:"value" json:"value"`
+	Desc  string `yaml:"description" json:"description"`
+}
+
+type Inspect struct {
+	*baetyl.Inspect `json:",inline"`
+	OTA             map[string][]*Record `json:"ota,omitempty"`
+}
+
+type Record struct {
+	Time  string `json:"time,omitempty"`
+	Step  string `json:"step,omitempty"`
+	Trace string `json:"trace,omitempty"`
+	Error string `json:"error,omitempty"`
 }

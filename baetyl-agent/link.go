@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 	"github.com/mitchellh/mapstructure"
@@ -44,9 +45,9 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	if err != nil {
 		return fmt.Errorf("failed to send request by link: %s", err.Error())
 	}
-	var res BackwardInfo
+	var res config.BackwardInfo
 	err = json.Unmarshal(resData, &res)
-	var dep Deployment
+	var dep config.Deployment
 	err = mapstructure.Decode(res.Metadata["deployment"], &dep)
 	if err != nil {
 		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
@@ -92,9 +93,9 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 				if err != nil {
 					return fmt.Errorf("failed to send request by link: %s", err.Error())
 				}
-				var res BackwardInfo
+				var res config.BackwardInfo
 				err = json.Unmarshal(resData, &res)
-				var config ModuleConfig
+				var config config.ModuleConfig
 				err = mapstructure.Decode(res.Metadata["config"], &config)
 				if err != nil {
 					return fmt.Errorf("error to transform from map to config: %s", err.Error())
@@ -109,7 +110,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 	return nil
 }
 
-func (a *agent) processModuleConfig(rootDir string, volumePath string, config *ModuleConfig) error {
+func (a *agent) processModuleConfig(rootDir string, volumePath string, config *config.ModuleConfig) error {
 	rp, err := filepath.Rel(baetyl.DefaultDBDir, volumePath)
 	if err != nil {
 		return fmt.Errorf("illegal path of config (%s): %s", config.Name, err.Error())
@@ -176,7 +177,7 @@ func (a *agent) processURL(rootDir string, name string, volume baetyl.VolumeInfo
 }
 
 func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl.VolumeInfo, string) {
-	var req *ForwardInfo
+	var req *config.ForwardInfo
 	for name, version := range appInfo {
 		req = a.newRequest("application", name, version)
 	}
@@ -189,7 +190,7 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 		a.ctx.Log().WithError(err).Warnf("failed to get response by link")
 		return nil, ""
 	}
-	var res BackwardInfo
+	var res config.BackwardInfo
 	err = json.Unmarshal(resData, &res)
 	deployConfig, err := getDeployConfig(&res)
 	if err != nil {
@@ -221,12 +222,12 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 	return deployConfig.Metadata, hostDir
 }
 
-func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
+func getDeployConfig(info *config.BackwardInfo) (*config.DeployConfig, error) {
 	appData, err := json.Marshal(info.Metadata["application"])
 	if err != nil {
 		return nil, err
 	}
-	var deployConfig DeployConfig
+	var deployConfig config.DeployConfig
 	err = json.Unmarshal(appData, &deployConfig)
 	if err != nil {
 		return nil, err
@@ -234,8 +235,8 @@ func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
 	return &deployConfig, nil
 }
 
-func (a *agent) newRequest(resourceType, resourceName, resourceVersion string) *ForwardInfo {
-	return &ForwardInfo{
+func (a *agent) newRequest(resourceType, resourceName, resourceVersion string) *config.ForwardInfo {
+	return &config.ForwardInfo{
 		Namespace: a.node.Namespace,
 		Name:      a.node.Name,
 		Metadata: map[string]string{
