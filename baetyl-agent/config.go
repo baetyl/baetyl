@@ -48,14 +48,14 @@ type DeployConfig struct {
 type ForwardInfo struct {
 	Namespace  string            `yaml:"namespace" json:"namespace"`
 	Name       string            `yaml:"name" json:"mame"`
-	Request    map[string]string `yaml:"request" json:"request" default:"{}"`
+	Metadata    map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
 	Status     *inspect          `yaml:"status" json:"status"`                      // node update
 	Deployment map[string]string `yaml:"deployment" json:"deployment" default:"{}"` // shadow update
 }
 
 type BackwardInfo struct {
 	Delta    map[string]interface{} `yaml:"delta" json:"delta"`
-	Response map[string]interface{} `yaml:"response" json:"response"`
+	Metadata map[string]interface{} `yaml:"metadata" json:"metadata"`
 }
 
 type Deployment struct {

@@ -15,4 +15,6 @@ const (
 	ResourceType = "resourceType"
 	// ResourceName resource name
 	ResourceName = "resourceName"
+	// ResourceVersion resource version
+	ResourceVersion = "resourceVersion"
 )

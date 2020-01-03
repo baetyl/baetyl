@@ -39,7 +39,7 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 		deploy.AppVersion = v.(string)
 	}
 
-	req := a.newRequest("deployment", deploy.Name)
+	req := a.newRequest("deployment", deploy.Name, deploy.AppVersion)
 	resData, err := a.sendData(*req)
 	if err != nil {
 		return fmt.Errorf("failed to send request by link: %s", err.Error())
@@ -47,26 +47,26 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	var res BackwardInfo
 	err = json.Unmarshal(resData, &res)
 	var dep Deployment
-	err = mapstructure.Decode(res.Response["deployment"], &dep)
+	err = mapstructure.Decode(res.Metadata["deployment"], &dep)
 	if err != nil {
 		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
 	}
-	metadata, hostDir := a.processApplication(dep.Snapshot.Apps)
+	volumeMetas, hostDir := a.processApplication(dep.Snapshot.Apps)
 
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
-	for name, volume := range metadata {
+	for name, volume := range volumeMetas {
 		volumes = append(volumes, volume)
 		metaVersion := volume.Meta.Version
 		if metaVersion == "" {
-			delete(metadata, name)
+			delete(volumeMetas, name)
 		}
 		if a.checkVolumeExists(volume) {
-			delete(metadata, name)
+			delete(volumeMetas, name)
 		}
 	}
 	a.cleaner.set(deploy.AppVersion, volumes)
-	err = a.processVolumes(metadata)
+	err = a.processVolumes(volumeMetas)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 					a.ctx.Log().Errorf("download volume (%s) failed: %s", name, err.Error())
 				}
 			} else {
-				req := a.newRequest("config", name)
+				req := a.newRequest("config", name, volume.Meta.Version)
 				resData, err := a.sendData(*req)
 				if err != nil {
 					return fmt.Errorf("failed to send request by link: %s", err.Error())
@@ -95,7 +95,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 				var res BackwardInfo
 				err = json.Unmarshal(resData, &res)
 				var config ModuleConfig
-				err = mapstructure.Decode(res.Response["config"], &config)
+				err = mapstructure.Decode(res.Metadata["config"], &config)
 				if err != nil {
 					return fmt.Errorf("error to transform from map to config: %s", err.Error())
 				}
@@ -176,11 +176,14 @@ func (a *agent) processURL(rootDir string, name string, volume baetyl.VolumeInfo
 }
 
 func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl.VolumeInfo, string) {
-	var appName string
-	for k, _ := range appInfo {
-		appName = k
+	var req *ForwardInfo
+	for name, version := range appInfo {
+		req = a.newRequest("application", name, version)
 	}
-	req := a.newRequest("application", appName)
+	if req == nil {
+		a.ctx.Log().Errorf("wrong format of app info")
+		return nil, ""
+	}
 	resData, err := a.sendData(*req)
 	if err != nil {
 		a.ctx.Log().WithError(err).Warnf("failed to get response by link")
@@ -219,7 +222,7 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 }
 
 func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
-	appData, err := json.Marshal(info.Response["application"])
+	appData, err := json.Marshal(info.Metadata["application"])
 	if err != nil {
 		return nil, err
 	}
@@ -231,13 +234,14 @@ func getDeployConfig(info *BackwardInfo) (*DeployConfig, error) {
 	return &deployConfig, nil
 }
 
-func (a *agent) newRequest(resourceType, resourceName string) *ForwardInfo {
+func (a *agent) newRequest(resourceType, resourceName, resourceVersion string) *ForwardInfo {
 	return &ForwardInfo{
 		Namespace: a.node.Namespace,
 		Name:      a.node.Name,
-		Request: map[string]string{
-			common.ResourceType: resourceType,
-			common.ResourceName: resourceName,
+		Metadata: map[string]string{
+			common.ResourceType:    resourceType,
+			common.ResourceName:    resourceName,
+			common.ResourceVersion: resourceVersion,
 		},
 	}
 }
