@@ -411,11 +411,13 @@ type VolumeInfo struct {
 	// specifies the directory where the storage volume is on the host
 	Path string `yaml:"path" json:"path" validate:"nonzero"`
 	// specifies the metadata of the storage volume
-	Meta struct {
-		URL     string `yaml:"url" json:"url"`
-		MD5     string `yaml:"md5" json:"md5"`
-		Version string `yaml:"version" json:"version"`
-	} `yaml:"meta" json:"meta"`
+	Meta Meta `yaml:"meta" json:"meta"`
+}
+
+type Meta struct {
+	URL     string `yaml:"url" json:"url"`
+	MD5     string `yaml:"md5" json:"md5"`
+	Version string `yaml:"version" json:"version"`
 }
 
 // LoadComposeAppConfigCompatible load compose app config or old compatible config

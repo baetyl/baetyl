@@ -83,7 +83,7 @@ func (a *agent) active(attrs map[string]string) (err error) {
 		PenetrateData:    attrs,
 	}
 	reportInfo := config.ForwardInfo{
-		Request:    request,
+		Metadata:   request,
 		Activation: activation,
 	}
 
@@ -98,8 +98,8 @@ func (a *agent) active(attrs map[string]string) (err error) {
 		a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned by link")
 		return nil
 	}
-	nodeName := res.Response["node"].(string)
-	ns := res.Response["namespace"].(string)
+	nodeName := res.Metadata["node"].(string)
+	ns := res.Metadata["namespace"].(string)
 	a.ctx.Log().Debugf("active node name = %s", nodeName)
 	a.ctx.Log().Debugf("active namespace = %s", ns)
 	if err := os.Setenv(common.NodeName, nodeName); err != nil {
@@ -119,8 +119,8 @@ func (a *agent) active(attrs map[string]string) (err error) {
 	a.ctx.Log().Debugf("active delta = %v", res.Delta)
 	if len(res.Delta) != 0 {
 		le := &EventLink{
-			Trace: res.Response["trace"].(string),
-			Type:  res.Response["type"].(string),
+			Trace: res.Metadata["trace"].(string),
+			Type:  res.Metadata["type"].(string),
 		}
 		le.Info = res.Delta
 		e := &Event{

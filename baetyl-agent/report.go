@@ -81,8 +81,8 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		}
 		if len(res.Delta) != 0 {
 			le := &EventLink{
-				Trace: res.Response["trace"].(string),
-				Type:  res.Response["type"].(string),
+				Trace: res.Metadata["trace"].(string),
+				Type:  res.Metadata["type"].(string),
 			}
 			le.Info = res.Delta
 			e := &Event{
