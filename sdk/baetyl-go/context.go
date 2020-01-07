@@ -3,6 +3,7 @@ package baetyl
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -171,6 +172,8 @@ type Context interface {
 	ListKV(p []byte) ([]*api.KV, error)
 	// list kv with prefix which supports context
 	ListKVContext(ctx context.Context, p []byte) ([]*api.KV, error)
+
+	io.Closer
 }
 
 type ctx struct {
@@ -257,4 +260,13 @@ func (c *ctx) WaitChan() <-chan os.Signal {
 
 func (c *ctx) ReportInstance(stats map[string]interface{}) error {
 	return c.Client.ReportInstance(c.sn, c.in, stats)
+}
+
+func (c *ctx) Close() error {
+	if c.Client.Client != nil {
+		if err := c.Client.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
