@@ -6,6 +6,7 @@ const (
 	Deployment  Resource = "deployment"
 	Application Resource = "application"
 	Config      Resource = "config"
+	Batch       Resource = "batch"
 
 	NodeName      string = "BAETYL_NODE_NAME"
 	NodeNamespace string = "BAETYL_NODE_NAMESPACE"
@@ -15,4 +16,6 @@ const (
 	ResourceType = "resourceType"
 	// ResourceName resource name
 	ResourceName = "resourceName"
+	// ResourceVersion resource version
+	ResourceVersion = "resourceVersion"
 )

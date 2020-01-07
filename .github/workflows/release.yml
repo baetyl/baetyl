@@ -1,0 +1,318 @@
+name: release
+on: 
+  push:
+    tags:
+      - '*'
+jobs:
+  amd64:
+    name: build on amd64
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+          echo ::set-output name=revision::1
+      - uses: baetyl/run-on-arch-action@master
+        with:
+          architecture: amd64
+          distribution: stretch
+          run: |
+            apt update
+            apt-get install -y dh-make dh-systemd
+            cp -r scripts/debian/ debian/
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+            sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
+            sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+            dpkg-buildpackage -b -d -uc -us -i
+            cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb .
+            tar cvzf baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz baetyl
+      - id: path
+        run: echo ::set-output name=path::$(pwd)
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz
+          asset_name: baetyl-${{ steps.version.outputs.version }}-linux-amd64.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload deb to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
+          asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
+          tag: ${{ github.ref }}
+          overwrite: true
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-amd64
+          path: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_amd64.deb
+          
+  armv7:
+      name: build on armv7
+      runs-on: ubuntu-18.04
+      steps:
+        - uses: actions/checkout@v1
+        - id: version
+          run: |
+            echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+            echo ::set-output name=revision::1
+        - uses: baetyl/run-on-arch-action@master
+          with:
+            architecture: armv7
+            distribution: stretch
+            run: |
+              apt update
+              apt-get install -y dh-make dh-systemd
+              cp -r scripts/debian/ debian/
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+              sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
+              sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+              dpkg-buildpackage -b -d -uc -us -i
+              cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb .
+              tar cvzf baetyl-${{ steps.version.outputs.version }}-linux-armv7.tar.gz baetyl
+        - id: path
+          run: echo ::set-output name=path::$(pwd)
+        - name: Upload binaries to release
+          uses: svenstaro/upload-release-action@v1-release
+          with:
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
+            file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-armv7.tar.gz
+            asset_name: baetyl-${{ steps.version.outputs.version }}-linux-armv7.tar.gz
+            tag: ${{ github.ref }}
+            overwrite: true
+        - name: Upload deb to release
+          uses: svenstaro/upload-release-action@v1-release
+          with:
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
+            file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb
+            asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb
+            tag: ${{ github.ref }}
+            overwrite: true
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-armv7
+            path: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_armhf.deb
+  
+  i386:
+    name: build on i386
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+          echo ::set-output name=revision::1
+      - uses: baetyl/run-on-arch-action@master
+        with:
+          architecture: i386
+          distribution: stretch
+          run: |
+            apt update
+            apt-get install -y dh-make dh-systemd
+            cp -r scripts/debian/ debian/
+            sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+            sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
+            sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+            dpkg-buildpackage -b -d -uc -us -i
+            cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb .
+            tar cvzf baetyl-${{ steps.version.outputs.version }}-linux-i386.tar.gz baetyl
+      - id: path
+        run: echo ::set-output name=path::$(pwd)
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-i386.tar.gz
+          asset_name: baetyl-${{ steps.version.outputs.version }}-linux-i386.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload deb to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb
+          asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb
+          tag: ${{ github.ref }}
+          overwrite: true
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-i386
+          path: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_i386.deb
+          
+  arm64:
+      name: build on arm64
+      runs-on: ubuntu-18.04
+      steps:
+        - uses: actions/checkout@v1
+        - id: version
+          run: |
+            echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+            echo ::set-output name=revision::1
+        - uses: baetyl/run-on-arch-action@master
+          with:
+            architecture: arm64
+            distribution: stretch
+            run: |
+              apt update
+              apt-get install -y dh-make dh-systemd
+              cp -r scripts/debian/ debian/
+              sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" debian/changelog
+              sed -i "s/make build/make build GIT_TAG=${{ steps.version.outputs.version }}/g;" debian/rules
+              sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+              dpkg-buildpackage -b -d -uc -us -i
+              cp ../baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb .
+              tar cvzf baetyl-${{ steps.version.outputs.version }}-linux-arm64.tar.gz baetyl
+        - id: path
+          run: echo ::set-output name=path::$(pwd)
+        - name: Upload binaries to release
+          uses: svenstaro/upload-release-action@v1-release
+          with:
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
+            file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-linux-arm64.tar.gz
+            asset_name: baetyl-${{ steps.version.outputs.version }}-linux-arm64.tar.gz
+            tag: ${{ github.ref }}
+            overwrite: true
+        - name: Upload deb to release
+          uses: svenstaro/upload-release-action@v1-release
+          with:
+            repo_token: ${{ secrets.RELEASE_TOKEN }}
+            file: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb
+            asset_name: baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb
+            tag: ${{ github.ref }}
+            overwrite: true
+        - uses: actions/upload-artifact@v1
+          with:
+            name: baetyl-arm64
+            path: ${{ steps.path.outputs.path }}/baetyl_${{ steps.version.outputs.version }}-${{ steps.version.outputs.revision }}_arm64.deb
+
+  centos:
+    name: build on centos
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+          echo ::set-output name=revision::1
+      - name: Build
+        run: make build GIT_TAG=${{ steps.version.outputs.version }}
+      - name: prepare
+        run: |
+          echo "${{ secrets.KEY_PRIVATE }}" >key.private
+          cp scripts/key.public key.public
+          sed -i "s/level: debug//g;" example/docker/etc/baetyl/conf.yml
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g;" scripts/centos/baetyl.spec
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/centos/pack.sh
+          mkdir baetyl-${{ steps.version.outputs.version }}
+          cp -r baetyl example scripts baetyl-${{ steps.version.outputs.version }}
+          tar -cvzf baetyl-${{ steps.version.outputs.version }}.tar.gz baetyl-${{ steps.version.outputs.version }}
+      - name: centos pack
+        uses: docker://centos:7
+        with:
+          entrypoint: /bin/bash
+          args: "scripts/centos/pack.sh"
+      - id: path
+        run: |
+          echo ::set-output name=path::$(pwd)
+          echo ::set-output name=rpm::$(ls *.rpm)
+      - name: Upload rpm to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ steps.path.outputs.path }}/${{ steps.path.outputs.rpm }}
+          asset_name: ${{ steps.path.outputs.rpm }}
+          tag: ${{ github.ref }}
+          overwrite: true
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-centos
+          path: ${{ steps.path.outputs.path }}/${{ steps.path.outputs.rpm }}
+
+  mac:
+    name: build on mac
+    runs-on: macos-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+      - name: build baetyl
+        run: |
+          make build GIT_TAG=${{ steps.version.outputs.version }}
+          tar cvzf baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz baetyl
+      - id: path
+        run: |
+          echo ::set-output name=path::$(pwd)
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: ${{ steps.path.outputs.path }}/baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
+          asset_name: baetyl-${{ steps.version.outputs.version }}-darwin-amd64.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-darwin
+          path: ${{ steps.path.outputs.path }}/baetyl
+          
+  release:
+    runs-on: ubuntu-16.04
+    needs: [amd64, i386, armv7, arm64, centos, mac]
+    steps:
+      - uses: actions/checkout@v1
+      - id: path
+        run: echo ::set-output name=path::$(pwd)
+      - name: test
+        run: pwd
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-amd64
+          path: ${{ steps.path.outputs.path }}
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-armv7
+          path: ${{ steps.path.outputs.path }}
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-i386
+          path: ${{ steps.path.outputs.path }}
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-arm64
+          path: ${{ steps.path.outputs.path }}
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-centos
+          path: ${{ steps.path.outputs.path }}
+      - uses: actions/download-artifact@v1
+        with:
+          name: baetyl-darwin
+          path: ${{ steps.path.outputs.path }}
+      - id: version
+        run: |
+          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
+          echo ::set-output name=revision::1
+      - name: release
+        run: |
+          sudo apt update
+          sudo apt-get install -y lsb-release dpkg gnupg gnupg2 aptly ca-certificates createrepo
+          echo "${{ secrets.KEY_PRIVATE }}" >key.private
+          sed -i "s/@version@/${{ steps.version.outputs.version }}/g; s/@revision@/${{ steps.version.outputs.revision }}/g; s/@passphrase@/${{ secrets.PASSPHRASE }}/g;" scripts/release.sh
+          chmod +x scripts/release.sh
+          sudo ./scripts/release.sh
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-release
+          path: /home/runner/.aptly/public/

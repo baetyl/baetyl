@@ -13,7 +13,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/baetyl/baetyl-go v0.0.6
+	github.com/baetyl/baetyl-go v0.0.7
 	github.com/containerd/containerd v1.3.0
 	github.com/creasty/defaults v1.3.0
 	github.com/deckarep/golang-set v1.7.1
@@ -25,7 +25,7 @@ require (
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9
+	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.2
 	github.com/gorilla/mux v1.7.3
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf
@@ -48,7 +48,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	go.etcd.io/bbolt v1.3.3 // indirect
 	gocv.io/x/gocv v0.21.0
-	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914
+	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 	golang.org/x/sys v0.0.0-20191223224216-5a3cf8467b4e // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
