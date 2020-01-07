@@ -139,18 +139,18 @@ func TestNative(t *testing.T) {
 		log:       newMockLogger(),
 	}
 	defer e.Close()
-	sv := &baetyl.ServiceVolume{
+	sv := baetyl.ServiceVolume{
 		Source: "var/db/baetyl/cmd",
 		Target: "/lib/baetyl/cmd",
 	}
 	cmd := baetyl.ComposeService{
 		Image:       "cmd",
 		Replica:     1,
-		Volumes:     []*baetyl.ServiceVolume{sv},
+		Volumes:     []baetyl.ServiceVolume{sv},
 		Networks:    baetyl.NetworksInfo{},
 		Ports:       []string{"13883:13883"},
-		Command:     &baetyl.Command{},
-		Environment: &baetyl.Environment{},
+		Command:     baetyl.Command{},
+		Environment: baetyl.Environment{},
 		Restart:     baetyl.RestartPolicyInfo{},
 		Resources:   baetyl.Resources{},
 	}
@@ -174,18 +174,18 @@ func TestNative(t *testing.T) {
 	<-ch
 	s.Stop()
 
-	sv = &baetyl.ServiceVolume{
+	sv = baetyl.ServiceVolume{
 		Source: "var/db/baetyl/unknown/cmd",
 		Target: "/lib/baetyl/cmd",
 	}
 	cmd = baetyl.ComposeService{
 		Image:       "cmd",
 		Replica:     1,
-		Volumes:     []*baetyl.ServiceVolume{sv},
+		Volumes:     []baetyl.ServiceVolume{sv},
 		Networks:    baetyl.NetworksInfo{},
 		Ports:       []string{"14883:14883"},
-		Command:     &baetyl.Command{},
-		Environment: &baetyl.Environment{},
+		Command:     baetyl.Command{},
+		Environment: baetyl.Environment{},
 		Restart:     baetyl.RestartPolicyInfo{},
 		Resources:   baetyl.Resources{},
 	}

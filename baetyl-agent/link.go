@@ -39,7 +39,9 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 		deploy.Name = k
 		deploy.AppVersion = v.(string)
 	}
-
+	if deploy.Name == "" || deploy.AppVersion == "" {
+		return fmt.Errorf("can not request deployment with empty name or version")
+	}
 	req := a.newRequest("deployment", deploy.Name, deploy.AppVersion)
 	resData, err := a.sendData(*req)
 	if err != nil {
