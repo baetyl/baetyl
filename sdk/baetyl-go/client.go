@@ -42,9 +42,6 @@ func NewEnvClient() (*Client, error) {
 		token = os.Getenv(EnvServiceTokenKey)
 		version = os.Getenv(EnvMasterAPIVersionKey)
 	}
-	if len(grpcAddr) == 0 {
-		return nil, fmt.Errorf("Env (%s) not found", EnvKeyMasterGRPCAPIAddress)
-	}
 	c := http.ClientInfo{
 		Address:  addr,
 		Username: name,
@@ -55,17 +52,20 @@ func NewEnvClient() (*Client, error) {
 		return nil, err
 	}
 
-	cc := api.ClientConfig{
-		Address:  grpcAddr,
-		Username: name,
-		Password: token,
-	}
-	api, err := api.NewClient(cc)
-	if err != nil {
-		return nil, err
+	var gcli *api.Client
+	if len(grpcAddr) != 0 {
+		cc := api.ClientConfig{
+			Address:  grpcAddr,
+			Username: name,
+			Password: token,
+		}
+		gcli, err = api.NewClient(cc)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &Client{
-		Client:     api,
+		Client:     gcli,
 		HTTPClient: cli,
 	}, nil
 }
