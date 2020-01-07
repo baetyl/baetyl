@@ -13,10 +13,6 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/andybalholm/cascadia v1.1.0 // indirect
-	github.com/antchfx/htmlquery v1.2.1 // indirect
-	github.com/antchfx/xmlquery v1.2.2 // indirect
-	github.com/antchfx/xpath v1.1.3 // indirect
 	github.com/baetyl/baetyl-go v0.0.7
 	github.com/containerd/containerd v1.3.0
 	github.com/creasty/defaults v1.3.0
@@ -28,10 +24,7 @@ require (
 	github.com/etcd-io/bbolt v1.3.3
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
-	github.com/gocolly/colly/v2 v2.0.1 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9
-	github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7 // indirect
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.2
 	github.com/gorilla/mux v1.7.3
@@ -57,8 +50,8 @@ require (
 	gocv.io/x/gocv v0.21.0
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
 	golang.org/x/sys v0.0.0-20191223224216-5a3cf8467b4e // indirect
+	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
