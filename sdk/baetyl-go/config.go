@@ -186,7 +186,7 @@ type ComposeService struct {
 	// specifies the number of instances started
 	Replica int `yaml:"replica,omitempty" json:"replica,omitempty" validate:"min=0"`
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
-	Volumes []*ServiceVolume `yaml:"volumes,omitempty" json:"volumes,omitempty"`
+	Volumes []ServiceVolume `yaml:"volumes,omitempty" json:"volumes,omitempty"`
 	// specifies the network mode of the service
 	NetworkMode string `yaml:"network_mode,omitempty" json:"network_mode,omitempty" validate:"regexp=^(bridge|host|none)?$"`
 	// specifies the network that the service needs
@@ -198,9 +198,9 @@ type ComposeService struct {
 	// specified other depended services
 	DependsOn []string `yaml:"depends_on,omitempty" json:"depends_on,omitempty" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
-	Command *Command `yaml:"command,omitempty" json:"command,omitempty" default:"{}"`
+	Command Command `yaml:"command,omitempty" json:"command,omitempty" default:"{}"`
 	// specifies the environment variable of the service program
-	Environment *Environment `yaml:"environment,omitempty" json:"environment,omitempty" default:"{}"`
+	Environment Environment `yaml:"environment,omitempty" json:"environment,omitempty" default:"{}"`
 	// specifies the restart policy of the instance of the service
 	Restart RestartPolicyInfo `yaml:"restart,omitempty" json:"restart,omitempty"`
 	// specifies resource limits for a single instance of the service,  only for Docker container mode
@@ -234,7 +234,7 @@ type Environment struct {
 	Envs map[string]string `yaml:"envs" json:"envs" default:"{}"`
 }
 
-func (e *Environment) MarshalYAML() (interface{}, error) {
+func (e Environment) MarshalYAML() (interface{}, error) {
 	return e.Envs, nil
 }
 
@@ -349,7 +349,7 @@ func (sv *ServiceVolume) UnmarshalYAML(unmarshal func(interface{}) error) error 
 }
 
 // MarshalYAML customize ServiceVolume marshal
-func (sv *ServiceVolume) MarshalYAML() (interface{}, error) {
+func (sv ServiceVolume) MarshalYAML() (interface{}, error) {
 	res := sv.Source + ":" + sv.Target
 	if sv.ReadOnly {
 		res += ":ro"
@@ -362,7 +362,7 @@ type Command struct {
 	Cmd []string `yaml:"cmd" json:"cmd" default:"[]"`
 }
 
-func (c *Command) MarshalYAML() (interface{}, error) {
+func (c Command) MarshalYAML() (interface{}, error) {
 	return c.Cmd, nil
 }
 
