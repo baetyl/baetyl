@@ -19,7 +19,6 @@ type EventLink struct {
 
 func (a *agent) reporting() error {
 	t := time.NewTicker(a.cfg.Remote.Report.Interval)
-	a.report()
 	for {
 		select {
 		case <-t.C:
@@ -32,6 +31,9 @@ func (a *agent) reporting() error {
 
 // Report reports info
 func (a *agent) report(pgs ...*progress) *config.Inspect {
+	if utils.FileExists(a.cfg.OTA.Logger.Path) && len(pgs) == 0 {
+		return nil
+	}
 	defer utils.Trace("report", logger.Debugf)()
 
 	i, err := a.ctx.InspectSystem()
@@ -50,7 +52,7 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			io.OTA[pg.event.Trace] = pg.records
 		}
 	}
-	if a.link != nil {
+	if a.mqtt == nil {
 		a.ctx.Log().Debugf("report set agent ，point = %p", a)
 		a.ctx.Log().Debugf("report set agent = %+v", a)
 		if a.node == nil {
@@ -63,13 +65,16 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			return nil
 		}
 		info := config.ForwardInfo{
-			Namespace:  a.node.Namespace,
-			Name:       a.node.Name,
 			Status:     io,
 			Deployment: currentDeploy,
 		}
+		req, err := json.Marshal(info)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("failed to marshal report info")
+			return nil
+		}
 		var res config.BackwardInfo
-		resData, err := a.sendData(info)
+		resData, err := a.sendRequest("POST", a.cfg.Remote.Report.URL, req)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to send report data by link")
 			return nil
@@ -79,7 +84,7 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned by link")
 			return nil
 		}
-		if len(res.Delta) != 0 {
+		if res.Delta != nil {
 			le := &EventLink{
 				Trace: res.Metadata["trace"].(string),
 				Type:  res.Metadata["type"].(string),

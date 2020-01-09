@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-go/link"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/protocol/mqtt"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
-	"io/ioutil"
-	"os"
-	"path"
-	"strings"
 )
 
 // agent agent module
@@ -28,7 +28,6 @@ type agent struct {
 	certSN  string
 	certKey []byte
 	http    *http.Client
-	link    *link.Client
 	// clean
 	cleaner *cleaner
 	node    *node
@@ -76,13 +75,6 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		}
 		dispatcher = mqtt.NewDispatcher(*cfg.Remote.MQTT, ctx.Log())
 	}
-	var linkCli *link.Client
-	if cfg.Remote.Link.Address != "" {
-		linkCli, err = link.NewClient(*cfg.Remote.Link, nil)
-		if err != nil {
-			return nil, err
-		}
-	}
 	a := &agent{
 		cfg:     cfg,
 		ctx:     ctx,
@@ -90,7 +82,6 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 		certSN:  sn,
 		certKey: key,
 		mqtt:    dispatcher,
-		link:    linkCli,
 		cleaner: newCleaner(baetyl.DefaultDBDir, path.Join(baetyl.DefaultDBDir, "volumes"), ctx.Log().WithField("agent", "cleaner")),
 	}
 	a.http, err = http.NewClient(*cfg.Remote.HTTP)
@@ -108,11 +99,11 @@ func (a *agent) start() error {
 		// active
 		if a.cfg.Active.Fingerprints != nil && len(a.cfg.Active.Fingerprints) > 0 {
 			if a.cfg.Server.Listen == "" {
-				// auto active
-				err := a.tomb.Go(a.autoActive)
-				if err != nil {
-					return err
-				}
+				//auto active
+				//err := a.tomb.Go(a.autoActive)
+				//if err != nil {
+				//	return err
+				//}
 			} else {
 				// todo
 				a.ctx.Log().Infof("todo active by server")
@@ -152,9 +143,6 @@ func (a *agent) close() {
 	a.tomb.Wait()
 	if a.mqtt != nil {
 		a.mqtt.Close()
-	}
-	if a.link != nil {
-		a.link.Close()
 	}
 }
 

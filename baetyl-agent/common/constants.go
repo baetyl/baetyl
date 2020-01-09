@@ -12,10 +12,8 @@ const (
 	NodeNamespace string = "BAETYL_NODE_NAMESPACE"
 	NodeID        string = "BAETYL_NODE_ID"
 
-	// ResourceType resource type
-	ResourceType = "resourceType"
-	// ResourceName resource name
-	ResourceName = "resourceName"
-	// ResourceVersion resource version
-	ResourceVersion = "resourceVersion"
+	// HeaderKeyNodeNamespace header key of node namespace
+	HeaderKeyNodeNamespace = "node-namespace"
+	// HeaderKeyNodeName header key of node name
+	HeaderKeyNodeName = "node-name"
 )
