@@ -3,6 +3,9 @@ package common
 type Resource string
 
 const (
+	// KeyContextNamespace the key of namespace in context
+	KeyContextNamespace = "namespace"
+
 	Deployment  Resource = "deployment"
 	Application Resource = "application"
 	Config      Resource = "config"
@@ -18,4 +21,6 @@ const (
 	ResourceName = "resourceName"
 	// ResourceVersion resource version
 	ResourceVersion = "resourceVersion"
+	// ResourceNamespace resource namespace
+	ResourceNamespace = "resourceNamespace"
 )

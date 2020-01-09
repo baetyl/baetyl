@@ -15,8 +15,6 @@ import (
 )
 
 const (
-	batchUuid = "batchuuid"
-
 	proofDiskID = "diskID"
 	proofHostID = "hostID"
 	proofCPU    = "cpu"
@@ -54,11 +52,15 @@ func (a *agent) active(attrs map[string]string) (err error) {
 		}
 	}
 	a.ctx.Log().Debugln("info c attributes : ", attrs)
-	batchUuid, ok := attrs[batchUuid]
+	batchName, ok := attrs[string(common.Batch)]
 	if !ok {
-		return errors.New("batch uuid can't be null")
+		return errors.New("batch name can't be null")
 	}
-	a.ctx.Log().Infof("batch uuid = %s", batchUuid)
+	namespace, ok := attrs[common.KeyContextNamespace]
+	if !ok {
+		return errors.New("namespace can't be null")
+	}
+	a.ctx.Log().Infof("batch name = %s", batchName)
 	inspect, err := a.ctx.InspectSystem()
 	if err != nil {
 		return err
@@ -69,14 +71,18 @@ func (a *agent) active(attrs map[string]string) (err error) {
 		if err != nil {
 			return err
 		}
-		fp += proof + ","
+		if proof != "" {
+			fp = proof
+			break
+		}
 	}
 	if fp == "" {
 		return errors.New("cannot get fingerprint")
 	}
 	request := map[string]string{
-		common.ResourceType: string(common.Batch),
-		common.ResourceName: batchUuid,
+		common.ResourceType:      string(common.Batch),
+		common.ResourceName:      batchName,
+		common.ResourceNamespace: namespace,
 	}
 	activation := config.Activation{
 		FingerprintValue: fp,
