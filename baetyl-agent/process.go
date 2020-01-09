@@ -18,8 +18,8 @@ func (a *agent) processing() error {
 		select {
 		case e := <-a.events:
 			a.cleaner.reset()
-			if a.link != nil {
-				a.processLinkEvent(e)
+			if a.mqtt == nil {
+				a.processDelta(e)
 			} else {
 				a.processEvent(e)
 			}

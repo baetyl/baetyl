@@ -3,58 +3,76 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-go/link"
-	"github.com/baetyl/baetyl/baetyl-agent/common"
-	"github.com/baetyl/baetyl/baetyl-agent/config"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"github.com/baetyl/baetyl/utils"
-	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"time"
+
+	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
+	"gopkg.in/yaml.v2"
 )
 
-func (a *agent) processLinkEvent(e *Event) {
+func (a *agent) processDelta(e *Event) {
 	le := e.Content.(*EventLink)
 	a.ctx.Log().Infof("process ota: type=%s, trace=%s", le.Type, le.Trace)
 	ol := newOTALog(a.cfg.OTA, a, &EventOTA{Type: le.Type, Trace: le.Trace}, a.ctx.Log().WithField("agent", "otalog"))
 	defer ol.wait()
-	err := a.processLinkOTA(le)
+	err := a.processDeployment(le)
 	if err != nil {
 		a.ctx.Log().WithError(err).Warnf("failed to process ota event")
-		ol.write(baetyl.OTAFailure, "failed to process link ota event", err)
+		ol.write(baetyl.OTAFailure, "failed to process ota event", err)
 	}
 }
 
-func (a *agent) processLinkOTA(le *EventLink) error {
-	d, ok := le.Info["deployment"]
+func (a *agent) processDeployment(le *EventLink) error {
+	d, ok := le.Info[string(common.Deployment)]
 	if !ok {
 		return fmt.Errorf("no deployment info in delta info")
 	}
-	var deploy deployment
+	var reqs []config.ResourceRequest
 	for k, v := range d.(map[string]interface{}) {
-		deploy.Name = k
-		deploy.AppVersion = v.(string)
+		req := config.ResourceRequest{
+			Type:    string(common.Deployment),
+			Name:    k,
+			Version: v.(string),
+		}
+		if req.Name == "" || req.Version == "" {
+			return fmt.Errorf("can not request deployment with empty name or version")
+		}
+		reqs = append(reqs, req)
 	}
-	if deploy.Name == "" || deploy.AppVersion == "" {
-		return fmt.Errorf("can not request deployment with empty name or version")
-	}
-	req := a.newRequest("deployment", deploy.Name, deploy.AppVersion)
-	resData, err := a.sendData(*req)
+
+	data, err := json.Marshal(reqs)
 	if err != nil {
-		return fmt.Errorf("failed to send request by link: %s", err.Error())
+		return fmt.Errorf("failed to marshal resource request: %s", err.Error())
 	}
-	var res config.BackwardInfo
+	resData, err := a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
+	if err != nil {
+		return fmt.Errorf("failed to send resource request: %s", err.Error())
+	}
+	var deployRes config.ResourceResponse
+	err = json.Unmarshal(resData, &deployRes)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal deployment resource: %s", err.Error())
+	}
+	data, err = generateRequest(deployRes.Deployment.Snapshot)
+	if err != nil {
+		return fmt.Errorf("failed to generate resource request of application and configs: %s", err.Error())
+	}
+	resData, err = a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
+	if err != nil {
+		return fmt.Errorf("failed to send resource request: %s", err.Error())
+	}
+	var res config.ResourceResponse
 	err = json.Unmarshal(resData, &res)
-	var dep config.Deployment
-	err = mapstructure.Decode(res.Metadata["deployment"], &dep)
 	if err != nil {
-		return fmt.Errorf("error to transform from map to deployment: %s", err.Error())
+		return fmt.Errorf("failed to unmarshal application and config resource: %s", err.Error())
 	}
-	volumeMetas, hostDir := a.processApplication(dep.Snapshot.Apps)
+	volumeMetas, hostDir := a.processApplication(res.Application)
 
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
@@ -68,8 +86,8 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 			delete(volumeMetas, name)
 		}
 	}
-	a.cleaner.set(deploy.AppVersion, volumes)
-	err = a.processVolumes(volumeMetas)
+	a.cleaner.set(deployRes.Deployment.Version, volumes)
+	err = a.processVolumes(volumeMetas, res.Configs)
 	if err != nil {
 		return err
 	}
@@ -80,7 +98,7 @@ func (a *agent) processLinkOTA(le *EventLink) error {
 	return nil
 }
 
-func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
+func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo, configs map[string]config.ModuleConfig) error {
 	rootDir := path.Join(baetyl.DefaultDBDir, "volumes")
 	for name, volume := range volumes {
 		if meta := volume.Meta; meta.Version != "" {
@@ -90,19 +108,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 					a.ctx.Log().Errorf("download volume (%s) failed: %s", name, err.Error())
 				}
 			} else {
-				req := a.newRequest("config", name, volume.Meta.Version)
-				resData, err := a.sendData(*req)
-				if err != nil {
-					return fmt.Errorf("failed to send request by link: %s", err.Error())
-				}
-				var res config.BackwardInfo
-				err = json.Unmarshal(resData, &res)
-				var config config.ModuleConfig
-				err = mapstructure.Decode(res.Metadata["config"], &config)
-				if err != nil {
-					return fmt.Errorf("error to transform from map to config: %s", err.Error())
-				}
-				err = a.processModuleConfig(rootDir, volume.Path, &config)
+				err := a.processModuleConfig(rootDir, volume.Path, configs[name])
 				if err != nil {
 					a.ctx.Log().Errorf("download module config (%s) failed: %s", name, err.Error())
 				}
@@ -112,7 +118,7 @@ func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo) error {
 	return nil
 }
 
-func (a *agent) processModuleConfig(rootDir string, volumePath string, config *config.ModuleConfig) error {
+func (a *agent) processModuleConfig(rootDir string, volumePath string, config config.ModuleConfig) error {
 	rp, err := filepath.Rel(baetyl.DefaultDBDir, volumePath)
 	if err != nil {
 		return fmt.Errorf("illegal path of config (%s): %s", config.Name, err.Error())
@@ -178,32 +184,11 @@ func (a *agent) processURL(rootDir string, name string, volume baetyl.VolumeInfo
 	return nil
 }
 
-func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl.VolumeInfo, string) {
-	var req *config.ForwardInfo
-	for name, version := range appInfo {
-		req = a.newRequest("application", name, version)
-	}
-	if req == nil {
-		a.ctx.Log().Errorf("wrong format of app info")
-		return nil, ""
-	}
-	resData, err := a.sendData(*req)
-	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to get response by link")
-		return nil, ""
-	}
-	var res config.BackwardInfo
-	err = json.Unmarshal(resData, &res)
-	deployConfig, err := getDeployConfig(&res)
-	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to get deploy config")
-		return nil, ""
-	}
-	appDir := deployConfig.AppConfig.Name
-	hostDir := path.Join(baetyl.DefaultDBDir, appDir, deployConfig.AppConfig.AppVersion)
-	containerDir := path.Join(baetyl.DefaultDBDir, "volumes", appDir, deployConfig.AppConfig.AppVersion)
+func (a *agent) processApplication(deployConfig config.DeployConfig) (map[string]baetyl.VolumeInfo, string) {
+	hostDir := path.Join(baetyl.DefaultDBDir, deployConfig.AppConfig.Name, deployConfig.AppConfig.AppVersion)
+	containerDir := path.Join(baetyl.DefaultDBDir, "volumes", deployConfig.AppConfig.Name, deployConfig.AppConfig.AppVersion)
 
-	err = os.MkdirAll(containerDir, 0755)
+	err := os.MkdirAll(containerDir, 0755)
 	if err != nil {
 		a.ctx.Log().WithError(err).Warnf("failed to prepare app directory (%s): %s", containerDir, err.Error())
 		return nil, ""
@@ -215,53 +200,48 @@ func (a *agent) processApplication(appInfo map[string]string) (map[string]baetyl
 		a.ctx.Log().WithError(err).Warnf("failed to marshal app config: %s", err.Error())
 		return nil, ""
 	}
-	err = ioutil.WriteFile(path.Join(containerDir, baetyl.AppConfFileName), data, 0755)
+	err = ioutil.WriteFile(path.Join(containerDir, baetyl.AppConfFileName), data, 0644)
 	if err != nil {
 		os.RemoveAll(containerDir)
-		a.ctx.Log().WithError(err).Warnf("failed to write applicationt config into file (%s): %s", baetyl.AppConfFileName, err.Error())
+		a.ctx.Log().WithError(err).Warnf("failed to write application config into file (%s): %s", baetyl.AppConfFileName, err.Error())
 		return nil, ""
 	}
 	return deployConfig.Metadata, hostDir
 }
 
-func getDeployConfig(info *config.BackwardInfo) (*config.DeployConfig, error) {
-	appData, err := json.Marshal(info.Metadata["application"])
+func generateRequest(snapshot config.Snapshot) ([]byte, error) {
+	var reqs []config.ResourceRequest
+	for n, v := range snapshot.Apps {
+		req := config.ResourceRequest{
+			Type:    string(common.Application),
+			Name:    n,
+			Version: v,
+		}
+		reqs = append(reqs, req)
+	}
+	filterConfigs(snapshot.Configs)
+	for n, v := range snapshot.Configs {
+		req := config.ResourceRequest{
+			Type:    string(common.Config),
+			Name:    n,
+			Version: v,
+		}
+		reqs = append(reqs, req)
+	}
+	res, err := json.Marshal(reqs)
 	if err != nil {
 		return nil, err
 	}
-	var deployConfig config.DeployConfig
-	err = json.Unmarshal(appData, &deployConfig)
-	if err != nil {
-		return nil, err
-	}
-	return &deployConfig, nil
+	return res, nil
 }
 
-func (a *agent) newRequest(resourceType, resourceName, resourceVersion string) *config.ForwardInfo {
-	return &config.ForwardInfo{
-		Namespace: a.node.Namespace,
-		Name:      a.node.Name,
-		Metadata: map[string]string{
-			common.ResourceType:    resourceType,
-			common.ResourceName:    resourceName,
-			common.ResourceVersion: resourceVersion,
-		},
+func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
+	header := map[string]string{
+		common.HeaderKeyNodeNamespace: a.node.Namespace,
+		common.HeaderKeyNodeName:      a.node.Name,
+		"Content-Type":                "application/x-www-form-urlencoded",
 	}
-}
-
-func (a *agent) sendData(request interface{}) ([]byte, error) {
-	content, err := json.Marshal(request)
-	if err != nil {
-		return nil, err
-	}
-	msg := &link.Message{
-		Content: content,
-	}
-	resMsg, err := a.link.Call(msg)
-	if err != nil {
-		return nil, err
-	}
-	return resMsg.Content, nil
+	return a.http.SendPath(method, path, body, header)
 }
 
 func (a *agent) getCurrentDeploy(inspect *baetyl.Inspect) (map[string]string, error) {
@@ -277,6 +257,15 @@ func (a *agent) getCurrentDeploy(inspect *baetyl.Inspect) (map[string]string, er
 	return map[string]string{
 		info.Name: inspect.Software.ConfVersion,
 	}, nil
+}
+
+func filterConfigs(configs map[string]string) {
+	for name, version := range configs {
+		configPath := path.Join(baetyl.DefaultDBDir, "volumes", name, version)
+		if utils.DirExists(configPath) {
+			delete(configs, name)
+		}
+	}
 }
 
 func (a *agent) checkVolumeExists(volume baetyl.VolumeInfo) bool {
