@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"time"
 
 	"github.com/baetyl/baetyl/logger"
@@ -109,8 +110,8 @@ type Server struct {
 
 // Fingerprint type to be collected
 type Fingerprint struct {
-	Proof string `yaml:"proof" json:"proof"`
-	Value string `yaml:"value" json:"value"`
+	Proof common.Proof `yaml:"proof" json:"proof"`
+	Value string       `yaml:"value" json:"value"`
 }
 
 // Attribute field to be filled (masterKey, deviceType, deviceCompany)
