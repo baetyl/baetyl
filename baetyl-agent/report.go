@@ -3,7 +3,12 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/baetyl-agent/config"
+	"io/ioutil"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/baetyl/baetyl/logger"
@@ -31,9 +36,6 @@ func (a *agent) reporting() error {
 
 // Report reports info
 func (a *agent) report(pgs ...*progress) *config.Inspect {
-	if utils.FileExists(a.cfg.OTA.Logger.Path) && len(pgs) == 0 {
-		return nil
-	}
 	defer utils.Trace("report", logger.Debugf)()
 
 	i, err := a.ctx.InspectSystem()
@@ -41,6 +43,9 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		a.ctx.Log().WithError(err).Warnf("failed to config.Inspect stats")
 		i = baetyl.NewInspect()
 		i.Error = err.Error()
+	}
+	if utils.FileExists(a.cfg.OTA.Logger.Path) && len(pgs) == 0 {
+		return nil
 	}
 
 	io := &config.Inspect{Inspect: i}
@@ -55,10 +60,6 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 	if a.mqtt == nil {
 		a.ctx.Log().Debugf("report set agent ，point = %p", a)
 		a.ctx.Log().Debugf("report set agent = %+v", a)
-		if a.node == nil {
-			a.ctx.Log().WithError(err).Warnf("node nil")
-			return nil
-		}
 		currentDeploy, err := a.getCurrentDeploy(io.Inspect)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
@@ -68,6 +69,15 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			Status:     io,
 			Deployment: currentDeploy,
 		}
+		if a.node == nil {
+			a.ctx.Log().WithError(err).Warnf("node nil , to active")
+			actInfo, err := a.collectActiveInfo(nil, i)
+			if err != nil {
+				a.ctx.Log().WithError(err).Warnf("collect active info error")
+				return nil
+			}
+			info.Activation = *actInfo
+		}
 		req, err := json.Marshal(info)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to marshal report info")
@@ -76,13 +86,19 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		var res config.BackwardInfo
 		resData, err := a.sendRequest("POST", a.cfg.Remote.Report.URL, req)
 		if err != nil {
-			a.ctx.Log().WithError(err).Warnf("failed to send report data by link")
+			a.ctx.Log().WithError(err).Warnf("failed to send report data")
 			return nil
 		}
 		err = json.Unmarshal(resData, &res)
 		if err != nil {
-			a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned by link")
+			a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned")
 			return nil
+		}
+		if a.node == nil {
+			a.node = &node{
+				Name:      res.Metadata[string(common.Node)].(string),
+				Namespace: res.Metadata[common.KeyContextNamespace].(string),
+			}
 		}
 		if res.Delta != nil {
 			le := &EventLink{
@@ -126,6 +142,34 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 	return io
 }
 
+func (a *agent) collectActiveInfo(attrs map[string]string, inspect *baetyl.Inspect) (*config.Activation, error) {
+	if attrs == nil {
+		attrs = map[string]string{}
+		for _, item := range a.cfg.Attributes {
+			attrs[item.Name] = item.Value
+		}
+	}
+	a.ctx.Log().Debugln("active attributes : ", attrs)
+	var fp string
+	for _, instance := range a.cfg.Fingerprints {
+		proof, err := collectFP(instance.Proof, instance.Value, inspect)
+		if err != nil {
+			return nil, err
+		}
+		if proof != "" {
+			fp = proof
+			break
+		}
+	}
+	if fp == "" {
+		return nil, errors.New("cannot get fingerprint")
+	}
+	return &config.Activation{
+		FingerprintValue: fp,
+		PenetrateData:    attrs,
+	}, nil
+}
+
 func (a *agent) send(data []byte) error {
 	body, key, err := a.encryptData(data)
 	if err != nil {
@@ -158,4 +202,47 @@ func (a *agent) encryptData(data []byte) ([]byte, string, error) {
 	// encode body using BASE64
 	body = []byte(base64.StdEncoding.EncodeToString(body))
 	return body, key, nil
+}
+
+func collectFP(proof common.Proof, value string, inspect *baetyl.Inspect) (string, error) {
+	switch proof {
+	case common.HostID:
+		return inspect.Hardware.HostInfo.HostID, nil
+	case common.CPU:
+		return collectCPU(inspect)
+	case common.MAC:
+		return collectMAC(value, inspect)
+	case common.SN:
+		return collectSN(value)
+	default:
+		return "", errors.New("proof invalid")
+	}
+}
+
+// collectCPU get cpu info
+func collectCPU(inspect *baetyl.Inspect) (string, error) {
+	// todo collect CPU info
+	return "", nil
+}
+
+// collectMAC get mac address
+func collectMAC(value string, inspect *baetyl.Inspect) (string, error) {
+	interfStat := inspect.Hardware.NetInfo.Interfaces
+	var mac string
+	for _, interf := range interfStat {
+		if interf.Name == value {
+			mac = interf.MAC
+			break
+		}
+	}
+	return mac, nil
+}
+
+// collectSN get sn from var/db/baetyl/data/
+func collectSN(value string) (string, error) {
+	snByte, err := ioutil.ReadFile(path.Join(common.SNPath, value))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(snByte)), nil
 }

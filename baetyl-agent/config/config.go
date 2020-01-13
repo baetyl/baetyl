@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"time"
 
 	"github.com/baetyl/baetyl/logger"
@@ -12,15 +13,15 @@ import (
 // Config agent config
 type Config struct {
 	Remote struct {
-		MQTT   *mqtt.ClientInfo   `yaml:"mqtt" json:"mqtt"`
-		HTTP   *http.ClientInfo   `yaml:"http" json:"http" default:"{}"`
+		MQTT   *mqtt.ClientInfo `yaml:"mqtt" json:"mqtt"`
+		HTTP   *http.ClientInfo `yaml:"http" json:"http" default:"{}"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v3/edge/info"`
 			Topic    string        `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/forward"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 		} `yaml:"report" json:"report"`
 		Desire struct {
-			URL string `yaml:"url" json:"url"`
+			URL   string `yaml:"url" json:"url"`
 			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
 		} `yaml:"desire" json:"desire"`
 	} `yaml:"remote" json:"remote"`
@@ -109,8 +110,8 @@ type Server struct {
 
 // Fingerprint type to be collected
 type Fingerprint struct {
-	Proof string `yaml:"proof" json:"proof"`
-	Value string `yaml:"value" json:"value"`
+	Proof common.Proof `yaml:"proof" json:"proof"`
+	Value string       `yaml:"value" json:"value"`
 }
 
 // Attribute field to be filled (masterKey, deviceType, deviceCompany)
@@ -134,13 +135,14 @@ type Record struct {
 }
 
 type ResourceRequest struct {
-	Type string `yaml:"type" json:"type"`
-	Name string `yaml:"name" json:"name"`
-	Version string `yaml:"version" json:"version"`
+	Type      string `yaml:"type" json:"type"`
+	Name      string `yaml:"name" json:"name"`
+	Namespace string `yaml:"namespace" json:"namespace"`
+	Version   string `yaml:"version" json:"version"`
 }
 
 type ResourceResponse struct {
-	Deployment Deployment `yaml:"deployment" json:"deployment"`
-	Application DeployConfig `yaml:"application" json:"application"`
-	Configs map[string]ModuleConfig `yaml:"configs" json:"configs"`
+	Deployment  Deployment              `yaml:"deployment" json:"deployment"`
+	Application DeployConfig            `yaml:"application" json:"application"`
+	Configs     map[string]ModuleConfig `yaml:"configs" json:"configs"`
 }

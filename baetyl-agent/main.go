@@ -31,6 +31,7 @@ type agent struct {
 	// clean
 	cleaner *cleaner
 	node    *node
+	batch   *batch
 }
 
 func main() {
@@ -92,29 +93,19 @@ func newAgent(ctx baetyl.Context) (*agent, error) {
 }
 
 func (a *agent) start() error {
-	// for activation
-	name := os.Getenv(common.NodeName)
-	namespace := os.Getenv(common.NodeNamespace)
-	if name == "" || namespace == "" {
-		// active
-		if a.cfg.Active.Fingerprints != nil && len(a.cfg.Active.Fingerprints) > 0 {
-			if a.cfg.Server.Listen == "" {
-				//auto active
-				//err := a.tomb.Go(a.autoActive)
-				//if err != nil {
-				//	return err
-				//}
-			} else {
-				// todo
-				a.ctx.Log().Infof("todo active by server")
-			}
-		} else {
-			return fmt.Errorf("can not report info by link without node name or namespace")
+	nodeName := os.Getenv(common.NodeName)
+	nodeNamespace := os.Getenv(common.NodeNamespace)
+	if nodeName != "" && nodeNamespace != "" {
+		a.node = &node{
+			Name:      nodeName,
+			Namespace: nodeNamespace,
 		}
 	} else {
-		a.node = &node{
-			Name:      name,
-			Namespace: namespace,
+		batchName := os.Getenv(common.BatchName)
+		batchNamespace := os.Getenv(common.BatchNamespace)
+		a.batch = &batch{
+			Name:      batchName,
+			Namespace: batchNamespace,
 		}
 	}
 	if a.mqtt != nil {

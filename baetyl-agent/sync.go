@@ -237,10 +237,18 @@ func generateRequest(snapshot config.Snapshot) ([]byte, error) {
 
 func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
 	header := map[string]string{
-		common.HeaderKeyNodeNamespace: a.node.Namespace,
-		common.HeaderKeyNodeName:      a.node.Name,
-		"Content-Type":                "application/x-www-form-urlencoded",
+		"Content-Type": "application/x-www-form-urlencoded",
 	}
+	if a.node != nil {
+		// for report
+		header[common.HeaderKeyNodeNamespace] = a.node.Namespace
+		header[common.HeaderKeyNodeName] = a.node.Name
+	} else if a.batch != nil {
+		// for active
+		header[common.HeaderKeyBatchNamespace] = a.batch.Namespace
+		header[common.HeaderKeyBatchName] = a.batch.Name
+	}
+	a.ctx.Log().Debugf("request, method=%s, path=%s , body=%s , header=%+v", method, path, string(body), header)
 	return a.http.SendPath(method, path, body, header)
 }
 
@@ -296,6 +304,11 @@ type deployment struct {
 }
 
 type node struct {
+	Name      string
+	Namespace string
+}
+
+type batch struct {
 	Name      string
 	Namespace string
 }
