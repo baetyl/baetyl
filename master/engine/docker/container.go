@@ -99,8 +99,12 @@ func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 		networks = make(map[string]baetyl.ComposeNetwork)
 	}
 	// add baetyl as default network
+	driver := "bridge"
+	if runtime.GOOS == "windows" {
+		driver = "nat"
+	}
 	networks[defaultNetworkName] = baetyl.ComposeNetwork{
-		Driver:     "bridge",
+		Driver:     driver,
 		DriverOpts: make(map[string]string),
 		Labels:     make(map[string]string),
 	}
