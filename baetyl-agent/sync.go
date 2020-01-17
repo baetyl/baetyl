@@ -168,7 +168,8 @@ func (a *agent) processModuleConfig(volume baetyl.VolumeInfo, cfg config.ModuleC
 			obj := new(config.StorageObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
-				return
+				a.ctx.Log().Warnf("process storage object of volume (%s) failed: %s", volume.Name, err.Error())
+				save = true
 			}
 			volume.Meta.URL = obj.URL
 			volume.Meta.MD5 = obj.Md5
