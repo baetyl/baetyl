@@ -43,7 +43,7 @@ func (a *agent) processEvent(e *Event) {
 }
 
 func (a *agent) processOTA(eo *EventOTA) error {
-	hostDir, containerDir, err := a.downloadVolume(eo.Volume)
+	hostDir, containerDir, err := a.downloadVolume(eo.Volume, "", true)
 	if err != nil {
 		return fmt.Errorf("failed to download volume: %s", err.Error())
 	}

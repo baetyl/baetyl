@@ -35,4 +35,8 @@ const (
 	HeaderKeyBatchNamespace = "batch-namespace"
 	// HeaderKeyBatchName header key of batch name
 	HeaderKeyBatchName = "batch-name"
+	// StorageObjectPrefix prefix of storage object
+	StorageObjectPrefix = "_object_"
+	// ZipCompression zip compression
+	ZipCompression = "zip"
 )

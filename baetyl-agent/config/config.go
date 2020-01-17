@@ -141,8 +141,8 @@ type ResourceRequest struct {
 	Version   string `yaml:"version" json:"version"`
 }
 
-type ResourceResponse struct {
-	Deployment  Deployment              `yaml:"deployment" json:"deployment"`
-	Application DeployConfig            `yaml:"application" json:"application"`
-	Configs     map[string]ModuleConfig `yaml:"configs" json:"configs"`
+type StorageObject struct {
+	Md5         string `json:"md5,omitempty" yaml:"md5"`
+	URL         string `json:"url,omitempty" yaml:"url"`
+	Compression string `json:"compression,omitempty" yaml:"compression" default:"none"`
 }
