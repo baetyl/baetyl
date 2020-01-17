@@ -7,8 +7,7 @@ timer:
   interval: 10s
 publish:
   topic: t
-  payload:
-    id: 1
+  payload: "{\"datetime\": \"{{.Time.Now}}\",\"time\": {{.Time.NowUnix}},\"timestampNano\": {{.Time.NowUnixNano}},\"random1\": {{.Rand.Int}},\"random2\": {{.Rand.Int63}},\"id\": {{.Rand.Intn 10}},\"random4\": {{.Rand.Float64}},\"random5\": {{.Rand.Float64n 60}},\"anyString\": \"inputString\"}"
 logger:
   path: var/log/baetyl/service.log
   level: "debug"
