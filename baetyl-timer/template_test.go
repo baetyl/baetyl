@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/baetyl/baetyl/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,6 +51,10 @@ func Test__template_gen(test *testing.T) {
 			name:  "anyString",
 			input: "{\"anyString\": \"inputString\"}",
 		},
+		{
+			name:  "allInOne",
+			input: "{\"datetime\": {{.Time.Now}},\"timestamp\": {{.Time.NowUnix}},\"timestampNano\": {{.Time.NowUnixNano}},\"random1\": {{.Rand.Int}},\"random2\": {{.Rand.Int63}},\"random3\": {{.Rand.Intn 10}},\"random4\": {{.Rand.Float64}},\"random5\": {{.Rand.Float64n 60}},\"anyString\": \"inputString\"}",
+		},
 	}
 	for _, t := range tests {
 		test.Run(t.name, func(testOne *testing.T) {
@@ -63,4 +68,24 @@ func Test__template_gen(test *testing.T) {
 			fmt.Println(string(pld))
 		})
 	}
+}
+
+func Test__template_gen_old_config(t *testing.T) {
+	cfgData := `
+publish:
+  topic: t
+  payload:
+    id: 1
+`
+	var cfg config
+	err := utils.UnmarshalYAML([]byte(cfgData), &cfg)
+	assert.NoError(t, err)
+	_template, err := newTemplate(string(cfg.Publish.Payload))
+	assert.NoError(t, err)
+	pld, err := _template.gen()
+	assert.NoError(t, err)
+	fmt.Println(string(pld))
+	pld, err = _template.gen()
+	assert.NoError(t, err)
+	fmt.Println(string(pld))
 }

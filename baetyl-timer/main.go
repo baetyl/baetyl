@@ -1,12 +1,37 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/256dpi/gomqtt/packet"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 )
+
+// Payload message payload
+type Payload string
+
+// UnmarshalYAML compatible with old configuration
+func (p *Payload) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var v string
+	err := unmarshal(&v)
+	if err != nil {
+		ov := map[string]interface{}{}
+		err2 := unmarshal(&ov)
+		if err2 != nil {
+			return err
+		}
+		ov["time"] = "{{.Time.NowUnix}}"
+		vb, err2 := json.Marshal(ov)
+		if err2 != nil {
+			return err
+		}
+		v = string(vb)
+	}
+	*p = Payload(v)
+	return nil
+}
 
 // custom configuration of the timer module
 type config struct {
@@ -17,7 +42,7 @@ type config struct {
 		QOS   uint32 `yaml:"qos" json:"qos" validate:"min=0, max=1"`
 		Topic string `yaml:"topic" json:"topic" default:"timer" validate:"nonzero"`
 		//Payload Payload `yaml:"payload" json:"payload" default:"{}"`
-		Payload string `yaml:"payload" json:"payload"`
+		Payload Payload `yaml:"payload" json:"payload"`
 	} `yaml:"publish" json:"publish"`
 }
 
@@ -40,8 +65,7 @@ func main() {
 		// create a timer
 		ticker := time.NewTicker(cfg.Timer.Interval)
 		defer ticker.Stop()
-		payload := cfg.Publish.Payload
-		temp, err := newTemplate(payload)
+		temp, err := newTemplate(string(cfg.Publish.Payload))
 		if err != nil {
 			return err
 		}
