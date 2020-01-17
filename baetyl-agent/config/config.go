@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"time"
+
+	"github.com/baetyl/baetyl/baetyl-agent/common"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/http"
@@ -47,8 +48,6 @@ type DeployConfig struct {
 }
 
 type ForwardInfo struct {
-	Namespace  string            `yaml:"namespace" json:"namespace"`
-	Name       string            `yaml:"name" json:"mame"`
 	Metadata   map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
 	Status     *Inspect          `yaml:"status" json:"status"`                      // node update
 	Deployment map[string]string `yaml:"deployment" json:"deployment" default:"{}"` // shadow update
@@ -135,10 +134,30 @@ type Record struct {
 }
 
 type ResourceRequest struct {
-	Type      string `yaml:"type" json:"type"`
-	Name      string `yaml:"name" json:"name"`
-	Namespace string `yaml:"namespace" json:"namespace"`
-	Version   string `yaml:"version" json:"version"`
+	Type    string `yaml:"type" json:"type"`
+	Name    string `yaml:"name" json:"name"`
+	Version string `yaml:"version" json:"version"`
+}
+
+type DeploymentResource struct {
+	Type    string     `yaml:"type" json:"type"`
+	Name    string     `yaml:"name" json:"name"`
+	Version string     `yaml:"version" json:"version"`
+	Value   Deployment `yaml:"value" json:"value"`
+}
+
+type ApplicationResource struct {
+	Type    string       `yaml:"type" json:"type"`
+	Name    string       `yaml:"name" json:"name"`
+	Version string       `yaml:"version" json:"version"`
+	Value   DeployConfig `yaml:"value" json:"value"`
+}
+
+type ModuleConfigResource struct {
+	Type    string       `yaml:"type" json:"type"`
+	Name    string       `yaml:"name" json:"name"`
+	Version string       `yaml:"version" json:"version"`
+	Value   ModuleConfig `yaml:"value" json:"value"`
 }
 
 type StorageObject struct {

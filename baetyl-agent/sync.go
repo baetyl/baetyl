@@ -60,44 +60,32 @@ func (a *agent) processDeployment(le *EventLink) error {
 		}
 		reqs = append(reqs, req)
 	}
-	res, err := a.syncResource(reqs)
+	var deploys []config.DeploymentResource
+	err := a.syncResource(reqs, &deploys)
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	var deploy config.Deployment
-	for i, req := range reqs {
-		switch req.Type {
-		case string(common.Deployment):
-			err := json.Unmarshal(res[i], &deploy)
-			if err != nil {
-				return err
-			}
-		}
+	deploy := deploys[0].Value
+
+	reqs = generateRequest(common.Application, deploy.Snapshot.Apps)
+	var apps []config.ApplicationResource
+	err = a.syncResource(reqs, &apps)
+	if err != nil {
+		return fmt.Errorf("failed to sync resource: %s", err.Error())
+	}
+	app := apps[0].Value
+
+	reqs = generateRequest(common.Config, deploy.Snapshot.Configs)
+	var cfgs []config.ModuleConfigResource
+	err = a.syncResource(reqs, &cfgs)
+	if err != nil {
+		return fmt.Errorf("failed to sync resource: %s", err.Error())
+	}
+	configs := map[string]config.ModuleConfig{}
+	for _, cfg := range cfgs {
+		configs[cfg.Name] = cfg.Value
 	}
 
-	reqs = generateRequest(deploy.Snapshot)
-	res, err = a.syncResource(reqs)
-	if err != nil {
-		return fmt.Errorf("failed to sync resource: %s", err.Error())
-	}
-	var app config.DeployConfig
-	var cfg config.ModuleConfig
-	configs := map[string]config.ModuleConfig{}
-	for i, req := range reqs {
-		switch req.Type {
-		case string(common.Application):
-			err = json.Unmarshal(res[i], &app)
-			if err != nil {
-				return err
-			}
-		case string(common.Config):
-			err = json.Unmarshal(res[i], &cfg)
-			if err != nil {
-				return err
-			}
-			configs[cfg.Name] = cfg
-		}
-	}
 	volumeMetas, hostDir := a.processApplication(app)
 
 	// avoid duplicated resource synchronization
@@ -120,21 +108,20 @@ func (a *agent) processDeployment(le *EventLink) error {
 	return nil
 }
 
-func (a *agent) syncResource(reqs []config.ResourceRequest) ([][]byte, error) {
+func (a *agent) syncResource(reqs []config.ResourceRequest, res interface{}) error {
 	data, err := json.Marshal(reqs)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	resData, err := a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
+		return fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	var res [][]byte
-	err = json.Unmarshal(resData, &res)
+	err = json.Unmarshal(resData, res)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return res, nil
+	return nil
 }
 
 func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo, configs map[string]config.ModuleConfig) error {
@@ -215,24 +202,28 @@ func (a *agent) processApplication(deployConfig config.DeployConfig) (map[string
 	return deployConfig.Metadata, hostDir
 }
 
-func generateRequest(snapshot config.Snapshot) []config.ResourceRequest {
+func generateRequest(resType common.Resource, res map[string]string) []config.ResourceRequest {
 	var reqs []config.ResourceRequest
-	for n, v := range snapshot.Apps {
-		req := config.ResourceRequest{
-			Type:    string(common.Application),
-			Name:    n,
-			Version: v,
+	switch resType {
+	case common.Application:
+		for n, v := range res {
+			req := config.ResourceRequest{
+				Type:    string(common.Application),
+				Name:    n,
+				Version: v,
+			}
+			reqs = append(reqs, req)
 		}
-		reqs = append(reqs, req)
-	}
-	filterConfigs(snapshot.Configs)
-	for n, v := range snapshot.Configs {
-		req := config.ResourceRequest{
-			Type:    string(common.Config),
-			Name:    n,
-			Version: v,
+	case common.Config:
+		filterConfigs(res)
+		for n, v := range res {
+			req := config.ResourceRequest{
+				Type:    string(common.Config),
+				Name:    n,
+				Version: v,
+			}
+			reqs = append(reqs, req)
 		}
-		reqs = append(reqs, req)
 	}
 	return reqs
 }
