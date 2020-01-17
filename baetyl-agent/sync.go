@@ -48,45 +48,52 @@ func (a *agent) processDeployment(le *EventLink) error {
 	if !ok {
 		return fmt.Errorf("no deployment info in delta info")
 	}
-	var reqs []config.ResourceRequest
+	var bs []*config.BaseResource
 	for k, v := range d.(map[string]interface{}) {
-		req := config.ResourceRequest{
-			Type:    string(common.Deployment),
+		b := &config.BaseResource{
+			Type:    common.Deployment,
 			Name:    k,
 			Version: v.(string),
 		}
-		if req.Name == "" || req.Version == "" {
+		if b.Name == "" || b.Version == "" {
 			return fmt.Errorf("can not request deployment with empty name or version")
 		}
-		reqs = append(reqs, req)
+		bs = append(bs, b)
 	}
-	var deploys []config.DeploymentResource
-	err := a.syncResource(reqs, &deploys)
+	res, err := a.syncResource(bs)
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	deploy := deploys[0].Value
+	deploy := res[0].GetDeployment()
+	if deploy == nil {
+		return fmt.Errorf("failed to get deployment resource")
+	}
 
-	reqs = generateRequest(common.Application, deploy.Snapshot.Apps)
-	var apps []config.ApplicationResource
-	err = a.syncResource(reqs, &apps)
+	reqs := generateRequest(common.Application, deploy.Snapshot.Apps)
+	res, err = a.syncResource(reqs)
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	app := apps[0].Value
+	app := res[0].GetApplication()
+	if app == nil {
+		return fmt.Errorf("failed to get application resource")
+	}
 
 	reqs = generateRequest(common.Config, deploy.Snapshot.Configs)
-	var cfgs []config.ModuleConfigResource
-	err = a.syncResource(reqs, &cfgs)
+	res, err = a.syncResource(reqs)
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
 	configs := map[string]config.ModuleConfig{}
-	for _, cfg := range cfgs {
-		configs[cfg.Name] = cfg.Value
+	for _, r := range res {
+		cfg := r.GetConfig()
+		if cfg == nil {
+			return fmt.Errorf("failed to get config resource")
+		}
+		configs[cfg.Name] = *cfg
 	}
 
-	volumeMetas, hostDir := a.processApplication(app)
+	volumeMetas, hostDir := a.processApplication(*app)
 
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
@@ -108,20 +115,22 @@ func (a *agent) processDeployment(le *EventLink) error {
 	return nil
 }
 
-func (a *agent) syncResource(reqs []config.ResourceRequest, res interface{}) error {
-	data, err := json.Marshal(reqs)
+func (a *agent) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
+	req := config.DesireRequest{Resources: res}
+	data, err := json.Marshal(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resData, err := a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
 	if err != nil {
-		return fmt.Errorf("failed to send resource request: %s", err.Error())
+		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	err = json.Unmarshal(resData, res)
+	var response config.DesireResponse
+	err = json.Unmarshal(resData, &response)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return response.Resources, nil
 }
 
 func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo, configs map[string]config.ModuleConfig) error {
@@ -150,7 +159,7 @@ func (a *agent) processModuleConfig(volume baetyl.VolumeInfo, cfg config.ModuleC
 	}
 	save := true
 	for k, v := range cfg.Data {
-		if strings.HasPrefix(k, common.StorageObjectPrefix) {
+		if strings.HasPrefix(k, common.PrefixConfigObject) {
 			save = false
 			obj := new(config.StorageObject)
 			err := json.Unmarshal([]byte(v), &obj)
@@ -160,7 +169,7 @@ func (a *agent) processModuleConfig(volume baetyl.VolumeInfo, cfg config.ModuleC
 			}
 			volume.Meta.URL = obj.URL
 			volume.Meta.MD5 = obj.Md5
-			_, _, err = a.downloadVolume(volume, strings.TrimPrefix(k, common.StorageObjectPrefix), obj.Compression == common.ZipCompression)
+			_, _, err = a.downloadVolume(volume, strings.TrimPrefix(k, common.PrefixConfigObject), obj.Compression == common.ZipCompression)
 			if err != nil {
 				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
@@ -202,30 +211,30 @@ func (a *agent) processApplication(deployConfig config.DeployConfig) (map[string
 	return deployConfig.Metadata, hostDir
 }
 
-func generateRequest(resType common.Resource, res map[string]string) []config.ResourceRequest {
-	var reqs []config.ResourceRequest
+func generateRequest(resType common.Resource, res map[string]string) []*config.BaseResource {
+	var bs []*config.BaseResource
 	switch resType {
 	case common.Application:
 		for n, v := range res {
-			req := config.ResourceRequest{
-				Type:    string(common.Application),
+			b := &config.BaseResource{
+				Type:    common.Application,
 				Name:    n,
 				Version: v,
 			}
-			reqs = append(reqs, req)
+			bs = append(bs, b)
 		}
 	case common.Config:
 		filterConfigs(res)
 		for n, v := range res {
-			req := config.ResourceRequest{
-				Type:    string(common.Config),
+			b := &config.BaseResource{
+				Type:    common.Config,
 				Name:    n,
 				Version: v,
 			}
-			reqs = append(reqs, req)
+			bs = append(bs, b)
 		}
 	}
-	return reqs
+	return bs
 }
 
 func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
