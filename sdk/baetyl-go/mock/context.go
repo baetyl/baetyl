@@ -5,11 +5,9 @@
 package baetyl
 
 import (
-	context "context"
 	logger "github.com/baetyl/baetyl/logger"
 	mqtt "github.com/baetyl/baetyl/protocol/mqtt"
 	baetyl_go "github.com/baetyl/baetyl/sdk/baetyl-go"
-	api "github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	gomock "github.com/golang/mock/gomock"
 	os "os"
 	reflect "reflect"
@@ -38,20 +36,6 @@ func (m *MockContext) EXPECT() *MockContextMockRecorder {
 	return m.recorder
 }
 
-// Close mocks base method
-func (m *MockContext) Close() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Close")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Close indicates an expected call of Close
-func (mr *MockContextMockRecorder) Close() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockContext)(nil).Close))
-}
-
 // Config mocks base method
 func (m *MockContext) Config() *baetyl_go.ServiceConfig {
 	m.ctrl.T.Helper()
@@ -64,34 +48,6 @@ func (m *MockContext) Config() *baetyl_go.ServiceConfig {
 func (mr *MockContextMockRecorder) Config() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Config", reflect.TypeOf((*MockContext)(nil).Config))
-}
-
-// DelKV mocks base method
-func (m *MockContext) DelKV(arg0 []byte) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DelKV", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DelKV indicates an expected call of DelKV
-func (mr *MockContextMockRecorder) DelKV(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelKV", reflect.TypeOf((*MockContext)(nil).DelKV), arg0)
-}
-
-// DelKVConext mocks base method
-func (m *MockContext) DelKVConext(arg0 context.Context, arg1 []byte) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DelKVConext", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DelKVConext indicates an expected call of DelKVConext
-func (mr *MockContextMockRecorder) DelKVConext(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelKVConext", reflect.TypeOf((*MockContext)(nil).DelKVConext), arg0, arg1)
 }
 
 // GetAvailablePort mocks base method
@@ -107,36 +63,6 @@ func (m *MockContext) GetAvailablePort() (string, error) {
 func (mr *MockContextMockRecorder) GetAvailablePort() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailablePort", reflect.TypeOf((*MockContext)(nil).GetAvailablePort))
-}
-
-// GetKV mocks base method
-func (m *MockContext) GetKV(arg0 []byte) (*api.KV, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetKV", arg0)
-	ret0, _ := ret[0].(*api.KV)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetKV indicates an expected call of GetKV
-func (mr *MockContextMockRecorder) GetKV(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKV", reflect.TypeOf((*MockContext)(nil).GetKV), arg0)
-}
-
-// GetKVConext mocks base method
-func (m *MockContext) GetKVConext(arg0 context.Context, arg1 []byte) (*api.KV, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetKVConext", arg0, arg1)
-	ret0, _ := ret[0].(*api.KV)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetKVConext indicates an expected call of GetKVConext
-func (mr *MockContextMockRecorder) GetKVConext(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKVConext", reflect.TypeOf((*MockContext)(nil).GetKVConext), arg0, arg1)
 }
 
 // InspectSystem mocks base method
@@ -166,36 +92,6 @@ func (m *MockContext) IsNative() bool {
 func (mr *MockContextMockRecorder) IsNative() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNative", reflect.TypeOf((*MockContext)(nil).IsNative))
-}
-
-// ListKV mocks base method
-func (m *MockContext) ListKV(arg0 []byte) ([]*api.KV, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListKV", arg0)
-	ret0, _ := ret[0].([]*api.KV)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListKV indicates an expected call of ListKV
-func (mr *MockContextMockRecorder) ListKV(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListKV", reflect.TypeOf((*MockContext)(nil).ListKV), arg0)
-}
-
-// ListKVContext mocks base method
-func (m *MockContext) ListKVContext(arg0 context.Context, arg1 []byte) ([]*api.KV, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListKVContext", arg0, arg1)
-	ret0, _ := ret[0].([]*api.KV)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListKVContext indicates an expected call of ListKVContext
-func (mr *MockContextMockRecorder) ListKVContext(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListKVContext", reflect.TypeOf((*MockContext)(nil).ListKVContext), arg0, arg1)
 }
 
 // LoadConfig mocks base method
@@ -253,34 +149,6 @@ func (m *MockContext) ReportInstance(arg0 map[string]interface{}) error {
 func (mr *MockContextMockRecorder) ReportInstance(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportInstance", reflect.TypeOf((*MockContext)(nil).ReportInstance), arg0)
-}
-
-// SetKV mocks base method
-func (m *MockContext) SetKV(arg0 api.KV) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetKV", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetKV indicates an expected call of SetKV
-func (mr *MockContextMockRecorder) SetKV(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetKV", reflect.TypeOf((*MockContext)(nil).SetKV), arg0)
-}
-
-// SetKVConext mocks base method
-func (m *MockContext) SetKVConext(arg0 context.Context, arg1 api.KV) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetKVConext", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetKVConext indicates an expected call of SetKVConext
-func (mr *MockContextMockRecorder) SetKVConext(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetKVConext", reflect.TypeOf((*MockContext)(nil).SetKVConext), arg0, arg1)
 }
 
 // StartInstance mocks base method

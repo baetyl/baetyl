@@ -9,10 +9,8 @@ import (
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/master/api"
-	"github.com/baetyl/baetyl/master/database"
 	"github.com/baetyl/baetyl/master/engine"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
-	grpcapi "github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	cmap "github.com/orcaman/concurrent-map"
 )
 
@@ -23,9 +21,7 @@ type Master struct {
 	pwd       string
 	server    *api.Server
 	engine    engine.Engine
-	apiserver *grpcapi.Server
 	services  cmap.ConcurrentMap
-	database  database.DB
 	accounts  cmap.ConcurrentMap
 	infostats *infoStats
 	sig       chan os.Signal
@@ -63,32 +59,6 @@ func New(pwd string, cfg Config, ver string, revision string) (*Master, error) {
 		return nil, err
 	}
 	log.Infoln("engine started")
-
-	err = os.MkdirAll(cfg.Database.Path, 0755)
-	if err != nil {
-		m.Close()
-		return nil, fmt.Errorf("failed to make db directory: %s", err.Error())
-	}
-	m.database, err = database.New(database.Conf{Driver: cfg.Database.Driver, Source: path.Join(cfg.Database.Path, "kv.db")})
-	if err != nil {
-		m.Close()
-		return nil, err
-	}
-	log.Infoln("db inited")
-
-	m.apiserver, err = grpcapi.NewServer(cfg.API, m)
-	if err != nil {
-		m.Close()
-		return nil, err
-	}
-	m.apiserver.RegisterKVService(api.NewKVService(m.database))
-	err = m.apiserver.Start()
-	if err != nil {
-		m.Close()
-		return nil, err
-	}
-	log.Infoln("api server started")
-
 	m.server, err = api.New(m.cfg.Server, m)
 	if err != nil {
 		m.Close()
@@ -115,14 +85,6 @@ func (m *Master) Close() error {
 	if m.server != nil {
 		m.server.Close()
 		m.log.Infoln("server stopped")
-	}
-	if m.apiserver != nil {
-		m.apiserver.Close()
-		m.log.Infoln("api server stopped")
-	}
-	if m.database != nil {
-		m.database.Close()
-		m.log.Infoln("db closed")
 	}
 	m.stopServices(map[string]struct{}{})
 	if m.engine != nil {
