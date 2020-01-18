@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
+	"strings"
 
 	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/baetyl-agent/config"
@@ -15,6 +15,21 @@ import (
 	"github.com/baetyl/baetyl/utils"
 	"gopkg.in/yaml.v2"
 )
+
+type deployment struct {
+	Name       string `yaml:"name" json:"name"`
+	AppVersion string `yaml:"app_version" json:"app_version"`
+}
+
+type node struct {
+	Name      string
+	Namespace string
+}
+
+type batch struct {
+	Name      string
+	Namespace string
+}
 
 func (a *agent) processDelta(e *Event) {
 	le := e.Content.(*EventLink)
@@ -33,61 +48,63 @@ func (a *agent) processDeployment(le *EventLink) error {
 	if !ok {
 		return fmt.Errorf("no deployment info in delta info")
 	}
-	var reqs []config.ResourceRequest
+	var bs []*config.BaseResource
 	for k, v := range d.(map[string]interface{}) {
-		req := config.ResourceRequest{
-			Type:    string(common.Deployment),
+		b := &config.BaseResource{
+			Type:    common.Deployment,
 			Name:    k,
 			Version: v.(string),
 		}
-		if req.Name == "" || req.Version == "" {
+		if b.Name == "" || b.Version == "" {
 			return fmt.Errorf("can not request deployment with empty name or version")
 		}
-		reqs = append(reqs, req)
+		bs = append(bs, b)
+	}
+	res, err := a.syncResource(bs)
+	if err != nil {
+		return fmt.Errorf("failed to sync resource: %s", err.Error())
+	}
+	deploy := res[0].GetDeployment()
+	if deploy == nil {
+		return fmt.Errorf("failed to get deployment resource")
 	}
 
-	data, err := json.Marshal(reqs)
+	reqs := generateRequest(common.Application, deploy.Snapshot.Apps)
+	res, err = a.syncResource(reqs)
 	if err != nil {
-		return fmt.Errorf("failed to marshal resource request: %s", err.Error())
+		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	resData, err := a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
+	app := res[0].GetApplication()
+	if app == nil {
+		return fmt.Errorf("failed to get application resource")
+	}
+
+	reqs = generateRequest(common.Config, deploy.Snapshot.Configs)
+	res, err = a.syncResource(reqs)
 	if err != nil {
-		return fmt.Errorf("failed to send resource request: %s", err.Error())
+		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	var deployRes config.ResourceResponse
-	err = json.Unmarshal(resData, &deployRes)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal deployment resource: %s", err.Error())
+	configs := map[string]config.ModuleConfig{}
+	for _, r := range res {
+		cfg := r.GetConfig()
+		if cfg == nil {
+			return fmt.Errorf("failed to get config resource")
+		}
+		configs[cfg.Name] = *cfg
 	}
-	data, err = generateRequest(deployRes.Deployment.Snapshot)
-	if err != nil {
-		return fmt.Errorf("failed to generate resource request of application and configs: %s", err.Error())
-	}
-	resData, err = a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
-	if err != nil {
-		return fmt.Errorf("failed to send resource request: %s", err.Error())
-	}
-	var res config.ResourceResponse
-	err = json.Unmarshal(resData, &res)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal application and config resource: %s", err.Error())
-	}
-	volumeMetas, hostDir := a.processApplication(res.Application)
+
+	volumeMetas, hostDir := a.processApplication(*app)
 
 	// avoid duplicated resource synchronization
 	var volumes []baetyl.VolumeInfo
 	for name, volume := range volumeMetas {
 		volumes = append(volumes, volume)
-		metaVersion := volume.Meta.Version
-		if metaVersion == "" {
-			delete(volumeMetas, name)
-		}
-		if a.checkVolumeExists(volume) {
+		if _, ok := configs[name]; !ok || volume.Meta.Version == "" {
 			delete(volumeMetas, name)
 		}
 	}
-	a.cleaner.set(deployRes.Deployment.Version, volumes)
-	err = a.processVolumes(volumeMetas, res.Configs)
+	a.cleaner.set(deploy.Version, volumes)
+	err = a.processVolumes(volumeMetas, configs)
 	if err != nil {
 		return err
 	}
@@ -98,88 +115,73 @@ func (a *agent) processDeployment(le *EventLink) error {
 	return nil
 }
 
+func (a *agent) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
+	req := config.DesireRequest{Resources: res}
+	data, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+	resData, err := a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
+	}
+	var response config.DesireResponse
+	err = json.Unmarshal(resData, &response)
+	if err != nil {
+		return nil, err
+	}
+	return response.Resources, nil
+}
+
 func (a *agent) processVolumes(volumes map[string]baetyl.VolumeInfo, configs map[string]config.ModuleConfig) error {
-	rootDir := path.Join(baetyl.DefaultDBDir, "volumes")
 	for name, volume := range volumes {
 		if meta := volume.Meta; meta.Version != "" {
-			if volume.Meta.URL != "" {
-				err := a.processURL(rootDir, name, volume)
-				if err != nil {
-					a.ctx.Log().Errorf("download volume (%s) failed: %s", name, err.Error())
-				}
-			} else {
-				err := a.processModuleConfig(rootDir, volume.Path, configs[name])
-				if err != nil {
-					a.ctx.Log().Errorf("download module config (%s) failed: %s", name, err.Error())
-				}
+			err := a.processModuleConfig(volume, configs[name])
+			if err != nil {
+				a.ctx.Log().Errorf("process module config (%s) failed: %s", name, err.Error())
+				return err
 			}
 		}
 	}
 	return nil
 }
 
-func (a *agent) processModuleConfig(rootDir string, volumePath string, config config.ModuleConfig) error {
-	rp, err := filepath.Rel(baetyl.DefaultDBDir, volumePath)
+func (a *agent) processModuleConfig(volume baetyl.VolumeInfo, cfg config.ModuleConfig) error {
+	rootDir := path.Join(baetyl.DefaultDBDir, "volumes")
+	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
 	if err != nil {
-		return fmt.Errorf("illegal path of config (%s): %s", config.Name, err.Error())
+		return fmt.Errorf("illegal path of config (%s): %s", cfg.Name, err.Error())
 	}
 	containerDir := path.Join(rootDir, rp)
 	err = os.MkdirAll(containerDir, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to prepare volume directory (%s): %s", containerDir, err.Error())
 	}
-	for file, content := range config.Data {
-		volumeFile := path.Join(containerDir, file)
-		err = ioutil.WriteFile(volumeFile, []byte(content), 0755)
-		if err != nil {
-			os.RemoveAll(containerDir)
-			return fmt.Errorf("failed to create file (%s): %s", volumeFile, err.Error())
+	save := true
+	for k, v := range cfg.Data {
+		if strings.HasPrefix(k, common.PrefixConfigObject) {
+			save = false
+			obj := new(config.StorageObject)
+			err := json.Unmarshal([]byte(v), &obj)
+			if err != nil {
+				a.ctx.Log().Warnf("process storage object of volume (%s) failed: %s", volume.Name, err.Error())
+				save = true
+			}
+			volume.Meta.URL = obj.URL
+			volume.Meta.MD5 = obj.Md5
+			_, _, err = a.downloadVolume(volume, strings.TrimPrefix(k, common.PrefixConfigObject), obj.Compression == common.ZipCompression)
+			if err != nil {
+				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
+			}
 		}
-	}
-	return nil
-}
-
-func (a *agent) processURL(rootDir string, name string, volume baetyl.VolumeInfo) error {
-	meta := volume.Meta
-	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
-	if err != nil {
-		return fmt.Errorf("illegal path of volume %s", volume.Name)
-	}
-	containerDir := path.Join(rootDir, rp)
-	err = os.MkdirAll(containerDir, 0755)
-	if err != nil {
-		return fmt.Errorf("failed to prepare volume directory (%s): %s", volume.Path, err.Error())
-	}
-	volumeFile := path.Join(containerDir, name)
-	if utils.FileExists(volumeFile) {
-		md5, err := utils.CalculateFileMD5(volumeFile)
-		if err == nil && md5 == meta.MD5 {
-			a.ctx.Log().Debugf("volume (%s) exists", name)
-			return nil
+		if save {
+			volumeFile := path.Join(containerDir, k)
+			err = ioutil.WriteFile(volumeFile, []byte(v), 0755)
+			if err != nil {
+				os.RemoveAll(containerDir)
+				return fmt.Errorf("failed to create file (%s): %s", volumeFile, err.Error())
+			}
 		}
-	}
-	res, err := a.http.SendUrl("GET", meta.URL, nil, nil)
-	if err != nil || res == nil {
-		// retry
-		time.Sleep(time.Second)
-		res, err = a.http.SendUrl("GET", meta.URL, nil, nil)
-		if err != nil || res == nil {
-			return fmt.Errorf("failed to download volume (%s): %v", name, err)
-		}
-	}
-	err = utils.WriteFile(volumeFile, res)
-	if err != nil {
-		os.RemoveAll(containerDir)
-		return fmt.Errorf("failed to prepare volume (%s): %s", name, err.Error())
-	}
-	md5, err := utils.CalculateFileMD5(volumeFile)
-	if err != nil {
-		os.RemoveAll(containerDir)
-		return fmt.Errorf("failed to calculate MD5 of volume (%s): %s", name, err.Error())
-	}
-	if md5 != meta.MD5 {
-		os.RemoveAll(containerDir)
-		return fmt.Errorf("MD5 of volume (%s) invalid", name)
 	}
 	return nil
 }
@@ -209,30 +211,30 @@ func (a *agent) processApplication(deployConfig config.DeployConfig) (map[string
 	return deployConfig.Metadata, hostDir
 }
 
-func generateRequest(snapshot config.Snapshot) ([]byte, error) {
-	var reqs []config.ResourceRequest
-	for n, v := range snapshot.Apps {
-		req := config.ResourceRequest{
-			Type:    string(common.Application),
-			Name:    n,
-			Version: v,
+func generateRequest(resType common.Resource, res map[string]string) []*config.BaseResource {
+	var bs []*config.BaseResource
+	switch resType {
+	case common.Application:
+		for n, v := range res {
+			b := &config.BaseResource{
+				Type:    common.Application,
+				Name:    n,
+				Version: v,
+			}
+			bs = append(bs, b)
 		}
-		reqs = append(reqs, req)
-	}
-	filterConfigs(snapshot.Configs)
-	for n, v := range snapshot.Configs {
-		req := config.ResourceRequest{
-			Type:    string(common.Config),
-			Name:    n,
-			Version: v,
+	case common.Config:
+		filterConfigs(res)
+		for n, v := range res {
+			b := &config.BaseResource{
+				Type:    common.Config,
+				Name:    n,
+				Version: v,
+			}
+			bs = append(bs, b)
 		}
-		reqs = append(reqs, req)
 	}
-	res, err := json.Marshal(reqs)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	return bs
 }
 
 func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
@@ -274,41 +276,4 @@ func filterConfigs(configs map[string]string) {
 			delete(configs, name)
 		}
 	}
-}
-
-func (a *agent) checkVolumeExists(volume baetyl.VolumeInfo) bool {
-	rp, err := filepath.Rel(baetyl.DefaultDBDir, volume.Path)
-	if err != nil {
-		a.ctx.Log().Warnf("illegal path of volume: %s", volume.Name)
-		return false
-	}
-	volumePath := path.Join(baetyl.DefaultDBDir, "volumes", rp)
-	if !utils.DirExists(volumePath) {
-		return false
-	}
-	if volume.Meta.MD5 != "" {
-		volumeFile := path.Join(volumePath, volume.Name)
-		md5, err := utils.CalculateFileMD5(volumeFile)
-		if err != nil {
-			a.ctx.Log().Warnf("failed to calculate md5 of volume file %s", volumeFile)
-			return false
-		}
-		return md5 == volume.Meta.MD5
-	}
-	return true
-}
-
-type deployment struct {
-	Name       string `yaml:"name" json:"name"`
-	AppVersion string `yaml:"app_version" json:"app_version"`
-}
-
-type node struct {
-	Name      string
-	Namespace string
-}
-
-type batch struct {
-	Name      string
-	Namespace string
 }

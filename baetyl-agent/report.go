@@ -4,12 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/baetyl/baetyl/baetyl-agent/common"
-	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"io/ioutil"
 	"path"
 	"strings"
 	"time"
+
+	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 
 	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
