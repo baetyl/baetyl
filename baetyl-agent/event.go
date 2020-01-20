@@ -90,6 +90,9 @@ func (a *agent) ProcessPublish(p *packet.Publish) error {
 	}
 	a.ctx.Log().Debugln("event:", string(p.Message.Payload))
 	select {
+	case oe := <-a.events:
+		a.ctx.Log().Warnf("discard old event: %+v", *oe)
+		a.events <- e
 	case a.events <- e:
 	case <-a.tomb.Dying():
 	}
