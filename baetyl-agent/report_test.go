@@ -2,17 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
+	baetylHttp "github.com/baetyl/baetyl/protocol/http"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/utils"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path"
 	"testing"
-
-	"github.com/baetyl/baetyl/baetyl-agent/config"
-	baetylHttp "github.com/baetyl/baetyl/protocol/http"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestReport(t *testing.T) {
@@ -55,4 +56,61 @@ app_version: v1`
 	}
 	assert.Equal(t, le, e.Content)
 	os.Chdir(cwd)
+}
+
+func TestCollector(t *testing.T) {
+	proofs := map[common.Proof]string{
+		common.HostID: "host",
+		common.MAC:    "mac",
+		common.SN:     "error path",
+		common.CPU:    attrs["fingerprintValue"],
+		"error":       "",
+	}
+
+	tmpDir, err := ioutil.TempDir("", "")
+	assert.Nil(t, err)
+	snPath := path.Join(tmpDir, "sn")
+	err = ioutil.WriteFile(snPath, []byte(proofs[common.SN]), 0755)
+	assert.Nil(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	i := &baetyl.Inspect{
+		Software: baetyl.Software{},
+		Hardware: baetyl.Hardware{
+			HostInfo: &utils.HostInfo{
+				HostID: proofs[common.HostID],
+			},
+			NetInfo: &utils.NetInfo{Interfaces: []utils.Interface{
+				{Name: "eh0", MAC: proofs[common.MAC]},
+			}},
+		},
+	}
+	a := initAgent(t)
+	a.attrs = attrs
+	expectAct := &config.Activation{
+		PenetrateData: a.attrs,
+	}
+
+	for k, v := range proofs {
+		t.Log(k)
+		a.cfg.Fingerprints = []config.Fingerprint{
+			{Proof: k},
+		}
+		if k == common.MAC {
+			a.cfg.Fingerprints[0].Value = "eh0"
+		}
+		if k == common.SN {
+			a.cfg.Fingerprints[0].Value = snPath
+		}
+		expectAct.FingerprintValue = v
+		act, err := a.collectActiveInfo(i)
+		if k == common.SN {
+			assert.Error(t, err)
+		} else if k == "error" {
+			assert.Error(t, err, "proof invalid")
+		} else {
+			assert.Nil(t, err)
+			assert.EqualValues(t, expectAct, act)
+		}
+	}
 }

@@ -30,8 +30,11 @@ type agent struct {
 	http    *http.Client
 	// clean
 	cleaner *cleaner
-	node    *node
-	batch   *batch
+	// active
+	node  *node
+	batch *batch
+	srv   *Server
+	attrs map[string]string
 }
 
 func main() {
@@ -114,9 +117,21 @@ func (a *agent) start() error {
 			return err
 		}
 	}
-	err := a.tomb.Go(a.reporting, a.processing)
-	if err != nil {
-		return err
+	if a.cfg.Server.Listen != "" && a.batch != nil {
+		err := a.NewServer(a.cfg.Server, a.ctx.Log())
+		if err != nil {
+			return err
+		}
+		err = a.StartServer()
+		if err != nil {
+			return err
+		}
+
+	} else {
+		err := a.tomb.Go(a.reporting, a.processing)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -134,6 +149,9 @@ func (a *agent) close() {
 	a.tomb.Wait()
 	if a.mqtt != nil {
 		a.mqtt.Close()
+	}
+	if a.srv != nil {
+		a.CloseServer()
 	}
 }
 
