@@ -33,12 +33,12 @@ func TestConfig(t *testing.T) {
 		})
 	}
 
-	expectedDeploy := Deployment {
-		Name:        "deploy",
-		Namespace:   "default",
-		Version:     "v1",
+	expectedDeploy := Deployment{
+		Name:      "deploy",
+		Namespace: "default",
+		Version:   "v1",
 	}
-	expectedRes := Resource {
+	expectedRes := Resource{
 		BaseResource: BaseResource{
 			Type:    common.Deployment,
 			Name:    "deploy",
@@ -59,13 +59,13 @@ func TestConfig(t *testing.T) {
 	assert.Nil(t, app)
 	assert.Nil(t, config)
 
-	expectedApp := DeployConfig {
+	expectedApp := DeployConfig{
 		AppConfig: baetyl.ComposeAppConfig{
-			Name: "app",
+			Name:       "app",
 			AppVersion: "v1",
 		},
 	}
-	expectedRes = Resource {
+	expectedRes = Resource{
 		BaseResource: BaseResource{
 			Type:    common.Application,
 			Name:    "app",
@@ -83,13 +83,13 @@ func TestConfig(t *testing.T) {
 	assert.Equal(t, *app, expectedApp)
 	assert.Nil(t, deploy)
 
-	expectedConfig := ModuleConfig {
+	expectedConfig := ModuleConfig{
 		Name: "config",
-		Data: map[string]string {
+		Data: map[string]string{
 			"service.yml": "config",
 		},
 	}
-	expectedRes = Resource {
+	expectedRes = Resource{
 		BaseResource: BaseResource{
 			Type:    common.Config,
 			Name:    "config",

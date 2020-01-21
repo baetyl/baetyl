@@ -6,6 +6,7 @@ type Proof string
 const (
 	// KeyContextNamespace the key of namespace in context
 	KeyContextNamespace = "namespace"
+	KeyFingerprintValue = "fingerprintValue"
 
 	Deployment  Resource = "deployment"
 	Application Resource = "application"

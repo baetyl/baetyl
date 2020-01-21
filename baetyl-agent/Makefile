@@ -30,6 +30,7 @@ XFLAGS?=--load
 XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g')
 
 YML_FILE=$(wildcard *.yml)
+RES_DIR=$(wildcard server/*.template)
 
 OUTPUT:=../output
 OUTPUT_MODS:=$(PLATFORMS:%=$(OUTPUT)/%/$(MODULE))
@@ -47,6 +48,8 @@ $(OUTPUT_BINS): $(SRC_FILES)
 $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@echo "PACKAGE $@"
 	@install -m 0755 $(YML_FILE) $(dir $@)
+	@install -d -m 0755 $(dir $@)/server
+	@install -m 0755 $(RES_DIR) $(dir $@)/server
 	@cd $(dir $@) && zip -q -r $(notdir $@) bin $(YML_FILE)
 
 .PHONY: image

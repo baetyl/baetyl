@@ -415,9 +415,9 @@ type VolumeInfo struct {
 }
 
 type Meta struct {
-	URL         string `yaml:"url" json:"url"`
-	MD5         string `yaml:"md5" json:"md5"`
-	Version     string `yaml:"version" json:"version"`
+	URL     string `yaml:"url" json:"url"`
+	MD5     string `yaml:"md5" json:"md5"`
+	Version string `yaml:"version" json:"version"`
 }
 
 // LoadComposeAppConfigCompatible load compose app config or old compatible config

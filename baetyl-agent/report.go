@@ -72,7 +72,7 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		}
 		if a.node == nil {
 			a.ctx.Log().WithError(err).Warnf("node nil , to active")
-			actInfo, err := a.collectActiveInfo(nil, i)
+			actInfo, err := a.collectActiveInfo(i)
 			if err != nil {
 				a.ctx.Log().WithError(err).Warnf("collect active info error")
 				return nil
@@ -143,7 +143,8 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 	return io
 }
 
-func (a *agent) collectActiveInfo(attrs map[string]string, inspect *baetyl.Inspect) (*config.Activation, error) {
+func (a *agent) collectActiveInfo(inspect *baetyl.Inspect) (*config.Activation, error) {
+	attrs := a.attrs
 	if attrs == nil {
 		attrs = map[string]string{}
 		for _, item := range a.cfg.Attributes {
@@ -151,15 +152,17 @@ func (a *agent) collectActiveInfo(attrs map[string]string, inspect *baetyl.Inspe
 		}
 	}
 	a.ctx.Log().Debugln("active attributes : ", attrs)
-	var fp string
-	for _, instance := range a.cfg.Fingerprints {
-		proof, err := collectFP(instance.Proof, instance.Value, inspect)
-		if err != nil {
-			return nil, err
-		}
-		if proof != "" {
-			fp = proof
-			break
+	fp := attrs[common.KeyFingerprintValue]
+	if a.cfg.Fingerprints != nil && len(a.cfg.Fingerprints) > 0 {
+		for _, instance := range a.cfg.Fingerprints {
+			proof, err := collectFP(instance.Proof, instance.Value, inspect)
+			if err != nil {
+				return nil, err
+			}
+			if proof != "" {
+				fp = proof
+				break
+			}
 		}
 	}
 	if fp == "" {
