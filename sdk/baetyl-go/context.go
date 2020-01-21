@@ -1,16 +1,13 @@
 package baetyl
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/mqtt"
-	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	"github.com/baetyl/baetyl/utils"
 )
 
@@ -67,9 +64,7 @@ const (
 	EnvKeyHostOS                 = "BAETYL_HOST_OS"
 	EnvKeyHostSN                 = "BAETYL_HOST_SN"
 	EnvKeyMasterAPISocket        = "BAETYL_MASTER_API_SOCKET"
-	EnvKeyMasterGRPCAPISocket    = "BAETYL_API_SOCKET"
 	EnvKeyMasterAPIAddress       = "BAETYL_MASTER_API_ADDRESS"
-	EnvKeyMasterGRPCAPIAddress   = "BAETYL_API_ADDRESS"
 	EnvKeyMasterAPIVersion       = "BAETYL_MASTER_API_VERSION"
 	EnvKeyServiceMode            = "BAETYL_SERVICE_MODE"
 	EnvKeyServiceName            = "BAETYL_SERVICE_NAME"
@@ -95,8 +90,6 @@ const (
 	DefaultBinBackupFile = "bin/baetyl.old"
 	// DefaultSockFile sock file of baetyl by default
 	DefaultSockFile = "var/run/baetyl.sock"
-	// DefaultGRPCSockFile sock file of grpc api by default
-	DefaultGRPCSockFile = "var/run/baetyl/api.sock"
 	// DefaultConfFile config path of the service by default
 	DefaultConfFile = "etc/baetyl/service.yml"
 	// DefaultDBDir db dir of the service by default
@@ -155,27 +148,6 @@ type Context interface {
 	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
 	// stop the instance of the service
 	StopInstance(serviceName, instanceName string) error
-
-	// Master KV API
-
-	// set kv
-	SetKV(kv api.KV) error
-	// set kv which supports context
-	SetKVConext(ctx context.Context, kv api.KV) error
-	// get kv
-	GetKV(k []byte) (*api.KV, error)
-	// get kv which supports context
-	GetKVConext(ctx context.Context, k []byte) (*api.KV, error)
-	// del kv
-	DelKV(k []byte) error
-	// del kv which supports context
-	DelKVConext(ctx context.Context, k []byte) error
-	// list kv with prefix
-	ListKV(p []byte) ([]*api.KV, error)
-	// list kv with prefix which supports context
-	ListKVContext(ctx context.Context, p []byte) ([]*api.KV, error)
-
-	io.Closer
 }
 
 type ctx struct {
@@ -246,7 +218,6 @@ func (c *ctx) Log() logger.Logger {
 
 func (c *ctx) Wait() {
 	<-c.WaitChan()
-	c.Close()
 }
 
 func (c *ctx) IsNative() bool {
@@ -262,13 +233,4 @@ func (c *ctx) WaitChan() <-chan os.Signal {
 
 func (c *ctx) ReportInstance(stats map[string]interface{}) error {
 	return c.Client.ReportInstance(c.sn, c.in, stats)
-}
-
-func (c *ctx) Close() error {
-	if c.Client.Client != nil {
-		if err := c.Client.Close(); err != nil {
-			return err
-		}
-	}
-	return nil
 }

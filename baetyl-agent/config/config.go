@@ -1,8 +1,10 @@
 package config
 
 import (
-	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"encoding/json"
 	"time"
+
+	"github.com/baetyl/baetyl/baetyl-agent/common"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/http"
@@ -47,8 +49,6 @@ type DeployConfig struct {
 }
 
 type ForwardInfo struct {
-	Namespace  string            `yaml:"namespace" json:"namespace"`
-	Name       string            `yaml:"name" json:"mame"`
 	Metadata   map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
 	Status     *Inspect          `yaml:"status" json:"status"`                      // node update
 	Deployment map[string]string `yaml:"deployment" json:"deployment" default:"{}"` // shadow update
@@ -134,15 +134,104 @@ type Record struct {
 	Error string `json:"error,omitempty"`
 }
 
-type ResourceRequest struct {
-	Type      string `yaml:"type" json:"type"`
-	Name      string `yaml:"name" json:"name"`
-	Namespace string `yaml:"namespace" json:"namespace"`
-	Version   string `yaml:"version" json:"version"`
+type DeploymentResource struct {
+	Type    string     `yaml:"type" json:"type"`
+	Name    string     `yaml:"name" json:"name"`
+	Version string     `yaml:"version" json:"version"`
+	Value   Deployment `yaml:"value" json:"value"`
 }
 
-type ResourceResponse struct {
-	Deployment  Deployment              `yaml:"deployment" json:"deployment"`
-	Application DeployConfig            `yaml:"application" json:"application"`
-	Configs     map[string]ModuleConfig `yaml:"configs" json:"configs"`
+type ApplicationResource struct {
+	Type    string       `yaml:"type" json:"type"`
+	Name    string       `yaml:"name" json:"name"`
+	Version string       `yaml:"version" json:"version"`
+	Value   DeployConfig `yaml:"value" json:"value"`
+}
+
+type ModuleConfigResource struct {
+	Type    string       `yaml:"type" json:"type"`
+	Name    string       `yaml:"name" json:"name"`
+	Version string       `yaml:"version" json:"version"`
+	Value   ModuleConfig `yaml:"value" json:"value"`
+}
+
+type DesireRequest struct {
+	Resources []*BaseResource `yaml:"resources" json:"resources"`
+}
+
+type DesireResponse struct {
+	Resources []*Resource `yaml:"resources" json:"resources"`
+}
+
+type BaseResource struct {
+	Type    common.Resource `yaml:"type,omitempty" json:"type,omitempty"`
+	Name    string          `yaml:"name,omitempty" json:"name,omitempty"`
+	Version string          `yaml:"version,omitempty" json:"version,omitempty"`
+}
+
+type Resource struct {
+	BaseResource `yaml:",inline" json:",inline"`
+	Data         []byte      `yaml:"data,omitempty" json:"data,omitempty"`
+	Value        interface{} `yaml:"value,omitempty" json:"value,omitempty"`
+}
+
+func (r *Resource) GetDeployment() *Deployment {
+	if r.Type == common.Deployment {
+		return r.Value.(*Deployment)
+	}
+	return nil
+}
+
+func (r *Resource) GetApplication() *DeployConfig {
+	if r.Type == common.Application {
+		return r.Value.(*DeployConfig)
+	}
+	return nil
+}
+
+func (r *Resource) GetConfig() *ModuleConfig {
+	if r.Type == common.Config {
+		return r.Value.(*ModuleConfig)
+	}
+	return nil
+}
+
+func (r *Resource) UnmarshalJSON(b []byte) error {
+	var base BaseResource
+	err := json.Unmarshal(b, &base)
+	if err != nil {
+		return err
+	}
+	switch base.Type {
+	case common.Deployment:
+		var deploy DeploymentResource
+		err := json.Unmarshal(b, &deploy)
+		if err != nil {
+			return err
+		}
+		r.Value = &deploy.Value
+	case common.Application:
+		var app ApplicationResource
+		err := json.Unmarshal(b, &app)
+		if err != nil {
+			return err
+		}
+		r.Value = &app.Value
+	case common.Config:
+		var config ModuleConfigResource
+		err := json.Unmarshal(b, &config)
+		if err != nil {
+			return err
+		}
+		r.Value = &config.Value
+	}
+	r.Data = b
+	r.BaseResource = base
+	return nil
+}
+
+type StorageObject struct {
+	Md5         string `json:"md5,omitempty" yaml:"md5"`
+	URL         string `json:"url,omitempty" yaml:"url"`
+	Compression string `json:"compression,omitempty" yaml:"compression"`
 }

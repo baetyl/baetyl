@@ -14,7 +14,6 @@ import (
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	"github.com/baetyl/baetyl/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -73,9 +72,6 @@ func TestConfig(t *testing.T) {
 		Server: http.ServerInfo{
 			Address: "baetyl://127.0.0.1:51150",
 		},
-		API: api.ServerConfig{
-			Address: "baetyl://127.0.0.1:51150",
-		},
 	}
 	err = conf.Validate()
 	assert.Error(t, err)
@@ -97,18 +93,13 @@ func TestConfig(t *testing.T) {
 		Server: http.ServerInfo{
 			Address: "unix:///tmp/run/baetyl.sock",
 		},
-		API: api.ServerConfig{
-			Address: "unix:///tmp/run/baetyl/api.sock",
-		},
 		SNFile: filepath,
 	}
 	err = conf.Validate()
 	assert.NoError(t, err)
 
 	assert.Equal(t, "unix:///"+baetyl.DefaultSockFile, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
-	assert.Equal(t, "unix:///"+baetyl.DefaultGRPCSockFile, utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
 	assert.Equal(t, "/tmp/run/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
-	assert.Equal(t, "/tmp/run/baetyl/api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
 	assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
 	assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
 	assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
@@ -119,18 +110,13 @@ func TestConfig(t *testing.T) {
 		Server: http.ServerInfo{
 			Address: "unix:///tmp/run/baetyl.sock",
 		},
-		API: api.ServerConfig{
-			Address: "unix:///tmp/run/baetyl/api.sock",
-		},
 		SNFile: filepath,
 	}
 	err = conf.Validate()
 	assert.NoError(t, err)
 
 	assert.Equal(t, "unix://"+baetyl.DefaultSockFile, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
-	assert.Equal(t, "unix://"+baetyl.DefaultGRPCSockFile, utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
 	assert.Equal(t, "/tmp/run/baetyl.sock", utils.GetEnv(baetyl.EnvKeyMasterAPISocket))
-	assert.Equal(t, "/tmp/run/baetyl/api.sock", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPISocket))
 	assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
 	assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
 	assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
@@ -141,15 +127,11 @@ func TestConfig(t *testing.T) {
 		Server: http.ServerInfo{
 			Address: "tcp://127.0.0.1:51150",
 		},
-		API: api.ServerConfig{
-			Address: "tcp://127.0.0.1:51151",
-		},
 		SNFile: filepath,
 	}
 	err = conf.Validate()
 	assert.NoError(t, err)
 	assert.Equal(t, "tcp://host.docker.internal:51150", utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
-	assert.Equal(t, "host.docker.internal:51151", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
 	assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
 	assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
 	assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
@@ -160,15 +142,11 @@ func TestConfig(t *testing.T) {
 		Server: http.ServerInfo{
 			Address: "tcp://127.0.0.1:51150",
 		},
-		API: api.ServerConfig{
-			Address: "tcp://127.0.0.1:51151",
-		},
 		SNFile: filepath,
 	}
 	err = conf.Validate()
 	assert.NoError(t, err)
 	assert.Equal(t, conf.Server.Address, utils.GetEnv(baetyl.EnvKeyMasterAPIAddress))
-	assert.Equal(t, "127.0.0.1:51151", utils.GetEnv(baetyl.EnvKeyMasterGRPCAPIAddress))
 	assert.Equal(t, sn, utils.GetEnv(baetyl.EnvKeyHostSN))
 	assert.Equal(t, "v1", utils.GetEnv(baetyl.EnvKeyMasterAPIVersion))
 	assert.Equal(t, runtime.GOOS, utils.GetEnv(baetyl.EnvKeyHostOS))
