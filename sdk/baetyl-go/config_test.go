@@ -48,6 +48,9 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				Command: Command{
 					Cmd: []string{"-c", "conf/conf.yml"},
 				},
+				Entrypoint: Entrypoint{
+					Entry: []string{"test"},
+				},
 				Environment: Environment{
 					Envs: map[string]string{
 						"version": "v1",
@@ -88,6 +91,9 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				Command: Command{
 					Cmd: []string{"/bin/sh"},
 				},
+				Entrypoint:Entrypoint{
+					Entry: []string{"test"},
+				},
 			},
 		},
 		Volumes: map[string]ComposeVolume{},
@@ -119,6 +125,7 @@ services:
     command:
       - '-c'
       - conf/conf.yml
+    entrypoint: test
     environment:
       - version=v1
   test-timer:
@@ -135,6 +142,7 @@ services:
     environment:
       version: v2
     command: '/bin/sh'
+    entrypoint: test
 
 networks:
   test-network:
@@ -158,6 +166,8 @@ services:
     args:
       - '-c'
       - conf/conf.yml
+    entrypoint:
+      - 'test'
     env:
       version: v1
   - name: test-timer
@@ -173,6 +183,8 @@ services:
       version: v2
     args:
       - '/bin/sh'
+    entrypoint:
+      - 'test'
 
 networks:
   test-network:

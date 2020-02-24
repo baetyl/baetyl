@@ -199,6 +199,8 @@ type ComposeService struct {
 	DependsOn []string `yaml:"depends_on,omitempty" json:"depends_on,omitempty" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Command Command `yaml:"command,omitempty" json:"command,omitempty" default:"{}"`
+	// specifies the entrypoint of the service program
+	Entrypoint Entrypoint `yaml:"entrypoint,omitempty" json:"entrypoint,omitempty" default:"{}"`
 	// specifies the environment variable of the service program
 	Environment Environment `yaml:"environment,omitempty" json:"environment,omitempty" default:"{}"`
 	// specifies the restart policy of the instance of the service
@@ -400,6 +402,54 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 		c.Cmd = strings.Split(cmd.(string), " ")
 	case reflect.Slice:
 		return json.Unmarshal(b, &c.Cmd)
+	}
+	return nil
+}
+
+// Entrypoint entrypoint configuration of the service
+type Entrypoint struct {
+	Entry []string `yaml:"entry" json:"entry" default:"[]"`
+}
+
+// MarshalYAML customize Entrypoint marshal
+func (c Entrypoint) MarshalYAML() (interface{}, error) {
+	return c.Entry, nil
+}
+
+//UnmarshalYAML customize Entrypoint unmarshal
+func (c *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if c.Entry == nil {
+		c.Entry = make([]string, 0)
+	}
+	var entry interface{}
+	err := unmarshal(&entry)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(entry).Kind() {
+	case reflect.String:
+		c.Entry = strings.Split(entry.(string), " ")
+	case reflect.Slice:
+		return unmarshal(&c.Entry)
+	}
+	return nil
+}
+
+//UnmarshalJSON customize Entrypoint unmarshal
+func (c *Entrypoint) UnmarshalJSON(b []byte) error {
+	if c.Entry == nil {
+		c.Entry = make([]string, 0)
+	}
+	var entry interface{}
+	err := json.Unmarshal(b, &entry)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(entry).Kind() {
+	case reflect.String:
+		c.Entry = strings.Split(entry.(string), " ")
+	case reflect.Slice:
+		return json.Unmarshal(b, &c.Entry)
 	}
 	return nil
 }
