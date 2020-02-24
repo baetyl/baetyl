@@ -412,14 +412,14 @@ type Entrypoint struct {
 }
 
 // MarshalYAML customize Entrypoint marshal
-func (c Entrypoint) MarshalYAML() (interface{}, error) {
-	return c.Entry, nil
+func (e Entrypoint) MarshalYAML() (interface{}, error) {
+	return e.Entry, nil
 }
 
 //UnmarshalYAML customize Entrypoint unmarshal
-func (c *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	if c.Entry == nil {
-		c.Entry = make([]string, 0)
+func (e *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if e.Entry == nil {
+		e.Entry = make([]string, 0)
 	}
 	var entry interface{}
 	err := unmarshal(&entry)
@@ -428,17 +428,17 @@ func (c *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	switch reflect.ValueOf(entry).Kind() {
 	case reflect.String:
-		c.Entry = strings.Split(entry.(string), " ")
+		e.Entry = strings.Split(entry.(string), " ")
 	case reflect.Slice:
-		return unmarshal(&c.Entry)
+		return unmarshal(&e.Entry)
 	}
 	return nil
 }
 
 //UnmarshalJSON customize Entrypoint unmarshal
-func (c *Entrypoint) UnmarshalJSON(b []byte) error {
-	if c.Entry == nil {
-		c.Entry = make([]string, 0)
+func (e *Entrypoint) UnmarshalJSON(b []byte) error {
+	if e.Entry == nil {
+		e.Entry = make([]string, 0)
 	}
 	var entry interface{}
 	err := json.Unmarshal(b, &entry)
@@ -447,9 +447,9 @@ func (c *Entrypoint) UnmarshalJSON(b []byte) error {
 	}
 	switch reflect.ValueOf(entry).Kind() {
 	case reflect.String:
-		c.Entry = strings.Split(entry.(string), " ")
+		e.Entry = strings.Split(entry.(string), " ")
 	case reflect.Slice:
-		return json.Unmarshal(b, &c.Entry)
+		return json.Unmarshal(b, &e.Entry)
 	}
 	return nil
 }
