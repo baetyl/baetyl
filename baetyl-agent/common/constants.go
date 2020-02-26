@@ -18,6 +18,7 @@ const (
 	CPU    Proof = "cpu"
 	MAC    Proof = "mac"
 	SN     Proof = "sn"
+	WEB    Proof = "web"
 
 	SNPath = "var/lib/baetyl/sn/"
 

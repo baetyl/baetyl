@@ -155,6 +155,10 @@ func (a *agent) collectActiveInfo(inspect *baetyl.Inspect) (*config.Activation, 
 	fp := attrs[common.KeyFingerprintValue]
 	if a.cfg.Fingerprints != nil && len(a.cfg.Fingerprints) > 0 {
 		for _, instance := range a.cfg.Fingerprints {
+			if instance.Proof == common.WEB {
+				fp = attrs[string(common.SN)]
+				break
+			}
 			proof, err := collectFP(instance.Proof, instance.Value, inspect)
 			if err != nil {
 				return nil, err
