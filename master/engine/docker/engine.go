@@ -160,11 +160,16 @@ func (e *dockerEngine) Run(name string, cfg baetyl.ComposeService, vs map[string
 	params.config = container.Config{
 		Image:        strings.TrimSpace(cfg.Image),
 		Env:          utils.AppendEnv(cfg.Environment.Envs, false),
-		Cmd:          cfg.Command.Cmd,
 		Hostname:     cfg.Hostname,
 		ExposedPorts: exposedPorts,
 		Volumes:      volumes,
 		Labels:       map[string]string{"baetyl": "baetyl", "service": name},
+	}
+	if len(cfg.Command.Cmd) != 0 {
+		params.config.Cmd = cfg.Command.Cmd
+	}
+	if len(cfg.Entrypoint.Entry) != 0 {
+		params.config.Entrypoint = cfg.Entrypoint.Entry
 	}
 	endpointsConfig := map[string]*network.EndpointSettings{}
 	if cfg.NetworkMode != "" {
