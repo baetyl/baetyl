@@ -301,6 +301,10 @@ func (e *Environment) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (e Environment) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Envs)
+}
+
 // ServiceVolume specific volume configuration of service
 type ServiceVolume struct {
 	// specifies type of volume
@@ -406,6 +410,10 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+func (c Command) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.Cmd)
+}
+
 // Entrypoint entrypoint configuration of the service
 type Entrypoint struct {
 	Entry []string `yaml:"entry" json:"entry" default:"[]"`
@@ -452,6 +460,10 @@ func (e *Entrypoint) UnmarshalJSON(b []byte) error {
 		return json.Unmarshal(b, &e.Entry)
 	}
 	return nil
+}
+
+func (e Entrypoint) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Entry)
 }
 
 // VolumeInfo storage volume configuration
