@@ -157,7 +157,7 @@ func (a *agent) collectActiveInfo(inspect *baetyl.Inspect) (*config.Activation, 
 	if a.cfg.Fingerprints != nil && len(a.cfg.Fingerprints) > 0 {
 		for _, instance := range a.cfg.Fingerprints {
 			if instance.Proof == common.Input {
-				fp = attrs[os.Getenv(common.BatchSnField)]
+				fp = attrs[os.Getenv(common.BatchInputField)]
 				break
 			}
 			proof, err := collectFP(instance.Proof, instance.Value, inspect)

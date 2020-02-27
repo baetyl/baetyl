@@ -26,9 +26,9 @@ const (
 	NodeNamespace string = "BAETYL_NODE_NAMESPACE"
 	NodeID        string = "BAETYL_NODE_ID"
 
-	BatchName      string = "BAETYL_BATCH_NAME"
-	BatchNamespace string = "BAETYL_BATCH_NAMESPACE"
-	BatchSnField   string = "BAETYL_BATCH_SN_FIELD"
+	BatchName       string = "BAETYL_BATCH_NAME"
+	BatchNamespace  string = "BAETYL_BATCH_NAMESPACE"
+	BatchInputField string = "BAETYL_BATCH_INPUT_FIELD"
 
 	// HeaderKeyNodeNamespace header key of node namespace
 	HeaderKeyNodeNamespace = "node-namespace"
