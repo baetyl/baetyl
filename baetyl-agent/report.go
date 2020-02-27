@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -155,8 +156,8 @@ func (a *agent) collectActiveInfo(inspect *baetyl.Inspect) (*config.Activation, 
 	fp := attrs[common.KeyFingerprintValue]
 	if a.cfg.Fingerprints != nil && len(a.cfg.Fingerprints) > 0 {
 		for _, instance := range a.cfg.Fingerprints {
-			if instance.Proof == common.WEB {
-				fp = attrs[string(common.SN)]
+			if instance.Proof == common.Input {
+				fp = attrs[os.Getenv(common.BatchSnField)]
 				break
 			}
 			proof, err := collectFP(instance.Proof, instance.Value, inspect)

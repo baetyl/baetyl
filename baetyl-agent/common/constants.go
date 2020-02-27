@@ -18,7 +18,7 @@ const (
 	CPU    Proof = "cpu"
 	MAC    Proof = "mac"
 	SN     Proof = "sn"
-	WEB    Proof = "web"
+	Input  Proof = "input"
 
 	SNPath = "var/lib/baetyl/sn/"
 
@@ -28,6 +28,7 @@ const (
 
 	BatchName      string = "BAETYL_BATCH_NAME"
 	BatchNamespace string = "BAETYL_BATCH_NAMESPACE"
+	BatchSnField   string = "BAETYL_BATCH_SN_FIELD"
 
 	// HeaderKeyNodeNamespace header key of node namespace
 	HeaderKeyNodeNamespace = "node-namespace"
