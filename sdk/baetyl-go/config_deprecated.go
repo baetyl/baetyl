@@ -24,6 +24,8 @@ type AppConfig struct {
 type ServiceInfo struct {
 	// specifies the unique name of the service
 	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
+	// specifies the hostname of the service
+	Hostname string `yaml:"hostname,omitempty" json:"hostname,omitempty"`
 	// specifies the image of the service, usually using the Docker image name
 	Image string `yaml:"image" json:"image" validate:"nonzero"`
 	// specifies the number of instances started
@@ -40,6 +42,8 @@ type ServiceInfo struct {
 	Devices []string `yaml:"devices" json:"devices" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Args []string `yaml:"args" json:"args" default:"[]"`
+	// specifies the entrypoint of the service program
+	Entrypoint []string `yaml:"entrypoint" json:"entrypoint" default:"[]"`
 	// specifies the environment variable of the service program
 	Env map[string]string `yaml:"env" json:"env" default:"{}"`
 	// specifies the restart policy of the instance of the service
@@ -76,12 +80,16 @@ func (cfg AppConfig) ToComposeAppConfig() ComposeAppConfig {
 	for _, service := range cfg.Services {
 		info := ComposeService{
 			Image:       service.Image,
+			Hostname:    service.Hostname,
 			NetworkMode: service.NetworkMode,
 			Networks:    service.Networks,
 			Ports:       service.Ports,
 			Devices:     service.Devices,
 			Command: Command{
 				Cmd: service.Args,
+			},
+			Entrypoint: Entrypoint{
+				Entry: service.Entrypoint,
 			},
 			Environment: Environment{
 				Envs: service.Env,

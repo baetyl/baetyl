@@ -199,6 +199,8 @@ type ComposeService struct {
 	DependsOn []string `yaml:"depends_on,omitempty" json:"depends_on,omitempty" default:"[]"`
 	// specifies the startup arguments of the service program, but does not include `arg[0]`
 	Command Command `yaml:"command,omitempty" json:"command,omitempty" default:"{}"`
+	// specifies the entrypoint of the service program
+	Entrypoint Entrypoint `yaml:"entrypoint,omitempty" json:"entrypoint,omitempty" default:"{}"`
 	// specifies the environment variable of the service program
 	Environment Environment `yaml:"environment,omitempty" json:"environment,omitempty" default:"{}"`
 	// specifies the restart policy of the instance of the service
@@ -297,6 +299,10 @@ func (e *Environment) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("failed to parse environment: unexpected type")
 	}
 	return nil
+}
+
+func (e Environment) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Envs)
 }
 
 // ServiceVolume specific volume configuration of service
@@ -402,6 +408,62 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 		return json.Unmarshal(b, &c.Cmd)
 	}
 	return nil
+}
+
+func (c Command) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.Cmd)
+}
+
+// Entrypoint entrypoint configuration of the service
+type Entrypoint struct {
+	Entry []string `yaml:"entry" json:"entry" default:"[]"`
+}
+
+// MarshalYAML customize Entrypoint marshal
+func (e Entrypoint) MarshalYAML() (interface{}, error) {
+	return e.Entry, nil
+}
+
+//UnmarshalYAML customize Entrypoint unmarshal
+func (e *Entrypoint) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if e.Entry == nil {
+		e.Entry = make([]string, 0)
+	}
+	var entry interface{}
+	err := unmarshal(&entry)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(entry).Kind() {
+	case reflect.String:
+		e.Entry = strings.Split(entry.(string), " ")
+	case reflect.Slice:
+		return unmarshal(&e.Entry)
+	}
+	return nil
+}
+
+//UnmarshalJSON customize Entrypoint unmarshal
+func (e *Entrypoint) UnmarshalJSON(b []byte) error {
+	if e.Entry == nil {
+		e.Entry = make([]string, 0)
+	}
+	var entry interface{}
+	err := json.Unmarshal(b, &entry)
+	if err != nil {
+		return err
+	}
+	switch reflect.ValueOf(entry).Kind() {
+	case reflect.String:
+		e.Entry = strings.Split(entry.(string), " ")
+	case reflect.Slice:
+		return json.Unmarshal(b, &e.Entry)
+	}
+	return nil
+}
+
+func (e Entrypoint) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Entry)
 }
 
 // VolumeInfo storage volume configuration
