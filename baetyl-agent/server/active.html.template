@@ -18,9 +18,11 @@
     </div>
     <div class="active-input">
         {{range $value := .Attributes }}
+        {{ if not $value.Value }}
             <label class="active-lable">{{$value.Label}}：</label>
             <input class="active-box" name="{{$value.Name}}" placeholder="{{$value.Desc}}" value=""/>
             <br/><br/>
+        {{ end }}
         {{ end }}
         <input class="active-submit" type="submit" value="激活"/>
     </div>
