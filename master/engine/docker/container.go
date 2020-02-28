@@ -144,10 +144,21 @@ func (e *dockerEngine) initNetworks(networks ComposeNetworks) error {
 	return nil
 }
 
-func (e *dockerEngine) connectNetworks(endpointSettings map[string]*network.EndpointSettings, containerID string) error {
-	ctx := context.Background()
+func (e *dockerEngine) connectNetworks(ctx context.Context, endpointSettings map[string]*network.EndpointSettings, containerID string) error {
+	inspect, err := e.cli.ContainerInspect(ctx, containerID)
+	if err != nil {
+		e.log.WithError(err).Errorf("failed to get instance %s info", containerID[:12])
+		return err
+	}
+	for name := range inspect.NetworkSettings.Networks {
+		err := e.cli.NetworkDisconnect(ctx, e.networks[name], containerID, true)
+		if err != nil {
+			e.log.WithError(err).Errorf("instance %s failed to disconnect from network %s", containerID[:12], e.networks[name][:12])
+			return err
+		}
+	}
 	for _, endpointSetting := range endpointSettings {
-		err := e.cli.NetworkConnect(ctx, endpointSetting.NetworkID, containerID, endpointSetting)
+		err = e.cli.NetworkConnect(ctx, endpointSetting.NetworkID, containerID, endpointSetting)
 		if err != nil {
 			e.log.WithError(err).Errorf("can not connect instance %s to network %s", containerID[:12], endpointSetting.NetworkID[:12])
 			return err
@@ -177,7 +188,7 @@ func (e *dockerEngine) startContainer(name string, cfg containerConfigs) (string
 		return "", err
 	}
 	if len(cfg.networkConfig.EndpointsConfig) > 0 {
-		err = e.connectNetworks(cfg.networkConfig.EndpointsConfig, container.ID)
+		err = e.connectNetworks(ctx, cfg.networkConfig.EndpointsConfig, container.ID)
 		if err != nil {
 			return "", err
 		}
