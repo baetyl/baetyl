@@ -53,7 +53,7 @@ $(OUTPUT_PKGS): $(OUTPUT_BINS) $(YML_FILE)
 	@cd $(dir $@) && zip -q -r $(notdir $@) bin $(YML_FILE)
 
 .PHONY: image
-image: $(OUTPUT_BINS)
+image: $(OUTPUT_BINS) $(OUTPUT_PKGS)
 	@echo "BUILDX: $(REGISTRY)$(MODULE):$(VERSION)"
 	@-docker buildx create --name baetyl
 	@docker buildx use baetyl

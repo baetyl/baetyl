@@ -62,14 +62,14 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 	if a.mqtt == nil {
 		a.ctx.Log().Debugf("report set agent ，point = %p", a)
 		a.ctx.Log().Debugf("report set agent = %+v", a)
-		currentDeploy, err := a.getCurrentDeploy(io.Inspect)
+		currentApp, err := a.getCurrentApp(io.Inspect)
 		if err != nil {
-			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
+			a.ctx.Log().WithError(err).Warnf("failed to get current app info")
 			return nil
 		}
 		info := config.ForwardInfo{
 			Status:     io,
-			Deployment: currentDeploy,
+			Apps: currentApp,
 		}
 		if a.node == nil {
 			a.ctx.Log().WithError(err).Warnf("node nil , to active")
