@@ -74,13 +74,14 @@ func TestSyncResource(t *testing.T) {
 		"hub-conf":   "v1",
 		"agent-conf": "v1",
 	}
-	req := generateRequest(common.Config, ver)
+	req, err := generateRequest(common.Config, ver)
 	expectedReq := []*config.BaseResource{{
 		Type:    common.Config,
 		Name:    "hub-conf",
 		Version: "v1",
 	}}
 	assert.Equal(t, req, expectedReq)
+	assert.NoError(t, err)
 
 	a := initAgent(t)
 	a.cfg.Remote.HTTP.Address = ts.URL
@@ -173,7 +174,7 @@ func TestApplication(t *testing.T) {
 	mockCtx := mock.NewMockContext(mockCtl)
 	mockCtx.EXPECT().Log().Return(logger.Global).AnyTimes()
 	a := agent{ctx: mockCtx, node: &node{Name: "test", Namespace: "default"}}
-	app := config.DeployConfig{
+	app := config.Application{
 		AppConfig: expected,
 	}
 	_, hostDir := a.processApplication(app)
@@ -213,7 +214,7 @@ app_version: v1`
 	filePath := path.Join(containerDir, baetyl.AppConfFileName)
 	ioutil.WriteFile(filePath, []byte(confString), 0755)
 	a := agent{}
-	res, err := a.getCurrentDeploy(inspect)
+	res, err := a.getCurrentApp(inspect)
 	assert.NoError(t, err)
 	expected := map[string]string{
 		"app": "v1",
@@ -221,11 +222,11 @@ app_version: v1`
 	assert.Equal(t, res, expected)
 
 	inspect.Software.ConfVersion = ""
-	_, err = a.getCurrentDeploy(inspect)
+	_, err = a.getCurrentApp(inspect)
 	assert.Error(t, err, "app version is empty")
 
 	os.Remove(filePath)
-	_, err = a.getCurrentDeploy(inspect)
+	_, err = a.getCurrentApp(inspect)
 	assert.Error(t, err, "open var/db/baetyl/volumes/application.yml: no such file or directory")
 	os.Chdir(cwd)
 }

@@ -33,39 +33,15 @@ func TestConfig(t *testing.T) {
 		})
 	}
 
-	expectedDeploy := Deployment{
-		Name:      "deploy",
-		Namespace: "default",
-		Version:   "v1",
-	}
-	expectedRes := Resource{
-		BaseResource: BaseResource{
-			Type:    common.Deployment,
-			Name:    "deploy",
-			Version: "v1",
-		},
-		Value: expectedDeploy,
-	}
-	b, _ := json.Marshal(expectedRes)
-	expectedRes.Data = b
 	var res Resource
-	err := json.Unmarshal(b, &res)
-	assert.NoError(t, err)
-	assert.Equal(t, res.Data, b)
-	deploy := res.GetDeployment()
-	app := res.GetApplication()
-	config := res.GetConfig()
-	assert.Equal(t, *deploy, expectedDeploy)
-	assert.Nil(t, app)
-	assert.Nil(t, config)
 
-	expectedApp := DeployConfig{
+	expectedApp := Application{
 		AppConfig: baetyl.ComposeAppConfig{
 			Name:       "app",
 			AppVersion: "v1",
 		},
 	}
-	expectedRes = Resource{
+	expectedRes := Resource{
 		BaseResource: BaseResource{
 			Type:    common.Application,
 			Name:    "app",
@@ -73,15 +49,13 @@ func TestConfig(t *testing.T) {
 		},
 		Value: expectedApp,
 	}
-	b, _ = json.Marshal(expectedRes)
+	b, _ := json.Marshal(expectedRes)
 	expectedRes.Data = b
-	err = json.Unmarshal(b, &res)
+	err := json.Unmarshal(b, &res)
 	assert.NoError(t, err)
 	assert.Equal(t, res.Data, b)
-	app = res.GetApplication()
-	deploy = res.GetDeployment()
+	app := res.GetApplication()
 	assert.Equal(t, *app, expectedApp)
-	assert.Nil(t, deploy)
 
 	expectedConfig := ModuleConfig{
 		Name: "config",
@@ -102,6 +76,6 @@ func TestConfig(t *testing.T) {
 	err = json.Unmarshal(b, &res)
 	assert.NoError(t, err)
 	assert.Equal(t, res.Data, b)
-	config = res.GetConfig()
+	config := res.GetConfig()
 	assert.Equal(t, *config, expectedConfig)
 }

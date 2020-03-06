@@ -43,15 +43,15 @@ type Metadata struct {
 	Volumes []baetyl.VolumeInfo `yaml:"volumes" json:"volumes" default:"[]"`
 }
 
-type DeployConfig struct {
+type Application struct {
 	AppConfig baetyl.ComposeAppConfig      `yaml:"appConfig" json:"appConfig"`
 	Metadata  map[string]baetyl.VolumeInfo `yaml:"metadata" json:"metadata" default:"{}"`
 }
 
 type ForwardInfo struct {
 	Metadata   map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
-	Status     *Inspect          `yaml:"status" json:"status"`                      // node update
-	Deployment map[string]string `yaml:"deployment" json:"deployment" default:"{}"` // shadow update
+	Status     *Inspect          `yaml:"status" json:"status"`          // node update
+	Apps       map[string]string `yaml:"apps" json:"apps" default:"{}"` // shadow update
 	Activation Activation        `yaml:"activation" json:"activation"`
 }
 
@@ -63,26 +63,6 @@ type Activation struct {
 type BackwardInfo struct {
 	Delta    map[string]interface{} `yaml:"delta,omitempty" json:"delta,omitempty"`
 	Metadata map[string]interface{} `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-}
-
-type Deployment struct {
-	Name      string `yaml:"name" json:"name"`
-	Namespace string `yaml:"namespace" json:"namespace"`
-	Version   string `yaml:"version" json:"version"`
-	Selector  string `yaml:"selector" json:"selector"`
-	// Snapshot for app and config
-	Snapshot    Snapshot `yaml:"snapshot" json:"snapshot"`
-	Priority    int      `yaml:"priority" json:"priority"`
-	Description string   `yaml:"description" json:"description"`
-}
-
-type Snapshot struct {
-	// key = unique name of the app
-	// value = version of the app
-	Apps map[string]string `yaml:"apps" json:"apps" default:"{}"`
-	// key = unique name of the volume
-	// value = version of the volume
-	Configs map[string]string `yaml:"configs" json:"configs" default:"{}"`
 }
 
 type ModuleConfig struct {
@@ -134,18 +114,11 @@ type Record struct {
 	Error string `json:"error,omitempty"`
 }
 
-type DeploymentResource struct {
-	Type    string     `yaml:"type" json:"type"`
-	Name    string     `yaml:"name" json:"name"`
-	Version string     `yaml:"version" json:"version"`
-	Value   Deployment `yaml:"value" json:"value"`
-}
-
 type ApplicationResource struct {
 	Type    string       `yaml:"type" json:"type"`
 	Name    string       `yaml:"name" json:"name"`
 	Version string       `yaml:"version" json:"version"`
-	Value   DeployConfig `yaml:"value" json:"value"`
+	Value   Application `yaml:"value" json:"value"`
 }
 
 type ModuleConfigResource struct {
@@ -175,16 +148,9 @@ type Resource struct {
 	Value        interface{} `yaml:"value,omitempty" json:"value,omitempty"`
 }
 
-func (r *Resource) GetDeployment() *Deployment {
-	if r.Type == common.Deployment {
-		return r.Value.(*Deployment)
-	}
-	return nil
-}
-
-func (r *Resource) GetApplication() *DeployConfig {
+func (r *Resource) GetApplication() *Application {
 	if r.Type == common.Application {
-		return r.Value.(*DeployConfig)
+		return r.Value.(*Application)
 	}
 	return nil
 }
@@ -203,13 +169,6 @@ func (r *Resource) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	switch base.Type {
-	case common.Deployment:
-		var deploy DeploymentResource
-		err := json.Unmarshal(b, &deploy)
-		if err != nil {
-			return err
-		}
-		r.Value = &deploy.Value
 	case common.Application:
 		var app ApplicationResource
 		err := json.Unmarshal(b, &app)
