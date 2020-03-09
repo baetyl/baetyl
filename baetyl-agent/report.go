@@ -12,7 +12,6 @@ import (
 
 	"github.com/baetyl/baetyl/baetyl-agent/common"
 	"github.com/baetyl/baetyl/baetyl-agent/config"
-
 	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
@@ -68,8 +67,8 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 			return nil
 		}
 		info := config.ForwardInfo{
-			Status:     io,
-			Apps: currentApp,
+			Status: io,
+			Apps:   currentApp,
 		}
 		if a.node == nil {
 			a.ctx.Log().WithError(err).Warnf("node nil , to active")

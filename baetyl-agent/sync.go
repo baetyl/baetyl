@@ -13,6 +13,7 @@ import (
 	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
+	"github.com/docker/distribution/uuid"
 	"gopkg.in/yaml.v2"
 )
 
@@ -234,7 +235,8 @@ func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseRe
 
 func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
 	header := map[string]string{
-		"Content-Type": "application/x-www-form-urlencoded",
+		"x-bce-request-id": uuid.Generate().String(),
+		"Content-Type":     "application/json",
 	}
 	if a.node != nil {
 		// for report
