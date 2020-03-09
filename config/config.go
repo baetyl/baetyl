@@ -6,7 +6,6 @@ import (
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl/protocol/http"
-	"github.com/baetyl/baetyl/protocol/mqtt"
 	"time"
 )
 
@@ -24,7 +23,6 @@ type APIServer struct {
 
 type AgentConfig struct {
 	Remote struct {
-		MQTT   *mqtt.ClientInfo `yaml:"mqtt" json:"mqtt"`
 		HTTP   *http.ClientInfo `yaml:"http" json:"http" default:"{}"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v3/edge/info"`

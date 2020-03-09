@@ -15,7 +15,7 @@ import (
 )
 
 type core struct {
-	a       *agent.Agent
+	a       agent.Agent
 	kubeCli *kube.Client
 	driver  store.Driver
 	cfg     config.Config

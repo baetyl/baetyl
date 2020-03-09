@@ -11,6 +11,8 @@ import (
 	"os"
 )
 
+//go:generate mockgen -destination=../mock/agent/agent.go -package=plugin github.com/baetyl/baetyl-core/agent Agent
+
 type node struct {
 	Name      string
 	Namespace string
@@ -21,13 +23,22 @@ type batch struct {
 	Namespace string
 }
 
+type Agent interface {
+	Start()
+	Stop()
+	Report()
+	ProcessResource(le *EventLink) error
+	ProcessVolumes(volumes []models.Volume, configs map[string]models.Configuration) error
+	ProcessConfiguration(volume models.Volume, cfg models.Configuration) error
+	ProcessApplication(app models.Application) error
+}
 
-func NewAgent(cfg config.AgentConfig, impl appv1.DeploymentInterface, log *log.Logger) (*Agent, error) {
+func NewAgent(cfg config.AgentConfig, impl appv1.DeploymentInterface, log *log.Logger) (Agent, error) {
 	httpCli, err := http.NewClient(*cfg.Remote.HTTP)
 	if err != nil {
 		return nil, err
 	}
-	a := &Agent{
+	a := &agent{
 		log:     log,
 		cfg:     cfg,
 		impl:    impl,
@@ -37,7 +48,7 @@ func NewAgent(cfg config.AgentConfig, impl appv1.DeploymentInterface, log *log.L
 	return a, nil
 }
 
-type Agent struct {
+type agent struct {
 	log     *log.Logger
 	cfg     config.AgentConfig
 	tomb    utils.Tomb
@@ -49,7 +60,7 @@ type Agent struct {
 	shadow  *models.Shadow
 }
 
-func (a *Agent) Start() {
+func (a *agent) Start() {
 	nodeName := os.Getenv(common.NodeName)
 	nodeNamespace := os.Getenv(common.NodeNamespace)
 	if nodeName != "" && nodeNamespace != "" {
@@ -66,9 +77,14 @@ func (a *Agent) Start() {
 		}
 	}
 
-	err := a.tomb.Go(a.Report, a.Process)
+	err := a.tomb.Go(a.reporting, a.processing)
 	if err != nil {
 		a.log.Error("failed to start report and process routine", log.Error(err))
 		return
 	}
+}
+
+func (a *agent) Stop() {
+	a.tomb.Kill(nil)
+	a.tomb.Wait()
 }

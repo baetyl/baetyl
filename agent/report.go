@@ -18,12 +18,12 @@ type EventLink struct {
 	Type  string
 }
 
-func (a *Agent) Report() error {
+func (a *agent) reporting() error {
 	t := time.NewTicker(a.cfg.Remote.Report.Interval)
 	for {
 		select {
 		case <-t.C:
-			a.report()
+			a.Report()
 		case <-a.tomb.Dying():
 			return nil
 		}
@@ -31,7 +31,7 @@ func (a *Agent) Report() error {
 }
 
 // Report reports info
-func (a *Agent) report() {
+func (a *agent) Report() {
 	defer utils.Trace("report", logger.Debugf)()
 
 	// TODO get pod and node info from api server
@@ -107,7 +107,7 @@ func (a *Agent) report() {
 	}
 }
 
-func (a *Agent) sendRequest(method, path string, body []byte) ([]byte, error) {
+func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
 	header := map[string]string{
 		"Content-Type": "application/x-www-form-urlencoded",
 	}

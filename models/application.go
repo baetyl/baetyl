@@ -52,7 +52,7 @@ type Volume struct {
 // VolumeSource volume source, include empty directory, host path, configmap
 type VolumeSource struct {
 	HostPath              *HostPathVolumeSource              `json:"hostPath,omitempty"`
-	ConfigMap             *ConfigurationVolumeSource         `json:"configuration,omitempty"`
+	Configuration         *ConfigurationVolumeSource         `json:"configuration,omitempty"`
 	Secret                *SecretVolumeSource                `json:"secret,omitempty"`
 	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim"`
 }
@@ -62,7 +62,7 @@ type HostPathVolumeSource struct {
 }
 
 type ConfigurationVolumeSource struct {
-	Name string `json:"name,omitempty"`
+	Name    string `json:"name,omitempty"`
 	Version string `json:"version,omitempty"`
 }
 

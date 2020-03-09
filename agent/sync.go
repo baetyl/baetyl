@@ -21,7 +21,7 @@ type Event struct {
 	Content interface{} `json:"content"`
 }
 
-func (a *Agent) Process() error {
+func (a *agent) processing() error {
 	for {
 		select {
 		case e := <-a.events:
@@ -32,16 +32,16 @@ func (a *Agent) Process() error {
 	}
 }
 
-func (a *Agent) processDelta(e *Event) {
+func (a *agent) processDelta(e *Event) {
 	le := e.Content.(*EventLink)
 	a.log.Info("process ota", log.Any("type", le.Type), log.Any("trace", le.Trace))
-	err := a.processResource(le)
+	err := a.ProcessResource(le)
 	if err != nil {
 		a.log.Warn("failed to process ota event", log.Error(err))
 	}
 }
 
-func (a *Agent) processResource(le *EventLink) error {
+func (a *agent) ProcessResource(le *EventLink) error {
 	apps, ok := le.Info["apps"]
 	if !ok {
 		return fmt.Errorf("no application info in delta info")
@@ -61,8 +61,8 @@ func (a *Agent) processResource(le *EventLink) error {
 
 	cMap := map[string]string{}
 	for _, v := range application.Volumes {
-		if v.ConfigMap != nil {
-			cMap[v.ConfigMap.Name] = v.ConfigMap.Version
+		if v.Configuration != nil {
+			cMap[v.Configuration.Name] = v.Configuration.Version
 		}
 	}
 	reqs, err := generateRequest(common.Configuration, cMap)
@@ -82,19 +82,19 @@ func (a *Agent) processResource(le *EventLink) error {
 		configs[cfg.Name] = *cfg
 	}
 
-	err = a.processVolumes(application.Volumes, configs)
+	err = a.ProcessVolumes(application.Volumes, configs)
 	if err != nil {
 		return err
 	}
 
-	err = a.processApplication(*application)
+	err = a.ProcessApplication(*application)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *Agent) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
+func (a *agent) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
 	req := config.DesireRequest{Resources: res}
 	data, err := json.Marshal(req)
 	if err != nil {
@@ -112,10 +112,10 @@ func (a *Agent) syncResource(res []*config.BaseResource) ([]*config.Resource, er
 	return response.Resources, nil
 }
 
-func (a *Agent) processVolumes(volumes []models.Volume, configs map[string]models.Configuration) error {
+func (a *agent) ProcessVolumes(volumes []models.Volume, configs map[string]models.Configuration) error {
 	for _, volume := range volumes {
-		if configMap := volume.VolumeSource.ConfigMap; configMap != nil {
-			err := a.processConfiguration(volume, configs[configMap.Name])
+		if cfg := volume.VolumeSource.Configuration; cfg != nil {
+			err := a.ProcessConfiguration(volume, configs[cfg.Name])
 			if err != nil {
 				//a.ctx.Log().Errorf("process module config (%s) failed: %s", name, err.Error())
 				return err
@@ -131,11 +131,11 @@ func (a *Agent) processVolumes(volumes []models.Volume, configs map[string]model
 	return nil
 }
 
-func (a *Agent) processConfiguration(volume models.Volume, cfg models.Configuration) error {
+func (a *agent) ProcessConfiguration(volume models.Volume, cfg models.Configuration) error {
 	return nil
 }
 
-func (a *Agent) processApplication(app models.Application) error {
+func (a *agent) ProcessApplication(app models.Application) error {
 	// TODO transform app to deployment and apply
 	return nil
 }
