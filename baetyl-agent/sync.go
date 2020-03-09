@@ -235,8 +235,8 @@ func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseRe
 
 func (a *agent) sendRequest(method, path string, body []byte) ([]byte, error) {
 	header := map[string]string{
-		"requestId":    uuid.Generate().String(),
-		"Content-Type": "application/json",
+		"x-bce-request-id": uuid.Generate().String(),
+		"Content-Type":     "application/json",
 	}
 	if a.node != nil {
 		// for report
