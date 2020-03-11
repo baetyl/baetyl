@@ -744,6 +744,8 @@ func (c *mockCodec) SetReadLimit(limit int64) {}
 
 func (c *mockCodec) SetReadTimeout(timeout time.Duration) {}
 
+func (c *mockCodec) SetMaxWriteDelay(delay time.Duration) {}
+
 func (c *mockCodec) SetBuffers(read, write int) {}
 
 func (c *mockCodec) LocalAddr() net.Addr { return nil }

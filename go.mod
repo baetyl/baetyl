@@ -3,7 +3,6 @@ module github.com/baetyl/baetyl
 go 1.13
 
 replace (
-	github.com/256dpi/gomqtt => github.com/256dpi/gomqtt v0.12.2
 	github.com/docker/docker => github.com/docker/engine v0.0.0-20191007211215-3e077fc8667a
 	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc6.0.20190307181833-2b18fe1d885e
 )
