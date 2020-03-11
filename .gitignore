@@ -26,3 +26,5 @@ baetyl-core
 .vscode
 /vendor
 /coverage.out
+/output*
+/conf

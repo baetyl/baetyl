@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-core/agent"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/kube"
 	"github.com/baetyl/baetyl-core/store"
+	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl/utils"
 	"os"
@@ -15,7 +15,7 @@ import (
 )
 
 type core struct {
-	a       agent.Agent
+	s       sync.Sync
 	kubeCli *kube.Client
 	driver  store.Driver
 	cfg     config.Config
@@ -27,8 +27,12 @@ func NewCore(cfg config.Config) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	driver := store.NewConfigMapDriver(kubeCli.CoreV1.ConfigMaps(kubeCli.Namespace))
-	a, err := agent.NewAgent(cfg.Agent, kubeCli.AppV1.Deployments(kubeCli.Namespace), logger)
+	driver, err := store.NewStateDriver(cfg.State)
+	if err != nil {
+		return nil, err
+	}
+	driver.Create([]byte("a"), []byte("b"))
+	s, err := sync.NewSync(cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), logger)
 	if err != nil {
 		return nil, err
 	}
@@ -36,12 +40,12 @@ func NewCore(cfg config.Config) (*core, error) {
 		kubeCli: kubeCli,
 		driver:  driver,
 		cfg:     cfg,
-		a:       a,
+		s:       s,
 	}, nil
 }
 
 func (c *core) Start() error {
-	go c.a.Start()
+	go c.s.Start()
 	return nil
 }
 

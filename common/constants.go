@@ -4,7 +4,7 @@ type Resource string
 type Proof string
 
 const (
-	DefaultConfFile = "config/config.yml"
+	DefaultConfFile = "conf/config.yml"
 
 	KeyContextNamespace = "namespace"
 
@@ -34,4 +34,6 @@ const (
 	PrefixConfigObject = "_object_"
 	DefaultNamespace = "baetyl-edge"
 	ZipCompression = "zip"
+
+	InternalEventTopic = "mqtt/event"
 )

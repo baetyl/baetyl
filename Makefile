@@ -1,5 +1,5 @@
 MODULE:=baetyl-core
-SRC_FILES:=$(shell find . ../logger ../sdk ../protocol ../utils -type f -name '*.go')
+SRC_FILES:=$(shell find . -type f -name '*.go')
 BIN_FILE:=baetyl-core
 BIN_CMD=$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/bin/$(BIN_FILE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "CGO_ENABLED=0 GOOS="$$1" GOARCH="$$2" GOARM="$$3" go build"}') -o $@ ${GO_FLAGS} .
 COPY_DIR:=../output
@@ -29,7 +29,7 @@ XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g'
 YML_FILE=$(wildcard *.yml)
 RES_DIR=$(wildcard server/*.template)
 
-OUTPUT:=../output
+OUTPUT:=./output
 OUTPUT_MODS:=$(PLATFORMS:%=$(OUTPUT)/%/$(MODULE))
 OUTPUT_BINS:=$(OUTPUT_MODS:%=%/bin/$(BIN_FILE))
 OUTPUT_PKGS:=$(OUTPUT_MODS:%=%/$(MODULE)-$(VERSION).zip) # TODO: switch to tar

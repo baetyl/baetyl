@@ -1,8 +1,9 @@
-package agent
+package sync
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/256dpi/gomqtt/packet"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
@@ -10,39 +11,72 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"path"
-	"time"
 )
 
-type EventType string
-
-type Event struct {
-	Time    time.Time   `json:"time"`
-	Type    EventType   `json:"event"`
-	Content interface{} `json:"content"`
+func NewEvent(v []byte) (*Event, error) {
+	e := Event{}
+	err := json.Unmarshal(v, &e.Content)
+	if err != nil {
+		return nil, fmt.Errorf("event content invalid: %s", err.Error())
+	}
+	return &e, nil
 }
 
-func (a *agent) processing() error {
+func (s *sync) OnPublish(p *packet.Publish) error {
+	if p.Message.QOS == 1 {
+		puback := packet.NewPuback()
+		puback.ID = p.ID
+		err := s.mqtt.Send(puback)
+		if err != nil {
+			return err
+		}
+	}
+	e, err := NewEvent(p.Message.Payload)
+	if err != nil {
+		return err
+	}
+	select {
+	case oe := <-s.events:
+		s.log.Warn("discard old event", log.Any("event", *oe))
+		s.events <- e
+	case s.events <- e:
+	case <-s.tomb.Dying():
+	}
+	return nil
+}
+
+func (s *sync) OnPuback(*packet.Puback) error {
+	return nil
+}
+
+func (s *sync) OnError(err error) {
+	if err != nil {
+		s.log.Error("get mqtt error", log.Error(err))
+	}
+}
+
+func (s *sync) processing() error {
 	for {
 		select {
-		case e := <-a.events:
-			a.processDelta(e)
-		case <-a.tomb.Dying():
+		case e := <-s.events:
+			s.processDelta(e)
+		case <-s.tomb.Dying():
 			return nil
 		}
 	}
 }
 
-func (a *agent) processDelta(e *Event) {
-	le := e.Content.(*EventLink)
-	a.log.Info("process ota", log.Any("type", le.Type), log.Any("trace", le.Trace))
-	err := a.ProcessResource(le)
+func (s *sync) processDelta(e *Event) {
+	s.log.Info("process ota", log.Any("type", e.Type), log.Any("trace", e.Trace))
+	err := s.ProcessResource(e.Content)
 	if err != nil {
-		a.log.Warn("failed to process ota event", log.Error(err))
+		s.log.Warn("failed to process ota event", log.Error(err))
 	}
 }
 
-func (a *agent) ProcessResource(le *EventLink) error {
-	apps, ok := le.Info["apps"]
+func (s *sync) ProcessResource(content interface{}) error {
+	info := content.(map[string]interface{})
+	apps, ok := info["apps"]
 	if !ok {
 		return fmt.Errorf("no application info in delta info")
 	}
@@ -50,7 +84,7 @@ func (a *agent) ProcessResource(le *EventLink) error {
 	if err != nil {
 		return err
 	}
-	res, err := a.syncResource(bs)
+	res, err := s.syncResource(bs)
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
@@ -69,7 +103,7 @@ func (a *agent) ProcessResource(le *EventLink) error {
 	if err != nil {
 		return err
 	}
-	res, err = a.syncResource(reqs)
+	res, err = s.syncResource(reqs)
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
@@ -82,25 +116,25 @@ func (a *agent) ProcessResource(le *EventLink) error {
 		configs[cfg.Name] = *cfg
 	}
 
-	err = a.ProcessVolumes(application.Volumes, configs)
+	err = s.ProcessVolumes(application.Volumes, configs)
 	if err != nil {
 		return err
 	}
 
-	err = a.ProcessApplication(*application)
+	err = s.ProcessApplication(*application)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *agent) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
+func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
 	req := config.DesireRequest{Resources: res}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
-	resData, err := a.sendRequest("POST", a.cfg.Remote.Desire.URL, data)
+	resData, err := s.sendRequest("POST", s.cfg.Remote.Desire.URL, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
@@ -112,10 +146,10 @@ func (a *agent) syncResource(res []*config.BaseResource) ([]*config.Resource, er
 	return response.Resources, nil
 }
 
-func (a *agent) ProcessVolumes(volumes []models.Volume, configs map[string]models.Configuration) error {
+func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]models.Configuration) error {
 	for _, volume := range volumes {
 		if cfg := volume.VolumeSource.Configuration; cfg != nil {
-			err := a.ProcessConfiguration(volume, configs[cfg.Name])
+			err := s.ProcessConfiguration(volume, configs[cfg.Name])
 			if err != nil {
 				//a.ctx.Log().Errorf("process module config (%s) failed: %s", name, err.Error())
 				return err
@@ -131,11 +165,11 @@ func (a *agent) ProcessVolumes(volumes []models.Volume, configs map[string]model
 	return nil
 }
 
-func (a *agent) ProcessConfiguration(volume models.Volume, cfg models.Configuration) error {
+func (s *sync) ProcessConfiguration(volume models.Volume, cfg models.Configuration) error {
 	return nil
 }
 
-func (a *agent) ProcessApplication(app models.Application) error {
+func (s *sync) ProcessApplication(app models.Application) error {
 	// TODO transform app to deployment and apply
 	return nil
 }

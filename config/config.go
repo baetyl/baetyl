@@ -5,35 +5,44 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/mqtt"
+	"github.com/baetyl/baetyl-go/utils"
 	"github.com/baetyl/baetyl/protocol/http"
 	"time"
 )
 
 // Config config
 type Config struct {
-	APIServer APIServer `yaml:"apiServer" json:"apiServer" default:"{}"`
-	Agent  AgentConfig `yaml:"agent" json:"agent"`
-	Logger log.Config  `yaml:"logger" json:"logger"`
+	APIServer APIServer   `yaml:"apiServer" json:"apiServer" default:"{}"`
+	Sync      SyncConfig  `yaml:"sync" json:"sync"`
+	State     StateConfig `yaml:"state" json:"state"`
+	Logger    log.Config  `yaml:"logger" json:"logger"`
+}
+
+type StateConfig struct {
+	Address           string `yaml:"address" json:"address"`
+	utils.Certificate `yaml:",inline" json:",inline"`
 }
 
 type APIServer struct {
 	InCluster  bool   `yaml:"inCluster" json:"inCluster" default:"false"`
-	ConfigPath string `yaml:"configPath" json:"configPath" default:"config.yaml"`
+	ConfigPath string `yaml:"configPath" json:"configPath"`
 }
 
-type AgentConfig struct {
+type SyncConfig struct {
 	Remote struct {
 		HTTP   *http.ClientInfo `yaml:"http" json:"http" default:"{}"`
 		Report struct {
-			URL      string        `yaml:"url" json:"url" default:"/v3/edge/info"`
-			Topic    string        `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/forward"`
+			URL      string        `yaml:"url" json:"url" default:"/v1/sync/report"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 		} `yaml:"report" json:"report"`
 		Desire struct {
-			URL   string `yaml:"url" json:"url"`
-			Topic string `yaml:"topic" json:"topic" default:"$baidu/iot/edge/%s/core/backward"`
+			URL string `yaml:"url" json:"url" default:"/v1/sync/desire"`
 		} `yaml:"desire" json:"desire"`
 	} `yaml:"remote" json:"remote"`
+	Local struct {
+		MQTT *mqtt.ClientConfig `yaml:"mqtt" json:"mqtt" default:"{}"`
+	} `yaml:"local" json:"local"`
 }
 
 type BackwardInfo struct {
@@ -48,16 +57,16 @@ type ForwardInfo struct {
 }
 
 type ApplicationResource struct {
-	Type    string      `yaml:"type" json:"type"`
-	Name    string      `yaml:"name" json:"name"`
-	Version string      `yaml:"version" json:"version"`
+	Type    string             `yaml:"type" json:"type"`
+	Name    string             `yaml:"name" json:"name"`
+	Version string             `yaml:"version" json:"version"`
 	Value   models.Application `yaml:"value" json:"value"`
 }
 
 type ConfigurationResource struct {
-	Type    string        `yaml:"type" json:"type"`
-	Name    string        `yaml:"name" json:"name"`
-	Version string        `yaml:"version" json:"version"`
+	Type    string               `yaml:"type" json:"type"`
+	Name    string               `yaml:"name" json:"name"`
+	Version string               `yaml:"version" json:"version"`
 	Value   models.Configuration `yaml:"value" json:"value"`
 }
 
