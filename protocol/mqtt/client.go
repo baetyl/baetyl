@@ -35,7 +35,7 @@ func NewClient(cc ClientInfo, handler Handler, log logger.Logger) (*Client, erro
 		log = logger.Global
 	}
 
-	dialer, err := NewDialer(cc.Certificate)
+	dialer, err := NewDialer(cc.Certificate, cc.Timeout)
 	if err != nil {
 		return nil, err
 	}

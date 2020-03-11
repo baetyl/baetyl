@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/baetyl/baetyl/utils"
@@ -13,14 +14,12 @@ type Dialer struct {
 }
 
 // NewDialer returns a new Dialer.
-func NewDialer(c utils.Certificate) (*Dialer, error) {
-	tls, err := utils.NewTLSClientConfig(c)
+func NewDialer(cert utils.Certificate, timeout time.Duration) (*Dialer, error) {
+	tls, err := utils.NewTLSClientConfig(cert)
 	if err != nil {
 		return nil, err
 	}
-	d := &Dialer{Dialer: transport.NewDialer()}
-	d.TLSConfig = tls
-	return d, nil
+	return &Dialer{Dialer: transport.NewDialer(transport.DialConfig{TLSConfig: tls, Timeout: timeout})}, nil
 }
 
 // Dial initiates a connection based in information extracted from an URL.

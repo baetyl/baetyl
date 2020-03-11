@@ -102,7 +102,7 @@ type Authorizer struct {
 
 // NewAuthorizer create a new authorizer
 func NewAuthorizer() *Authorizer {
-	return &Authorizer{Tree: topic.NewTree()}
+	return &Authorizer{Tree: topic.NewStandardTree()}
 }
 
 // Authorize auth action

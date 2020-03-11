@@ -224,7 +224,7 @@ func BenchmarkTrieMatch(b *testing.B) {
 }
 
 func BenchmarkTreeMatch256dpi(b *testing.B) {
-	root := topic.NewTree()
+	root := topic.NewStandardTree()
 	root.Add(" ", NewNopSinkSub(" ", 0, " ", 0, ""))
 	root.Add(" abc", NewNopSinkSub(" abc", 0, " abc", 0, ""))
 	root.Add("//", NewNopSinkSub("//", 0, "//", 0, ""))

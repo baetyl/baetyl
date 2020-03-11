@@ -9,7 +9,7 @@ import (
 
 // The Launcher helps with launching a server and accepting connections.
 type Launcher struct {
-	transport.Launcher
+	*transport.Launcher
 }
 
 // NewLauncher returns a new Launcher.
@@ -18,7 +18,7 @@ func NewLauncher(c utils.Certificate) (*Launcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Launcher{Launcher: transport.Launcher{TLSConfig: t}}, nil
+	return &Launcher{Launcher: transport.NewLauncher(transport.LaunchConfig{TLSConfig: t})}, nil
 }
 
 // Launch will launch a server based on information extracted from an URL.
