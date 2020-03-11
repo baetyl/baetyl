@@ -13,3 +13,18 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+.svn
+.tmp
+.download
+output
+.*.swp
+.*.swo
+/etc
+/**/var
+baetyl-core
+.idea
+.vscode
+/vendor
+/coverage.out
+/output*
+/conf

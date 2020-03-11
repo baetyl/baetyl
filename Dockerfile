@@ -1,0 +1,5 @@
+FROM --platform=$TARGETPLATFORM busybox
+ARG TARGETPLATFORM
+ARG MODULE=baetyl-core
+COPY $TARGETPLATFORM/$MODULE/bin/$MODULE /bin/
+ENTRYPOINT ["baetyl-core"]
