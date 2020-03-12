@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/baetyl/baetyl-go/log"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"time"
 
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl/logger"
-	"github.com/baetyl/baetyl/utils"
 )
 
 type Event struct {
@@ -20,6 +18,7 @@ type Event struct {
 }
 
 func (s *sync) reporting() error {
+	s.Report()
 	t := time.NewTicker(s.cfg.Remote.Report.Interval)
 	for {
 		select {
@@ -33,60 +32,38 @@ func (s *sync) reporting() error {
 
 // Report reports info
 func (s *sync) Report() {
-	defer utils.Trace("report", logger.Debugf)()
-
-	// TODO get pod and node info from api server
-	desire, ok := s.shadow.Desired.(map[string]interface{})
-	if !ok {
-		s.log.Error("shadow desire format error")
+	data, err := s.driver.Get([]byte(common.DefaultAppsKey))
+	if err != nil {
+		s.log.Error("failed to get local apps info", log.Error(err))
+		return
 	}
-	report, ok := s.shadow.Reported.(map[string]interface{})
-	if !ok {
-		s.log.Error("shadow report format error")
+	var apps map[string]string
+	err = json.Unmarshal(data, &apps)
+	if err != nil {
+		s.log.Error("failed to unmarshal apps", log.Error(err))
+		return
 	}
-	desireApps, ok := report["apps"].(map[string]string)
-	if !ok {
-		s.log.Error("shadow desire does not have apps info or format error")
-	}
-	reportApps, ok := desire["apps"].(map[string]string)
-	if !ok {
-		s.log.Error("shadow report does not have apps info or format error")
-	}
-	for name, ver := range desireApps {
-		d, err := s.impl.Get(name, metav1.GetOptions{})
-		if err != nil {
-			s.log.Error("failed to get deployment", log.Any("name", name), log.Error(err))
-		}
-		if ver != d.ResourceVersion {
-			reportApps[name] = d.ResourceVersion
-		}
-	}
-	// TODO update local shadow report
-
 	info := config.ForwardInfo{
-		Apps: reportApps,
+		Apps:   apps,
+		Status: &baetyl.Inspect{
+			Time:     time.Now(),
+		},
 	}
 	req, err := json.Marshal(info)
 	if err != nil {
 		s.log.Error("failed to marshal report info", log.Error(err))
 		return
 	}
-	var res config.BackwardInfo
 	resData, err := s.sendRequest("POST", s.cfg.Remote.Report.URL, req)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
 		return
 	}
+	var res config.BackwardInfo
 	err = json.Unmarshal(resData, &res)
 	if err != nil {
 		s.log.Error("error to unmarshal response data returned", log.Error(err))
 		return
-	}
-	if s.node == nil {
-		s.node = &node{
-			Name:      res.Metadata[string(common.Node)].(string),
-			Namespace: res.Metadata[common.KeyContextNamespace].(string),
-		}
 	}
 	if res.Delta != nil {
 		e := &Event{
@@ -116,8 +93,8 @@ func (s *sync) sendRequest(method, path string, body []byte) ([]byte, error) {
 	}
 	if s.node != nil {
 		// for report
-		header[common.HeaderKeyNodeNamespace] = s.shadow.Namespace
-		header[common.HeaderKeyNodeName] = s.shadow.Name
+		header[common.HeaderKeyNodeNamespace] = s.node.Namespace
+		header[common.HeaderKeyNodeName] = s.node.Name
 	} else if s.batch != nil {
 		// for active
 		header[common.HeaderKeyBatchNamespace] = s.batch.Namespace

@@ -31,8 +31,7 @@ func NewCore(cfg config.Config) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	driver.Create([]byte("a"), []byte("b"))
-	s, err := sync.NewSync(cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), logger)
+	s, err := sync.NewSync(cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), driver, logger)
 	if err != nil {
 		return nil, err
 	}

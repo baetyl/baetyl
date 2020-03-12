@@ -76,11 +76,11 @@ func (s *sync) processDelta(e *Event) {
 
 func (s *sync) ProcessResource(content interface{}) error {
 	info := content.(map[string]interface{})
-	apps, ok := info["apps"]
+	aMap, ok := info["apps"]
 	if !ok {
 		return fmt.Errorf("no application info in delta info")
 	}
-	bs, err := generateRequest(common.Application, apps)
+	bs, err := generateRequest(common.Application, aMap)
 	if err != nil {
 		return err
 	}
@@ -88,17 +88,20 @@ func (s *sync) ProcessResource(content interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	application := res[0].GetApplication()
-	if application == nil {
-		return fmt.Errorf("failed to get application resource")
-	}
-
 	cMap := map[string]string{}
-	for _, v := range application.Volumes {
-		if v.Configuration != nil {
-			cMap[v.Configuration.Name] = v.Configuration.Version
+	apps := map[string]*models.Application{}
+	for _, r := range res {
+		app := r.GetApplication()
+		if app != nil {
+			apps[app.Name] = app
+			for _, v := range app.Volumes {
+				if v.Configuration != nil {
+					cMap[v.Configuration.Name] = v.Configuration.Version
+				}
+			}
 		}
 	}
+
 	reqs, err := generateRequest(common.Configuration, cMap)
 	if err != nil {
 		return err
@@ -107,24 +110,27 @@ func (s *sync) ProcessResource(content interface{}) error {
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	configs := map[string]models.Configuration{}
+	configs := map[string]*models.Configuration{}
 	for _, r := range res {
 		cfg := r.GetConfiguration()
 		if cfg == nil {
 			return fmt.Errorf("failed to get config resource")
 		}
-		configs[cfg.Name] = *cfg
+		configs[cfg.Name] = cfg
 	}
 
-	err = s.ProcessVolumes(application.Volumes, configs)
-	if err != nil {
-		return err
+	for _, app := range apps {
+		err := s.ProcessApplication(app)
+		if err != nil {
+			return err
+		}
+		err = s.ProcessVolumes(app.Volumes, configs)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = s.ProcessApplication(*application)
-	if err != nil {
-		return err
-	}
+	// TODO start k8s engine
 	return nil
 }
 
@@ -146,7 +152,7 @@ func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, err
 	return response.Resources, nil
 }
 
-func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]models.Configuration) error {
+func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]*models.Configuration) error {
 	for _, volume := range volumes {
 		if cfg := volume.VolumeSource.Configuration; cfg != nil {
 			err := s.ProcessConfiguration(volume, configs[cfg.Name])
@@ -165,13 +171,43 @@ func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]models
 	return nil
 }
 
-func (s *sync) ProcessConfiguration(volume models.Volume, cfg models.Configuration) error {
+func (s *sync) ProcessConfiguration(volume models.Volume, cfg *models.Configuration) error {
+	key := makeKey(common.Configuration, cfg.Name, cfg.Version)
+	if key == nil {
+		return fmt.Errorf("configuration does not have name or version")
+	}
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	err = s.driver.Create(key, data)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (s *sync) ProcessApplication(app models.Application) error {
-	// TODO transform app to deployment and apply
+func (s *sync) ProcessApplication(app *models.Application) error {
+	key := makeKey(common.Application, app.Name, app.Version)
+	if key == nil {
+		return fmt.Errorf("app does not have name or version")
+	}
+	data, err := json.Marshal(app)
+	if err != nil {
+		return err
+	}
+	err = s.driver.Create(key, data)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func makeKey(resType common.Resource, name, ver string) []byte {
+	if name == "" || ver == "" {
+		return nil
+	}
+	return []byte(string(resType) + "/" + name + "/" + ver)
 }
 
 func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseResource, error) {

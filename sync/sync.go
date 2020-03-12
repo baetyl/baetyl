@@ -4,6 +4,7 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
+	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
 	"github.com/baetyl/baetyl/protocol/http"
@@ -29,12 +30,12 @@ type Sync interface {
 	Stop()
 	Report()
 	ProcessResource(interface{}) error
-	ProcessVolumes(volumes []models.Volume, configs map[string]models.Configuration) error
-	ProcessConfiguration(volume models.Volume, cfg models.Configuration) error
-	ProcessApplication(app models.Application) error
+	ProcessVolumes(volumes []models.Volume, cfgs map[string]*models.Configuration) error
+	ProcessConfiguration(volume models.Volume, cfg *models.Configuration) error
+	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, log *log.Logger) (Sync, error) {
+func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, driver store.Driver, log *log.Logger) (Sync, error) {
 	httpCli, err := http.NewClient(*cfg.Remote.HTTP)
 	if err != nil {
 		return nil, err
@@ -43,6 +44,7 @@ func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, log *log.Log
 		log:    log,
 		cfg:    cfg,
 		impl:   impl,
+		driver: driver,
 		events: make(chan *Event, 1),
 		http:   httpCli,
 	}
@@ -68,6 +70,7 @@ type sync struct {
 	mqtt   *mqtt.Client
 	batch  *batch
 	node   *node
+	driver store.Driver
 	shadow *models.Shadow
 }
 
