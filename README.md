@@ -1,4 +1,4 @@
-# Baetyl
+# Baetyl V1
 
 [![Baetyl-logo](./docs/images/logo/logo-with-name.png)](https://baetyl.io)
 
