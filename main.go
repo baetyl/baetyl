@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/kube"
@@ -9,15 +13,12 @@ import (
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl/utils"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 type core struct {
 	s       sync.Sync
 	kubeCli *kube.Client
-	driver  store.Driver
+	store   store.Store
 	cfg     config.Config
 }
 
@@ -27,17 +28,17 @@ func NewCore(cfg config.Config) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	driver, err := store.NewStateDriver(cfg.State)
+	store, err := store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, err
 	}
-	s, err := sync.NewSync(cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), driver, logger)
+	s, err := sync.NewSync(cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), store, logger)
 	if err != nil {
 		return nil, err
 	}
 	return &core{
 		kubeCli: kubeCli,
-		driver:  driver,
+		store:   store,
 		cfg:     cfg,
 		s:       s,
 	}, nil

@@ -2,27 +2,26 @@ package config
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
-	"github.com/baetyl/baetyl-go/utils"
 	"github.com/baetyl/baetyl/protocol/http"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"time"
 )
 
 // Config config
 type Config struct {
 	APIServer APIServer   `yaml:"apiServer" json:"apiServer" default:"{}"`
 	Sync      SyncConfig  `yaml:"sync" json:"sync"`
-	State     StateConfig `yaml:"state" json:"state"`
+	Store     StoreConfig `yaml:"store" json:"store"`
 	Logger    log.Config  `yaml:"logger" json:"logger"`
 }
 
-type StateConfig struct {
-	Address           string `yaml:"address" json:"address"`
-	utils.Certificate `yaml:",inline" json:",inline"`
+type StoreConfig struct {
+	Path string `yaml:"path" json:"path" default:"var/lib/baetyl/store.db"`
 }
 
 type APIServer struct {

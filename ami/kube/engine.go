@@ -1,7 +1,6 @@
 package kube
 
 import (
-	"encoding/json"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/kube"
 	"github.com/baetyl/baetyl-core/models"
@@ -16,30 +15,22 @@ type Engine interface {
 }
 
 type kubeEngine struct {
-	cli    *kube.Client
-	driver store.Driver
+	cli   *kube.Client
+	store store.Store
 }
 
-func NewEngine(cli *kube.Client, driver store.Driver) *kubeEngine {
-	return &kubeEngine{cli: cli, driver: driver}
+func NewEngine(cli *kube.Client, store store.Store) *kubeEngine {
+	return &kubeEngine{cli: cli, store: store}
 }
 
 func (k *kubeEngine) Start() error {
-	data, err := k.driver.Get([]byte(common.DefaultAppsKey))
-	if err != nil {
-		return err
-	}
 	var apps map[string]string
-	err = json.Unmarshal(data, &apps)
+	err := k.store.Get(common.DefaultAppsKey, &apps)
 	if err != nil {
 		return err
 	}
-
-	err = k.UpdateApp(apps)
-	if err != nil {
-		return err
-	}
-	return nil
+	// TODO: why to get here, then to update in update.go?
+	return k.UpdateApp(apps)
 }
 
 func configurationToConfigMap(config *models.Configuration) (*v1.ConfigMap, error) {

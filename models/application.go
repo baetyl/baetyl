@@ -45,7 +45,7 @@ type Service struct {
 type Volume struct {
 	// specified name of the volume
 	Name string `json:"name,omitempty" binding:"required"`
-	// specified driver for the storage volume
+	// specified store for the storage volume
 	VolumeSource `json:",inline"`
 }
 
