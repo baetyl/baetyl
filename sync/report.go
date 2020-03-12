@@ -2,10 +2,11 @@ package sync
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"time"
 
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
@@ -32,15 +33,10 @@ func (s *sync) reporting() error {
 
 // Report reports info
 func (s *sync) Report() {
-	data, err := s.driver.Get([]byte(common.DefaultAppsKey))
+	var apps map[string]string
+	err := s.store.Get(common.DefaultAppsKey, &apps)
 	if err != nil {
 		s.log.Error("failed to get local apps info", log.Error(err))
-		return
-	}
-	var apps map[string]string
-	err = json.Unmarshal(data, &apps)
-	if err != nil {
-		s.log.Error("failed to unmarshal apps", log.Error(err))
 		return
 	}
 	info := config.ForwardInfo{

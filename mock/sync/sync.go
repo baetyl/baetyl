@@ -34,7 +34,7 @@ func (m *MockSync) EXPECT() *MockSyncMockRecorder {
 }
 
 // ProcessApplication mocks base method
-func (m *MockSync) ProcessApplication(arg0 models.Application) error {
+func (m *MockSync) ProcessApplication(arg0 *models.Application) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessApplication", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (mr *MockSyncMockRecorder) ProcessApplication(arg0 interface{}) *gomock.Cal
 }
 
 // ProcessConfiguration mocks base method
-func (m *MockSync) ProcessConfiguration(arg0 models.Volume, arg1 models.Configuration) error {
+func (m *MockSync) ProcessConfiguration(arg0 models.Volume, arg1 *models.Configuration) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessConfiguration", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -76,7 +76,7 @@ func (mr *MockSyncMockRecorder) ProcessResource(arg0 interface{}) *gomock.Call {
 }
 
 // ProcessVolumes mocks base method
-func (m *MockSync) ProcessVolumes(arg0 []models.Volume, arg1 map[string]models.Configuration) error {
+func (m *MockSync) ProcessVolumes(arg0 []models.Volume, arg1 map[string]*models.Configuration) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProcessVolumes", arg0, arg1)
 	ret0, _ := ret[0].(error)

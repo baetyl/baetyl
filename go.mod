@@ -17,6 +17,7 @@ require (
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/shirou/gopsutil v2.20.2+incompatible // indirect
+	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
 	google.golang.org/grpc v1.25.1
 	k8s.io/api v0.0.0-20190620084959-7cf5895f2711
 	k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719

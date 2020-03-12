@@ -35,7 +35,7 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, driver store.Driver, log *log.Logger) (Sync, error) {
+func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, store store.Store, log *log.Logger) (Sync, error) {
 	httpCli, err := http.NewClient(*cfg.Remote.HTTP)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, driver store
 		log:    log,
 		cfg:    cfg,
 		impl:   impl,
-		driver: driver,
+		store:  store,
 		events: make(chan *Event, 1),
 		http:   httpCli,
 	}
@@ -70,7 +70,7 @@ type sync struct {
 	mqtt   *mqtt.Client
 	batch  *batch
 	node   *node
-	driver store.Driver
+	store  store.Store
 	shadow *models.Shadow
 }
 

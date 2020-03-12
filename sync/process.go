@@ -3,6 +3,8 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"path"
+
 	"github.com/256dpi/gomqtt/packet"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
@@ -10,7 +12,6 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
-	"path"
 )
 
 func NewEvent(v []byte) (*Event, error) {
@@ -176,15 +177,7 @@ func (s *sync) ProcessConfiguration(volume models.Volume, cfg *models.Configurat
 	if key == nil {
 		return fmt.Errorf("configuration does not have name or version")
 	}
-	data, err := json.Marshal(cfg)
-	if err != nil {
-		return err
-	}
-	err = s.driver.Create(key, data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.store.Insert(key, cfg)
 }
 
 func (s *sync) ProcessApplication(app *models.Application) error {
@@ -192,15 +185,7 @@ func (s *sync) ProcessApplication(app *models.Application) error {
 	if key == nil {
 		return fmt.Errorf("app does not have name or version")
 	}
-	data, err := json.Marshal(app)
-	if err != nil {
-		return err
-	}
-	err = s.driver.Create(key, data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.store.Insert(key, app)
 }
 
 func makeKey(resType common.Resource, name, ver string) []byte {
