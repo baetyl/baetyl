@@ -9,9 +9,9 @@ replace (
 
 require (
 	github.com/256dpi/gomqtt v0.13.0
-	github.com/StackExchange/wmi v0.0.0-20190523213609-cbe669659 // indirect
 	github.com/baetyl/baetyl v0.0.0-20200311054409-9c1d1d194316
 	github.com/baetyl/baetyl-go v0.1.8
+	github.com/docker/docker v0.0.0-00010101000000-000000000000
 	github.com/docker/go-units v0.4.0
 	github.com/golang/mock v1.3.1
 	github.com/gorilla/mux v1.7.4 // indirect

@@ -44,9 +44,9 @@ func (s *sync) Report() {
 		return
 	}
 	info := config.ForwardInfo{
-		Apps:   apps,
+		Apps: apps,
 		Status: &baetyl.Inspect{
-			Time:     time.Now(),
+			Time: time.Now(),
 		},
 	}
 	req, err := json.Marshal(info)

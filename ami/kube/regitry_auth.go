@@ -13,7 +13,7 @@ import (
 type auth struct {
 	Username string
 	Password string
-	Auth string
+	Auth     string
 }
 
 func getRegistryToken(server, username, password string) (string, error) {
@@ -33,7 +33,7 @@ func getRegistryToken(server, username, password string) (string, error) {
 	return res.IdentityToken, nil
 }
 
-func (k *kubeEngine) GenerateRegistrySecret(name, server, username, password string) (*v1.Secret, error){
+func (k *kubeEngine) GenerateRegistrySecret(name, server, username, password string) (*v1.Secret, error) {
 	token, err := getRegistryToken(server, username, password)
 	if err != nil {
 		return nil, err
@@ -43,11 +43,11 @@ func (k *kubeEngine) GenerateRegistrySecret(name, server, username, password str
 		Type:       v1.SecretTypeDockerConfigJson,
 	}
 
-	serverAuth := map[string]auth {
+	serverAuth := map[string]auth{
 		server: {
 			Username: username,
 			Password: password,
-			Auth: token,
+			Auth:     token,
 		},
 	}
 	auths := map[string]interface{}{

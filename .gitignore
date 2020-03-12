@@ -28,3 +28,4 @@ baetyl-core
 /coverage.out
 /output*
 /conf
+coverage.txt

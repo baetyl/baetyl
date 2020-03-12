@@ -8,19 +8,19 @@ const (
 
 	KeyContextNamespace = "namespace"
 
-	Deployment  Resource = "deployment"
-	Application Resource = "application"
+	Deployment    Resource = "deployment"
+	Application   Resource = "application"
 	Configuration Resource = "configuration"
-	Node        Resource = "node"
+	Node          Resource = "node"
 
 	HostID Proof = "hostID"
 	CPU    Proof = "cpu"
 
-	NodeName      string = "BAETYL_NODE_NAME"
-	NodeNamespace string = "BAETYL_NODE_NAMESPACE"
-	BatchName       string = "BAETYL_BATCH_NAME"
-	BatchNamespace  string = "BAETYL_BATCH_NAMESPACE"
-	NodeID        string = "BAETYL_NODE_ID"
+	NodeName       string = "BAETYL_NODE_NAME"
+	NodeNamespace  string = "BAETYL_NODE_NAMESPACE"
+	BatchName      string = "BAETYL_BATCH_NAME"
+	BatchNamespace string = "BAETYL_BATCH_NAMESPACE"
+	NodeID         string = "BAETYL_NODE_ID"
 
 	// HeaderKeyNodeNamespace header key of node namespace
 	HeaderKeyNodeNamespace = "node-namespace"
@@ -32,8 +32,8 @@ const (
 	HeaderKeyBatchName = "batch-name"
 	// StorageObjectPrefix prefix of storage object
 	PrefixConfigObject = "_object_"
-	DefaultNamespace = "baetyl-edge"
-	ZipCompression = "zip"
+	DefaultNamespace   = "baetyl-edge"
+	ZipCompression     = "zip"
 
 	InternalEventTopic = "mqtt/event"
 

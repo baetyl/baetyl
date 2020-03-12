@@ -80,7 +80,7 @@ func (s *stateDriver) Delete(key []byte) error {
 
 func (s *stateDriver) Get(key []byte) ([]byte, error) {
 	kv, err := s.KV.Get(s.ctx, &kv.KV{
-		Key:   string(key),
+		Key: string(key),
 	})
 	if err != nil {
 		return nil, err
