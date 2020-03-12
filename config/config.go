@@ -8,6 +8,7 @@ import (
 	"github.com/baetyl/baetyl-go/mqtt"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/baetyl/baetyl/protocol/http"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"time"
 )
 
@@ -52,7 +53,7 @@ type BackwardInfo struct {
 
 type ForwardInfo struct {
 	Metadata map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
-	//Status     *Inspect          `yaml:"status" json:"status"`          // node update
+	Status     *baetyl.Inspect          `yaml:"status" json:"status"`          // node update
 	Apps map[string]string `yaml:"apps" json:"apps" default:"{}"` // shadow update
 }
 

@@ -36,4 +36,8 @@ const (
 	ZipCompression = "zip"
 
 	InternalEventTopic = "mqtt/event"
+
+	DefaultAppsKey = "apps"
+
+	APPVersionMapping = "app/mapping"
 )
