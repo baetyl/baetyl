@@ -1,17 +1,16 @@
 package sync
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"path"
 
-	"github.com/256dpi/gomqtt/packet"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
+	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/utils"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl-go/mqtt"
 )
 
 func NewEvent(v []byte) (*Event, error) {
@@ -23,9 +22,9 @@ func NewEvent(v []byte) (*Event, error) {
 	return &e, nil
 }
 
-func (s *sync) OnPublish(p *packet.Publish) error {
+func (s *sync) OnPublish(p *mqtt.Publish) error {
 	if p.Message.QOS == 1 {
-		puback := packet.NewPuback()
+		puback := mqtt.NewPuback()
 		puback.ID = p.ID
 		err := s.mqtt.Send(puback)
 		if err != nil {
@@ -46,7 +45,7 @@ func (s *sync) OnPublish(p *packet.Publish) error {
 	return nil
 }
 
-func (s *sync) OnPuback(*packet.Puback) error {
+func (s *sync) OnPuback(*mqtt.Puback) error {
 	return nil
 }
 
@@ -141,12 +140,16 @@ func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, err
 	if err != nil {
 		return nil, err
 	}
-	resData, err := s.sendRequest("POST", s.cfg.Remote.Desire.URL, data)
+	resp, err := s.http.Post(s.cfg.Cloud.Desire.URL, "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
+	}
+	data, err = http.HandleResponse(resp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
 	var response config.DesireResponse
-	err = json.Unmarshal(resData, &response)
+	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +215,7 @@ func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseRe
 		}
 	case common.Configuration:
 		cRes := res.(map[string]string)
-		filterConfigs(cRes)
+		// filterConfigs(cRes)
 		for n, v := range cRes {
 			b := &config.BaseResource{
 				Type:    common.Configuration,
@@ -225,11 +228,11 @@ func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseRe
 	return bs, nil
 }
 
-func filterConfigs(configs map[string]string) {
-	for name, version := range configs {
-		configPath := path.Join(baetyl.DefaultDBDir, "volumes", name, version)
-		if utils.DirExists(configPath) {
-			delete(configs, name)
-		}
-	}
-}
+// func filterConfigs(configs map[string]string) {
+// 	for name, version := range configs {
+// 		configPath := path.Join(baetyl.DefaultDBDir, "volumes", name, version)
+// 		if utils.DirExists(configPath) {
+// 			delete(configs, name)
+// 		}
+// 	}
+// }
