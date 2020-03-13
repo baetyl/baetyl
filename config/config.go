@@ -6,10 +6,8 @@ import (
 
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
+	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/mqtt"
-	"github.com/baetyl/baetyl/protocol/http"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 // Config config
@@ -30,8 +28,8 @@ type APIServer struct {
 }
 
 type SyncConfig struct {
-	Remote struct {
-		HTTP   *http.ClientInfo `yaml:"http" json:"http" default:"{}"`
+	Cloud struct {
+		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v1/sync/report"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
@@ -39,10 +37,7 @@ type SyncConfig struct {
 		Desire struct {
 			URL string `yaml:"url" json:"url" default:"/v1/sync/desire"`
 		} `yaml:"desire" json:"desire"`
-	} `yaml:"remote" json:"remote"`
-	Local struct {
-		MQTT *mqtt.ClientConfig `yaml:"mqtt" json:"mqtt" default:"{}"`
-	} `yaml:"local" json:"local"`
+	} `yaml:"cloud" json:"cloud"`
 }
 
 type BackwardInfo struct {
@@ -52,7 +47,6 @@ type BackwardInfo struct {
 
 type ForwardInfo struct {
 	Metadata map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
-	Status   *baetyl.Inspect   `yaml:"status" json:"status"`          // node update
 	Apps     map[string]string `yaml:"apps" json:"apps" default:"{}"` // shadow update
 }
 

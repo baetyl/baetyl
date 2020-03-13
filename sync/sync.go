@@ -1,19 +1,21 @@
 package sync
 
 import (
+	"os"
+
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/store"
+	"github.com/baetyl/baetyl-go/context"
+	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
-	"github.com/baetyl/baetyl/protocol/http"
-	"github.com/baetyl/baetyl/utils"
+	"github.com/baetyl/baetyl-go/utils"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
-	"os"
 )
 
-//go:generate mockgen -destination=../mock/sync/sync.go -package=plugin github.com/baetyl/baetyl-core/sync Sync
+//go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl-core/sync Sync
 
 type node struct {
 	Name      string
@@ -35,11 +37,12 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, store store.Store, log *log.Logger) (Sync, error) {
-	httpCli, err := http.NewClient(*cfg.Remote.HTTP)
+func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentInterface, store store.Store, log *log.Logger) (Sync, error) {
+	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
+	httpCli := http.NewClient(*httpOps)
 	s := &sync{
 		log:    log,
 		cfg:    cfg,
@@ -48,12 +51,14 @@ func NewSync(cfg config.SyncConfig, impl appv1.DeploymentInterface, store store.
 		events: make(chan *Event, 1),
 		http:   httpCli,
 	}
-	mqttCli, err := mqtt.NewClient(*cfg.Local.MQTT, s)
+	mqttOps, err := ctx.ServiceConfig().MQTT.ToClientOptions(s)
 	if err != nil {
 		return nil, err
 	}
+	mqttCli := mqtt.NewClient(*mqttOps)
 	err = mqttCli.Subscribe([]mqtt.Subscription{{Topic: common.InternalEventTopic}})
 	if err != nil {
+		mqttCli.Close()
 		return nil, err
 	}
 	s.mqtt = mqttCli

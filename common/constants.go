@@ -4,8 +4,6 @@ type Resource string
 type Proof string
 
 const (
-	DefaultConfFile = "conf/config.yml"
-
 	KeyContextNamespace = "namespace"
 
 	Deployment    Resource = "deployment"
