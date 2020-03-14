@@ -6,12 +6,12 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
-	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/context"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
 	"github.com/baetyl/baetyl-go/utils"
+	bh "github.com/timshannon/bolthold"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
@@ -37,7 +37,7 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentInterface, store store.Store, log *log.Logger) (Sync, error) {
+func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentInterface, store *bh.Store, log *log.Logger) (Sync, error) {
 	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ type sync struct {
 	mqtt   *mqtt.Client
 	batch  *batch
 	node   *node
-	store  store.Store
+	store  *bh.Store
 	shadow *models.Shadow
 }
 
