@@ -4,8 +4,8 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/kube"
 	"github.com/baetyl/baetyl-core/models"
-	"github.com/baetyl/baetyl-core/store"
 	"github.com/jinzhu/copier"
+	bh "github.com/timshannon/bolthold"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -16,10 +16,10 @@ type Engine interface {
 
 type kubeEngine struct {
 	cli   *kube.Client
-	store store.Store
+	store *bh.Store
 }
 
-func NewEngine(cli *kube.Client, store store.Store) *kubeEngine {
+func NewEngine(cli *kube.Client, store *bh.Store) *kubeEngine {
 	return &kubeEngine{cli: cli, store: store}
 }
 
