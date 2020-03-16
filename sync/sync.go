@@ -1,6 +1,7 @@
 package sync
 
 import (
+	"github.com/baetyl/baetyl-core/ami/kube"
 	"os"
 
 	"github.com/baetyl/baetyl-core/common"
@@ -31,13 +32,13 @@ type Sync interface {
 	Start()
 	Stop()
 	Report()
-	ProcessResource(interface{}) error
+	ProcessResource(map[string]string) error
 	ProcessVolumes(volumes []models.Volume, cfgs map[string]*models.Configuration) error
-	ProcessConfiguration(volume models.Volume, cfg *models.Configuration) error
+	ProcessConfiguration(volume *models.Volume, cfg *models.Configuration) error
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentInterface, store *bh.Store, log *log.Logger) (Sync, error) {
+func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentInterface, store *bh.Store, engine kube.Engine, log *log.Logger) (Sync, error) {
 	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
@@ -45,27 +46,18 @@ func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentIn
 	httpCli := http.NewClient(*httpOps)
 	s := &sync{
 		log:    log,
+		engine: engine,
 		cfg:    cfg,
 		impl:   impl,
 		store:  store,
 		events: make(chan *Event, 1),
 		http:   httpCli,
 	}
-	mqttOps, err := ctx.ServiceConfig().MQTT.ToClientOptions(s)
-	if err != nil {
-		return nil, err
-	}
-	mqttCli := mqtt.NewClient(*mqttOps)
-	err = mqttCli.Subscribe([]mqtt.Subscription{{Topic: common.InternalEventTopic}})
-	if err != nil {
-		mqttCli.Close()
-		return nil, err
-	}
-	s.mqtt = mqttCli
 	return s, nil
 }
 
 type sync struct {
+	engine kube.Engine
 	log    *log.Logger
 	cfg    config.SyncConfig
 	tomb   utils.Tomb

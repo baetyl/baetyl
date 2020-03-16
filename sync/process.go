@@ -1,59 +1,18 @@
 package sync
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
+	"github.com/baetyl/baetyl-core/utils"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/mqtt"
+	"os"
+	"path"
+	"strings"
 )
-
-func NewEvent(v []byte) (*Event, error) {
-	e := Event{}
-	err := json.Unmarshal(v, &e.Content)
-	if err != nil {
-		return nil, fmt.Errorf("event content invalid: %s", err.Error())
-	}
-	return &e, nil
-}
-
-func (s *sync) OnPublish(p *mqtt.Publish) error {
-	if p.Message.QOS == 1 {
-		puback := mqtt.NewPuback()
-		puback.ID = p.ID
-		err := s.mqtt.Send(puback)
-		if err != nil {
-			return err
-		}
-	}
-	e, err := NewEvent(p.Message.Payload)
-	if err != nil {
-		return err
-	}
-	select {
-	case oe := <-s.events:
-		s.log.Warn("discard old event", log.Any("event", *oe))
-		s.events <- e
-	case s.events <- e:
-	case <-s.tomb.Dying():
-	}
-	return nil
-}
-
-func (s *sync) OnPuback(*mqtt.Puback) error {
-	return nil
-}
-
-func (s *sync) OnError(err error) {
-	if err != nil {
-		s.log.Error("get mqtt error", log.Error(err))
-	}
-}
 
 func (s *sync) processing() error {
 	for {
@@ -68,19 +27,33 @@ func (s *sync) processing() error {
 
 func (s *sync) processDelta(e *Event) {
 	s.log.Info("process ota", log.Any("type", e.Type), log.Any("trace", e.Trace))
-	err := s.ProcessResource(e.Content)
+	content, ok := e.Content.(map[string]interface{})
+	if !ok {
+		s.log.Error("format error")
+		return
+	}
+	apps, ok := content["apps"]
+	if !ok || apps == nil {
+		s.log.Error("apps info does not exist")
+		return
+	}
+	appInfo := map[string]string{}
+	aMap, ok := apps.(map[string]interface{})
+	if !ok {
+		s.log.Error("format error")
+		return
+	}
+	for name, ver := range aMap {
+		appInfo[name] = ver.(string)
+	}
+	err := s.ProcessResource(appInfo)
 	if err != nil {
 		s.log.Warn("failed to process ota event", log.Error(err))
 	}
 }
 
-func (s *sync) ProcessResource(content interface{}) error {
-	info := content.(map[string]interface{})
-	aMap, ok := info["apps"]
-	if !ok {
-		return fmt.Errorf("no application info in delta info")
-	}
-	bs, err := generateRequest(common.Application, aMap)
+func (s *sync) ProcessResource(appInfo map[string]string) error {
+	bs, err := s.generateRequest(common.Application, appInfo)
 	if err != nil {
 		return err
 	}
@@ -102,7 +75,7 @@ func (s *sync) ProcessResource(content interface{}) error {
 		}
 	}
 
-	reqs, err := generateRequest(common.Configuration, cMap)
+	reqs, err := s.generateRequest(common.Configuration, cMap)
 	if err != nil {
 		return err
 	}
@@ -130,8 +103,7 @@ func (s *sync) ProcessResource(content interface{}) error {
 		}
 	}
 
-	// TODO start k8s engine
-	return nil
+	return s.engine.UpdateApp(appInfo)
 }
 
 func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
@@ -140,7 +112,7 @@ func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, err
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.http.Post(s.cfg.Cloud.Desire.URL, "application/json", bytes.NewBuffer(data))
+	resp, err := s.sendRequest("POST", s.cfg.Cloud.Desire.URL, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
@@ -158,55 +130,69 @@ func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, err
 
 func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]*models.Configuration) error {
 	for _, volume := range volumes {
-		if cfg := volume.VolumeSource.Configuration; cfg != nil {
-			err := s.ProcessConfiguration(volume, configs[cfg.Name])
+		if cfg := volume.VolumeSource.Configuration; cfg != nil && configs[cfg.Name] != nil {
+			err := s.ProcessConfiguration(&volume, configs[cfg.Name])
 			if err != nil {
 				//a.ctx.Log().Errorf("process module config (%s) failed: %s", name, err.Error())
 				return err
 			}
 		} else if secret := volume.VolumeSource.Secret; secret != nil {
 			// TODO handle secret
-		} else if pvc := volume.VolumeSource.PersistentVolumeClaim; pvc != nil {
-			// TODO handle pvc
-		} else if hostPath := volume.VolumeSource.HostPath; hostPath != nil {
-			// TODO handle hostPath
 		}
 	}
 	return nil
 }
 
-func (s *sync) ProcessConfiguration(volume models.Volume, cfg *models.Configuration) error {
-	key := makeKey(common.Configuration, cfg.Name, cfg.Version)
-	if key == nil {
+func (s *sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configuration) error {
+	var dir string
+	for k, v := range cfg.Data {
+		if strings.HasPrefix(k, common.PrefixConfigObject) {
+			if dir == "" {
+				dir = path.Join(s.cfg.Local.FileHostPath, cfg.Name, cfg.Version)
+			}
+			obj := new(config.StorageObject)
+			err := json.Unmarshal([]byte(v), &obj)
+			if err != nil {
+				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
+				return err
+			}
+			filename := path.Join(dir, strings.TrimPrefix(k, common.PrefixConfigObject))
+			err = s.downloadFile(obj, dir, filename, obj.Compression == common.ZipCompression)
+			if err != nil {
+				os.RemoveAll(dir)
+				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
+			}
+			volume.Configuration = nil
+			volume.HostPath = &models.HostPathVolumeSource{
+				Path: dir,
+			}
+		}
+	}
+
+	key := utils.MakeKey(common.Configuration, cfg.Name, cfg.Version)
+	if key == "" {
 		return fmt.Errorf("configuration does not have name or version")
 	}
-	return s.store.Insert(key, cfg)
+	return s.store.Upsert(key, cfg)
 }
 
 func (s *sync) ProcessApplication(app *models.Application) error {
-	key := makeKey(common.Application, app.Name, app.Version)
-	if key == nil {
+	key := utils.MakeKey(common.Application, app.Name, app.Version)
+	if key == "" {
 		return fmt.Errorf("app does not have name or version")
 	}
-	return s.store.Insert(key, app)
+	return s.store.Upsert(key, app)
 }
 
-func makeKey(resType common.Resource, name, ver string) []byte {
-	if name == "" || ver == "" {
-		return nil
-	}
-	return []byte(string(resType) + "/" + name + "/" + ver)
-}
-
-func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseResource, error) {
+func (s *sync) generateRequest(resType common.Resource, res map[string]string) ([]*config.BaseResource, error) {
 	var bs []*config.BaseResource
 	switch resType {
 	case common.Application:
-		for n, v := range res.(map[string]interface{}) {
+		for n, v := range res {
 			b := &config.BaseResource{
 				Type:    common.Application,
 				Name:    n,
-				Version: v.(string),
+				Version: v,
 			}
 			if b.Name == "" || b.Version == "" {
 				return nil, fmt.Errorf("can not request application with empty name or version")
@@ -214,9 +200,8 @@ func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseRe
 			bs = append(bs, b)
 		}
 	case common.Configuration:
-		cRes := res.(map[string]string)
-		// filterConfigs(cRes)
-		for n, v := range cRes {
+		s.filterConfigs(res)
+		for n, v := range res {
 			b := &config.BaseResource{
 				Type:    common.Configuration,
 				Name:    n,
@@ -228,11 +213,17 @@ func generateRequest(resType common.Resource, res interface{}) ([]*config.BaseRe
 	return bs, nil
 }
 
-// func filterConfigs(configs map[string]string) {
-// 	for name, version := range configs {
-// 		configPath := path.Join(baetyl.DefaultDBDir, "volumes", name, version)
-// 		if utils.DirExists(configPath) {
-// 			delete(configs, name)
-// 		}
-// 	}
-// }
+func (s *sync) filterConfigs(configs map[string]string) {
+	for name, ver := range configs {
+		key := utils.MakeKey(common.Configuration, name, ver)
+		var config models.Configuration
+		err := s.store.Get(key, &config)
+		if err != nil {
+			s.log.Error("failed to get config", log.Error(err))
+			continue
+		}
+		if config.Version != "" {
+			delete(configs, name)
+		}
+	}
+}

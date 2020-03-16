@@ -1,6 +1,7 @@
 package main
 
 import (
+	amiKube "github.com/baetyl/baetyl-core/ami/kube"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/kube"
 	"github.com/baetyl/baetyl-core/store"
@@ -15,6 +16,7 @@ type core struct {
 	kubeCli *kube.Client
 	store   *bh.Store
 	cfg     config.Config
+	engine  amiKube.Engine
 }
 
 func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
@@ -27,11 +29,13 @@ func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := sync.NewSync(ctx, cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), store, logger)
+	engine := amiKube.NewEngine(kubeCli, store)
+	s, err := sync.NewSync(ctx, cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), store, engine, logger)
 	if err != nil {
 		return nil, err
 	}
 	return &core{
+		engine:  engine,
 		kubeCli: kubeCli,
 		store:   store,
 		cfg:     cfg,
@@ -41,6 +45,7 @@ func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
 
 func (c *core) Start() error {
 	go c.s.Start()
+	go c.engine.Start()
 	return nil
 }
 

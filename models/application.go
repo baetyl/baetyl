@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/docker/go-units"
+	v1 "k8s.io/api/core/v1"
 	"time"
 )
 
@@ -9,8 +10,7 @@ type Application struct {
 	Name       string            `json:"name,omitempty" validate:"omitempty,resourceName"`
 	Namespace  string            `json:"namespace,omitempty"`
 	Version    string            `json:"version,omitempty"`
-	Annotation map[string]string `json:"annotation,omitempty"`
-	Replicas   *int              `json:"replicas,omitempty"`
+	//Replicas   *int              `json:"replicas,omitempty"`
 	Services   []Service         `json:"services,omitempty" binding:"required,dive"`
 	Volumes    []Volume          `json:"volumes,omitempty"`
 }
@@ -52,9 +52,9 @@ type Volume struct {
 // VolumeSource volume source, include empty directory, host path, configmap
 type VolumeSource struct {
 	HostPath              *HostPathVolumeSource              `json:"hostPath,omitempty"`
-	Configuration         *ConfigurationVolumeSource         `json:"configuration,omitempty"`
+	Configuration         *ConfigurationVolumeSource         `json:"config,omitempty"`
 	Secret                *SecretVolumeSource                `json:"secret,omitempty"`
-	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim"`
+	PersistentVolumeClaim *PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim,omitempty"`
 }
 
 type HostPathVolumeSource struct {
@@ -64,6 +64,14 @@ type HostPathVolumeSource struct {
 type ConfigurationVolumeSource struct {
 	Name    string `json:"name,omitempty"`
 	Version string `json:"version,omitempty"`
+}
+
+func (v *VolumeSource) ConfigMap() *v1.ConfigMapVolumeSource {
+	if v.Configuration != nil {
+		configMap := &v1.ConfigMapVolumeSource{LocalObjectReference: v1.LocalObjectReference{Name: v.Configuration.Name}}
+		return configMap
+	}
+	return nil
 }
 
 type SecretVolumeSource struct {
