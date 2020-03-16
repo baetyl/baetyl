@@ -184,15 +184,15 @@ func (s *sync) ProcessApplication(app *models.Application) error {
 	return s.store.Upsert(key, app)
 }
 
-func (s *sync) generateRequest(resType common.Resource, res interface{}) ([]*config.BaseResource, error) {
+func (s *sync) generateRequest(resType common.Resource, res map[string]string) ([]*config.BaseResource, error) {
 	var bs []*config.BaseResource
 	switch resType {
 	case common.Application:
-		for n, v := range res.(map[string]interface{}) {
+		for n, v := range res {
 			b := &config.BaseResource{
 				Type:    common.Application,
 				Name:    n,
-				Version: v.(string),
+				Version: v,
 			}
 			if b.Name == "" || b.Version == "" {
 				return nil, fmt.Errorf("can not request application with empty name or version")
@@ -200,9 +200,8 @@ func (s *sync) generateRequest(resType common.Resource, res interface{}) ([]*con
 			bs = append(bs, b)
 		}
 	case common.Configuration:
-		cRes := res.(map[string]string)
-		s.filterConfigs(cRes)
-		for n, v := range cRes {
+		s.filterConfigs(res)
+		for n, v := range res {
 			b := &config.BaseResource{
 				Type:    common.Configuration,
 				Name:    n,

@@ -5,8 +5,8 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/kube"
 	"github.com/baetyl/baetyl-core/models"
-	"github.com/baetyl/baetyl-core/store"
 	"github.com/jinzhu/copier"
+	bh "github.com/timshannon/bolthold"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,10 +20,10 @@ type Engine interface {
 
 type kubeEngine struct {
 	cli   *kube.Client
-	store store.Store
+	store *bh.Store
 }
 
-func NewEngine(cli *kube.Client, store store.Store) *kubeEngine {
+func NewEngine(cli *kube.Client, store *bh.Store) *kubeEngine {
 	return &kubeEngine{cli: cli, store: store}
 }
 
@@ -49,8 +49,8 @@ func ToConfigMap(config *models.Configuration) (*v1.ConfigMap, error) {
 func ToDeployAndService(app *models.Application) (*appv1.Deployment, []*v1.Service, error) {
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:                       app.Name,
-			Namespace:                  app.Namespace,
+			Name:      app.Name,
+			Namespace: app.Namespace,
 		},
 		Spec: appv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{

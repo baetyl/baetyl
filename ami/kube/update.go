@@ -43,8 +43,8 @@ func (k *kubeEngine) UpdateApp(apps map[string]string) error {
 
 	configMapInterface := k.cli.CoreV1.ConfigMaps(k.cli.Namespace)
 	for _, cfg := range configs {
-		config, _ := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
-		if config.ResourceVersion != "" {
+		_, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
+		if err == nil {
 			_, err := configMapInterface.Update(cfg)
 			if err != nil {
 				return err
@@ -59,8 +59,8 @@ func (k *kubeEngine) UpdateApp(apps map[string]string) error {
 
 	deployInterface := k.cli.AppV1.Deployments(k.cli.Namespace)
 	for _, d := range deploys {
-		deploy, _ := deployInterface.Get(d.Name, metav1.GetOptions{})
-		if deploy.ResourceVersion != "" {
+		_, err := deployInterface.Get(d.Name, metav1.GetOptions{})
+		if err == nil {
 			_, err := deployInterface.Update(d)
 			if err != nil {
 				return err
@@ -75,8 +75,8 @@ func (k *kubeEngine) UpdateApp(apps map[string]string) error {
 
 	serviceInterface := k.cli.CoreV1.Services(k.cli.Namespace)
 	for _, s := range services {
-		svc, _ := serviceInterface.Get(s.Name, metav1.GetOptions{})
-		if svc.ResourceVersion != "" {
+		_, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
+		if err == nil {
 			_, err := serviceInterface.Update(s)
 			if err != nil {
 				return err

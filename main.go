@@ -8,12 +8,13 @@ import (
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
 	"github.com/baetyl/baetyl-go/log"
+	bh "github.com/timshannon/bolthold"
 )
 
 type core struct {
 	s       sync.Sync
 	kubeCli *kube.Client
-	store   store.Store
+	store   *bh.Store
 	cfg     config.Config
 	engine  amiKube.Engine
 }
