@@ -30,7 +30,7 @@ const (
 	HeaderKeyBatchName = "batch-name"
 	// StorageObjectPrefix prefix of storage object
 	PrefixConfigObject = "_object_"
-	DefaultNamespace   = "baetyl-edge"
+	DefaultNamespace   = "default"
 	ZipCompression     = "zip"
 
 	InternalEventTopic = "mqtt/event"

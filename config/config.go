@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"time"
 
 	"github.com/baetyl/baetyl-core/common"
@@ -38,6 +39,9 @@ type SyncConfig struct {
 			URL string `yaml:"url" json:"url" default:"/v1/sync/desire"`
 		} `yaml:"desire" json:"desire"`
 	} `yaml:"cloud" json:"cloud"`
+	Local struct {
+		FileHostPath string `yaml:"fileHostPath" json:"fileHostPath"`
+	}
 }
 
 type BackwardInfo struct {
@@ -48,6 +52,12 @@ type BackwardInfo struct {
 type ForwardInfo struct {
 	Metadata map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
 	Apps     map[string]string `yaml:"apps" json:"apps" default:"{}"` // shadow update
+	Status   baetyl.Inspect `yaml:"status" json:"status"`
+}
+
+type AppsVersionResource struct {
+	Name string `yaml:"name" json:"name"`
+	Value map[string]string `yaml:"value" json:"value"`
 }
 
 type ApplicationResource struct {
@@ -130,7 +140,7 @@ func (r *Resource) UnmarshalJSON(b []byte) error {
 }
 
 type StorageObject struct {
-	Md5         string `json:"md5,omitempty" yaml:"md5"`
+	MD5         string `json:"md5,omitempty" yaml:"md5"`
 	URL         string `json:"url,omitempty" yaml:"url"`
 	Compression string `json:"compression,omitempty" yaml:"compression"`
 }
