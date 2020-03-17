@@ -3,66 +3,69 @@ package main
 import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
-	"github.com/baetyl/baetyl-core/omi"
+	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
-	"github.com/baetyl/baetyl-go/log"
 	bh "github.com/timshannon/bolthold"
 )
 
 type core struct {
-	s      sync.Sync
-	store  *bh.Store
-	cfg    config.Config
-	engine *engine.Engine
+	cfg config.Config
+	sto *bh.Store
+	sha *shadow.Shadow
+	eng *engine.Engine
+	syn sync.Sync
 }
 
-func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
-	logger, err := log.Init(cfg.Logger)
+func NewCore(ctx context.Context) (*core, error) {
+	var cfg config.Config
+	err := ctx.LoadCustomConfig(&cfg)
 	if err != nil {
 		return nil, err
 	}
-	store, err := store.NewBoltHold(cfg.Store.Path)
+	c := &core{}
+	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, err
 	}
-	// TODO: move into engine
-	model, err := omi.NewKubeModel(cfg.Engine.Kubernetes, store)
+	c.sha, err = shadow.NewShadow(cfg.Node.Namespace, cfg.Node.Name, c.sto)
 	if err != nil {
+		c.Close()
 		return nil, err
 	}
-	e := engine.NewEngine(cfg.Engine, model, logger)
-	s, err := sync.NewSync(ctx, cfg.Sync, store, logger)
+	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha)
 	if err != nil {
+		c.Close()
 		return nil, err
 	}
-	return &core{
-		engine: e,
-		store:  store,
-		cfg:    cfg,
-		s:      s,
-	}, nil
+	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
+	if err != nil {
+		c.Close()
+		return nil, err
+	}
+	return c, nil
 }
 
-func (c *core) Stop() {
-	c.engine.Close()
-	c.s.Stop()
-	c.store.Close()
+func (c *core) Close() {
+	if c.syn != nil {
+		c.syn.Close()
+	}
+	if c.eng != nil {
+		c.eng.Close()
+	}
+	if c.sto != nil {
+		c.sto.Close()
+	}
 }
 
 func main() {
 	context.Run(func(ctx context.Context) error {
-		var cfg config.Config
-		err := ctx.LoadCustomConfig(&cfg)
+		c, err := NewCore(ctx)
 		if err != nil {
 			return err
 		}
-		c, err := NewCore(ctx, cfg)
-		if err != nil {
-			return err
-		}
-		defer c.Stop()
+		defer c.Close()
 		ctx.Wait()
 		return nil
 	})

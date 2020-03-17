@@ -7,8 +7,12 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 )
 
-// Config config
+// Config the core config
 type Config struct {
+	Node struct {
+		Name      string `json:"name,omitempty"`
+		Namespace string `json:"namespace,omitempty"`
+	} `yaml:"node" json:"node"`
 	Engine EngineConfig `yaml:"engine" json:"engine"`
 	Sync   SyncConfig   `yaml:"sync" json:"sync"`
 	Store  StoreConfig  `yaml:"store" json:"store"`
@@ -16,8 +20,11 @@ type Config struct {
 }
 
 type EngineConfig struct {
+	Kind       string           `yaml:"kind" json:"kind" default:"kubernetes"`
 	Kubernetes KubernetesConfig `yaml:"kubernetes" json:"kubernetes"`
-	Interval   time.Duration    `yaml:"interval" json:"interval"`
+	Collector  struct {
+		Interval time.Duration `yaml:"interval" json:"interval"`
+	} `yaml:"collector" json:"collector"`
 }
 
 type KubernetesConfig struct {

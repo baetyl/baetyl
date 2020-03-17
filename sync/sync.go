@@ -6,7 +6,7 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
-	"github.com/baetyl/baetyl-go/context"
+	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
@@ -29,7 +29,7 @@ type batch struct {
 
 type Sync interface {
 	Start()
-	Stop()
+	Close()
 	Report()
 	ProcessResource(map[string]string) error
 	ProcessVolumes(volumes []models.Volume, cfgs map[string]*models.Configuration) error
@@ -37,18 +37,19 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(ctx context.Context, cfg config.SyncConfig, store *bh.Store, log *log.Logger) (Sync, error) {
+func NewSync(cfg config.SyncConfig, sto *bh.Store, sha *shadow.Shadow) (Sync, error) {
 	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
 	httpCli := http.NewClient(*httpOps)
 	s := &sync{
-		log:    log,
 		cfg:    cfg,
-		store:  store,
+		store:  sto,
+		shadow: sha,
 		events: make(chan *Event, 1),
 		http:   httpCli,
+		log:    log.With(log.Any("core", "sync")),
 	}
 	return s, nil
 }
@@ -64,7 +65,7 @@ type sync struct {
 	batch  *batch
 	node   *node
 	store  *bh.Store
-	shadow *models.Shadow
+	shadow *shadow.Shadow
 }
 
 func (s *sync) Start() {
@@ -91,7 +92,7 @@ func (s *sync) Start() {
 	}
 }
 
-func (s *sync) Stop() {
+func (s *sync) Close() {
 	s.tomb.Kill(nil)
 	s.tomb.Wait()
 }

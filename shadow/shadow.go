@@ -20,7 +20,7 @@ type Shadow struct {
 }
 
 // NewShadow create a new shadow
-func NewShadow(name, namespace string, store *bh.Store) (*Shadow, error) {
+func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
 	m := &models.Shadow{
 		Name:              name,
 		Namespace:         namespace,
