@@ -1,4 +1,4 @@
-package kube
+package omi
 
 import (
 	"context"
@@ -33,7 +33,7 @@ func getRegistryToken(server, username, password string) (string, error) {
 	return res.IdentityToken, nil
 }
 
-func (k *kubeEngine) GenerateRegistrySecret(name, server, username, password string) (*v1.Secret, error) {
+func (k *kubeModel) GenerateRegistrySecret(name, server, username, password string) (*v1.Secret, error) {
 	token, err := getRegistryToken(server, username, password)
 	if err != nil {
 		return nil, err
