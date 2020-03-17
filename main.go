@@ -12,10 +12,10 @@ import (
 )
 
 type core struct {
-	s       sync.Sync
-	store   *bh.Store
-	cfg     config.Config
-	engine  *engine.Engine
+	s      sync.Sync
+	store  *bh.Store
+	cfg    config.Config
+	engine *engine.Engine
 }
 
 func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
@@ -27,11 +27,12 @@ func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	model, err := omi.NewKubeModel(cfg.APIServer, store)
+	// TODO: move into engine
+	model, err := omi.NewKubeModel(cfg.Engine.Kubernetes, store)
 	if err != nil {
 		return nil, err
 	}
-	e := engine.NewEngine(cfg.Interval, model, logger)
+	e := engine.NewEngine(cfg.Engine, model, logger)
 	s, err := sync.NewSync(ctx, cfg.Sync, store, logger)
 	if err != nil {
 		return nil, err

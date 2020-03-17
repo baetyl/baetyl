@@ -3,15 +3,15 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"os"
-	"path"
-	"strings"
 )
 
 func (s *sync) processing() error {
@@ -106,8 +106,8 @@ func (s *sync) ProcessResource(appInfo map[string]string) error {
 	return nil
 }
 
-func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {
-	req := config.DesireRequest{Resources: res}
+func (s *sync) syncResource(res []*BaseResource) ([]*Resource, error) {
+	req := DesireRequest{Resources: res}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, err
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	var response config.DesireResponse
+	var response DesireResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
@@ -148,9 +148,9 @@ func (s *sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configura
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, common.PrefixConfigObject) {
 			if dir == "" {
-				dir = path.Join(s.cfg.Local.FileHostPath, cfg.Name, cfg.Version)
+				dir = path.Join(s.cfg.Edge.DownloadPath, cfg.Name, cfg.Version)
 			}
-			obj := new(config.StorageObject)
+			obj := new(StorageObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
@@ -184,12 +184,12 @@ func (s *sync) ProcessApplication(app *models.Application) error {
 	return s.store.Upsert(key, app)
 }
 
-func (s *sync) generateRequest(resType common.Resource, res map[string]string) ([]*config.BaseResource, error) {
-	var bs []*config.BaseResource
+func (s *sync) generateRequest(resType common.Resource, res map[string]string) ([]*BaseResource, error) {
+	var bs []*BaseResource
 	switch resType {
 	case common.Application:
 		for n, v := range res {
-			b := &config.BaseResource{
+			b := &BaseResource{
 				Type:    common.Application,
 				Name:    n,
 				Version: v,
@@ -202,7 +202,7 @@ func (s *sync) generateRequest(resType common.Resource, res map[string]string) (
 	case common.Configuration:
 		s.filterConfigs(res)
 		for n, v := range res {
-			b := &config.BaseResource{
+			b := &BaseResource{
 				Type:    common.Configuration,
 				Name:    n,
 				Version: v,

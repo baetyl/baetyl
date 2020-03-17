@@ -3,14 +3,14 @@ package sync
 import (
 	"bytes"
 	"fmt"
-	"github.com/baetyl/baetyl-core/config"
+	"time"
+
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
-	"time"
 )
 
-func (s *sync) downloadFile(obj *config.StorageObject, dir, name string, zip bool) error {
+func (s *sync) downloadFile(obj *StorageObject, dir, name string, zip bool) error {
 	// file exists
 	if utils.FileExists(name) {
 		md5, err := utils.CalculateFileMD5(name)

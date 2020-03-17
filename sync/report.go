@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -36,13 +35,13 @@ func (s *sync) reporting() error {
 
 // Report reports info
 func (s *sync) Report() {
-	var apps config.AppsVersionResource
+	var apps AppsVersionResource
 	err := s.store.Get(common.DefaultAppsKey, &apps)
 	if err != nil {
 		s.log.Error("failed to get local apps info", log.Error(err))
 		return
 	}
-	info := config.ForwardInfo{
+	info := ForwardInfo{
 		Apps: apps.Value,
 		Status: baetyl.Inspect{
 			Time: time.Now(),
@@ -65,7 +64,7 @@ func (s *sync) Report() {
 		return
 	}
 
-	var res config.BackwardInfo
+	var res BackwardInfo
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		s.log.Error("error to unmarshal response data returned", log.Error(err))

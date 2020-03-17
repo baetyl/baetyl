@@ -19,7 +19,7 @@ type Client struct {
 	Namespace string
 }
 
-func NewClient(cfg config.APIServer) (*Client, error) {
+func NewClient(cfg config.KubernetesConfig) (*Client, error) {
 	kubeConfig, err := func() (*rest.Config, error) {
 		if cfg.InCluster {
 			return rest.InClusterConfig()

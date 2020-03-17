@@ -7,12 +7,12 @@ import (
 )
 
 type Application struct {
-	Name       string            `json:"name,omitempty" validate:"omitempty,resourceName"`
-	Namespace  string            `json:"namespace,omitempty"`
-	Version    string            `json:"version,omitempty"`
+	Name      string `json:"name,omitempty" validate:"omitempty,resourceName"`
+	Namespace string `json:"namespace,omitempty"`
+	Version   string `json:"version,omitempty"`
 	//Replicas   *int              `json:"replicas,omitempty"`
-	Services   []Service         `json:"services,omitempty" binding:"required,dive"`
-	Volumes    []Volume          `json:"volumes,omitempty"`
+	Services []Service `json:"services,omitempty" binding:"required,dive"`
+	Volumes  []Volume  `json:"volumes,omitempty"`
 }
 
 type Service struct {
