@@ -6,6 +6,7 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
+	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-core/utils"
 	"github.com/jinzhu/copier"
@@ -21,15 +22,17 @@ import (
 type kubeModel struct {
 	cli      *Client
 	store    *bh.Store
+	shadow   *shadow.Shadow
 	nodeName string
 }
 
-func NewKubeModel(cfg config.KubernetesConfig, store *bh.Store) (Model, error) {
+// TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
+func NewKubeModel(cfg config.KubernetesConfig, sto *bh.Store, sha *shadow.Shadow) (Model, error) {
 	cli, err := NewClient(cfg)
 	if err != nil {
 		return nil, err
 	}
-	return &kubeModel{cli: cli, store: store}, nil
+	return &kubeModel{cli: cli, store: sto, shadow: sha}, nil
 }
 
 func (k *kubeModel) CollectInfo(apps map[string]string) (map[string]interface{}, error) {
