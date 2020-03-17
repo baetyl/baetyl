@@ -2,11 +2,13 @@ package engine
 
 import (
 	"encoding/json"
+	"time"
+
+	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/omi"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
-	"time"
 )
 
 type Engine struct {
@@ -16,11 +18,11 @@ type Engine struct {
 	log   *log.Logger
 }
 
-func NewEngine(interval time.Duration, model omi.Model, log *log.Logger) *Engine {
+func NewEngine(cfg config.EngineConfig, model omi.Model, log *log.Logger) *Engine {
 	e := &Engine{
 		log:   log,
 		model: model,
-		t:     time.NewTicker(interval),
+		t:     time.NewTicker(cfg.Interval),
 	}
 	e.tomb.Go(e.start)
 	return e

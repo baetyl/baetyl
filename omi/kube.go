@@ -1,9 +1,12 @@
 package omi
 
 import (
+	"time"
+
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
+	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-core/utils"
 	"github.com/jinzhu/copier"
 	bh "github.com/timshannon/bolthold"
@@ -13,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
-	"time"
 )
 
 type kubeModel struct {
@@ -22,7 +24,7 @@ type kubeModel struct {
 	nodeName string
 }
 
-func NewKubeModel(cfg config.APIServer, store *bh.Store) (Model, error) {
+func NewKubeModel(cfg config.KubernetesConfig, store *bh.Store) (Model, error) {
 	cli, err := NewClient(cfg)
 	if err != nil {
 		return nil, err
@@ -113,7 +115,8 @@ func (k *kubeModel) collectVolumeInfo(name string) (*models.VolumeInfo, error) {
 }
 
 func (k *kubeModel) ApplyApplications(info map[string]string) error {
-	var apps config.AppsVersionResource
+	// TODO: move to engine and register $engine/app event
+	var apps sync.AppsVersionResource
 	err := k.store.Get(common.DefaultAppsKey, &apps)
 	if err != nil {
 		return err
@@ -202,7 +205,7 @@ func (k *kubeModel) UpdateApp(apps map[string]string) error {
 	}
 
 	return k.store.Upsert(common.DefaultAppsKey,
-		config.AppsVersionResource{Name: common.DefaultAppsKey, Value: apps})
+		sync.AppsVersionResource{Name: common.DefaultAppsKey, Value: apps})
 }
 
 func toConfigMap(config *models.Configuration) (*v1.ConfigMap, error) {
