@@ -103,7 +103,7 @@ func (s *sync) ProcessResource(appInfo map[string]string) error {
 		}
 	}
 
-	return s.engine.UpdateApp(appInfo)
+	return nil
 }
 
 func (s *sync) syncResource(res []*config.BaseResource) ([]*config.Resource, error) {

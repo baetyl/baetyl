@@ -1,4 +1,4 @@
-package kube
+package omi
 
 import (
 	"github.com/baetyl/baetyl-core/common"
@@ -8,11 +8,14 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	clientset "k8s.io/metrics/pkg/client/clientset/versioned"
+	metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
 type Client struct {
-	CoreV1    corev1.CoreV1Interface
-	AppV1     appv1.AppsV1Interface
+	Core      corev1.CoreV1Interface
+	App       appv1.AppsV1Interface
+	Metrics   metricsv1beta1.MetricsV1beta1Interface
 	Namespace string
 }
 
@@ -32,9 +35,15 @@ func NewClient(cfg config.APIServer) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	metricsCli, err := clientset.NewForConfig(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
 	return &Client{
-		CoreV1:    kubeClient.CoreV1(),
-		AppV1:     kubeClient.AppsV1(),
+		Core:      kubeClient.CoreV1(),
+		App:       kubeClient.AppsV1(),
+		Metrics:   metricsCli.MetricsV1beta1(),
 		Namespace: common.DefaultNamespace,
 	}, nil
 }

@@ -13,10 +13,11 @@ import (
 
 // Config config
 type Config struct {
-	APIServer APIServer   `yaml:"apiServer" json:"apiServer" default:"{}"`
-	Sync      SyncConfig  `yaml:"sync" json:"sync"`
-	Store     StoreConfig `yaml:"store" json:"store"`
-	Logger    log.Config  `yaml:"logger" json:"logger"`
+	APIServer APIServer     `yaml:"apiServer" json:"apiServer" default:"{}"`
+	Sync      SyncConfig    `yaml:"sync" json:"sync"`
+	Store     StoreConfig   `yaml:"store" json:"store"`
+	Logger    log.Config    `yaml:"logger" json:"logger"`
+	Interval  time.Duration `yaml:"interval" json:"interval"`
 }
 
 type StoreConfig struct {
@@ -52,11 +53,11 @@ type BackwardInfo struct {
 type ForwardInfo struct {
 	Metadata map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
 	Apps     map[string]string `yaml:"apps" json:"apps" default:"{}"` // shadow update
-	Status   baetyl.Inspect `yaml:"status" json:"status"`
+	Status   baetyl.Inspect    `yaml:"status" json:"status"`
 }
 
 type AppsVersionResource struct {
-	Name string `yaml:"name" json:"name"`
+	Name  string            `yaml:"name" json:"name"`
 	Value map[string]string `yaml:"value" json:"value"`
 }
 

@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"github.com/baetyl/baetyl-core/ami/kube"
 	"os"
 
 	"github.com/baetyl/baetyl-core/common"
@@ -38,7 +37,7 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentInterface, store *bh.Store, engine kube.Engine, log *log.Logger) (Sync, error) {
+func NewSync(ctx context.Context, cfg config.SyncConfig, store *bh.Store, log *log.Logger) (Sync, error) {
 	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
@@ -46,9 +45,7 @@ func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentIn
 	httpCli := http.NewClient(*httpOps)
 	s := &sync{
 		log:    log,
-		engine: engine,
 		cfg:    cfg,
-		impl:   impl,
 		store:  store,
 		events: make(chan *Event, 1),
 		http:   httpCli,
@@ -57,7 +54,6 @@ func NewSync(ctx context.Context, cfg config.SyncConfig, impl appv1.DeploymentIn
 }
 
 type sync struct {
-	engine kube.Engine
 	log    *log.Logger
 	cfg    config.SyncConfig
 	tomb   utils.Tomb

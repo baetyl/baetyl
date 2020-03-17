@@ -1,9 +1,9 @@
 package main
 
 import (
-	amiKube "github.com/baetyl/baetyl-core/ami/kube"
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/kube"
+	"github.com/baetyl/baetyl-core/engine"
+	"github.com/baetyl/baetyl-core/omi"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
@@ -13,14 +13,12 @@ import (
 
 type core struct {
 	s       sync.Sync
-	kubeCli *kube.Client
 	store   *bh.Store
 	cfg     config.Config
-	engine  amiKube.Engine
+	engine  *engine.Engine
 }
 
 func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
-	kubeCli, err := kube.NewClient(cfg.APIServer)
 	logger, err := log.Init(cfg.Logger)
 	if err != nil {
 		return nil, err
@@ -29,27 +27,27 @@ func NewCore(ctx context.Context, cfg config.Config) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	engine := amiKube.NewEngine(kubeCli, store)
-	s, err := sync.NewSync(ctx, cfg.Sync, kubeCli.AppV1.Deployments(kubeCli.Namespace), store, engine, logger)
+	model, err := omi.NewKubeModel(cfg.APIServer, store)
+	if err != nil {
+		return nil, err
+	}
+	e := engine.NewEngine(cfg.Interval, model, logger)
+	s, err := sync.NewSync(ctx, cfg.Sync, store, logger)
 	if err != nil {
 		return nil, err
 	}
 	return &core{
-		engine:  engine,
-		kubeCli: kubeCli,
-		store:   store,
-		cfg:     cfg,
-		s:       s,
+		engine: e,
+		store:  store,
+		cfg:    cfg,
+		s:      s,
 	}, nil
 }
 
-func (c *core) Start() error {
-	go c.s.Start()
-	go c.engine.Start()
-	return nil
-}
-
 func (c *core) Stop() {
+	c.engine.Close()
+	c.s.Stop()
+	c.store.Close()
 }
 
 func main() {
@@ -64,10 +62,6 @@ func main() {
 			return err
 		}
 		defer c.Stop()
-		err = c.Start()
-		if err != nil {
-			return err
-		}
 		ctx.Wait()
 		return nil
 	})
