@@ -11,7 +11,7 @@ const (
 	DefaultSNPath = "var/lib/baetyl/sn"
 )
 
-func (init *initialize) collect() (string, error) {
+func (init *Initialize) collect() (string, error) {
 	fs := init.cfg.Init.ActivateConfig.Fingerprints
 	if fs == nil || len(fs) == 0 {
 		return "", nil

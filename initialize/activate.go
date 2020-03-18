@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (init *initialize) activating() error {
+func (init *Initialize) activating() error {
 	init.Activate()
 	t := time.NewTicker(init.cfg.Init.Cloud.Active.Interval)
 	defer t.Stop()
@@ -25,7 +25,7 @@ func (init *initialize) activating() error {
 }
 
 // Report reports info
-func (init *initialize) Activate() {
+func (init *Initialize) Activate() {
 	info := ForwardInfo{
 		BatchName:     init.batch.name,
 		Namespace:     init.batch.namespace,
@@ -73,7 +73,7 @@ func (init *initialize) Activate() {
 	init.sig <- true
 }
 
-func (init *initialize) sendRequest(method, path string, body []byte) (*gohttp.Response, error) {
+func (init *Initialize) sendRequest(method, path string, body []byte) (*gohttp.Response, error) {
 	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, path)
 	r := bytes.NewReader(body)
 	req, err := gohttp.NewRequest(method, url, r)
