@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-core/store"
+	shad "github.com/baetyl/baetyl-go/shadow"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,9 +22,9 @@ func TestShadow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	shad, err := NewShadow(t.Name(), t.Name(), s)
+	ss, err := NewShadow(t.Name(), t.Name(), s)
 	assert.NoError(t, err)
-	assert.NotNil(t, shad)
+	assert.NotNil(t, ss)
 
 	// ! test sequence is important
 	tests := []struct {
@@ -76,7 +77,9 @@ func TestShadow(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var desired, reported, desireDelta, reportDelta, desireStored, reportStored map[string]interface{}
+			var desired, desireStored shad.Desire
+			var reported, reportStored shad.Report
+			var desireDelta, reportDelta shad.Delta
 			assert.NoError(t, json.Unmarshal([]byte(tt.desired), &desired))
 			assert.NoError(t, json.Unmarshal([]byte(tt.reported), &reported))
 			assert.NoError(t, json.Unmarshal([]byte(tt.desireDelta), &desireDelta))
@@ -84,31 +87,31 @@ func TestShadow(t *testing.T) {
 			assert.NoError(t, json.Unmarshal([]byte(tt.desireStored), &desireStored))
 			assert.NoError(t, json.Unmarshal([]byte(tt.reportStored), &reportStored))
 
-			gotDelta, err := shad.Desire(desired)
+			gotDelta, err := ss.Desire(desired)
 			assert.Equal(t, tt.desireErr, err)
 			if !reflect.DeepEqual(gotDelta, desireDelta) {
 				t.Errorf("Shadow.Desire() = %v, want %v", gotDelta, desireDelta)
 			}
-			gotDelta, err = shad.Report(reported)
+			gotDelta, err = ss.Report(reported)
 			assert.Equal(t, tt.reportErr, err)
 			if !reflect.DeepEqual(gotDelta, reportDelta) {
 				t.Errorf("Shadow.Report() = %v, want %v", gotDelta, reportDelta)
 			}
 
-			actual, err := shad.Get()
+			actual, err := ss.Get()
 			assert.NoError(t, err)
-			if actual.Desired == nil {
+			if actual.Desire == nil {
 				assert.Empty(t, desireStored)
 			} else {
-				if !reflect.DeepEqual(actual.Desired, desireStored) {
-					t.Errorf("Shadow.Get().Desired = %v, want %v", actual.Desired, desireStored)
+				if !reflect.DeepEqual(actual.Desire, desireStored) {
+					t.Errorf("Shadow.Get().Desire = %v, want %v", actual.Desire, desireStored)
 				}
 			}
-			if actual.Reported == nil {
+			if actual.Report == nil {
 				assert.Empty(t, reportStored)
 			} else {
-				if !reflect.DeepEqual(actual.Reported, reportStored) {
-					t.Errorf("Shadow.Get().Reported = %v, want %v", actual.Reported, reportStored)
+				if !reflect.DeepEqual(actual.Report, reportStored) {
+					t.Errorf("Shadow.Get().Report = %v, want %v", actual.Report, reportStored)
 				}
 			}
 		})
@@ -125,12 +128,12 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	shad, err := NewShadow(t.Name(), t.Name(), s)
+	ss, err := NewShadow(t.Name(), t.Name(), s)
 	assert.NoError(t, err)
-	assert.NotNil(t, shad)
+	assert.NotNil(t, ss)
 
-	desire := map[string]interface{}{"apps": map[string]interface{}{"app1": "123", "app2": "234", "app3": "345", "app4": "456", "app5": ""}}
-	delta, err := shad.Desire(desire)
+	desire := shad.Desire{"apps": map[string]interface{}{"app1": "123", "app2": "234", "app3": "345", "app4": "456", "app5": ""}}
+	delta, err := ss.Desire(desire)
 	assert.NoError(t, err)
 	apps := delta["apps"].(map[string]interface{})
 	assert.Len(t, apps, 5)
@@ -140,8 +143,8 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
 
-	report := map[string]interface{}{"apps": map[string]interface{}{"app1": "123", "app2": "235", "app3": "", "app5": "567", "app6": "678"}}
-	delta, err = shad.Report(report)
+	report := shad.Report{"apps": map[string]interface{}{"app1": "123", "app2": "235", "app3": "", "app5": "567", "app6": "678"}}
+	delta, err = ss.Report(report)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
 	assert.Len(t, apps, 4)
@@ -150,11 +153,11 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
 
-	shad, err = NewShadow(t.Name(), t.Name(), s)
+	ss, err = NewShadow(t.Name(), t.Name(), s)
 	assert.NoError(t, err)
-	assert.NotNil(t, shad)
+	assert.NotNil(t, ss)
 
-	delta, err = shad.Report(report)
+	delta, err = ss.Report(report)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
 	assert.Len(t, apps, 4)
