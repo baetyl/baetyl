@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type AppsVersionResource struct {
+	Name  string            `yaml:"name" json:"name"`
+	Value map[string]string `yaml:"value" json:"value"`
+}
+
 type Application struct {
 	Name      string `json:"name,omitempty" validate:"omitempty,resourceName"`
 	Namespace string `json:"namespace,omitempty"`

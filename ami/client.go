@@ -1,4 +1,4 @@
-package omi
+package ami
 
 import (
 	"github.com/baetyl/baetyl-core/common"
