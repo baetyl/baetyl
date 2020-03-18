@@ -5,7 +5,7 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-core/event"
-	"github.com/baetyl/baetyl-core/init"
+	"github.com/baetyl/baetyl-core/initialize"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
@@ -30,12 +30,13 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 
 	if cfg.Node.Name == "" {
-		i, err := init.NewInit(cfg)
+		i, err := initialize.NewInit(cfg)
 		if err != nil {
 			i.Close()
 			return nil, err
 		}
-
+		i.Start()
+		i.WaitAndClose()
 	}
 
 	c := &core{}
@@ -63,7 +64,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, err
 	}
 
-	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha, c.cent)
+	c.syn, err = sync.NewSync(cfg, c.sto, c.sha, c.cent)
 	if err != nil {
 		c.Close()
 		return nil, err

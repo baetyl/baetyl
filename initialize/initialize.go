@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	"github.com/baetyl/baetyl-core/config"
@@ -7,7 +7,7 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 )
 
-//go:generate mockgen -destination=../mock/init.go -package=mock github.com/baetyl/baetyl-core/init Init
+//go:generate mockgen -destination=../mock/initialize.go -package=mock github.com/baetyl/baetyl-core/initialize Initialize
 
 type batch struct {
 	Name         string
@@ -16,14 +16,14 @@ type batch struct {
 	SecurityKey  string
 }
 
-type Init interface {
+type Initialize interface {
 	Start()
 	Close()
 	Activate()
 	WaitAndClose()
 }
 
-func NewInit(cfg config.Config) (Init, error) {
+func NewInit(cfg config.Config) (Initialize, error) {
 	httpOps, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func NewInit(cfg config.Config) (Init, error) {
 		cfg:  cfg,
 		http: httpCli,
 		sig:  make(chan bool, 1),
-		log:  log.With(log.Any("core", "init")),
+		log:  log.With(log.Any("core", "initialize")),
 	}
 	init.batch = &batch{
 		Name:         cfg.Init.Batch.Name,
@@ -69,7 +69,7 @@ func (init *initialize) Close() {
 
 func (init *initialize) WaitAndClose() {
 	if _, ok := <-init.sig; !ok {
-		init.log.Error("init get sig error")
+		init.log.Error("initialize get sig error")
 	}
 	init.Close()
 }

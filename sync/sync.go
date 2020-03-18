@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-core/models"
@@ -13,7 +12,6 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
-	"os"
 )
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl-core/sync Sync
@@ -37,8 +35,8 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(cfg config.SyncConfig, sto *bh.Store, sha *shadow.Shadow, cent *event.Center) (Sync, error) {
-	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
+func NewSync(cfg config.Config, sto *bh.Store, sha *shadow.Shadow, cent *event.Center) (Sync, error) {
+	httpOps, err := cfg.Sync.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
@@ -49,22 +47,11 @@ func NewSync(cfg config.SyncConfig, sto *bh.Store, sha *shadow.Shadow, cent *eve
 		store:  sto,
 		shadow: sha,
 		http:   httpCli,
-		log:    log.With(log.Any("core", "sync")),
-	}
-	nodeName := os.Getenv(common.NodeName)
-	nodeNamespace := os.Getenv(common.NodeNamespace)
-	if nodeName != "" && nodeNamespace != "" {
-		s.node = &node{
-			Name:      nodeName,
-			Namespace: nodeNamespace,
-		}
-	} else {
-		batchName := os.Getenv(common.BatchName)
-		batchNamespace := os.Getenv(common.BatchNamespace)
-		s.batch = &batch{
-			Name:      batchName,
-			Namespace: batchNamespace,
-		}
+		node: &node{
+			Name:      cfg.Node.Name,
+			Namespace: cfg.Node.Namespace,
+		},
+		log: log.With(log.Any("core", "sync")),
 	}
 	return s, nil
 }
@@ -72,12 +59,11 @@ func NewSync(cfg config.SyncConfig, sto *bh.Store, sha *shadow.Shadow, cent *eve
 type sync struct {
 	cent   *event.Center
 	log    *log.Logger
-	cfg    config.SyncConfig
+	cfg    config.Config
 	tomb   utils.Tomb
 	impl   appv1.DeploymentInterface
 	http   *http.Client
 	mqtt   *mqtt.Client
-	batch  *batch
 	node   *node
 	store  *bh.Store
 	shadow *shadow.Shadow
