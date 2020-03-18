@@ -1,0 +1,13 @@
+PREFIX?=/usr/local
+BIN_PATH?=${PREFIX}/bin
+
+CONF_PATH?=etc/baetyl/baetyl.yml
+PID_PATH?=var/run/baetyl.pid
+LOG_PATH?=var/log/baetyl.log
+DATA_PATH?=var/lib/baetyl
+API_ADDR?=var/run/baetyl.sock
+
+APP:=baetyl
+
+CGO_ENABLED=1
+CC?=gcc

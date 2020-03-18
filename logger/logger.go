@@ -83,7 +83,7 @@ func (l *logger) Fatalln(args ...interface{}) {
 func New(c LogInfo, fields ...string) Logger {
 	logLevel, err := logrus.ParseLevel(c.Level)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to parse log level (%s), use default level (info)", c.Level)
+		fmt.Fprintf(os.Stderr, "failed to parse log level (%s), use default level (info)\n", c.Level)
 		logLevel = logrus.InfoLevel
 	}
 

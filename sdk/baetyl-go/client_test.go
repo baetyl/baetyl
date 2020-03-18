@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	"github.com/gogo/protobuf/types"
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +15,7 @@ func TestNewEnvClient(t *testing.T) {
 	assert.EqualError(t, err, "Env (BAETYL_MASTER_API_ADDRESS) not found")
 	assert.Nil(t, cli)
 
-	server, err := api.NewServer(api.ServerConfig{
+	server, err := apiserver.NewServer(apiserver.ServerConfig{
 		Address: "tcp://127.0.0.1:52060",
 	}, &mockMaster{})
 	assert.NoError(t, err)
@@ -39,14 +38,14 @@ func TestNewEnvClient(t *testing.T) {
 
 	master := new(mockMaster)
 	confs := []struct {
-		serverConf api.ServerConfig
-		cliConf    api.ClientConfig
+		serverConf apiserver.ServerConfig
+		cliConf    apiserver.ClientConfig
 	}{
 		{
-			serverConf: api.ServerConfig{
+			serverConf: apiserver.ServerConfig{
 				Address: "tcp://127.0.0.1:51060",
 			},
-			cliConf: api.ClientConfig{
+			cliConf: apiserver.ClientConfig{
 				Address:  "127.0.0.1:51060",
 				Timeout:  10 * time.Second,
 				Username: "baetyl",
@@ -54,11 +53,11 @@ func TestNewEnvClient(t *testing.T) {
 			},
 		},
 		{
-			serverConf: api.ServerConfig{
-				Address: "unix:///tmp/baetyl/run/api.sock",
+			serverConf: apiserver.ServerConfig{
+				Address: "unix:///tmp/baetyl/run/apiserver.sock",
 			},
-			cliConf: api.ClientConfig{
-				Address:  "unix:///tmp/baetyl/run/api.sock",
+			cliConf: apiserver.ClientConfig{
+				Address:  "unix:///tmp/baetyl/run/apiserver.sock",
 				Timeout:  10 * time.Second,
 				Username: "baetyl",
 				Password: "baetyl",
@@ -66,7 +65,7 @@ func TestNewEnvClient(t *testing.T) {
 		},
 	}
 	for _, conf := range confs {
-		server, err := api.NewServer(api.ServerConfig{Address: conf.serverConf.Address, Certificate: conf.serverConf.Certificate}, master)
+		server, err := apiserver.NewServer(apiserver.ServerConfig{Address: conf.serverConf.Address, Certificate: conf.serverConf.Certificate}, master)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, server)
 		kvService.m = make(map[string][]byte)
@@ -83,7 +82,7 @@ func TestNewEnvClient(t *testing.T) {
 		assert.NotNil(t, cli)
 		assert.Equal(t, "/v1", cli.ver)
 
-		a := api.KV{
+		a := apiserver.KV{
 			Key:   []byte("name"),
 			Value: []byte("baetyl"),
 		}
@@ -147,7 +146,7 @@ func TestNewEnvClient(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "DeadlineExceeded desc")
 
-		server, err = api.NewServer(api.ServerConfig{Address: conf.serverConf.Address, Certificate: conf.serverConf.Certificate}, master)
+		server, err = apiserver.NewServer(apiserver.ServerConfig{Address: conf.serverConf.Address, Certificate: conf.serverConf.Certificate}, master)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, server)
 		kvService.m = make(map[string][]byte)
@@ -204,32 +203,32 @@ type mockKVService struct {
 }
 
 // Set set kv
-func (s *mockKVService) Set(ctx context.Context, kv *api.KV) (*types.Empty, error) {
+func (s *mockKVService) Set(ctx context.Context, kv *apiserver.KV) (*types.Empty, error) {
 	s.m[string(kv.Key)] = kv.Value
 	return new(types.Empty), nil
 }
 
 // Get get kv
-func (s *mockKVService) Get(ctx context.Context, kv *api.KV) (*api.KV, error) {
-	return &api.KV{
+func (s *mockKVService) Get(ctx context.Context, kv *apiserver.KV) (*apiserver.KV, error) {
+	return &apiserver.KV{
 		Key:   kv.Key,
 		Value: s.m[string(kv.Key)],
 	}, nil
 }
 
 // Del del kv
-func (s *mockKVService) Del(ctx context.Context, kv *api.KV) (*types.Empty, error) {
+func (s *mockKVService) Del(ctx context.Context, kv *apiserver.KV) (*types.Empty, error) {
 	delete(s.m, string(kv.Key))
 	return new(types.Empty), nil
 }
 
 // List list kvs with prefix
-func (s *mockKVService) List(ctx context.Context, kv *api.KV) (*api.KVs, error) {
-	kvs := api.KVs{
-		Kvs: []*api.KV{},
+func (s *mockKVService) List(ctx context.Context, kv *apiserver.KV) (*apiserver.KVs, error) {
+	kvs := apiserver.KVs{
+		Kvs: []*apiserver.KV{},
 	}
 	for k, v := range s.m {
-		kvs.Kvs = append(kvs.Kvs, &api.KV{
+		kvs.Kvs = append(kvs.Kvs, &apiserver.KV{
 			Key:   []byte(k),
 			Value: v,
 		})

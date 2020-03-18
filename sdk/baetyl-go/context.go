@@ -2,218 +2,147 @@ package baetyl
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
+	"path/filepath"
+	"time"
 
 	"github.com/baetyl/baetyl/logger"
 	"github.com/baetyl/baetyl/protocol/mqtt"
-	"github.com/baetyl/baetyl/sdk/baetyl-go/api"
 	"github.com/baetyl/baetyl/utils"
-)
-
-// Mode keys
-const (
-	ModeNative = "native"
-	ModeDocker = "docker"
-)
-
-// OTA types
-const (
-	OTAAPP = "APP"
-	OTAMST = "MST"
-)
-
-// OTA steps
-const (
-	OTAKeyStep  = "step"
-	OTAKeyType  = "type"
-	OTAKeyTrace = "trace"
-
-	OTAReceived    = "RECEIVED"    // [agent] ota event is received
-	OTAUpdating    = "UPDATING"    // [master] to update app or master
-	OTAUpdated     = "UPDATED"     // [master][finished] app or master is updated
-	OTARestarting  = "RESTARTING"  // [master] to restart master
-	OTARestarted   = "RESTARTED"   // [master] master is restarted
-	OTARollingBack = "ROLLINGBACK" // [master] to roll back app or master
-	OTARolledBack  = "ROLLEDBACK"  // [master][finished] app or master is rolled back
-	OTAFailure     = "FAILURE"     // [master/agent][finished] failed to update app or master
-	OTATimeout     = "TIMEOUT"     // [agent][finished] ota is timed out
-)
-
-// CheckOK print OK if binary is valid
-const CheckOK = "OK!"
-
-// Env keys
-const (
-	// deprecated
-	EnvHostID                    = "OPENEDGE_HOST_ID"
-	EnvHostOSKey                 = "OPENEDGE_HOST_OS"
-	EnvMasterAPIKey              = "OPENEDGE_MASTER_API"
-	EnvMasterAPIVersionKey       = "OPENEDGE_MASTER_API_VERSION"
-	EnvRunningModeKey            = "OPENEDGE_RUNNING_MODE"
-	EnvServiceNameKey            = "OPENEDGE_SERVICE_NAME"
-	EnvServiceTokenKey           = "OPENEDGE_SERVICE_TOKEN"
-	EnvServiceAddressKey         = "OPENEDGE_SERVICE_ADDRESS" // deprecated
-	EnvServiceInstanceNameKey    = "OPENEDGE_SERVICE_INSTANCE_NAME"
-	EnvServiceInstanceAddressKey = "OPENEDGE_SERVICE_INSTANCE_ADDRESS"
-
-	// new envs
-	EnvKeyHostID                 = "BAETYL_HOST_ID"
-	EnvKeyHostOS                 = "BAETYL_HOST_OS"
-	EnvKeyHostSN                 = "BAETYL_HOST_SN"
-	EnvKeyMasterAPISocket        = "BAETYL_MASTER_API_SOCKET"
-	EnvKeyMasterGRPCAPISocket    = "BAETYL_API_SOCKET"
-	EnvKeyMasterAPIAddress       = "BAETYL_MASTER_API_ADDRESS"
-	EnvKeyMasterGRPCAPIAddress   = "BAETYL_API_ADDRESS"
-	EnvKeyMasterAPIVersion       = "BAETYL_MASTER_API_VERSION"
-	EnvKeyServiceMode            = "BAETYL_SERVICE_MODE"
-	EnvKeyServiceName            = "BAETYL_SERVICE_NAME"
-	EnvKeyServiceToken           = "BAETYL_SERVICE_TOKEN"
-	EnvKeyServiceInstanceName    = "BAETYL_SERVICE_INSTANCE_NAME"
-	EnvKeyServiceInstanceAddress = "BAETYL_SERVICE_INSTANCE_ADDRESS"
-)
-
-// Path keys
-const (
-	// AppConfFileName application config file name
-	AppConfFileName = "application.yml"
-	// AppBackupFileName application backup configuration file
-	AppBackupFileName = "application.yml.old"
-	// AppStatsFileName application stats file name
-	AppStatsFileName = "application.stats"
-	// MetadataFileName application metadata file name
-	MetadataFileName = "metadata.yml"
-
-	// BinFile the file path of master binary
-	DefaultBinFile = "bin/baetyl"
-	// DefaultBinBackupFile the backup file path of master binary
-	DefaultBinBackupFile = "bin/baetyl.old"
-	// DefaultSockFile sock file of baetyl by default
-	DefaultSockFile = "var/run/baetyl.sock"
-	// DefaultGRPCSockFile sock file of grpc api by default
-	DefaultGRPCSockFile = "var/run/baetyl/api.sock"
-	// DefaultConfFile config path of the service by default
-	DefaultConfFile = "etc/baetyl/service.yml"
-	// DefaultDBDir db dir of the service by default
-	DefaultDBDir = "var/db/baetyl"
-	// DefaultRunDir  run dir of the service by default
-	DefaultRunDir = "var/run/baetyl"
-	// DefaultLogDir  log dir of the service by default
-	DefaultLogDir = "var/log/baetyl"
-	// DefaultMasterConfDir master config dir by default
-	DefaultMasterConfDir = "etc/baetyl"
-	// DefaultMasterConfFile master config file by default
-	DefaultMasterConfFile = "etc/baetyl/conf.yml"
-
-	// backward compatibility
-	// PreviousDBDir previous db dir of the service
-	PreviousDBDir = "var/db/openedge"
-	// PreviousMasterConfDir previous master config dir
-	PreviousMasterConfDir = "etc/openedge"
-	// PreviousMasterConfFile previous master config file
-	PreviousMasterConfFile = "etc/openedge/openedge.yml"
-	// PreviousBinBackupFile the backup file path of master binary
-	PreviousBinBackupFile = "bin/openedge.old"
-	// PreviousLogDir  log dir of the service by default
-	PreviousLogDir = "var/log/openedge"
 )
 
 // Context of service
 type Context interface {
-	// returns the system configuration of the service, such as hub and logger
-	Config() *ServiceConfig
-	// loads the custom configuration of the service
-	LoadConfig(interface{}) error
+	context.Context
+
+	// returns logger interface
+	Log() logger.Logger
 	// creates a Client that connects to the Hub through system configuration,
 	// you can specify the Client ID and the topic information of the subscription.
 	NewHubClient(string, []mqtt.TopicInfo) (*mqtt.Dispatcher, error)
-	// returns logger interface
-	Log() logger.Logger
-	// check running mode
-	IsNative() bool
-	// waiting to exit, receiving SIGTERM and SIGINT signals
-	Wait()
-	// returns wait channel
-	WaitChan() <-chan os.Signal
+	// LoadConfig by giving path
+	LoadConfig(path string, cfg interface{}) error
 
 	// Master RESTful API
 
-	// updates application or master
-	UpdateSystem(trace, tp, path string) error
 	// inspects system stats
-	InspectSystem() (*Inspect, error)
+	//InspectSystem() (*Inspect, error)
 	// gets an available port of the host
 	GetAvailablePort() (string, error)
-	// reports the stats of the instance of the service
-	ReportInstance(stats map[string]interface{}) error
-	// starts an instance of the service
-	StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error
-	// stop the instance of the service
-	StopInstance(serviceName, instanceName string) error
 
-	// Master KV API
+	/*
+		// Master KV API
 
-	// set kv
-	SetKV(kv api.KV) error
-	// set kv which supports context
-	SetKVConext(ctx context.Context, kv api.KV) error
-	// get kv
-	GetKV(k []byte) (*api.KV, error)
-	// get kv which supports context
-	GetKVConext(ctx context.Context, k []byte) (*api.KV, error)
-	// del kv
-	DelKV(k []byte) error
-	// del kv which supports context
-	DelKVConext(ctx context.Context, k []byte) error
-	// list kv with prefix
-	ListKV(p []byte) ([]*api.KV, error)
-	// list kv with prefix which supports context
-	ListKVContext(ctx context.Context, p []byte) ([]*api.KV, error)
+		// set kv
+		SetKV(kv apiserver.KV) error
+		// set kv which supports context
+		SetKVConext(ctx context.Context, kv apiserver.KV) error
+		// get kv
+		GetKV(k []byte) (*apiserver.KV, error)
+		// get kv which supports context
+		GetKVConext(ctx context.Context, k []byte) (*apiserver.KV, error)
+		// del kv
+		DelKV(k []byte) error
+		// del kv which supports context
+		DelKVConext(ctx context.Context, k []byte) error
+		// list kv with prefix
+		ListKV(p []byte) ([]*apiserver.KV, error)
+		// list kv with prefix which supports context
+		ListKVContext(ctx context.Context, p []byte) ([]*apiserver.KV, error)
+	*/
 }
 
-type ctx struct {
-	sn  string // service name
-	in  string // instance name
-	md  string // running mode
-	cfg ServiceConfig
-	log logger.Logger
-	*Client
+type apiConfig struct {
+	Address          string `yaml:"address" json:"address"`
+	TimeoutInSeconds int    `yaml:"timeout_s" json:"timeout_s"`
 }
 
-func newContext() (*ctx, error) {
-	var cfg ServiceConfig
-	md := os.Getenv(EnvKeyServiceMode)
-	sn := os.Getenv(EnvKeyServiceName)
-	in := os.Getenv(EnvKeyServiceInstanceName)
-	if md == "" {
-		md = os.Getenv(EnvRunningModeKey)
-		sn = os.Getenv(EnvServiceNameKey)
-		in = os.Getenv(EnvServiceInstanceNameKey)
-	}
+type injectConfig struct {
+	Name            string          `yaml:"name" json:"name"`
+	Logger          logger.LogInfo  `yaml:"logger" json:"logger"`
+	CA              string          `yaml:"ca" json:"ca"`
+	Certificate     string          `yaml:"certificate" json:"certificate"`
+	CertificateKey  string          `yaml:"certificate_key" json:"certificate_key"`
+	APIServer       apiConfig       `yaml:"apiserver" json:"apiserver"`
+	LegacyAPIServer apiConfig       `yaml:"legacy_apiserver" json:"legacy_apiserver"`
+	Hub             mqtt.ClientInfo `yaml:"hub" json:"hub"`
+}
 
-	err := utils.LoadYAML(DefaultConfFile, &cfg)
-	if err != nil && !os.IsNotExist(err) {
-		fmt.Fprintf(os.Stderr, "[%s][%s] failed to load config: %s\n", sn, in, err.Error())
+type ctximpl struct {
+	done chan struct{}
+	err  error
+	cfg  injectConfig
+	log  logger.Logger
+	tls  *tls.Config
+	m    http.Client
+}
+
+func newContext() (*ctximpl, error) {
+	ctx := &ctximpl{
+		done: make(chan struct{}),
 	}
-	log := logger.InitLogger(cfg.Logger, "service", sn, "instance", in)
-	cli, err := NewEnvClient()
+	err := utils.LoadYAML(configPath, &ctx.cfg)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "[%s][%s] failed to create master client: %s\n", sn, in, err.Error())
-		log.WithError(err).Errorf("failed to create master client")
+		fmt.Fprintf(os.Stderr, "failed to load config: %s\n", err.Error())
+		return nil, err
 	}
-	return &ctx{
-		sn:     sn,
-		in:     in,
-		md:     md,
-		cfg:    cfg,
-		log:    log,
-		Client: cli,
-	}, nil
+	ctx.log = logger.InitLogger(ctx.cfg.Logger)
+
+	d := filepath.Dir(configPath)
+	cpath := ctx.cfg.Certificate
+	if !filepath.IsAbs(cpath) {
+		cpath = filepath.Join(d, cpath)
+	}
+	data, err := ioutil.ReadFile(cpath)
+	if err != nil {
+		return nil, err
+	}
+	var block *pem.Block
+	block, data = pem.Decode(data)
+	certPEM := pem.EncodeToMemory(block)
+	block, data = pem.Decode(data)
+	keyPEM := pem.EncodeToMemory(block)
+	cert, err := tls.X509KeyPair(certPEM, keyPEM)
+	if err != nil {
+		return nil, err
+	}
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(data) {
+		ctx.log.Errorf("append X.509 CA fail: %s", err.Error())
+		return nil, errors.New("append CA fail")
+	}
+	ctx.tls = &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      certPool,
+	}
+	return ctx, nil
 }
 
-func (c *ctx) NewHubClient(cid string, subs []mqtt.TopicInfo) (*mqtt.Dispatcher, error) {
+func (c *ctximpl) Deadline() (deadline time.Time, ok bool) {
+	ok = false
+	return
+}
+
+func (c *ctximpl) Done() <-chan struct{} {
+	return c.done
+}
+
+func (c *ctximpl) Err() error {
+	return c.err
+}
+
+func (c *ctximpl) Value(key interface{}) interface{} {
+	return nil
+}
+
+func (c *ctximpl) NewHubClient(cid string, subs []mqtt.TopicInfo) (*mqtt.Dispatcher, error) {
 	if c.cfg.Hub.Address == "" {
 		return nil, fmt.Errorf("hub not configured")
 	}
@@ -227,34 +156,18 @@ func (c *ctx) NewHubClient(cid string, subs []mqtt.TopicInfo) (*mqtt.Dispatcher,
 	return mqtt.NewDispatcher(cc, c.log.WithField("cid", cid)), nil
 }
 
-func (c *ctx) LoadConfig(cfg interface{}) error {
-	return utils.LoadYAML(DefaultConfFile, cfg)
+func (c *ctximpl) LoadConfig(path string, cfg interface{}) error {
+	return utils.LoadYAML(path, cfg)
 }
 
-func (c *ctx) Config() *ServiceConfig {
-	return &c.cfg
-}
-
-func (c *ctx) Log() logger.Logger {
+func (c *ctximpl) Log() logger.Logger {
 	return c.log
 }
 
-func (c *ctx) Wait() {
-	<-c.WaitChan()
-	c.Close()
-}
-
-func (c *ctx) IsNative() bool {
-	return c.md == ModeNative
-}
-
-func (c *ctx) WaitChan() <-chan os.Signal {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
-	signal.Ignore(syscall.SIGPIPE)
-	return sig
-}
-
-func (c *ctx) ReportInstance(stats map[string]interface{}) error {
-	return c.Client.ReportInstance(c.sn, c.in, stats)
+func (c *ctximpl) cancel() {
+	if c.err != nil {
+		return
+	}
+	c.err = context.Canceled
+	c.done <- struct{}{}
 }

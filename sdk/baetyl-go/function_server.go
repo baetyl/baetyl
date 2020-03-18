@@ -1,9 +1,11 @@
 package baetyl
 
+/*
 import (
 	fmt "fmt"
 	"net"
 
+	define "github.com/baetyl/baetyl"
 	"github.com/baetyl/baetyl/utils"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
@@ -17,13 +19,13 @@ type Call func(context.Context, *FunctionMessage) (*FunctionMessage, error)
 // FServer functions server to handle message
 type FServer struct {
 	addr string
-	cfg  FunctionServerConfig
+	cfg  define.FunctionServerConfig
 	svr  *grpc.Server
 	call Call
 }
 
 // NewFServer creates a new functions server
-func NewFServer(c FunctionServerConfig, call Call) (*FServer, error) {
+func NewFServer(c define.FunctionServerConfig, call Call) (*FServer, error) {
 	lis, err := net.Listen("tcp", c.Address)
 	if err != nil {
 		return nil, err
@@ -63,3 +65,4 @@ func (s *FServer) Close() {
 		s.svr.GracefulStop()
 	}
 }
+*/

@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"crypto/tls"
 	"net/url"
 
 	"github.com/256dpi/gomqtt/transport"
@@ -14,12 +15,20 @@ type Dialer struct {
 
 // NewDialer returns a new Dialer.
 func NewDialer(c utils.Certificate) (*Dialer, error) {
-	tls, err := utils.NewTLSClientConfig(c)
-	if err != nil {
-		return nil, err
+	return NewDialer2(nil, c)
+}
+
+// NewDialer2 returns a new Dialer.
+func NewDialer2(c *tls.Config, c2 utils.Certificate) (*Dialer, error) {
+	if c == nil {
+		var err error
+		c, err = utils.NewTLSClientConfig(c2)
+		if err != nil {
+			return nil, err
+		}
 	}
 	d := &Dialer{Dialer: transport.NewDialer()}
-	d.TLSConfig = tls
+	d.TLSConfig = c
 	return d, nil
 }
 

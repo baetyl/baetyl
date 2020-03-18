@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"crypto/tls"
 	"time"
 
 	"github.com/baetyl/baetyl/utils"
@@ -17,6 +18,7 @@ type ClientInfo struct {
 	Address           string `yaml:"address" json:"address"`
 	Username          string `yaml:"username" json:"username"`
 	Password          string `yaml:"password" json:"password"`
+	TLSConfig         *tls.Config
 	utils.Certificate `yaml:",inline" json:",inline"`
 	ClientID          string        `yaml:"clientid" json:"clientid"`
 	CleanSession      bool          `yaml:"cleansession" json:"cleansession"`

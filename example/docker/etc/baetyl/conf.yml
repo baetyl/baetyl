@@ -1,4 +1,7 @@
-mode: docker
-logger:
-  path: var/log/baetyl/baetyl.log
-  level: debug
+manage:
+  clientid: f7b80418a24140cfb7768dae3aaa8e89
+  report:
+    interval: 1m
+  desire:
+    address: 'ssl://ec1d522e2d6c4a2a84068fa824ed9d2b.mqtt.iot.gz.baidubce.com:1884'
+    username: ec1d522e2d6c4a2a84068fa824ed9d2b/f7b80418a24140cfb7768dae3aaa8e89

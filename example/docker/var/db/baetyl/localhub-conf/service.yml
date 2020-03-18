@@ -2,9 +2,9 @@ listen:
   - tcp://0.0.0.0:1883
   - ssl://0.0.0.0:8883
 certificate:
-  ca: var/db/baetyl/cert/ca.pem
-  cert: var/db/baetyl/cert/server.pem
-  key: var/db/baetyl/cert/server.key
+  ca: C:\ProgramData\baetyl\cert\ca.pem
+  cert: C:\ProgramData\baetyl\cert\server.pem
+  key: C:\ProgramData\baetyl\cert\server.key
 principals:
   - username: two-way-tls
     permissions:
@@ -25,5 +25,5 @@ subscriptions:
     target:
       topic: 't/topic'
 logger:
-  path: var/log/baetyl/service.log
+  path: C:\ProgramData\baetyl\log\service.log
   level: "debug"
