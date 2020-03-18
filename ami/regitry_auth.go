@@ -1,4 +1,4 @@
-package omi
+package ami
 
 import (
 	"context"

@@ -3,6 +3,7 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-go/link"
 	"os"
 	"path"
 	"strings"
@@ -14,46 +15,17 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 )
 
-func (s *sync) processing() error {
-	for {
-		select {
-		case e := <-s.events:
-			s.processDelta(e)
-		case <-s.tomb.Dying():
-			return nil
-		}
-	}
-}
-
-func (s *sync) processDelta(e *Event) {
-	s.log.Info("process ota", log.Any("type", e.Type), log.Any("trace", e.Trace))
-	content, ok := e.Content.(map[string]interface{})
-	if !ok {
-		s.log.Error("format error")
-		return
-	}
-	apps, ok := content["apps"]
-	if !ok || apps == nil {
-		s.log.Error("apps info does not exist")
-		return
-	}
-	appInfo := map[string]string{}
-	aMap, ok := apps.(map[string]interface{})
-	if !ok {
-		s.log.Error("format error")
-		return
-	}
-	for name, ver := range aMap {
-		appInfo[name] = ver.(string)
-	}
-	err := s.ProcessResource(appInfo)
+func (s *sync) ProcessDelta(msg link.Message) error {
+	var delta map[string]interface{}
+	err := json.Unmarshal(msg.Content, &delta)
 	if err != nil {
-		s.log.Warn("failed to process ota event", log.Error(err))
+		return err
 	}
-}
-
-func (s *sync) ProcessResource(appInfo map[string]string) error {
-	bs, err := s.generateRequest(common.Application, appInfo)
+	info, ok := delta[common.DefaultAppsKey].(map[string]string)
+	if !ok {
+		return fmt.Errorf("apps does not exist")
+	}
+	bs, err := s.generateRequest(common.Application, info)
 	if err != nil {
 		return err
 	}
@@ -74,7 +46,6 @@ func (s *sync) ProcessResource(appInfo map[string]string) error {
 			}
 		}
 	}
-
 	reqs, err := s.generateRequest(common.Configuration, cMap)
 	if err != nil {
 		return err
@@ -91,7 +62,6 @@ func (s *sync) ProcessResource(appInfo map[string]string) error {
 		}
 		configs[cfg.Name] = cfg
 	}
-
 	for _, app := range apps {
 		err := s.ProcessApplication(app)
 		if err != nil {
@@ -102,7 +72,6 @@ func (s *sync) ProcessResource(appInfo map[string]string) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
