@@ -30,12 +30,11 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 
 	if cfg.Node.Name == "" {
-		i, err := initialize.NewInit(cfg)
+		i, err := initialize.NewInit(&cfg)
 		if err != nil {
 			i.Close()
 			return nil, err
 		}
-		i.Start()
 		i.WaitAndClose()
 	}
 

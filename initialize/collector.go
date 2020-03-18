@@ -3,9 +3,12 @@ package initialize
 import (
 	"github.com/baetyl/baetyl-core/common"
 	"io/ioutil"
-	"os"
 	"path"
 	"strings"
+)
+
+const (
+	DefaultSNPath = "var/lib/baetyl/sn"
 )
 
 func (init *initialize) collect() (string, error) {
@@ -20,13 +23,13 @@ func (init *initialize) collect() (string, error) {
 				return init.attrs[f.Value], nil
 			}
 		case common.SN:
-			snByte, err := ioutil.ReadFile(path.Join(common.DefaultSNPath, f.Value))
+			snByte, err := ioutil.ReadFile(path.Join(DefaultSNPath, f.Value))
 			if err != nil {
 				return "", err
 			}
 			return strings.TrimSpace(string(snByte)), nil
 		case common.HostName:
-			return os.Getenv(common.KeyHostName), nil
+			// todo get hostname
 		case common.MachineID:
 			// todo get MachineID
 		case common.SystemUUID:

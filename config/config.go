@@ -17,7 +17,7 @@ type Config struct {
 	Engine EngineConfig `yaml:"engine" json:"engine"`
 	Sync   SyncConfig   `yaml:"sync" json:"sync"`
 	Store  StoreConfig  `yaml:"store" json:"store"`
-	Init   InitConfig   `yaml:"initialize" json:"initialize"`
+	Init   InitConfig   `yaml:"init" json:"init"`
 	Logger log.Config   `yaml:"logger" json:"logger"`
 }
 
@@ -60,7 +60,7 @@ type InitConfig struct {
 		Namespace    string `json:"namespace,omitempty"`
 		SecurityType string `json:"securityType,omitempty"`
 		SecurityKey  string `json:"securityKey,omitempty"`
-	} `yaml:"node" json:"node"`
+	} `yaml:"batch" json:"batch"`
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Active struct {
@@ -75,7 +75,7 @@ type InitConfig struct {
 		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
 		Server       Server        `yaml:"server" json:"server"`
-	} `yaml:"activateConfig" json:"activateConfig"`
+	} `yaml:"active" json:"active"`
 }
 
 // Server manually activated server configuration

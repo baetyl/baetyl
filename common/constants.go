@@ -18,26 +18,9 @@ const (
 	MachineID  Proof = "machineID"
 	SystemUUID Proof = "systemUUID"
 
-	DefaultSNPath = "var/lib/baetyl/sn"
-	KeyHostName   = "NODE_NAME"
-
-	KeyActivateDataBatchName        = "batchName"
-	KeyActivateDataBatchNamespace   = "batchNamespace"
-	KeyActivateDataSecurityType     = "securityType"
-	KeyActivateDataSecurityKey      = "securityKey"
-	KeyActivateDataFingerprintValue = "fingerprintValue"
-	KeyActivateResNodeName          = "nodeName"
-	KeyActivateResNodeNamespace     = "namespace"
-	KeyActivateResCA                = "ca"
-	KeyActivateResCert              = "cert"
-	KeyActivateResKey               = "key"
-	KeyActivateResName              = "name"
-
-	NodeName       = "BAETYL_NODE_NAME"
-	NodeNamespace  = "BAETYL_NODE_NAMESPACE"
-	BatchName      = "BAETYL_BATCH_NAME"
-	BatchNamespace = "BAETYL_BATCH_NAMESPACE"
-	NodeID         = "BAETYL_NODE_ID"
+	NodeName      = "BAETYL_NODE_NAME"
+	NodeNamespace = "BAETYL_NODE_NAMESPACE"
+	NodeID        = "BAETYL_NODE_ID"
 
 	// HeaderKeyNodeNamespace header key of node namespace
 	HeaderKeyNodeNamespace = "node-namespace"

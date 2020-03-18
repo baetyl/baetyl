@@ -4,19 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	gohttp "net/http"
 	"time"
 )
-
-type Event struct {
-	Content interface{}
-	Trace   string
-	Type    string
-}
 
 func (init *initialize) activating() error {
 	init.Activate()
@@ -35,22 +27,18 @@ func (init *initialize) activating() error {
 // Report reports info
 func (init *initialize) Activate() {
 	info := ForwardInfo{
-		Status: baetyl.Inspect{
-			Time: time.Now(),
-		},
-		Data: map[string]string{
-			common.KeyActivateDataBatchName:      init.batch.Name,
-			common.KeyActivateDataBatchNamespace: init.batch.Namespace,
-			common.KeyActivateDataSecurityType:   init.batch.SecurityType,
-			common.KeyActivateDataSecurityKey:    init.batch.SecurityKey,
-		},
+		BatchName:     init.batch.name,
+		Namespace:     init.batch.namespace,
+		SecurityType:  init.batch.securityType,
+		SecurityValue: init.batch.securityKey,
+		PenetrateData: init.attrs,
 	}
 	fv, err := init.collect()
 	if err != nil {
 		init.log.Error("failed to get fingerprint value", log.Error(err))
 		return
 	}
-	info.Data[common.KeyActivateDataFingerprintValue] = fv
+	info.FingerprintValue = fv
 	data, err := json.Marshal(info)
 	if err != nil {
 		init.log.Error("failed to marshal activate info", log.Error(err))
@@ -75,12 +63,12 @@ func (init *initialize) Activate() {
 		return
 	}
 
-	init.cfg.Node.Name = res.Data[common.KeyActivateResNodeName]
-	init.cfg.Node.Namespace = res.Data[common.KeyActivateResNodeNamespace]
-	init.cfg.Sync.Cloud.HTTP.CA = res.Data[common.KeyActivateResCA]
-	init.cfg.Sync.Cloud.HTTP.Cert = res.Data[common.KeyActivateResCert]
-	init.cfg.Sync.Cloud.HTTP.Key = res.Data[common.KeyActivateResKey]
-	init.cfg.Sync.Cloud.HTTP.Name = res.Data[common.KeyActivateResName]
+	init.cfg.Node.Name = res.NodeName
+	init.cfg.Node.Namespace = res.Namespace
+	init.cfg.Sync.Cloud.HTTP.CA = res.Cert.CA
+	init.cfg.Sync.Cloud.HTTP.Cert = res.Cert.Cert
+	init.cfg.Sync.Cloud.HTTP.Key = res.Cert.Key
+	init.cfg.Sync.Cloud.HTTP.Name = res.Cert.Name
 
 	init.sig <- true
 }
