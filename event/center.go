@@ -26,14 +26,14 @@ type Center struct {
 }
 
 // NewCenter create a new persistent center
-func NewCenter(store *bh.Store, handlers map[string]Handler, limit int) (*Center, error) {
-	if store == nil || len(handlers) == 0 || limit < 1 {
+func NewCenter(store *bh.Store, limit int) (*Center, error) {
+	if store == nil || limit < 1 {
 		return nil, os.ErrInvalid
 	}
 	c := &Center{
 		store:    store,
 		limit:    limit,
-		handlers: handlers,
+		handlers: map[string]Handler{},
 		signal:   make(chan struct{}, 1),
 		logger:   log.With(log.Any("event", "center")),
 	}
@@ -51,8 +51,22 @@ func NewCenter(store *bh.Store, handlers map[string]Handler, limit int) (*Center
 	}
 	c.last = last.Context.ID
 	c.Trigger(nil)
-	c.tomb.Go(c.handling)
+
 	return c, nil
+}
+
+// Register register the event handler
+func (c *Center) Register(topic string, handler Handler) error {
+	if topic == "" || handler == nil {
+		return os.ErrInvalid
+	}
+	c.handlers[topic] = handler
+	return nil
+}
+
+// Start start the event center
+func (c *Center) Start() {
+	c.tomb.Go(c.handling)
 }
 
 // Close close the event handling center

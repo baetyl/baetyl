@@ -2,11 +2,13 @@ package engine
 
 import (
 	"encoding/json"
+	"github.com/baetyl/baetyl-core/ami"
+	"github.com/baetyl/baetyl-core/common"
+	"github.com/baetyl/baetyl-core/event"
 	"os"
 	"time"
 
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/omi"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
@@ -15,22 +17,26 @@ import (
 )
 
 type Engine struct {
+	sha   *shadow.Shadow
+	cent  *event.Center
 	cfg   config.EngineConfig
-	model omi.Model
+	model ami.Model
 	tomb  utils.Tomb
 	log   *log.Logger
 }
 
-func NewEngine(cfg config.EngineConfig, sto *bh.Store, sha *shadow.Shadow) (*Engine, error) {
+func NewEngine(cfg config.EngineConfig, sto *bh.Store, sha *shadow.Shadow, cent *event.Center) (*Engine, error) {
 	if cfg.Kind != "kubernetes" {
 		return nil, os.ErrInvalid
 	}
 	e := &Engine{
-		cfg: cfg,
-		log: log.With(log.Any("engine", cfg.Kind)),
+		sha:  sha,
+		cent: cent,
+		cfg:  cfg,
+		log:  log.With(log.Any("engine", cfg.Kind)),
 	}
 	var err error
-	e.model, err = omi.NewKubeModel(cfg.Kubernetes, sto, sha)
+	e.model, err = ami.NewKubeModel(cfg.Kubernetes, sto, sha)
 	if err != nil {
 		return nil, err
 	}
@@ -44,13 +50,31 @@ func (e *Engine) collecting() error {
 	for {
 		select {
 		case <-t.C:
-			res, err := e.model.CollectInfo(map[string]string{})
+			info, err := e.model.CollectInfo()
 			if err != nil {
 				e.log.Error("failed to collect info", log.Error(err))
+				continue
 			}
-			err = e.updateShadowReport(res)
+			delta, err := e.sha.Report(info)
 			if err != nil {
 				e.log.Error("failed to update shadow report", log.Error(err))
+				continue
+			}
+			content, err := json.Marshal(info)
+			if err != nil {
+				e.log.Error("failed to marshal delta", log.Error(err))
+				continue
+			}
+			msg := &link.Message{Content: content}
+			if delta != nil {
+				msg.Context.Topic = common.SyncDesireEvent
+			} else {
+				msg.Context.Topic = common.SyncReportEvent
+			}
+			err = e.cent.Trigger(msg)
+			if err != nil {
+				e.log.Error("failed to trigger event", log.Error(err))
+				continue
 			}
 		case <-e.tomb.Dying():
 			return nil
@@ -63,12 +87,7 @@ func (e *Engine) Close() {
 	e.tomb.Wait()
 }
 
-func (e *Engine) updateShadowReport(res interface{}) error {
-	// TODO update shadow report
-	return nil
-}
-
-func (e *Engine) Handler(msg link.Message) error {
+func (e *Engine) Apply(msg link.Message) error {
 	var apps map[string]string
 	err := json.Unmarshal(msg.Content, &apps)
 	if err != nil {

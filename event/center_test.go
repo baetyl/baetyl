@@ -21,16 +21,16 @@ func TestCenter(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	handlers := map[string]Handler{
-		t.Name(): func(e link.Message) error {
-			fmt.Println("-->1 handling", e.String())
-			return os.ErrInvalid
-		},
-	}
-
-	c, err := NewCenter(s, handlers, 2)
+	c, err := NewCenter(s, 2)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
+
+	err = c.Register(t.Name(), func(e link.Message) error {
+		fmt.Println("-->1 handling", e.String())
+		return os.ErrInvalid
+	})
+	assert.NoError(t, err)
+	c.Start()
 
 	var e1 link.Message
 	e1.Context.Topic = t.Name()
@@ -43,19 +43,19 @@ func TestCenter(t *testing.T) {
 	err = c.Close()
 	assert.NoError(t, err)
 
-	events := make(chan link.Message, 2)
-	handlers = map[string]Handler{
-		t.Name(): func(e link.Message) error {
-			fmt.Println("-->2 handling", e.String())
-			events <- e
-			return nil
-		},
-	}
-
-	c, err = NewCenter(s, handlers, 2)
+	c, err = NewCenter(s, 2)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	defer c.Close()
+
+	events := make(chan link.Message, 2)
+	err = c.Register(t.Name(), func(e link.Message) error {
+		fmt.Println("-->2 handling", e.String())
+		events <- e
+		return nil
+	})
+	assert.NoError(t, err)
+	c.Start()
 
 	e2 := <-events
 	assert.Equal(t, uint64(1), e2.Context.ID)
@@ -97,28 +97,31 @@ func TestCenterException(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	handlers := map[string]Handler{
-		t.Name(): func(e link.Message) error {
-			fmt.Println("-->handling", e.String())
-			return os.ErrInvalid
-		},
+	handler := func(e link.Message) error {
+		fmt.Println("-->handling", e.String())
+		return os.ErrInvalid
 	}
 
-	c, err := NewCenter(nil, handlers, 2)
+	c, err := NewCenter(nil, 2)
 	assert.Equal(t, os.ErrInvalid, err)
 	assert.Nil(t, c)
 
-	c, err = NewCenter(s, nil, 2)
+	c, err = NewCenter(s, 0)
 	assert.Equal(t, os.ErrInvalid, err)
 	assert.Nil(t, c)
 
-	c, err = NewCenter(s, handlers, 0)
-	assert.Equal(t, os.ErrInvalid, err)
-	assert.Nil(t, c)
-
-	c, err = NewCenter(s, handlers, 2)
+	c, err = NewCenter(s, 2)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
+
+	err = c.Register("", handler)
+	assert.Equal(t, os.ErrInvalid, err)
+
+	err = c.Register("2", nil)
+	assert.Equal(t, os.ErrInvalid, err)
+
+	err = c.Register("2", handler)
+	assert.NoError(t, err)
 
 	var e1 link.Message
 	err = c.Trigger(&e1)

@@ -4,86 +4,50 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	gohttp "net/http"
-	"time"
-
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
+	gohttp "net/http"
 )
 
-type Event struct {
-	Content interface{}
-	Trace   string
-	Type    string
-}
-
-func (s *sync) reporting() error {
-	s.Report()
-	t := time.NewTicker(s.cfg.Cloud.Report.Interval)
-	defer t.Stop()
-	for {
-		select {
-		case <-t.C:
-			s.Report()
-		case <-s.tomb.Dying():
-			return nil
-		}
-	}
-}
-
 // Report reports info
-func (s *sync) Report() {
-	var apps AppsVersionResource
-	err := s.store.Get(common.DefaultAppsKey, &apps)
-	if err != nil {
-		s.log.Error("failed to get local apps info", log.Error(err))
-		return
-	}
-	info := ForwardInfo{
-		Apps: apps.Value,
-		Status: baetyl.Inspect{
-			Time: time.Now(),
-		},
-	}
-	data, err := json.Marshal(info)
-	if err != nil {
-		s.log.Error("failed to marshal report info", log.Error(err))
-		return
-	}
-
-	resp, err := s.sendRequest("POST", s.cfg.Cloud.Report.URL, data)
+func (s *sync) Report(msg link.Message) error {
+	resp, err := s.sendRequest("POST", s.cfg.Cloud.Report.URL, msg.Content)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
-		return
+		return err
 	}
-	data, err = http.HandleResponse(resp)
+	data, err := http.HandleResponse(resp)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
-		return
+		return err
 	}
-
 	var res BackwardInfo
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		s.log.Error("error to unmarshal response data returned", log.Error(err))
-		return
+		return err
 	}
 	if res.Delta != nil {
-		e := &Event{
-			Trace: res.Metadata["trace"].(string),
-			Type:  res.Metadata["type"].(string),
+		content, err := json.Marshal(res.Delta)
+		if err != nil {
+			return err
 		}
-		e.Content = res.Delta
-		select {
-		case oe := <-s.events:
-			s.log.Warn("discard old event", log.Any("event", *oe))
-			s.events <- e
-		case s.events <- e:
-		case <-s.tomb.Dying():
+		_, err = s.shadow.Desire(res.Delta)
+		if err != nil {
+			return err
+		}
+		msg := &link.Message{
+			Context: link.Context{Topic: common.EngineAppEvent},
+			Content: content,
+		}
+		err = s.cent.Trigger(msg)
+		if err != nil {
+			return err
 		}
 	}
+	return nil
 }
 
 func (s *sync) sendRequest(method, path string, body []byte) (*gohttp.Response, error) {

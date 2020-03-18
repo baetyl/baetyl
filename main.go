@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
+	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-core/init"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-core/store"
@@ -12,11 +14,12 @@ import (
 )
 
 type core struct {
-	cfg config.Config
-	sto *bh.Store
-	sha *shadow.Shadow
-	eng *engine.Engine
-	syn sync.Sync
+	cfg  config.Config
+	sto  *bh.Store
+	cent *event.Center
+	sha  *shadow.Shadow
+	eng  *engine.Engine
+	syn  sync.Sync
 }
 
 func NewCore(ctx context.Context) (*core, error) {
@@ -45,16 +48,36 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha)
+	c.cent, err = event.NewCenter(c.sto, common.EventCenterLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.cent)
 	if err != nil {
 		c.Close()
 		return nil, err
 	}
-	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
+	err = c.cent.Register(common.EngineAppEvent, c.eng.Apply)
+	if err != nil {
+		return nil, err
+	}
+
+	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha, c.cent)
 	if err != nil {
 		c.Close()
 		return nil, err
 	}
+	err = c.cent.Register(common.SyncReportEvent, c.syn.Report)
+	if err != nil {
+		return nil, err
+	}
+	err = c.cent.Register(common.SyncDesireEvent, c.syn.ProcessDelta)
+	if err != nil {
+		return nil, err
+	}
+
+	c.cent.Start()
 	return c, nil
 }
 
@@ -67,6 +90,9 @@ func (c *core) Close() {
 	}
 	if c.sto != nil {
 		c.sto.Close()
+	}
+	if c.cent != nil {
+		c.cent.Close()
 	}
 }
 

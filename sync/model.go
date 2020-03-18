@@ -19,11 +19,6 @@ type ForwardInfo struct {
 	Status   baetyl.Inspect    `yaml:"status" json:"status"`
 }
 
-type AppsVersionResource struct {
-	Name  string            `yaml:"name" json:"name"`
-	Value map[string]string `yaml:"value" json:"value"`
-}
-
 type ApplicationResource struct {
 	Type    string             `yaml:"type" json:"type"`
 	Name    string             `yaml:"name" json:"name"`

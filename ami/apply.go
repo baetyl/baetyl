@@ -1,134 +1,17 @@
-package omi
+package ami
 
 import (
-	"time"
-
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/models"
-	"github.com/baetyl/baetyl-core/shadow"
-	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-core/utils"
 	"github.com/jinzhu/copier"
-	bh "github.com/timshannon/bolthold"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/tools/reference"
-	"k8s.io/kubectl/pkg/scheme"
 )
 
-type kubeModel struct {
-	cli      *Client
-	store    *bh.Store
-	shadow   *shadow.Shadow
-	nodeName string
-}
-
-// TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
-func NewKubeModel(cfg config.KubernetesConfig, sto *bh.Store, sha *shadow.Shadow) (Model, error) {
-	cli, err := NewClient(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return &kubeModel{cli: cli, store: sto, shadow: sha}, nil
-}
-
-func (k *kubeModel) CollectInfo(apps map[string]string) (map[string]interface{}, error) {
-	nodeInfo, err := k.collectNodeInfo()
-	if err != nil {
-		return nil, err
-	}
-	appStatus, err := k.collectAppStatus(apps)
-	if err != nil {
-		return nil, err
-	}
-
-	info := map[string]interface{}{
-		"time": time.Now(),
-		"node": nodeInfo,
-		"apps": appStatus,
-	}
-	return info, nil
-}
-
-func (k *kubeModel) collectNodeInfo() (*models.NodeInfo, error) {
-	node, err := k.cli.Core.Nodes().Get(k.nodeName, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	ni := node.Status.NodeInfo
-	nodeInfo := &models.NodeInfo{
-		Arch:             ni.Architecture,
-		KernelVersion:    ni.KernelVersion,
-		OS:               ni.OperatingSystem,
-		ContainerRuntime: ni.ContainerRuntimeVersion,
-		MachineID:        ni.MachineID,
-		OSImage:          ni.OSImage,
-	}
-
-	for _, addr := range node.Status.Addresses {
-		if addr.Type == v1.NodeInternalIP {
-			nodeInfo.Address = addr.Address
-		} else if addr.Type == v1.NodeHostName {
-			nodeInfo.Hostname = addr.Address
-		}
-	}
-	for res, quantity := range node.Status.Capacity {
-		nodeInfo.Capacity[string(res)] = models.ResourceInfo{
-			Name:  string(res),
-			Value: quantity.String(),
-		}
-	}
-	return nodeInfo, nil
-}
-
-func (k *kubeModel) collectAppStatus(apps map[string]string) (map[string]*models.AppStatus, error) {
-	res := map[string]*models.AppStatus{}
-	for name, ver := range apps {
-		status := &models.AppStatus{
-			Name:    name,
-			Version: ver,
-		}
-		deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(name, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		ref, err := reference.GetReference(scheme.Scheme, deploy)
-		events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
-		for _, e := range events.Items {
-			if e.Type == "Warning" {
-				status.Cause += e.Message + "\n"
-			}
-		}
-		status.ServiceInfos = map[string]models.ServiceInfo{}
-		status.VolumeInfos = map[string]models.VolumeInfo{}
-		res[name] = status
-	}
-	return res, nil
-}
-
-func (k *kubeModel) collectService(name string) (*models.ServiceInfo, error) {
-	return nil, nil
-}
-
-func (k *kubeModel) collectVolumeInfo(name string) (*models.VolumeInfo, error) {
-	return nil, nil
-}
-
-func (k *kubeModel) ApplyApplications(info map[string]string) error {
-	// TODO: move to engine and register $engine/app event
-	var apps sync.AppsVersionResource
-	err := k.store.Get(common.DefaultAppsKey, &apps)
-	if err != nil {
-		return err
-	}
-	// TODO: why to get here, then to update in update.go?
-	return k.UpdateApp(apps.Value)
-}
-
-func (k *kubeModel) UpdateApp(apps map[string]string) error {
+func (k *kubeModel) ApplyApplications(apps map[string]string) error {
 	deploys := map[string]*appv1.Deployment{}
 	var services []*v1.Service
 	configs := map[string]*v1.ConfigMap{}
@@ -208,7 +91,7 @@ func (k *kubeModel) UpdateApp(apps map[string]string) error {
 	}
 
 	return k.store.Upsert(common.DefaultAppsKey,
-		sync.AppsVersionResource{Name: common.DefaultAppsKey, Value: apps})
+		models.AppsVersionResource{Name: common.DefaultAppsKey, Value: apps})
 }
 
 func toConfigMap(config *models.Configuration) (*v1.ConfigMap, error) {

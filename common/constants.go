@@ -48,9 +48,11 @@ const (
 	DefaultNamespace   = "default"
 	ZipCompression     = "zip"
 
-	InternalEventTopic = "mqtt/event"
-
 	DefaultAppsKey = "apps"
 
-	APPVersionMapping = "app/mapping"
+	SyncDesireEvent = "sync/desire"
+	SyncReportEvent = "sync/report"
+	EngineAppEvent  = "engine/app"
+
+	EventCenterLimit = 20
 )
