@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
+	"github.com/baetyl/baetyl-core/init"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
@@ -24,6 +25,16 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if cfg.Node.Name == "" {
+		i, err := init.NewInit(cfg)
+		if err != nil {
+			i.Close()
+			return nil, err
+		}
+
+	}
+
 	c := &core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {

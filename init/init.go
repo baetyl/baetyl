@@ -2,12 +2,9 @@ package init
 
 import (
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
-	bh "github.com/timshannon/bolthold"
-	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
 
 //go:generate mockgen -destination=../mock/init.go -package=mock github.com/baetyl/baetyl-core/init Init
@@ -23,41 +20,38 @@ type Init interface {
 	Start()
 	Close()
 	Activate()
+	WaitAndClose()
 }
 
-func NewInit(cfg config.Config, sto *bh.Store, sha *shadow.Shadow) (Init, error) {
+func NewInit(cfg config.Config) (Init, error) {
 	httpOps, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
 	httpCli := http.NewClient(*httpOps)
 	init := &initialize{
-		cfg:    cfg,
-		store:  sto,
-		shadow: sha,
-		events: make(chan *Event, 1),
-		http:   httpCli,
-		log:    log.With(log.Any("core", "init")),
+		cfg:  cfg,
+		http: httpCli,
+		sig:  make(chan bool, 1),
+		log:  log.With(log.Any("core", "init")),
 	}
 	init.batch = &batch{
-		Name:         cfg.Batch.Name,
-		Namespace:    cfg.Batch.Namespace,
-		SecurityType: cfg.Batch.SecurityType,
-		SecurityKey:  cfg.Batch.SecurityKey,
+		Name:         cfg.Init.Batch.Name,
+		Namespace:    cfg.Init.Batch.Namespace,
+		SecurityType: cfg.Init.Batch.SecurityType,
+		SecurityKey:  cfg.Init.Batch.SecurityKey,
 	}
 	return init, nil
 }
 
 type initialize struct {
-	log    *log.Logger
-	cfg    config.Config
-	tomb   utils.Tomb
-	impl   appv1.DeploymentInterface
-	events chan *Event
-	http   *http.Client
-	batch  *batch
-	store  *bh.Store
-	shadow *shadow.Shadow
+	log   *log.Logger
+	cfg   config.Config
+	tomb  utils.Tomb
+	http  *http.Client
+	batch *batch
+	attrs map[string]string
+	sig   chan bool
 }
 
 func (init *initialize) Start() {
@@ -71,4 +65,11 @@ func (init *initialize) Start() {
 func (init *initialize) Close() {
 	init.tomb.Kill(nil)
 	init.tomb.Wait()
+}
+
+func (init *initialize) WaitAndClose() {
+	if _, ok := <-init.sig; !ok {
+		init.log.Error("init get sig error")
+	}
+	init.Close()
 }

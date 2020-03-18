@@ -1,9 +1,10 @@
 package init
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -33,68 +34,66 @@ func (init *initialize) activating() error {
 
 // Report reports info
 func (init *initialize) Activate() {
-	info := sync.ForwardInfo{
+	info := ForwardInfo{
 		Status: baetyl.Inspect{
 			Time: time.Now(),
 		},
+		Data: map[string]string{
+			common.KeyActivateDataBatchName:      init.batch.Name,
+			common.KeyActivateDataBatchNamespace: init.batch.Namespace,
+			common.KeyActivateDataSecurityType:   init.batch.SecurityType,
+			common.KeyActivateDataSecurityKey:    init.batch.SecurityKey,
+		},
 	}
+	fv, err := init.collect()
+	if err != nil {
+		init.log.Error("failed to get fingerprint value", log.Error(err))
+		return
+	}
+	info.Data[common.KeyActivateDataFingerprintValue] = fv
 	data, err := json.Marshal(info)
 	if err != nil {
-		init.log.Error("failed to marshal report info", log.Error(err))
+		init.log.Error("failed to marshal activate info", log.Error(err))
 		return
 	}
 
-	resp, err := init.sendRequest("POST", init.cfg.Cloud.Report.URL, data)
+	resp, err := init.sendRequest("POST", init.cfg.Init.Cloud.Active.URL, data)
 	if err != nil {
-		init.log.Error("failed to send report data", log.Error(err))
+		init.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
 	data, err = http.HandleResponse(resp)
 	if err != nil {
-		init.log.Error("failed to send report data", log.Error(err))
+		init.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
 
 	var res BackwardInfo
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		init.log.Error("error to unmarshal response data returned", log.Error(err))
+		init.log.Error("error to unmarshal activate response data returned", log.Error(err))
 		return
 	}
-	if reinit.Delta != nil {
-		e := &Event{
-			Trace: reinit.Metadata["trace"].(string),
-			Type:  reinit.Metadata["type"].(string),
-		}
-		e.Content = reinit.Delta
-		select {
-		case oe := <-init.events:
-			init.log.Warn("discard old event", log.Any("event", *oe))
-			init.events <- e
-		case init.events <- e:
-		case <-init.tomb.Dying():
-		}
-	}
+
+	init.cfg.Node.Name = res.Data[common.KeyActivateResNodeName]
+	init.cfg.Node.Namespace = res.Data[common.KeyActivateResNodeNamespace]
+	init.cfg.Sync.Cloud.HTTP.CA = res.Data[common.KeyActivateResCA]
+	init.cfg.Sync.Cloud.HTTP.Cert = res.Data[common.KeyActivateResCert]
+	init.cfg.Sync.Cloud.HTTP.Key = res.Data[common.KeyActivateResKey]
+	init.cfg.Sync.Cloud.HTTP.Name = res.Data[common.KeyActivateResName]
+
+	init.sig <- true
 }
 
 func (init *initialize) sendRequest(method, path string, body []byte) (*gohttp.Response, error) {
-	url := fmt.Sprintf("%init%init", init.cfg.Cloud.HTTP.Address, path)
-	r := byteinit.NewReader(body)
+	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, path)
+	r := bytes.NewReader(body)
 	req, err := gohttp.NewRequest(method, url, r)
 	if err != nil {
 		return nil, err
 	}
 	header := map[string]string{
 		"Content-Type": "application/json",
-	}
-	if init.node != nil {
-		// for report
-		header[common.HeaderKeyNodeNamespace] = init.node.Namespace
-		header[common.HeaderKeyNodeName] = init.node.Name
-	} else if init.batch != nil {
-		// for active
-		header[common.HeaderKeyBatchNamespace] = init.batch.Namespace
-		header[common.HeaderKeyBatchName] = init.batch.Name
 	}
 	init.log.Debug("request", log.Any("method", method),
 		log.Any("path", path), log.Any("body", body),

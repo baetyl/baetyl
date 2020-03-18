@@ -10,12 +10,6 @@ import (
 
 // Config the core config
 type Config struct {
-	Batch struct {
-		Name         string `json:"name,omitempty"`
-		Namespace    string `json:"namespace,omitempty"`
-		SecurityType string `json:"securityType,omitempty"`
-		SecurityKey  string `json:"securityKey,omitempty"`
-	} `yaml:"node" json:"node"`
 	Node struct {
 		Name      string `json:"name,omitempty"`
 		Namespace string `json:"namespace,omitempty"`
@@ -61,6 +55,12 @@ type SyncConfig struct {
 }
 
 type InitConfig struct {
+	Batch struct {
+		Name         string `json:"name,omitempty"`
+		Namespace    string `json:"namespace,omitempty"`
+		SecurityType string `json:"securityType,omitempty"`
+		SecurityKey  string `json:"securityKey,omitempty"`
+	} `yaml:"node" json:"node"`
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Active struct {
