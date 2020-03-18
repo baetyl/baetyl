@@ -10,9 +10,12 @@ const (
 	Application   Resource = "application"
 	Configuration Resource = "configuration"
 	Node          Resource = "node"
+	Secret        Resource = "secret"
 
-	HostID Proof = "hostID"
-	CPU    Proof = "cpu"
+	SN        Proof = "sn"
+	Input     Proof = "input"
+	HostName  Proof = "hostName"
+	MachineID Proof = "machineID"
 
 	NodeName       string = "BAETYL_NODE_NAME"
 	NodeNamespace  string = "BAETYL_NODE_NAMESPACE"
