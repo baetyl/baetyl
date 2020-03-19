@@ -3,6 +3,7 @@ package sync
 import (
 	"encoding/json"
 	"errors"
+	"github.com/baetyl/baetyl-go/spec"
 
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/event"
@@ -56,14 +57,13 @@ func (s *Sync) Report(msg faas.Message) error {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err
 	}
-	var res BackwardInfo
-	err = json.Unmarshal(data, &res)
+	var delta spec.Delta
+	err = json.Unmarshal(data, &delta)
 	if err != nil {
-		s.log.Error("error to unmarshal response data returned", log.Error(err))
 		return err
 	}
-	if res.Delta != nil {
-		_, err = s.shad.Desire(res.Delta)
+	if len(delta) > 0 {
+		_, err = s.shad.Desire(spec.Desire(delta))
 		if err != nil {
 			return err
 		}

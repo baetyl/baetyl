@@ -161,7 +161,7 @@ func (s *Sync) generateRequest(resType common.Resource, res map[string]string) (
 	var bs []*BaseResource
 	switch resType {
 	case common.Application:
-		//s.filterApps(res)
+		s.filterApps(res)
 		for n, v := range res {
 			b := &BaseResource{
 				Type:    common.Application,
@@ -174,7 +174,7 @@ func (s *Sync) generateRequest(resType common.Resource, res map[string]string) (
 			bs = append(bs, b)
 		}
 	case common.Configuration:
-		//s.filterConfigs(res)
+		s.filterConfigs(res)
 		for n, v := range res {
 			b := &BaseResource{
 				Type:    common.Configuration,
@@ -189,9 +189,8 @@ func (s *Sync) generateRequest(resType common.Resource, res map[string]string) (
 
 func (s *Sync) filterApps(apps map[string]string) {
 	for name, ver := range apps {
-		key := utils.MakeKey(common.Application, name, ver)
 		var app models.Application
-		err := s.store.Get(key, &app)
+		err := s.store.Get(utils.MakeKey(common.Application, name, ver), &app)
 		if err != nil {
 			s.log.Error("failed to get app", log.Error(err))
 			continue
@@ -204,9 +203,8 @@ func (s *Sync) filterApps(apps map[string]string) {
 
 func (s *Sync) filterConfigs(configs map[string]string) {
 	for name, ver := range configs {
-		key := utils.MakeKey(common.Configuration, name, ver)
 		var config models.Configuration
-		err := s.store.Get(key, &config)
+		err := s.store.Get(utils.MakeKey(common.Configuration, name, ver), &config)
 		if err != nil {
 			s.log.Error("failed to get config", log.Error(err))
 			continue

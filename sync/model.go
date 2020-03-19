@@ -7,16 +7,6 @@ import (
 	"github.com/baetyl/baetyl-core/models"
 )
 
-type BackwardInfo struct {
-	Metadata map[string]interface{} `yaml:"metadata,omitempty" json:"metadata,omitempty"`
-	Delta    map[string]interface{} `yaml:"delta,omitempty" json:"delta,omitempty"`
-}
-
-type ForwardInfo struct {
-	Metadata map[string]string      `yaml:"metadata" json:"metadata" default:"{}"`
-	Apps     map[string]interface{} `yaml:"apps" json:"apps" default:"{}"` // shadow update
-}
-
 type ApplicationResource struct {
 	Type    string             `yaml:"type" json:"type"`
 	Name    string             `yaml:"name" json:"name"`
@@ -37,10 +27,6 @@ type DesireRequest struct {
 
 type DesireResponse struct {
 	Resources []*Resource `yaml:"resources" json:"resources"`
-}
-
-type VolumeDevice struct {
-	DevicePath string `json:"devicePath,omitempty"`
 }
 
 type BaseResource struct {

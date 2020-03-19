@@ -30,7 +30,7 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
-	bi := &BackwardInfo{Delta: map[string]interface{}{"apps": map[string]interface{}{"app1": "123"}}}
+	bi := &spec.Delta{"apps": map[string]interface{}{"app1": "123"}}
 	data, err := json.Marshal(bi)
 	assert.NoError(t, err)
 

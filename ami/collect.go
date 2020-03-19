@@ -4,6 +4,7 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
+	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
@@ -26,15 +27,15 @@ func (k *kubeModel) CollectInfo() (map[string]interface{}, error) {
 	}
 	nodeInfo, err := k.collectNodeInfo(node)
 	if err != nil {
-		return nil, err
+		k.log.Error("failed to collect node info", log.Error(err))
 	}
 	nodeStats, err := k.collectNodeStats(node)
 	if err != nil {
-		return nil, err
+		k.log.Error("failed to collect node status", log.Error(err))
 	}
 	appStatus, err := k.collectAppStatus(apps.Value)
 	if err != nil {
-		return nil, err
+		k.log.Error("failed to collect app status", log.Error(err))
 	}
 
 	info := map[string]interface{}{
@@ -188,14 +189,14 @@ func (k *kubeModel) collectServiceInfo(name string) (*v1.ServiceInfo, error) {
 
 func (k *kubeModel) collectVolumeInfo(volume v1.Volume) (*v1.VolumeInfo, error) {
 	info := &v1.VolumeInfo{Name: volume.Name}
-	if volume.VolumeSource.Config != nil {
-		configMap, err := k.cli.Core.ConfigMaps(k.cli.Namespace).Get(volume.Name, metav1.GetOptions{})
+	if config := volume.VolumeSource.Config; config != nil {
+		configMap, err := k.cli.Core.ConfigMaps(k.cli.Namespace).Get(config.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
 		info.Version = configMap.ResourceVersion
-	} else if volume.VolumeSource.Secret != nil {
-		secret, err := k.cli.Core.Secrets(k.cli.Namespace).Get(volume.Name, metav1.GetOptions{})
+	} else if secret := volume.VolumeSource.Secret; secret != nil {
+		secret, err := k.cli.Core.Secrets(k.cli.Namespace).Get(secret.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
