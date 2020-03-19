@@ -4,21 +4,41 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-go/link"
+	gohttp "net/http"
+	"time"
+
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-go/http"
-	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
-	gohttp "net/http"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 // Report reports info
 func (s *sync) Report(msg link.Message) error {
-	resp, err := s.sendRequest("POST", s.cfg.Cloud.Report.URL, msg.Content)
+	var report map[string]interface{}
+	err := json.Unmarshal(msg.Content, &report)
+	apps, ok := report["apps"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("apps does not exist")
+	}
+	info := ForwardInfo{
+		Apps: apps,
+		Status: baetyl.Inspect{
+			Time: time.Now(),
+		},
+	}
+	data, err := json.Marshal(info)
+	if err != nil {
+		s.log.Error("failed to marshal report info", log.Error(err))
+		return err
+	}
+	resp, err := s.sendRequest("POST", s.cfg.Cloud.Report.URL, data)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err
 	}
-	data, err := http.HandleResponse(resp)
+	data, err = http.HandleResponse(resp)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err
@@ -30,19 +50,7 @@ func (s *sync) Report(msg link.Message) error {
 		return err
 	}
 	if res.Delta != nil {
-		content, err := json.Marshal(res.Delta)
-		if err != nil {
-			return err
-		}
 		_, err = s.shadow.Desire(res.Delta)
-		if err != nil {
-			return err
-		}
-		msg := &link.Message{
-			Context: link.Context{Topic: common.EngineAppEvent},
-			Content: content,
-		}
-		err = s.cent.Trigger(msg)
 		if err != nil {
 			return err
 		}

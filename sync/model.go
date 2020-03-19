@@ -14,9 +14,9 @@ type BackwardInfo struct {
 }
 
 type ForwardInfo struct {
-	Metadata map[string]string `yaml:"metadata" json:"metadata" default:"{}"`
-	Apps     map[string]string `yaml:"apps" json:"apps" default:"{}"` // shadow update
-	Status   baetyl.Inspect    `yaml:"status" json:"status"`
+	Metadata map[string]string      `yaml:"metadata" json:"metadata" default:"{}"`
+	Apps     map[string]interface{} `yaml:"apps" json:"apps" default:"{}"` // shadow update
+	Status   baetyl.Inspect         `yaml:"status" json:"status"`
 }
 
 type ApplicationResource struct {

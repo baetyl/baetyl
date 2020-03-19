@@ -21,11 +21,15 @@ func (s *sync) ProcessDelta(msg link.Message) error {
 	if err != nil {
 		return err
 	}
-	info, ok := delta[common.DefaultAppsKey].(map[string]string)
+	info, ok := delta[common.DefaultAppsKey].(map[string]interface{})
 	if !ok {
 		return fmt.Errorf("apps does not exist")
 	}
-	bs, err := s.generateRequest(common.Application, info)
+	apps := map[string]string{}
+	for name, ver := range info {
+		apps[name] = ver.(string)
+	}
+	bs, err := s.generateRequest(common.Application, apps)
 	if err != nil {
 		return err
 	}
@@ -34,11 +38,11 @@ func (s *sync) ProcessDelta(msg link.Message) error {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
 	cMap := map[string]string{}
-	apps := map[string]*models.Application{}
+	aMap := map[string]*models.Application{}
 	for _, r := range res {
 		app := r.GetApplication()
 		if app != nil {
-			apps[app.Name] = app
+			aMap[app.Name] = app
 			for _, v := range app.Volumes {
 				if v.Configuration != nil {
 					cMap[v.Configuration.Name] = v.Configuration.Version
@@ -62,7 +66,7 @@ func (s *sync) ProcessDelta(msg link.Message) error {
 		}
 		configs[cfg.Name] = cfg
 	}
-	for _, app := range apps {
+	for _, app := range aMap {
 		err := s.ProcessApplication(app)
 		if err != nil {
 			return err
@@ -71,6 +75,13 @@ func (s *sync) ProcessDelta(msg link.Message) error {
 		if err != nil {
 			return err
 		}
+	}
+	message := &link.Message{Context: link.Context{
+		Topic: common.EngineAppEvent,
+	}, Content: msg.Content}
+	err = s.cent.Trigger(message)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -157,6 +168,7 @@ func (s *sync) generateRequest(resType common.Resource, res map[string]string) (
 	var bs []*BaseResource
 	switch resType {
 	case common.Application:
+		//s.filterApps(res)
 		for n, v := range res {
 			b := &BaseResource{
 				Type:    common.Application,
@@ -169,7 +181,7 @@ func (s *sync) generateRequest(resType common.Resource, res map[string]string) (
 			bs = append(bs, b)
 		}
 	case common.Configuration:
-		s.filterConfigs(res)
+		//s.filterConfigs(res)
 		for n, v := range res {
 			b := &BaseResource{
 				Type:    common.Configuration,
@@ -180,6 +192,21 @@ func (s *sync) generateRequest(resType common.Resource, res map[string]string) (
 		}
 	}
 	return bs, nil
+}
+
+func (s *sync) filterApps(apps map[string]string) {
+	for name, ver := range apps {
+		key := utils.MakeKey(common.Application, name, ver)
+		var app models.Application
+		err := s.store.Get(key, &app)
+		if err != nil {
+			s.log.Error("failed to get app", log.Error(err))
+			continue
+		}
+		if app.Version != "" {
+			delete(apps, name)
+		}
+	}
 }
 
 func (s *sync) filterConfigs(configs map[string]string) {

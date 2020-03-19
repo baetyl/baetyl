@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-core/store"
-	shad "github.com/baetyl/baetyl-go/shadow"
+	shad "github.com/baetyl/baetyl-go/spec"
 	"github.com/stretchr/testify/assert"
 )
 

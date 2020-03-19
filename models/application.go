@@ -7,8 +7,8 @@ import (
 )
 
 type AppsVersionResource struct {
-	Name  string            `yaml:"name" json:"name"`
-	Value map[string]string `yaml:"value" json:"value"`
+	Name  string                 `yaml:"name" json:"name"`
+	Value map[string]interface{} `yaml:"value" json:"value"`
 }
 
 type Application struct {

@@ -11,13 +11,21 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func (k *kubeModel) ApplyApplications(apps map[string]string) error {
+func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 	deploys := map[string]*appv1.Deployment{}
 	var services []*v1.Service
 	configs := map[string]*v1.ConfigMap{}
+	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
 	for name, ver := range apps {
+		if ver.(string) == "" {
+			err := deployInterface.Delete(name, &metav1.DeleteOptions{})
+			if err != nil {
+				return err
+			}
+			continue
+		}
 		var app models.Application
-		key := utils.MakeKey(common.Application, name, ver)
+		key := utils.MakeKey(common.Application, name, ver.(string))
 		err := k.store.Get(key, &app)
 		if err != nil {
 			return err
@@ -58,7 +66,6 @@ func (k *kubeModel) ApplyApplications(apps map[string]string) error {
 		}
 	}
 
-	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
 	for _, d := range deploys {
 		_, err := deployInterface.Get(d.Name, metav1.GetOptions{})
 		if err == nil {
@@ -76,8 +83,9 @@ func (k *kubeModel) ApplyApplications(apps map[string]string) error {
 
 	serviceInterface := k.cli.Core.Services(k.cli.Namespace)
 	for _, s := range services {
-		_, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
+		service, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
 		if err == nil {
+			s.ResourceVersion = service.ResourceVersion
 			_, err := serviceInterface.Update(s)
 			if err != nil {
 				return err
@@ -110,6 +118,9 @@ func toDeployAndService(app *models.Application) (*appv1.Deployment, []*v1.Servi
 			Namespace: app.Namespace,
 		},
 		Spec: appv1.DeploymentSpec{
+			Strategy: appv1.DeploymentStrategy{
+				Type: appv1.RecreateDeploymentStrategyType,
+			},
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"baetyl": app.Name,

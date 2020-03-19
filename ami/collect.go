@@ -4,8 +4,9 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
+	"github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
@@ -40,18 +41,15 @@ func (k *kubeModel) CollectInfo() (map[string]interface{}, error) {
 		"time":      time.Now(),
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
+		"apps":      apps.Value,
 		"appstats":  appStatus,
-	}
-	_, err = k.shadow.Report(info)
-	if err != nil {
-		return nil, err
 	}
 	return info, nil
 }
 
-func (k *kubeModel) collectNodeInfo(node *v1.Node) (*models.NodeInfo, error) {
+func (k *kubeModel) collectNodeInfo(node *corev1.Node) (*v1.NodeInfo, error) {
 	ni := node.Status.NodeInfo
-	nodeInfo := &models.NodeInfo{
+	nodeInfo := &v1.NodeInfo{
 		Arch:             ni.Architecture,
 		KernelVersion:    ni.KernelVersion,
 		OS:               ni.OperatingSystem,
@@ -61,19 +59,22 @@ func (k *kubeModel) collectNodeInfo(node *v1.Node) (*models.NodeInfo, error) {
 	}
 
 	for _, addr := range node.Status.Addresses {
-		if addr.Type == v1.NodeInternalIP {
+		if addr.Type == corev1.NodeInternalIP {
 			nodeInfo.Address = addr.Address
-		} else if addr.Type == v1.NodeHostName {
+		} else if addr.Type == corev1.NodeHostName {
 			nodeInfo.Hostname = addr.Address
 		}
 	}
 	return nodeInfo, nil
 }
 
-func (k *kubeModel) collectNodeStats(node *v1.Node) (*models.NodeStats, error) {
-	nodeStats := &models.NodeStats{}
+func (k *kubeModel) collectNodeStats(node *corev1.Node) (*v1.NodeStatus, error) {
+	nodeStats := &v1.NodeStatus{
+		Usage:    map[string]*v1.ResourceInfo{},
+		Capacity: map[string]*v1.ResourceInfo{},
+	}
 	for res, quantity := range node.Status.Capacity {
-		nodeStats.Capacity[string(res)] = &models.ResourceInfo{
+		nodeStats.Capacity[string(res)] = &v1.ResourceInfo{
 			Name:  string(res),
 			Value: quantity.String(),
 		}
@@ -83,7 +84,7 @@ func (k *kubeModel) collectNodeStats(node *v1.Node) (*models.NodeStats, error) {
 		return nil, err
 	}
 	for res, quantity := range nodeMetric.Usage {
-		nodeStats.Usage[string(res)] = &models.ResourceInfo{
+		nodeStats.Usage[string(res)] = &v1.ResourceInfo{
 			Name:  string(res),
 			Value: quantity.String(),
 		}
@@ -91,12 +92,12 @@ func (k *kubeModel) collectNodeStats(node *v1.Node) (*models.NodeStats, error) {
 	return nodeStats, nil
 }
 
-func (k *kubeModel) collectAppStatus(apps map[string]string) (map[string]*models.AppStats, error) {
-	res := map[string]*models.AppStats{}
+func (k *kubeModel) collectAppStatus(apps map[string]interface{}) ([]*v1.AppStatus, error) {
+	var res []*v1.AppStatus
 	for name, ver := range apps {
-		status := &models.AppStats{
+		status := &v1.AppStatus{
 			Name:    name,
-			Version: ver,
+			Version: ver.(string),
 		}
 		deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(name, metav1.GetOptions{})
 		if err != nil {
@@ -109,32 +110,32 @@ func (k *kubeModel) collectAppStatus(apps map[string]string) (map[string]*models
 				status.Cause += e.Message + "\n"
 			}
 		}
-		var app models.Application
-		err = k.store.Get(utils.MakeKey(common.Application, app.Name, app.Version), &app)
+		var app v1.Application
+		err = k.store.Get(utils.MakeKey(common.Application, name, ver.(string)), &app)
 		if err != nil {
 			return nil, err
 		}
-		status.ServiceInfos = map[string]*models.ServiceInfo{}
+		status.ServiceInfos = map[string]*v1.ServiceInfo{}
 		for _, svc := range app.Services {
 			status.ServiceInfos[svc.Name], err = k.collectServiceInfo(svc.Name)
 			if err != nil {
 				return nil, err
 			}
 		}
-		status.VolumeInfos = map[string]*models.VolumeInfo{}
+		status.VolumeInfos = map[string]*v1.VolumeInfo{}
 		for _, v := range app.Volumes {
 			status.VolumeInfos[v.Name], err = k.collectVolumeInfo(v)
 			if err != nil {
 				return nil, err
 			}
 		}
-		res[name] = status
+		res = append(res, status)
 	}
 	return res, nil
 }
 
-func (k *kubeModel) collectServiceInfo(name string) (*models.ServiceInfo, error) {
-	info := &models.ServiceInfo{Name: name}
+func (k *kubeModel) collectServiceInfo(name string) (*v1.ServiceInfo, error) {
+	info := &v1.ServiceInfo{Name: name, Usage: map[string]*v1.ResourceInfo{}}
 	svc, err := k.cli.Core.Services(k.cli.Namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -161,28 +162,33 @@ func (k *kubeModel) collectServiceInfo(name string) (*models.ServiceInfo, error)
 		}
 	}
 	info.CreateTime = pod.CreationTimestamp.Local()
-	info.Container = models.Container{
-		// service only have one container
-		Name: pod.Status.ContainerStatuses[0].Name,
-		ID:   pod.Status.ContainerStatuses[0].ContainerID,
+	for _, cont := range pod.Status.ContainerStatuses {
+		if cont.Name == name {
+			info.Container.Name = name
+			info.Container.ID = cont.ContainerID
+		}
 	}
-	nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(pod.Name, metav1.GetOptions{})
+	podMetric, err := k.cli.Metrics.PodMetricses(k.cli.Namespace).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	for res, quantity := range nodeMetric.Usage {
-		info.Usage[string(res)] = &models.ResourceInfo{
-			Name:  string(res),
-			Value: quantity.String(),
+	for _, cont := range podMetric.Containers {
+		if cont.Name == name {
+			for res, quantity := range cont.Usage {
+				info.Usage[string(res)] = &v1.ResourceInfo{
+					Name:  string(res),
+					Value: quantity.String(),
+				}
+			}
 		}
 	}
 	info.Status = string(pod.Status.Phase)
 	return info, nil
 }
 
-func (k *kubeModel) collectVolumeInfo(volume models.Volume) (*models.VolumeInfo, error) {
-	info := &models.VolumeInfo{Name: volume.Name}
-	if volume.VolumeSource.Configuration != nil {
+func (k *kubeModel) collectVolumeInfo(volume v1.Volume) (*v1.VolumeInfo, error) {
+	info := &v1.VolumeInfo{Name: volume.Name}
+	if volume.VolumeSource.Config != nil {
 		configMap, err := k.cli.Core.ConfigMaps(k.cli.Namespace).Get(volume.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err

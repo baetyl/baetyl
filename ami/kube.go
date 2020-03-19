@@ -15,11 +15,11 @@ type kubeModel struct {
 }
 
 // TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
-func NewKubeModel(cfg config.KubernetesConfig, sto *bh.Store, sha *shadow.Shadow) (Model, error) {
+func NewKubeModel(cfg config.KubernetesConfig, sto *bh.Store) (Model, error) {
 	cli, err := NewClient(cfg)
 	if err != nil {
 		return nil, err
 	}
 	nodeName := os.Getenv("NODE_NAME")
-	return &kubeModel{cli: cli, store: sto, shadow: sha, nodeName: nodeName}, nil
+	return &kubeModel{cli: cli, store: sto, nodeName: nodeName}, nil
 }

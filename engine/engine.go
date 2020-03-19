@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/event"
@@ -13,7 +14,6 @@ import (
 	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
-	bh "github.com/timshannon/bolthold"
 )
 
 type Engine struct {
@@ -25,20 +25,16 @@ type Engine struct {
 	log   *log.Logger
 }
 
-func NewEngine(cfg config.EngineConfig, sto *bh.Store, sha *shadow.Shadow, cent *event.Center) (*Engine, error) {
+func NewEngine(cfg config.EngineConfig, model ami.Model, sha *shadow.Shadow, cent *event.Center) (*Engine, error) {
 	if cfg.Kind != "kubernetes" {
 		return nil, os.ErrInvalid
 	}
 	e := &Engine{
-		sha:  sha,
-		cent: cent,
-		cfg:  cfg,
-		log:  log.With(log.Any("engine", cfg.Kind)),
-	}
-	var err error
-	e.model, err = ami.NewKubeModel(cfg.Kubernetes, sto, sha)
-	if err != nil {
-		return nil, err
+		sha:   sha,
+		model: model,
+		cent:  cent,
+		cfg:   cfg,
+		log:   log.With(log.Any("engine", cfg.Kind)),
 	}
 	e.tomb.Go(e.collecting)
 	return e, nil
@@ -60,18 +56,23 @@ func (e *Engine) collecting() error {
 				e.log.Error("failed to update shadow report", log.Error(err))
 				continue
 			}
-			content, err := json.Marshal(info)
-			if err != nil {
-				e.log.Error("failed to marshal delta", log.Error(err))
-				continue
-			}
-			msg := &link.Message{Content: content}
-			if delta != nil {
+			var msg link.Message
+			if len(delta) > 0 {
+				msg.Content, err = json.Marshal(delta)
+				if err != nil {
+					e.log.Error("failed to marshal delta", log.Error(err))
+					continue
+				}
 				msg.Context.Topic = common.SyncDesireEvent
 			} else {
+				msg.Content, err = json.Marshal(info)
+				if err != nil {
+					e.log.Error("failed to marshal delta", log.Error(err))
+					continue
+				}
 				msg.Context.Topic = common.SyncReportEvent
 			}
-			err = e.cent.Trigger(msg)
+			err = e.cent.Trigger(&msg)
 			if err != nil {
 				e.log.Error("failed to trigger event", log.Error(err))
 				continue
@@ -88,10 +89,14 @@ func (e *Engine) Close() {
 }
 
 func (e *Engine) Apply(msg link.Message) error {
-	var apps map[string]string
-	err := json.Unmarshal(msg.Content, &apps)
+	var info map[string]interface{}
+	err := json.Unmarshal(msg.Content, &info)
 	if err != nil {
 		return err
+	}
+	apps, ok := info["apps"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("apps does not exist")
 	}
 	err = e.model.ApplyApplications(apps)
 	if err != nil {

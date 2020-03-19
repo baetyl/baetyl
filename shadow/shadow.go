@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	shad "github.com/baetyl/baetyl-go/shadow"
+	"github.com/baetyl/baetyl-go/spec"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
 )
@@ -18,12 +18,12 @@ type Shadow struct {
 
 // NewShadow create a new shadow
 func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
-	m := &shad.Spec{
+	m := &spec.Spec{
 		Name:              name,
 		Namespace:         namespace,
 		CreationTimestamp: time.Now(),
-		Report:            shad.Report{},
-		Desire:            shad.Desire{},
+		Report:            spec.Report{},
+		Desire:            spec.Desire{},
 	}
 	s := &Shadow{
 		bk:    []byte("baetyl-edge-shadow"),
@@ -38,28 +38,28 @@ func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
 }
 
 // Get returns shadow model
-func (s *Shadow) Get() (m *shad.Spec, err error) {
+func (s *Shadow) Get() (m *spec.Spec, err error) {
 	err = s.store.Bolt().View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m = &shad.Spec{}
+		m = &spec.Spec{}
 		return json.Unmarshal(prev, m)
 	})
 	return
 }
 
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (s *Shadow) Desire(desired shad.Desire) (delta shad.Delta, err error) {
+func (s *Shadow) Desire(desired spec.Desire) (delta spec.Delta, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m := &shad.Spec{}
+		m := &spec.Spec{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
 			return err
@@ -87,14 +87,14 @@ func (s *Shadow) Desire(desired shad.Desire) (delta shad.Delta, err error) {
 }
 
 // Report update shadow reported data, then return the delta of desired and reported data
-func (s *Shadow) Report(reported shad.Report) (delta shad.Delta, err error) {
+func (s *Shadow) Report(reported spec.Report) (delta spec.Delta, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m := &shad.Spec{}
+		m := &spec.Spec{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
 			return err
@@ -122,7 +122,7 @@ func (s *Shadow) Report(reported shad.Report) (delta shad.Delta, err error) {
 }
 
 // Get insert the whole shadow data
-func (s *Shadow) insert(m *shad.Spec) error {
+func (s *Shadow) insert(m *spec.Spec) error {
 	return s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(s.bk)
 		if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
@@ -43,17 +44,20 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.sha, err = shadow.NewShadow(cfg.Sync.Node.Namespace, cfg.Sync.Node.Name, c.sto)
+	model, err := ami.NewKubeModel(cfg.Engine.Kubernetes, c.sto)
 	if err != nil {
-		c.Close()
 		return nil, err
 	}
 	c.cent, err = event.NewCenter(c.sto, common.EventCenterLimit)
 	if err != nil {
 		return nil, err
 	}
-
-	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.cent)
+	c.sha, err = shadow.NewShadow(cfg.Sync.Node.Namespace, cfg.Sync.Node.Name, c.sto)
+	if err != nil {
+		c.Close()
+		return nil, err
+	}
+	c.eng, err = engine.NewEngine(cfg.Engine, model, c.sha, c.cent)
 	if err != nil {
 		c.Close()
 		return nil, err
