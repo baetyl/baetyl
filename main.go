@@ -20,7 +20,7 @@ type core struct {
 	cent *event.Center
 	sha  *shadow.Shadow
 	eng  *engine.Engine
-	syn  sync.Sync
+	syn  *sync.Sync
 }
 
 func NewCore(ctx context.Context) (*core, error) {
@@ -74,10 +74,12 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 	err = c.cent.Register(common.SyncReportEvent, c.syn.Report)
 	if err != nil {
+		c.Close()
 		return nil, err
 	}
 	err = c.cent.Register(common.SyncDesireEvent, c.syn.ProcessDelta)
 	if err != nil {
+		c.Close()
 		return nil, err
 	}
 
@@ -86,9 +88,6 @@ func NewCore(ctx context.Context) (*core, error) {
 }
 
 func (c *core) Close() {
-	if c.syn != nil {
-		c.syn.Close()
-	}
 	if c.eng != nil {
 		c.eng.Close()
 	}

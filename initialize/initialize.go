@@ -26,15 +26,14 @@ type Initialize struct {
 
 // NewInit to activate, success add node info
 func NewInit(cfg *config.Config) (*Initialize, error) {
-	httpOps, err := cfg.Init.Cloud.HTTP.ToClientOptions()
+	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
-	httpCli := http.NewClient(*httpOps)
 	init := &Initialize{
 		cfg:   cfg,
-		http:  httpCli,
 		sig:   make(chan bool, 1),
+		http:  http.NewClient(ops),
 		attrs: map[string]string{},
 		log:   log.With(log.Any("core", "Initialize")),
 	}
