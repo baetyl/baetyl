@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/baetyl/baetyl-core/common"
 	"time"
 
 	"github.com/baetyl/baetyl-go/http"
@@ -16,6 +17,7 @@ type Config struct {
 	Engine EngineConfig `yaml:"engine" json:"engine"`
 	Sync   SyncConfig   `yaml:"sync" json:"sync"`
 	Store  StoreConfig  `yaml:"store" json:"store"`
+	Init   InitConfig   `yaml:"init" json:"init"`
 	Logger log.Config   `yaml:"logger" json:"logger"`
 }
 
@@ -50,4 +52,48 @@ type SyncConfig struct {
 	Edge struct {
 		DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
 	} `yaml:"edge" json:"edge"`
+}
+
+type InitConfig struct {
+	Batch struct {
+		Name         string `json:"name,omitempty"`
+		Namespace    string `json:"namespace,omitempty"`
+		SecurityType string `json:"securityType,omitempty"`
+		SecurityKey  string `json:"securityKey,omitempty"`
+	} `yaml:"batch" json:"batch"`
+	Cloud struct {
+		HTTP   http.ClientConfig `yaml:"http" json:"http"`
+		Active struct {
+			URL      string        `yaml:"url" json:"url" default:"/v1/sync/active"`
+			Interval time.Duration `yaml:"interval" json:"interval" default:"45s"`
+		} `yaml:"active" json:"active"`
+	} `yaml:"cloud" json:"cloud"`
+	Edge struct {
+		DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
+	} `yaml:"edge" json:"edge"`
+	ActivateConfig struct {
+		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
+		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
+		Server       Server        `yaml:"server" json:"server"`
+	} `yaml:"active" json:"active"`
+}
+
+// Server manually activated server configuration
+type Server struct {
+	Listen string `yaml:"listen" json:"listen"`
+	Pages  string `yaml:"pages" json:"pages" default:"etc/baetyl/pages"`
+}
+
+// Fingerprint type to be collected
+type Fingerprint struct {
+	Proof common.Proof `yaml:"proof" json:"proof"`
+	Value string       `yaml:"value" json:"value"`
+}
+
+// Attribute field to be filled
+type Attribute struct {
+	Name  string `yaml:"name" json:"name" validate:"nonzero"`
+	Label string `yaml:"label" json:"label" validate:"nonzero"`
+	Value string `yaml:"value" json:"value"`
+	Desc  string `yaml:"description" json:"description"`
 }

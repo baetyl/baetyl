@@ -8,17 +8,6 @@ type Report map[string]interface{}
 // Desire desire
 type Desire map[string]interface{}
 
-// report structrue
-/*
-{
-	"apps": map[string]string{},
-	"appStats": map[string]*AppStats{},
-    "node": NodeInfo{},
-    "nodeStats": NodeStats{},
-    "time": time.Time{},
-}
-*/
-
 // ServiceInfo service info
 type ServiceInfo struct {
 	Name       string                   `yaml:"name,omitempty" json:"name,omitempty"`
@@ -62,6 +51,7 @@ type NodeInfo struct {
 	OS               string `yaml:"os,omitempty" json:"os,omitempty"`
 	ContainerRuntime string `yaml:"containerRuntime,omitempty" json:"containerRuntime"`
 	MachineID        string `yaml:"machineID,omitempty" json:"machineID"`
+	SystemUUID       string `yaml:"systemUUID,omitempty" json:"systemUUID"`
 	OSImage          string `yaml:"osImage,omitempty" json:"osImage"`
 }
 

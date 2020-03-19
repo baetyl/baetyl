@@ -11,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-
 func (k *kubeModel) ApplyApplications(apps map[string]string) error {
 	deploys := map[string]*appv1.Deployment{}
 	var services []*v1.Service

@@ -13,7 +13,7 @@ import (
 
 // Report reports info
 func (s *sync) Report(msg link.Message) error {
-	resp, err := s.sendRequest("POST", s.cfg.Cloud.Report.URL, msg.Content)
+	resp, err := s.sendRequest("POST", s.cfg.Sync.Cloud.Report.URL, msg.Content)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err
@@ -51,7 +51,7 @@ func (s *sync) Report(msg link.Message) error {
 }
 
 func (s *sync) sendRequest(method, path string, body []byte) (*gohttp.Response, error) {
-	url := fmt.Sprintf("%s%s", s.cfg.Cloud.HTTP.Address, path)
+	url := fmt.Sprintf("%s%s", s.cfg.Sync.Cloud.HTTP.Address, path)
 	r := bytes.NewReader(body)
 	req, err := gohttp.NewRequest(method, url, r)
 	if err != nil {
@@ -60,15 +60,8 @@ func (s *sync) sendRequest(method, path string, body []byte) (*gohttp.Response, 
 	header := map[string]string{
 		"Content-Type": "application/json",
 	}
-	if s.node != nil {
-		// for report
-		header[common.HeaderKeyNodeNamespace] = s.node.Namespace
-		header[common.HeaderKeyNodeName] = s.node.Name
-	} else if s.batch != nil {
-		// for active
-		header[common.HeaderKeyBatchNamespace] = s.batch.Namespace
-		header[common.HeaderKeyBatchName] = s.batch.Name
-	}
+	header[common.HeaderKeyNodeNamespace] = s.node.Namespace
+	header[common.HeaderKeyNodeName] = s.node.Name
 	s.log.Debug("request", log.Any("method", method),
 		log.Any("path", path), log.Any("body", body),
 		log.Any("header", header))

@@ -57,6 +57,13 @@ type Resource struct {
 	Value        interface{} `yaml:"value,omitempty" json:"value,omitempty"`
 }
 
+type SecretResource struct {
+	Type    string        `yaml:"type" json:"type"`
+	Name    string        `yaml:"name" json:"name"`
+	Version string        `yaml:"version" json:"version"`
+	Value   models.Secret `yaml:"value" json:"value"`
+}
+
 func (r *Resource) GetApplication() *models.Application {
 	if r.Type == common.Application {
 		return r.Value.(*models.Application)
@@ -67,6 +74,13 @@ func (r *Resource) GetApplication() *models.Application {
 func (r *Resource) GetConfiguration() *models.Configuration {
 	if r.Type == common.Configuration {
 		return r.Value.(*models.Configuration)
+	}
+	return nil
+}
+
+func (r *Resource) GetSecret() *models.Secret {
+	if r.Type == common.Secret {
+		return r.Value.(*models.Secret)
 	}
 	return nil
 }
@@ -92,6 +106,13 @@ func (r *Resource) UnmarshalJSON(b []byte) error {
 			return err
 		}
 		r.Value = &config.Value
+	case common.Secret:
+		var secret SecretResource
+		err := json.Unmarshal(b, &secret)
+		if err != nil {
+			return err
+		}
+		r.Value = &secret.Value
 	}
 	r.Data = b
 	r.BaseResource = base
