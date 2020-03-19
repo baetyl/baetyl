@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"path"
 
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
@@ -17,8 +18,8 @@ func (a *agent) processing() error {
 		select {
 		case e := <-a.events:
 			a.cleaner.reset()
-			if a.link != nil {
-				a.processLinkEvent(e)
+			if a.mqtt == nil {
+				a.processDelta(e)
 			} else {
 				a.processEvent(e)
 			}
@@ -42,7 +43,7 @@ func (a *agent) processEvent(e *Event) {
 }
 
 func (a *agent) processOTA(eo *EventOTA) error {
-	hostDir, containerDir, err := a.downloadVolume(eo.Volume)
+	hostDir, containerDir, err := a.downloadVolume(eo.Volume, "", true)
 	if err != nil {
 		return fmt.Errorf("failed to download volume: %s", err.Error())
 	}
@@ -51,7 +52,7 @@ func (a *agent) processOTA(eo *EventOTA) error {
 		hostTarget = path.Join(hostDir, baetyl.AppConfFileName)
 		containerAppFile := path.Join(containerDir, baetyl.AppConfFileName)
 		containerMetadataFile := path.Join(containerDir, baetyl.MetadataFileName)
-		var meta Metadata
+		var meta config.Metadata
 		file := containerMetadataFile
 		if !utils.FileExists(containerMetadataFile) {
 			file = containerAppFile

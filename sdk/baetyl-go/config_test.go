@@ -38,17 +38,20 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						Factor: 2,
 					},
 				},
-				Volumes: []*ServiceVolume{
-					&ServiceVolume{
+				Volumes: []ServiceVolume{
+					ServiceVolume{
 						Source:   "var/db/baetyl/test-hub-conf",
 						Target:   "/etc/baetyl",
 						ReadOnly: false,
 					},
 				},
-				Command: &Command{
+				Command: Command{
 					Cmd: []string{"-c", "conf/conf.yml"},
 				},
-				Environment: &Environment{
+				Entrypoint: Entrypoint{
+					Entry: []string{"test"},
+				},
+				Environment: Environment{
 					Envs: map[string]string{
 						"version": "v1",
 					},
@@ -60,7 +63,7 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				Replica:   1,
 				Ports:     []string{},
 				Devices:   []string{},
-				Environment: &Environment{
+				Environment: Environment{
 					Envs: map[string]string{
 						"version": "v2",
 					},
@@ -70,8 +73,8 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						"test-network": ServiceNetwork{},
 					},
 				},
-				Volumes: []*ServiceVolume{
-					&ServiceVolume{
+				Volumes: []ServiceVolume{
+					ServiceVolume{
 						Source:   "var/db/baetyl/test-timer-conf",
 						Target:   "/etc/baetyl",
 						ReadOnly: true,
@@ -85,8 +88,11 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 						Factor: 2,
 					},
 				},
-				Command: &Command{
+				Command: Command{
 					Cmd: []string{"/bin/sh"},
+				},
+				Entrypoint:Entrypoint{
+					Entry: []string{"test"},
 				},
 			},
 		},
@@ -119,6 +125,7 @@ services:
     command:
       - '-c'
       - conf/conf.yml
+    entrypoint: test
     environment:
       - version=v1
   test-timer:
@@ -135,6 +142,7 @@ services:
     environment:
       version: v2
     command: '/bin/sh'
+    entrypoint: test
 
 networks:
   test-network:
@@ -158,6 +166,8 @@ services:
     args:
       - '-c'
       - conf/conf.yml
+    entrypoint:
+      - 'test'
     env:
       version: v1
   - name: test-timer
@@ -173,6 +183,8 @@ services:
       version: v2
     args:
       - '/bin/sh'
+    entrypoint:
+      - 'test'
 
 networks:
   test-network:

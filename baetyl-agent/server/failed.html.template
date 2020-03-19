@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="3; url=/">
+    <title>激活失败</title>
+    <style type="text/css">
+        div.active-title {font-family:Menlo; height: 50px; margin-top:20%; vertical-align: middle; text-align:center}
+    </style>
+</head>
+<body bgcolor="#f6f7fb">
+<div class="active-title">
+    <h3>激活失败，请重新输入</h3>
+</div>
+</body>

@@ -1,0 +1,97 @@
+name: buildall
+on:
+  schedule:
+    - cron:  '6 21 * * *'
+jobs:
+  amd64:
+    name: build on amd64
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: baetyl/run-on-arch-action@master
+        with:
+          architecture: amd64
+          distribution: stretch
+          run: |
+            make build
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-amd64
+          path: ${{ steps.path.outputs.path }}
+
+  i386:
+    name: build on i386
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: baetyl/run-on-arch-action@master
+        id: build
+        with:
+          architecture: i386
+          distribution: stretch
+          run: |
+            make build
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-i386
+          path: ${{ steps.path.outputs.path }}
+
+  arm64:
+    name: build on arm64
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: baetyl/run-on-arch-action@master
+        id: build
+        with:
+          architecture: arm64
+          distribution: stretch
+          run: |
+            make build
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-arm64
+          path: ${{ steps.path.outputs.path }}
+
+  armv7:
+    name: build on armv7
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: baetyl/run-on-arch-action@master
+        id: build
+        with:
+          architecture: armv7
+          distribution: stretch
+          run: |
+            make build
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-armv7
+          path: ${{ steps.path.outputs.path }}
+
+  mac:
+    name: build on mac
+    runs-on: macos-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - uses: actions/checkout@v1
+      - name: build baetyl
+        run: |
+          make build
+      - id: path
+        run: echo ::set-output name=path::$(pwd)/baetyl
+      - uses: actions/upload-artifact@v1
+        with:
+          name: baetyl-darwin
+          path: ${{ steps.path.outputs.path }}

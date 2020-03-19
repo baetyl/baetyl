@@ -7,7 +7,7 @@ override_dh_auto_test:
 	: 
 
 override_dh_auto_install:
-	make baetyl
+	make build
 	install -d -m 0755 debian/baetyl/usr/local/bin
 	install -m 0755 baetyl debian/baetyl/usr/local/bin/
 	tar cf - -C example/docker etc | tar xvf - -C debian/baetyl/usr/local

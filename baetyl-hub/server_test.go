@@ -27,7 +27,7 @@ func TestMqttTcp(t *testing.T) {
 	m.Start()
 	time.Sleep(time.Millisecond * 100)
 
-	dailer, err := mqtt.NewDialer(utils.Certificate{})
+	dailer, err := mqtt.NewDialer(utils.Certificate{}, 0)
 	request := packet.NewConnect()
 	request.ClientID = m.servers[0].Addr().String()
 	conn, err := dailer.Dial(getURL(m.servers[0], "tcp"))
@@ -85,7 +85,7 @@ func TestMqttTcpTls(t *testing.T) {
 	request.ClientID = m.servers[0].Addr().String()
 
 	// count: 1
-	dailer, err := mqtt.NewDialer(utils.Certificate{Insecure: true})
+	dailer, err := mqtt.NewDialer(utils.Certificate{Insecure: true}, 0)
 	assert.NoError(t, err)
 	conn, err := dailer.Dial(url)
 	assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestMqttTcpTls(t *testing.T) {
 	dailer, err = mqtt.NewDialer(utils.Certificate{
 		CA:       "./testcert/ca.pem",
 		Insecure: true,
-	})
+	}, 0)
 	assert.NoError(t, err)
 	conn, err = dailer.Dial(url)
 	assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestMqttTcpTls(t *testing.T) {
 		Key:      "./testcert/testssl2.key",
 		Cert:     "./testcert/testssl2.pem",
 		Insecure: true,
-	})
+	}, 0)
 	assert.NoError(t, err)
 	conn, err = dailer.Dial(url)
 	assert.NoError(t, err)
@@ -142,7 +142,7 @@ func TestMqttWebSocket(t *testing.T) {
 	m.Start()
 	time.Sleep(time.Millisecond * 100)
 
-	dailer, err := mqtt.NewDialer(utils.Certificate{Insecure: true})
+	dailer, err := mqtt.NewDialer(utils.Certificate{Insecure: true}, 0)
 	assert.NoError(t, err)
 	request := packet.NewConnect()
 	request.ClientID = m.servers[0].Addr().String()
@@ -210,7 +210,7 @@ func TestMqttWebSocketTls(t *testing.T) {
 	request := packet.NewConnect()
 	request.ClientID = m.servers[0].Addr().String()
 
-	dailer, err := mqtt.NewDialer(utils.Certificate{})
+	dailer, err := mqtt.NewDialer(utils.Certificate{}, 0)
 	assert.NoError(t, err)
 	conn, err := dailer.Dial(url)
 	assert.Nil(t, conn)
@@ -222,7 +222,7 @@ func TestMqttWebSocketTls(t *testing.T) {
 	}
 
 	// count: 1
-	dailer, err = mqtt.NewDialer(utils.Certificate{Insecure: true})
+	dailer, err = mqtt.NewDialer(utils.Certificate{Insecure: true}, 0)
 	assert.NoError(t, err)
 	conn, err = dailer.Dial(url)
 	assert.NoError(t, err)
@@ -236,7 +236,7 @@ func TestMqttWebSocketTls(t *testing.T) {
 	dailer, err = mqtt.NewDialer(utils.Certificate{
 		CA:       "./testcert/ca.pem",
 		Insecure: true,
-	})
+	}, 0)
 	assert.NoError(t, err)
 	conn, err = dailer.Dial(url)
 	assert.NoError(t, err)
@@ -252,7 +252,7 @@ func TestMqttWebSocketTls(t *testing.T) {
 		Key:      "./testcert/testssl2.key",
 		Cert:     "./testcert/testssl2.pem",
 		Insecure: true,
-	})
+	}, 0)
 	assert.NoError(t, err)
 	conn, err = dailer.Dial(url)
 	assert.NoError(t, err)

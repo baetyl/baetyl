@@ -3,6 +3,7 @@ package mqtt
 import (
 	"crypto/tls"
 	"net/url"
+	"time"
 
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/baetyl/baetyl/utils"

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
@@ -198,9 +199,9 @@ func (hook *fileHook) Fire(entry *logrus.Entry) (err error) {
 func newFormatter(format string) logrus.Formatter {
 	var formatter logrus.Formatter
 	if strings.ToLower(format) == "json" {
-		formatter = &logrus.JSONFormatter{}
+		formatter = &logrus.JSONFormatter{TimestampFormat: time.RFC3339Nano}
 	} else {
-		formatter = &logrus.TextFormatter{FullTimestamp: true, DisableColors: true}
+		formatter = &logrus.TextFormatter{TimestampFormat: time.RFC3339Nano, FullTimestamp: true, DisableColors: true}
 	}
 	return formatter
 }

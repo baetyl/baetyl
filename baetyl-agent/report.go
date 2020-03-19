@@ -3,17 +3,19 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 	"time"
 
+	"github.com/baetyl/baetyl/baetyl-agent/common"
+	"github.com/baetyl/baetyl/baetyl-agent/config"
 	"github.com/baetyl/baetyl/logger"
 	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/baetyl/baetyl/utils"
 )
-
-type inspect struct {
-	*baetyl.Inspect `json:",inline"`
-	OTA             map[string][]*record `json:"ota,omitempty"`
-}
 
 type EventLink struct {
 	Info  map[string]interface{}
@@ -23,7 +25,6 @@ type EventLink struct {
 
 func (a *agent) reporting() error {
 	t := time.NewTicker(a.cfg.Remote.Report.Interval)
-	a.report()
 	for {
 		select {
 		case <-t.C:
@@ -35,52 +36,75 @@ func (a *agent) reporting() error {
 }
 
 // Report reports info
-func (a *agent) report(pgs ...*progress) *inspect {
+func (a *agent) report(pgs ...*progress) *config.Inspect {
 	defer utils.Trace("report", logger.Debugf)()
 
 	i, err := a.ctx.InspectSystem()
 	if err != nil {
-		a.ctx.Log().WithError(err).Warnf("failed to inspect stats")
+		a.ctx.Log().WithError(err).Warnf("failed to config.Inspect stats")
 		i = baetyl.NewInspect()
 		i.Error = err.Error()
 	}
+	if utils.FileExists(a.cfg.OTA.Logger.Path) && len(pgs) == 0 {
+		return nil
+	}
 
-	io := &inspect{Inspect: i}
+	io := &config.Inspect{Inspect: i}
 	for _, pg := range pgs {
 		if io.OTA == nil {
-			io.OTA = map[string][]*record{}
+			io.OTA = map[string][]*config.Record{}
 		}
 		if pg.event != nil && pg.event.Trace != "" {
 			io.OTA[pg.event.Trace] = pg.records
 		}
 	}
-	if a.link != nil {
-		currentInfo, err := a.getCurrentDeployInfo(io.Inspect)
+	if a.mqtt == nil {
+		a.ctx.Log().Debugf("report set agent ，point = %p", a)
+		a.ctx.Log().Debugf("report set agent = %+v", a)
+		currentApp, err := a.getCurrentApp(io.Inspect)
 		if err != nil {
-			a.ctx.Log().WithError(err).Warnf("failed to get current deploy info")
+			a.ctx.Log().WithError(err).Warnf("failed to get current app info")
 			return nil
 		}
-		info := ForwardInfo{
-			Namespace:  a.node.Namespace,
-			Name:       a.node.Name,
-			Status:     io,
-			DeployInfo: currentInfo,
+		info := config.ForwardInfo{
+			Status: io,
+			Apps:   currentApp,
 		}
-		var res BackwardInfo
-		resData, err := a.sendData(info)
+		if a.node == nil {
+			a.ctx.Log().WithError(err).Warnf("node nil , to active")
+			actInfo, err := a.collectActiveInfo(i)
+			if err != nil {
+				a.ctx.Log().WithError(err).Warnf("collect active info error")
+				return nil
+			}
+			info.Activation = *actInfo
+		}
+		req, err := json.Marshal(info)
 		if err != nil {
-			a.ctx.Log().WithError(err).Warnf("failed to send report data by link")
+			a.ctx.Log().WithError(err).Warnf("failed to marshal report info")
+			return nil
+		}
+		var res config.BackwardInfo
+		resData, err := a.sendRequest("POST", a.cfg.Remote.Report.URL, req)
+		if err != nil {
+			a.ctx.Log().WithError(err).Warnf("failed to send report data")
 			return nil
 		}
 		err = json.Unmarshal(resData, &res)
 		if err != nil {
-			a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned by link")
+			a.ctx.Log().WithError(err).Warnf("error to unmarshal response data returned")
 			return nil
 		}
-		if len(res.Delta) != 0 {
+		if a.node == nil {
+			a.node = &node{
+				Name:      res.Metadata[string(common.Node)].(string),
+				Namespace: res.Metadata[common.KeyContextNamespace].(string),
+			}
+		}
+		if res.Delta != nil {
 			le := &EventLink{
-				Trace: res.Response["trace"].(string),
-				Type:  res.Response["type"].(string),
+				Trace: res.Metadata["trace"].(string),
+				Type:  res.Metadata["type"].(string),
 			}
 			le.Info = res.Delta
 			e := &Event{
@@ -89,9 +113,10 @@ func (a *agent) report(pgs ...*progress) *inspect {
 				Content: le,
 			}
 			select {
+			case oe := <-a.events:
+				a.ctx.Log().Warnf("discard old event: %+v", *oe)
+				a.events <- e
 			case a.events <- e:
-			default:
-				a.ctx.Log().Warnf("discard event: %+v", *e)
 			}
 		}
 	} else {
@@ -116,6 +141,41 @@ func (a *agent) report(pgs ...*progress) *inspect {
 		}
 	}
 	return io
+}
+
+func (a *agent) collectActiveInfo(inspect *baetyl.Inspect) (*config.Activation, error) {
+	attrs := a.attrs
+	if attrs == nil {
+		attrs = map[string]string{}
+		for _, item := range a.cfg.Attributes {
+			attrs[item.Name] = item.Value
+		}
+	}
+	a.ctx.Log().Debugln("active attributes : ", attrs)
+	fp := attrs[common.KeyFingerprintValue]
+	if a.cfg.Fingerprints != nil && len(a.cfg.Fingerprints) > 0 {
+		for _, instance := range a.cfg.Fingerprints {
+			if instance.Proof == common.Input {
+				fp = attrs[os.Getenv(common.BatchInputField)]
+				break
+			}
+			proof, err := collectFP(instance.Proof, instance.Value, inspect)
+			if err != nil {
+				return nil, err
+			}
+			if proof != "" {
+				fp = proof
+				break
+			}
+		}
+	}
+	if fp == "" {
+		return nil, errors.New("cannot get fingerprint")
+	}
+	return &config.Activation{
+		FingerprintValue: fp,
+		PenetrateData:    attrs,
+	}, nil
 }
 
 func (a *agent) send(data []byte) error {
@@ -150,4 +210,47 @@ func (a *agent) encryptData(data []byte) ([]byte, string, error) {
 	// encode body using BASE64
 	body = []byte(base64.StdEncoding.EncodeToString(body))
 	return body, key, nil
+}
+
+func collectFP(proof common.Proof, value string, inspect *baetyl.Inspect) (string, error) {
+	switch proof {
+	case common.HostID:
+		return inspect.Hardware.HostInfo.HostID, nil
+	case common.CPU:
+		return collectCPU(inspect)
+	case common.MAC:
+		return collectMAC(value, inspect)
+	case common.SN:
+		return collectSN(value)
+	default:
+		return "", errors.New("proof invalid")
+	}
+}
+
+// collectCPU get cpu info
+func collectCPU(inspect *baetyl.Inspect) (string, error) {
+	// todo collect CPU info
+	return "", nil
+}
+
+// collectMAC get mac address
+func collectMAC(value string, inspect *baetyl.Inspect) (string, error) {
+	interfStat := inspect.Hardware.NetInfo.Interfaces
+	var mac string
+	for _, interf := range interfStat {
+		if interf.Name == value {
+			mac = interf.MAC
+			break
+		}
+	}
+	return mac, nil
+}
+
+// collectSN get sn from var/db/baetyl/data/
+func collectSN(value string) (string, error) {
+	snByte, err := ioutil.ReadFile(path.Join(common.SNPath, value))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(snByte)), nil
 }

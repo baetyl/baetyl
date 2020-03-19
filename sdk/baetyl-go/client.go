@@ -1,7 +1,6 @@
 package baetyl
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -97,56 +96,3 @@ func (c *ctximpl) StopInstance(serviceName, instanceName string) error {
 	_, err := c.cli.Put(nil, c.ver+"/services/%s/instances/%s/stop", serviceName, instanceName)
 	return err
 }
-
-// SetKV set kv
-func (c *ctximpl) SetKV(kv apiserver.KV) error {
-	_, err := c.KV.Set(context.Background(), &kv, grpc.WaitForReady(true))
-	return err
-}
-
-// SetKVConext set kv which supports context
-func (c *ctximpl) SetKVConext(ctx context.Context, kv apiserver.KV) error {
-	_, err := c.KV.Set(ctx, &kv, grpc.WaitForReady(true))
-	return err
-}
-
-// GetKV get kv
-func (c *ctximpl) GetKV(k []byte) (*apiserver.KV, error) {
-	return c.KV.Get(context.Background(), &apiserver.KV{Key: k}, grpc.WaitForReady(true))
-}
-
-// GetKVConext get kv which supports context
-func (c *ctximpl) GetKVConext(ctx context.Context, k []byte) (*apiserver.KV, error) {
-	return c.KV.Get(ctx, &apiserver.KV{Key: k}, grpc.WaitForReady(true))
-}
-
-// DelKV del kv
-func (c *ctximpl) DelKV(k []byte) error {
-	_, err := c.KV.Del(context.Background(), &apiserver.KV{Key: k}, grpc.WaitForReady(true))
-	return err
-}
-
-// DelKVConext del kv which supports context
-func (c *ctximpl) DelKVConext(ctx context.Context, k []byte) error {
-	_, err := c.KV.Del(ctx, &apiserver.KV{Key: k}, grpc.WaitForReady(true))
-	return err
-}
-
-// ListKV list kv with prefix
-func (c *ctximpl) ListKV(p []byte) ([]*apiserver.KV, error) {
-	kvs, err := c.KV.List(context.Background(), &apiserver.KV{Key: p}, grpc.WaitForReady(true))
-	if err != nil {
-		return nil, err
-	}
-	return kvs.Kvs, nil
-}
-
-// ListKVContext list kv with prefix which supports context
-func (c *ctximpl) ListKVContext(ctx context.Context, p []byte) ([]*apiserver.KV, error) {
-	kvs, err := c.KV.List(ctx, &apiserver.KV{Key: p}, grpc.WaitForReady(true))
-	if err != nil {
-		return nil, err
-	}
-	return kvs.Kvs, nil
-}
-*/
