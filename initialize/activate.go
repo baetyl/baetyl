@@ -56,7 +56,6 @@ func (init *Initialize) Activate() {
 		init.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
-
 	var res BackwardInfo
 	err = json.Unmarshal(data, &res)
 	if err != nil {
