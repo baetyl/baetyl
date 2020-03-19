@@ -35,8 +35,8 @@ type Sync interface {
 	ProcessApplication(app *models.Application) error
 }
 
-func NewSync(cfg config.Config, sto *bh.Store, sha *shadow.Shadow, cent *event.Center) (Sync, error) {
-	httpOps, err := cfg.Sync.Cloud.HTTP.ToClientOptions()
+func NewSync(cfg config.SyncConfig, sto *bh.Store, sha *shadow.Shadow, cent *event.Center) (Sync, error) {
+	httpOps, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func NewSync(cfg config.Config, sto *bh.Store, sha *shadow.Shadow, cent *event.C
 type sync struct {
 	cent   *event.Center
 	log    *log.Logger
-	cfg    config.Config
+	cfg    config.SyncConfig
 	tomb   utils.Tomb
 	impl   appv1.DeploymentInterface
 	http   *http.Client

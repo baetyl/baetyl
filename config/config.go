@@ -10,10 +10,6 @@ import (
 
 // Config the core config
 type Config struct {
-	Node struct {
-		Name      string `json:"name,omitempty"`
-		Namespace string `json:"namespace,omitempty"`
-	} `yaml:"node" json:"node"`
 	Engine EngineConfig `yaml:"engine" json:"engine"`
 	Sync   SyncConfig   `yaml:"sync" json:"sync"`
 	Store  StoreConfig  `yaml:"store" json:"store"`
@@ -39,8 +35,13 @@ type StoreConfig struct {
 }
 
 type SyncConfig struct {
+	Node struct {
+		Name      string `json:"name,omitempty"`
+		Namespace string `json:"namespace,omitempty"`
+	} `yaml:"node" json:"node"`
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
+		Token  string            `yaml:"token" json:"token"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v1/sync/report"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
