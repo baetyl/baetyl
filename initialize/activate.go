@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	gohttp "net/http"
 	"time"
 )
 
@@ -45,7 +44,9 @@ func (init *Initialize) Activate() {
 		return
 	}
 
-	resp, err := init.sendRequest("POST", init.cfg.Init.Cloud.Active.URL, data)
+	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, init.cfg.Init.Cloud.Active.URL)
+	resp, err := init.http.Post(url, "application/json", bytes.NewReader(data))
+
 	if err != nil {
 		init.log.Error("failed to send activate data", log.Error(err))
 		return
@@ -55,7 +56,6 @@ func (init *Initialize) Activate() {
 		init.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
-
 	var res BackwardInfo
 	err = json.Unmarshal(data, &res)
 	if err != nil {
@@ -63,36 +63,12 @@ func (init *Initialize) Activate() {
 		return
 	}
 
-	init.cfg.Node.Name = res.NodeName
-	init.cfg.Node.Namespace = res.Namespace
+	init.cfg.Sync.Node.Name = res.NodeName
+	init.cfg.Sync.Node.Namespace = res.Namespace
 	init.cfg.Sync.Cloud.HTTP.CA = res.Cert.CA
 	init.cfg.Sync.Cloud.HTTP.Cert = res.Cert.Cert
 	init.cfg.Sync.Cloud.HTTP.Key = res.Cert.Key
 	init.cfg.Sync.Cloud.HTTP.Name = res.Cert.Name
 
 	init.sig <- true
-}
-
-func (init *Initialize) sendRequest(method, path string, body []byte) (*gohttp.Response, error) {
-	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, path)
-	r := bytes.NewReader(body)
-	req, err := gohttp.NewRequest(method, url, r)
-	if err != nil {
-		return nil, err
-	}
-	header := map[string]string{
-		"Content-Type": "application/json",
-	}
-	init.log.Debug("request", log.Any("method", method),
-		log.Any("path", path), log.Any("body", body),
-		log.Any("header", header))
-	req.Header = gohttp.Header{}
-	for k, v := range header {
-		req.Header.Set(k, v)
-	}
-	res, err := init.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }

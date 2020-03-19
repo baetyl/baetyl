@@ -29,7 +29,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, err
 	}
 
-	if cfg.Node.Name == "" {
+	if cfg.Sync.Node.Name == "" {
 		i, err := initialize.NewInit(&cfg)
 		if err != nil {
 			i.Close()
@@ -43,7 +43,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.sha, err = shadow.NewShadow(cfg.Node.Namespace, cfg.Node.Name, c.sto)
+	c.sha, err = shadow.NewShadow(cfg.Sync.Node.Namespace, cfg.Sync.Node.Name, c.sto)
 	if err != nil {
 		c.Close()
 		return nil, err
@@ -63,7 +63,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, err
 	}
 
-	c.syn, err = sync.NewSync(cfg, c.sto, c.sha, c.cent)
+	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha, c.cent)
 	if err != nil {
 		c.Close()
 		return nil, err

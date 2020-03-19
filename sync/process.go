@@ -81,7 +81,7 @@ func (s *sync) syncResource(res []*BaseResource) ([]*Resource, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.sendRequest("POST", s.cfg.Sync.Cloud.Desire.URL, data)
+	resp, err := s.sendRequest("POST", s.cfg.Cloud.Desire.URL, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
@@ -117,7 +117,7 @@ func (s *sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configura
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, common.PrefixConfigObject) {
 			if dir == "" {
-				dir = path.Join(s.cfg.Sync.Edge.DownloadPath, cfg.Name, cfg.Version)
+				dir = path.Join(s.cfg.Edge.DownloadPath, cfg.Name, cfg.Version)
 			}
 			obj := new(StorageObject)
 			err := json.Unmarshal([]byte(v), &obj)
