@@ -18,7 +18,7 @@ type Shadow struct {
 
 // NewShadow create a new shadow
 func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
-	m := &spec.Spec{
+	m := &spec.Shadow{
 		Name:              name,
 		Namespace:         namespace,
 		CreationTimestamp: time.Now(),
@@ -38,14 +38,14 @@ func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
 }
 
 // Get returns shadow model
-func (s *Shadow) Get() (m *spec.Spec, err error) {
+func (s *Shadow) Get() (m *spec.Shadow, err error) {
 	err = s.store.Bolt().View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m = &spec.Spec{}
+		m = &spec.Shadow{}
 		return json.Unmarshal(prev, m)
 	})
 	return
@@ -59,7 +59,7 @@ func (s *Shadow) Desire(desired spec.Desire) (delta spec.Delta, err error) {
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m := &spec.Spec{}
+		m := &spec.Shadow{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
 			return err
@@ -94,7 +94,7 @@ func (s *Shadow) Report(reported spec.Report) (delta spec.Delta, err error) {
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m := &spec.Spec{}
+		m := &spec.Shadow{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
 			return err
@@ -122,7 +122,7 @@ func (s *Shadow) Report(reported spec.Report) (delta spec.Delta, err error) {
 }
 
 // Get insert the whole shadow data
-func (s *Shadow) insert(m *spec.Spec) error {
+func (s *Shadow) insert(m *spec.Shadow) error {
 	return s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(s.bk)
 		if err != nil {

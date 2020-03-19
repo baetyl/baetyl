@@ -10,7 +10,7 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 )
 
-func (s *sync) downloadFile(obj *StorageObject, dir, name string, zip bool) error {
+func (s *Sync) downloadFile(obj *StorageObject, dir, name string, zip bool) error {
 	// file exists
 	if utils.FileExists(name) {
 		md5, err := utils.CalculateFileMD5(name)
@@ -20,11 +20,12 @@ func (s *sync) downloadFile(obj *StorageObject, dir, name string, zip bool) erro
 		}
 	}
 
-	resp, err := s.sendRequest("GET", obj.URL, nil)
+	// TODO: streaming mode
+	resp, err := s.http.Get(obj.URL)
 	if err != nil || resp == nil {
 		// retry
 		time.Sleep(time.Second)
-		resp, err = s.sendRequest("GET", obj.URL, nil)
+		resp, err = s.http.Get(obj.URL)
 		if err != nil || resp == nil {
 			return fmt.Errorf("failed to download file (%s)", name)
 		}

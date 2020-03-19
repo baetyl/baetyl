@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/baetyl/baetyl-core/common"
 	"time"
+
+	"github.com/baetyl/baetyl-core/common"
 
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
@@ -41,7 +42,6 @@ type SyncConfig struct {
 	} `yaml:"node" json:"node"`
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
-		Token  string            `yaml:"token" json:"token"`
 		Report struct {
 			URL      string        `yaml:"url" json:"url" default:"/v1/sync/report"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`

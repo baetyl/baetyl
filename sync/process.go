@@ -3,7 +3,6 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-go/link"
 	"os"
 	"path"
 	"strings"
@@ -11,11 +10,11 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
-	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
 )
 
-func (s *sync) ProcessDelta(msg link.Message) error {
+func (s *Sync) ProcessDelta(msg link.Message) error {
 	var delta map[string]interface{}
 	err := json.Unmarshal(msg.Content, &delta)
 	if err != nil {
@@ -86,17 +85,13 @@ func (s *sync) ProcessDelta(msg link.Message) error {
 	return nil
 }
 
-func (s *sync) syncResource(res []*BaseResource) ([]*Resource, error) {
+func (s *Sync) syncResource(res []*BaseResource) ([]*Resource, error) {
 	req := DesireRequest{Resources: res}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.sendRequest("POST", s.cfg.Cloud.Desire.URL, data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
-	}
-	data, err = http.HandleResponse(resp)
+	data, err = s.http.PostJSON(s.cfg.Cloud.Desire.URL, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
@@ -108,7 +103,7 @@ func (s *sync) syncResource(res []*BaseResource) ([]*Resource, error) {
 	return response.Resources, nil
 }
 
-func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]*models.Configuration) error {
+func (s *Sync) ProcessVolumes(volumes []models.Volume, configs map[string]*models.Configuration) error {
 	for _, volume := range volumes {
 		if cfg := volume.VolumeSource.Configuration; cfg != nil && configs[cfg.Name] != nil {
 			err := s.ProcessConfiguration(&volume, configs[cfg.Name])
@@ -123,7 +118,7 @@ func (s *sync) ProcessVolumes(volumes []models.Volume, configs map[string]*model
 	return nil
 }
 
-func (s *sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configuration) error {
+func (s *Sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configuration) error {
 	var dir string
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, common.PrefixConfigObject) {
@@ -156,7 +151,7 @@ func (s *sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configura
 	return s.store.Upsert(key, cfg)
 }
 
-func (s *sync) ProcessApplication(app *models.Application) error {
+func (s *Sync) ProcessApplication(app *models.Application) error {
 	key := utils.MakeKey(common.Application, app.Name, app.Version)
 	if key == "" {
 		return fmt.Errorf("app does not have name or version")
@@ -164,7 +159,7 @@ func (s *sync) ProcessApplication(app *models.Application) error {
 	return s.store.Upsert(key, app)
 }
 
-func (s *sync) generateRequest(resType common.Resource, res map[string]string) ([]*BaseResource, error) {
+func (s *Sync) generateRequest(resType common.Resource, res map[string]string) ([]*BaseResource, error) {
 	var bs []*BaseResource
 	switch resType {
 	case common.Application:
@@ -194,7 +189,7 @@ func (s *sync) generateRequest(resType common.Resource, res map[string]string) (
 	return bs, nil
 }
 
-func (s *sync) filterApps(apps map[string]string) {
+func (s *Sync) filterApps(apps map[string]string) {
 	for name, ver := range apps {
 		key := utils.MakeKey(common.Application, name, ver)
 		var app models.Application
@@ -209,7 +204,7 @@ func (s *sync) filterApps(apps map[string]string) {
 	}
 }
 
-func (s *sync) filterConfigs(configs map[string]string) {
+func (s *Sync) filterConfigs(configs map[string]string) {
 	for name, ver := range configs {
 		key := utils.MakeKey(common.Configuration, name, ver)
 		var config models.Configuration
