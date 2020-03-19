@@ -9,7 +9,7 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-core/store"
-	"github.com/baetyl/baetyl-go/link"
+	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/mock"
 	"github.com/baetyl/baetyl-go/spec"
 	"github.com/baetyl/baetyl-go/utils"
@@ -53,7 +53,7 @@ func TestSync_Report(t *testing.T) {
 	syn, err := NewSync(sc, sto, sha, nil)
 	assert.NoError(t, err)
 
-	err = syn.Report(link.Message{})
+	err = syn.Report(faas.Message{})
 	assert.NoError(t, err)
 
 	sp, err := sha.Get()

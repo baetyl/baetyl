@@ -5,7 +5,6 @@ import (
 
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
-	"github.com/baetyl/baetyl/sdk/baetyl-go"
 )
 
 type BackwardInfo struct {
@@ -16,7 +15,6 @@ type BackwardInfo struct {
 type ForwardInfo struct {
 	Metadata map[string]string      `yaml:"metadata" json:"metadata" default:"{}"`
 	Apps     map[string]interface{} `yaml:"apps" json:"apps" default:"{}"` // shadow update
-	Status   baetyl.Inspect         `yaml:"status" json:"status"`
 }
 
 type ApplicationResource struct {

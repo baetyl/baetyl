@@ -5,14 +5,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/baetyl/baetyl-go/link"
+	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 )
 
 // Handler event handler
-type Handler func(link.Message) error
+type Handler func(faas.Message) error
 
 // Center the event handling center, event handling methods can be registered by topic
 type Center struct {
@@ -38,7 +38,7 @@ func NewCenter(store *bh.Store, limit int) (*Center, error) {
 		logger:   log.With(log.Any("event", "center")),
 	}
 	// TODO: to improve bolthold
-	last := &link.Message{}
+	last := &faas.Message{}
 	num, err := c.store.Count(last, nil)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func NewCenter(store *bh.Store, limit int) (*Center, error) {
 			return nil, err
 		}
 	}
-	c.last = last.Context.ID
+	c.last = last.ID
 	c.Trigger(nil)
 
 	return c, nil
@@ -76,13 +76,13 @@ func (c *Center) Close() error {
 }
 
 // Trigger store event if not nil, then trigger a signal
-func (c *Center) Trigger(e *link.Message) error {
+func (c *Center) Trigger(e *faas.Message) error {
 	if e != nil {
-		if e.Context.Topic == "" {
+		if e.Metadata == nil || e.Metadata["topic"] == "" {
 			return os.ErrInvalid
 		}
-		e.Context.ID = atomic.AddUint64(&c.last, 1)
-		err := c.store.Insert(e.Context.ID, e)
+		e.ID = atomic.AddUint64(&c.last, 1)
+		err := c.store.Insert(e.ID, e)
 		if err != nil {
 			return err
 		}
@@ -100,8 +100,8 @@ func (c *Center) handling() error {
 	defer c.logger.Info("center has stopped handling event")
 
 	var err error
-	var events []link.Message
-LOOP:
+	var events []faas.Message
+
 	for {
 		select {
 		case <-c.signal:
@@ -118,19 +118,16 @@ LOOP:
 			// TODO: to merge events if needs
 			for _, e := range events {
 				c.logger.Debug("find an event", log.Any("event", e.String()))
-				topic := e.Context.Topic
+				topic := e.Metadata["topic"]
 				handler, ok := c.handlers[topic]
-				if ok {
-					err = handler(e)
-					if err != nil {
-						c.logger.Error("failed to handle event", log.Error(err), log.Any("event", e.String()))
-						time.Sleep(time.Second)
-						continue LOOP
-					}
-				} else {
+				if !ok {
 					c.logger.Warn("event handler not found", log.Any("event", e.String()))
 				}
-				err = c.store.Delete(e.Context.ID, &e)
+				err = handler(e)
+				if err != nil {
+					c.logger.Warn("failed to handle event", log.Error(err), log.Any("event", e.String()))
+				}
+				err = c.store.Delete(e.ID, &e)
 				if err != nil {
 					c.logger.Error("failed to delete event", log.Error(err), log.Any("event", e.String()))
 				}

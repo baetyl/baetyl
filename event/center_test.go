@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-core/store"
-	"github.com/baetyl/baetyl-go/link"
+	"github.com/baetyl/baetyl-go/faas"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,31 +25,8 @@ func TestCenter(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
-	err = c.Register(t.Name(), func(e link.Message) error {
-		fmt.Println("-->1 handling", e.String())
-		return os.ErrInvalid
-	})
-	assert.NoError(t, err)
-	c.Start()
-
-	var e1 link.Message
-	e1.Context.Topic = t.Name()
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-	err = c.Close()
-	assert.NoError(t, err)
-
-	c, err = NewCenter(s, 2)
-	assert.NoError(t, err)
-	assert.NotNil(t, c)
-	defer c.Close()
-
-	events := make(chan link.Message, 2)
-	err = c.Register(t.Name(), func(e link.Message) error {
+	events := make(chan faas.Message, 2)
+	err = c.Register(t.Name(), func(e faas.Message) error {
 		fmt.Println("-->2 handling", e.String())
 		events <- e
 		return nil
@@ -57,34 +34,29 @@ func TestCenter(t *testing.T) {
 	assert.NoError(t, err)
 	c.Start()
 
+	go func() {
+		var e1 faas.Message
+		e1.Metadata = map[string]string{"topic": t.Name()}
+		e1.Payload = []byte("test")
+		err = c.Trigger(&e1)
+		assert.NoError(t, err)
+		err = c.Trigger(&e1)
+		assert.NoError(t, err)
+		err = c.Trigger(&e1)
+		assert.NoError(t, err)
+		err = c.Trigger(&e1)
+		assert.NoError(t, err)
+	}()
+
 	e2 := <-events
-	assert.Equal(t, uint64(1), e2.Context.ID)
-	assert.Equal(t, t.Name(), e2.Context.Topic)
+	assert.Equal(t, uint64(1), e2.ID)
 	e2 = <-events
-	assert.Equal(t, uint64(2), e2.Context.ID)
-	assert.Equal(t, t.Name(), e2.Context.Topic)
+	assert.Equal(t, uint64(2), e2.ID)
 	e2 = <-events
-	assert.Equal(t, uint64(3), e2.Context.ID)
-	assert.Equal(t, t.Name(), e2.Context.Topic)
-
-	e1.Content = []byte("test")
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-	err = c.Trigger(&e1)
-	assert.NoError(t, err)
-
+	assert.Equal(t, uint64(3), e2.ID)
 	e2 = <-events
-	assert.Equal(t, uint64(4), e2.Context.ID)
-	e2 = <-events
-	assert.Equal(t, uint64(5), e2.Context.ID)
-	e2 = <-events
-	assert.Equal(t, uint64(6), e2.Context.ID)
-	e2 = <-events
-	assert.Equal(t, uint64(7), e2.Context.ID)
+	assert.Equal(t, uint64(4), e2.ID)
+	assert.Equal(t, []byte("test"), e2.Payload)
 }
 
 func TestCenterException(t *testing.T) {
@@ -97,7 +69,7 @@ func TestCenterException(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	handler := func(e link.Message) error {
+	handler := func(e faas.Message) error {
 		fmt.Println("-->handling", e.String())
 		return os.ErrInvalid
 	}
@@ -123,7 +95,7 @@ func TestCenterException(t *testing.T) {
 	err = c.Register("2", handler)
 	assert.NoError(t, err)
 
-	var e1 link.Message
+	var e1 faas.Message
 	err = c.Trigger(&e1)
 	assert.Equal(t, os.ErrInvalid, err)
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-core/shadow"
+	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/http"
-	"github.com/baetyl/baetyl-go/link"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
 	bh "github.com/timshannon/bolthold"
@@ -50,8 +50,8 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, shad *shadow.Shadow, cent *
 }
 
 // Report reports info
-func (s *Sync) Report(msg link.Message) error {
-	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, msg.Content)
+func (s *Sync) Report(msg faas.Message) error {
+	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, msg.Payload)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err

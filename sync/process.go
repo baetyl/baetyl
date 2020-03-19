@@ -10,13 +10,13 @@ import (
 	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
-	"github.com/baetyl/baetyl-go/link"
+	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
 )
 
-func (s *Sync) ProcessDelta(msg link.Message) error {
+func (s *Sync) ProcessDelta(msg faas.Message) error {
 	var delta map[string]interface{}
-	err := json.Unmarshal(msg.Content, &delta)
+	err := json.Unmarshal(msg.Payload, &delta)
 	if err != nil {
 		return err
 	}
@@ -75,9 +75,7 @@ func (s *Sync) ProcessDelta(msg link.Message) error {
 			return err
 		}
 	}
-	message := &link.Message{Context: link.Context{
-		Topic: common.EngineAppEvent,
-	}, Content: msg.Content}
+	message := &faas.Message{Metadata: map[string]string{"topic": common.EngineAppEvent}, Payload: msg.Payload}
 	err = s.cent.Trigger(message)
 	if err != nil {
 		return err

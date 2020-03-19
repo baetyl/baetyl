@@ -3,15 +3,15 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-core/ami"
-	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/event"
 	"os"
 	"time"
 
+	"github.com/baetyl/baetyl-core/ami"
+	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-core/shadow"
-	"github.com/baetyl/baetyl-go/link"
+	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
 )
@@ -56,21 +56,21 @@ func (e *Engine) collecting() error {
 				e.log.Error("failed to update shadow report", log.Error(err))
 				continue
 			}
-			var msg link.Message
+			var msg faas.Message
 			if len(delta) > 0 {
-				msg.Content, err = json.Marshal(delta)
+				msg.Payload, err = json.Marshal(delta)
 				if err != nil {
 					e.log.Error("failed to marshal delta", log.Error(err))
 					continue
 				}
-				msg.Context.Topic = common.SyncDesireEvent
+				msg.Metadata = map[string]string{"topic": common.SyncDesireEvent}
 			} else {
-				msg.Content, err = json.Marshal(info)
+				msg.Payload, err = json.Marshal(info)
 				if err != nil {
 					e.log.Error("failed to marshal delta", log.Error(err))
 					continue
 				}
-				msg.Context.Topic = common.SyncReportEvent
+				msg.Metadata = map[string]string{"topic": common.SyncReportEvent}
 			}
 			err = e.cent.Trigger(&msg)
 			if err != nil {
@@ -88,9 +88,9 @@ func (e *Engine) Close() {
 	e.tomb.Wait()
 }
 
-func (e *Engine) Apply(msg link.Message) error {
+func (e *Engine) Apply(msg faas.Message) error {
 	var info map[string]interface{}
-	err := json.Unmarshal(msg.Content, &info)
+	err := json.Unmarshal(msg.Payload, &info)
 	if err != nil {
 		return err
 	}
