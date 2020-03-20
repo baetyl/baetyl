@@ -105,6 +105,7 @@ const (
 	ProofSN         Proof = "sn"
 	ProofInput      Proof = "input"
 	ProofHostName   Proof = "hostName"
+	ProofBootID     Proof = "bootID"
 	ProofMachineID  Proof = "machineID"
 	ProofSystemUUID Proof = "systemUUID"
 )

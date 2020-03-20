@@ -22,6 +22,10 @@ func (init *Initialize) collect() (string, error) {
 	if len(fs) == 0 {
 		return "", nil
 	}
+	report, err := init.ami.CollectInfo()
+	if err != nil {
+		return "", err
+	}
 	for _, f := range fs {
 		switch f.Proof {
 		case config.ProofInput:
@@ -34,12 +38,14 @@ func (init *Initialize) collect() (string, error) {
 				return "", err
 			}
 			return strings.TrimSpace(string(snByte)), nil
-		// case config.ProofHostName:
-		// todo get hostname
-		// case config.ProofMachineID:
-		// todo get MachineID
-		// case config.ProofSystemUUID:
-		// todo get SystemUUID
+		case config.ProofHostName:
+			return report.NodeInfo.Hostname, nil
+		case config.ProofMachineID:
+			return report.NodeInfo.MachineID, nil
+		case config.ProofSystemUUID:
+			return report.NodeInfo.SystemUUID, nil
+		case config.ProofBootID:
+			return report.NodeInfo.BootID, nil
 		default:
 			return "", ErrProofTypeNotSupported
 		}

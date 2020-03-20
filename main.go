@@ -30,8 +30,17 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, err
 	}
 
+	c := &core{}
+	c.sto, err = store.NewBoltHold(cfg.Store.Path)
+	if err != nil {
+		return nil, err
+	}
+	ami, err := ami.NewKubeModel(cfg.Engine.Kubernetes, c.sto)
+	if err != nil {
+		return nil, err
+	}
 	if cfg.Sync.Node.Name == "" {
-		i, err := initialize.NewInit(&cfg)
+		i, err := initialize.NewInit(&cfg, ami)
 		if err != nil {
 			i.Close()
 			return nil, err
@@ -39,15 +48,6 @@ func NewCore(ctx context.Context) (*core, error) {
 		i.WaitAndClose()
 	}
 
-	c := &core{}
-	c.sto, err = store.NewBoltHold(cfg.Store.Path)
-	if err != nil {
-		return nil, err
-	}
-	model, err := ami.NewKubeModel(cfg.Engine.Kubernetes, c.sto)
-	if err != nil {
-		return nil, err
-	}
 	c.cent, err = event.NewCenter(c.sto, 10)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	c.eng, err = engine.NewEngine(cfg.Engine, model, c.sha, c.cent)
+	c.eng, err = engine.NewEngine(cfg.Engine, ami, c.sha, c.cent)
 	if err != nil {
 		c.Close()
 		return nil, err
