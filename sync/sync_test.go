@@ -46,8 +46,8 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	sc.Cloud.HTTP.Address = ms.URL
 	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
-	sc.Cloud.HTTP.Key = "./testcert/server.key"
-	sc.Cloud.HTTP.Cert = "./testcert/server.pem"
+	sc.Cloud.HTTP.Key = "./testcert/client.key"
+	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 
 	syn, err := NewSync(sc, sto, sha, nil)
@@ -58,5 +58,10 @@ func TestSync_Report(t *testing.T) {
 
 	sp, err := sha.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, spec.Desire{"apps": map[string]interface{}{"app1": "123"}}, sp.Desire)
+	assert.Equal(t, &spec.Shadow{
+		Namespace:         t.Name(),
+		Name:              t.Name(),
+		CreationTimestamp: sp.CreationTimestamp,
+		Desire:            spec.Desire{"apps": map[string]interface{}{"app1": "123"}},
+	}, sp)
 }

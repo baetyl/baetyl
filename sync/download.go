@@ -7,10 +7,11 @@ import (
 
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/spec/api"
 	"github.com/baetyl/baetyl-go/utils"
 )
 
-func (s *Sync) downloadFile(obj *StorageObject, dir, name string, zip bool) error {
+func (s *Sync) downloadFile(obj *api.CRDConfigObject, dir, name string, zip bool) error {
 	// file exists
 	if utils.FileExists(name) {
 		md5, err := utils.CalculateFileMD5(name)

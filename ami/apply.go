@@ -1,9 +1,8 @@
 package ami
 
 import (
-	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/utils"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl-go/spec/api"
+	"github.com/baetyl/baetyl-go/spec/crd"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -11,35 +10,29 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
+func (k *kubeModel) ApplyApplications(apps *api.ReportResponse) error {
 	deploys := map[string]*appv1.Deployment{}
 	var services []*corev1.Service
 	configs := map[string]*corev1.ConfigMap{}
 	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
-	for name, ver := range apps {
-		if ver.(string) == "" {
-			err := deployInterface.Delete(name, &metav1.DeleteOptions{})
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		var app v1.Application
-		key := utils.MakeKey(common.Application, name, ver.(string))
-		err := k.store.Get(key, &app)
+	for _, app := range apps.AppInfos {
+		key := makeKey(crd.KindApplication, app.Name, app.Version)
+
+		var appdata crd.Application
+		err := k.store.Get(key, &appdata)
 		if err != nil {
 			return err
 		}
-		deploy, svcs, err := toDeployAndService(&app)
+		deploy, svcs, err := toDeployAndService(&appdata)
 		if err != nil {
 			return err
 		}
 		deploys[deploy.Name] = deploy
 		services = append(services, svcs...)
-		for _, v := range app.Volumes {
+		for _, v := range appdata.Volumes {
 			if cfg := v.Config; cfg != nil {
-				key := utils.MakeKey(common.Configuration, cfg.Name, cfg.Version)
-				var config v1.Configuration
+				key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
+				var config crd.Configuration
 				err := k.store.Get(key, &config)
 				if err != nil {
 					return err
@@ -49,6 +42,8 @@ func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 			}
 		}
 	}
+
+	// TODO: delete removed services
 
 	configMapInterface := k.cli.Core.ConfigMaps(k.cli.Namespace)
 	for _, cfg := range configs {
@@ -98,11 +93,10 @@ func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 		}
 	}
 
-	return k.store.Upsert(common.DefaultAppsKey,
-		appsVersionResource{Name: common.DefaultAppsKey, Value: apps})
+	return k.store.Upsert("apps", apps)
 }
 
-func toConfigMap(config *v1.Configuration) (*corev1.ConfigMap, error) {
+func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
 	configMap := &corev1.ConfigMap{}
 	err := copier.Copy(configMap, config)
 	if err != nil {
@@ -111,7 +105,7 @@ func toConfigMap(config *v1.Configuration) (*corev1.ConfigMap, error) {
 	return configMap, nil
 }
 
-func toDeployAndService(app *v1.Application) (*appv1.Deployment, []*corev1.Service, error) {
+func toDeployAndService(app *crd.Application) (*appv1.Deployment, []*corev1.Service, error) {
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
@@ -146,7 +140,7 @@ func toDeployAndService(app *v1.Application) (*appv1.Deployment, []*corev1.Servi
 	for _, v := range app.Volumes {
 		if config := v.Config; config != nil {
 			volume := corev1.Volume{
-				Name:         v.Name,
+				Name: v.Name,
 				VolumeSource: corev1.VolumeSource{
 					ConfigMap: &corev1.ConfigMapVolumeSource{
 						LocalObjectReference: corev1.LocalObjectReference{Name: config.Name},
@@ -156,9 +150,9 @@ func toDeployAndService(app *v1.Application) (*appv1.Deployment, []*corev1.Servi
 			deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, volume)
 		} else if secret := v.Secret; secret != nil {
 			volume := corev1.Volume{
-				Name:         v.Name,
+				Name: v.Name,
 				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource {
+					Secret: &corev1.SecretVolumeSource{
 						SecretName: secret.Name,
 					},
 				},
@@ -194,4 +188,11 @@ func toDeployAndService(app *v1.Application) (*appv1.Deployment, []*corev1.Servi
 		services = append(services, service)
 	}
 	return deploy, services, nil
+}
+
+func makeKey(kind crd.Kind, name, ver string) string {
+	if name == "" || ver == "" {
+		return ""
+	}
+	return string(kind) + "/" + name + "/" + ver
 }

@@ -2,17 +2,17 @@ package initialize
 
 import (
 	"encoding/json"
-	"github.com/baetyl/baetyl-core/common"
+	"testing"
+
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/mock"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl-go/spec/api"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestInitialize_Activate(t *testing.T) {
-	resp := &v1.ActiveResponce{
+	resp := &api.ActiveResponse{
 		NodeName:  "node.test",
 		Namespace: "default",
 		Certificate: utils.Certificate{
@@ -46,7 +46,7 @@ func TestInitialize_Activate(t *testing.T) {
 	}
 	ic.ActivateConfig.Fingerprints = []config.Fingerprint{
 		{
-			Proof: common.Input,
+			Proof: config.ProofInput,
 			Value: "abc",
 		},
 	}

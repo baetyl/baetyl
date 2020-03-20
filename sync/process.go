@@ -3,33 +3,39 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/utils"
+	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/spec"
+	"github.com/baetyl/baetyl-go/spec/api"
+	"github.com/baetyl/baetyl-go/spec/crd"
+)
+
+// extended features of config resourece
+const (
+	configKeyObject = "_object_"
+	configValueZip  = "zip"
 )
 
 func (s *Sync) ProcessDelta(msg faas.Message) error {
-	var delta map[string]interface{}
+	var delta spec.Desire
 	err := json.Unmarshal(msg.Payload, &delta)
 	if err != nil {
 		return err
 	}
-	info, ok := delta[common.DefaultAppsKey].(map[string]interface{})
-	if !ok {
+	ais := delta.AppInfos()
+	if len(ais) == 0 {
 		return fmt.Errorf("apps does not exist")
 	}
 	appInfo := map[string]string{}
-	for name, ver := range info {
-		appInfo[name] = ver.(string)
+	for _, a := range ais {
+		appInfo[a.Name] = a.Version
 	}
-	
-	bs, err := s.generateRequest(common.Application, appInfo)
+	bs, err := s.generateRequest(crd.KindApplication, appInfo)
 	if err != nil {
 		return err
 	}
@@ -39,9 +45,9 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	}
 	cInfo := map[string]string{}
 	sInfo := map[string]string{}
-	apps := map[string]*v1.Application{}
+	apps := map[string]*crd.Application{}
 	for _, r := range res {
-		if app := r.GetApplication(); app != nil {
+		if app := r.App(); app != nil {
 			apps[app.Name] = app
 			for _, v := range app.Volumes {
 				if v.Config != nil {
@@ -55,7 +61,7 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 		}
 	}
 
-	reqs, err := s.generateRequest(common.Configuration, cInfo)
+	reqs, err := s.generateRequest(crd.KindConfiguration, cInfo)
 	if err != nil {
 		return err
 	}
@@ -63,16 +69,16 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	configs := map[string]*v1.Configuration{}
+	configs := map[string]*crd.Configuration{}
 	for _, r := range res {
-		if cfg := r.GetConfiguration(); cfg != nil {
+		if cfg := r.Config(); cfg != nil {
 			configs[cfg.Name] = cfg
 		} else {
 			return fmt.Errorf("failed to sync configuration (%s) (%s)", r.Name, r.Version)
 		}
 	}
 
-	reqs, err = s.generateRequest(common.Secret, sInfo)
+	reqs, err = s.generateRequest(crd.KindSecret, sInfo)
 	if err != nil {
 		return err
 	}
@@ -80,9 +86,9 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	secrets := map[string]*v1.Secret{}
+	secrets := map[string]*crd.Secret{}
 	for _, r := range res {
-		if secret := r.GetSecret(); secret != nil {
+		if secret := r.Secret(); secret != nil {
 			secrets[secret.Name] = secret
 		} else {
 			return fmt.Errorf("failed to sync secret (%s) (%s)", r.Name, r.Version)
@@ -100,7 +106,7 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 			return err
 		}
 	}
-	message := &faas.Message{Metadata: map[string]string{"topic": common.EngineAppEvent}, Payload: msg.Payload}
+	message := &faas.Message{Metadata: map[string]string{"topic": event.EngineAppEvent}, Payload: msg.Payload}
 	err = s.cent.Trigger(message)
 	if err != nil {
 		return err
@@ -108,8 +114,8 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	return nil
 }
 
-func (s *Sync) syncResource(res []*BaseResource) ([]*Resource, error) {
-	req := DesireRequest{Resources: res}
+func (s *Sync) syncResource(res []api.CRDInfo) ([]api.CRDData, error) {
+	req := api.CRDRequest{CRDInfos: res}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -118,15 +124,15 @@ func (s *Sync) syncResource(res []*BaseResource) ([]*Resource, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	var response DesireResponse
+	var response api.CRDResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
 	}
-	return response.Resources, nil
+	return response.CRDDatas, nil
 }
 
-func (s *Sync) processVolumes(volumes []v1.Volume, configs map[string]*v1.Configuration, secrets map[string]*v1.Secret) error {
+func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Configuration, secrets map[string]*crd.Secret) error {
 	for _, volume := range volumes {
 		if cfg := volume.VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
 			err := s.processConfiguration(&volume, configs[cfg.Name])
@@ -144,78 +150,88 @@ func (s *Sync) processVolumes(volumes []v1.Volume, configs map[string]*v1.Config
 	return nil
 }
 
-func (s *Sync) processConfiguration(volume *v1.Volume, cfg *v1.Configuration) error {
+func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) error {
 	var dir string
 	for k, v := range cfg.Data {
-		if strings.HasPrefix(k, common.PrefixConfigObject) {
+		if strings.HasPrefix(k, configKeyObject) {
 			if dir == "" {
 				dir = path.Join(s.cfg.Edge.DownloadPath, cfg.Name, cfg.Version)
 			}
-			obj := new(StorageObject)
+			obj := new(api.CRDConfigObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
 				return err
 			}
-			filename := path.Join(dir, strings.TrimPrefix(k, common.PrefixConfigObject))
-			err = s.downloadFile(obj, dir, filename, obj.Compression == common.ZipCompression)
+			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
+			err = s.downloadFile(obj, dir, filename, obj.Compression == configValueZip)
 			if err != nil {
 				os.RemoveAll(dir)
 				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
 			// change app.volume from config to host path of downloaded file path
 			volume.Config = nil
-			volume.HostPath = &v1.HostPathVolumeSource{
+			volume.HostPath = &crd.HostPathVolumeSource{
 				Path: dir,
 			}
 		}
 	}
 
-	key := utils.MakeKey(common.Configuration, cfg.Name, cfg.Version)
+	key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
 	if key == "" {
 		return fmt.Errorf("configuration does not have name or version")
 	}
 	return s.store.Upsert(key, cfg)
 }
 
-func (s *Sync) storeApplication(app *v1.Application) error {
-	key := utils.MakeKey(common.Application, app.Name, app.Version)
+func (s *Sync) storeApplication(app *crd.Application) error {
+	key := makeKey(crd.KindApplication, app.Name, app.Version)
 	if key == "" {
 		return fmt.Errorf("app does not have name or version")
 	}
 	return s.store.Upsert(key, app)
 }
 
-func (s *Sync) storeSecret(secret *v1.Secret) error {
-	key := utils.MakeKey(common.Secret, secret.Name, secret.Version)
+func (s *Sync) storeSecret(secret *crd.Secret) error {
+	key := makeKey(crd.KindSecret, secret.Name, secret.Version)
 	if key == "" {
 		return fmt.Errorf("secret does not have name or version")
 	}
 	return s.store.Upsert(key, secret)
 }
 
-func (s *Sync) generateRequest(resType common.Resource, res map[string]string) (bs []*BaseResource, err error) {
+func (s *Sync) generateRequest(kind crd.Kind, res map[string]string) (bs []api.CRDInfo, err error) {
 	var num int
 	for name, version := range res {
 		num = 0
-		switch resType {
-		case common.Configuration:
-			num, err = s.store.Count(&v1.Configuration{}, nil)
-		case common.Secret:
-			num, err = s.store.Count(&v1.Secret{}, nil)
+		switch kind {
+		// case crd.KindApplication, crd.KindApp:
+		// 	num, err = s.store.Count(&crd.Application{}, nil)
+		case crd.KindConfiguration, crd.KindConfig:
+			num, err = s.store.Count(&crd.Configuration{}, nil)
+		case crd.KindSecret:
+			num, err = s.store.Count(&crd.Secret{}, nil)
 		}
 		if err != nil {
 			return nil, err
 		}
+		// TODO: ?
 		if num > 0 {
 			delete(res, name)
 		}
-		b := &BaseResource{
-			Type:    resType,
+		b := api.CRDInfo{
+			Kind:    kind,
 			Name:    name,
 			Version: version,
 		}
 		bs = append(bs, b)
 	}
 	return
+}
+
+func makeKey(kind crd.Kind, name, ver string) string {
+	if name == "" || ver == "" {
+		return ""
+	}
+	return string(kind) + "/" + name + "/" + ver
 }

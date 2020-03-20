@@ -1,7 +1,6 @@
 package ami
 
 import (
-	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"k8s.io/client-go/kubernetes"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
@@ -44,6 +43,6 @@ func NewClient(cfg config.KubernetesConfig) (*Client, error) {
 		Core:      kubeClient.CoreV1(),
 		App:       kubeClient.AppsV1(),
 		Metrics:   metricsCli.MetricsV1beta1(),
-		Namespace: common.DefaultNamespace,
+		Namespace: "default", // TODO: check
 	}, nil
 }

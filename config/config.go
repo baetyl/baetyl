@@ -3,8 +3,6 @@ package config
 import (
 	"time"
 
-	"github.com/baetyl/baetyl-core/common"
-
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 )
@@ -87,8 +85,8 @@ type Server struct {
 
 // Fingerprint type to be collected
 type Fingerprint struct {
-	Proof common.Proof `yaml:"proof" json:"proof"`
-	Value string       `yaml:"value" json:"value"`
+	Proof Proof  `yaml:"proof" json:"proof"`
+	Value string `yaml:"value" json:"value"`
 }
 
 // Attribute field to be filled
@@ -98,3 +96,15 @@ type Attribute struct {
 	Value string `yaml:"value" json:"value"`
 	Desc  string `yaml:"description" json:"description"`
 }
+
+// Proof the proof of fingerprints
+type Proof string
+
+// all proofs
+const (
+	ProofSN         Proof = "sn"
+	ProofInput      Proof = "input"
+	ProofHostName   Proof = "hostName"
+	ProofMachineID  Proof = "machineID"
+	ProofSystemUUID Proof = "systemUUID"
+)
