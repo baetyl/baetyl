@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
-	"time"
+	"github.com/baetyl/baetyl-go/spec/api"
 )
 
 func (init *Initialize) activating() error {
@@ -26,7 +27,7 @@ func (init *Initialize) activating() error {
 
 // Report reports info
 func (init *Initialize) Activate() {
-	info := v1.ActiveRequest{
+	info := api.ActiveRequest{
 		BatchName:     init.batch.name,
 		Namespace:     init.batch.namespace,
 		SecurityType:  init.batch.securityType,
@@ -61,7 +62,7 @@ func (init *Initialize) Activate() {
 		init.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
-	var res v1.ActiveResponce
+	var res api.ActiveResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		init.log.Error("error to unmarshal activate response data returned", log.Error(err))

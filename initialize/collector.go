@@ -1,39 +1,47 @@
 package initialize
 
 import (
-	"github.com/baetyl/baetyl-core/common"
+	"errors"
 	"io/ioutil"
 	"path"
 	"strings"
+
+	"github.com/baetyl/baetyl-core/config"
 )
 
+// TODO: can be configured by cloud
 const (
-	DefaultSNPath = "var/lib/baetyl/sn"
+	defaultSNPath = "var/lib/baetyl/sn"
 )
+
+// ErrProofTypeNotSupported the proof type is not supported
+var ErrProofTypeNotSupported = errors.New("the proof type is not supported")
 
 func (init *Initialize) collect() (string, error) {
 	fs := init.cfg.Init.ActivateConfig.Fingerprints
-	if fs == nil || len(fs) == 0 {
+	if len(fs) == 0 {
 		return "", nil
 	}
 	for _, f := range fs {
 		switch f.Proof {
-		case common.Input:
+		case config.ProofInput:
 			if init.attrs != nil {
 				return init.attrs[f.Value], nil
 			}
-		case common.SN:
-			snByte, err := ioutil.ReadFile(path.Join(DefaultSNPath, f.Value))
+		case config.ProofSN:
+			snByte, err := ioutil.ReadFile(path.Join(defaultSNPath, f.Value))
 			if err != nil {
 				return "", err
 			}
 			return strings.TrimSpace(string(snByte)), nil
-		case common.HostName:
-			// todo get hostname
-		case common.MachineID:
-			// todo get MachineID
-		case common.SystemUUID:
-			// todo get SystemUUID
+		// case config.ProofHostName:
+		// todo get hostname
+		// case config.ProofMachineID:
+		// todo get MachineID
+		// case config.ProofSystemUUID:
+		// todo get SystemUUID
+		default:
+			return "", ErrProofTypeNotSupported
 		}
 	}
 	return "", nil

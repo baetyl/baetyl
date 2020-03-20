@@ -7,34 +7,34 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-core/ami"
-	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/spec/api"
 	"github.com/baetyl/baetyl-go/utils"
 )
 
 type Engine struct {
-	sha   *shadow.Shadow
-	cent  *event.Center
-	cfg   config.EngineConfig
-	model ami.Model
-	tomb  utils.Tomb
-	log   *log.Logger
+	sha  *shadow.Shadow
+	cent *event.Center
+	cfg  config.EngineConfig
+	ami  ami.AMI
+	tomb utils.Tomb
+	log  *log.Logger
 }
 
-func NewEngine(cfg config.EngineConfig, model ami.Model, sha *shadow.Shadow, cent *event.Center) (*Engine, error) {
+func NewEngine(cfg config.EngineConfig, ami ami.AMI, sha *shadow.Shadow, cent *event.Center) (*Engine, error) {
 	if cfg.Kind != "kubernetes" {
 		return nil, os.ErrInvalid
 	}
 	e := &Engine{
-		sha:   sha,
-		model: model,
-		cent:  cent,
-		cfg:   cfg,
-		log:   log.With(log.Any("engine", cfg.Kind)),
+		sha:  sha,
+		ami:  ami,
+		cent: cent,
+		cfg:  cfg,
+		log:  log.With(log.Any("engine", cfg.Kind)),
 	}
 	e.tomb.Go(e.collecting)
 	return e, nil
@@ -46,12 +46,20 @@ func (e *Engine) collecting() error {
 	for {
 		select {
 		case <-t.C:
-			info, err := e.model.CollectInfo()
+			info, err := e.ami.CollectInfo()
 			if err != nil {
 				e.log.Error("failed to collect info", log.Error(err))
 				continue
 			}
-			delta, err := e.sha.Report(info)
+			// TODO: improve
+			rep := map[string]interface{}{
+				"time":      info.Time,
+				"node":      info.NodeInfo,
+				"nodestats": info.NodeStat,
+				"apps":      info.AppInfos,
+				"appstats":  info.AppStats,
+			}
+			delta, err := e.sha.Report(rep)
 			if err != nil {
 				e.log.Error("failed to update shadow report", log.Error(err))
 				continue
@@ -63,14 +71,14 @@ func (e *Engine) collecting() error {
 					e.log.Error("failed to marshal delta", log.Error(err))
 					continue
 				}
-				msg.Metadata = map[string]string{"topic": common.SyncDesireEvent}
+				msg.Metadata = map[string]string{"topic": event.SyncDesireEvent}
 			} else {
 				msg.Payload, err = json.Marshal(info)
 				if err != nil {
 					e.log.Error("failed to marshal delta", log.Error(err))
 					continue
 				}
-				msg.Metadata = map[string]string{"topic": common.SyncReportEvent}
+				msg.Metadata = map[string]string{"topic": event.SyncReportEvent}
 			}
 			err = e.cent.Trigger(&msg)
 			if err != nil {
@@ -89,16 +97,15 @@ func (e *Engine) Close() {
 }
 
 func (e *Engine) Apply(msg faas.Message) error {
-	var info map[string]interface{}
+	var info api.ReportResponse
 	err := json.Unmarshal(msg.Payload, &info)
 	if err != nil {
 		return err
 	}
-	apps, ok := info["apps"].(map[string]interface{})
-	if !ok {
+	if len(info.AppInfos) == 0 {
 		return fmt.Errorf("apps does not exist")
 	}
-	err = e.model.ApplyApplications(apps)
+	err = e.ami.ApplyApplications(&info)
 	if err != nil {
 		return err
 	}

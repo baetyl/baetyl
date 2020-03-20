@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/baetyl/baetyl-core/ami"
-	"github.com/baetyl/baetyl-core/common"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-core/event"
@@ -23,6 +22,7 @@ type core struct {
 	syn  *sync.Sync
 }
 
+// NewCore creats a new core
 func NewCore(ctx context.Context) (*core, error) {
 	var cfg config.Config
 	err := ctx.LoadCustomConfig(&cfg)
@@ -48,7 +48,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.cent, err = event.NewCenter(c.sto, common.EventCenterLimit)
+	c.cent, err = event.NewCenter(c.sto, 10)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	err = c.cent.Register(common.EngineAppEvent, c.eng.Apply)
+	err = c.cent.Register(event.EngineAppEvent, c.eng.Apply)
 	if err != nil {
 		return nil, err
 	}
@@ -72,12 +72,12 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	err = c.cent.Register(common.SyncReportEvent, c.syn.Report)
+	err = c.cent.Register(event.SyncReportEvent, c.syn.Report)
 	if err != nil {
 		c.Close()
 		return nil, err
 	}
-	err = c.cent.Register(common.SyncDesireEvent, c.syn.ProcessDelta)
+	err = c.cent.Register(event.SyncDesireEvent, c.syn.ProcessDelta)
 	if err != nil {
 		c.Close()
 		return nil, err
