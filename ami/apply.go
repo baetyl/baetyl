@@ -2,19 +2,19 @@ package ami
 
 import (
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 	deploys := map[string]*appv1.Deployment{}
-	var services []*v1.Service
-	configs := map[string]*v1.ConfigMap{}
+	var services []*corev1.Service
+	configs := map[string]*corev1.ConfigMap{}
 	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
 	for name, ver := range apps {
 		if ver.(string) == "" {
@@ -24,7 +24,7 @@ func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 			}
 			continue
 		}
-		var app models.Application
+		var app v1.Application
 		key := utils.MakeKey(common.Application, name, ver.(string))
 		err := k.store.Get(key, &app)
 		if err != nil {
@@ -37,9 +37,9 @@ func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 		deploys[deploy.Name] = deploy
 		services = append(services, svcs...)
 		for _, v := range app.Volumes {
-			if cfg := v.Configuration; cfg != nil {
+			if cfg := v.Config; cfg != nil {
 				key := utils.MakeKey(common.Configuration, cfg.Name, cfg.Version)
-				var config models.Configuration
+				var config v1.Configuration
 				err := k.store.Get(key, &config)
 				if err != nil {
 					return err
@@ -99,11 +99,11 @@ func (k *kubeModel) ApplyApplications(apps map[string]interface{}) error {
 	}
 
 	return k.store.Upsert(common.DefaultAppsKey,
-		models.AppsVersionResource{Name: common.DefaultAppsKey, Value: apps})
+		appsVersionResource{Name: common.DefaultAppsKey, Value: apps})
 }
 
-func toConfigMap(config *models.Configuration) (*v1.ConfigMap, error) {
-	configMap := &v1.ConfigMap{}
+func toConfigMap(config *v1.Configuration) (*corev1.ConfigMap, error) {
+	configMap := &corev1.ConfigMap{}
 	err := copier.Copy(configMap, config)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func toConfigMap(config *models.Configuration) (*v1.ConfigMap, error) {
 	return configMap, nil
 }
 
-func toDeployAndService(app *models.Application) (*appv1.Deployment, []*v1.Service, error) {
+func toDeployAndService(app *v1.Application) (*appv1.Deployment, []*corev1.Service, error) {
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
@@ -126,7 +126,7 @@ func toDeployAndService(app *models.Application) (*appv1.Deployment, []*v1.Servi
 					"baetyl": app.Name,
 				},
 			},
-			Template: v1.PodTemplateSpec{
+			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
 					"baetyl": app.Name,
 				}},
@@ -143,17 +143,41 @@ func toDeployAndService(app *models.Application) (*appv1.Deployment, []*v1.Servi
 		return nil, nil, err
 	}
 
-	var services []*v1.Service
+	for _, v := range app.Volumes {
+		if config := v.Config; config != nil {
+			volume := corev1.Volume{
+				Name:         v.Name,
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{Name: config.Name},
+					},
+				},
+			}
+			deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, volume)
+		} else if secret := v.Secret; secret != nil {
+			volume := corev1.Volume{
+				Name:         v.Name,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource {
+						SecretName: secret.Name,
+					},
+				},
+			}
+			deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, volume)
+		}
+	}
+
+	var services []*corev1.Service
 	for _, svc := range app.Services {
 		if len(svc.Ports) == 0 {
 			continue
 		}
-		service := &v1.Service{
+		service := &corev1.Service{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      svc.Name,
 				Namespace: app.Namespace,
 			},
-			Spec: v1.ServiceSpec{
+			Spec: corev1.ServiceSpec{
 				Selector: map[string]string{
 					"baetyl": app.Name,
 				},
@@ -161,7 +185,7 @@ func toDeployAndService(app *models.Application) (*appv1.Deployment, []*v1.Servi
 			},
 		}
 		for _, p := range svc.Ports {
-			port := v1.ServicePort{
+			port := corev1.ServicePort{
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 			}

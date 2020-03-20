@@ -27,6 +27,6 @@ func NewKubeModel(cfg config.KubernetesConfig, sto *bh.Store) (Model, error) {
 		cli:      cli,
 		store:    sto,
 		nodeName: nodeName,
-		log:      log.With(log.Any("model", "kube")),
+		log:      log.With(log.Any("ami", "kube")),
 	}, nil
 }

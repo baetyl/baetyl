@@ -2,7 +2,6 @@ package ami
 
 import (
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/v1"
@@ -15,8 +14,13 @@ import (
 	"time"
 )
 
+type appsVersionResource struct {
+	Name  string                 `yaml:"name" json:"name"`
+	Value map[string]interface{} `yaml:"value" json:"value"`
+}
+
 func (k *kubeModel) CollectInfo() (map[string]interface{}, error) {
-	var apps models.AppsVersionResource
+	var apps appsVersionResource
 	err := k.store.Get(common.DefaultAppsKey, &apps)
 	if err != nil {
 		return nil, err

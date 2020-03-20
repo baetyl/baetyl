@@ -2,23 +2,23 @@ package sync
 
 import (
 	"encoding/json"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/models"
 )
 
 type ApplicationResource struct {
-	Type    string             `yaml:"type" json:"type"`
-	Name    string             `yaml:"name" json:"name"`
-	Version string             `yaml:"version" json:"version"`
-	Value   models.Application `yaml:"value" json:"value"`
+	Type    string         `yaml:"type" json:"type"`
+	Name    string         `yaml:"name" json:"name"`
+	Version string         `yaml:"version" json:"version"`
+	Value   v1.Application `yaml:"value" json:"value"`
 }
 
 type ConfigurationResource struct {
-	Type    string               `yaml:"type" json:"type"`
-	Name    string               `yaml:"name" json:"name"`
-	Version string               `yaml:"version" json:"version"`
-	Value   models.Configuration `yaml:"value" json:"value"`
+	Type    string           `yaml:"type" json:"type"`
+	Name    string           `yaml:"name" json:"name"`
+	Version string           `yaml:"version" json:"version"`
+	Value   v1.Configuration `yaml:"value" json:"value"`
 }
 
 type DesireRequest struct {
@@ -42,29 +42,29 @@ type Resource struct {
 }
 
 type SecretResource struct {
-	Type    string        `yaml:"type" json:"type"`
-	Name    string        `yaml:"name" json:"name"`
-	Version string        `yaml:"version" json:"version"`
-	Value   models.Secret `yaml:"value" json:"value"`
+	Type    string    `yaml:"type" json:"type"`
+	Name    string    `yaml:"name" json:"name"`
+	Version string    `yaml:"version" json:"version"`
+	Value   v1.Secret `yaml:"value" json:"value"`
 }
 
-func (r *Resource) GetApplication() *models.Application {
+func (r *Resource) GetApplication() *v1.Application {
 	if r.Type == common.Application {
-		return r.Value.(*models.Application)
+		return r.Value.(*v1.Application)
 	}
 	return nil
 }
 
-func (r *Resource) GetConfiguration() *models.Configuration {
+func (r *Resource) GetConfiguration() *v1.Configuration {
 	if r.Type == common.Configuration {
-		return r.Value.(*models.Configuration)
+		return r.Value.(*v1.Configuration)
 	}
 	return nil
 }
 
-func (r *Resource) GetSecret() *models.Secret {
+func (r *Resource) GetSecret() *v1.Secret {
 	if r.Type == common.Secret {
-		return r.Value.(*models.Secret)
+		return r.Value.(*v1.Secret)
 	}
 	return nil
 }

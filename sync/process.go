@@ -3,12 +3,12 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/baetyl/baetyl-core/common"
-	"github.com/baetyl/baetyl-core/models"
 	"github.com/baetyl/baetyl-core/utils"
 	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
@@ -24,11 +24,12 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	if !ok {
 		return fmt.Errorf("apps does not exist")
 	}
-	apps := map[string]string{}
+	appInfo := map[string]string{}
 	for name, ver := range info {
-		apps[name] = ver.(string)
+		appInfo[name] = ver.(string)
 	}
-	bs, err := s.generateRequest(common.Application, apps)
+	
+	bs, err := s.generateRequest(common.Application, appInfo)
 	if err != nil {
 		return err
 	}
@@ -36,20 +37,25 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	cMap := map[string]string{}
-	aMap := map[string]*models.Application{}
+	cInfo := map[string]string{}
+	sInfo := map[string]string{}
+	apps := map[string]*v1.Application{}
 	for _, r := range res {
-		app := r.GetApplication()
-		if app != nil {
-			aMap[app.Name] = app
+		if app := r.GetApplication(); app != nil {
+			apps[app.Name] = app
 			for _, v := range app.Volumes {
-				if v.Configuration != nil {
-					cMap[v.Configuration.Name] = v.Configuration.Version
+				if v.Config != nil {
+					cInfo[v.Config.Name] = v.Config.Version
+				} else if v.Secret != nil {
+					sInfo[v.Secret.Name] = v.Secret.Version
 				}
 			}
+		} else {
+			return fmt.Errorf("failed to sync application (%s) (%s)", r.Name, r.Version)
 		}
 	}
-	reqs, err := s.generateRequest(common.Configuration, cMap)
+
+	reqs, err := s.generateRequest(common.Configuration, cInfo)
 	if err != nil {
 		return err
 	}
@@ -57,20 +63,39 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
-	configs := map[string]*models.Configuration{}
+	configs := map[string]*v1.Configuration{}
 	for _, r := range res {
-		cfg := r.GetConfiguration()
-		if cfg == nil {
-			return fmt.Errorf("failed to get config resource")
+		if cfg := r.GetConfiguration(); cfg != nil {
+			configs[cfg.Name] = cfg
+		} else {
+			return fmt.Errorf("failed to sync configuration (%s) (%s)", r.Name, r.Version)
 		}
-		configs[cfg.Name] = cfg
 	}
-	for _, app := range aMap {
-		err := s.ProcessApplication(app)
+
+	reqs, err = s.generateRequest(common.Secret, sInfo)
+	if err != nil {
+		return err
+	}
+	res, err = s.syncResource(reqs)
+	if err != nil {
+		return fmt.Errorf("failed to sync resource: %s", err.Error())
+	}
+	secrets := map[string]*v1.Secret{}
+	for _, r := range res {
+		if secret := r.GetSecret(); secret != nil {
+			secrets[secret.Name] = secret
+		} else {
+			return fmt.Errorf("failed to sync secret (%s) (%s)", r.Name, r.Version)
+		}
+	}
+
+	for _, app := range apps {
+		err = s.processVolumes(app.Volumes, configs, secrets)
 		if err != nil {
 			return err
 		}
-		err = s.ProcessVolumes(app.Volumes, configs)
+		// app.volume may change when processing Volumes
+		err := s.storeApplication(app)
 		if err != nil {
 			return err
 		}
@@ -101,22 +126,25 @@ func (s *Sync) syncResource(res []*BaseResource) ([]*Resource, error) {
 	return response.Resources, nil
 }
 
-func (s *Sync) ProcessVolumes(volumes []models.Volume, configs map[string]*models.Configuration) error {
+func (s *Sync) processVolumes(volumes []v1.Volume, configs map[string]*v1.Configuration, secrets map[string]*v1.Secret) error {
 	for _, volume := range volumes {
-		if cfg := volume.VolumeSource.Configuration; cfg != nil && configs[cfg.Name] != nil {
-			err := s.ProcessConfiguration(&volume, configs[cfg.Name])
+		if cfg := volume.VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
+			err := s.processConfiguration(&volume, configs[cfg.Name])
 			if err != nil {
 				//a.ctx.Log().Errorf("process module config (%s) failed: %s", name, err.Error())
 				return err
 			}
-		} else if secret := volume.VolumeSource.Secret; secret != nil {
-			// TODO handle secret
+		} else if secret := volume.VolumeSource.Secret; secret != nil && secrets[secret.Name] != nil {
+			err := s.storeSecret(secrets[secret.Name])
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func (s *Sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configuration) error {
+func (s *Sync) processConfiguration(volume *v1.Volume, cfg *v1.Configuration) error {
 	var dir string
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, common.PrefixConfigObject) {
@@ -135,8 +163,9 @@ func (s *Sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configura
 				os.RemoveAll(dir)
 				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
-			volume.Configuration = nil
-			volume.HostPath = &models.HostPathVolumeSource{
+			// change app.volume from config to host path of downloaded file path
+			volume.Config = nil
+			volume.HostPath = &v1.HostPathVolumeSource{
 				Path: dir,
 			}
 		}
@@ -149,7 +178,7 @@ func (s *Sync) ProcessConfiguration(volume *models.Volume, cfg *models.Configura
 	return s.store.Upsert(key, cfg)
 }
 
-func (s *Sync) ProcessApplication(app *models.Application) error {
+func (s *Sync) storeApplication(app *v1.Application) error {
 	key := utils.MakeKey(common.Application, app.Name, app.Version)
 	if key == "" {
 		return fmt.Errorf("app does not have name or version")
@@ -157,60 +186,36 @@ func (s *Sync) ProcessApplication(app *models.Application) error {
 	return s.store.Upsert(key, app)
 }
 
-func (s *Sync) generateRequest(resType common.Resource, res map[string]string) ([]*BaseResource, error) {
-	var bs []*BaseResource
-	switch resType {
-	case common.Application:
-		s.filterApps(res)
-		for n, v := range res {
-			b := &BaseResource{
-				Type:    common.Application,
-				Name:    n,
-				Version: v,
-			}
-			if b.Name == "" || b.Version == "" {
-				return nil, fmt.Errorf("can not request application with empty name or version")
-			}
-			bs = append(bs, b)
-		}
-	case common.Configuration:
-		s.filterConfigs(res)
-		for n, v := range res {
-			b := &BaseResource{
-				Type:    common.Configuration,
-				Name:    n,
-				Version: v,
-			}
-			bs = append(bs, b)
-		}
+func (s *Sync) storeSecret(secret *v1.Secret) error {
+	key := utils.MakeKey(common.Secret, secret.Name, secret.Version)
+	if key == "" {
+		return fmt.Errorf("secret does not have name or version")
 	}
-	return bs, nil
+	return s.store.Upsert(key, secret)
 }
 
-func (s *Sync) filterApps(apps map[string]string) {
-	for name, ver := range apps {
-		var app models.Application
-		err := s.store.Get(utils.MakeKey(common.Application, name, ver), &app)
+func (s *Sync) generateRequest(resType common.Resource, res map[string]string) (bs []*BaseResource, err error) {
+	var num int
+	for name, version := range res {
+		num = 0
+		switch resType {
+		case common.Configuration:
+			num, err = s.store.Count(&v1.Configuration{}, nil)
+		case common.Secret:
+			num, err = s.store.Count(&v1.Secret{}, nil)
+		}
 		if err != nil {
-			s.log.Error("failed to get app", log.Error(err))
-			continue
+			return nil, err
 		}
-		if app.Version != "" {
-			delete(apps, name)
+		if num > 0 {
+			delete(res, name)
 		}
+		b := &BaseResource{
+			Type:    resType,
+			Name:    name,
+			Version: version,
+		}
+		bs = append(bs, b)
 	}
-}
-
-func (s *Sync) filterConfigs(configs map[string]string) {
-	for name, ver := range configs {
-		var config models.Configuration
-		err := s.store.Get(utils.MakeKey(common.Configuration, name, ver), &config)
-		if err != nil {
-			s.log.Error("failed to get config", log.Error(err))
-			continue
-		}
-		if config.Version != "" {
-			delete(configs, name)
-		}
-	}
+	return
 }
