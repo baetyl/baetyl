@@ -1,4 +1,0 @@
-mode: native
-logger:
-  path: var/db/baetyl/baetyl.log
-  level: "debug"

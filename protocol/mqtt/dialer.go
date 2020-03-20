@@ -3,7 +3,6 @@ package mqtt
 import (
 	"crypto/tls"
 	"net/url"
-	"time"
 
 	"github.com/256dpi/gomqtt/transport"
 	"github.com/baetyl/baetyl/utils"
@@ -28,8 +27,9 @@ func NewDialer2(c *tls.Config, c2 utils.Certificate) (*Dialer, error) {
 			return nil, err
 		}
 	}
-	d := &Dialer{Dialer: transport.NewDialer()}
-	d.TLSConfig = c
+	d := &Dialer{Dialer: transport.NewDialer(transport.DialConfig{
+		TLSConfig: c,
+	})}
 	return d, nil
 }
 

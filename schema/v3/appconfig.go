@@ -67,7 +67,7 @@ type ComposeService struct {
 	// specifies the number of instances started
 	Replica int `yaml:"replica,omitempty" json:"replica,omitempty" validate:"min=0"`
 	// specifies the storage volumes that the service needs, map the storage volume to the directory in the container
-	Volumes []ServiceVolume `yaml:"volumes,omitempty" json:"volumes,omitempty"`
+	Volumes []*ServiceVolume `yaml:"volumes,omitempty" json:"volumes,omitempty"`
 	// specifies the network mode of the service
 	NetworkMode string `yaml:"network_mode,omitempty" json:"network_mode,omitempty" validate:"regexp=^(bridge|host|none)?$"`
 	// specifies the network that the service needs
@@ -280,63 +280,6 @@ func (c *Command) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-<<<<<<< HEAD:schema/v3/appconfig.go
-func (cfg *ComposeAppConfig) FromAppConfig(old *v0.AppConfig) {
-	cfg.Version = "3"
-	cfg.AppVersion = old.Version
-	cfg.Networks = old.Networks
-	cfg.Volumes = map[string]ComposeVolume{}
-	utils.SetDefaults(&cfg.Volumes)
-	services := map[string]ComposeService{}
-	utils.SetDefaults(&services)
-	var previous string
-	first := true
-	for _, service := range old.Services {
-		info := ComposeService{
-			Image:       service.Image,
-			NetworkMode: service.NetworkMode,
-			Networks:    service.Networks,
-			Ports:       service.Ports,
-			Devices:     service.Devices,
-			Command: &Command{
-				Cmd: service.Args,
-			},
-			Environment: &Environment{
-				Envs: service.Env,
-			},
-			Replica:   service.Replica,
-			Restart:   service.Restart,
-			Resources: service.Resources,
-			Runtime:   service.Runtime,
-		}
-		if first {
-			first = false
-			info.DependsOn = []string{}
-		} else {
-			info.DependsOn = []string{previous}
-		}
-		previous = service.Name
-		vs := make([]*ServiceVolume, 0)
-		for _, mount := range service.Mounts {
-			var p string
-			for _, v := range old.Volumes {
-				if v.Name == mount.Name {
-					p = v.Path
-				}
-			}
-			v := &ServiceVolume{
-				Source: p,
-				// FIXME
-				Target: mount.Path,
-				//Target:   path.Join("/", mount.Path),
-				ReadOnly: mount.ReadOnly,
-			}
-			vs = append(vs, v)
-=======
-func (c Command) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Cmd)
-}
-
 // Entrypoint entrypoint configuration of the service
 type Entrypoint struct {
 	Entry []string `yaml:"entry" json:"entry" default:"[]"`
@@ -389,32 +332,57 @@ func (e Entrypoint) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.Entry)
 }
 
-// VolumeInfo storage volume configuration
-type VolumeInfo struct {
-	// specifies a unique name for the storage volume
-	Name string `yaml:"name" json:"name" validate:"regexp=^[a-zA-Z0-9][a-zA-Z0-9_-]{0\\,63}$"`
-	// specifies the directory where the storage volume is on the host
-	Path string `yaml:"path" json:"path" validate:"nonzero"`
-	// specifies the metadata of the storage volume
-	Meta Meta `yaml:"meta" json:"meta"`
-}
-
-type Meta struct {
-	URL     string `yaml:"url" json:"url"`
-	MD5     string `yaml:"md5" json:"md5"`
-	Version string `yaml:"version" json:"version"`
-}
-
-// LoadComposeAppConfigCompatible load compose app config or old compatible config
-func LoadComposeAppConfigCompatible(configFile string) (ComposeAppConfig, error) {
-	var cfg ComposeAppConfig
-	err := utils.LoadYAML(configFile, &cfg)
-	if err != nil {
-		var c AppConfig
-		err = utils.LoadYAML(configFile, &c)
-		if err != nil {
-			return cfg, err
->>>>>>> upstream/alpha/w1:sdk/baetyl-go/config.go
+func (cfg *ComposeAppConfig) FromAppConfig(old *v0.AppConfig) {
+	cfg.Version = "3"
+	cfg.AppVersion = old.Version
+	cfg.Networks = old.Networks
+	cfg.Volumes = map[string]ComposeVolume{}
+	utils.SetDefaults(&cfg.Volumes)
+	services := map[string]ComposeService{}
+	utils.SetDefaults(&services)
+	var previous string
+	first := true
+	for _, service := range old.Services {
+		info := ComposeService{
+			Image:       service.Image,
+			NetworkMode: service.NetworkMode,
+			Networks:    service.Networks,
+			Ports:       service.Ports,
+			Devices:     service.Devices,
+			Command: Command{
+				Cmd: service.Args,
+			},
+			Environment: Environment{
+				Envs: service.Env,
+			},
+			Replica:   service.Replica,
+			Restart:   service.Restart,
+			Resources: service.Resources,
+			Runtime:   service.Runtime,
+		}
+		if first {
+			first = false
+			info.DependsOn = []string{}
+		} else {
+			info.DependsOn = []string{previous}
+		}
+		previous = service.Name
+		vs := make([]*ServiceVolume, 0)
+		for _, mount := range service.Mounts {
+			var p string
+			for _, v := range old.Volumes {
+				if v.Name == mount.Name {
+					p = v.Path
+				}
+			}
+			v := &ServiceVolume{
+				Source: p,
+				// FIXME
+				Target: mount.Path,
+				//Target:   path.Join("/", mount.Path),
+				ReadOnly: mount.ReadOnly,
+			}
+			vs = append(vs, v)
 		}
 		info.Volumes = vs
 		services[service.Name] = info

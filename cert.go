@@ -48,7 +48,7 @@ func (rt *runtime) loadSysCert() error {
 	}
 	var block *pem.Block
 	block, data = pem.Decode(data)
-	if block.Type != "CERTIFICATE" {
+	if block == nil || block.Type != "CERTIFICATE" {
 		return errors.New("first one should be a certificate")
 	}
 	rt.cert.caraw = make([]byte, len(block.Bytes))
@@ -58,7 +58,7 @@ func (rt *runtime) loadSysCert() error {
 		return err
 	}
 	block, data = pem.Decode(data)
-	if block.Type != "RSA PRIVATE KEY" {
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		return errors.New("second one should be a certificate")
 	}
 	rt.cert.cakey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
@@ -66,8 +66,14 @@ func (rt *runtime) loadSysCert() error {
 		return err
 	}
 	block, data = pem.Decode(data)
+	if block == nil {
+		return errors.New("null pem data")
+	}
 	certPEM := pem.EncodeToMemory(block)
 	block, data = pem.Decode(data)
+	if block == nil {
+		return errors.New("null pem data")
+	}
 	keyPEM := pem.EncodeToMemory(block)
 	rt.cert.cert, err = tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
@@ -235,7 +241,7 @@ func loadCertChain(file string) (certChain, error) {
 	var block *pem.Block
 	var certRaw []byte
 	block, data = pem.Decode(data)
-	if block.Type != "CERTIFICATE" {
+	if block == nil || block.Type != "CERTIFICATE" {
 		return fail(errors.New("first one should be a certificate"))
 	}
 	cert, err := x509.ParseCertificate(block.Bytes)
@@ -244,7 +250,7 @@ func loadCertChain(file string) (certChain, error) {
 	}
 	certRaw = block.Bytes
 	block, data = pem.Decode(data)
-	if !strings.HasSuffix(block.Type, "PRIVATE KEY") {
+	if block == nil || !strings.HasSuffix(block.Type, "PRIVATE KEY") {
 		return fail(errors.New("second one should be a certificate"))
 	}
 	var key crypto.PrivateKey

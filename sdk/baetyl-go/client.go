@@ -1,6 +1,7 @@
 package baetyl
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -96,3 +97,4 @@ func (c *ctximpl) StopInstance(serviceName, instanceName string) error {
 	_, err := c.cli.Put(nil, c.ver+"/services/%s/instances/%s/stop", serviceName, instanceName)
 	return err
 }
+*/

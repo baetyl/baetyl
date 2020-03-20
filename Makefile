@@ -18,7 +18,6 @@ GO_TEST_FLAGS?=-race -short -covermode=atomic -coverprofile=coverage.out
 
 .PHONY: all
 all: $(APP)
-	CGO_ENABLED=${CGO_ENABLED} CC=${CC} make -C baetyl-hub all
 
 $(APP):
 	@echo "BUILD $@"
@@ -27,14 +26,12 @@ $(APP):
 .PHONY: clean
 clean:
 	@-rm -f $(APP)
-	make -C baetyl-hub clean
 
 .PHONY: rebuild
 rebuild: clean all
 
 .PHONY: image
 image: all
-	make -C baetyl-hub image
 
 .PHONY: test
 test:

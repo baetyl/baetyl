@@ -170,10 +170,10 @@ func (rt *runtime) update(ctx context.Context, uac *updateAppConfig) error {
 				Ports:       s.Ports,
 				Devices:     s.Devices,
 				DependsOn:   depends,
-				Command: &schema.Command{
+				Command: schema.Command{
 					Cmd: s.Args,
 				},
-				Environment: &schema.Environment{
+				Environment: schema.Environment{
 					Envs: s.Env,
 				},
 				Restart:   s.Restart,
