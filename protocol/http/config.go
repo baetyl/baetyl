@@ -6,13 +6,6 @@ import (
 	"github.com/baetyl/baetyl/utils"
 )
 
-// ServerInfo http server config
-type ServerInfo struct {
-	Address           string        `yaml:"address" json:"address"`
-	Timeout           time.Duration `yaml:"timeout" json:"timeout" default:"5m"`
-	utils.Certificate `yaml:",inline" json:",inline"`
-}
-
 // ClientInfo http client config
 type ClientInfo struct {
 	Address           string        `yaml:"address" json:"address"`

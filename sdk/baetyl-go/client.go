@@ -1,74 +1,29 @@
 package baetyl
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
-
-	"github.com/baetyl/baetyl/protocol/http"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"time"
 )
 
-// HTTPClient client of http server
-// Deprecated: Use api.Client instead.
-type HTTPClient struct {
-	cli *http.Client
-	ver string
+func (c *ctximpl) setupMaster() error {
+	c.m.Transport = &http.Transport{
+		TLSClientConfig: c.tls,
+		DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+			return net.Dial("unix", c.cfg.LegacyAPIServer.Address)
+		},
+	}
+	c.m.Timeout = time.Duration(c.cfg.LegacyAPIServer.TimeoutInSeconds)
+	return nil
 }
 
-// Client client of api server
-type Client struct {
-	*HTTPClient
-}
-
-// NewEnvClient creates a new client by env
-func NewEnvClient() (*Client, error) {
-	addr := os.Getenv(EnvKeyMasterAPIAddress)
-	name := os.Getenv(EnvKeyServiceName)
-	token := os.Getenv(EnvKeyServiceToken)
-	version := os.Getenv(EnvKeyMasterAPIVersion)
-	if len(addr) == 0 {
-		// TODO: remove, backward compatibility
-		addr = os.Getenv(EnvMasterAPIKey)
-		if len(addr) == 0 {
-			return nil, fmt.Errorf("Env (%s) not found", EnvKeyMasterAPIAddress)
-		}
-		name = os.Getenv(EnvServiceNameKey)
-		token = os.Getenv(EnvServiceTokenKey)
-		version = os.Getenv(EnvMasterAPIVersionKey)
-	}
-	c := http.ClientInfo{
-		Address:  addr,
-		Username: name,
-		Password: token,
-	}
-	cli, err := NewClient(c, version)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Client{
-		HTTPClient: cli,
-	}, nil
-}
-
-// NewClient creates a new client
-func NewClient(c http.ClientInfo, ver string) (*HTTPClient, error) {
-	cli, err := http.NewClient(c)
-	if err != nil {
-		return nil, err
-	}
-	if ver != "" && !strings.HasPrefix(ver, "/") {
-		ver = "/" + ver
-	}
-	return &HTTPClient{
-		cli: cli,
-		ver: ver,
-	}, nil
-}
-
+/*
 // UpdateSystem updates and reloads config
-func (c *Client) UpdateSystem(trace, tp, path string) error {
+func (c *ctximpl) UpdateSystem(trace, tp, path string) error {
 	data, err := json.Marshal(map[string]string{
 		"type":  tp,
 		"path":  path,
@@ -83,7 +38,7 @@ func (c *Client) UpdateSystem(trace, tp, path string) error {
 }
 
 // InspectSystem inspect all stats
-func (c *Client) InspectSystem() (*Inspect, error) {
+func (c *ctximpl) InspectSystem() (*Inspect, error) {
 	body, err := c.cli.Get(c.ver + "/system/inspect")
 	if err != nil {
 		return nil, err
@@ -92,15 +47,20 @@ func (c *Client) InspectSystem() (*Inspect, error) {
 	err = json.Unmarshal(body, s)
 	return s, err
 }
-
+*/
 // GetAvailablePort gets available port
-func (c *Client) GetAvailablePort() (string, error) {
-	res, err := c.cli.Get(c.ver + "/ports/available")
+func (c *ctximpl) GetAvailablePort() (string, error) {
+	resp, err := c.m.Get(c.cfg.LegacyAPIServer.Address + "/ports/available")
+	if err != nil {
+		return "", err
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
 	info := make(map[string]string)
-	err = json.Unmarshal(res, &info)
+	err = json.Unmarshal(data, &info)
 	if err != nil {
 		return "", err
 	}
@@ -111,8 +71,9 @@ func (c *Client) GetAvailablePort() (string, error) {
 	return port, nil
 }
 
+/*
 // ReportInstance reports the stats of the instance of the service
-func (c *Client) ReportInstance(serviceName, instanceName string, stats map[string]interface{}) error {
+func (c *ctximpl) ReportInstance(serviceName, instanceName string, stats map[string]interface{}) error {
 	data, err := json.Marshal(stats)
 	if err != nil {
 		return err
@@ -122,7 +83,7 @@ func (c *Client) ReportInstance(serviceName, instanceName string, stats map[stri
 }
 
 // StartInstance starts a new service instance with dynamic config
-func (c *Client) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
+func (c *ctximpl) StartInstance(serviceName, instanceName string, dynamicConfig map[string]string) error {
 	data, err := json.Marshal(dynamicConfig)
 	if err != nil {
 		return err
@@ -132,7 +93,8 @@ func (c *Client) StartInstance(serviceName, instanceName string, dynamicConfig m
 }
 
 // StopInstance stops a service instance
-func (c *Client) StopInstance(serviceName, instanceName string) error {
+func (c *ctximpl) StopInstance(serviceName, instanceName string) error {
 	_, err := c.cli.Put(nil, c.ver+"/services/%s/instances/%s/stop", serviceName, instanceName)
 	return err
 }
+*/

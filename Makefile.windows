@@ -1,0 +1,14 @@
+PREFIX?=C:/ProgramData/baetyl
+BIN_PATH?=C:/baetyl
+
+CONF_PATH?=baetyl.yml
+PID_PATH?=baetyl.pid
+LOG_PATH?=/baetyl.log
+DATA_PATH?=data
+API_ADDR?=baetyl.sock
+
+APP:=baetyl.exe
+
+CGO_ENABLED=1
+CC=x86_64-w64-mingw32-gcc
+
