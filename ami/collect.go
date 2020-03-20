@@ -96,10 +96,9 @@ func (k *kubeModel) collectNodeStats(node *corev1.Node) (*v1.NodeStatus, error) 
 func (k *kubeModel) collectAppStatus(apps map[string]interface{}) ([]*v1.AppStatus, error) {
 	var res []*v1.AppStatus
 	for name, ver := range apps {
-		status := &v1.AppStatus{
-			Name:    name,
-			Version: ver.(string),
-		}
+		status := &v1.AppStatus{}
+		status.Name = name
+		status.Version = ver.(string)
 		deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err

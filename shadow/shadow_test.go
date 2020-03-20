@@ -79,7 +79,7 @@ func TestShadow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var desired, desireStored spec.Desire
 			var reported, reportStored spec.Report
-			var desireDelta, reportDelta spec.Delta
+			var desireDelta, reportDelta spec.Desire
 			assert.NoError(t, json.Unmarshal([]byte(tt.desired), &desired))
 			assert.NoError(t, json.Unmarshal([]byte(tt.reported), &reported))
 			assert.NoError(t, json.Unmarshal([]byte(tt.desireDelta), &desireDelta))

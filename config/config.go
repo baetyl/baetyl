@@ -65,7 +65,7 @@ type InitConfig struct {
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Active struct {
-			URL      string        `yaml:"url" json:"url" default:"/v1/sync/active"`
+			URL      string        `yaml:"url" json:"url" default:"/v1/active"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"45s"`
 		} `yaml:"active" json:"active"`
 	} `yaml:"cloud" json:"cloud"`

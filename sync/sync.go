@@ -57,13 +57,13 @@ func (s *Sync) Report(msg faas.Message) error {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err
 	}
-	var delta spec.Delta
+	var delta spec.Desire
 	err = json.Unmarshal(data, &delta)
 	if err != nil {
 		return err
 	}
 	if len(delta) > 0 {
-		_, err = s.shad.Desire(spec.Desire(delta))
+		_, err = s.shad.Desire(delta)
 		if err != nil {
 			return err
 		}

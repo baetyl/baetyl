@@ -52,7 +52,7 @@ func (s *Shadow) Get() (m *spec.Shadow, err error) {
 }
 
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (s *Shadow) Desire(desired spec.Desire) (delta spec.Delta, err error) {
+func (s *Shadow) Desire(desired spec.Desire) (delta spec.Desire, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
@@ -87,7 +87,7 @@ func (s *Shadow) Desire(desired spec.Desire) (delta spec.Delta, err error) {
 }
 
 // Report update shadow reported data, then return the delta of desired and reported data
-func (s *Shadow) Report(reported spec.Report) (delta spec.Delta, err error) {
+func (s *Shadow) Report(reported spec.Report) (delta spec.Desire, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)

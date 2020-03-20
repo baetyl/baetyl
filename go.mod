@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
-	github.com/baetyl/baetyl-go v0.1.24
+	github.com/baetyl/baetyl-go v0.1.26
 	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
 	github.com/docker/go-units v0.4.0
 	github.com/gorilla/mux v1.7.4 // indirect

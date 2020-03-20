@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func (init *Initialize) activating() error {
 
 // Report reports info
 func (init *Initialize) Activate() {
-	info := ForwardInfo{
+	info := v1.ActiveRequest{
 		BatchName:     init.batch.name,
 		Namespace:     init.batch.namespace,
 		SecurityType:  init.batch.securityType,
@@ -35,6 +36,10 @@ func (init *Initialize) Activate() {
 	fv, err := init.collect()
 	if err != nil {
 		init.log.Error("failed to get fingerprint value", log.Error(err))
+		return
+	}
+	if fv == "" {
+		init.log.Error("fingerprint value is null", log.Error(err))
 		return
 	}
 	info.FingerprintValue = fv
@@ -56,7 +61,7 @@ func (init *Initialize) Activate() {
 		init.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
-	var res BackwardInfo
+	var res v1.ActiveResponce
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		init.log.Error("error to unmarshal activate response data returned", log.Error(err))
@@ -65,10 +70,10 @@ func (init *Initialize) Activate() {
 
 	init.cfg.Sync.Node.Name = res.NodeName
 	init.cfg.Sync.Node.Namespace = res.Namespace
-	init.cfg.Sync.Cloud.HTTP.CA = res.Cert.CA
-	init.cfg.Sync.Cloud.HTTP.Cert = res.Cert.Cert
-	init.cfg.Sync.Cloud.HTTP.Key = res.Cert.Key
-	init.cfg.Sync.Cloud.HTTP.Name = res.Cert.Name
+	init.cfg.Sync.Cloud.HTTP.CA = res.Certificate.CA
+	init.cfg.Sync.Cloud.HTTP.Cert = res.Certificate.Cert
+	init.cfg.Sync.Cloud.HTTP.Key = res.Certificate.Key
+	init.cfg.Sync.Cloud.HTTP.Name = res.Certificate.Name
 
 	init.sig <- true
 }
