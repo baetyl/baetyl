@@ -1,8 +1,8 @@
 package ami
 
 import (
-	"github.com/baetyl/baetyl-go/spec/api"
 	"github.com/baetyl/baetyl-go/spec/crd"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -10,12 +10,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func (k *kubeModel) ApplyApplications(apps *api.ReportResponse) error {
-	deploys := map[string]*appv1.Deployment{}
-	var services []*corev1.Service
+func (k *kubeModel) ApplyApplications(apps specv1.Desire) error {
+	services := []*corev1.Service{}
 	configs := map[string]*corev1.ConfigMap{}
+	deploys := map[string]*appv1.Deployment{}
 	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
-	for _, app := range apps.AppInfos {
+	for _, app := range apps.AppInfos() {
 		key := makeKey(crd.KindApplication, app.Name, app.Version)
 
 		var appdata crd.Application

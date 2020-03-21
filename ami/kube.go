@@ -1,11 +1,12 @@
 package ami
 
 import (
+	"os"
+
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/log"
 	bh "github.com/timshannon/bolthold"
-	"os"
 )
 
 type kubeModel struct {

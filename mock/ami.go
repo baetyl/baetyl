@@ -5,7 +5,7 @@
 package mock
 
 import (
-	api "github.com/baetyl/baetyl-go/spec/api"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -34,7 +34,7 @@ func (m *MockAMI) EXPECT() *MockAMIMockRecorder {
 }
 
 // ApplyApplications mocks base method
-func (m *MockAMI) ApplyApplications(arg0 *api.ReportResponse) error {
+func (m *MockAMI) ApplyApplications(arg0 v1.Desire) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyApplications", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,10 +48,10 @@ func (mr *MockAMIMockRecorder) ApplyApplications(arg0 interface{}) *gomock.Call 
 }
 
 // CollectInfo mocks base method
-func (m *MockAMI) CollectInfo() (*api.ReportRequest, error) {
+func (m *MockAMI) CollectInfo() (v1.Report, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectInfo")
-	ret0, _ := ret[0].(*api.ReportRequest)
+	ret0, _ := ret[0].(v1.Report)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

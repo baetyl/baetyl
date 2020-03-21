@@ -11,7 +11,7 @@ import (
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/mock"
-	"github.com/baetyl/baetyl-go/spec"
+	"github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,7 +30,7 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
-	bi := &spec.Desire{"apps": map[string]interface{}{"app1": "123"}}
+	bi := &v1.Desire{"apps": map[string]interface{}{"app1": "123"}}
 	data, err := json.Marshal(bi)
 	assert.NoError(t, err)
 
@@ -58,10 +58,10 @@ func TestSync_Report(t *testing.T) {
 
 	sp, err := sha.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, &spec.Shadow{
+	assert.Equal(t, &v1.Shadow{
 		Namespace:         t.Name(),
 		Name:              t.Name(),
 		CreationTimestamp: sp.CreationTimestamp,
-		Desire:            spec.Desire{"apps": map[string]interface{}{"app1": "123"}},
+		Desire:            v1.Desire{"apps": map[string]interface{}{"app1": "123"}},
 	}, sp)
 }

@@ -10,9 +10,8 @@ import (
 	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec"
-	"github.com/baetyl/baetyl-go/spec/api"
 	"github.com/baetyl/baetyl-go/spec/crd"
+	"github.com/baetyl/baetyl-go/spec/v1"
 )
 
 // extended features of config resourece
@@ -23,7 +22,7 @@ const (
 
 // Desire process desire delta, to sync crds
 func (s *Sync) Desire(msg faas.Message) error {
-	var delta spec.Desire
+	var delta v1.Desire
 	err := json.Unmarshal(msg.Payload, &delta)
 	if err != nil {
 		return err
@@ -103,11 +102,11 @@ func (s *Sync) Desire(msg faas.Message) error {
 	return nil
 }
 
-func (s *Sync) syncCRDs(crds []api.CRDInfo) ([]api.CRDData, error) {
+func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := api.CRDRequest{CRDInfos: crds}
+	req := v1.CRDRequest{CRDInfos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -116,7 +115,7 @@ func (s *Sync) syncCRDs(crds []api.CRDInfo) ([]api.CRDData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	var response api.CRDResponse
+	var response v1.CRDResponse
 	err = json.Unmarshal(data, &response)
 	if err != nil {
 		return nil, err
@@ -149,7 +148,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 			if dir == "" {
 				dir = path.Join(s.cfg.Edge.DownloadPath, cfg.Name, cfg.Version)
 			}
-			obj := new(api.CRDConfigObject)
+			obj := new(v1.CRDConfigObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
@@ -192,10 +191,10 @@ func (s *Sync) storeSecret(secret *crd.Secret) error {
 	return s.store.Upsert(key, secret)
 }
 
-func (s *Sync) genCRDInfos(kind crd.Kind, infos map[string]string) []api.CRDInfo {
-	var crds []api.CRDInfo
+func (s *Sync) genCRDInfos(kind crd.Kind, infos map[string]string) []v1.CRDInfo {
+	var crds []v1.CRDInfo
 	for name, version := range infos {
-		crds = append(crds, api.CRDInfo{
+		crds = append(crds, v1.CRDInfo{
 			Kind:    kind,
 			Name:    name,
 			Version: version,

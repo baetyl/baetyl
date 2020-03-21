@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/baetyl/baetyl-core/config"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 )
 
 // TODO: can be configured by cloud
@@ -17,6 +18,9 @@ const (
 // ErrProofTypeNotSupported the proof type is not supported
 var ErrProofTypeNotSupported = errors.New("the proof type is not supported")
 
+// ErrProofValueNotFound the proof value is not found
+var ErrProofValueNotFound = errors.New("the proof value is not found")
+
 func (init *Initialize) collect() (string, error) {
 	fs := init.cfg.Init.ActivateConfig.Fingerprints
 	if len(fs) == 0 {
@@ -26,6 +30,7 @@ func (init *Initialize) collect() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	nodeInfo := report["node"]
 	for _, f := range fs {
 		switch f.Proof {
 		case config.ProofInput:
@@ -39,13 +44,25 @@ func (init *Initialize) collect() (string, error) {
 			}
 			return strings.TrimSpace(string(snByte)), nil
 		case config.ProofHostName:
-			return report.NodeInfo.Hostname, nil
+			if nodeInfo == nil {
+				return "", ErrProofValueNotFound
+			}
+			return nodeInfo.(v1.NodeInfo).Hostname, nil
 		case config.ProofMachineID:
-			return report.NodeInfo.MachineID, nil
+			if nodeInfo == nil {
+				return "", ErrProofValueNotFound
+			}
+			return nodeInfo.(v1.NodeInfo).MachineID, nil
 		case config.ProofSystemUUID:
-			return report.NodeInfo.SystemUUID, nil
+			if nodeInfo == nil {
+				return "", ErrProofValueNotFound
+			}
+			return nodeInfo.(v1.NodeInfo).SystemUUID, nil
 		case config.ProofBootID:
-			return report.NodeInfo.BootID, nil
+			if nodeInfo == nil {
+				return "", ErrProofValueNotFound
+			}
+			return nodeInfo.(v1.NodeInfo).BootID, nil
 		default:
 			return "", ErrProofTypeNotSupported
 		}

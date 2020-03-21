@@ -3,7 +3,6 @@ package sync
 import (
 	"encoding/json"
 	"errors"
-	"github.com/baetyl/baetyl-go/spec"
 
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/event"
@@ -12,6 +11,7 @@ import (
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mqtt"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	bh "github.com/timshannon/bolthold"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 )
@@ -57,7 +57,7 @@ func (s *Sync) Report(msg faas.Message) error {
 		s.log.Error("failed to send report data", log.Error(err))
 		return err
 	}
-	var delta spec.Desire
+	var delta v1.Desire
 	err = json.Unmarshal(data, &delta)
 	if err != nil {
 		return err

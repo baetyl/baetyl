@@ -10,14 +10,14 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	mc "github.com/baetyl/baetyl-core/mock"
 	"github.com/baetyl/baetyl-go/mock"
-	"github.com/baetyl/baetyl-go/spec/api"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	resp = &api.ActiveResponse{
+	resp = &v1.ActiveResponse{
 		NodeName:  "node.test",
 		Namespace: "default",
 		Certificate: utils.Certificate{
@@ -32,7 +32,7 @@ var (
 	cases = []struct {
 		name         string
 		fingerprints []config.Fingerprint
-		want         *api.ActiveResponse
+		want         *v1.ActiveResponse
 	}{
 		{
 			name: "0: Pass Input",
@@ -114,8 +114,8 @@ func TestInitialize_Activate(t *testing.T) {
 	c := &config.Config{}
 	c.Init = *ic
 
-	inspect := &api.ReportRequest{
-		NodeInfo: api.NodeInfo{
+	inspect := v1.Report{
+		"node": v1.NodeInfo{
 			Hostname:         "docker-desktop",
 			Address:          "192.168.1.77",
 			Arch:             "amd64",
@@ -159,7 +159,7 @@ func TestInitialize_Activate(t *testing.T) {
 	}
 }
 
-func responseEqual(t *testing.T, resp api.ActiveResponse, sc config.SyncConfig) {
+func responseEqual(t *testing.T, resp v1.ActiveResponse, sc config.SyncConfig) {
 	assert.Equal(t, resp.NodeName, sc.Node.Name)
 	assert.Equal(t, resp.Namespace, sc.Node.Namespace)
 	assert.Equal(t, resp.Certificate.Cert, sc.Cloud.HTTP.Cert)

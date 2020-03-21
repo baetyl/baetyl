@@ -12,7 +12,7 @@ import (
 	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/api"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 )
 
@@ -51,15 +51,7 @@ func (e *Engine) collecting() error {
 				e.log.Error("failed to collect info", log.Error(err))
 				continue
 			}
-			// TODO: improve
-			rep := map[string]interface{}{
-				"time":      info.Time,
-				"node":      info.NodeInfo,
-				"nodestats": info.NodeStat,
-				"apps":      info.AppInfos,
-				"appstats":  info.AppStats,
-			}
-			delta, err := e.sha.Report(rep)
+			delta, err := e.sha.Report(info)
 			if err != nil {
 				e.log.Error("failed to update shadow report", log.Error(err))
 				continue
@@ -97,15 +89,15 @@ func (e *Engine) Close() {
 }
 
 func (e *Engine) Apply(msg faas.Message) error {
-	var info api.ReportResponse
+	var info v1.Desire
 	err := json.Unmarshal(msg.Payload, &info)
 	if err != nil {
 		return err
 	}
-	if len(info.AppInfos) == 0 {
+	if len(info.AppInfos()) == 0 {
 		return fmt.Errorf("apps does not exist")
 	}
-	err = e.ami.ApplyApplications(&info)
+	err = e.ami.ApplyApplications(info)
 	if err != nil {
 		return err
 	}

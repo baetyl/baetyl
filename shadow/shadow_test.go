@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-core/store"
-	"github.com/baetyl/baetyl-go/spec"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,9 +77,9 @@ func TestShadow(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var desired, desireStored spec.Desire
-			var reported, reportStored spec.Report
-			var desireDelta, reportDelta spec.Desire
+			var desired, desireStored v1.Desire
+			var reported, reportStored v1.Report
+			var desireDelta, reportDelta v1.Desire
 			assert.NoError(t, json.Unmarshal([]byte(tt.desired), &desired))
 			assert.NoError(t, json.Unmarshal([]byte(tt.reported), &reported))
 			assert.NoError(t, json.Unmarshal([]byte(tt.desireDelta), &desireDelta))
@@ -132,7 +132,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
-	desire := spec.Desire{"apps": map[string]interface{}{"app1": "123", "app2": "234", "app3": "345", "app4": "456", "app5": ""}}
+	desire := v1.Desire{"apps": map[string]interface{}{"app1": "123", "app2": "234", "app3": "345", "app4": "456", "app5": ""}}
 	delta, err := ss.Desire(desire)
 	assert.NoError(t, err)
 	apps := delta["apps"].(map[string]interface{})
@@ -143,7 +143,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
 
-	report := spec.Report{"apps": map[string]interface{}{"app1": "123", "app2": "235", "app3": "", "app5": "567", "app6": "678"}}
+	report := v1.Report{"apps": map[string]interface{}{"app1": "123", "app2": "235", "app3": "", "app5": "567", "app6": "678"}}
 	delta, err = ss.Report(report)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
