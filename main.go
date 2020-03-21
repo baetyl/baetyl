@@ -77,7 +77,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	err = c.cent.Register(event.SyncDesireEvent, c.syn.ProcessDelta)
+	err = c.cent.Register(event.SyncDesireEvent, c.syn.Desire)
 	if err != nil {
 		c.Close()
 		return nil, err

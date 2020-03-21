@@ -21,7 +21,8 @@ const (
 	configValueZip  = "zip"
 )
 
-func (s *Sync) ProcessDelta(msg faas.Message) error {
+// Desire process desire delta, to sync crds
+func (s *Sync) Desire(msg faas.Message) error {
 	var delta spec.Desire
 	err := json.Unmarshal(msg.Payload, &delta)
 	if err != nil {
@@ -35,18 +36,14 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	for _, a := range ais {
 		appInfo[a.Name] = a.Version
 	}
-	bs, err := s.generateRequest(crd.KindApplication, appInfo)
-	if err != nil {
-		return err
-	}
-	res, err := s.syncResource(bs)
+	crds, err := s.syncCRDs(s.genCRDInfos(crd.KindApplication, appInfo))
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
 	cInfo := map[string]string{}
 	sInfo := map[string]string{}
 	apps := map[string]*crd.Application{}
-	for _, r := range res {
+	for _, r := range crds {
 		if app := r.App(); app != nil {
 			apps[app.Name] = app
 			for _, v := range app.Volumes {
@@ -61,16 +58,12 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 		}
 	}
 
-	reqs, err := s.generateRequest(crd.KindConfiguration, cInfo)
-	if err != nil {
-		return err
-	}
-	res, err = s.syncResource(reqs)
+	crds, err = s.syncCRDs(s.genCRDInfos(crd.KindConfiguration, cInfo))
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
 	configs := map[string]*crd.Configuration{}
-	for _, r := range res {
+	for _, r := range crds {
 		if cfg := r.Config(); cfg != nil {
 			configs[cfg.Name] = cfg
 		} else {
@@ -78,16 +71,12 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 		}
 	}
 
-	reqs, err = s.generateRequest(crd.KindSecret, sInfo)
-	if err != nil {
-		return err
-	}
-	res, err = s.syncResource(reqs)
+	crds, err = s.syncCRDs(s.genCRDInfos(crd.KindSecret, sInfo))
 	if err != nil {
 		return fmt.Errorf("failed to sync resource: %s", err.Error())
 	}
 	secrets := map[string]*crd.Secret{}
-	for _, r := range res {
+	for _, r := range crds {
 		if secret := r.Secret(); secret != nil {
 			secrets[secret.Name] = secret
 		} else {
@@ -114,8 +103,11 @@ func (s *Sync) ProcessDelta(msg faas.Message) error {
 	return nil
 }
 
-func (s *Sync) syncResource(res []api.CRDInfo) ([]api.CRDData, error) {
-	req := api.CRDRequest{CRDInfos: res}
+func (s *Sync) syncCRDs(crds []api.CRDInfo) ([]api.CRDData, error) {
+	if len(crds) == 0 {
+		return nil, nil
+	}
+	req := api.CRDRequest{CRDInfos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -164,7 +156,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 				return err
 			}
 			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
-			err = s.downloadFile(obj, dir, filename, obj.Compression == configValueZip)
+			err = s.downloadObject(obj, dir, filename, obj.Compression == configValueZip)
 			if err != nil {
 				os.RemoveAll(dir)
 				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
@@ -200,33 +192,16 @@ func (s *Sync) storeSecret(secret *crd.Secret) error {
 	return s.store.Upsert(key, secret)
 }
 
-func (s *Sync) generateRequest(kind crd.Kind, res map[string]string) (bs []api.CRDInfo, err error) {
-	var num int
-	for name, version := range res {
-		num = 0
-		switch kind {
-		// case crd.KindApplication, crd.KindApp:
-		// 	num, err = s.store.Count(&crd.Application{}, nil)
-		case crd.KindConfiguration, crd.KindConfig:
-			num, err = s.store.Count(&crd.Configuration{}, nil)
-		case crd.KindSecret:
-			num, err = s.store.Count(&crd.Secret{}, nil)
-		}
-		if err != nil {
-			return nil, err
-		}
-		// TODO: ?
-		if num > 0 {
-			delete(res, name)
-		}
-		b := api.CRDInfo{
+func (s *Sync) genCRDInfos(kind crd.Kind, infos map[string]string) []api.CRDInfo {
+	var crds []api.CRDInfo
+	for name, version := range infos {
+		crds = append(crds, api.CRDInfo{
 			Kind:    kind,
 			Name:    name,
 			Version: version,
-		}
-		bs = append(bs, b)
+		})
 	}
-	return
+	return crds
 }
 
 func makeKey(kind crd.Kind, name, ver string) string {
