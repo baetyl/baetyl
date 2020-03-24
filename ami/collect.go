@@ -56,6 +56,8 @@ func (k *kubeModel) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) 
 		ContainerRuntime: ni.ContainerRuntimeVersion,
 		MachineID:        ni.MachineID,
 		OSImage:          ni.OSImage,
+		BootID:           ni.BootID,
+		SystemUUID:       ni.SystemUUID,
 	}
 	for _, addr := range node.Status.Addresses {
 		if addr.Type == corev1.NodeInternalIP {

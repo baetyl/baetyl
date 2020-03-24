@@ -253,8 +253,8 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume) (*a
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
 			Namespace: app.Namespace,
-			Labels: map[string]string {
-				"baetyl":    "baetyl",
+			Labels: map[string]string{
+				"baetyl": "baetyl",
 			},
 		},
 		Spec: appv1.DeploymentSpec{

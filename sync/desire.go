@@ -106,7 +106,7 @@ func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := v1.CRDRequest {CRDInfos: crds}
+	req := v1.CRDRequest{CRDInfos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
