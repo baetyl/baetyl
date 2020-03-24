@@ -15,6 +15,14 @@ const (
 	AppName     = "baetyl-app-name"
 	AppVersion  = "baetyl-app-version"
 	ServiceName = "baetyl-service-name"
+
+	BaetylCloudGroup = "cloud.baetyl.io"
+	SecretLabel      = "secret-type"
+	SecretRegistry   = BaetylCloudGroup + "-secret-registry"
+
+	RegistryAddress  = "address"
+	RegistryUsername = "username"
+	RegistryPassword = "password"
 )
 
 func (k *kubeModel) Apply(appInfos []specv1.AppInfo) error {
@@ -31,18 +39,8 @@ func (k *kubeModel) Apply(appInfos []specv1.AppInfo) error {
 		if err != nil {
 			return err
 		}
-		for _, svc := range app.Services {
-			deploy, err := toDeploy(&app, &svc, app.Volumes)
-			if err != nil {
-				return err
-			}
-			deploys[deploy.Name] = deploy
-			service, err := toService(app.Namespace, &svc)
-			if err != nil {
-				return err
-			}
-			services[service.Name] = service
-		}
+
+		var imagePullSecrets []corev1.LocalObjectReference
 		for _, v := range app.Volumes {
 			if cfg := v.Config; cfg != nil {
 				key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
@@ -56,20 +54,46 @@ func (k *kubeModel) Apply(appInfos []specv1.AppInfo) error {
 					return err
 				}
 				configs[config.Name] = configMap
-			} else if sec := v.Secret; sec != nil {
+			}
+
+			if sec := v.Secret; sec != nil {
 				key := makeKey(crd.KindSecret, sec.Name, sec.Version)
 				var secret crd.Secret
 				err := k.store.Get(key, &secret)
 				if err != nil {
 					return err
 				}
+
+				if isRegistrySecret(&secret) {
+					imagePullSecrets = append(imagePullSecrets,
+						corev1.LocalObjectReference{
+							Name: secret.Name,
+						})
+					v.Secret = nil
+				}
+
 				kSecret, err := toSecret(&secret)
 				if err != nil {
 					return err
 				}
 				secrets[kSecret.Name] = kSecret
+
 			}
 		}
+
+		for _, svc := range app.Services {
+			deploy, err := toDeploy(&app, &svc, app.Volumes, imagePullSecrets)
+			if err != nil {
+				return err
+			}
+			deploys[deploy.Name] = deploy
+			service, err := toService(app.Namespace, &svc)
+			if err != nil {
+				return err
+			}
+			services[service.Name] = service
+		}
+
 	}
 
 	if err := k.applyConfigMaps(configs); err != nil {
@@ -192,25 +216,8 @@ func (k *kubeModel) applySecrets(secrets map[string]*corev1.Secret) error {
 	return nil
 }
 
-func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
-	configMap := &corev1.ConfigMap{}
-	err := copier.Copy(configMap, config)
-	if err != nil {
-		return nil, err
-	}
-	return configMap, nil
-}
-
-func toSecret(sec *crd.Secret) (*corev1.Secret, error) {
-	secret := &corev1.Secret{}
-	err := copier.Copy(secret, sec)
-	if err != nil {
-		return nil, err
-	}
-	return secret, nil
-}
-
-func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume) (*appv1.Deployment, error) {
+func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
+	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
 	volMap := map[string]crd.Volume{}
 	for _, v := range vols {
 		volMap[v.Name] = v
@@ -223,6 +230,7 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume) (*a
 	var containers []corev1.Container
 	containers = append(containers, c)
 	var volumes []corev1.Volume
+
 	for _, v := range service.VolumeMounts {
 		vol := volMap[v.Name]
 		volume := corev1.Volume{
@@ -275,14 +283,40 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume) (*a
 					ServiceName: service.Name,
 				}},
 				Spec: corev1.PodSpec{
-					Volumes:       volumes,
-					Containers:    containers,
-					RestartPolicy: restartPolicy,
+					Volumes:          volumes,
+					Containers:       containers,
+					RestartPolicy:    restartPolicy,
+					ImagePullSecrets: imagePullSecrets,
 				},
 			},
 		},
 	}
 	return deploy, nil
+}
+
+func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
+	configMap := &corev1.ConfigMap{}
+	err := copier.Copy(configMap, config)
+	if err != nil {
+		return nil, err
+	}
+	return configMap, nil
+}
+
+func toSecret(sec *crd.Secret) (*corev1.Secret, error) {
+	// secret for docker config
+	if isRegistrySecret(sec) {
+		return GenerateRegistrySecret(sec.Name, string(sec.Data[RegistryAddress]),
+			string(sec.Data[RegistryUsername]), string(sec.Data[RegistryPassword]))
+	}
+
+	// common secret
+	secret := &corev1.Secret{}
+	err := copier.Copy(secret, sec)
+	if err != nil {
+		return nil, err
+	}
+	return secret, nil
 }
 
 func toService(namespace string, svc *crd.Service) (*corev1.Service, error) {
@@ -318,4 +352,11 @@ func makeKey(kind crd.Kind, name, ver string) string {
 		return ""
 	}
 	return string(kind) + "-" + name + "-" + ver
+}
+
+func isRegistrySecret(secret *crd.Secret) bool {
+	if registry, ok := secret.Labels[SecretLabel]; ok && registry == SecretRegistry {
+		return true
+	}
+	return false
 }
