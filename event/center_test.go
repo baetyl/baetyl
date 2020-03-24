@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-core/store"
-	"github.com/baetyl/baetyl-go/faas"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,8 +24,8 @@ func TestCenter(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
-	events := make(chan faas.Message, 2)
-	err = c.Register(t.Name(), func(e faas.Message) error {
+	events := make(chan *Event, 2)
+	err = c.Register(t.Name(), func(e *Event) error {
 		fmt.Println("-->2 handling", e.String())
 		events <- e
 		return nil
@@ -35,16 +34,14 @@ func TestCenter(t *testing.T) {
 	c.Start()
 
 	go func() {
-		var e1 faas.Message
-		e1.Metadata = map[string]string{"topic": t.Name()}
-		e1.Payload = []byte("test")
-		err = c.Trigger(&e1)
+		e1 := NewEvent(t.Name(), []byte("test"))
+		err = c.Trigger(e1)
 		assert.NoError(t, err)
-		err = c.Trigger(&e1)
+		err = c.Trigger(e1)
 		assert.NoError(t, err)
-		err = c.Trigger(&e1)
+		err = c.Trigger(e1)
 		assert.NoError(t, err)
-		err = c.Trigger(&e1)
+		err = c.Trigger(e1)
 		assert.NoError(t, err)
 	}()
 
@@ -69,7 +66,7 @@ func TestCenterException(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	handler := func(e faas.Message) error {
+	handler := func(e *Event) error {
 		fmt.Println("-->handling", e.String())
 		return os.ErrInvalid
 	}
@@ -95,7 +92,11 @@ func TestCenterException(t *testing.T) {
 	err = c.Register("2", handler)
 	assert.NoError(t, err)
 
-	var e1 faas.Message
-	err = c.Trigger(&e1)
+	var e1 *Event
+	err = c.Trigger(e1)
+	assert.NoError(t, err)
+
+	e1 = NewEvent("", nil)
+	err = c.Trigger(e1)
 	assert.Equal(t, os.ErrInvalid, err)
 }

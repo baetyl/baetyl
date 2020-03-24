@@ -5,14 +5,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 )
 
 // Handler event handler
-type Handler func(faas.Message) error
+type Handler func(*Event) error
 
 // Center the event handling center, event handling methods can be registered by topic
 type Center struct {
@@ -38,7 +37,7 @@ func NewCenter(store *bh.Store, limit int) (*Center, error) {
 		logger:   log.With(log.Any("event", "center")),
 	}
 	// TODO: to improve bolthold
-	last := &faas.Message{}
+	last := &Event{}
 	num, err := c.store.Count(last, nil)
 	if err != nil {
 		return nil, err
@@ -76,7 +75,7 @@ func (c *Center) Close() error {
 }
 
 // Trigger store event if not nil, then trigger a signal
-func (c *Center) Trigger(e *faas.Message) error {
+func (c *Center) Trigger(e *Event) error {
 	if e != nil {
 		if e.Metadata == nil || e.Metadata["topic"] == "" {
 			return os.ErrInvalid
@@ -100,7 +99,7 @@ func (c *Center) handling() error {
 	defer c.logger.Info("center has stopped handling event")
 
 	var err error
-	var events []faas.Message
+	var events []*Event
 
 	for {
 		select {
