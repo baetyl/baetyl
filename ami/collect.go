@@ -7,6 +7,7 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
@@ -39,11 +40,11 @@ func (k *kubeModel) CollectInfo() (specv1.Report, error) {
 		apps = append(apps, app)
 	}
 	return specv1.Report{
-		"time":     time.Now(),
-		"node":     nodeInfo,
-		"nodestat": nodeStats,
-		"apps":     apps,
-		"appstats": appStatus,
+		"time":      time.Now(),
+		"node":      nodeInfo,
+		"nodestats": nodeStats,
+		"apps":      apps,
+		"appstats":  appStatus,
 	}, nil
 }
 
@@ -71,25 +72,27 @@ func (k *kubeModel) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) 
 
 func (k *kubeModel) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error) {
 	nodeStats := specv1.NodeStatus{
-		Usage:    map[string]*specv1.ResourceInfo{},
-		Capacity: map[string]*specv1.ResourceInfo{},
+		Usage:    map[string]string{},
+		Capacity: map[string]string{},
 	}
 	nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(k.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return nodeStats, err
 	}
-	for res, quantity := range nodeMetric.Usage {
-		nodeStats.Usage[string(res)] = &specv1.ResourceInfo{
-			Name:  string(res),
-			Value: quantity.String(),
+	for res, quan := range nodeMetric.Usage {
+		quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+		nodeStats.Usage[string(res)] = quantity.String()
+	}
+	for res, quan := range node.Status.Capacity {
+		if _, ok := nodeStats.Usage[string(res)]; ok {
+			quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+			nodeStats.Capacity[string(res)] = quantity.String()
 		}
 	}
-	for res, quantity := range node.Status.Capacity {
+	for res, quan := range node.Status.Capacity {
 		if _, ok := nodeStats.Usage[string(res)]; ok {
-			nodeStats.Capacity[string(res)] = &specv1.ResourceInfo{
-				Name:  string(res),
-				Value: quantity.String(),
-			}
+			quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+			nodeStats.Capacity[string(res)] = quantity.String()
 		}
 	}
 	return nodeStats, nil
@@ -157,7 +160,7 @@ func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStat
 }
 
 func (k *kubeModel) collectServiceInfo(serviceName string, pod *corev1.Pod) (*specv1.ServiceInfo, error) {
-	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]*specv1.ResourceInfo{}}
+	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
 	events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
 	for _, e := range events.Items {
@@ -178,11 +181,9 @@ func (k *kubeModel) collectServiceInfo(serviceName string, pod *corev1.Pod) (*sp
 	}
 	for _, cont := range podMetric.Containers {
 		if cont.Name == serviceName {
-			for res, quantity := range cont.Usage {
-				info.Usage[string(res)] = &specv1.ResourceInfo{
-					Name:  string(res),
-					Value: quantity.String(),
-				}
+			for res, quan := range cont.Usage {
+				quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+				info.Usage[string(res)] = quantity.String()
 			}
 		}
 	}
