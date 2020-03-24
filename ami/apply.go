@@ -7,29 +7,43 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func (k *kubeModel) ApplyApplications(apps specv1.Desire) error {
-	services := []*corev1.Service{}
-	configs := map[string]*corev1.ConfigMap{}
-	deploys := map[string]*appv1.Deployment{}
-	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
-	for _, app := range apps.AppInfos() {
-		key := makeKey(crd.KindApplication, app.Name, app.Version)
+const (
+	AppName     = "baetyl-app-name"
+	AppVersion  = "baetyl-app-version"
+	ServiceName = "baetyl-service-name"
+)
 
-		var appdata crd.Application
-		err := k.store.Get(key, &appdata)
+func (k *kubeModel) Apply(appInfos []specv1.AppInfo) error {
+	appMap := map[string]string{}
+	configs := map[string]*corev1.ConfigMap{}
+	secrets := map[string]*corev1.Secret{}
+	services := map[string]*corev1.Service{}
+	deploys := map[string]*appv1.Deployment{}
+	for _, info := range appInfos {
+		appMap[info.Name] = info.Version
+		key := makeKey(crd.KindApplication, info.Name, info.Version)
+		var app crd.Application
+		err := k.store.Get(key, &app)
 		if err != nil {
 			return err
 		}
-		deploy, svcs, err := toDeployAndService(&appdata)
-		if err != nil {
-			return err
+		for _, svc := range app.Services {
+			deploy, err := toDeploy(&app, &svc, app.Volumes)
+			if err != nil {
+				return err
+			}
+			deploys[deploy.Name] = deploy
+			service, err := toService(app.Namespace, &svc)
+			if err != nil {
+				return err
+			}
+			services[service.Name] = service
 		}
-		deploys[deploy.Name] = deploy
-		services = append(services, svcs...)
-		for _, v := range appdata.Volumes {
+		for _, v := range app.Volumes {
 			if cfg := v.Config; cfg != nil {
 				key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
 				var config crd.Configuration
@@ -38,44 +52,89 @@ func (k *kubeModel) ApplyApplications(apps specv1.Desire) error {
 					return err
 				}
 				configMap, err := toConfigMap(&config)
+				if err != nil {
+					return err
+				}
 				configs[config.Name] = configMap
+			} else if sec := v.Secret; sec != nil {
+				key := makeKey(crd.KindSecret, sec.Name, sec.Version)
+				var secret crd.Secret
+				err := k.store.Get(key, &secret)
+				if err != nil {
+					return err
+				}
+				kSecret, err := toSecret(&secret)
+				if err != nil {
+					return err
+				}
+				secrets[kSecret.Name] = kSecret
 			}
 		}
 	}
 
-	// TODO: delete removed services
+	if err := k.applyConfigMaps(configs); err != nil {
+		return err
+	}
+	if err := k.applySecrets(secrets); err != nil {
+		return err
+	}
+	if err := k.applyDeploys(deploys); err != nil {
+		return err
+	}
+	if err := k.applyServices(services); err != nil {
+		return err
+	}
+	return nil
+}
 
-	configMapInterface := k.cli.Core.ConfigMaps(k.cli.Namespace)
-	for _, cfg := range configs {
-		_, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
-		if err == nil {
-			_, err := configMapInterface.Update(cfg)
-			if err != nil {
-				return err
-			}
-		} else {
-			_, err := configMapInterface.Create(cfg)
-			if err != nil {
-				return err
+func (k *kubeModel) applyDeploys(deploys map[string]*appv1.Deployment) error {
+	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
+	ls := kl.Set{}
+	selector := map[string]string{
+		"baetyl": "baetyl",
+	}
+	err := copier.Copy(&ls, &selector)
+	if err != nil {
+		return err
+	}
+	deployList, err := k.cli.App.Deployments(k.cli.Namespace).List(metav1.ListOptions{
+		LabelSelector: ls.String(),
+	})
+	if err != nil {
+		return err
+	}
+	deletes := map[string]struct{}{}
+	if deployList != nil {
+		for _, d := range deployList.Items {
+			if _, ok := deploys[d.Name]; !ok {
+				deletes[d.Name] = struct{}{}
 			}
 		}
 	}
-
+	for n := range deletes {
+		err := deployInterface.Delete(n, &metav1.DeleteOptions{})
+		if err != nil {
+			return err
+		}
+	}
 	for _, d := range deploys {
 		_, err := deployInterface.Get(d.Name, metav1.GetOptions{})
 		if err == nil {
-			_, err := deployInterface.Update(d)
+			_, err = deployInterface.Update(d)
 			if err != nil {
 				return err
 			}
 		} else {
-			_, err := deployInterface.Create(d)
+			_, err = deployInterface.Create(d)
 			if err != nil {
 				return err
 			}
 		}
 	}
+	return nil
+}
 
+func (k *kubeModel) applyServices(services map[string]*corev1.Service) error {
 	serviceInterface := k.cli.Core.Services(k.cli.Namespace)
 	for _, s := range services {
 		service, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
@@ -92,8 +151,45 @@ func (k *kubeModel) ApplyApplications(apps specv1.Desire) error {
 			}
 		}
 	}
+	return nil
+}
 
-	return k.store.Upsert("apps", apps)
+func (k *kubeModel) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) error {
+	configMapInterface := k.cli.Core.ConfigMaps(k.cli.Namespace)
+	for _, cfg := range configMaps {
+		_, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
+		if err == nil {
+			_, err := configMapInterface.Update(cfg)
+			if err != nil {
+				return err
+			}
+		} else {
+			_, err := configMapInterface.Create(cfg)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (k *kubeModel) applySecrets(secrets map[string]*corev1.Secret) error {
+	secretInterface := k.cli.Core.Secrets(k.cli.Namespace)
+	for _, sec := range secrets {
+		_, err := secretInterface.Get(sec.Name, metav1.GetOptions{})
+		if err == nil {
+			_, err := secretInterface.Update(sec)
+			if err != nil {
+				return err
+			}
+		} else {
+			_, err := secretInterface.Create(sec)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
@@ -105,94 +201,121 @@ func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
 	return configMap, nil
 }
 
-func toDeployAndService(app *crd.Application) (*appv1.Deployment, []*corev1.Service, error) {
+func toSecret(sec *crd.Secret) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	err := copier.Copy(secret, sec)
+	if err != nil {
+		return nil, err
+	}
+	return secret, nil
+}
+
+func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume) (*appv1.Deployment, error) {
+	volMap := map[string]crd.Volume{}
+	for _, v := range vols {
+		volMap[v.Name] = v
+	}
+	var c corev1.Container
+	err := copier.Copy(&c, &service)
+	if err != nil {
+		return nil, err
+	}
+	var containers []corev1.Container
+	containers = append(containers, c)
+	var volumes []corev1.Volume
+	for _, v := range service.VolumeMounts {
+		vol := volMap[v.Name]
+		volume := corev1.Volume{
+			Name: v.Name,
+		}
+		if vol.Config != nil {
+			volume.VolumeSource.ConfigMap = &corev1.ConfigMapVolumeSource{
+				LocalObjectReference: corev1.LocalObjectReference{Name: vol.VolumeSource.Config.Name},
+			}
+		} else if vol.Secret != nil {
+			volume.VolumeSource.Secret = &corev1.SecretVolumeSource{
+				SecretName: vol.VolumeSource.Secret.Name,
+			}
+		} else if vol.HostPath != nil {
+			volume.VolumeSource.HostPath = &corev1.HostPathVolumeSource{
+				Path: vol.VolumeSource.HostPath.Path,
+			}
+		}
+		volumes = append(volumes, volume)
+	}
+	restartPolicy := corev1.RestartPolicyAlways
+	if service.Restart != nil {
+		restartPolicy = corev1.RestartPolicy(service.Restart.Policy)
+	}
+	replica := new(int32)
+	*replica = int32(service.Replica)
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      app.Name,
+			Name:      service.Name,
 			Namespace: app.Namespace,
+			Labels: map[string]string {
+				"baetyl":    "baetyl",
+			},
 		},
 		Spec: appv1.DeploymentSpec{
+			Replicas: replica,
 			Strategy: appv1.DeploymentStrategy{
 				Type: appv1.RecreateDeploymentStrategyType,
 			},
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"baetyl": app.Name,
+					ServiceName: service.Name,
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
-					"baetyl": app.Name,
+					"baetyl":    "baetyl",
+					AppName:     app.Name,
+					AppVersion:  app.Version,
+					ServiceName: service.Name,
 				}},
+				Spec: corev1.PodSpec{
+					Volumes:       volumes,
+					Containers:    containers,
+					RestartPolicy: restartPolicy,
+				},
 			},
 		},
 	}
+	return deploy, nil
+}
 
-	err := copier.Copy(&deploy.Spec.Template.Spec.Containers, &app.Services)
-	if err != nil {
-		return nil, nil, err
+func toService(namespace string, svc *crd.Service) (*corev1.Service, error) {
+	if len(svc.Ports) == 0 {
+		return nil, nil
 	}
-	err = copier.Copy(&deploy.Spec.Template.Spec.Volumes, &app.Volumes)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	for _, v := range app.Volumes {
-		if config := v.Config; config != nil {
-			volume := corev1.Volume{
-				Name: v.Name,
-				VolumeSource: corev1.VolumeSource{
-					ConfigMap: &corev1.ConfigMapVolumeSource{
-						LocalObjectReference: corev1.LocalObjectReference{Name: config.Name},
-					},
-				},
-			}
-			deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, volume)
-		} else if secret := v.Secret; secret != nil {
-			volume := corev1.Volume{
-				Name: v.Name,
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
-						SecretName: secret.Name,
-					},
-				},
-			}
-			deploy.Spec.Template.Spec.Volumes = append(deploy.Spec.Template.Spec.Volumes, volume)
+	var ports []corev1.ServicePort
+	for _, p := range svc.Ports {
+		port := corev1.ServicePort{
+			Port:       p.ContainerPort,
+			TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 		}
+		ports = append(ports, port)
 	}
-
-	var services []*corev1.Service
-	for _, svc := range app.Services {
-		if len(svc.Ports) == 0 {
-			continue
-		}
-		service := &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      svc.Name,
-				Namespace: app.Namespace,
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      svc.Name,
+			Namespace: namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{
+				"baetyl": svc.Name,
 			},
-			Spec: corev1.ServiceSpec{
-				Selector: map[string]string{
-					"baetyl": app.Name,
-				},
-				ClusterIP: "None",
-			},
-		}
-		for _, p := range svc.Ports {
-			port := corev1.ServicePort{
-				Port:       p.ContainerPort,
-				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
-			}
-			service.Spec.Ports = append(service.Spec.Ports, port)
-		}
-		services = append(services, service)
+			ClusterIP: "None",
+			Ports:     ports,
+		},
 	}
-	return deploy, services, nil
+	return service, nil
 }
 
 func makeKey(kind crd.Kind, name, ver string) string {
 	if name == "" || ver == "" {
 		return ""
 	}
-	return string(kind) + "/" + name + "/" + ver
+	return string(kind) + "-" + name + "-" + ver
 }

@@ -106,7 +106,7 @@ func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := v1.CRDRequest{CRDInfos: crds}
+	req := v1.CRDRequest {CRDInfos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -115,12 +115,12 @@ func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	var response v1.CRDResponse
-	err = json.Unmarshal(data, &response)
+	var res v1.CRDResponse
+	err = json.Unmarshal(data, &res)
 	if err != nil {
 		return nil, err
 	}
-	return response.CRDDatas, nil
+	return res.CRDDatas, nil
 }
 
 func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Configuration, secrets map[string]*crd.Secret) error {
@@ -207,5 +207,5 @@ func makeKey(kind crd.Kind, name, ver string) string {
 	if name == "" || ver == "" {
 		return ""
 	}
-	return string(kind) + "/" + name + "/" + ver
+	return string(kind) + "-" + name + "-" + ver
 }

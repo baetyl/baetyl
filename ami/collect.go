@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/crd"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
@@ -15,11 +14,6 @@ import (
 )
 
 func (k *kubeModel) CollectInfo() (specv1.Report, error) {
-	var apps specv1.Desire
-	err := k.store.Get("apps", &apps)
-	if err != nil {
-		return nil, err
-	}
 	node, err := k.cli.Core.Nodes().Get(k.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -32,16 +26,23 @@ func (k *kubeModel) CollectInfo() (specv1.Report, error) {
 	if err != nil {
 		k.log.Error("failed to collect node status", log.Error(err))
 	}
-	appStatus, err := k.collectAppStatus(apps.AppInfos())
+	appStatus, err := k.collectAppStatus()
 	if err != nil {
 		k.log.Error("failed to collect app status", log.Error(err))
 	}
-
+	var apps []specv1.AppInfo
+	for _, info := range appStatus {
+		app := specv1.AppInfo{
+			Name:    info.Name,
+			Version: info.Version,
+		}
+		apps = append(apps, app)
+	}
 	return specv1.Report{
 		"time":     time.Now(),
 		"node":     nodeInfo,
 		"nodestat": nodeStats,
-		"apps":     apps.AppInfos,
+		"apps":     apps,
 		"appstats": appStatus,
 	}, nil
 }
@@ -71,12 +72,6 @@ func (k *kubeModel) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, erro
 		Usage:    map[string]*specv1.ResourceInfo{},
 		Capacity: map[string]*specv1.ResourceInfo{},
 	}
-	for res, quantity := range node.Status.Capacity {
-		nodeStats.Capacity[string(res)] = &specv1.ResourceInfo{
-			Name:  string(res),
-			Value: quantity.String(),
-		}
-	}
 	nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(k.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return nodeStats, err
@@ -87,14 +82,48 @@ func (k *kubeModel) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, erro
 			Value: quantity.String(),
 		}
 	}
+	for res, quantity := range node.Status.Capacity {
+		if _, ok := nodeStats.Usage[string(res)]; ok {
+			nodeStats.Capacity[string(res)] = &specv1.ResourceInfo{
+				Name:  string(res),
+				Value: quantity.String(),
+			}
+		}
+	}
 	return nodeStats, nil
 }
 
-func (k *kubeModel) collectAppStatus(apps []specv1.AppInfo) ([]specv1.AppStatus, error) {
-	var res []specv1.AppStatus
-	for _, app := range apps {
-		status := specv1.AppStatus{AppInfo: app}
-		deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(app.Name, metav1.GetOptions{})
+func (k *kubeModel) collectAppStatus() ([]specv1.AppStatus, error) {
+	ls := kl.Set{}
+	selector := map[string]string{
+		"baetyl": "baetyl",
+	}
+	err := copier.Copy(&ls, &selector)
+	podList, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
+		LabelSelector: ls.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	appStatuses := map[string]*specv1.AppStatus{}
+	if podList == nil {
+		return nil, nil
+	}
+	for _, pod := range podList.Items {
+		appName := pod.Labels[AppName]
+		appVersion := pod.Labels[AppVersion]
+		serviceName := pod.Labels[ServiceName]
+		if appName == "" || appVersion == "" || serviceName == "" {
+			continue
+		}
+		var status *specv1.AppStatus
+		if status = appStatuses[appName]; status == nil {
+			status = &specv1.AppStatus{AppInfo: specv1.AppInfo{
+				Name:    appName,
+				Version: appVersion,
+			}}
+		}
+		deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(serviceName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -105,51 +134,29 @@ func (k *kubeModel) collectAppStatus(apps []specv1.AppInfo) ([]specv1.AppStatus,
 				status.Cause += e.Message + "\n"
 			}
 		}
-		var appinfo crd.Application
-		err = k.store.Get(makeKey(crd.KindApplication, app.Name, app.Version), &appinfo)
+		if status.ServiceInfos == nil {
+			status.ServiceInfos = map[string]*specv1.ServiceInfo{}
+		}
+		status.ServiceInfos[serviceName], err = k.collectServiceInfo(serviceName, &pod)
 		if err != nil {
 			return nil, err
 		}
-		status.ServiceInfos = map[string]*specv1.ServiceInfo{}
-		for _, svc := range appinfo.Services {
-			status.ServiceInfos[svc.Name], err = k.collectServiceInfo(svc.Name)
-			if err != nil {
-				return nil, err
-			}
-		}
-		status.VolumeInfos = map[string]*specv1.VolumeInfo{}
-		for _, v := range appinfo.Volumes {
-			status.VolumeInfos[v.Name], err = k.collectVolumeInfo(v)
-			if err != nil {
-				return nil, err
-			}
-		}
-		res = append(res, status)
+		appStatuses[appName] = status
 	}
-	return res, nil
+	return transformAppStatus(appStatuses), nil
 }
 
-func (k *kubeModel) collectServiceInfo(name string) (*specv1.ServiceInfo, error) {
-	info := &specv1.ServiceInfo{Name: name, Usage: map[string]*specv1.ResourceInfo{}}
-	svc, err := k.cli.Core.Services(k.cli.Namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
+func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStatus {
+	var res []specv1.AppStatus
+	for _, status := range appStatus {
+		res = append(res, *status)
 	}
-	ls := kl.Set{}
-	err = copier.Copy(&ls, &svc.Spec.Selector)
-	if err != nil {
-		return nil, err
-	}
-	pods, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
-		LabelSelector: ls.String(),
-		// limit 1 temporarily
-		Limit: 1,
-	})
-	if err != nil {
-		return nil, err
-	}
-	pod := pods.Items[0]
-	ref, err := reference.GetReference(scheme.Scheme, &pod)
+	return res
+}
+
+func (k *kubeModel) collectServiceInfo(serviceName string, pod *corev1.Pod) (*specv1.ServiceInfo, error) {
+	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]*specv1.ResourceInfo{}}
+	ref, err := reference.GetReference(scheme.Scheme, pod)
 	events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
 	for _, e := range events.Items {
 		if e.Type == "Warning" {
@@ -158,8 +165,8 @@ func (k *kubeModel) collectServiceInfo(name string) (*specv1.ServiceInfo, error)
 	}
 	info.CreateTime = pod.CreationTimestamp.Local()
 	for _, cont := range pod.Status.ContainerStatuses {
-		if cont.Name == name {
-			info.Container.Name = name
+		if cont.Name == serviceName {
+			info.Container.Name = serviceName
 			info.Container.ID = cont.ContainerID
 		}
 	}
@@ -168,7 +175,7 @@ func (k *kubeModel) collectServiceInfo(name string) (*specv1.ServiceInfo, error)
 		return nil, err
 	}
 	for _, cont := range podMetric.Containers {
-		if cont.Name == name {
+		if cont.Name == serviceName {
 			for res, quantity := range cont.Usage {
 				info.Usage[string(res)] = &specv1.ResourceInfo{
 					Name:  string(res),
@@ -178,23 +185,5 @@ func (k *kubeModel) collectServiceInfo(name string) (*specv1.ServiceInfo, error)
 		}
 	}
 	info.Status = string(pod.Status.Phase)
-	return info, nil
-}
-
-func (k *kubeModel) collectVolumeInfo(volume crd.Volume) (*specv1.VolumeInfo, error) {
-	info := &specv1.VolumeInfo{Name: volume.Name}
-	if config := volume.VolumeSource.Config; config != nil {
-		configMap, err := k.cli.Core.ConfigMaps(k.cli.Namespace).Get(config.Name, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		info.Version = configMap.ResourceVersion
-	} else if secret := volume.VolumeSource.Secret; secret != nil {
-		secret, err := k.cli.Core.Secrets(k.cli.Namespace).Get(secret.Name, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-		info.Version = secret.ResourceVersion
-	}
 	return info, nil
 }

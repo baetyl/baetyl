@@ -7,5 +7,5 @@ import specv1 "github.com/baetyl/baetyl-go/spec/v1"
 // AMI app model interfaces
 type AMI interface {
 	CollectInfo() (specv1.Report, error)
-	ApplyApplications(specv1.Desire) error
+	Apply([]specv1.AppInfo) error
 }
