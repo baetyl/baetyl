@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/shadow"
 	"github.com/baetyl/baetyl-go/log"
 	bh "github.com/timshannon/bolthold"
 )
@@ -12,7 +11,6 @@ import (
 type kubeModel struct {
 	cli      *Client
 	store    *bh.Store
-	shadow   *shadow.Shadow
 	nodeName string
 	log      *log.Logger
 }
@@ -24,10 +22,11 @@ func NewKubeModel(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
 		return nil, err
 	}
 	nodeName := os.Getenv("NODE_NAME")
-	return &kubeModel{
+	model := &kubeModel{
 		cli:      cli,
 		store:    sto,
 		nodeName: nodeName,
 		log:      log.With(log.Any("ami", "kube")),
-	}, nil
+	}
+	return model, nil
 }

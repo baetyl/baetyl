@@ -94,11 +94,13 @@ func (e *Engine) Apply(msg faas.Message) error {
 	if err != nil {
 		return err
 	}
-	if len(info.AppInfos()) == 0 {
+	apps := info.AppInfos()
+	if len(apps) == 0 {
 		return fmt.Errorf("apps does not exist")
 	}
-	err = e.ami.ApplyApplications(info)
+	err = e.ami.Apply(apps)
 	if err != nil {
+		e.log.Error("failed to apply application", log.Error(err))
 		return err
 	}
 	return nil
