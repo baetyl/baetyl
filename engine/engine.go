@@ -10,7 +10,6 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-core/shadow"
-	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
@@ -56,23 +55,23 @@ func (e *Engine) collecting() error {
 				e.log.Error("failed to update shadow report", log.Error(err))
 				continue
 			}
-			var msg faas.Message
+			var evt *event.Event
 			if len(delta) > 0 {
-				msg.Payload, err = json.Marshal(delta)
+				pld, err := json.Marshal(delta)
 				if err != nil {
 					e.log.Error("failed to marshal delta", log.Error(err))
 					continue
 				}
-				msg.Metadata = map[string]string{"topic": event.SyncDesireEvent}
+				evt = event.NewEvent(event.SyncDesireEvent, pld)
 			} else {
-				msg.Payload, err = json.Marshal(info)
+				pld, err := json.Marshal(info)
 				if err != nil {
 					e.log.Error("failed to marshal delta", log.Error(err))
 					continue
 				}
-				msg.Metadata = map[string]string{"topic": event.SyncReportEvent}
+				evt = event.NewEvent(event.SyncReportEvent, pld)
 			}
-			err = e.cent.Trigger(&msg)
+			err = e.cent.Trigger(evt)
 			if err != nil {
 				e.log.Error("failed to trigger event", log.Error(err))
 				continue
@@ -88,9 +87,9 @@ func (e *Engine) Close() {
 	e.tomb.Wait()
 }
 
-func (e *Engine) Apply(msg faas.Message) error {
+func (e *Engine) Apply(evt *event.Event) error {
 	var info v1.Desire
-	err := json.Unmarshal(msg.Payload, &info)
+	err := json.Unmarshal(evt.Payload, &info)
 	if err != nil {
 		return err
 	}

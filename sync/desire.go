@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/baetyl/baetyl-core/event"
-	"github.com/baetyl/baetyl-go/faas"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/crd"
 	"github.com/baetyl/baetyl-go/spec/v1"
@@ -21,9 +20,9 @@ const (
 )
 
 // Desire process desire delta, to sync crds
-func (s *Sync) Desire(msg faas.Message) error {
+func (s *Sync) Desire(evt *event.Event) error {
 	var delta v1.Desire
-	err := json.Unmarshal(msg.Payload, &delta)
+	err := json.Unmarshal(evt.Payload, &delta)
 	if err != nil {
 		return err
 	}
@@ -94,8 +93,7 @@ func (s *Sync) Desire(msg faas.Message) error {
 			return err
 		}
 	}
-	message := &faas.Message{Metadata: map[string]string{"topic": event.EngineAppEvent}, Payload: msg.Payload}
-	err = s.cent.Trigger(message)
+	err = s.cent.Trigger(event.NewEvent(event.EngineAppEvent, evt.Payload))
 	if err != nil {
 		return err
 	}
