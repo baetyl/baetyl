@@ -6,6 +6,7 @@ import (
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -16,6 +17,7 @@ const (
 	AppVersion  = "baetyl-app-version"
 	ServiceName = "baetyl-service-name"
 
+	// TODO replace by baetyl-go
 	BaetylCloudGroup = "cloud.baetyl.io"
 	SecretLabel      = "secret-type"
 	SecretRegistry   = BaetylCloudGroup + "-secret-registry"
@@ -227,6 +229,14 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 	if err != nil {
 		return nil, err
 	}
+	c.Resources.Limits = corev1.ResourceList{}
+	for n, value := range service.Resources.Limits {
+		quantity, err := resource.ParseQuantity(value)
+		if err != nil {
+		    return nil, err
+		}
+		c.Resources.Limits[corev1.ResourceName(n)] = quantity
+	}
 	var containers []corev1.Container
 	containers = append(containers, c)
 	var volumes []corev1.Volume
@@ -261,8 +271,8 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
 			Namespace: app.Namespace,
-			Labels: map[string]string{
-				"baetyl": "baetyl",
+			Labels: map[string]string {
+				"baetyl":    "baetyl",
 			},
 		},
 		Spec: appv1.DeploymentSpec{

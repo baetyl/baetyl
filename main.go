@@ -11,6 +11,8 @@ import (
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
 	bh "github.com/timshannon/bolthold"
+	"os"
+	"path"
 )
 
 type core struct {
@@ -29,7 +31,10 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	err = os.MkdirAll(path.Dir(cfg.Store.Path), 0755)
+	if err != nil {
+		return nil, err
+	}
 	c := &core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
