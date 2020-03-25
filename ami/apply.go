@@ -16,7 +16,7 @@ const (
 	AppName     = "baetyl-app-name"
 	AppVersion  = "baetyl-app-version"
 	ServiceName = "baetyl-service-name"
-
+  
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
 	RegistryPassword = "password"
