@@ -228,7 +228,7 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 	for n, value := range service.Resources.Limits {
 		quantity, err := resource.ParseQuantity(value)
 		if err != nil {
-		    return nil, err
+			return nil, err
 		}
 		c.Resources.Limits[corev1.ResourceName(n)] = quantity
 	}
@@ -266,8 +266,8 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
 			Namespace: app.Namespace,
-			Labels: map[string]string {
-				"baetyl":    "baetyl",
+			Labels: map[string]string{
+				"baetyl": "baetyl",
 			},
 		},
 		Spec: appv1.DeploymentSpec{
@@ -360,8 +360,7 @@ func makeKey(kind crd.Kind, name, ver string) string {
 }
 
 func isRegistrySecret(secret *crd.Secret) bool {
-	if registry, ok := secret.Labels[crd.SecretLabel]; ok && registry == crd.SecretRegistry {
-		return true
-	}
-	return false
+	registry, ok := secret.Labels[crd.SecretLabel]
+
+	return ok && registry == crd.SecretRegistry
 }
