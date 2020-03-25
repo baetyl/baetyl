@@ -47,17 +47,17 @@ func (mr *MockAMIMockRecorder) Apply(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockAMI)(nil).Apply), arg0)
 }
 
-// CollectInfo mocks base method
-func (m *MockAMI) CollectInfo() (v1.Report, error) {
+// Collect mocks base method
+func (m *MockAMI) Collect() (v1.Report, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CollectInfo")
+	ret := m.ctrl.Call(m, "Collect")
 	ret0, _ := ret[0].(v1.Report)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CollectInfo indicates an expected call of CollectInfo
-func (mr *MockAMIMockRecorder) CollectInfo() *gomock.Call {
+// Collect indicates an expected call of Collect
+func (mr *MockAMIMockRecorder) Collect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectInfo", reflect.TypeOf((*MockAMI)(nil).CollectInfo))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collect", reflect.TypeOf((*MockAMI)(nil).Collect))
 }

@@ -40,7 +40,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	ami, err := ami.NewKubeModel(cfg.Engine.Kubernetes, c.sto)
+	ami, err := ami.NewKubeImpl(cfg.Engine.Kubernetes, c.sto)
 	if err != nil {
 		return nil, err
 	}

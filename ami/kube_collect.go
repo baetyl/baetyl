@@ -14,8 +14,8 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-func (k *kubeModel) CollectInfo() (specv1.Report, error) {
-	node, err := k.cli.Core.Nodes().Get(k.nodeName, metav1.GetOptions{})
+func (k *kubeImpl) Collect() (specv1.Report, error) {
+	node, err := k.cli.Core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (k *kubeModel) CollectInfo() (specv1.Report, error) {
 	}, nil
 }
 
-func (k *kubeModel) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) {
+func (k *kubeImpl) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) {
 	ni := node.Status.NodeInfo
 	nodeInfo := specv1.NodeInfo{
 		Arch:             ni.Architecture,
@@ -70,12 +70,12 @@ func (k *kubeModel) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) 
 	return nodeInfo, nil
 }
 
-func (k *kubeModel) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error) {
+func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error) {
 	nodeStats := specv1.NodeStatus{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
 	}
-	nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(k.nodeName, metav1.GetOptions{})
+	nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nodeStats, err
 	}
@@ -98,7 +98,7 @@ func (k *kubeModel) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, erro
 	return nodeStats, nil
 }
 
-func (k *kubeModel) collectAppStatus() ([]specv1.AppStatus, error) {
+func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 	ls := kl.Set{}
 	selector := map[string]string{
 		"baetyl": "baetyl",
@@ -159,7 +159,7 @@ func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStat
 	return res
 }
 
-func (k *kubeModel) collectServiceInfo(serviceName string, pod *corev1.Pod) (*specv1.ServiceInfo, error) {
+func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*specv1.ServiceInfo, error) {
 	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
 	events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)

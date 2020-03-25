@@ -132,7 +132,7 @@ func TestInitialize_Activate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().CollectInfo().Return(inspect, nil).Times(len(cases))
+	ami.EXPECT().Collect().Return(inspect, nil).Times(len(cases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
