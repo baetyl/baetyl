@@ -16,13 +16,13 @@ const (
 	AppName     = "baetyl-app-name"
 	AppVersion  = "baetyl-app-version"
 	ServiceName = "baetyl-service-name"
-  
+
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
 	RegistryPassword = "password"
 )
 
-func (k *kubeModel) Apply(appInfos []specv1.AppInfo) error {
+func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 	appMap := map[string]string{}
 	configs := map[string]*corev1.ConfigMap{}
 	secrets := map[string]*corev1.Secret{}
@@ -108,7 +108,7 @@ func (k *kubeModel) Apply(appInfos []specv1.AppInfo) error {
 	return nil
 }
 
-func (k *kubeModel) applyDeploys(deploys map[string]*appv1.Deployment) error {
+func (k *kubeImpl) applyDeploys(deploys map[string]*appv1.Deployment) error {
 	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
 	ls := kl.Set{}
 	selector := map[string]string{
@@ -155,7 +155,7 @@ func (k *kubeModel) applyDeploys(deploys map[string]*appv1.Deployment) error {
 	return nil
 }
 
-func (k *kubeModel) applyServices(services map[string]*corev1.Service) error {
+func (k *kubeImpl) applyServices(services map[string]*corev1.Service) error {
 	serviceInterface := k.cli.Core.Services(k.cli.Namespace)
 	for _, s := range services {
 		service, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
@@ -175,7 +175,7 @@ func (k *kubeModel) applyServices(services map[string]*corev1.Service) error {
 	return nil
 }
 
-func (k *kubeModel) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) error {
+func (k *kubeImpl) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) error {
 	configMapInterface := k.cli.Core.ConfigMaps(k.cli.Namespace)
 	for _, cfg := range configMaps {
 		_, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
@@ -194,7 +194,7 @@ func (k *kubeModel) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) err
 	return nil
 }
 
-func (k *kubeModel) applySecrets(secrets map[string]*corev1.Secret) error {
+func (k *kubeImpl) applySecrets(secrets map[string]*corev1.Secret) error {
 	secretInterface := k.cli.Core.Secrets(k.cli.Namespace)
 	for _, sec := range secrets {
 		_, err := secretInterface.Get(sec.Name, metav1.GetOptions{})

@@ -26,7 +26,7 @@ func (init *Initialize) collect() (string, error) {
 	if len(fs) == 0 {
 		return "", nil
 	}
-	report, err := init.ami.CollectInfo()
+	report, err := init.ami.Collect()
 	if err != nil {
 		return "", err
 	}

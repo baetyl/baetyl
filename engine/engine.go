@@ -45,7 +45,7 @@ func (e *Engine) collecting() error {
 	for {
 		select {
 		case <-t.C:
-			info, err := e.ami.CollectInfo()
+			info, err := e.ami.Collect()
 			if err != nil {
 				e.log.Error("failed to collect info", log.Error(err))
 				continue
