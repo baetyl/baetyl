@@ -17,11 +17,6 @@ const (
 	AppVersion  = "baetyl-app-version"
 	ServiceName = "baetyl-service-name"
 
-	// TODO replace by baetyl-go
-	BaetylCloudGroup = "cloud.baetyl.io"
-	SecretLabel      = "secret-type"
-	SecretRegistry   = BaetylCloudGroup + "-secret-registry"
-
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
 	RegistryPassword = "password"
@@ -365,7 +360,7 @@ func makeKey(kind crd.Kind, name, ver string) string {
 }
 
 func isRegistrySecret(secret *crd.Secret) bool {
-	if registry, ok := secret.Labels[SecretLabel]; ok && registry == SecretRegistry {
+	if registry, ok := secret.Labels[crd.SecretLabel]; ok && registry == crd.SecretRegistry {
 		return true
 	}
 	return false
