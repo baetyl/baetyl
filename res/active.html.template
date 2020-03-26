@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style type="text/css">
+    div.active-title {font-family:Menlo; height: 50px; margin-top:12%; vertical-align: middle; text-align:center}
+    div.active-input {font-family:SimHei; margin:0 auto; width: 30%; height: 150px; margin-top:40px}
+    label.active-lable {float: left; font-size: 17px; margin-top: 5px}
+    input.active-box{float:right; width: 200px; height: 18px; margin-top: 4px}
+    input.active-submit{margin-top:25px; float:right; width: 100px; height: 30px; font-size: 30px}
+</style>
+<title>激活界面</title>
+</head>
+<body bgcolor="#f6f7fb">
+<form method="post" action="update">
+    <div class="active-title">
+        <h1>设备激活</h1>
+    </div>
+    <div class="active-input">
+        {{range $value := .Attributes }}
+        {{ if not $value.Value }}
+            <label class="active-lable">{{$value.Label}}：</label>
+            <input class="active-box" name="{{$value.Name}}" placeholder="{{$value.Desc}}" value=""/>
+            <br/><br/>
+        {{ end }}
+        {{ end }}
+        <input class="active-submit" type="submit" value="激活"/>
+    </div>
+</form>
+</body>
