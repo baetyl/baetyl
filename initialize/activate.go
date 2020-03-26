@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-go/utils"
+	"io/ioutil"
 	"time"
 
 	"github.com/baetyl/baetyl-go/http"
@@ -49,6 +51,7 @@ func (init *Initialize) Activate() {
 		init.log.Error("failed to marshal activate info", log.Error(err))
 		return
 	}
+	init.log.Debug("init", log.Any("info data", string(data)))
 
 	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, init.cfg.Init.Cloud.Active.URL)
 	resp, err := init.http.Post(url, "application/json", bytes.NewReader(data))
@@ -71,10 +74,23 @@ func (init *Initialize) Activate() {
 
 	init.cfg.Sync.Node.Name = res.NodeName
 	init.cfg.Sync.Node.Namespace = res.Namespace
-	init.cfg.Sync.Cloud.HTTP.CA = res.Certificate.CA
-	init.cfg.Sync.Cloud.HTTP.Cert = res.Certificate.Cert
-	init.cfg.Sync.Cloud.HTTP.Key = res.Certificate.Key
-	init.cfg.Sync.Cloud.HTTP.Name = res.Certificate.Name
+	if err := init.genCert(res.Certificate); err != nil {
+		init.log.Error("error to create cert file", log.Error(err))
+		return
+	}
 
 	init.sig <- true
+}
+
+func (init *Initialize) genCert(c utils.Certificate) error {
+	if err := ioutil.WriteFile(init.cfg.Sync.Cloud.HTTP.CA, []byte(c.CA), 0755); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(init.cfg.Sync.Cloud.HTTP.Cert, []byte(c.Cert), 0755); err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(init.cfg.Sync.Cloud.HTTP.Key, []byte(c.Key), 0755); err != nil {
+		return err
+	}
+	return nil
 }

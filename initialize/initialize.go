@@ -6,6 +6,7 @@ import (
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
+	gohttp "net/http"
 )
 
 type batch struct {
@@ -20,6 +21,7 @@ type Initialize struct {
 	cfg   *config.Config
 	tomb  utils.Tomb
 	http  *http.Client
+	srv   *gohttp.Server
 	ami   ami.AMI
 	batch *batch
 	attrs map[string]string
@@ -54,14 +56,24 @@ func NewInit(cfg *config.Config, ami ami.AMI) (*Initialize, error) {
 }
 
 func (init *Initialize) Start() {
-	err := init.tomb.Go(init.activating)
-	if err != nil {
-		init.log.Error("failed to start report and process routine", log.Error(err))
-		return
+	if init.cfg.Init.ActivateConfig.Server.Listen == "" {
+		err := init.tomb.Go(init.activating)
+		if err != nil {
+			init.log.Error("failed to start report and process routine", log.Error(err))
+			return
+		}
+	} else {
+		err := init.tomb.Go(init.StartServer)
+		if err != nil {
+			init.log.Error("init", log.Any("server start err", err))
+		}
 	}
 }
 
 func (init *Initialize) Close() {
+	if init.srv != nil {
+		init.CloseServer()
+	}
 	init.tomb.Kill(nil)
 	init.tomb.Wait()
 }
