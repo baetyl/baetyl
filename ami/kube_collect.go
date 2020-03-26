@@ -89,12 +89,6 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 			nodeStats.Capacity[string(res)] = quantity.String()
 		}
 	}
-	for res, quan := range node.Status.Capacity {
-		if _, ok := nodeStats.Usage[string(res)]; ok {
-			quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
-			nodeStats.Capacity[string(res)] = quantity.String()
-		}
-	}
 	return nodeStats, nil
 }
 

@@ -1,0 +1,39 @@
+package ami
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+type auth struct {
+	Username string
+	Password string
+	Auth     string
+}
+
+func generateRegistrySecret(name, server, username, password string) (*v1.Secret, error) {
+	secret := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+		Type:       v1.SecretTypeDockerConfigJson,
+	}
+	serverAuth := map[string]auth{
+		server: {
+			Username: username,
+			Password: password,
+			Auth:     base64.StdEncoding.EncodeToString([]byte(username + ":" + password)),
+		},
+	}
+	auths := map[string]interface{}{
+		"auths": serverAuth,
+	}
+	data, err := json.Marshal(auths)
+	if err != nil {
+		return nil, err
+	}
+	secret.Data = map[string][]byte{
+		v1.DockerConfigJsonKey: data,
+	}
+	return secret, nil
+}
