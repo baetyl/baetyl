@@ -5,6 +5,7 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 	"html/template"
 	"net/http"
+	"time"
 )
 
 func (init *Initialize) StartServer() error {
@@ -18,7 +19,8 @@ func (init *Initialize) StartServer() error {
 	return init.srv.ListenAndServe()
 }
 
-func (init *Initialize) CloseServer() {
+func (init *Initialize) CloseServer(dur time.Duration) {
+	time.Sleep(dur)
 	err := init.srv.Close()
 	if err != nil {
 		init.log.Error("init", log.Any("server err", err))
@@ -67,7 +69,7 @@ func (init *Initialize) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	if init.cfg.Sync.Node.Name == "" {
 		page = "/failed.html.template"
 	} else {
-		defer init.CloseServer()
+		defer init.CloseServer(time.Duration(3) * time.Second)
 	}
 	tpl, err = template.ParseFiles(init.cfg.Init.ActivateConfig.Server.Pages + page)
 	if err != nil {
