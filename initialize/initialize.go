@@ -63,7 +63,7 @@ func (init *Initialize) Start() {
 			return
 		}
 	} else {
-		err := init.StartServer()
+		err := init.tomb.Go(init.StartServer)
 		if err != nil {
 			init.log.Error("init", log.Any("server start err", err))
 		}
@@ -73,6 +73,9 @@ func (init *Initialize) Start() {
 func (init *Initialize) Close() {
 	init.tomb.Kill(nil)
 	init.tomb.Wait()
+	if init.srv != nil {
+		init.CloseServer()
+	}
 }
 
 func (init *Initialize) WaitAndClose() {
