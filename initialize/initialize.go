@@ -71,11 +71,11 @@ func (init *Initialize) Start() {
 }
 
 func (init *Initialize) Close() {
-	init.tomb.Kill(nil)
-	init.tomb.Wait()
 	if init.srv != nil {
 		init.CloseServer()
 	}
+	init.tomb.Kill(nil)
+	init.tomb.Wait()
 }
 
 func (init *Initialize) WaitAndClose() {
