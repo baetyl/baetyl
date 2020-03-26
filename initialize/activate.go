@@ -49,6 +49,7 @@ func (init *Initialize) Activate() {
 		init.log.Error("failed to marshal activate info", log.Error(err))
 		return
 	}
+	init.log.Debug("init", log.Any("info data", string(data)))
 
 	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, init.cfg.Init.Cloud.Active.URL)
 	resp, err := init.http.Post(url, "application/json", bytes.NewReader(data))

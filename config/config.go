@@ -55,10 +55,10 @@ type SyncConfig struct {
 
 type InitConfig struct {
 	Batch struct {
-		Name         string `json:"name,omitempty"`
-		Namespace    string `json:"namespace,omitempty"`
-		SecurityType string `json:"securityType,omitempty"`
-		SecurityKey  string `json:"securityKey,omitempty"`
+		Name         string `yaml:"name" json:"name"`
+		Namespace    string `yaml:"namespace" json:"namespace"`
+		SecurityType string `yaml:"securityType" json:"securityType"`
+		SecurityKey  string `yaml:"securityKey" json:"securityKey"`
 	} `yaml:"batch" json:"batch"`
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
