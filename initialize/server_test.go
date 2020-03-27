@@ -132,6 +132,7 @@ func TestServer(t *testing.T) {
 	for k, v := range attrs {
 		form.Set(k, v)
 	}
+
 	req := &http.Request{
 		Method:   http.MethodPost,
 		Form:     form,
