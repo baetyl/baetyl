@@ -150,8 +150,8 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
 			if base == "" {
-				base := filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
-				dir := filepath.Join(base, cfg.Version)
+				base = filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
+				dir = filepath.Join(base, cfg.Version)
 				err := os.MkdirAll(dir, 0755)
 				if err != nil {
 					return err
@@ -189,7 +189,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 	return s.store.Upsert(key, cfg)
 }
 
-func cleanDir(dir, retain string) error  {
+func cleanDir(dir, retain string) error {
 	files, _ := ioutil.ReadDir(dir)
 	for _, f := range files {
 		if f.Name() != retain {

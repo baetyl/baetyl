@@ -64,4 +64,40 @@ func TestSync_Report(t *testing.T) {
 		CreationTimestamp: sp.CreationTimestamp,
 		Desire:            v1.Desire{"apps": map[string]interface{}{"app1": "123"}},
 	}, sp)
+
+	sc = config.SyncConfig{}
+	_, err = NewSync(sc, sto, sha, nil)
+	assert.Error(t, err, ErrSyncTLSConfigMissing.Error())
+
+	sc.Cloud.HTTP.Cert = "./testcert/notexist.pem"
+	_, err = NewSync(sc, sto, sha, nil)
+	assert.Error(t, err)
+
+	ms = mock.NewServer(tlssvr, mock.NewResponse(200, []byte{}))
+	sc = config.SyncConfig{}
+	err = utils.UnmarshalYAML(nil, &sc)
+	assert.NoError(t, err)
+	sc.Cloud.HTTP.Address = ms.URL
+	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
+	sc.Cloud.HTTP.Key = "./testcert/client.key"
+	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
+	sc.Cloud.HTTP.InsecureSkipVerify = true
+	syn, err = NewSync(sc, sto, sha, nil)
+	assert.NoError(t, err)
+	err = syn.Report(&event.Event{})
+	assert.Error(t, err)
+
+	ms = mock.NewServer(tlssvr, mock.NewResponse(500, []byte{}))
+	sc = config.SyncConfig{}
+	err = utils.UnmarshalYAML(nil, &sc)
+	assert.NoError(t, err)
+	sc.Cloud.HTTP.Address = ms.URL
+	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
+	sc.Cloud.HTTP.Key = "./testcert/client.key"
+	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
+	sc.Cloud.HTTP.InsecureSkipVerify = true
+	syn, err = NewSync(sc, sto, sha, nil)
+	assert.NoError(t, err)
+	err = syn.Report(&event.Event{})
+	assert.Error(t, err)
 }

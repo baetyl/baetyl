@@ -1,0 +1,1826 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/baetyl/baetyl-core/ami/kube.go (0.0%)</option>
+				
+				<option value="file1">github.com/baetyl/baetyl-core/ami/kube_apply.go (61.5%)</option>
+				
+				<option value="file2">github.com/baetyl/baetyl-core/ami/kube_collect.go (0.0%)</option>
+				
+				<option value="file3">github.com/baetyl/baetyl-core/ami/registry.go (87.5%)</option>
+				
+				<option value="file4">github.com/baetyl/baetyl-core/engine/engine.go (79.2%)</option>
+				
+				<option value="file5">github.com/baetyl/baetyl-core/event/center.go (75.9%)</option>
+				
+				<option value="file6">github.com/baetyl/baetyl-core/event/event.go (100.0%)</option>
+				
+				<option value="file7">github.com/baetyl/baetyl-core/initialize/activate.go (68.3%)</option>
+				
+				<option value="file8">github.com/baetyl/baetyl-core/initialize/collector.go (62.1%)</option>
+				
+				<option value="file9">github.com/baetyl/baetyl-core/initialize/initialize.go (77.8%)</option>
+				
+				<option value="file10">github.com/baetyl/baetyl-core/shadow/shadow.go (80.3%)</option>
+				
+				<option value="file11">github.com/baetyl/baetyl-core/sync/desire.go (80.8%)</option>
+				
+				<option value="file12">github.com/baetyl/baetyl-core/sync/object.go (89.3%)</option>
+				
+				<option value="file13">github.com/baetyl/baetyl-core/sync/sync.go (94.7%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package ami
+
+import (
+        "os"
+
+        "github.com/baetyl/baetyl-core/config"
+        "github.com/baetyl/baetyl-go/log"
+        bh "github.com/timshannon/bolthold"
+        "k8s.io/client-go/kubernetes"
+        appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
+        corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+        "k8s.io/client-go/rest"
+        "k8s.io/client-go/tools/clientcmd"
+        clientset "k8s.io/metrics/pkg/client/clientset/versioned"
+        metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
+)
+
+type kubeImpl struct {
+        knn   string // kube node name
+        cli   *Client
+        store *bh.Store
+        log   *log.Logger
+}
+
+// TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
+func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) <span class="cov0" title="0">{
+        cli, err := NewClient(cfg)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">knn := os.Getenv("KUBE_NODE_NAME")
+        model := &amp;kubeImpl{
+                cli:   cli,
+                store: sto,
+                knn:   knn,
+                log:   log.With(log.Any("ami", "kube")),
+        }
+        return model, nil</span>
+}
+
+type Client struct {
+        Namespace string
+        Core      corev1.CoreV1Interface
+        App       appv1.AppsV1Interface
+        Metrics   metricsv1beta1.MetricsV1beta1Interface
+}
+
+func NewClient(cfg config.KubernetesConfig) (*Client, error) <span class="cov0" title="0">{
+        kubeConfig, err := func() (*rest.Config, error) </span><span class="cov0" title="0">{
+                if cfg.InCluster </span><span class="cov0" title="0">{
+                        return rest.InClusterConfig()
+
+                }</span>
+                <span class="cov0" title="0">return clientcmd.BuildConfigFromFlags(
+                        "", cfg.ConfigPath)</span>
+        }()
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">kubeClient, err := kubernetes.NewForConfig(kubeConfig)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">metricsCli, err := clientset.NewForConfig(kubeConfig)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return &amp;Client{
+                Core:      kubeClient.CoreV1(),
+                App:       kubeClient.AppsV1(),
+                Metrics:   metricsCli.MetricsV1beta1(),
+                Namespace: "default", // TODO: check
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package ami
+
+import (
+        "github.com/baetyl/baetyl-go/spec/crd"
+        specv1 "github.com/baetyl/baetyl-go/spec/v1"
+        "github.com/jinzhu/copier"
+        appv1 "k8s.io/api/apps/v1"
+        corev1 "k8s.io/api/core/v1"
+        "k8s.io/apimachinery/pkg/api/resource"
+        metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+        kl "k8s.io/apimachinery/pkg/labels"
+        "k8s.io/apimachinery/pkg/util/intstr"
+)
+
+const (
+        AppName     = "baetyl-app-name"
+        AppVersion  = "baetyl-app-version"
+        ServiceName = "baetyl-service-name"
+
+        RegistryAddress  = "address"
+        RegistryUsername = "username"
+        RegistryPassword = "password"
+)
+
+func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error <span class="cov0" title="0">{
+        appMap := map[string]string{}
+        configs := map[string]*corev1.ConfigMap{}
+        secrets := map[string]*corev1.Secret{}
+        services := map[string]*corev1.Service{}
+        deploys := map[string]*appv1.Deployment{}
+        for _, info := range appInfos </span><span class="cov0" title="0">{
+                appMap[info.Name] = info.Version
+                key := makeKey(crd.KindApplication, info.Name, info.Version)
+                var app crd.Application
+                err := k.store.Get(key, &amp;app)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov0" title="0">var imagePullSecrets []corev1.LocalObjectReference
+                for _, v := range app.Volumes </span><span class="cov0" title="0">{
+                        if cfg := v.Config; cfg != nil </span><span class="cov0" title="0">{
+                                key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
+                                var config crd.Configuration
+                                err := k.store.Get(key, &amp;config)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                                <span class="cov0" title="0">configMap, err := toConfigMap(&amp;config)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                                <span class="cov0" title="0">configs[config.Name] = configMap</span>
+                        }
+
+                        <span class="cov0" title="0">if sec := v.Secret; sec != nil </span><span class="cov0" title="0">{
+                                key := makeKey(crd.KindSecret, sec.Name, sec.Version)
+                                var secret crd.Secret
+                                err := k.store.Get(key, &amp;secret)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+
+                                <span class="cov0" title="0">if isRegistrySecret(&amp;secret) </span><span class="cov0" title="0">{
+                                        imagePullSecrets = append(imagePullSecrets,
+                                                corev1.LocalObjectReference{
+                                                        Name: secret.Name,
+                                                })
+                                        v.Secret = nil
+                                }</span>
+
+                                <span class="cov0" title="0">kSecret, err := toSecret(&amp;secret)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                                <span class="cov0" title="0">secrets[kSecret.Name] = kSecret</span>
+
+                        }
+                }
+
+                <span class="cov0" title="0">for _, svc := range app.Services </span><span class="cov0" title="0">{
+                        deploy, err := toDeploy(&amp;app, &amp;svc, app.Volumes, imagePullSecrets)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                        <span class="cov0" title="0">deploys[deploy.Name] = deploy
+                        service, err := toService(app.Namespace, &amp;svc)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                        <span class="cov0" title="0">services[service.Name] = service</span>
+                }
+
+        }
+
+        <span class="cov0" title="0">if err := k.applyConfigMaps(configs); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">if err := k.applySecrets(secrets); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">if err := k.applyDeploys(deploys); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">if err := k.applyServices(services); err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (k *kubeImpl) applyDeploys(deploys map[string]*appv1.Deployment) error <span class="cov8" title="3">{
+        deployInterface := k.cli.App.Deployments(k.cli.Namespace)
+        ls := kl.Set{}
+        selector := map[string]string{
+                "baetyl": "baetyl",
+        }
+        err := copier.Copy(&amp;ls, &amp;selector)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="3">deployList, err := k.cli.App.Deployments(k.cli.Namespace).List(metav1.ListOptions{
+                LabelSelector: ls.String(),
+        })
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="3">deletes := map[string]struct{}{}
+        if deployList != nil </span><span class="cov8" title="3">{
+                for _, d := range deployList.Items </span><span class="cov10" title="4">{
+                        if _, ok := deploys[d.Name]; !ok </span><span class="cov5" title="2">{
+                                deletes[d.Name] = struct{}{}
+                        }</span>
+                }
+        }
+        <span class="cov8" title="3">for n := range deletes </span><span class="cov5" title="2">{
+                err := deployInterface.Delete(n, &amp;metav1.DeleteOptions{})
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+        <span class="cov8" title="3">for _, d := range deploys </span><span class="cov10" title="4">{
+                deploy, err := deployInterface.Get(d.Name, metav1.GetOptions{})
+                if deploy != nil &amp;&amp; err == nil </span><span class="cov5" title="2">{
+                        d.ResourceVersion = deploy.ResourceVersion
+                        _, err = deployInterface.Update(d)
+                        if err != nil </span><span class="cov1" title="1">{
+                                return err
+                        }</span>
+                } else<span class="cov5" title="2"> {
+                        _, err = deployInterface.Create(d)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+        }
+        <span class="cov5" title="2">return nil</span>
+}
+
+func (k *kubeImpl) applyServices(services map[string]*corev1.Service) error <span class="cov5" title="2">{
+        serviceInterface := k.cli.Core.Services(k.cli.Namespace)
+        for _, s := range services </span><span class="cov8" title="3">{
+                service, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
+                if service != nil &amp;&amp; err == nil </span><span class="cov5" title="2">{
+                        s.ResourceVersion = service.ResourceVersion
+                        _, err := serviceInterface.Update(s)
+                        if err != nil </span><span class="cov1" title="1">{
+                                return err
+                        }</span>
+                } else<span class="cov1" title="1"> {
+                        _, err := serviceInterface.Create(s)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+        }
+        <span class="cov1" title="1">return nil</span>
+}
+
+func (k *kubeImpl) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) error <span class="cov5" title="2">{
+        configMapInterface := k.cli.Core.ConfigMaps(k.cli.Namespace)
+        for _, cfg := range configMaps </span><span class="cov8" title="3">{
+                config, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
+                if config != nil &amp;&amp; err == nil </span><span class="cov5" title="2">{
+                        cfg.ResourceVersion = config.ResourceVersion
+                        _, err := configMapInterface.Update(cfg)
+                        if err != nil </span><span class="cov1" title="1">{
+                                return err
+                        }</span>
+                } else<span class="cov1" title="1"> {
+                        _, err := configMapInterface.Create(cfg)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+        }
+        <span class="cov1" title="1">return nil</span>
+}
+
+func (k *kubeImpl) applySecrets(secrets map[string]*corev1.Secret) error <span class="cov5" title="2">{
+        secretInterface := k.cli.Core.Secrets(k.cli.Namespace)
+        for _, sec := range secrets </span><span class="cov8" title="3">{
+                secret, err := secretInterface.Get(sec.Name, metav1.GetOptions{})
+                if secret != nil &amp;&amp; err == nil </span><span class="cov5" title="2">{
+                        sec.ResourceVersion = secret.ResourceVersion
+                        _, err := secretInterface.Update(sec)
+                        if err != nil </span><span class="cov1" title="1">{
+                                return err
+                        }</span>
+                } else<span class="cov1" title="1"> {
+                        _, err := secretInterface.Create(sec)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+        }
+        <span class="cov1" title="1">return nil</span>
+}
+
+func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
+        imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) <span class="cov1" title="1">{
+        volMap := map[string]crd.Volume{}
+        for _, v := range vols </span><span class="cov8" title="3">{
+                volMap[v.Name] = v
+        }</span>
+        <span class="cov1" title="1">var c corev1.Container
+        err := copier.Copy(&amp;c, &amp;service)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov1" title="1">if service.Resources != nil </span><span class="cov1" title="1">{
+                c.Resources.Limits = corev1.ResourceList{}
+                for n, value := range service.Resources.Limits </span><span class="cov5" title="2">{
+                        quantity, err := resource.ParseQuantity(value)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return nil, err
+                        }</span>
+                        <span class="cov5" title="2">c.Resources.Limits[corev1.ResourceName(n)] = quantity</span>
+                }
+        }
+        <span class="cov1" title="1">var containers []corev1.Container
+        containers = append(containers, c)
+        var volumes []corev1.Volume
+
+        for _, v := range service.VolumeMounts </span><span class="cov8" title="3">{
+                vol := volMap[v.Name]
+                volume := corev1.Volume{
+                        Name: v.Name,
+                }
+                if vol.Config != nil </span><span class="cov1" title="1">{
+                        volume.VolumeSource.ConfigMap = &amp;corev1.ConfigMapVolumeSource{
+                                LocalObjectReference: corev1.LocalObjectReference{Name: vol.VolumeSource.Config.Name},
+                        }
+                }</span> else<span class="cov5" title="2"> if vol.Secret != nil </span><span class="cov1" title="1">{
+                        volume.VolumeSource.Secret = &amp;corev1.SecretVolumeSource{
+                                SecretName: vol.VolumeSource.Secret.Name,
+                        }
+                }</span> else<span class="cov1" title="1"> if vol.HostPath != nil </span><span class="cov1" title="1">{
+                        volume.VolumeSource.HostPath = &amp;corev1.HostPathVolumeSource{
+                                Path: vol.VolumeSource.HostPath.Path,
+                        }
+                }</span>
+                <span class="cov8" title="3">volumes = append(volumes, volume)</span>
+        }
+        <span class="cov1" title="1">restartPolicy := corev1.RestartPolicyAlways
+        if service.Restart != nil </span><span class="cov1" title="1">{
+                restartPolicy = corev1.RestartPolicy(service.Restart.Policy)
+        }</span>
+        <span class="cov1" title="1">replica := new(int32)
+        *replica = int32(service.Replica)
+        deploy := &amp;appv1.Deployment{
+                ObjectMeta: metav1.ObjectMeta{
+                        Name:      service.Name,
+                        Namespace: app.Namespace,
+                        Labels: map[string]string{
+                                "baetyl": "baetyl",
+                        },
+                },
+                Spec: appv1.DeploymentSpec{
+                        Replicas: replica,
+                        Strategy: appv1.DeploymentStrategy{
+                                Type: appv1.RecreateDeploymentStrategyType,
+                        },
+                        Selector: &amp;metav1.LabelSelector{
+                                MatchLabels: map[string]string{
+                                        ServiceName: service.Name,
+                                },
+                        },
+                        Template: corev1.PodTemplateSpec{
+                                ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
+                                        "baetyl":    "baetyl",
+                                        AppName:     app.Name,
+                                        AppVersion:  app.Version,
+                                        ServiceName: service.Name,
+                                }},
+                                Spec: corev1.PodSpec{
+                                        Volumes:          volumes,
+                                        Containers:       containers,
+                                        RestartPolicy:    restartPolicy,
+                                        ImagePullSecrets: imagePullSecrets,
+                                },
+                        },
+                },
+        }
+        return deploy, nil</span>
+}
+
+func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) <span class="cov1" title="1">{
+        configMap := &amp;corev1.ConfigMap{}
+        err := copier.Copy(configMap, config)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov1" title="1">return configMap, nil</span>
+}
+
+func toSecret(sec *crd.Secret) (*corev1.Secret, error) <span class="cov5" title="2">{
+        // secret for docker config
+        if isRegistrySecret(sec) </span><span class="cov1" title="1">{
+                return generateRegistrySecret(sec.Name, string(sec.Data[RegistryAddress]),
+                        string(sec.Data[RegistryUsername]), string(sec.Data[RegistryPassword]))
+        }</span>
+
+        // common secret
+        <span class="cov1" title="1">secret := &amp;corev1.Secret{}
+        err := copier.Copy(secret, sec)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov1" title="1">return secret, nil</span>
+}
+
+func toService(namespace string, svc *crd.Service) (*corev1.Service, error) <span class="cov5" title="2">{
+        if len(svc.Ports) == 0 </span><span class="cov1" title="1">{
+                return nil, nil
+        }</span>
+        <span class="cov1" title="1">var ports []corev1.ServicePort
+        for _, p := range svc.Ports </span><span class="cov5" title="2">{
+                port := corev1.ServicePort{
+                        Port:       p.ContainerPort,
+                        TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
+                }
+                ports = append(ports, port)
+        }</span>
+        <span class="cov1" title="1">service := &amp;corev1.Service{
+                ObjectMeta: metav1.ObjectMeta{
+                        Name:      svc.Name,
+                        Namespace: namespace,
+                },
+                Spec: corev1.ServiceSpec{
+                        Selector: map[string]string{
+                                "baetyl": svc.Name,
+                        },
+                        ClusterIP: "None",
+                        Ports:     ports,
+                },
+        }
+        return service, nil</span>
+}
+
+func makeKey(kind crd.Kind, name, ver string) string <span class="cov0" title="0">{
+        if name == "" || ver == "" </span><span class="cov0" title="0">{
+                return ""
+        }</span>
+        <span class="cov0" title="0">return string(kind) + "-" + name + "-" + ver</span>
+}
+
+func isRegistrySecret(secret *crd.Secret) bool <span class="cov5" title="2">{
+        registry, ok := secret.Labels[crd.SecretLabel]
+
+        return ok &amp;&amp; registry == crd.SecretRegistry
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package ami
+
+import (
+        "time"
+
+        "github.com/baetyl/baetyl-go/log"
+        specv1 "github.com/baetyl/baetyl-go/spec/v1"
+        "github.com/jinzhu/copier"
+        corev1 "k8s.io/api/core/v1"
+        "k8s.io/apimachinery/pkg/api/resource"
+        metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+        kl "k8s.io/apimachinery/pkg/labels"
+        "k8s.io/client-go/tools/reference"
+        "k8s.io/kubectl/pkg/scheme"
+)
+
+func (k *kubeImpl) Collect() (specv1.Report, error) <span class="cov0" title="0">{
+        node, err := k.cli.Core.Nodes().Get(k.knn, metav1.GetOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">nodeInfo, err := k.collectNodeInfo(node)
+        if err != nil </span><span class="cov0" title="0">{
+                k.log.Error("failed to collect node info", log.Error(err))
+        }</span>
+        <span class="cov0" title="0">nodeStats, err := k.collectNodeStats(node)
+        if err != nil </span><span class="cov0" title="0">{
+                k.log.Error("failed to collect node status", log.Error(err))
+        }</span>
+        <span class="cov0" title="0">appStatus, err := k.collectAppStatus()
+        if err != nil </span><span class="cov0" title="0">{
+                k.log.Error("failed to collect app status", log.Error(err))
+        }</span>
+        <span class="cov0" title="0">var apps []specv1.AppInfo
+        for _, info := range appStatus </span><span class="cov0" title="0">{
+                app := specv1.AppInfo{
+                        Name:    info.Name,
+                        Version: info.Version,
+                }
+                apps = append(apps, app)
+        }</span>
+        <span class="cov0" title="0">return specv1.Report{
+                "time":      time.Now(),
+                "node":      nodeInfo,
+                "nodestats": nodeStats,
+                "apps":      apps,
+                "appstats":  appStatus,
+        }, nil</span>
+}
+
+func (k *kubeImpl) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) <span class="cov0" title="0">{
+        ni := node.Status.NodeInfo
+        nodeInfo := specv1.NodeInfo{
+                Arch:             ni.Architecture,
+                KernelVersion:    ni.KernelVersion,
+                OS:               ni.OperatingSystem,
+                ContainerRuntime: ni.ContainerRuntimeVersion,
+                MachineID:        ni.MachineID,
+                OSImage:          ni.OSImage,
+                BootID:           ni.BootID,
+                SystemUUID:       ni.SystemUUID,
+        }
+        for _, addr := range node.Status.Addresses </span><span class="cov0" title="0">{
+                if addr.Type == corev1.NodeInternalIP </span><span class="cov0" title="0">{
+                        nodeInfo.Address = addr.Address
+                }</span> else<span class="cov0" title="0"> if addr.Type == corev1.NodeHostName </span><span class="cov0" title="0">{
+                        nodeInfo.Hostname = addr.Address
+                }</span>
+        }
+        <span class="cov0" title="0">return nodeInfo, nil</span>
+}
+
+func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error) <span class="cov0" title="0">{
+        nodeStats := specv1.NodeStatus{
+                Usage:    map[string]string{},
+                Capacity: map[string]string{},
+        }
+        nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return nodeStats, err
+        }</span>
+        <span class="cov0" title="0">for res, quan := range nodeMetric.Usage </span><span class="cov0" title="0">{
+                quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+                nodeStats.Usage[string(res)] = quantity.String()
+        }</span>
+        <span class="cov0" title="0">for res, quan := range node.Status.Capacity </span><span class="cov0" title="0">{
+                if _, ok := nodeStats.Usage[string(res)]; ok </span><span class="cov0" title="0">{
+                        quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+                        nodeStats.Capacity[string(res)] = quantity.String()
+                }</span>
+        }
+        <span class="cov0" title="0">return nodeStats, nil</span>
+}
+
+func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) <span class="cov0" title="0">{
+        ls := kl.Set{}
+        selector := map[string]string{
+                "baetyl": "baetyl",
+        }
+        err := copier.Copy(&amp;ls, &amp;selector)
+        podList, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
+                LabelSelector: ls.String(),
+        })
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">appStatuses := map[string]*specv1.AppStatus{}
+        if podList == nil </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+        <span class="cov0" title="0">for _, pod := range podList.Items </span><span class="cov0" title="0">{
+                appName := pod.Labels[AppName]
+                appVersion := pod.Labels[AppVersion]
+                serviceName := pod.Labels[ServiceName]
+                if appName == "" || appVersion == "" || serviceName == "" </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+                <span class="cov0" title="0">var status *specv1.AppStatus
+                if status = appStatuses[appName]; status == nil </span><span class="cov0" title="0">{
+                        status = &amp;specv1.AppStatus{AppInfo: specv1.AppInfo{
+                                Name:    appName,
+                                Version: appVersion,
+                        }}
+                }</span>
+                <span class="cov0" title="0">deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(serviceName, metav1.GetOptions{})
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">ref, err := reference.GetReference(scheme.Scheme, deploy)
+                events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
+                for _, e := range events.Items </span><span class="cov0" title="0">{
+                        if e.Type == "Warning" </span><span class="cov0" title="0">{
+                                status.Cause += e.Message + "\n"
+                        }</span>
+                }
+                <span class="cov0" title="0">if status.ServiceInfos == nil </span><span class="cov0" title="0">{
+                        status.ServiceInfos = map[string]*specv1.ServiceInfo{}
+                }</span>
+                <span class="cov0" title="0">status.ServiceInfos[serviceName], err = k.collectServiceInfo(serviceName, &amp;pod)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+                <span class="cov0" title="0">appStatuses[appName] = status</span>
+        }
+        <span class="cov0" title="0">return transformAppStatus(appStatuses), nil</span>
+}
+
+func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStatus <span class="cov0" title="0">{
+        var res []specv1.AppStatus
+        for _, status := range appStatus </span><span class="cov0" title="0">{
+                res = append(res, *status)
+        }</span>
+        <span class="cov0" title="0">return res</span>
+}
+
+func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*specv1.ServiceInfo, error) <span class="cov0" title="0">{
+        info := &amp;specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
+        ref, err := reference.GetReference(scheme.Scheme, pod)
+        events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
+        for _, e := range events.Items </span><span class="cov0" title="0">{
+                if e.Type == "Warning" </span><span class="cov0" title="0">{
+                        info.Cause += e.Message + "\n"
+                }</span>
+        }
+        <span class="cov0" title="0">info.CreateTime = pod.CreationTimestamp.Local()
+        for _, cont := range pod.Status.ContainerStatuses </span><span class="cov0" title="0">{
+                if cont.Name == serviceName </span><span class="cov0" title="0">{
+                        info.Container.Name = serviceName
+                        info.Container.ID = cont.ContainerID
+                }</span>
+        }
+        <span class="cov0" title="0">podMetric, err := k.cli.Metrics.PodMetricses(k.cli.Namespace).Get(pod.Name, metav1.GetOptions{})
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">for _, cont := range podMetric.Containers </span><span class="cov0" title="0">{
+                if cont.Name == serviceName </span><span class="cov0" title="0">{
+                        for res, quan := range cont.Usage </span><span class="cov0" title="0">{
+                                quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
+                                info.Usage[string(res)] = quantity.String()
+                        }</span>
+                }
+        }
+        <span class="cov0" title="0">info.Status = string(pod.Status.Phase)
+        return info, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package ami
+
+import (
+        "encoding/base64"
+        "encoding/json"
+        v1 "k8s.io/api/core/v1"
+        metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+type auth struct {
+        Username string
+        Password string
+        Auth     string
+}
+
+func generateRegistrySecret(name, server, username, password string) (*v1.Secret, error) <span class="cov8" title="1">{
+        secret := &amp;v1.Secret{
+                ObjectMeta: metav1.ObjectMeta{Name: name},
+                Type:       v1.SecretTypeDockerConfigJson,
+        }
+        serverAuth := map[string]auth{
+                server: {
+                        Username: username,
+                        Password: password,
+                        Auth:     base64.StdEncoding.EncodeToString([]byte(username + ":" + password)),
+                },
+        }
+        auths := map[string]interface{}{
+                "auths": serverAuth,
+        }
+        data, err := json.Marshal(auths)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">secret.Data = map[string][]byte{
+                v1.DockerConfigJsonKey: data,
+        }
+        return secret, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package engine
+
+import (
+        "encoding/json"
+        "fmt"
+        "os"
+        "time"
+
+        "github.com/baetyl/baetyl-core/ami"
+        "github.com/baetyl/baetyl-core/config"
+        "github.com/baetyl/baetyl-core/event"
+        "github.com/baetyl/baetyl-core/shadow"
+        "github.com/baetyl/baetyl-go/log"
+        v1 "github.com/baetyl/baetyl-go/spec/v1"
+        "github.com/baetyl/baetyl-go/utils"
+)
+
+type Engine struct {
+        sha  *shadow.Shadow
+        cent *event.Center
+        cfg  config.EngineConfig
+        ami  ami.AMI
+        tomb utils.Tomb
+        log  *log.Logger
+}
+
+func NewEngine(cfg config.EngineConfig, ami ami.AMI, sha *shadow.Shadow, cent *event.Center) (*Engine, error) <span class="cov8" title="4">{
+        if cfg.Kind != "kubernetes" </span><span class="cov1" title="1">{
+                return nil, os.ErrInvalid
+        }</span>
+        <span class="cov7" title="3">e := &amp;Engine{
+                sha:  sha,
+                ami:  ami,
+                cent: cent,
+                cfg:  cfg,
+                log:  log.With(log.Any("engine", cfg.Kind)),
+        }
+        e.tomb.Go(e.collecting)
+        return e, nil</span>
+}
+
+func (e *Engine) collecting() error <span class="cov7" title="3">{
+        t := time.NewTicker(e.cfg.Collector.Interval)
+        defer t.Stop()
+        for </span><span class="cov10" title="5">{
+                select </span>{
+                case &lt;-t.C:<span class="cov4" title="2">
+                        info, err := e.ami.Collect()
+                        if err != nil </span><span class="cov0" title="0">{
+                                e.log.Error("failed to collect info", log.Error(err))
+                                continue</span>
+                        }
+                        <span class="cov4" title="2">delta, err := e.sha.Report(info)
+                        if err != nil </span><span class="cov0" title="0">{
+                                e.log.Error("failed to update shadow report", log.Error(err))
+                                continue</span>
+                        }
+                        <span class="cov4" title="2">var evt *event.Event
+                        if len(delta) &gt; 0 </span><span class="cov1" title="1">{
+                                pld, err := json.Marshal(delta)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        e.log.Error("failed to marshal delta", log.Error(err))
+                                        continue</span>
+                                }
+                                <span class="cov1" title="1">evt = event.NewEvent(event.SyncDesireEvent, pld)</span>
+                        } else<span class="cov1" title="1"> {
+                                pld, err := json.Marshal(info)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        e.log.Error("failed to marshal delta", log.Error(err))
+                                        continue</span>
+                                }
+                                <span class="cov1" title="1">evt = event.NewEvent(event.SyncReportEvent, pld)</span>
+                        }
+                        <span class="cov4" title="2">err = e.cent.Trigger(evt)
+                        if err != nil </span><span class="cov0" title="0">{
+                                e.log.Error("failed to trigger event", log.Error(err))
+                                continue</span>
+                        }
+                case &lt;-e.tomb.Dying():<span class="cov7" title="3">
+                        return nil</span>
+                }
+        }
+}
+
+func (e *Engine) Close() <span class="cov8" title="4">{
+        e.tomb.Kill(nil)
+        e.tomb.Wait()
+}</span>
+
+func (e *Engine) Apply(evt *event.Event) error <span class="cov8" title="4">{
+        var info v1.Desire
+        err := json.Unmarshal(evt.Payload, &amp;info)
+        if err != nil </span><span class="cov1" title="1">{
+                return err
+        }</span>
+        <span class="cov7" title="3">apps := info.AppInfos()
+        if len(apps) == 0 </span><span class="cov1" title="1">{
+                return fmt.Errorf("apps does not exist")
+        }</span>
+        <span class="cov4" title="2">err = e.ami.Apply(apps)
+        if err != nil </span><span class="cov1" title="1">{
+                e.log.Error("failed to apply application", log.Error(err))
+                return err
+        }</span>
+        <span class="cov1" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package event
+
+import (
+        "os"
+        "sync/atomic"
+        "time"
+
+        "github.com/baetyl/baetyl-go/log"
+        "github.com/baetyl/baetyl-go/utils"
+        bh "github.com/timshannon/bolthold"
+)
+
+// Handler event handler
+type Handler func(*Event) error
+
+// Center the event handling center, event handling methods can be registered by topic
+type Center struct {
+        store    *bh.Store
+        limit    int // sets the maximum number of events that can be found by a query
+        last     uint64
+        signal   chan struct{}
+        handlers map[string]Handler
+        logger   *log.Logger
+        tomb     utils.Tomb
+}
+
+// NewCenter create a new persistent center
+func NewCenter(store *bh.Store, limit int) (*Center, error) <span class="cov6" title="4">{
+        if store == nil || limit &lt; 1 </span><span class="cov3" title="2">{
+                return nil, os.ErrInvalid
+        }</span>
+        <span class="cov3" title="2">c := &amp;Center{
+                store:    store,
+                limit:    limit,
+                handlers: map[string]Handler{},
+                signal:   make(chan struct{}, 1),
+                logger:   log.With(log.Any("event", "center")),
+        }
+        // TODO: to improve bolthold
+        last := &amp;Event{}
+        num, err := c.store.Count(last, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov3" title="2">if num &gt; 0 </span><span class="cov0" title="0">{
+                err := c.store.FindOne(last, bh.Where(bh.Key).Ge(0).Skip(num-1))
+                if err != nil &amp;&amp; err != bh.ErrNotFound </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+        }
+        <span class="cov3" title="2">c.last = last.ID
+        c.Trigger(nil)
+
+        return c, nil</span>
+}
+
+// Register register the event handler
+func (c *Center) Register(topic string, handler Handler) error <span class="cov6" title="4">{
+        if topic == "" || handler == nil </span><span class="cov3" title="2">{
+                return os.ErrInvalid
+        }</span>
+        <span class="cov3" title="2">c.handlers[topic] = handler
+        return nil</span>
+}
+
+// Start start the event center
+func (c *Center) Start() <span class="cov1" title="1">{
+        c.tomb.Go(c.handling)
+}</span>
+
+// Close close the event handling center
+func (c *Center) Close() error <span class="cov0" title="0">{
+        c.tomb.Kill(nil)
+        return c.tomb.Wait()
+}</span>
+
+// Trigger store event if not nil, then trigger a signal
+func (c *Center) Trigger(e *Event) error <span class="cov10" title="11">{
+        if e != nil </span><span class="cov7" title="5">{
+                if e.Metadata == nil || e.Metadata["topic"] == "" </span><span class="cov1" title="1">{
+                        return os.ErrInvalid
+                }</span>
+                <span class="cov6" title="4">e.ID = atomic.AddUint64(&amp;c.last, 1)
+                err := c.store.Insert(e.ID, e)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov6" title="4">c.logger.Debug("store an event", log.Any("event", e.String()))</span>
+        }
+        <span class="cov9" title="10">select </span>{
+        case c.signal &lt;- struct{}{}:<span class="cov7" title="6"></span>
+        default:<span class="cov6" title="4"></span>
+        }
+        <span class="cov9" title="10">return nil</span>
+}
+
+func (c *Center) handling() error <span class="cov1" title="1">{
+        c.logger.Info("center starts to handle event")
+        defer c.logger.Info("center has stopped handling event")
+
+        var err error
+        var events []*Event
+
+        for </span><span class="cov7" title="6">{
+                select </span>{
+                case &lt;-c.signal:<span class="cov7" title="5">
+                        events = events[:0]
+                        err = c.store.Find(&amp;events, bh.Where(bh.Key).Ge(0).Limit(c.limit))
+                        if err != nil </span><span class="cov0" title="0">{
+                                c.logger.Error("failed to find events", log.Error(err))
+                                time.Sleep(time.Second)
+                                continue</span>
+                        }
+                        <span class="cov7" title="5">if len(events) &gt; 0 </span><span class="cov5" title="3">{
+                                c.Trigger(nil) // keep handling events
+                        }</span>
+                        // TODO: to merge events if needs
+                        <span class="cov7" title="5">for _, e := range events </span><span class="cov6" title="4">{
+                                c.logger.Debug("find an event", log.Any("event", e.String()))
+                                topic := e.Metadata["topic"]
+                                handler, ok := c.handlers[topic]
+                                if !ok </span><span class="cov0" title="0">{
+                                        c.logger.Warn("event handler not found", log.Any("event", e.String()))
+                                }</span>
+                                <span class="cov6" title="4">err = handler(e)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        c.logger.Warn("failed to handle event", log.Error(err), log.Any("event", e.String()))
+                                }</span>
+                                <span class="cov6" title="4">err = c.store.Delete(e.ID, &amp;e)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        c.logger.Error("failed to delete event", log.Error(err), log.Any("event", e.String()))
+                                }</span>
+                        }
+                case &lt;-c.tomb.Dying():<span class="cov0" title="0">
+                        return nil</span>
+                }
+        }
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package event
+
+import "github.com/baetyl/baetyl-go/faas"
+
+// all event topics
+const (
+        SyncDesireEvent = "$sync/desire"
+        SyncReportEvent = "$sync/report"
+        EngineAppEvent  = "$engine/app"
+)
+
+type Event struct {
+        faas.Message
+}
+
+func NewEvent(topic string, payload []byte) *Event <span class="cov10" title="2">{
+        return &amp;Event{Message: faas.Message{
+                Metadata: map[string]string{"topic": topic},
+                Payload:  payload,
+        }}
+}</span>
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package initialize
+
+import (
+        "bytes"
+        "encoding/json"
+        "fmt"
+        "time"
+
+        "github.com/baetyl/baetyl-go/http"
+        "github.com/baetyl/baetyl-go/log"
+        "github.com/baetyl/baetyl-go/spec/v1"
+)
+
+func (init *Initialize) activating() error <span class="cov10" title="5">{
+        init.Activate()
+        t := time.NewTicker(init.cfg.Init.Cloud.Active.Interval)
+        defer t.Stop()
+        for </span><span class="cov10" title="5">{
+                select </span>{
+                case &lt;-t.C:<span class="cov0" title="0">
+                        init.Activate()</span>
+                case &lt;-init.tomb.Dying():<span class="cov10" title="5">
+                        return nil</span>
+                }
+        }
+}
+
+// Report reports info
+func (init *Initialize) Activate() <span class="cov10" title="5">{
+        info := v1.ActiveRequest{
+                BatchName:     init.batch.name,
+                Namespace:     init.batch.namespace,
+                SecurityType:  init.batch.securityType,
+                SecurityValue: init.batch.securityKey,
+                PenetrateData: init.attrs,
+        }
+        fv, err := init.collect()
+        if err != nil </span><span class="cov0" title="0">{
+                init.log.Error("failed to get fingerprint value", log.Error(err))
+                return
+        }</span>
+        <span class="cov10" title="5">if fv == "" </span><span class="cov0" title="0">{
+                init.log.Error("fingerprint value is null", log.Error(err))
+                return
+        }</span>
+        <span class="cov10" title="5">info.FingerprintValue = fv
+        data, err := json.Marshal(info)
+        if err != nil </span><span class="cov0" title="0">{
+                init.log.Error("failed to marshal activate info", log.Error(err))
+                return
+        }</span>
+
+        <span class="cov10" title="5">url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, init.cfg.Init.Cloud.Active.URL)
+        resp, err := init.http.Post(url, "application/json", bytes.NewReader(data))
+
+        if err != nil </span><span class="cov0" title="0">{
+                init.log.Error("failed to send activate data", log.Error(err))
+                return
+        }</span>
+        <span class="cov10" title="5">data, err = http.HandleResponse(resp)
+        if err != nil </span><span class="cov0" title="0">{
+                init.log.Error("failed to send activate data", log.Error(err))
+                return
+        }</span>
+        <span class="cov10" title="5">var res v1.ActiveResponse
+        err = json.Unmarshal(data, &amp;res)
+        if err != nil </span><span class="cov0" title="0">{
+                init.log.Error("error to unmarshal activate response data returned", log.Error(err))
+                return
+        }</span>
+
+        <span class="cov10" title="5">init.cfg.Sync.Node.Name = res.NodeName
+        init.cfg.Sync.Node.Namespace = res.Namespace
+        init.cfg.Sync.Cloud.HTTP.CA = res.Certificate.CA
+        init.cfg.Sync.Cloud.HTTP.Cert = res.Certificate.Cert
+        init.cfg.Sync.Cloud.HTTP.Key = res.Certificate.Key
+        init.cfg.Sync.Cloud.HTTP.Name = res.Certificate.Name
+
+        init.sig &lt;- true</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package initialize
+
+import (
+        "errors"
+        "io/ioutil"
+        "path"
+        "strings"
+
+        "github.com/baetyl/baetyl-core/config"
+        v1 "github.com/baetyl/baetyl-go/spec/v1"
+)
+
+// TODO: can be configured by cloud
+const (
+        defaultSNPath = "var/lib/baetyl/sn"
+)
+
+// ErrProofTypeNotSupported the proof type is not supported
+var ErrProofTypeNotSupported = errors.New("the proof type is not supported")
+
+// ErrProofValueNotFound the proof value is not found
+var ErrProofValueNotFound = errors.New("the proof value is not found")
+
+func (init *Initialize) collect() (string, error) <span class="cov10" title="5">{
+        fs := init.cfg.Init.ActivateConfig.Fingerprints
+        if len(fs) == 0 </span><span class="cov0" title="0">{
+                return "", nil
+        }</span>
+        <span class="cov10" title="5">report, err := init.ami.Collect()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov10" title="5">nodeInfo := report["node"]
+        for _, f := range fs </span><span class="cov10" title="5">{
+                switch f.Proof </span>{
+                case config.ProofInput:<span class="cov1" title="1">
+                        if init.attrs != nil </span><span class="cov1" title="1">{
+                                return init.attrs[f.Value], nil
+                        }</span>
+                case config.ProofSN:<span class="cov1" title="1">
+                        snByte, err := ioutil.ReadFile(path.Join(defaultSNPath, f.Value))
+                        if err != nil </span><span class="cov0" title="0">{
+                                return "", err
+                        }</span>
+                        <span class="cov1" title="1">return strings.TrimSpace(string(snByte)), nil</span>
+                case config.ProofHostName:<span class="cov0" title="0">
+                        if nodeInfo == nil </span><span class="cov0" title="0">{
+                                return "", ErrProofValueNotFound
+                        }</span>
+                        <span class="cov0" title="0">return nodeInfo.(v1.NodeInfo).Hostname, nil</span>
+                case config.ProofMachineID:<span class="cov1" title="1">
+                        if nodeInfo == nil </span><span class="cov0" title="0">{
+                                return "", ErrProofValueNotFound
+                        }</span>
+                        <span class="cov1" title="1">return nodeInfo.(v1.NodeInfo).MachineID, nil</span>
+                case config.ProofSystemUUID:<span class="cov1" title="1">
+                        if nodeInfo == nil </span><span class="cov0" title="0">{
+                                return "", ErrProofValueNotFound
+                        }</span>
+                        <span class="cov1" title="1">return nodeInfo.(v1.NodeInfo).SystemUUID, nil</span>
+                case config.ProofBootID:<span class="cov1" title="1">
+                        if nodeInfo == nil </span><span class="cov0" title="0">{
+                                return "", ErrProofValueNotFound
+                        }</span>
+                        <span class="cov1" title="1">return nodeInfo.(v1.NodeInfo).BootID, nil</span>
+                default:<span class="cov0" title="0">
+                        return "", ErrProofTypeNotSupported</span>
+                }
+        }
+        <span class="cov0" title="0">return "", nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package initialize
+
+import (
+        "github.com/baetyl/baetyl-core/ami"
+        "github.com/baetyl/baetyl-core/config"
+        "github.com/baetyl/baetyl-go/http"
+        "github.com/baetyl/baetyl-go/log"
+        "github.com/baetyl/baetyl-go/utils"
+)
+
+type batch struct {
+        name         string
+        namespace    string
+        securityType string
+        securityKey  string
+}
+
+type Initialize struct {
+        log   *log.Logger
+        cfg   *config.Config
+        tomb  utils.Tomb
+        http  *http.Client
+        ami   ami.AMI
+        batch *batch
+        attrs map[string]string
+        sig   chan bool
+}
+
+// NewInit to activate, success add node info
+func NewInit(cfg *config.Config, ami ami.AMI) (*Initialize, error) <span class="cov10" title="5">{
+        ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov10" title="5">init := &amp;Initialize{
+                cfg:   cfg,
+                sig:   make(chan bool, 1),
+                http:  http.NewClient(ops),
+                attrs: map[string]string{},
+                ami:   ami,
+                log:   log.With(log.Any("core", "Initialize")),
+        }
+        init.batch = &amp;batch{
+                name:         cfg.Init.Batch.Name,
+                namespace:    cfg.Init.Batch.Namespace,
+                securityType: cfg.Init.Batch.SecurityType,
+                securityKey:  cfg.Init.Batch.SecurityKey,
+        }
+        for _, a := range cfg.Init.ActivateConfig.Attributes </span><span class="cov10" title="5">{
+                init.attrs[a.Name] = a.Value
+        }</span>
+        <span class="cov10" title="5">init.Start()
+        return init, nil</span>
+}
+
+func (init *Initialize) Start() <span class="cov10" title="5">{
+        err := init.tomb.Go(init.activating)
+        if err != nil </span><span class="cov0" title="0">{
+                init.log.Error("failed to start report and process routine", log.Error(err))
+                return
+        }</span>
+}
+
+func (init *Initialize) Close() <span class="cov10" title="5">{
+        init.tomb.Kill(nil)
+        init.tomb.Wait()
+}</span>
+
+func (init *Initialize) WaitAndClose() <span class="cov10" title="5">{
+        if _, ok := &lt;-init.sig; !ok </span><span class="cov0" title="0">{
+                init.log.Error("Initialize get sig error")
+        }</span>
+        <span class="cov10" title="5">init.Close()</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package shadow
+
+import (
+        "encoding/json"
+        "time"
+
+        v1 "github.com/baetyl/baetyl-go/spec/v1"
+        bh "github.com/timshannon/bolthold"
+        bolt "go.etcd.io/bbolt"
+)
+
+// Shadow shadow
+type Shadow struct {
+        bk    []byte
+        id    []byte
+        store *bh.Store
+}
+
+// NewShadow create a new shadow
+func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) <span class="cov6" title="3">{
+        m := &amp;v1.Shadow{
+                Name:              name,
+                Namespace:         namespace,
+                CreationTimestamp: time.Now(),
+                Report:            v1.Report{},
+                Desire:            v1.Desire{},
+        }
+        s := &amp;Shadow{
+                bk:    []byte("baetyl-edge-shadow"),
+                id:    []byte(name + "." + namespace),
+                store: store,
+        }
+        err := s.insert(m)
+        if err != nil &amp;&amp; err != bh.ErrKeyExists </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov6" title="3">return s, nil</span>
+}
+
+// Get returns shadow model
+func (s *Shadow) Get() (m *v1.Shadow, err error) <span class="cov7" title="4">{
+        err = s.store.Bolt().View(func(tx *bolt.Tx) error </span><span class="cov7" title="4">{
+                b := tx.Bucket(s.bk)
+                prev := b.Get(s.id)
+                if len(prev) == 0 </span><span class="cov0" title="0">{
+                        return bh.ErrNotFound
+                }</span>
+                <span class="cov7" title="4">m = &amp;v1.Shadow{}
+                return json.Unmarshal(prev, m)</span>
+        })
+        <span class="cov7" title="4">return</span>
+}
+
+// Desire update shadow desired data, then return the delta of desired and reported data
+func (s *Shadow) Desire(desired v1.Desire) (delta v1.Desire, err error) <span class="cov9" title="5">{
+        err = s.store.Bolt().Update(func(tx *bolt.Tx) error </span><span class="cov9" title="5">{
+                b := tx.Bucket(s.bk)
+                prev := b.Get(s.id)
+                if len(prev) == 0 </span><span class="cov0" title="0">{
+                        return bh.ErrNotFound
+                }</span>
+                <span class="cov9" title="5">m := &amp;v1.Shadow{}
+                err := json.Unmarshal(prev, m)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov9" title="5">if m.Desire == nil </span><span class="cov6" title="3">{
+                        m.Desire = desired
+                }</span> else<span class="cov4" title="2"> {
+                        err = m.Desire.Merge(desired)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+                <span class="cov9" title="5">curr, err := json.Marshal(m)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov9" title="5">err = b.Put(s.id, curr)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov9" title="5">delta, err = m.Desire.Diff(m.Report)
+                return err</span>
+        })
+        <span class="cov9" title="5">return</span>
+}
+
+// Report update shadow reported data, then return the delta of desired and reported data
+func (s *Shadow) Report(reported v1.Report) (delta v1.Desire, err error) <span class="cov10" title="6">{
+        err = s.store.Bolt().Update(func(tx *bolt.Tx) error </span><span class="cov10" title="6">{
+                b := tx.Bucket(s.bk)
+                prev := b.Get(s.id)
+                if len(prev) == 0 </span><span class="cov0" title="0">{
+                        return bh.ErrNotFound
+                }</span>
+                <span class="cov10" title="6">m := &amp;v1.Shadow{}
+                err := json.Unmarshal(prev, m)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov10" title="6">if m.Report == nil </span><span class="cov6" title="3">{
+                        m.Report = reported
+                }</span> else<span class="cov6" title="3"> {
+                        err = m.Report.Merge(reported)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+                <span class="cov10" title="6">curr, err := json.Marshal(m)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov10" title="6">err = b.Put(s.id, curr)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov10" title="6">delta, err = m.Desire.Diff(m.Report)
+                return err</span>
+        })
+        <span class="cov10" title="6">return</span>
+}
+
+// Get insert the whole shadow data
+func (s *Shadow) insert(m *v1.Shadow) error <span class="cov6" title="3">{
+        return s.store.Bolt().Update(func(tx *bolt.Tx) error </span><span class="cov6" title="3">{
+                b, err := tx.CreateBucketIfNotExists(s.bk)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov6" title="3">data := b.Get(s.id)
+                if len(data) != 0 </span><span class="cov1" title="1">{
+                        return bh.ErrKeyExists
+                }</span>
+                <span class="cov4" title="2">data, err = json.Marshal(m)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+                <span class="cov4" title="2">return b.Put(s.id, data)</span>
+        })
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package sync
+
+import (
+        "encoding/json"
+        "fmt"
+        "io/ioutil"
+        "os"
+        "path"
+        "path/filepath"
+        "strings"
+
+        "github.com/baetyl/baetyl-core/event"
+        "github.com/baetyl/baetyl-go/log"
+        "github.com/baetyl/baetyl-go/spec/crd"
+        "github.com/baetyl/baetyl-go/spec/v1"
+)
+
+// extended features of config resourece
+const (
+        configKeyObject = "_object_"
+        configValueZip  = "zip"
+)
+
+// Desire process desire delta, to sync crds
+func (s *Sync) Desire(evt *event.Event) error <span class="cov3" title="2">{
+        var delta v1.Desire
+        err := json.Unmarshal(evt.Payload, &amp;delta)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov3" title="2">ais := delta.AppInfos()
+        if len(ais) == 0 </span><span class="cov1" title="1">{
+                return fmt.Errorf("apps does not exist")
+        }</span>
+        <span class="cov1" title="1">appInfo := map[string]string{}
+        for _, a := range ais </span><span class="cov1" title="1">{
+                appInfo[a.Name] = a.Version
+        }</span>
+        <span class="cov1" title="1">crds, err := s.syncCRDs(s.genCRDInfos(crd.KindApplication, appInfo))
+        if err != nil </span><span class="cov0" title="0">{
+                s.log.Error("failed to sync application resource", log.Error(err))
+                return err
+        }</span>
+        <span class="cov1" title="1">cInfo := map[string]string{}
+        sInfo := map[string]string{}
+        apps := map[string]*crd.Application{}
+        for _, r := range crds </span><span class="cov1" title="1">{
+                if app := r.App(); app != nil </span><span class="cov1" title="1">{
+                        apps[app.Name] = app
+                        for _, v := range app.Volumes </span><span class="cov3" title="2">{
+                                if v.Config != nil </span><span class="cov1" title="1">{
+                                        cInfo[v.Config.Name] = v.Config.Version
+                                }</span> else<span class="cov1" title="1"> if v.Secret != nil </span><span class="cov1" title="1">{
+                                        sInfo[v.Secret.Name] = v.Secret.Version
+                                }</span>
+                        }
+                } else<span class="cov0" title="0"> {
+                        return fmt.Errorf("failed to sync application (%s) (%s)", r.Name, r.Version)
+                }</span>
+        }
+
+        <span class="cov1" title="1">crds, err = s.syncCRDs(s.genCRDInfos(crd.KindConfiguration, cInfo))
+        if err != nil </span><span class="cov0" title="0">{
+                s.log.Error("failed to sync configuration resource", log.Error(err))
+                return err
+        }</span>
+        <span class="cov1" title="1">configs := map[string]*crd.Configuration{}
+        for _, r := range crds </span><span class="cov1" title="1">{
+                if cfg := r.Config(); cfg != nil </span><span class="cov1" title="1">{
+                        configs[cfg.Name] = cfg
+                }</span> else<span class="cov0" title="0"> {
+                        return fmt.Errorf("failed to sync configuration (%s) (%s)", r.Name, r.Version)
+                }</span>
+        }
+
+        <span class="cov1" title="1">crds, err = s.syncCRDs(s.genCRDInfos(crd.KindSecret, sInfo))
+        if err != nil </span><span class="cov0" title="0">{
+                s.log.Error("failed to sync secret resource", log.Error(err))
+                return err
+        }</span>
+        <span class="cov1" title="1">secrets := map[string]*crd.Secret{}
+        for _, r := range crds </span><span class="cov1" title="1">{
+                if secret := r.Secret(); secret != nil </span><span class="cov1" title="1">{
+                        secrets[secret.Name] = secret
+                }</span> else<span class="cov0" title="0"> {
+                        return fmt.Errorf("failed to sync secret (%s) (%s)", r.Name, r.Version)
+                }</span>
+        }
+
+        <span class="cov1" title="1">for _, app := range apps </span><span class="cov1" title="1">{
+                err = s.processVolumes(app.Volumes, configs, secrets)
+                if err != nil </span><span class="cov0" title="0">{
+                        s.log.Error("failed to process volumes", log.Error(err))
+                        return err
+                }</span>
+                // app.volume may change when processing Volumes
+                <span class="cov1" title="1">err := s.storeApplication(app)
+                if err != nil </span><span class="cov0" title="0">{
+                        s.log.Error("failed to store application", log.Error(err))
+                        return err
+                }</span>
+        }
+        <span class="cov1" title="1">err = s.cent.Trigger(event.NewEvent(event.EngineAppEvent, evt.Payload))
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov1" title="1">return nil</span>
+}
+
+func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) <span class="cov4" title="3">{
+        if len(crds) == 0 </span><span class="cov0" title="0">{
+                return nil, nil
+        }</span>
+        <span class="cov4" title="3">req := v1.CRDRequest{CRDInfos: crds}
+        data, err := json.Marshal(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov4" title="3">data, err = s.http.PostJSON(s.cfg.Cloud.Desire.URL, data)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
+        }</span>
+        <span class="cov4" title="3">var res v1.CRDResponse
+        err = json.Unmarshal(data, &amp;res)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov4" title="3">return res.CRDDatas, nil</span>
+}
+
+func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Configuration, secrets map[string]*crd.Secret) error <span class="cov1" title="1">{
+        for i := range volumes </span><span class="cov3" title="2">{
+                if cfg := volumes[i].VolumeSource.Config; cfg != nil &amp;&amp; configs[cfg.Name] != nil </span><span class="cov1" title="1">{
+                        err := s.processConfiguration(&amp;volumes[i], configs[cfg.Name])
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                } else<span class="cov1" title="1"> if secret := volumes[i].VolumeSource.Secret; secret != nil &amp;&amp; secrets[secret.Name] != nil </span><span class="cov1" title="1">{
+                        err := s.storeSecret(secrets[secret.Name])
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+                }
+        }
+        <span class="cov1" title="1">return nil</span>
+}
+
+func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) error <span class="cov6" title="5">{
+        var base, dir string
+        for k, v := range cfg.Data </span><span class="cov3" title="2">{
+                if strings.HasPrefix(k, configKeyObject) </span><span class="cov3" title="2">{
+                        if base == "" </span><span class="cov3" title="2">{
+                                base = filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
+                                dir = filepath.Join(base, cfg.Version)
+                                err := os.MkdirAll(dir, 0755)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                        }
+                        <span class="cov3" title="2">obj := new(v1.CRDConfigObject)
+                        err := json.Unmarshal([]byte(v), &amp;obj)
+                        if err != nil </span><span class="cov1" title="1">{
+                                s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
+                                return err
+                        }</span>
+                        <span class="cov1" title="1">filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
+                        err = s.downloadObject(obj, dir, filename, obj.Compression == configValueZip)
+                        if err != nil </span><span class="cov0" title="0">{
+                                os.RemoveAll(dir)
+                                return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
+                        }</span>
+                        // change app.volume from config to host path of downloaded file path
+                        <span class="cov1" title="1">if volume.HostPath == nil </span><span class="cov1" title="1">{
+                                volume.Config = nil
+                                volume.HostPath = &amp;crd.HostPathVolumeSource{
+                                        Path: dir,
+                                }
+                                err = cleanDir(base, cfg.Version)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return err
+                                }</span>
+                        }
+                }
+        }
+        <span class="cov5" title="4">key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
+        if key == "" </span><span class="cov1" title="1">{
+                return fmt.Errorf("configuration does not have name or version")
+        }</span>
+        <span class="cov4" title="3">return s.store.Upsert(key, cfg)</span>
+}
+
+func cleanDir(dir, retain string) error <span class="cov3" title="2">{
+        files, _ := ioutil.ReadDir(dir)
+        for _, f := range files </span><span class="cov5" title="4">{
+                if f.Name() != retain </span><span class="cov3" title="2">{
+                        os.RemoveAll(filepath.Join(dir, f.Name()))
+                }</span>
+        }
+        <span class="cov3" title="2">return nil</span>
+}
+
+func (s *Sync) storeApplication(app *crd.Application) error <span class="cov4" title="3">{
+        key := makeKey(crd.KindApplication, app.Name, app.Version)
+        if key == "" </span><span class="cov1" title="1">{
+                return fmt.Errorf("app does not have name or version")
+        }</span>
+        <span class="cov3" title="2">return s.store.Upsert(key, app)</span>
+}
+
+func (s *Sync) storeSecret(secret *crd.Secret) error <span class="cov4" title="3">{
+        key := makeKey(crd.KindSecret, secret.Name, secret.Version)
+        if key == "" </span><span class="cov1" title="1">{
+                return fmt.Errorf("secret does not have name or version")
+        }</span>
+        <span class="cov3" title="2">return s.store.Upsert(key, secret)</span>
+}
+
+func (s *Sync) genCRDInfos(kind crd.Kind, infos map[string]string) []v1.CRDInfo <span class="cov4" title="3">{
+        var crds []v1.CRDInfo
+        for name, version := range infos </span><span class="cov4" title="3">{
+                crds = append(crds, v1.CRDInfo{
+                        Kind:    kind,
+                        Name:    name,
+                        Version: version,
+                })
+        }</span>
+        <span class="cov4" title="3">return crds</span>
+}
+
+func makeKey(kind crd.Kind, name, ver string) string <span class="cov10" title="18">{
+        if name == "" || ver == "" </span><span class="cov5" title="4">{
+                return ""
+        }</span>
+        <span class="cov9" title="14">return string(kind) + "-" + name + "-" + ver</span>
+}
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package sync
+
+import (
+        "bytes"
+        "fmt"
+        "time"
+
+        "github.com/baetyl/baetyl-go/http"
+        "github.com/baetyl/baetyl-go/log"
+        "github.com/baetyl/baetyl-go/spec/v1"
+        "github.com/baetyl/baetyl-go/utils"
+)
+
+func (s *Sync) downloadObject(obj *v1.CRDConfigObject, dir, name string, zip bool) error <span class="cov10" title="7">{
+        // file exists
+        if utils.FileExists(name) </span><span class="cov1" title="1">{
+                md5, err := utils.CalculateFileMD5(name)
+                if err == nil &amp;&amp; md5 == obj.MD5 </span><span class="cov1" title="1">{
+                        s.log.Debug("file exists", log.Any("name", name))
+                        return nil
+                }</span>
+        }
+
+        // TODO: streaming mode
+        <span class="cov9" title="6">resp, err := s.http.Get(obj.URL)
+        if err != nil || resp == nil </span><span class="cov1" title="1">{
+                // retry
+                time.Sleep(time.Second)
+                resp, err = s.http.Get(obj.URL)
+                if err != nil || resp == nil </span><span class="cov1" title="1">{
+                        return fmt.Errorf("failed to download file (%s)", name)
+                }</span>
+        }
+        <span class="cov8" title="5">data, err := http.HandleResponse(resp)
+        if err != nil </span><span class="cov0" title="0">{
+                s.log.Error("failed to send report data", log.Error(err))
+                return err
+        }</span>
+
+        <span class="cov8" title="5">err = utils.WriteFile(name, bytes.NewBuffer(data))
+        if err != nil </span><span class="cov1" title="1">{
+                return fmt.Errorf("failed to prepare volume (%s): %s", name, err.Error())
+        }</span>
+
+        <span class="cov7" title="4">md5, err := utils.CalculateFileMD5(name)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to calculate MD5 of volume (%s): %s", name, err.Error())
+        }</span>
+        <span class="cov7" title="4">if md5 != obj.MD5 </span><span class="cov1" title="1">{
+                return fmt.Errorf("MD5 of volume (%s) invalid", name)
+        }</span>
+
+        <span class="cov6" title="3">if zip </span><span class="cov1" title="1">{
+                err = utils.Unzip(name, dir)
+                if err != nil </span><span class="cov1" title="1">{
+                        return fmt.Errorf("failed to unzip file (%s): %s", name, err.Error())
+                }</span>
+        }
+        <span class="cov4" title="2">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file13" style="display: none">package sync
+
+import (
+        "encoding/json"
+        "errors"
+        "github.com/baetyl/baetyl-core/config"
+        "github.com/baetyl/baetyl-core/event"
+        "github.com/baetyl/baetyl-core/shadow"
+        "github.com/baetyl/baetyl-go/http"
+        "github.com/baetyl/baetyl-go/log"
+        v1 "github.com/baetyl/baetyl-go/spec/v1"
+        bh "github.com/timshannon/bolthold"
+)
+
+// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
+var ErrSyncTLSConfigMissing = errors.New("Certificate bidirectional authentication is required for connection with cloud")
+
+// Sync sync shadow and resources with cloud
+type Sync struct {
+        cent  *event.Center
+        cfg   config.SyncConfig
+        http  *http.Client
+        store *bh.Store
+        shad  *shadow.Shadow
+        log   *log.Logger
+}
+
+// NewSync create a new sync
+func NewSync(cfg config.SyncConfig, store *bh.Store, shad *shadow.Shadow, cent *event.Center) (*Sync, error) <span class="cov10" title="9">{
+        ops, err := cfg.Cloud.HTTP.ToClientOptions()
+        if err != nil </span><span class="cov1" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov9" title="8">if ops.TLSConfig == nil </span><span class="cov1" title="1">{
+                return nil, ErrSyncTLSConfigMissing
+        }</span>
+        <span class="cov8" title="7">return &amp;Sync{
+                cfg:   cfg,
+                cent:  cent,
+                store: store,
+                shad:  shad,
+                http:  http.NewClient(ops),
+                log:   log.With(log.Any("core", "sync")),
+        }, nil</span>
+}
+
+// Report reports info
+func (s *Sync) Report(msg *event.Event) error <span class="cov5" title="3">{
+        data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, msg.Payload)
+        if err != nil </span><span class="cov1" title="1">{
+                s.log.Error("failed to send report data", log.Error(err))
+                return err
+        }</span>
+        <span class="cov3" title="2">var desire v1.Desire
+        err = json.Unmarshal(data, &amp;desire)
+        if err != nil </span><span class="cov1" title="1">{
+                return err
+        }</span>
+        <span class="cov1" title="1">if len(desire) &gt; 0 </span><span class="cov1" title="1">{
+                _, err = s.shad.Desire(desire)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+        <span class="cov1" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
