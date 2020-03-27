@@ -150,8 +150,8 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
 			if base == "" {
-				base := filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
-				dir := filepath.Join(base, cfg.Version)
+				base = filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
+				dir = filepath.Join(base, cfg.Version)
 				err := os.MkdirAll(dir, 0755)
 				if err != nil {
 					return err
