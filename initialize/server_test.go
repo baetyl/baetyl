@@ -119,6 +119,8 @@ func TestServer(t *testing.T) {
 
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)
+	init.srv = &http.Server{}
+	defer init.CloseServer()
 
 	w := &httptest.ResponseRecorder{
 		Code:    http.StatusOK,
@@ -137,4 +139,14 @@ func TestServer(t *testing.T) {
 	}
 	init.handleUpdate(w, req)
 	assert.Equal(t, attrs, init.attrs)
+
+	req = &http.Request{
+		Method: http.MethodGet,
+	}
+	init.handleUpdate(w, req)
+	req = &http.Request{
+		Method: http.MethodPost,
+		Form:   nil,
+	}
+	init.handleUpdate(w, req)
 }
