@@ -86,6 +86,7 @@ func TestInitialize_Activate_Err_Collector(t *testing.T) {
 	c.Init.Cloud.Active.Interval = 5 * time.Second
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)
+	init.Close()
 
 	for _, tt := range collectorBadCases {
 		t.Run(tt.name, func(t *testing.T) {

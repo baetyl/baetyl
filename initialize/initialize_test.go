@@ -3,6 +3,7 @@ package initialize
 import (
 	"encoding/json"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"testing"
@@ -218,6 +219,7 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)
+	init.srv = &http.Server{}
 	init.Close()
 }
 
