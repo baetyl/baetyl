@@ -3,8 +3,10 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/baetyl/baetyl-core/event"
@@ -36,7 +38,8 @@ func (s *Sync) Desire(evt *event.Event) error {
 	}
 	crds, err := s.syncCRDs(s.genCRDInfos(crd.KindApplication, appInfo))
 	if err != nil {
-		return fmt.Errorf("failed to sync resource: %s", err.Error())
+		s.log.Error("failed to sync application resource", log.Error(err))
+		return err
 	}
 	cInfo := map[string]string{}
 	sInfo := map[string]string{}
@@ -58,7 +61,8 @@ func (s *Sync) Desire(evt *event.Event) error {
 
 	crds, err = s.syncCRDs(s.genCRDInfos(crd.KindConfiguration, cInfo))
 	if err != nil {
-		return fmt.Errorf("failed to sync resource: %s", err.Error())
+		s.log.Error("failed to sync configuration resource", log.Error(err))
+		return err
 	}
 	configs := map[string]*crd.Configuration{}
 	for _, r := range crds {
@@ -71,7 +75,8 @@ func (s *Sync) Desire(evt *event.Event) error {
 
 	crds, err = s.syncCRDs(s.genCRDInfos(crd.KindSecret, sInfo))
 	if err != nil {
-		return fmt.Errorf("failed to sync resource: %s", err.Error())
+		s.log.Error("failed to sync secret resource", log.Error(err))
+		return err
 	}
 	secrets := map[string]*crd.Secret{}
 	for _, r := range crds {
@@ -85,11 +90,13 @@ func (s *Sync) Desire(evt *event.Event) error {
 	for _, app := range apps {
 		err = s.processVolumes(app.Volumes, configs, secrets)
 		if err != nil {
+			s.log.Error("failed to process volumes", log.Error(err))
 			return err
 		}
 		// app.volume may change when processing Volumes
 		err := s.storeApplication(app)
 		if err != nil {
+			s.log.Error("failed to store application", log.Error(err))
 			return err
 		}
 	}
@@ -122,14 +129,13 @@ func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 }
 
 func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Configuration, secrets map[string]*crd.Secret) error {
-	for _, volume := range volumes {
-		if cfg := volume.VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
-			err := s.processConfiguration(&volume, configs[cfg.Name])
+	for i := range volumes {
+		if cfg := volumes[i].VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
+			err := s.processConfiguration(&volumes[i], configs[cfg.Name])
 			if err != nil {
-				//a.ctx.Log().Errorf("process module config (%s) failed: %s", name, err.Error())
 				return err
 			}
-		} else if secret := volume.VolumeSource.Secret; secret != nil && secrets[secret.Name] != nil {
+		} else if secret := volumes[i].VolumeSource.Secret; secret != nil && secrets[secret.Name] != nil {
 			err := s.storeSecret(secrets[secret.Name])
 			if err != nil {
 				return err
@@ -140,11 +146,16 @@ func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Conf
 }
 
 func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) error {
-	var dir string
+	var base, dir string
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
-			if dir == "" {
-				dir = path.Join(s.cfg.Edge.DownloadPath, cfg.Name, cfg.Version)
+			if base == "" {
+				base := filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
+				dir := filepath.Join(base, cfg.Version)
+				err := os.MkdirAll(dir, 0755)
+				if err != nil {
+					return err
+				}
 			}
 			obj := new(v1.CRDConfigObject)
 			err := json.Unmarshal([]byte(v), &obj)
@@ -159,18 +170,33 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
 			// change app.volume from config to host path of downloaded file path
-			volume.Config = nil
-			volume.HostPath = &crd.HostPathVolumeSource{
-				Path: dir,
+			if volume.HostPath == nil {
+				volume.Config = nil
+				volume.HostPath = &crd.HostPathVolumeSource{
+					Path: dir,
+				}
+				err = cleanDir(base, cfg.Version)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
-
 	key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
 	if key == "" {
 		return fmt.Errorf("configuration does not have name or version")
 	}
 	return s.store.Upsert(key, cfg)
+}
+
+func cleanDir(dir, retain string) error {
+	files, _ := ioutil.ReadDir(dir)
+	for _, f := range files {
+		if f.Name() != retain {
+			os.RemoveAll(filepath.Join(dir, f.Name()))
+		}
+	}
+	return nil
 }
 
 func (s *Sync) storeApplication(app *crd.Application) error {
