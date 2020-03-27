@@ -189,7 +189,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 	return s.store.Upsert(key, cfg)
 }
 
-func cleanDir(dir, retain string) error  {
+func cleanDir(dir, retain string) error {
 	files, _ := ioutil.ReadDir(dir)
 	for _, f := range files {
 		if f.Name() != retain {

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"testing"
+	"time"
 
 	"github.com/baetyl/baetyl-core/config"
 	mc "github.com/baetyl/baetyl-core/mock"
@@ -29,7 +30,7 @@ var (
 		},
 	}
 
-	cases = []struct {
+	goodCases = []struct {
 		name         string
 		fingerprints []config.Fingerprint
 		want         *v1.ActiveResponse
@@ -81,6 +82,15 @@ var (
 			},
 			want: resp,
 		},
+		{
+			name: "5: Pass HostName",
+			fingerprints: []config.Fingerprint{
+				{
+					Proof: config.ProofHostName,
+				},
+			},
+			want: resp,
+		},
 	}
 )
 
@@ -89,7 +99,7 @@ func TestInitialize_Activate(t *testing.T) {
 	assert.NoError(t, err)
 
 	r := []*mock.Response{}
-	for i := 0; i < len(cases); i++ {
+	for i := 0; i < len(goodCases); i++ {
 		r = append(r, mock.NewResponse(200, data))
 	}
 
@@ -100,6 +110,7 @@ func TestInitialize_Activate(t *testing.T) {
 	ic := &config.InitConfig{}
 	err = utils.UnmarshalYAML(nil, ic)
 	assert.NoError(t, err)
+	ic.Cloud.Active.Interval = 5 * time.Second
 	ic.Batch.Name = "batch.test"
 	ic.Batch.Namespace = "default"
 	ic.Batch.SecurityType = "Token"
@@ -111,8 +122,21 @@ func TestInitialize_Activate(t *testing.T) {
 			Value: "abc",
 		},
 	}
+
+	certPath := "var/lib/baetyl/cert"
+	is := &config.SyncConfig{}
+	err = utils.UnmarshalYAML(nil, is)
+	assert.NoError(t, err)
+	is.Cloud.HTTP.Key = path.Join(certPath, "client.key")
+	is.Cloud.HTTP.Cert = path.Join(certPath, "client.pem")
+	is.Cloud.HTTP.CA = path.Join(certPath, "ca.pem")
+	err = os.MkdirAll(certPath, 0755)
+	assert.Nil(t, err)
+	defer os.RemoveAll(path.Dir(certPath))
+
 	c := &config.Config{}
 	c.Init = *ic
+	c.Sync = *is
 
 	inspect := v1.Report{
 		"node": v1.NodeInfo{
@@ -132,7 +156,7 @@ func TestInitialize_Activate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect().Return(inspect, nil).Times(len(cases))
+	ami.EXPECT().Collect().Return(inspect, nil).Times(len(goodCases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
@@ -140,15 +164,10 @@ func TestInitialize_Activate(t *testing.T) {
 	assert.Nil(t, err)
 	defer os.RemoveAll(path.Dir(defaultSNPath))
 
-	for _, tt := range cases {
+	for _, tt := range goodCases {
 		t.Run(tt.name, func(t *testing.T) {
 			c.Sync.Node.Name = ""
 			c.Sync.Node.Namespace = ""
-			c.Sync.Cloud.HTTP.CA = ""
-			c.Sync.Cloud.HTTP.Cert = ""
-			c.Sync.Cloud.HTTP.Name = ""
-			c.Sync.Cloud.HTTP.Key = ""
-			c.Sync.Cloud.HTTP.InsecureSkipVerify = false
 			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
 
 			init, err := NewInit(c, ami)
@@ -159,13 +178,60 @@ func TestInitialize_Activate(t *testing.T) {
 	}
 }
 
+func TestInitialize_Activate_Err_Response(t *testing.T) {
+	errResp := map[string]string{
+		"code": "ErrParam",
+		"msg":  "error msg",
+	}
+	data, err := json.Marshal(errResp)
+	assert.NoError(t, err)
+
+	r := []*mock.Response{mock.NewResponse(500, data)}
+
+	ms := mock.NewServer(nil, r...)
+	assert.NotNil(t, ms)
+	defer ms.Close()
+
+	ic := &config.InitConfig{}
+	err = utils.UnmarshalYAML(nil, ic)
+	assert.NoError(t, err)
+	ic.Cloud.Active.Interval = 5 * time.Second
+	ic.Cloud.HTTP.Address = ms.URL
+	ic.ActivateConfig.Fingerprints = []config.Fingerprint{{
+		Proof: config.ProofHostName,
+	}}
+	ic.ActivateConfig.Attributes = []config.Attribute{}
+
+	c := &config.Config{}
+	c.Init = *ic
+
+	inspect := v1.Report{
+		"node": v1.NodeInfo{
+			Hostname: "docker-desktop",
+		},
+	}
+
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	ami := mc.NewMockAMI(mockCtl)
+	ami.EXPECT().Collect().Return(inspect, nil).AnyTimes()
+
+	init, err := NewInit(c, ami)
+	assert.Nil(t, err)
+	init.Close()
+}
+
 func responseEqual(t *testing.T, resp v1.ActiveResponse, sc config.SyncConfig) {
 	assert.Equal(t, resp.NodeName, sc.Node.Name)
 	assert.Equal(t, resp.Namespace, sc.Node.Namespace)
-	assert.Equal(t, resp.Certificate.Cert, sc.Cloud.HTTP.Cert)
-	assert.Equal(t, resp.Certificate.Name, sc.Cloud.HTTP.Name)
-	assert.Equal(t, resp.Certificate.CA, sc.Cloud.HTTP.CA)
-	assert.Equal(t, resp.Certificate.Key, sc.Cloud.HTTP.Key)
-	assert.Equal(t, resp.Certificate.InsecureSkipVerify, sc.Cloud.HTTP.InsecureSkipVerify)
 
+	cert, err := ioutil.ReadFile(sc.Cloud.HTTP.Cert)
+	assert.Nil(t, err)
+	assert.Equal(t, resp.Certificate.Cert, string(cert))
+	ca, err := ioutil.ReadFile(sc.Cloud.HTTP.CA)
+	assert.Nil(t, err)
+	assert.Equal(t, resp.Certificate.CA, string(ca))
+	key, err := ioutil.ReadFile(sc.Cloud.HTTP.Key)
+	assert.Nil(t, err)
+	assert.Equal(t, resp.Certificate.Key, string(key))
 }
