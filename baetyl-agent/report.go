@@ -59,8 +59,6 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		}
 	}
 	if a.mqtt == nil {
-		a.ctx.Log().Debugf("report set agent ，point = %p", a)
-		a.ctx.Log().Debugf("report set agent = %+v", a)
 		currentApp, err := a.getCurrentApp(io.Inspect)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to get current app info")
