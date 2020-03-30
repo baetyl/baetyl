@@ -85,7 +85,6 @@ func (a *agent) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	a.report()
 	if a.node == nil {
 		page = "/failed.html.template"
-		a.srv.log.Errorf("Failed to active: %s", err.Error())
 	} else {
 		err := a.tomb.Go(a.reporting, a.processing)
 		if err != nil {
