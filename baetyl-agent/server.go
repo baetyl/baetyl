@@ -96,7 +96,7 @@ func (a *agent) handleUpdate(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = tpl.Execute(w, nil)
+	err = tpl.Execute(w, a.attrs)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

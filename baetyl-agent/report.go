@@ -86,6 +86,10 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		resData, err := a.sendRequest("POST", a.cfg.Remote.Report.URL, req)
 		if err != nil {
 			a.ctx.Log().WithError(err).Warnf("failed to send report data")
+			if a.attrs == nil {
+				a.attrs = map[string]string{}
+			}
+			a.attrs["ErrMsg"] = err.Error()
 			return nil
 		}
 		err = json.Unmarshal(resData, &res)
