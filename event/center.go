@@ -50,7 +50,6 @@ func NewCenter(store *bh.Store, limit int) (*Center, error) {
 	}
 	c.last = last.ID
 	c.Trigger(nil)
-
 	return c, nil
 }
 
@@ -119,12 +118,13 @@ func (c *Center) handling() error {
 				c.logger.Debug("find an event", log.Any("event", e.String()))
 				topic := e.Metadata["topic"]
 				handler, ok := c.handlers[topic]
-				if !ok {
+				if ok {
+					err = handler(e)
+					if err != nil {
+						c.logger.Warn("failed to handle event", log.Error(err), log.Any("event", e.String()))
+					}
+				} else {
 					c.logger.Warn("event handler not found", log.Any("event", e.String()))
-				}
-				err = handler(e)
-				if err != nil {
-					c.logger.Warn("failed to handle event", log.Error(err), log.Any("event", e.String()))
 				}
 				err = c.store.Delete(e.ID, &e)
 				if err != nil {
