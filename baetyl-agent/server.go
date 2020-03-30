@@ -91,6 +91,7 @@ func (a *agent) handleUpdate(w http.ResponseWriter, req *http.Request) {
 			a.srv.log.WithError(err)
 		}
 	}
+
 	tpl, err = template.ParseFiles(a.cfg.Server.Pages + page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
