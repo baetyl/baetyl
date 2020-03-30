@@ -1,13 +1,13 @@
 package ami
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
@@ -19,10 +19,7 @@ func (k *kubeImpl) Collect() (specv1.Report, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo, err := k.collectNodeInfo(node)
-	if err != nil {
-		k.log.Error("failed to collect node info", log.Error(err))
-	}
+	nodeInfo := k.collectNodeInfo(node)
 	nodeStats, err := k.collectNodeStats(node)
 	if err != nil {
 		k.log.Error("failed to collect node status", log.Error(err))
@@ -48,7 +45,7 @@ func (k *kubeImpl) Collect() (specv1.Report, error) {
 	}, nil
 }
 
-func (k *kubeImpl) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) {
+func (k *kubeImpl) collectNodeInfo(node *corev1.Node) specv1.NodeInfo {
 	ni := node.Status.NodeInfo
 	nodeInfo := specv1.NodeInfo{
 		Arch:             ni.Architecture,
@@ -67,7 +64,7 @@ func (k *kubeImpl) collectNodeInfo(node *corev1.Node) (specv1.NodeInfo, error) {
 			nodeInfo.Hostname = addr.Address
 		}
 	}
-	return nodeInfo, nil
+	return nodeInfo
 }
 
 func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error) {
@@ -80,13 +77,11 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 		return nodeStats, err
 	}
 	for res, quan := range nodeMetric.Usage {
-		quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
-		nodeStats.Usage[string(res)] = quantity.String()
+		nodeStats.Usage[string(res)] = strconv.FormatInt(quan.Value(), 10)
 	}
 	for res, quan := range node.Status.Capacity {
 		if _, ok := nodeStats.Usage[string(res)]; ok {
-			quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
-			nodeStats.Capacity[string(res)] = quantity.String()
+			nodeStats.Capacity[string(res)] = strconv.FormatInt(quan.Value(), 10)
 		}
 	}
 	return nodeStats, nil
@@ -176,8 +171,7 @@ func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*spe
 	for _, cont := range podMetric.Containers {
 		if cont.Name == serviceName {
 			for res, quan := range cont.Usage {
-				quantity := resource.NewQuantity(quan.Value(), resource.DecimalSI)
-				info.Usage[string(res)] = quantity.String()
+				info.Usage[string(res)] = strconv.FormatInt(quan.Value(), 10)
 			}
 		}
 	}

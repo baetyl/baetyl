@@ -35,8 +35,11 @@ func NewEngine(cfg config.EngineConfig, ami ami.AMI, sha *shadow.Shadow, cent *e
 		cfg:  cfg,
 		log:  log.With(log.Any("engine", cfg.Kind)),
 	}
-	e.tomb.Go(e.collecting)
 	return e, nil
+}
+
+func (e *Engine) Start() {
+	e.tomb.Go(e.collecting)
 }
 
 func (e *Engine) collecting() error {
@@ -45,40 +48,44 @@ func (e *Engine) collecting() error {
 	for {
 		select {
 		case <-t.C:
-			info, err := e.ami.Collect()
-			if err != nil {
-				e.log.Error("failed to collect info", log.Error(err))
-				continue
-			}
-			delta, err := e.sha.Report(info)
-			if err != nil {
-				e.log.Error("failed to update shadow report", log.Error(err))
-				continue
-			}
-			var evt *event.Event
-			if len(delta) > 0 {
-				pld, err := json.Marshal(delta)
-				if err != nil {
-					e.log.Error("failed to marshal delta", log.Error(err))
-					continue
-				}
-				evt = event.NewEvent(event.SyncDesireEvent, pld)
-			} else {
-				pld, err := json.Marshal(info)
-				if err != nil {
-					e.log.Error("failed to marshal delta", log.Error(err))
-					continue
-				}
-				evt = event.NewEvent(event.SyncReportEvent, pld)
-			}
-			err = e.cent.Trigger(evt)
-			if err != nil {
-				e.log.Error("failed to trigger event", log.Error(err))
-				continue
-			}
+			e.collect()
 		case <-e.tomb.Dying():
 			return nil
 		}
+	}
+}
+
+func (e *Engine) collect() {
+	info, err := e.ami.Collect()
+	if err != nil {
+		e.log.Error("failed to collect info", log.Error(err))
+		return
+	}
+	delta, err := e.sha.Report(info)
+	if err != nil {
+		e.log.Error("failed to update shadow report", log.Error(err))
+		return
+	}
+	var evt *event.Event
+	if len(delta) > 0 {
+		pld, err := json.Marshal(delta)
+		if err != nil {
+			e.log.Error("failed to marshal delta", log.Error(err))
+			return
+		}
+		evt = event.NewEvent(event.SyncDesireEvent, pld)
+	} else {
+		pld, err := json.Marshal(info)
+		if err != nil {
+			e.log.Error("failed to marshal delta", log.Error(err))
+			return
+		}
+		evt = event.NewEvent(event.SyncReportEvent, pld)
+	}
+	err = e.cent.Trigger(evt)
+	if err != nil {
+		e.log.Error("failed to trigger event", log.Error(err))
+		return
 	}
 }
 

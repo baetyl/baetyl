@@ -40,7 +40,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
-	ami, err := ami.NewKubeImpl(cfg.Engine.Kubernetes, c.sto)
+	ami, err := ami.NewKubeImpl(cfg.Engine.Kubernetes, c.sto, cfg.Sync.Node.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,6 @@ func NewCore(ctx context.Context) (*core, error) {
 		}
 		i.WaitAndClose()
 	}
-
 	c.cent, err = event.NewCenter(c.sto, 10)
 	if err != nil {
 		return nil, err
@@ -87,7 +86,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-
+	c.eng.Start()
 	c.cent.Start()
 	return c, nil
 }

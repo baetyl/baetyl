@@ -41,8 +41,7 @@ type SyncConfig struct {
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Report struct {
-			URL      string        `yaml:"url" json:"url" default:"v1/sync/report"`
-			Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
+			URL string `yaml:"url" json:"url" default:"v1/sync/report"`
 		} `yaml:"report" json:"report"`
 		Desire struct {
 			URL string `yaml:"url" json:"url" default:"v1/sync/desire"`

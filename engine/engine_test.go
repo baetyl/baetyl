@@ -78,6 +78,7 @@ func TestReport(t *testing.T) {
 	syn := mockSync{msgs: make(chan *event.Event, 1)}
 	err = engine.cent.Register(event.SyncReportEvent, syn.report)
 	cent.Start()
+	engine.collect()
 	assert.NoError(t, err)
 	pld, _ := json.Marshal(r)
 	expected := event.NewEvent(event.SyncReportEvent, pld)
@@ -134,6 +135,7 @@ func TestDesire(t *testing.T) {
 	syn := mockSync{msgs: make(chan *event.Event, 1)}
 	err = engine.cent.Register(event.SyncDesireEvent, syn.desire)
 	cent.Start()
+	engine.collect()
 	assert.NoError(t, err)
 	pld, _ := json.Marshal(d)
 	expected := event.NewEvent(event.SyncReportEvent, pld)

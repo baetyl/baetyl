@@ -23,8 +23,8 @@ type kubeImpl struct {
 }
 
 // TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
-func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
-	cli, err := NewClient(cfg)
+func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store, ns string) (AMI, error) {
+	cli, err := newClient(cfg, ns)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ type Client struct {
 	Metrics   metricsv1beta1.MetricsV1beta1Interface
 }
 
-func NewClient(cfg config.KubernetesConfig) (*Client, error) {
+func newClient(cfg config.KubernetesConfig, ns string) (*Client, error) {
 	kubeConfig, err := func() (*rest.Config, error) {
 		if cfg.InCluster {
 			return rest.InClusterConfig()
@@ -70,6 +70,6 @@ func NewClient(cfg config.KubernetesConfig) (*Client, error) {
 		Core:      kubeClient.CoreV1(),
 		App:       kubeClient.AppsV1(),
 		Metrics:   metricsCli.MetricsV1beta1(),
-		Namespace: "default", // TODO: check
+		Namespace: ns,
 	}, nil
 }

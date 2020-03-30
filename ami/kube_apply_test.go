@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/spec/crd"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	appv1 "k8s.io/api/apps/v1"
@@ -17,6 +18,52 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"testing"
 )
+
+func TestApply(t *testing.T) {
+	ami := initApplyKubeAMI(t)
+	app := &crd.Application{
+		Name:      "app1",
+		Namespace: "baetyl-edge",
+		Version:   "a1",
+		Services: []crd.Service{{
+			Name: "svc1",
+			Ports: []crd.ContainerPort{{
+				HostPort:      80,
+				ContainerPort: 80,
+			}},
+		}},
+		Volumes: []crd.Volume{{
+			Name:         "cfg1",
+			VolumeSource: crd.VolumeSource{Config: &crd.ObjectReference{Name: "cfg1", Version: "c1"}},
+		}, {
+			Name:         "sec1",
+			VolumeSource: crd.VolumeSource{Secret: &crd.ObjectReference{Name: "sec1", Version: "s1"}},
+		}},
+	}
+	key := makeKey(crd.KindApplication, app.Name, app.Version)
+	err := ami.store.Upsert(key, app)
+	assert.NoError(t, err)
+	cfg := &crd.Configuration{
+		Name:      "cfg1",
+		Namespace: "baetyl-edge",
+		Version:   "c1",
+	}
+	key = makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
+	err = ami.store.Upsert(key, cfg)
+	sec := &crd.Secret{
+		Name:      "sec1",
+		Namespace: "baetyl-edge",
+		Version:   "s1",
+	}
+	key = makeKey(crd.KindSecret, sec.Name, sec.Version)
+	err = ami.store.Upsert(key, sec)
+	infos := []specv1.AppInfo{{
+		Name:    "app1",
+		Version: "a1",
+	}}
+	err = ami.Apply(infos)
+	assert.NoError(t, err)
+}
 
 func TestToConfigMap(t *testing.T) {
 	config := &crd.Configuration{
@@ -253,7 +300,7 @@ func TestToDeploy(t *testing.T) {
 }
 
 func TestApplyDeploy(t *testing.T) {
-	ami := initKubeAMI(t)
+	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	lables := map[string]string{
 		"baetyl": "baetyl",
@@ -292,7 +339,7 @@ func TestApplyDeploy(t *testing.T) {
 }
 
 func TestApplySecret(t *testing.T) {
-	ami := initKubeAMI(t)
+	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	secs := map[string]*v1.Secret{
 		"sec1": {
@@ -317,7 +364,7 @@ func TestApplySecret(t *testing.T) {
 }
 
 func TestApplyConfigMap(t *testing.T) {
-	ami := initKubeAMI(t)
+	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	cfgs := map[string]*v1.ConfigMap{
 		"cfg1": {
@@ -342,7 +389,7 @@ func TestApplyConfigMap(t *testing.T) {
 }
 
 func TestApplyService(t *testing.T) {
-	ami := initKubeAMI(t)
+	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	svcs := map[string]*v1.Service{
 		"svc1": {
@@ -366,7 +413,7 @@ func TestApplyService(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func genRuntime() []runtime.Object {
+func genApplyRuntime() []runtime.Object {
 	ns := "baetyl-edge"
 	rs := []runtime.Object{
 		&v1.Secret{
@@ -385,8 +432,8 @@ func genRuntime() []runtime.Object {
 	return rs
 }
 
-func initKubeAMI(t *testing.T) *kubeImpl {
-	fc := fake.NewSimpleClientset(genRuntime()...)
+func initApplyKubeAMI(t *testing.T) *kubeImpl {
+	fc := fake.NewSimpleClientset(genApplyRuntime()...)
 	cli := Client{
 		Namespace: "baetyl-edge",
 		Core:      fc.CoreV1(),
