@@ -1,6 +1,9 @@
-MODULE:=baetyl-core
+MODULE:=core
+BIN:=baetyl-$(MODULE)
 SRC_FILES:=$(shell find . -type f -name '*.go')
-PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/386 linux/arm/v7
+PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/arm/v7
+
+export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
@@ -27,14 +30,15 @@ XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g'
 
 .PHONY: all
 all: $(SRC_FILES)
-	@echo "BUILD $(MODULE)"
-	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(MODULE) $(GO_FLAGS) .
+	@echo "BUILD $(BIN)"
+	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(BIN) $(GO_FLAGS) .
 
 .PHONY: image
 image:
 	@echo "BUILDX: $(REGISTRY)$(MODULE):$(VERSION)"
 	@-docker buildx create --name baetyl
 	@docker buildx use baetyl
+	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE):$(VERSION) -f Dockerfile .
 
 .PHONY: test
@@ -48,4 +52,4 @@ fmt:
 
 .PHONY: clean
 clean:
-	@rm -rf $(MODULE)
+	@rm -rf $(BIN)

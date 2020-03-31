@@ -4,5 +4,5 @@ RUN cd /go/src/ && make all
 
 FROM --platform=$TARGETPLATFORM busybox
 COPY --from=devel /go/src/baetyl-core /bin/
-COPY $TARGETPLATFORM/$MODULE/res/*.template /var/lib/baetyl/page/
+COPY /res/*.template /var/lib/baetyl/page/
 ENTRYPOINT ["baetyl-core"]
