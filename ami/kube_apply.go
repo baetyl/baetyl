@@ -88,7 +88,9 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 			if err != nil {
 				return err
 			}
-			services[service.Name] = service
+			if service != nil {
+				services[service.Name] = service
+			}
 		}
 
 	}
