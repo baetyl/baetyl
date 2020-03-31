@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
@@ -10,9 +11,12 @@ import (
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 	"os"
 	"path"
+	"runtime"
 )
 
 type core struct {
@@ -88,6 +92,26 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 	c.eng.Start()
 	c.cent.Start()
+	r := v1.Report{
+		"core": v1.CoreInfo{
+			GoVersion:   runtime.Version(),
+			BinVersion:  utils.VERSION,
+			GitRevision: utils.REVISION,
+		},
+	}
+	_, err = c.sha.Report(r)
+	if err != nil {
+		return nil, err
+	}
+	pld, err := json.Marshal(r)
+	if err != nil {
+		return nil, err
+	}
+	evt := event.NewEvent(event.SyncReportEvent, pld)
+	err = c.cent.Trigger(evt)
+	if err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 

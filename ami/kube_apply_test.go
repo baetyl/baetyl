@@ -160,7 +160,7 @@ func TestToService(t *testing.T) {
 				TargetPort: intstr.IntOrString{IntVal: 8080},
 			}},
 			Selector: map[string]string{
-				"baetyl": svcName,
+				ServiceName: svcName,
 			},
 			ClusterIP: "None",
 		},
@@ -230,10 +230,7 @@ func TestToDeploy(t *testing.T) {
 	expected := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svcName,
-			Namespace: namespace,
-			Labels: map[string]string{
-				"baetyl": "baetyl",
-			}},
+			Namespace: namespace},
 		Spec: appv1.DeploymentSpec{
 			Replicas: replica,
 			Selector: &metav1.LabelSelector{
@@ -244,7 +241,6 @@ func TestToDeploy(t *testing.T) {
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"baetyl":    "baetyl",
 						AppName:     app.Name,
 						AppVersion:  app.Version,
 						ServiceName: svcName,
@@ -431,7 +427,7 @@ func genApplyRuntime() []runtime.Object {
 			ObjectMeta: metav1.ObjectMeta{Name: "svc1", Namespace: ns},
 		},
 		&appv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: ns, Labels: map[string]string{"baetyl": "baetyl"}},
+			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: ns},
 		},
 	}
 	return rs

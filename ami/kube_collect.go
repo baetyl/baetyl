@@ -1,15 +1,15 @@
 package ami
 
 import (
-	"strconv"
+	"fmt"
+	"github.com/jinzhu/copier"
+	kl "k8s.io/apimachinery/pkg/labels"
 	"time"
 
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
-	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
 )
@@ -77,37 +77,40 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 		return nodeStats, err
 	}
 	for res, quan := range nodeMetric.Usage {
-		nodeStats.Usage[string(res)] = strconv.FormatInt(quan.Value(), 10)
+		nodeStats.Usage[string(res)] = quan.String()
 	}
 	for res, quan := range node.Status.Capacity {
 		if _, ok := nodeStats.Usage[string(res)]; ok {
-			nodeStats.Capacity[string(res)] = strconv.FormatInt(quan.Value(), 10)
+			nodeStats.Capacity[string(res)] = quan.String()
 		}
 	}
 	return nodeStats, nil
 }
 
 func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
-	ls := kl.Set{}
-	selector := map[string]string{
-		"baetyl": "baetyl",
-	}
-	err := copier.Copy(&ls, &selector)
-	podList, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
-		LabelSelector: ls.String(),
-	})
+	deploys, err := k.cli.App.Deployments(k.cli.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 	appStatuses := map[string]*specv1.AppStatus{}
-	if podList == nil {
+	if deploys == nil {
 		return nil, nil
 	}
-	for _, pod := range podList.Items {
+	for _, deploy := range deploys.Items {
+		ls := kl.Set{}
+		selector := deploy.Spec.Selector.MatchLabels
+		err := copier.Copy(&ls, &selector)
+		pods, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
+			LabelSelector: ls.String(),
+		})
+		if pods == nil || len(pods.Items) > 1 {
+			return nil, fmt.Errorf("no pod or more than one pod exists")
+		}
+		pod := pods.Items[0]
 		appName := pod.Labels[AppName]
 		appVersion := pod.Labels[AppVersion]
 		serviceName := pod.Labels[ServiceName]
-		if appName == "" || appVersion == "" || serviceName == "" {
+		if appName == "" || serviceName == "" {
 			continue
 		}
 		var status *specv1.AppStatus
@@ -117,11 +120,10 @@ func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 				Version: appVersion,
 			}}
 		}
-		deploy, err := k.cli.App.Deployments(k.cli.Namespace).Get(serviceName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
-		ref, err := reference.GetReference(scheme.Scheme, deploy)
+		ref, err := reference.GetReference(scheme.Scheme, &deploy)
 		events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
 		for _, e := range events.Items {
 			if e.Type == "Warning" {
@@ -171,7 +173,7 @@ func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*spe
 	for _, cont := range podMetric.Containers {
 		if cont.Name == serviceName {
 			for res, quan := range cont.Usage {
-				info.Usage[string(res)] = strconv.FormatInt(quan.Value(), 10)
+				info.Usage[string(res)] = quan.String()
 			}
 		}
 	}

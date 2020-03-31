@@ -12,7 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
-	mfake "k8s.io/metrics/pkg/client/clientset/versioned/fake"
 	"testing"
 )
 
@@ -38,12 +37,10 @@ func TestCollectNodeInfo(t *testing.T) {
 
 func initCollectKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genCollectRuntime()...)
-	mc := mfake.NewSimpleClientset(genMetricsRuntime()...)
 	cli := Client{
 		Namespace: "baetyl-edge",
 		Core:      fc.CoreV1(),
 		App:       fc.AppsV1(),
-		Metrics:   mc.MetricsV1beta1(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
@@ -53,11 +50,6 @@ func initCollectKubeAMI(t *testing.T) *kubeImpl {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 	return &kubeImpl{cli: &cli, store: sto, knn: "node1"}
-}
-
-func genMetricsRuntime() []runtime.Object {
-	rs := []runtime.Object{}
-	return rs
 }
 
 func genCollectRuntime() []runtime.Object {

@@ -8,7 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -112,17 +111,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 
 func (k *kubeImpl) applyDeploys(deploys map[string]*appv1.Deployment) error {
 	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
-	ls := kl.Set{}
-	selector := map[string]string{
-		"baetyl": "baetyl",
-	}
-	err := copier.Copy(&ls, &selector)
-	if err != nil {
-		return err
-	}
-	deployList, err := k.cli.App.Deployments(k.cli.Namespace).List(metav1.ListOptions{
-		LabelSelector: ls.String(),
-	})
+	deployList, err := deployInterface.List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -273,9 +262,6 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
 			Namespace: k.cli.Namespace,
-			Labels: map[string]string{
-				"baetyl": "baetyl",
-			},
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: replica,
@@ -289,7 +275,6 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
-					"baetyl":    "baetyl",
 					AppName:     app.Name,
 					AppVersion:  app.Version,
 					ServiceName: service.Name,
@@ -352,7 +337,7 @@ func (k *kubeImpl) toService(svc *crd.Service) (*corev1.Service, error) {
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"baetyl": svc.Name,
+				ServiceName: svc.Name,
 			},
 			ClusterIP: "None",
 			Ports:     ports,
