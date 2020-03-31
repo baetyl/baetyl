@@ -66,6 +66,7 @@ func TestApply(t *testing.T) {
 }
 
 func TestToConfigMap(t *testing.T) {
+	ami := initApplyKubeAMI(t)
 	config := &crd.Configuration{
 		Name:      "cfg",
 		Namespace: "baetyl-edge",
@@ -79,22 +80,24 @@ func TestToConfigMap(t *testing.T) {
 			"test-key": "test-val",
 		},
 	}
-	configMap, err := toConfigMap(config)
+	configMap, err := ami.toConfigMap(config)
 	assert.NoError(t, err)
 	assert.Equal(t, configMap, expected)
 }
 
 func TestToSecret(t *testing.T) {
+	ami := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
 	sec := &crd.Secret{
 		Name:      "sec",
-		Namespace: "baetyl-edge",
+		Namespace: ns,
 	}
 	secKey := "sec-key"
 	secVal := "sec-val"
 	sec.Data = map[string][]byte{
 		secKey: []byte(secVal),
 	}
-	secret, err := toSecret(sec)
+	secret, err := ami.toSecret(sec)
 	assert.NoError(t, err)
 	expected := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "sec", Namespace: "baetyl-edge"},
@@ -114,10 +117,10 @@ func TestToSecret(t *testing.T) {
 		RegistryUsername: []byte("test"),
 		RegistryPassword: []byte("1234"),
 	}
-	registry, err := toSecret(reg)
+	registry, err := ami.toSecret(reg)
 	assert.NoError(t, err)
 	expected = &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{Name: "registry"},
+		ObjectMeta: metav1.ObjectMeta{Name: "registry", Namespace: ns},
 		Type:       v1.SecretTypeDockerConfigJson,
 	}
 	auths := map[string]interface{}{
@@ -137,13 +140,14 @@ func TestToSecret(t *testing.T) {
 }
 
 func TestToService(t *testing.T) {
+	ami := initApplyKubeAMI(t)
 	svcName := "svc"
 	namespace := "baetyl-edge"
 	svc := &crd.Service{
 		Name:  svcName,
 		Ports: []crd.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
 	}
-	service, err := toService(namespace, svc)
+	service, err := ami.toService(svc)
 	assert.NoError(t, err)
 	expected := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: namespace},
@@ -165,12 +169,13 @@ func TestToService(t *testing.T) {
 	svc = &crd.Service{
 		Name: svcName,
 	}
-	service, err = toService(namespace, svc)
+	service, err = ami.toService(svc)
 	assert.NoError(t, err)
 	assert.Nil(t, service)
 }
 
 func TestToDeploy(t *testing.T) {
+	ami := initApplyKubeAMI(t)
 	namespace := "baetyl-edge"
 	svcName := "svc"
 	app := &crd.Application{
@@ -218,7 +223,7 @@ func TestToDeploy(t *testing.T) {
 			HostPath: &crd.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := toDeploy(app, svc, volumes, nil)
+	deploy, err := ami.toDeploy(app, svc, volumes, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1

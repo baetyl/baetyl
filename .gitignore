@@ -29,3 +29,4 @@ baetyl-core
 /output*
 /etc
 coverage.txt
+coverage.html

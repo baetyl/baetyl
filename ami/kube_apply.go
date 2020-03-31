@@ -46,7 +46,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 				if err != nil {
 					return err
 				}
-				configMap, err := toConfigMap(&config)
+				configMap, err := k.toConfigMap(&config)
 				if err != nil {
 					return err
 				}
@@ -69,7 +69,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 					v.Secret = nil
 				}
 
-				kSecret, err := toSecret(&secret)
+				kSecret, err := k.toSecret(&secret)
 				if err != nil {
 					return err
 				}
@@ -79,12 +79,12 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 		}
 
 		for _, svc := range app.Services {
-			deploy, err := toDeploy(&app, &svc, app.Volumes, imagePullSecrets)
+			deploy, err := k.toDeploy(&app, &svc, app.Volumes, imagePullSecrets)
 			if err != nil {
 				return err
 			}
 			deploys[deploy.Name] = deploy
-			service, err := toService(app.Namespace, &svc)
+			service, err := k.toService(&svc)
 			if err != nil {
 				return err
 			}
@@ -216,7 +216,7 @@ func (k *kubeImpl) applySecrets(secrets map[string]*corev1.Secret) error {
 	return nil
 }
 
-func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
+func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
 	volMap := map[string]crd.Volume{}
 	for _, v := range vols {
@@ -270,7 +270,7 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
-			Namespace: app.Namespace,
+			Namespace: k.cli.Namespace,
 			Labels: map[string]string{
 				"baetyl": "baetyl",
 			},
@@ -304,19 +304,20 @@ func toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 	return deploy, nil
 }
 
-func toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
+func (k *kubeImpl) toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
 	configMap := &corev1.ConfigMap{}
 	err := copier.Copy(configMap, config)
 	if err != nil {
 		return nil, err
 	}
+	configMap.Namespace = k.cli.Namespace
 	return configMap, nil
 }
 
-func toSecret(sec *crd.Secret) (*corev1.Secret, error) {
+func (k *kubeImpl) toSecret(sec *crd.Secret) (*corev1.Secret, error) {
 	// secret for docker config
 	if isRegistrySecret(sec) {
-		return generateRegistrySecret(sec.Name, string(sec.Data[RegistryAddress]),
+		return k.generateRegistrySecret(sec.Name, string(sec.Data[RegistryAddress]),
 			string(sec.Data[RegistryUsername]), string(sec.Data[RegistryPassword]))
 	}
 
@@ -326,10 +327,11 @@ func toSecret(sec *crd.Secret) (*corev1.Secret, error) {
 	if err != nil {
 		return nil, err
 	}
+	secret.Namespace = k.cli.Namespace
 	return secret, nil
 }
 
-func toService(namespace string, svc *crd.Service) (*corev1.Service, error) {
+func (k *kubeImpl) toService(svc *crd.Service) (*corev1.Service, error) {
 	if len(svc.Ports) == 0 {
 		return nil, nil
 	}
@@ -344,7 +346,7 @@ func toService(namespace string, svc *crd.Service) (*corev1.Service, error) {
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svc.Name,
-			Namespace: namespace,
+			Namespace: k.cli.Namespace,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{

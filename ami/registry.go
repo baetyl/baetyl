@@ -13,9 +13,9 @@ type auth struct {
 	Auth     string
 }
 
-func generateRegistrySecret(name, server, username, password string) (*v1.Secret, error) {
+func (k *kubeImpl) generateRegistrySecret(name, server, username, password string) (*v1.Secret, error) {
 	secret := &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{Name: name},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: k.cli.Namespace},
 		Type:       v1.SecretTypeDockerConfigJson,
 	}
 	serverAuth := map[string]auth{
