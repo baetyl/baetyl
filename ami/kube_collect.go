@@ -103,7 +103,7 @@ func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 		pods, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
 			LabelSelector: ls.String(),
 		})
-		if pods == nil || len(pods.Items) > 1 {
+		if pods == nil || len(pods.Items) < 1 {
 			return nil, fmt.Errorf("no pod or more than one pod exists")
 		}
 		pod := pods.Items[0]
@@ -133,13 +133,26 @@ func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 		if status.ServiceInfos == nil {
 			status.ServiceInfos = map[string]*specv1.ServiceInfo{}
 		}
-		status.ServiceInfos[serviceName], err = k.collectServiceInfo(serviceName, &pod)
-		if err != nil {
-			return nil, err
-		}
+		status.ServiceInfos[serviceName] = k.collectServiceInfo(serviceName, &pod)
+		status.Status = getDeployStatus(status.ServiceInfos)
 		appStatuses[appName] = status
 	}
 	return transformAppStatus(appStatuses), nil
+}
+
+func getDeployStatus(infos map[string]*specv1.ServiceInfo) string {
+	var pending = false
+	for _, info := range infos {
+		if info.Status == string(corev1.PodPending) {
+			pending = true
+		} else if info.Status == string(corev1.PodFailed) {
+			return info.Status
+		}
+	}
+	if pending {
+		return string(corev1.PodPending)
+	}
+	return string(corev1.PodRunning)
 }
 
 func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStatus {
@@ -150,7 +163,7 @@ func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStat
 	return res
 }
 
-func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*specv1.ServiceInfo, error) {
+func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {
 	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
 	events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
@@ -166,9 +179,11 @@ func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*spe
 			info.Container.ID = cont.ContainerID
 		}
 	}
+	info.Status = string(pod.Status.Phase)
 	podMetric, err := k.cli.Metrics.PodMetricses(k.cli.Namespace).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		k.log.Warn("failed to collect pod metrics", log.Error(err))
+		return info
 	}
 	for _, cont := range podMetric.Containers {
 		if cont.Name == serviceName {
@@ -177,6 +192,5 @@ func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) (*spe
 			}
 		}
 	}
-	info.Status = string(pod.Status.Phase)
-	return info, nil
+	return info
 }

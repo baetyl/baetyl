@@ -247,6 +247,7 @@ func TestToDeploy(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
+					ServiceAccountName: ServiceAccountName,
 					Volumes: []v1.Volume{
 						{
 							Name: "cfg",
@@ -274,6 +275,7 @@ func TestToDeploy(t *testing.T) {
 						},
 					},
 					Containers: []v1.Container{{
+						Env:  []v1.EnvVar{{Name: KubeNodeName, Value: "node1"}},
 						Name: "svc",
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
@@ -447,5 +449,5 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
-	return &kubeImpl{cli: &cli, store: sto}
+	return &kubeImpl{cli: &cli, store: sto, knn: "node1"}
 }

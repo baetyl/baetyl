@@ -19,6 +19,8 @@ const (
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
 	RegistryPassword = "password"
+
+	ServiceAccountName = "baetyl-edge-service-account"
 )
 
 func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
@@ -228,6 +230,11 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 			c.Resources.Limits[corev1.ResourceName(n)] = quantity
 		}
 	}
+	env := corev1.EnvVar{
+		Name:  KubeNodeName,
+		Value: k.knn,
+	}
+	c.Env = append(c.Env, env)
 	var containers []corev1.Container
 	containers = append(containers, c)
 	var volumes []corev1.Volume
@@ -280,10 +287,11 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 					ServiceName: service.Name,
 				}},
 				Spec: corev1.PodSpec{
-					Volumes:          volumes,
-					Containers:       containers,
-					RestartPolicy:    restartPolicy,
-					ImagePullSecrets: imagePullSecrets,
+					ServiceAccountName: ServiceAccountName,
+					Volumes:            volumes,
+					Containers:         containers,
+					RestartPolicy:      restartPolicy,
+					ImagePullSecrets:   imagePullSecrets,
 				},
 			},
 		},
