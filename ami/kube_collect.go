@@ -103,7 +103,7 @@ func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 		pods, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
 			LabelSelector: ls.String(),
 		})
-		if pods == nil || len(pods.Items) < 1 {
+		if pods == nil || len(pods.Items) == 0 {
 			return nil, fmt.Errorf("no pod or more than one pod exists")
 		}
 		pod := pods.Items[0]
