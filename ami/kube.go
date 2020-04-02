@@ -15,6 +15,10 @@ import (
 	metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
+const (
+	KubeNodeName = "KUBE_NODE_NAME"
+)
+
 type kubeImpl struct {
 	knn   string // kube node name
 	cli   *Client
@@ -28,7 +32,7 @@ func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
 	if err != nil {
 		return nil, err
 	}
-	knn := os.Getenv("KUBE_NODE_NAME")
+	knn := os.Getenv(KubeNodeName)
 	model := &kubeImpl{
 		cli:   cli,
 		store: sto,
