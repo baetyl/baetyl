@@ -65,7 +65,7 @@ func TestApply(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestToConfigMap(t *testing.T) {
+func TestPrepareConfigMap(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	config := &crd.Configuration{
 		Name:      "cfg",
@@ -80,7 +80,7 @@ func TestToConfigMap(t *testing.T) {
 			"test-key": "test-val",
 		},
 	}
-	configMap, err := ami.toConfigMap(config)
+	configMap, err := ami.prepareConfigMap(config)
 	assert.NoError(t, err)
 	assert.Equal(t, configMap, expected)
 }
@@ -97,7 +97,7 @@ func TestToSecret(t *testing.T) {
 	sec.Data = map[string][]byte{
 		secKey: []byte(secVal),
 	}
-	secret, err := ami.toSecret(sec)
+	secret, err := ami.prepareSecret(sec)
 	assert.NoError(t, err)
 	expected := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "sec", Namespace: "baetyl-edge"},
@@ -117,7 +117,7 @@ func TestToSecret(t *testing.T) {
 		RegistryUsername: []byte("test"),
 		RegistryPassword: []byte("1234"),
 	}
-	registry, err := ami.toSecret(reg)
+	registry, err := ami.prepareSecret(reg)
 	assert.NoError(t, err)
 	expected = &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "registry", Namespace: ns},
@@ -147,7 +147,7 @@ func TestToService(t *testing.T) {
 		Name:  svcName,
 		Ports: []crd.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
 	}
-	service, err := ami.toService(svc)
+	service, err := ami.prepareService(svc)
 	assert.NoError(t, err)
 	expected := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: namespace},
@@ -169,7 +169,7 @@ func TestToService(t *testing.T) {
 	svc = &crd.Service{
 		Name: svcName,
 	}
-	service, err = ami.toService(svc)
+	service, err = ami.prepareService(svc)
 	assert.NoError(t, err)
 	assert.Nil(t, service)
 }
@@ -223,7 +223,7 @@ func TestToDeploy(t *testing.T) {
 			HostPath: &crd.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := ami.toDeploy(app, svc, volumes, nil)
+	deploy, err := ami.prepareDeploy(app, svc, volumes, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1
