@@ -47,7 +47,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 				if err != nil {
 					return err
 				}
-				configMap, err := k.toConfigMap(&config)
+				configMap, err := k.prepareConfigMap(&config)
 				if err != nil {
 					return err
 				}
@@ -70,7 +70,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 					v.Secret = nil
 				}
 
-				kSecret, err := k.toSecret(&secret)
+				kSecret, err := k.prepareSecret(&secret)
 				if err != nil {
 					return err
 				}
@@ -80,12 +80,12 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 		}
 
 		for _, svc := range app.Services {
-			deploy, err := k.toDeploy(&app, &svc, app.Volumes, imagePullSecrets)
+			deploy, err := k.prepareDeploy(&app, &svc, app.Volumes, imagePullSecrets)
 			if err != nil {
 				return err
 			}
 			deploys[deploy.Name] = deploy
-			service, err := k.toService(&svc)
+			service, err := k.prepareService(&svc)
 			if err != nil {
 				return err
 			}
@@ -209,13 +209,14 @@ func (k *kubeImpl) applySecrets(secrets map[string]*corev1.Secret) error {
 	return nil
 }
 
-func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
+func (k *kubeImpl) prepareDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
 	volMap := map[string]crd.Volume{}
 	for _, v := range vols {
 		volMap[v.Name] = v
 	}
 	var c corev1.Container
+	var volumes []corev1.Volume
 	err := copier.Copy(&c, &service)
 	if err != nil {
 		return nil, err
@@ -230,6 +231,15 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 			c.Resources.Limits[corev1.ResourceName(n)] = quantity
 		}
 	}
+	if len(service.Devices) != 0 {
+		deviceVols, err := k.processDevices(&c, service.Devices)
+		if err != nil {
+			return nil, err
+		}
+		if len(deviceVols) > 0 {
+			volumes = append(volumes, deviceVols...)
+		}
+	}
 	env := corev1.EnvVar{
 		Name:  KubeNodeName,
 		Value: k.knn,
@@ -237,7 +247,6 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 	c.Env = append(c.Env, env)
 	var containers []corev1.Container
 	containers = append(containers, c)
-	var volumes []corev1.Volume
 
 	for _, v := range service.VolumeMounts {
 		vol := volMap[v.Name]
@@ -299,7 +308,7 @@ func (k *kubeImpl) toDeploy(app *crd.Application, service *crd.Service, vols []c
 	return deploy, nil
 }
 
-func (k *kubeImpl) toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
+func (k *kubeImpl) prepareConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
 	configMap := &corev1.ConfigMap{}
 	err := copier.Copy(configMap, config)
 	if err != nil {
@@ -309,7 +318,7 @@ func (k *kubeImpl) toConfigMap(config *crd.Configuration) (*corev1.ConfigMap, er
 	return configMap, nil
 }
 
-func (k *kubeImpl) toSecret(sec *crd.Secret) (*corev1.Secret, error) {
+func (k *kubeImpl) prepareSecret(sec *crd.Secret) (*corev1.Secret, error) {
 	// secret for docker config
 	if isRegistrySecret(sec) {
 		return k.generateRegistrySecret(sec.Name, string(sec.Data[RegistryAddress]),
@@ -326,7 +335,7 @@ func (k *kubeImpl) toSecret(sec *crd.Secret) (*corev1.Secret, error) {
 	return secret, nil
 }
 
-func (k *kubeImpl) toService(svc *crd.Service) (*corev1.Service, error) {
+func (k *kubeImpl) prepareService(svc *crd.Service) (*corev1.Service, error) {
 	if len(svc.Ports) == 0 {
 		return nil, nil
 	}
