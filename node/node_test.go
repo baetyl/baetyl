@@ -1,4 +1,4 @@
-package shadow
+package node
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestShadow(t *testing.T) {
+func TestNodeShadow(t *testing.T) {
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
@@ -22,7 +22,7 @@ func TestShadow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewShadow(t.Name(), t.Name(), s)
+	ss, err := NewNode(t.Name(), t.Name(), s)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -90,12 +90,12 @@ func TestShadow(t *testing.T) {
 			gotDelta, err := ss.Desire(desired)
 			assert.Equal(t, tt.desireErr, err)
 			if !reflect.DeepEqual(gotDelta, desireDelta) {
-				t.Errorf("Shadow.Desire() = %v, want %v", gotDelta, desireDelta)
+				t.Errorf("Node.Desire() = %v, want %v", gotDelta, desireDelta)
 			}
 			gotDelta, err = ss.Report(reported)
 			assert.Equal(t, tt.reportErr, err)
 			if !reflect.DeepEqual(gotDelta, reportDelta) {
-				t.Errorf("Shadow.Report() = %v, want %v", gotDelta, reportDelta)
+				t.Errorf("Node.Report() = %v, want %v", gotDelta, reportDelta)
 			}
 
 			actual, err := ss.Get()
@@ -104,14 +104,14 @@ func TestShadow(t *testing.T) {
 				assert.Empty(t, desireStored)
 			} else {
 				if !reflect.DeepEqual(actual.Desire, desireStored) {
-					t.Errorf("Shadow.Get().Desire = %v, want %v", actual.Desire, desireStored)
+					t.Errorf("Node.Get().Desire = %v, want %v", actual.Desire, desireStored)
 				}
 			}
 			if actual.Report == nil {
 				assert.Empty(t, reportStored)
 			} else {
 				if !reflect.DeepEqual(actual.Report, reportStored) {
-					t.Errorf("Shadow.Get().Report = %v, want %v", actual.Report, reportStored)
+					t.Errorf("Node.Get().Report = %v, want %v", actual.Report, reportStored)
 				}
 			}
 		})
@@ -128,7 +128,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewShadow(t.Name(), t.Name(), s)
+	ss, err := NewNode(t.Name(), t.Name(), s)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -153,7 +153,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
 
-	ss, err = NewShadow(t.Name(), t.Name(), s)
+	ss, err = NewNode(t.Name(), t.Name(), s)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 

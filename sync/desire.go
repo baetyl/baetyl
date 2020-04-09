@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/baetyl/baetyl-core/event"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/crd"
 	"github.com/baetyl/baetyl-go/spec/v1"
@@ -21,17 +20,11 @@ const (
 	configValueZip  = "zip"
 )
 
-// Desire process desire delta, to sync crds
-func (s *Sync) Desire(evt *event.Event) error {
-	var delta v1.Desire
-	err := json.Unmarshal(evt.Payload, &delta)
-	if err != nil {
-		return err
-	}
-	ais := delta.AppInfos()
+func (s *Sync) syncResources(ais []v1.AppInfo) error {
 	if len(ais) == 0 {
-		return fmt.Errorf("apps does not exist")
+		return nil
 	}
+
 	appInfo := map[string]string{}
 	for _, a := range ais {
 		appInfo[a.Name] = a.Version
@@ -99,10 +92,6 @@ func (s *Sync) Desire(evt *event.Event) error {
 			s.log.Error("failed to store application", log.Error(err))
 			return err
 		}
-	}
-	err = s.cent.Trigger(event.NewEvent(event.EngineAppEvent, evt.Payload))
-	if err != nil {
-		return err
 	}
 	return nil
 }

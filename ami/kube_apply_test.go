@@ -4,22 +4,24 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"testing"
+
 	"github.com/baetyl/baetyl-core/store"
+	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/crd"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	appv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
-	"testing"
 )
 
-func TestApply(t *testing.T) {
+func TestKubeApply(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	app := &crd.Application{
 		Name:      "app1",
@@ -65,7 +67,7 @@ func TestApply(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestPrepareConfigMap(t *testing.T) {
+func TestKubePrepareConfigMap(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	config := &crd.Configuration{
 		Name:      "cfg",
@@ -85,7 +87,7 @@ func TestPrepareConfigMap(t *testing.T) {
 	assert.Equal(t, configMap, expected)
 }
 
-func TestToSecret(t *testing.T) {
+func TestKubeToSecret(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	sec := &crd.Secret{
@@ -139,7 +141,7 @@ func TestToSecret(t *testing.T) {
 	assert.Equal(t, registry, expected)
 }
 
-func TestToService(t *testing.T) {
+func TestKubeToService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	svcName := "svc"
 	namespace := "baetyl-edge"
@@ -174,7 +176,7 @@ func TestToService(t *testing.T) {
 	assert.Nil(t, service)
 }
 
-func TestToDeploy(t *testing.T) {
+func TestKubeToDeploy(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	namespace := "baetyl-edge"
 	svcName := "svc"
@@ -302,7 +304,7 @@ func TestToDeploy(t *testing.T) {
 	assert.Equal(t, deploy, expected)
 }
 
-func TestApplyDeploy(t *testing.T) {
+func TestKubeApplyDeploy(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	lables := map[string]string{
@@ -341,7 +343,7 @@ func TestApplyDeploy(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestApplySecret(t *testing.T) {
+func TestKubeApplySecret(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	secs := map[string]*v1.Secret{
@@ -366,7 +368,7 @@ func TestApplySecret(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestApplyConfigMap(t *testing.T) {
+func TestKubeApplyConfigMap(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	cfgs := map[string]*v1.ConfigMap{
@@ -391,7 +393,7 @@ func TestApplyConfigMap(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestApplyService(t *testing.T) {
+func TestKubeApplyService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	svcs := map[string]*v1.Service{
@@ -449,5 +451,5 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
-	return &kubeImpl{cli: &cli, store: sto, knn: "node1"}
+	return &kubeImpl{cli: &cli, store: sto, knn: "node1", log: log.With()}
 }

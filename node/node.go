@@ -1,4 +1,4 @@
-package shadow
+package node
 
 import (
 	"encoding/json"
@@ -9,24 +9,24 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-// Shadow shadow
-type Shadow struct {
+// Node node
+type Node struct {
 	bk    []byte
 	id    []byte
 	store *bh.Store
 }
 
-// NewShadow create a new shadow
-func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
-	m := &v1.Shadow{
+// NewNode create a node with shadow
+func NewNode(namespace, name string, store *bh.Store) (*Node, error) {
+	m := &v1.Node{
 		Name:              name,
 		Namespace:         namespace,
 		CreationTimestamp: time.Now(),
 		Report:            v1.Report{},
 		Desire:            v1.Desire{},
 	}
-	s := &Shadow{
-		bk:    []byte("baetyl-edge-shadow"),
+	s := &Node{
+		bk:    []byte("baetyl-edge-node"),
 		id:    []byte(name + "." + namespace),
 		store: store,
 	}
@@ -37,29 +37,29 @@ func NewShadow(namespace, name string, store *bh.Store) (*Shadow, error) {
 	return s, nil
 }
 
-// Get returns shadow model
-func (s *Shadow) Get() (m *v1.Shadow, err error) {
+// Get returns node model
+func (s *Node) Get() (m *v1.Node, err error) {
 	err = s.store.Bolt().View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m = &v1.Shadow{}
+		m = &v1.Node{}
 		return json.Unmarshal(prev, m)
 	})
 	return
 }
 
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (s *Shadow) Desire(desired v1.Desire) (delta v1.Desire, err error) {
+func (s *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m := &v1.Shadow{}
+		m := &v1.Node{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
 			return err
@@ -87,14 +87,14 @@ func (s *Shadow) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 }
 
 // Report update shadow reported data, then return the delta of desired and reported data
-func (s *Shadow) Report(reported v1.Report) (delta v1.Desire, err error) {
+func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(s.bk)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
 		}
-		m := &v1.Shadow{}
+		m := &v1.Node{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
 			return err
@@ -122,7 +122,7 @@ func (s *Shadow) Report(reported v1.Report) (delta v1.Desire, err error) {
 }
 
 // Get insert the whole shadow data
-func (s *Shadow) insert(m *v1.Shadow) error {
+func (s *Node) insert(m *v1.Node) error {
 	return s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(s.bk)
 		if err != nil {
