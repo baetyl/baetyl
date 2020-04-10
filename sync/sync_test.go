@@ -25,7 +25,7 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(t.Name(), t.Name(), sto)
+	sha, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
@@ -57,12 +57,7 @@ func TestSync_Report(t *testing.T) {
 
 	sp, err := sha.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, &v1.Node{
-		Namespace:         t.Name(),
-		Name:              t.Name(),
-		CreationTimestamp: sp.CreationTimestamp,
-		Desire:            v1.Desire{"apps": map[string]interface{}{"app1": "123"}},
-	}, sp)
+	assert.Equal(t, v1.Desire{"apps": map[string]interface{}{"app1": "123"}}, sp.Desire)
 
 	sc = config.SyncConfig{}
 	_, err = NewSync(sc, sto, sha)

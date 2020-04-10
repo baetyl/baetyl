@@ -30,7 +30,7 @@ func prepare(t *testing.T) (*node.Node, config.EngineConfig) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(t.Name(), t.Name(), sto)
+	sha, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
@@ -109,8 +109,13 @@ func TestEngineReport(t *testing.T) {
 		}).Times(1),
 	)
 
-	engine, err := NewEngine(cfg, mockAmi, sha)
-	assert.NoError(t, err)
-	defer engine.Close()
+	e := &Engine{
+		sha: sha,
+		ami: mockAmi,
+		cfg: cfg,
+		log: log.With(log.Any("engine", cfg.Kind)),
+	}
+	e.tomb.Go(e.reporting)
+	defer e.Close()
 	wg.Wait()
 }

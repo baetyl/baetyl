@@ -2,6 +2,7 @@ package engine
 
 import (
 	"errors"
+	bh "github.com/timshannon/bolthold"
 	"math/rand"
 	"os"
 	"time"
@@ -21,9 +22,13 @@ type Engine struct {
 	log  *log.Logger
 }
 
-func NewEngine(cfg config.EngineConfig, ami ami.AMI, sha *node.Node) (*Engine, error) {
+func NewEngine(cfg config.EngineConfig, sto *bh.Store, sha *node.Node) (*Engine, error) {
 	if cfg.Kind != "kubernetes" {
 		return nil, os.ErrInvalid
+	}
+	ami, err := ami.NewKubeImpl(cfg.Kubernetes, sto)
+	if err != nil {
+		return nil, err
 	}
 	e := &Engine{
 		sha: sha,

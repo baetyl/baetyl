@@ -22,7 +22,7 @@ func TestNodeShadow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewNode(t.Name(), t.Name(), s)
+	ss, err := NewNode(s)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -110,6 +110,7 @@ func TestNodeShadow(t *testing.T) {
 			if actual.Report == nil {
 				assert.Empty(t, reportStored)
 			} else {
+				delete(actual.Report, "core")
 				if !reflect.DeepEqual(actual.Report, reportStored) {
 					t.Errorf("Node.Get().Report = %v, want %v", actual.Report, reportStored)
 				}
@@ -128,7 +129,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewNode(t.Name(), t.Name(), s)
+	ss, err := NewNode(s)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -153,7 +154,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
 
-	ss, err = NewNode(t.Name(), t.Name(), s)
+	ss, err = NewNode(s)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
