@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"testing"
+	"time"
 
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
@@ -48,16 +49,13 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
+	sc.Cloud.Report.Interval = time.Millisecond * 500
 
 	syn, err := NewSync(sc, sto, sha)
 	assert.NoError(t, err)
 
-	err = syn.report()
-	assert.NoError(t, err)
-
-	sp, err := sha.Get()
-	assert.NoError(t, err)
-	assert.Equal(t, v1.Desire{"apps": map[string]interface{}{"app1": "123"}}, sp.Desire)
+	desire := <-syn.fifo
+	assert.Equal(t, v1.Desire{"apps": map[string]interface{}{"app1": "123"}}, desire)
 
 	sc = config.SyncConfig{}
 	_, err = NewSync(sc, sto, sha)
