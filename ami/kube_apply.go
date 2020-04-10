@@ -1,6 +1,7 @@
 package ami
 
 import (
+	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/crd"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
@@ -24,13 +25,11 @@ const (
 )
 
 func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
-	appMap := map[string]string{}
 	configs := map[string]*corev1.ConfigMap{}
 	secrets := map[string]*corev1.Secret{}
 	services := map[string]*corev1.Service{}
 	deploys := map[string]*appv1.Deployment{}
 	for _, info := range appInfos {
-		appMap[info.Name] = info.Version
 		key := makeKey(crd.KindApplication, info.Name, info.Version)
 		var app crd.Application
 		err := k.store.Get(key, &app)
@@ -108,6 +107,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 	if err := k.applyServices(services); err != nil {
 		return err
 	}
+	k.log.Info("ami apply apps", log.Any("apps", appInfos))
 	return nil
 }
 

@@ -9,7 +9,7 @@ GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
 
-GO_FLAGS?=-ldflags '-X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)"'
+GO_FLAGS?=-ldflags '-s -w -X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)"'
 GO_TEST_FLAGS?=-race -short -covermode=atomic -coverprofile=coverage.txt
 GO_TEST_PKGS?=$(shell go list ./...)
 ifndef PLATFORMS

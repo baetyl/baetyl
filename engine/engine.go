@@ -1,113 +1,89 @@
 package engine
 
 import (
-	"encoding/json"
-	"fmt"
+	"errors"
+	"math/rand"
 	"os"
 	"time"
 
 	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/event"
-	"github.com/baetyl/baetyl-core/shadow"
+	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-go/log"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 )
 
 type Engine struct {
-	sha  *shadow.Shadow
-	cent *event.Center
+	sha  *node.Node
 	cfg  config.EngineConfig
 	ami  ami.AMI
 	tomb utils.Tomb
 	log  *log.Logger
 }
 
-func NewEngine(cfg config.EngineConfig, ami ami.AMI, sha *shadow.Shadow, cent *event.Center) (*Engine, error) {
+func NewEngine(cfg config.EngineConfig, ami ami.AMI, sha *node.Node) (*Engine, error) {
 	if cfg.Kind != "kubernetes" {
 		return nil, os.ErrInvalid
 	}
 	e := &Engine{
-		sha:  sha,
-		ami:  ami,
-		cent: cent,
-		cfg:  cfg,
-		log:  log.With(log.Any("engine", cfg.Kind)),
+		sha: sha,
+		ami: ami,
+		cfg: cfg,
+		log: log.With(log.Any("engine", cfg.Kind)),
 	}
+	e.tomb.Go(e.reporting)
 	return e, nil
 }
 
-func (e *Engine) Start() {
-	e.tomb.Go(e.collecting)
-}
+func (e *Engine) reporting() error {
+	e.log.Info("engine starts to report")
+	defer e.log.Info("engine has stopped reporting")
 
-func (e *Engine) collecting() error {
-	t := time.NewTicker(e.cfg.Collector.Interval)
+	t := time.NewTicker(e.cfg.Report.Interval)
 	defer t.Stop()
 	for {
 		select {
 		case <-t.C:
-			e.collect()
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+			err := e.report()
+			if err != nil {
+				e.log.Error("failed to report local shadow", log.Error(err))
+			} else {
+				e.log.Debug("engine reports local shadow")
+			}
 		case <-e.tomb.Dying():
 			return nil
 		}
 	}
 }
 
-func (e *Engine) collect() {
+func (e *Engine) report() error {
+	// to collect app status
 	info, err := e.ami.Collect()
 	if err != nil {
-		e.log.Error("failed to collect info", log.Error(err))
-		return
+		return err
 	}
+	if len(info) == 0 {
+		return errors.New("no status collected")
+	}
+	// to report app status into local shadow, and return shadow delta
 	delta, err := e.sha.Report(info)
 	if err != nil {
-		e.log.Error("failed to update shadow report", log.Error(err))
-		return
+		return err
 	}
-	var evt *event.Event
-	if len(delta) > 0 {
-		pld, err := json.Marshal(delta)
-		if err != nil {
-			e.log.Error("failed to marshal delta", log.Error(err))
-			return
-		}
-		evt = event.NewEvent(event.SyncDesireEvent, pld)
-	} else {
-		pld, err := json.Marshal(info)
-		if err != nil {
-			e.log.Error("failed to marshal delta", log.Error(err))
-			return
-		}
-		evt = event.NewEvent(event.SyncReportEvent, pld)
+	// if apps are updated, to apply new apps
+	if delta == nil {
+		return nil
 	}
-	err = e.cent.Trigger(evt)
-	if err != nil {
-		e.log.Error("failed to trigger event", log.Error(err))
-		return
+	apps := delta.AppInfos()
+	if apps == nil {
+		return nil
 	}
+	e.log.Info("to apply apps", log.Any("apps", apps))
+	return e.ami.Apply(apps)
 }
 
 func (e *Engine) Close() {
 	e.tomb.Kill(nil)
 	e.tomb.Wait()
-}
-
-func (e *Engine) Apply(evt *event.Event) error {
-	var info v1.Desire
-	err := json.Unmarshal(evt.Payload, &info)
-	if err != nil {
-		return err
-	}
-	apps := info.AppInfos()
-	if len(apps) == 0 {
-		return fmt.Errorf("apps does not exist")
-	}
-	err = e.ami.Apply(apps)
-	if err != nil {
-		e.log.Error("failed to apply application", log.Error(err))
-		return err
-	}
-	return nil
 }

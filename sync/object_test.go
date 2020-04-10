@@ -2,17 +2,18 @@ package sync
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/shadow"
+	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 func TestDownloadObject(t *testing.T) {
@@ -25,7 +26,7 @@ func TestDownloadObject(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := shadow.NewShadow(t.Name(), t.Name(), sto)
+	sha, err := node.NewNode(t.Name(), t.Name(), sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
@@ -53,7 +54,7 @@ func TestDownloadObject(t *testing.T) {
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 
-	syn, err := NewSync(sc, sto, sha, nil)
+	syn, err := NewSync(sc, sto, sha)
 	assert.NoError(t, err)
 
 	md5, _ := utils.CalculateFileMD5(file1)

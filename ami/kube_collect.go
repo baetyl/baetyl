@@ -36,13 +36,15 @@ func (k *kubeImpl) Collect() (specv1.Report, error) {
 		}
 		apps = append(apps, app)
 	}
-	return specv1.Report{
+	r := specv1.Report{
 		"time":      time.Now(),
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
 		"apps":      apps,
 		"appstats":  appStatus,
-	}, nil
+	}
+	k.log.Debug("ami collects status", log.Any("report", r))
+	return r, nil
 }
 
 func (k *kubeImpl) collectNodeInfo(node *corev1.Node) specv1.NodeInfo {

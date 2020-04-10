@@ -7,8 +7,7 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/event"
-	"github.com/baetyl/baetyl-core/shadow"
+	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
 	"github.com/baetyl/baetyl-go/spec/v1"
@@ -26,7 +25,7 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := shadow.NewShadow(t.Name(), t.Name(), sto)
+	sha, err := node.NewNode(t.Name(), t.Name(), sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
@@ -50,15 +49,15 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 
-	syn, err := NewSync(sc, sto, sha, nil)
+	syn, err := NewSync(sc, sto, sha)
 	assert.NoError(t, err)
 
-	err = syn.Report(&event.Event{})
+	err = syn.report()
 	assert.NoError(t, err)
 
 	sp, err := sha.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, &v1.Shadow{
+	assert.Equal(t, &v1.Node{
 		Namespace:         t.Name(),
 		Name:              t.Name(),
 		CreationTimestamp: sp.CreationTimestamp,
@@ -66,11 +65,11 @@ func TestSync_Report(t *testing.T) {
 	}, sp)
 
 	sc = config.SyncConfig{}
-	_, err = NewSync(sc, sto, sha, nil)
+	_, err = NewSync(sc, sto, sha)
 	assert.Error(t, err, ErrSyncTLSConfigMissing.Error())
 
 	sc.Cloud.HTTP.Cert = "./testcert/notexist.pem"
-	_, err = NewSync(sc, sto, sha, nil)
+	_, err = NewSync(sc, sto, sha)
 	assert.Error(t, err)
 
 	ms = mock.NewServer(tlssvr, mock.NewResponse(200, []byte{}))
@@ -82,9 +81,9 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, sha, nil)
+	syn, err = NewSync(sc, sto, sha)
 	assert.NoError(t, err)
-	err = syn.Report(&event.Event{})
+	err = syn.report()
 	assert.Error(t, err)
 
 	ms = mock.NewServer(tlssvr, mock.NewResponse(500, []byte{}))
@@ -96,8 +95,8 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, sha, nil)
+	syn, err = NewSync(sc, sto, sha)
 	assert.NoError(t, err)
-	err = syn.Report(&event.Event{})
+	err = syn.report()
 	assert.Error(t, err)
 }
