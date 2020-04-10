@@ -26,7 +26,8 @@ func (init *Initialize) collect() (string, error) {
 	if len(fs) == 0 {
 		return "", nil
 	}
-	report, err := init.ami.Collect()
+	ns := "baetyl-edge"
+	report, err := init.ami.Collect(ns)
 	if err != nil {
 		return "", err
 	}

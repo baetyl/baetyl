@@ -14,7 +14,11 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-func (k *kubeImpl) Collect() (specv1.Report, error) {
+const (
+	LabelSystemApp = "baetyl-sysapp"
+)
+
+func (k *kubeImpl) Collect(ns string) (specv1.Report, error) {
 	node, err := k.cli.Core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -24,7 +28,7 @@ func (k *kubeImpl) Collect() (specv1.Report, error) {
 	if err != nil {
 		k.log.Error("failed to collect node status", log.Error(err))
 	}
-	appStatus, err := k.collectAppStatus()
+	sysAppStatus, appStatus, err := k.collectAppStatus(ns)
 	if err != nil {
 		k.log.Error("failed to collect app status", log.Error(err))
 	}
@@ -36,11 +40,20 @@ func (k *kubeImpl) Collect() (specv1.Report, error) {
 		}
 		apps = append(apps, app)
 	}
+	var sysApps []specv1.AppInfo
+	for _, info := range sysAppStatus {
+		app := specv1.AppInfo{
+			Name:    info.Name,
+			Version: info.Version,
+		}
+		sysApps = append(sysApps, app)
+	}
 	r := specv1.Report{
 		"time":      time.Now(),
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
 		"apps":      apps,
+		"sysapps":   sysApps,
 		"appstats":  appStatus,
 	}
 	k.log.Debug("ami collects status", log.Any("report", r))
@@ -89,24 +102,25 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 	return nodeStats, nil
 }
 
-func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
-	deploys, err := k.cli.App.Deployments(k.cli.Namespace).List(metav1.ListOptions{})
+func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.AppStatus, error) {
+	deploys, err := k.cli.App.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	appStatuses := map[string]*specv1.AppStatus{}
+	sysAppStatuses := map[string]*specv1.AppStatus{}
 	if deploys == nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 	for _, deploy := range deploys.Items {
 		ls := kl.Set{}
 		selector := deploy.Spec.Selector.MatchLabels
 		err := copier.Copy(&ls, &selector)
-		pods, err := k.cli.Core.Pods(k.cli.Namespace).List(metav1.ListOptions{
+		pods, err := k.cli.Core.Pods(ns).List(metav1.ListOptions{
 			LabelSelector: ls.String(),
 		})
 		if pods == nil || len(pods.Items) == 0 {
-			return nil, fmt.Errorf("no pod or more than one pod exists")
+			return nil, nil, fmt.Errorf("no pod or more than one pod exists")
 		}
 		pod := pods.Items[0]
 		appName := pod.Labels[AppName]
@@ -123,10 +137,10 @@ func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 			}}
 		}
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		ref, err := reference.GetReference(scheme.Scheme, &deploy)
-		events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
+		events, _ := k.cli.Core.Events(ns).Search(scheme.Scheme, ref)
 		for _, e := range events.Items {
 			if e.Type == "Warning" {
 				status.Cause += e.Message + "\n"
@@ -135,11 +149,16 @@ func (k *kubeImpl) collectAppStatus() ([]specv1.AppStatus, error) {
 		if status.ServiceInfos == nil {
 			status.ServiceInfos = map[string]*specv1.ServiceInfo{}
 		}
-		status.ServiceInfos[serviceName] = k.collectServiceInfo(serviceName, &pod)
+		status.ServiceInfos[serviceName] = k.collectServiceInfo(ns, serviceName, &pod)
 		status.Status = getDeployStatus(status.ServiceInfos)
-		appStatuses[appName] = status
+		if _, ok := deploy.Labels[LabelSystemApp]; ok {
+			sysAppStatuses[appName] = status
+		} else {
+			appStatuses[appName] = status
+		}
+
 	}
-	return transformAppStatus(appStatuses), nil
+	return transformAppStatus(sysAppStatuses), transformAppStatus(appStatuses), nil
 }
 
 func getDeployStatus(infos map[string]*specv1.ServiceInfo) string {
@@ -165,10 +184,10 @@ func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStat
 	return res
 }
 
-func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {
+func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {
 	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
-	events, _ := k.cli.Core.Events(k.cli.Namespace).Search(scheme.Scheme, ref)
+	events, _ := k.cli.Core.Events(ns).Search(scheme.Scheme, ref)
 	for _, e := range events.Items {
 		if e.Type == "Warning" {
 			info.Cause += e.Message + "\n"
@@ -182,7 +201,7 @@ func (k *kubeImpl) collectServiceInfo(serviceName string, pod *corev1.Pod) *spec
 		}
 	}
 	info.Status = string(pod.Status.Phase)
-	podMetric, err := k.cli.Metrics.PodMetricses(k.cli.Namespace).Get(pod.Name, metav1.GetOptions{})
+	podMetric, err := k.cli.Metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
 		return info

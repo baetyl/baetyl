@@ -24,7 +24,7 @@ const (
 	ServiceAccountName = "baetyl-edge-service-account"
 )
 
-func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
+func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 	configs := map[string]*corev1.ConfigMap{}
 	secrets := map[string]*corev1.Secret{}
 	services := map[string]*corev1.Service{}
@@ -46,7 +46,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 				if err != nil {
 					return err
 				}
-				configMap, err := k.prepareConfigMap(&config)
+				configMap, err := k.prepareConfigMap(ns, &config)
 				if err != nil {
 					return err
 				}
@@ -69,7 +69,7 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 					v.Secret = nil
 				}
 
-				kSecret, err := k.prepareSecret(&secret)
+				kSecret, err := k.prepareSecret(ns, &secret)
 				if err != nil {
 					return err
 				}
@@ -79,12 +79,12 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 		}
 
 		for _, svc := range app.Services {
-			deploy, err := k.prepareDeploy(&app, &svc, app.Volumes, imagePullSecrets)
+			deploy, err := k.prepareDeploy(ns, &app, &svc, app.Volumes, imagePullSecrets)
 			if err != nil {
 				return err
 			}
 			deploys[deploy.Name] = deploy
-			service, err := k.prepareService(&svc)
+			service, err := k.prepareService(ns, &svc)
 			if err != nil {
 				return err
 			}
@@ -94,25 +94,24 @@ func (k *kubeImpl) Apply(appInfos []specv1.AppInfo) error {
 		}
 
 	}
-
-	if err := k.applyConfigMaps(configs); err != nil {
+	if err := k.applyConfigMaps(ns, configs); err != nil {
 		return err
 	}
-	if err := k.applySecrets(secrets); err != nil {
+	if err := k.applySecrets(ns, secrets); err != nil {
 		return err
 	}
-	if err := k.applyDeploys(deploys); err != nil {
+	if err := k.applyDeploys(ns, deploys); err != nil {
 		return err
 	}
-	if err := k.applyServices(services); err != nil {
+	if err := k.applyServices(ns, services); err != nil {
 		return err
 	}
 	k.log.Info("ami apply apps", log.Any("apps", appInfos))
 	return nil
 }
 
-func (k *kubeImpl) applyDeploys(deploys map[string]*appv1.Deployment) error {
-	deployInterface := k.cli.App.Deployments(k.cli.Namespace)
+func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment) error {
+	deployInterface := k.cli.App.Deployments(ns)
 	deployList, err := deployInterface.List(metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -149,8 +148,8 @@ func (k *kubeImpl) applyDeploys(deploys map[string]*appv1.Deployment) error {
 	return nil
 }
 
-func (k *kubeImpl) applyServices(services map[string]*corev1.Service) error {
-	serviceInterface := k.cli.Core.Services(k.cli.Namespace)
+func (k *kubeImpl) applyServices(ns string, services map[string]*corev1.Service) error {
+	serviceInterface := k.cli.Core.Services(ns)
 	for _, s := range services {
 		service, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
 		if service != nil && err == nil {
@@ -169,8 +168,8 @@ func (k *kubeImpl) applyServices(services map[string]*corev1.Service) error {
 	return nil
 }
 
-func (k *kubeImpl) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) error {
-	configMapInterface := k.cli.Core.ConfigMaps(k.cli.Namespace)
+func (k *kubeImpl) applyConfigMaps(ns string, configMaps map[string]*corev1.ConfigMap) error {
+	configMapInterface := k.cli.Core.ConfigMaps(ns)
 	for _, cfg := range configMaps {
 		config, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
 		if config != nil && err == nil {
@@ -189,8 +188,8 @@ func (k *kubeImpl) applyConfigMaps(configMaps map[string]*corev1.ConfigMap) erro
 	return nil
 }
 
-func (k *kubeImpl) applySecrets(secrets map[string]*corev1.Secret) error {
-	secretInterface := k.cli.Core.Secrets(k.cli.Namespace)
+func (k *kubeImpl) applySecrets(ns string, secrets map[string]*corev1.Secret) error {
+	secretInterface := k.cli.Core.Secrets(ns)
 	for _, sec := range secrets {
 		secret, err := secretInterface.Get(sec.Name, metav1.GetOptions{})
 		if secret != nil && err == nil {
@@ -209,7 +208,7 @@ func (k *kubeImpl) applySecrets(secrets map[string]*corev1.Secret) error {
 	return nil
 }
 
-func (k *kubeImpl) prepareDeploy(app *crd.Application, service *crd.Service, vols []crd.Volume,
+func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.Service, vols []crd.Volume,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
 	volMap := map[string]crd.Volume{}
 	for _, v := range vols {
@@ -229,15 +228,6 @@ func (k *kubeImpl) prepareDeploy(app *crd.Application, service *crd.Service, vol
 				return nil, err
 			}
 			c.Resources.Limits[corev1.ResourceName(n)] = quantity
-		}
-	}
-	if len(service.Devices) != 0 {
-		deviceVols, err := k.processDevices(&c, service.Devices)
-		if err != nil {
-			return nil, err
-		}
-		if len(deviceVols) > 0 {
-			volumes = append(volumes, deviceVols...)
 		}
 	}
 	env := corev1.EnvVar{
@@ -277,7 +267,8 @@ func (k *kubeImpl) prepareDeploy(app *crd.Application, service *crd.Service, vol
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
-			Namespace: k.cli.Namespace,
+			Namespace: ns,
+			Labels:    app.Labels,
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: replica,
@@ -308,34 +299,33 @@ func (k *kubeImpl) prepareDeploy(app *crd.Application, service *crd.Service, vol
 	return deploy, nil
 }
 
-func (k *kubeImpl) prepareConfigMap(config *crd.Configuration) (*corev1.ConfigMap, error) {
+func (k *kubeImpl) prepareConfigMap(ns string, config *crd.Configuration) (*corev1.ConfigMap, error) {
 	configMap := &corev1.ConfigMap{}
 	err := copier.Copy(configMap, config)
 	if err != nil {
 		return nil, err
 	}
-	configMap.Namespace = k.cli.Namespace
+	configMap.Namespace = ns
 	return configMap, nil
 }
 
-func (k *kubeImpl) prepareSecret(sec *crd.Secret) (*corev1.Secret, error) {
+func (k *kubeImpl) prepareSecret(ns string, sec *crd.Secret) (*corev1.Secret, error) {
 	// secret for docker config
 	if isRegistrySecret(sec) {
-		return k.generateRegistrySecret(sec.Name, string(sec.Data[RegistryAddress]),
+		return k.generateRegistrySecret(ns, sec.Name, string(sec.Data[RegistryAddress]),
 			string(sec.Data[RegistryUsername]), string(sec.Data[RegistryPassword]))
 	}
-
 	// common secret
 	secret := &corev1.Secret{}
 	err := copier.Copy(secret, sec)
 	if err != nil {
 		return nil, err
 	}
-	secret.Namespace = k.cli.Namespace
+	secret.Namespace = ns
 	return secret, nil
 }
 
-func (k *kubeImpl) prepareService(svc *crd.Service) (*corev1.Service, error) {
+func (k *kubeImpl) prepareService(ns string, svc *crd.Service) (*corev1.Service, error) {
 	if len(svc.Ports) == 0 {
 		return nil, nil
 	}
@@ -350,7 +340,7 @@ func (k *kubeImpl) prepareService(svc *crd.Service) (*corev1.Service, error) {
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svc.Name,
-			Namespace: k.cli.Namespace,
+			Namespace: ns,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -372,6 +362,5 @@ func makeKey(kind crd.Kind, name, ver string) string {
 
 func isRegistrySecret(secret *crd.Secret) bool {
 	registry, ok := secret.Labels[crd.SecretLabel]
-
 	return ok && registry == crd.SecretRegistry
 }

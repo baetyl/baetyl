@@ -43,10 +43,9 @@ func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
 }
 
 type Client struct {
-	Namespace string
-	Core      corev1.CoreV1Interface
-	App       appv1.AppsV1Interface
-	Metrics   metricsv1beta1.MetricsV1beta1Interface
+	Core    corev1.CoreV1Interface
+	App     appv1.AppsV1Interface
+	Metrics metricsv1beta1.MetricsV1beta1Interface
 }
 
 func newClient(cfg config.KubernetesConfig) (*Client, error) {
@@ -71,9 +70,8 @@ func newClient(cfg config.KubernetesConfig) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		Core:      kubeClient.CoreV1(),
-		App:       kubeClient.AppsV1(),
-		Metrics:   metricsCli.MetricsV1beta1(),
-		Namespace: "baetyl-edge",
+		Core:    kubeClient.CoreV1(),
+		App:     kubeClient.AppsV1(),
+		Metrics: metricsCli.MetricsV1beta1(),
 	}, nil
 }

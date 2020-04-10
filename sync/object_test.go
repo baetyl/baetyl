@@ -26,9 +26,9 @@ func TestDownloadObject(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(sto)
+	nod, err := node.NewNode(sto)
 	assert.NoError(t, err)
-	assert.NotNil(t, sha)
+	assert.NotNil(t, nod)
 
 	content := []byte("test")
 	dir, err := ioutil.TempDir("", t.Name())
@@ -54,7 +54,7 @@ func TestDownloadObject(t *testing.T) {
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 
-	syn, err := NewSync(sc, sto, sha)
+	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 
 	md5, _ := utils.CalculateFileMD5(file1)

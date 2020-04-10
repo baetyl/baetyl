@@ -38,9 +38,8 @@ func TestCollectNodeInfo(t *testing.T) {
 func initCollectKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genCollectRuntime()...)
 	cli := Client{
-		Namespace: "baetyl-edge",
-		Core:      fc.CoreV1(),
-		App:       fc.AppsV1(),
+		Core: fc.CoreV1(),
+		App:  fc.AppsV1(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)

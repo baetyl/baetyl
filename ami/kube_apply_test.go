@@ -23,9 +23,10 @@ import (
 
 func TestKubeApply(t *testing.T) {
 	ami := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
 	app := &crd.Application{
 		Name:      "app1",
-		Namespace: "baetyl-edge",
+		Namespace: ns,
 		Version:   "a1",
 		Services: []crd.Service{{
 			Name: "svc1",
@@ -47,14 +48,14 @@ func TestKubeApply(t *testing.T) {
 	assert.NoError(t, err)
 	cfg := &crd.Configuration{
 		Name:      "cfg1",
-		Namespace: "baetyl-edge",
+		Namespace: ns,
 		Version:   "c1",
 	}
 	key = makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
 	err = ami.store.Upsert(key, cfg)
 	sec := &crd.Secret{
 		Name:      "sec1",
-		Namespace: "baetyl-edge",
+		Namespace: ns,
 		Version:   "s1",
 	}
 	key = makeKey(crd.KindSecret, sec.Name, sec.Version)
@@ -63,15 +64,16 @@ func TestKubeApply(t *testing.T) {
 		Name:    "app1",
 		Version: "a1",
 	}}
-	err = ami.Apply(infos)
+	err = ami.Apply(ns, infos)
 	assert.NoError(t, err)
 }
 
 func TestKubePrepareConfigMap(t *testing.T) {
 	ami := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
 	config := &crd.Configuration{
 		Name:      "cfg",
-		Namespace: "baetyl-edge",
+		Namespace: ns,
 		Data: map[string]string{
 			"test-key": "test-val",
 		},
@@ -82,7 +84,7 @@ func TestKubePrepareConfigMap(t *testing.T) {
 			"test-key": "test-val",
 		},
 	}
-	configMap, err := ami.prepareConfigMap(config)
+	configMap, err := ami.prepareConfigMap(ns, config)
 	assert.NoError(t, err)
 	assert.Equal(t, configMap, expected)
 }
@@ -99,7 +101,7 @@ func TestKubeToSecret(t *testing.T) {
 	sec.Data = map[string][]byte{
 		secKey: []byte(secVal),
 	}
-	secret, err := ami.prepareSecret(sec)
+	secret, err := ami.prepareSecret(ns, sec)
 	assert.NoError(t, err)
 	expected := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "sec", Namespace: "baetyl-edge"},
@@ -119,7 +121,7 @@ func TestKubeToSecret(t *testing.T) {
 		RegistryUsername: []byte("test"),
 		RegistryPassword: []byte("1234"),
 	}
-	registry, err := ami.prepareSecret(reg)
+	registry, err := ami.prepareSecret(ns, reg)
 	assert.NoError(t, err)
 	expected = &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "registry", Namespace: ns},
@@ -144,15 +146,15 @@ func TestKubeToSecret(t *testing.T) {
 func TestKubeToService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	svcName := "svc"
-	namespace := "baetyl-edge"
+	ns := "baetyl-edge"
 	svc := &crd.Service{
 		Name:  svcName,
 		Ports: []crd.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
 	}
-	service, err := ami.prepareService(svc)
+	service, err := ami.prepareService(ns, svc)
 	assert.NoError(t, err)
 	expected := &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: namespace},
+		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: ns},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{{
 				Port:       80,
@@ -171,18 +173,18 @@ func TestKubeToService(t *testing.T) {
 	svc = &crd.Service{
 		Name: svcName,
 	}
-	service, err = ami.prepareService(svc)
+	service, err = ami.prepareService(ns, svc)
 	assert.NoError(t, err)
 	assert.Nil(t, service)
 }
 
 func TestKubeToDeploy(t *testing.T) {
 	ami := initApplyKubeAMI(t)
-	namespace := "baetyl-edge"
+	ns := "baetyl-edge"
 	svcName := "svc"
 	app := &crd.Application{
 		Name:      "app",
-		Namespace: namespace,
+		Namespace: ns,
 		Version:   "a1",
 	}
 	svc := &crd.Service{
@@ -225,14 +227,14 @@ func TestKubeToDeploy(t *testing.T) {
 			HostPath: &crd.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := ami.prepareDeploy(app, svc, volumes, nil)
+	deploy, err := ami.prepareDeploy(ns, app, svc, volumes, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1
 	expected := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svcName,
-			Namespace: namespace},
+			Namespace: ns},
 		Spec: appv1.DeploymentSpec{
 			Replicas: replica,
 			Selector: &metav1.LabelSelector{
@@ -318,7 +320,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d2", Namespace: ns, Labels: lables},
 		},
 	}
-	err := ami.applyDeploys(ds)
+	err := ami.applyDeploys(ns, ds)
 	assert.NoError(t, err)
 
 	wrongDs := map[string]*appv1.Deployment{
@@ -329,7 +331,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: "default", Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(wrongDs)
+	err = ami.applyDeploys(ns, wrongDs)
 	assert.Error(t, err)
 
 	deleteDs := map[string]*appv1.Deployment{
@@ -337,7 +339,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: ns, Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(deleteDs)
+	err = ami.applyDeploys(ns, deleteDs)
 	assert.NoError(t, err)
 	_, err = ami.cli.App.Deployments(ns).Get("d1", metav1.GetOptions{})
 	assert.Error(t, err)
@@ -354,7 +356,7 @@ func TestKubeApplySecret(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "sec2", Namespace: ns},
 		},
 	}
-	err := ami.applySecrets(secs)
+	err := ami.applySecrets(ns, secs)
 	assert.NoError(t, err)
 	wrongSecs := map[string]*v1.Secret{
 		"sec1": {
@@ -364,7 +366,7 @@ func TestKubeApplySecret(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "sec3", Namespace: "default"},
 		},
 	}
-	err = ami.applySecrets(wrongSecs)
+	err = ami.applySecrets(ns, wrongSecs)
 	assert.Error(t, err)
 }
 
@@ -379,7 +381,7 @@ func TestKubeApplyConfigMap(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "cfg2", Namespace: ns},
 		},
 	}
-	err := ami.applyConfigMaps(cfgs)
+	err := ami.applyConfigMaps(ns, cfgs)
 	assert.NoError(t, err)
 	wrongCfgs := map[string]*v1.ConfigMap{
 		"cfg1": {
@@ -389,7 +391,7 @@ func TestKubeApplyConfigMap(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "cfg3", Namespace: "default"},
 		},
 	}
-	err = ami.applyConfigMaps(wrongCfgs)
+	err = ami.applyConfigMaps(ns, wrongCfgs)
 	assert.Error(t, err)
 }
 
@@ -404,7 +406,7 @@ func TestKubeApplyService(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "svc2", Namespace: ns},
 		},
 	}
-	err := ami.applyServices(svcs)
+	err := ami.applyServices(ns, svcs)
 	assert.NoError(t, err)
 	wrongSvcs := map[string]*v1.Service{
 		"svc1": {
@@ -414,7 +416,7 @@ func TestKubeApplyService(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "svc3", Namespace: "default"},
 		},
 	}
-	err = ami.applyServices(wrongSvcs)
+	err = ami.applyServices(ns, wrongSvcs)
 	assert.Error(t, err)
 }
 
@@ -440,9 +442,8 @@ func genApplyRuntime() []runtime.Object {
 func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genApplyRuntime()...)
 	cli := Client{
-		Namespace: "baetyl-edge",
-		Core:      fc.CoreV1(),
-		App:       fc.AppsV1(),
+		Core: fc.CoreV1(),
+		App:  fc.AppsV1(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)

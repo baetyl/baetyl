@@ -157,7 +157,7 @@ func TestInitialize_Activate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect().Return(inspect, nil).Times(len(goodCases))
+	ami.EXPECT().Collect(gomock.Any()).Return(inspect, nil).Times(len(goodCases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
@@ -215,7 +215,7 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect().Return(inspect, nil).AnyTimes()
+	ami.EXPECT().Collect(gomock.Any()).Return(inspect, nil).AnyTimes()
 
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)

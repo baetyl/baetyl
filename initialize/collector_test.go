@@ -80,7 +80,7 @@ func TestInitialize_Activate_Err_Collector(t *testing.T) {
 	defer mockCtl.Finish()
 
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect().Return(inspect, nil).AnyTimes()
+	ami.EXPECT().Collect(gomock.Any()).Return(inspect, nil).AnyTimes()
 
 	c := &config.Config{}
 	c.Init.Cloud.Active.Interval = 5 * time.Second
@@ -106,7 +106,7 @@ func TestInitialize_Activate_Err_Ami(t *testing.T) {
 	defer mockCtl.Finish()
 
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect().Return(nil, fmt.Errorf("ami error")).AnyTimes()
+	ami.EXPECT().Collect(gomock.Any()).Return(nil, fmt.Errorf("ami error")).AnyTimes()
 
 	c := &config.Config{}
 	c.Init.Cloud.Active.Interval = 5 * time.Second

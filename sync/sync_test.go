@@ -26,9 +26,9 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(sto)
+	nod, err := node.NewNode(sto)
 	assert.NoError(t, err)
-	assert.NotNil(t, sha)
+	assert.NotNil(t, nod)
 
 	bi := &v1.Desire{"apps": map[string]interface{}{"app1": "123"}}
 	data, err := json.Marshal(bi)
@@ -51,18 +51,18 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 	sc.Cloud.Report.Interval = time.Millisecond * 500
 
-	syn, err := NewSync(sc, sto, sha)
+	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 
 	desire := <-syn.fifo
 	assert.Equal(t, v1.Desire{"apps": map[string]interface{}{"app1": "123"}}, desire)
 
 	sc = config.SyncConfig{}
-	_, err = NewSync(sc, sto, sha)
+	_, err = NewSync(sc, sto, nod)
 	assert.Error(t, err, ErrSyncTLSConfigMissing.Error())
 
 	sc.Cloud.HTTP.Cert = "./testcert/notexist.pem"
-	_, err = NewSync(sc, sto, sha)
+	_, err = NewSync(sc, sto, nod)
 	assert.Error(t, err)
 
 	ms = mock.NewServer(tlssvr, mock.NewResponse(200, []byte{}))
@@ -74,7 +74,7 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, sha)
+	syn, err = NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 	err = syn.report()
 	assert.Error(t, err)
@@ -88,7 +88,7 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, sha)
+	syn, err = NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 	err = syn.report()
 	assert.Error(t, err)

@@ -24,13 +24,13 @@ type Sync struct {
 	fifo  chan v1.Desire
 	http  *http.Client
 	store *bh.Store
-	shad  *node.Node
+	nod   *node.Node
 	tomb  utils.Tomb
 	log   *log.Logger
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.SyncConfig, store *bh.Store, shad *node.Node) (*Sync, error) {
+func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, error) {
 	ops, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, shad *node.Node) (*Sync, er
 	s := &Sync{
 		cfg:   cfg,
 		store: store,
-		shad:  shad,
+		nod:   nod,
 		http:  http.NewClient(ops),
 		fifo:  make(chan v1.Desire, 1),
 		log:   log.With(log.Any("core", "sync")),
@@ -73,7 +73,7 @@ func (s *Sync) reporting() error {
 }
 
 func (s *Sync) report() error {
-	sd, err := s.shad.Get()
+	sd, err := s.nod.Get()
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (s *Sync) desiring() error {
 			}
 
 			// to persist desire
-			_, err = s.shad.Desire(e)
+			_, err = s.nod.Desire(e)
 			if err != nil {
 				s.log.Error("failed to persist shadow desire", log.Any("desire", e), log.Error(err))
 				continue
