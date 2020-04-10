@@ -2,36 +2,45 @@ package node
 
 import (
 	"encoding/json"
+	"runtime"
 	"time"
 
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
 )
 
 // Node node
 type Node struct {
-	bk    []byte
 	id    []byte
 	store *bh.Store
 }
 
 // NewNode create a node with shadow
-func NewNode(namespace, name string, store *bh.Store) (*Node, error) {
+func NewNode(store *bh.Store) (*Node, error) {
 	m := &v1.Node{
-		Name:              name,
-		Namespace:         namespace,
 		CreationTimestamp: time.Now(),
-		Report:            v1.Report{},
 		Desire:            v1.Desire{},
+		Report: v1.Report{
+			"core": v1.CoreInfo{
+				GoVersion:   runtime.Version(),
+				BinVersion:  utils.VERSION,
+				GitRevision: utils.REVISION,
+			},
+		},
 	}
 	s := &Node{
-		bk:    []byte("baetyl-edge-node"),
-		id:    []byte(name + "." + namespace),
+		id:    []byte("baetyl-edge-node"),
 		store: store,
 	}
 	err := s.insert(m)
 	if err != nil && err != bh.ErrKeyExists {
+		return nil, err
+	}
+	// report some core info
+	_, err = s.Report(m.Report)
+	if err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -40,7 +49,7 @@ func NewNode(namespace, name string, store *bh.Store) (*Node, error) {
 // Get returns node model
 func (s *Node) Get() (m *v1.Node, err error) {
 	err = s.store.Bolt().View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(s.bk)
+		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
@@ -54,7 +63,7 @@ func (s *Node) Get() (m *v1.Node, err error) {
 // Desire update shadow desired data, then return the delta of desired and reported data
 func (s *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(s.bk)
+		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
@@ -89,7 +98,7 @@ func (s *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 // Report update shadow reported data, then return the delta of desired and reported data
 func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 	err = s.store.Bolt().Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(s.bk)
+		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
 			return bh.ErrNotFound
@@ -124,7 +133,7 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 // Get insert the whole shadow data
 func (s *Node) insert(m *v1.Node) error {
 	return s.store.Bolt().Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(s.bk)
+		b, err := tx.CreateBucketIfNotExists(s.id)
 		if err != nil {
 			return err
 		}

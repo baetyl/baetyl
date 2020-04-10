@@ -11,7 +11,7 @@ import (
 
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/spec/crd"
-	"github.com/baetyl/baetyl-go/spec/v1"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 )
 
 // extended features of config resourece

@@ -10,7 +10,7 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
-	"github.com/baetyl/baetyl-go/spec/v1"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +25,7 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(t.Name(), t.Name(), sto)
+	sha, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
@@ -57,12 +57,7 @@ func TestSync_Report(t *testing.T) {
 
 	sp, err := sha.Get()
 	assert.NoError(t, err)
-	assert.Equal(t, &v1.Node{
-		Namespace:         t.Name(),
-		Name:              t.Name(),
-		CreationTimestamp: sp.CreationTimestamp,
-		Desire:            v1.Desire{"apps": map[string]interface{}{"app1": "123"}},
-	}, sp)
+	assert.Equal(t, v1.Desire{"apps": map[string]interface{}{"app1": "123"}}, sp.Desire)
 
 	sc = config.SyncConfig{}
 	_, err = NewSync(sc, sto, sha)

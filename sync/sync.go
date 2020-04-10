@@ -3,6 +3,8 @@ package sync
 import (
 	"encoding/json"
 	"errors"
+	"time"
+
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-go/http"
@@ -11,7 +13,6 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"time"
 )
 
 // ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
