@@ -10,7 +10,7 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
-	"github.com/baetyl/baetyl-go/spec/v1"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
 )

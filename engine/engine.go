@@ -2,7 +2,6 @@ package engine
 
 import (
 	"errors"
-	bh "github.com/timshannon/bolthold"
 	"math/rand"
 	"os"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
+	bh "github.com/timshannon/bolthold"
 )
 
 type Engine struct {

@@ -2,11 +2,11 @@ package node
 
 import (
 	"encoding/json"
-	"github.com/baetyl/baetyl-go/utils"
 	"runtime"
 	"time"
 
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
 )

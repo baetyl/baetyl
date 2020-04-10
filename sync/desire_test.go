@@ -3,6 +3,11 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
@@ -11,10 +16,6 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
 )
 
 func TestSyncMakeKey(t *testing.T) {
