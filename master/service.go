@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/baetyl/baetyl/master/engine"
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -62,8 +62,8 @@ func (m *Master) stopServices(keepServices map[string]struct{}) {
 		wg.Add(1)
 		go func(s engine.Service) {
 			defer wg.Done()
-			s.Stop()
 			m.services.Remove(s.Name())
+			s.Stop()
 			m.accounts.Remove(s.Name())
 			m.engine.DelServiceStats(s.Name(), true)
 			m.log.Infof("service (%s) stopped", s.Name())
@@ -88,7 +88,21 @@ func (m *Master) StartInstance(service, instance string, dynamicConfig map[strin
 	if !ok {
 		return fmt.Errorf("service (%s) not found", service)
 	}
-	return s.(engine.Service).StartInstance(instance, dynamicConfig)
+	err := s.(engine.Service).StartInstance(instance, dynamicConfig)
+	if err != nil {
+		return err
+	}
+	_, okAgain := m.services.Get(service)
+	if !okAgain {
+		m.log.Errorf("service (%s) do not exist,stop instance (%s)", service, instance)
+		return StopInstance(s, instance)
+	}
+	return nil
+}
+
+// StopInstance stops a service instance
+func StopInstance(s interface{}, instance string) error {
+	return s.(engine.Service).StopInstance(instance)
 }
 
 // StopInstance stops a service instance
