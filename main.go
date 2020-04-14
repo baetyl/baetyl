@@ -24,7 +24,7 @@ type core struct {
 	sha *node.Node
 	eng *engine.Engine
 	syn *sync.Sync
-	svc *http.Server
+	svr *http.Server
 }
 
 // NewCore creats a new core
@@ -57,14 +57,14 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, err
 	}
 	c.syn.Start()
-	c.svc = http.NewServer(cfg.Server, c.initRouter())
-	c.svc.Start()
+	c.svr = http.NewServer(cfg.Server, c.initRouter())
+	c.svr.Start()
 	return c, nil
 }
 
 func (c *core) Close() {
-	if c.svc != nil {
-		c.svc.Close()
+	if c.svr != nil {
+		c.svr.Close()
 	}
 	if c.eng != nil {
 		c.eng.Close()
