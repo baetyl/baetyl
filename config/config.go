@@ -9,11 +9,12 @@ import (
 
 // Config the core config
 type Config struct {
-	Engine EngineConfig `yaml:"engine" json:"engine"`
-	Sync   SyncConfig   `yaml:"sync" json:"sync"`
-	Store  StoreConfig  `yaml:"store" json:"store"`
-	Init   InitConfig   `yaml:"init" json:"init"`
-	Logger log.Config   `yaml:"logger" json:"logger"`
+	Engine EngineConfig      `yaml:"engine" json:"engine"`
+	Sync   SyncConfig        `yaml:"sync" json:"sync"`
+	Store  StoreConfig       `yaml:"store" json:"store"`
+	Init   InitConfig        `yaml:"init" json:"init"`
+	Server http.ServerConfig `yaml:"server" json:"server"`
+	Logger log.Config        `yaml:"logger" json:"logger"`
 }
 
 type EngineConfig struct {
