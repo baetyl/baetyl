@@ -19,7 +19,7 @@ const (
 )
 
 func (k *kubeImpl) Collect(ns string) (specv1.Report, error) {
-	node, err := k.cli.Core.Nodes().Get(k.knn, metav1.GetOptions{})
+	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
 	}
-	nodeMetric, err := k.cli.Metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
+	nodeMetric, err := k.cli.metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nodeStats, err
 	}
@@ -103,7 +103,7 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 }
 
 func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.AppStatus, error) {
-	deploys, err := k.cli.App.Deployments(ns).List(metav1.ListOptions{})
+	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -116,7 +116,7 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 		ls := kl.Set{}
 		selector := deploy.Spec.Selector.MatchLabels
 		err := copier.Copy(&ls, &selector)
-		pods, err := k.cli.Core.Pods(ns).List(metav1.ListOptions{
+		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{
 			LabelSelector: ls.String(),
 		})
 		if pods == nil || len(pods.Items) == 0 {
@@ -140,7 +140,7 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 			return nil, nil, err
 		}
 		ref, err := reference.GetReference(scheme.Scheme, &deploy)
-		events, _ := k.cli.Core.Events(ns).Search(scheme.Scheme, ref)
+		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
 		for _, e := range events.Items {
 			if e.Type == "Warning" {
 				status.Cause += e.Message + "\n"
@@ -187,7 +187,7 @@ func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStat
 func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {
 	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
-	events, _ := k.cli.Core.Events(ns).Search(scheme.Scheme, ref)
+	events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
 	for _, e := range events.Items {
 		if e.Type == "Warning" {
 			info.Cause += e.Message + "\n"
@@ -201,7 +201,7 @@ func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *
 		}
 	}
 	info.Status = string(pod.Status.Phase)
-	podMetric, err := k.cli.Metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
+	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
 		return info

@@ -2,8 +2,10 @@ package initialize
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/baetyl/baetyl-core/store"
 	"io/ioutil"
-	"net/http"
+	gohttp "net/http"
 	"os"
 	"path"
 	"testing"
@@ -154,6 +156,15 @@ func TestInitialize_Activate(t *testing.T) {
 		},
 	}
 
+	f, err := ioutil.TempFile("", t.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	fmt.Println("-->tempfile", f.Name())
+
+	sto, err := store.NewBoltHold(f.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, sto)
+
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
@@ -167,12 +178,10 @@ func TestInitialize_Activate(t *testing.T) {
 
 	for _, tt := range goodCases {
 		t.Run(tt.name, func(t *testing.T) {
-			c.Sync.Node.Name = ""
-			c.Sync.Node.Namespace = ""
 			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
-
 			init, err := NewInit(c, ami)
 			assert.Nil(t, err)
+			init.Start()
 			init.WaitAndClose()
 			responseEqual(t, *tt.want, c.Sync)
 		})
@@ -212,6 +221,15 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 		},
 	}
 
+	f, err := ioutil.TempFile("", t.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	fmt.Println("-->tempfile", f.Name())
+
+	sto, err := store.NewBoltHold(f.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, sto)
+
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
@@ -219,14 +237,12 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)
-	init.srv = &http.Server{}
+	init.Start()
+	init.srv = &gohttp.Server{}
 	init.Close()
 }
 
 func responseEqual(t *testing.T, resp v1.ActiveResponse, sc config.SyncConfig) {
-	assert.Equal(t, resp.NodeName, sc.Node.Name)
-	assert.Equal(t, resp.Namespace, sc.Node.Namespace)
-
 	cert, err := ioutil.ReadFile(sc.Cloud.HTTP.Cert)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Cert, string(cert))

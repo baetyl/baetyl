@@ -1,5 +1,4 @@
-MODULE:=core
-INIT:=init
+MODULE:=init
 BIN:=baetyl-$(MODULE)
 SRC_FILES:=$(shell find . -type f -name '*.go')
 PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/arm/v7
@@ -33,22 +32,6 @@ XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g'
 all: $(SRC_FILES)
 	@echo "BUILD $(BIN)"
 	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(BIN) $(GO_FLAGS) .
-
-.PHONY: image
-image:
-	@echo "BUILDX: $(REGISTRY)$(MODULE):$(VERSION)"
-	@-docker buildx create --name baetyl
-	@docker buildx use baetyl
-	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE):$(VERSION) -f Dockerfile .
-
-.PHONY: init
-init:
-	@echo "BUILDX: $(REGISTRY)$(INIT):$(VERSION)"
-	@-docker buildx create --name baetyl
-	@docker buildx use baetyl
-	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(INIT):$(VERSION) -f init.Dockerfile .
 
 .PHONY: test
 test: fmt

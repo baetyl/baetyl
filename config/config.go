@@ -34,11 +34,6 @@ type StoreConfig struct {
 }
 
 type SyncConfig struct {
-	// TODO: remove node
-	Node struct {
-		Name      string `json:"name,omitempty"`
-		Namespace string `json:"namespace,omitempty"`
-	} `yaml:"node" json:"node"`
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Report struct {

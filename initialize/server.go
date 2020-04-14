@@ -3,11 +3,12 @@ package initialize
 import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/utils"
 	"html/template"
 	"net/http"
 )
 
-func (init *Initialize) StartServer() error {
+func (init *Initialize) startServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", init.handleView)
 	mux.HandleFunc("/update", init.handleUpdate)
@@ -18,7 +19,7 @@ func (init *Initialize) StartServer() error {
 	return init.srv.ListenAndServe()
 }
 
-func (init *Initialize) CloseServer() {
+func (init *Initialize) closeServer() {
 	err := init.srv.Close()
 	if err != nil {
 		init.log.Error("init", log.Any("server err", err))
@@ -63,8 +64,8 @@ func (init *Initialize) handleUpdate(w http.ResponseWriter, req *http.Request) {
 
 	var tpl *template.Template
 	page := "/success.html.template"
-	init.Activate()
-	if init.cfg.Sync.Node.Name == "" {
+	init.activate()
+	if !utils.FileExists(init.cfg.Sync.Cloud.HTTP.Cert) {
 		page = "/failed.html.template"
 	}
 	tpl, err = template.ParseFiles(init.cfg.Init.ActivateConfig.Server.Pages + page)

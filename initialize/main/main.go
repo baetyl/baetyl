@@ -3,10 +3,12 @@ package main
 import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
+	"github.com/baetyl/baetyl-core/initialize"
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
+	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 )
 
@@ -31,6 +33,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	c.sha, err = node.NewNode(c.sto)
 	if err != nil {
 		c.Close()
@@ -38,28 +41,29 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha)
 	if err != nil {
-		c.Close()
 		return nil, err
 	}
-	c.eng.Start()
+
+	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
+		i, err := initialize.NewInit(&cfg, c.eng.Ami)
+		if err != nil {
+			i.Close()
+			return nil, err
+		}
+		i.Start()
+		i.WaitAndClose()
+	}
+
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
 	if err != nil {
-		c.Close()
 		return nil, err
 	}
-	c.syn.Start()
 	return c, nil
 }
 
 func (c *core) Close() {
-	if c.eng != nil {
-		c.eng.Close()
-	}
 	if c.sto != nil {
 		c.sto.Close()
-	}
-	if c.syn != nil {
-		c.syn.Close()
 	}
 }
 
@@ -70,7 +74,16 @@ func main() {
 			return err
 		}
 		defer c.Close()
-		ctx.Wait()
+
+		err = c.syn.ReportAndDesire()
+		if err != nil {
+			return err
+		}
+		err = c.eng.ReportAndDesire()
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 }

@@ -119,6 +119,7 @@ func TestServer(t *testing.T) {
 
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)
+	init.Start()
 
 	w := &httptest.ResponseRecorder{
 		Code:    http.StatusOK,

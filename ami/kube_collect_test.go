@@ -17,7 +17,7 @@ import (
 
 func TestCollectNodeInfo(t *testing.T) {
 	ami := initCollectKubeAMI(t)
-	node, err := ami.cli.Core.Nodes().Get("node1", metav1.GetOptions{})
+	node, err := ami.cli.core.Nodes().Get("node1", metav1.GetOptions{})
 	assert.NoError(t, err)
 	res := ami.collectNodeInfo(node)
 	expected := specv1.NodeInfo{
@@ -37,9 +37,9 @@ func TestCollectNodeInfo(t *testing.T) {
 
 func initCollectKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genCollectRuntime()...)
-	cli := Client{
-		Core: fc.CoreV1(),
-		App:  fc.AppsV1(),
+	cli := client{
+		core: fc.CoreV1(),
+		app:  fc.AppsV1(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
