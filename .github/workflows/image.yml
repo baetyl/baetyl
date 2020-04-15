@@ -25,3 +25,7 @@ jobs:
       - name: build and publish image
         run: |
           make image PLATFORMS=all XFLAGS=--push REGISTRY=baetyltechtest/
+      - name: build and publish image
+        run: |
+          make init PLATFORMS=all XFLAGS=--push REGISTRY=baetyltechtest/
+
