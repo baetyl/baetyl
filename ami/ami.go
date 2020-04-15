@@ -12,7 +12,7 @@ import (
 // AMI app model interfaces
 type AMI interface {
 	Collect(string) (specv1.Report, error)
-	Apply(string, []specv1.AppInfo) error
+	Apply(string, []specv1.AppInfo, string) error
 }
 
 const (

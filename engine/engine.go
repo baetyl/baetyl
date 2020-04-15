@@ -2,8 +2,10 @@ package engine
 
 import (
 	"errors"
+	"github.com/baetyl/baetyl-go/spec/crd"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/baetyl/baetyl-core/ami"
@@ -14,11 +16,18 @@ import (
 	bh "github.com/timshannon/bolthold"
 )
 
+const (
+	EnvKeyAppName     = "BAETYL_APP_NAME"
+	EnvKeyNodeName    = "BAETYL_NODE_NAME"
+	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
+)
+
 type Engine struct {
 	Ami  ami.AMI
 	nod  *node.Node
 	cfg  config.EngineConfig
 	tomb utils.Tomb
+	sto  *bh.Store
 	log  *log.Logger
 	ns   string
 }
@@ -30,6 +39,7 @@ func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node) (*Engine,
 	}
 	e := &Engine{
 		Ami: kube,
+		sto: sto,
 		nod: nod,
 		cfg: cfg,
 		ns:  "baetyl-edge",
@@ -98,20 +108,78 @@ func (e *Engine) reportAndDesireAsync() error {
 		return nil
 	}
 	apps := delta.AppInfos()
-	if apps == nil {
-		return nil
+	if apps != nil {
+		err = e.injectEnv(apps)
+		if err != nil {
+			return err
+		}
+		err = e.Ami.Apply(e.ns, apps, "!"+ami.LabelSystemApp)
+		if err != nil {
+			return err
+		}
+		e.log.Info("to apply apps", log.Any("apps", apps))
 	}
 	sysApps := delta.SysAppInfos()
 	if sysApps != nil {
-		apps = append(apps, sysApps...)
+		err = e.injectEnv(sysApps)
+		if err != nil {
+			return err
+		}
+		err = e.Ami.Apply(e.ns, sysApps, ami.LabelSystemApp)
+		if err != nil {
+			return err
+		}
+		e.log.Info("to apply sys apps", log.Any("apps", sysApps))
 	}
-	e.log.Info("to apply apps", log.Any("apps", apps))
-	return e.Ami.Apply(e.ns, apps)
+	return nil
+}
+
+func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
+	for _, info := range appInfos {
+		key := makeKey(crd.KindApplication, info.Name, info.Version)
+		var app crd.Application
+		err := e.sto.Get(key, &app)
+		if err != nil {
+			return err
+		}
+		var services []crd.Service
+		for _, svc := range app.Services {
+			env := []crd.Environment{
+				{
+					Name:  EnvKeyAppName,
+					Value: app.Name,
+				},
+				{
+					Name:  EnvKeyServiceName,
+					Value: svc.Name,
+				},
+				{
+					Name:  EnvKeyNodeName,
+					Value: os.Getenv(EnvKeyNodeName),
+				},
+			}
+			svc.Env = append(svc.Env, env...)
+			services = append(services, svc)
+		}
+		app.Services = services
+		err = e.sto.Upsert(key, app)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *Engine) Close() {
 	e.tomb.Kill(nil)
 	e.tomb.Wait()
+}
+
+func makeKey(kind crd.Kind, name, ver string) string {
+	if name == "" || ver == "" {
+		return ""
+	}
+	return string(kind) + "-" + name + "-" + ver
 }
 
 func alignApps(reApps, deApps []v1.AppInfo) []v1.AppInfo {

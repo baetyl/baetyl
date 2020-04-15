@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	AppName     = "baetyl-app-name"
-	AppVersion  = "baetyl-app-version"
-	ServiceName = "baetyl-service-name"
+	KubeNodeName = "KUBE_NODE_NAME"
+	AppName      = "baetyl-app-name"
+	AppVersion   = "baetyl-app-version"
+	ServiceName  = "baetyl-service-name"
 
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
@@ -24,7 +25,7 @@ const (
 	ServiceAccountName = "baetyl-edge-service-account"
 )
 
-func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
+func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string) error {
 	configs := map[string]*corev1.ConfigMap{}
 	secrets := map[string]*corev1.Secret{}
 	services := map[string]*corev1.Service{}
@@ -36,7 +37,6 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 		if err != nil {
 			return err
 		}
-
 		var imagePullSecrets []corev1.LocalObjectReference
 		for _, v := range app.Volumes {
 			if cfg := v.Config; cfg != nil {
@@ -77,7 +77,6 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 
 			}
 		}
-
 		for _, svc := range app.Services {
 			deploy, err := k.prepareDeploy(ns, &app, &svc, app.Volumes, imagePullSecrets)
 			if err != nil {
@@ -92,7 +91,6 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 				services[service.Name] = service
 			}
 		}
-
 	}
 	if err := k.applyConfigMaps(ns, configs); err != nil {
 		return err
@@ -100,7 +98,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 	if err := k.applySecrets(ns, secrets); err != nil {
 		return err
 	}
-	if err := k.applyDeploys(ns, deploys); err != nil {
+	if err := k.applyDeploys(ns, deploys, condition); err != nil {
 		return err
 	}
 	if err := k.applyServices(ns, services); err != nil {
@@ -110,9 +108,9 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 	return nil
 }
 
-func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment) error {
+func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, condition string) error {
 	deployInterface := k.cli.app.Deployments(ns)
-	deployList, err := deployInterface.List(metav1.ListOptions{})
+	deployList, err := deployInterface.List(metav1.ListOptions{LabelSelector: condition})
 	if err != nil {
 		return err
 	}
@@ -235,6 +233,11 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 		Value: k.knn,
 	}
 	c.Env = append(c.Env, env)
+	if sc := service.SecurityContext; sc != nil {
+		c.SecurityContext = &corev1.SecurityContext{
+			Privileged: &sc.Privileged,
+		}
+	}
 	var containers []corev1.Container
 	containers = append(containers, c)
 
@@ -292,6 +295,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 					Containers:         containers,
 					RestartPolicy:      restartPolicy,
 					ImagePullSecrets:   imagePullSecrets,
+					HostNetwork:        service.HostNetwork,
 				},
 			},
 		},

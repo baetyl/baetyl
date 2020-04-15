@@ -1,8 +1,11 @@
 package sync
 
 import (
+	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/baetyl/baetyl-core/config"
@@ -17,6 +20,8 @@ import (
 
 // ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
 var ErrSyncTLSConfigMissing = errors.New("certificate bidirectional authentication is required for connection with cloud")
+
+const EnvKeyNodeName = "BAETYL_NODE_NAME"
 
 // Sync sync shadow and resources with cloud
 type Sync struct {
@@ -45,6 +50,19 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, err
 		http:  http.NewClient(ops),
 		fifo:  make(chan v1.Desire, 1),
 		log:   log.With(log.Any("core", "sync")),
+	}
+	if len(ops.TLSConfig.Certificates) == 1 && len(ops.TLSConfig.Certificates[0].Certificate) == 1 {
+		cert, err := x509.ParseCertificate(ops.TLSConfig.Certificates[0].Certificate[0])
+		if err == nil {
+			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
+			if len(res) != 2 || res[0] == "" || res[1] == "" {
+				s.log.Error("failed to parse node name from cert")
+			} else {
+				os.Setenv(EnvKeyNodeName, res[1])
+			}
+		} else {
+			s.log.Error("certificate format error")
+		}
 	}
 	return s, nil
 }
@@ -154,7 +172,12 @@ func (s *Sync) desiring() error {
 				s.log.Error("failed to sync resources", log.Any("desire", e), log.Error(err))
 				continue
 			}
-
+			// to prepare resources
+			err = s.syncResources(e.SysAppInfos())
+			if err != nil {
+				s.log.Error("failed to sync sys resources", log.Any("desire", e), log.Error(err))
+				continue
+			}
 			// to persist desire
 			_, err = s.nod.Desire(e)
 			if err != nil {

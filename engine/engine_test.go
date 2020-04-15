@@ -2,6 +2,8 @@ package engine
 
 import (
 	"fmt"
+	"github.com/baetyl/baetyl-go/spec/crd"
+	bh "github.com/timshannon/bolthold"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -18,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func prepare(t *testing.T) (*node.Node, config.EngineConfig) {
+func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
 	log.Init(log.Config{Level: "debug"})
 
 	f, err := ioutil.TempFile("", t.Name())
@@ -37,7 +39,7 @@ func prepare(t *testing.T) (*node.Node, config.EngineConfig) {
 	cfg := config.EngineConfig{}
 	cfg.Kind = "kubernetes"
 	cfg.Report.Interval = time.Second
-	return no, cfg
+	return no, cfg, sto
 }
 
 func TestEngine(t *testing.T) {
@@ -47,12 +49,12 @@ func TestEngine(t *testing.T) {
 }
 
 func TestEngineReport(t *testing.T) {
-	nod, cfg := prepare(t)
+	nod, cfg, sto := prepare(t)
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
 	r0 := v1.Report{
-		"apps": []interface{}{},
+		"apps": []v1.AppInfo{},
 	}
 	r1 := v1.Report{
 		"apps": []v1.AppInfo{{Name: "app", Version: "v1"}},
@@ -61,6 +63,9 @@ func TestEngineReport(t *testing.T) {
 		"apps": []v1.AppInfo{{Name: "app", Version: "v2"}},
 	}
 	ns := "baetyl-edge"
+	app := crd.Application{}
+	err := sto.Upsert(makeKey(crd.KindApplication, "app", "v2"), app)
+	assert.NoError(t, err)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	gomock.InOrder(
@@ -71,7 +76,7 @@ func TestEngineReport(t *testing.T) {
 			assert.NoError(t, err)
 			return r1, nil
 		}).Times(1),
-		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo) error {
+		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo, cond string) error {
 			fmt.Println("2", apps)
 			sd, err := nod.Get()
 			assert.NoError(t, err)
@@ -90,7 +95,7 @@ func TestEngineReport(t *testing.T) {
 			assert.NoError(t, err)
 			return r1, nil
 		}).Times(1),
-		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo) error {
+		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo, cond string) error {
 			fmt.Println("5", apps)
 			defer wg.Done()
 			sd, err := nod.Get()
@@ -102,6 +107,7 @@ func TestEngineReport(t *testing.T) {
 
 	e := &Engine{
 		nod: nod,
+		sto: sto,
 		Ami: mockAmi,
 		cfg: cfg,
 		ns:  ns,
