@@ -64,6 +64,10 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, err
 			s.log.Error("certificate format error")
 		}
 	}
+	return s, nil
+}
+
+func (s *Sync) Start() {
 	s.tomb.Go(s.reporting, s.desiring)
 }
 

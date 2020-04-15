@@ -206,7 +206,7 @@ func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *
 			info.Status = string(corev1.PodPending)
 		}
 	}
-	podMetric, err := k.cli.Metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
+	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
 		return info

@@ -4,7 +4,6 @@ import (
 	"errors"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/baetyl/baetyl-core/ami"
@@ -100,7 +99,7 @@ func (e *Engine) reportAndDesireAsync() error {
 	}
 	apps := delta.AppInfos()
 	if apps != nil {
-		err = e.ami.Apply(e.ns, apps)
+		err = e.Ami.Apply(e.ns, apps)
 		if err != nil {
 			return err
 		}
@@ -108,7 +107,7 @@ func (e *Engine) reportAndDesireAsync() error {
 	}
 	sysApps := delta.SysAppInfos()
 	if sysApps != nil {
-		err = e.ami.Apply(e.ns, sysApps)
+		err = e.Ami.Apply(e.ns, sysApps)
 		if err != nil {
 			return err
 		}

@@ -114,7 +114,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 }
 
 func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, isSysApp bool) error {
-	deployInterface := k.cli.App.Deployments(ns)
+	deployInterface := k.cli.app.Deployments(ns)
 	var options metav1.ListOptions
 	if isSysApp {
 		options.LabelSelector = LabelSystemApp
