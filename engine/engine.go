@@ -85,7 +85,7 @@ func (e *Engine) report() error {
 		info["sysapps"] = alignApps(info.SysAppInfos(), no.Desire.SysAppInfos())
 	}
 
-	// to report app status into local shadow, and return shadow delta
+	// to report app status into local sadow, and return shadow delta
 	delta, err := e.nod.Report(info)
 	if err != nil {
 		return err
@@ -95,15 +95,22 @@ func (e *Engine) report() error {
 		return nil
 	}
 	apps := delta.AppInfos()
-	if apps == nil {
-		return nil
+	if apps != nil {
+		err = e.ami.Apply(e.ns, apps)
+		if err != nil {
+			return err
+		}
+		e.log.Info("to apply apps", log.Any("apps", apps))
 	}
 	sysApps := delta.SysAppInfos()
 	if sysApps != nil {
-		apps = append(apps, sysApps...)
+		err = e.ami.Apply(e.ns, sysApps)
+		if err != nil {
+			return err
+		}
+		e.log.Info("to apply sys apps", log.Any("apps", sysApps))
 	}
-	e.log.Info("to apply apps", log.Any("apps", apps))
-	return e.ami.Apply(e.ns, apps)
+	return nil
 }
 
 func (e *Engine) Close() {

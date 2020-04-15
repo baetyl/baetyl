@@ -16,7 +16,10 @@ import (
 )
 
 const (
-	KubeNodeName = "KUBE_NODE_NAME"
+	KubeNodeName      = "KUBE_NODE_NAME"
+	EnvKeyAppName     = "BAETYL_APP_NAME"
+	EnvKeyNodeName    = "BAETYL_NODE_NAME"
+	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
 )
 
 type kubeImpl struct {
