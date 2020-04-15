@@ -36,10 +36,10 @@ func NewInit(cfg *config.Config, ami ami.AMI) (*Initialize, error) {
 	}
 	init := &Initialize{
 		cfg:   cfg,
+		ami:   ami,
 		sig:   make(chan bool, 1),
 		http:  http.NewClient(ops),
 		attrs: map[string]string{},
-		ami:   ami,
 		log:   log.With(log.Any("core", "Initialize")),
 	}
 	init.batch = &batch{
@@ -51,7 +51,6 @@ func NewInit(cfg *config.Config, ami ami.AMI) (*Initialize, error) {
 	for _, a := range cfg.Init.ActivateConfig.Attributes {
 		init.attrs[a.Name] = a.Value
 	}
-	init.Start()
 	return init, nil
 }
 
@@ -63,7 +62,7 @@ func (init *Initialize) Start() {
 			return
 		}
 	} else {
-		err := init.tomb.Go(init.StartServer)
+		err := init.tomb.Go(init.startServer)
 		if err != nil {
 			init.log.Error("init", log.Any("server start err", err))
 		}
@@ -72,7 +71,7 @@ func (init *Initialize) Start() {
 
 func (init *Initialize) Close() {
 	if init.srv != nil {
-		init.CloseServer()
+		init.closeServer()
 	}
 	init.tomb.Kill(nil)
 	init.tomb.Wait()

@@ -16,31 +16,35 @@ import (
 )
 
 type Engine struct {
+	Ami  ami.AMI
 	nod  *node.Node
 	cfg  config.EngineConfig
-	ami  ami.AMI
 	tomb utils.Tomb
 	log  *log.Logger
 	ns   string
 }
 
 func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node) (*Engine, error) {
-	if cfg.Kind != "kubernetes" {
-		return nil, os.ErrInvalid
-	}
-	ami, err := ami.NewKubeImpl(cfg.Kubernetes, sto)
+	kube, err := ami.GenAMI(cfg, sto)
 	if err != nil {
 		return nil, err
 	}
 	e := &Engine{
+		Ami: kube,
 		nod: nod,
-		ami: ami,
 		cfg: cfg,
 		ns:  "baetyl-edge",
 		log: log.With(log.Any("engine", cfg.Kind)),
 	}
-	e.tomb.Go(e.reporting)
 	return e, nil
+}
+
+func (e *Engine) Start() {
+	e.tomb.Go(e.reporting)
+}
+
+func (e *Engine) ReportAndDesire() error {
+	return e.reportAndDesireAsync()
 }
 
 func (e *Engine) reporting() error {
@@ -53,7 +57,7 @@ func (e *Engine) reporting() error {
 		select {
 		case <-t.C:
 			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-			err := e.report()
+			err := e.reportAndDesireAsync()
 			if err != nil {
 				e.log.Error("failed to report local shadow", log.Error(err))
 			} else {
@@ -65,9 +69,9 @@ func (e *Engine) reporting() error {
 	}
 }
 
-func (e *Engine) report() error {
+func (e *Engine) reportAndDesireAsync() error {
 	// to collect app status
-	info, err := e.ami.Collect(e.ns)
+	info, err := e.Ami.Collect(e.ns)
 	if err != nil {
 		return err
 	}
@@ -85,7 +89,7 @@ func (e *Engine) report() error {
 		info["sysapps"] = alignApps(info.SysAppInfos(), no.Desire.SysAppInfos())
 	}
 
-	// to report app status into local sadow, and return shadow delta
+	// to report app status into local shadow, and return shadow delta
 	delta, err := e.nod.Report(info)
 	if err != nil {
 		return err

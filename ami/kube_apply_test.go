@@ -346,7 +346,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 	}
 	err = ami.applyDeploys(ns, deleteDs, false)
 	assert.NoError(t, err)
-	_, err = ami.cli.App.Deployments(ns).Get("d1", metav1.GetOptions{})
+	_, err = ami.cli.app.Deployments(ns).Get("d1", metav1.GetOptions{})
 	assert.Error(t, err)
 }
 
@@ -446,9 +446,9 @@ func genApplyRuntime() []runtime.Object {
 
 func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genApplyRuntime()...)
-	cli := Client{
-		Core: fc.CoreV1(),
-		App:  fc.AppsV1(),
+	cli := client{
+		core: fc.CoreV1(),
+		app:  fc.AppsV1(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)

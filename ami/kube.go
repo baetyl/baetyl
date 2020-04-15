@@ -24,13 +24,13 @@ const (
 
 type kubeImpl struct {
 	knn   string // kube node name
-	cli   *Client
+	cli   *client
 	store *bh.Store
 	log   *log.Logger
 }
 
 // TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
-func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
+func newKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
 	cli, err := newClient(cfg)
 	if err != nil {
 		return nil, err
@@ -45,13 +45,13 @@ func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
 	return model, nil
 }
 
-type Client struct {
-	Core    corev1.CoreV1Interface
-	App     appv1.AppsV1Interface
-	Metrics metricsv1beta1.MetricsV1beta1Interface
+type client struct {
+	core    corev1.CoreV1Interface
+	app     appv1.AppsV1Interface
+	metrics metricsv1beta1.MetricsV1beta1Interface
 }
 
-func newClient(cfg config.KubernetesConfig) (*Client, error) {
+func newClient(cfg config.KubernetesConfig) (*client, error) {
 	kubeConfig, err := func() (*rest.Config, error) {
 		if cfg.InCluster {
 			return rest.InClusterConfig()
@@ -72,9 +72,9 @@ func newClient(cfg config.KubernetesConfig) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{
-		Core:    kubeClient.CoreV1(),
-		App:     kubeClient.AppsV1(),
-		Metrics: metricsCli.MetricsV1beta1(),
+	return &client{
+		core:    kubeClient.CoreV1(),
+		app:     kubeClient.AppsV1(),
+		metrics: metricsCli.MetricsV1beta1(),
 	}, nil
 }

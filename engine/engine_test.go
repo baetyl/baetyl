@@ -102,7 +102,7 @@ func TestEngineReport(t *testing.T) {
 
 	e := &Engine{
 		nod: nod,
-		ami: mockAmi,
+		Ami: mockAmi,
 		cfg: cfg,
 		ns:  ns,
 		log: log.With(log.Any("engine", cfg.Kind)),

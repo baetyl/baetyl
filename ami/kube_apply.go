@@ -158,7 +158,7 @@ func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment,
 }
 
 func (k *kubeImpl) applyServices(ns string, services map[string]*corev1.Service) error {
-	serviceInterface := k.cli.Core.Services(ns)
+	serviceInterface := k.cli.core.Services(ns)
 	for _, s := range services {
 		service, err := serviceInterface.Get(s.Name, metav1.GetOptions{})
 		if service != nil && err == nil {
@@ -178,7 +178,7 @@ func (k *kubeImpl) applyServices(ns string, services map[string]*corev1.Service)
 }
 
 func (k *kubeImpl) applyConfigMaps(ns string, configMaps map[string]*corev1.ConfigMap) error {
-	configMapInterface := k.cli.Core.ConfigMaps(ns)
+	configMapInterface := k.cli.core.ConfigMaps(ns)
 	for _, cfg := range configMaps {
 		config, err := configMapInterface.Get(cfg.Name, metav1.GetOptions{})
 		if config != nil && err == nil {
@@ -198,7 +198,7 @@ func (k *kubeImpl) applyConfigMaps(ns string, configMaps map[string]*corev1.Conf
 }
 
 func (k *kubeImpl) applySecrets(ns string, secrets map[string]*corev1.Secret) error {
-	secretInterface := k.cli.Core.Secrets(ns)
+	secretInterface := k.cli.core.Secrets(ns)
 	for _, sec := range secrets {
 		secret, err := secretInterface.Get(sec.Name, metav1.GetOptions{})
 		if secret != nil && err == nil {
