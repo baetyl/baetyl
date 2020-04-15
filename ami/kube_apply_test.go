@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/baetyl/baetyl-core/store"
@@ -65,7 +64,7 @@ func TestKubeApply(t *testing.T) {
 		Name:    "app1",
 		Version: "a1",
 	}}
-	err = ami.Apply(ns, infos)
+	err = ami.Apply(ns, infos, "")
 	assert.NoError(t, err)
 }
 
@@ -281,10 +280,7 @@ func TestKubeToDeploy(t *testing.T) {
 					},
 					Containers: []v1.Container{{
 						Env: []v1.EnvVar{
-							{Name: KubeNodeName, Value: "node1"},
-							{Name: EnvKeyAppName, Value: app.Name},
-							{Name: EnvKeyServiceName, Value: svcName},
-							{Name: EnvKeyNodeName, Value: os.Getenv(EnvKeyNodeName)}},
+							{Name: KubeNodeName, Value: "node1"},},
 						Name: "svc",
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
@@ -325,7 +321,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d2", Namespace: ns, Labels: lables},
 		},
 	}
-	err := ami.applyDeploys(ns, ds, false)
+	err := ami.applyDeploys(ns, ds, "")
 	assert.NoError(t, err)
 
 	wrongDs := map[string]*appv1.Deployment{
@@ -336,7 +332,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: "default", Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(ns, wrongDs, false)
+	err = ami.applyDeploys(ns, wrongDs, "")
 	assert.Error(t, err)
 
 	deleteDs := map[string]*appv1.Deployment{
@@ -344,7 +340,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: ns, Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(ns, deleteDs, false)
+	err = ami.applyDeploys(ns, deleteDs, "")
 	assert.NoError(t, err)
 	_, err = ami.cli.app.Deployments(ns).Get("d1", metav1.GetOptions{})
 	assert.Error(t, err)

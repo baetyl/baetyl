@@ -15,13 +15,6 @@ import (
 	metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
-const (
-	KubeNodeName      = "KUBE_NODE_NAME"
-	EnvKeyAppName     = "BAETYL_APP_NAME"
-	EnvKeyNodeName    = "BAETYL_NODE_NAME"
-	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
-)
-
 type kubeImpl struct {
 	knn   string // kube node name
 	cli   *client

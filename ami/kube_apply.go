@@ -10,13 +10,13 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"os"
 )
 
 const (
-	AppName     = "baetyl-app-name"
-	AppVersion  = "baetyl-app-version"
-	ServiceName = "baetyl-service-name"
+	KubeNodeName = "KUBE_NODE_NAME"
+	AppName      = "baetyl-app-name"
+	AppVersion   = "baetyl-app-version"
+	ServiceName  = "baetyl-service-name"
 
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
@@ -25,22 +25,17 @@ const (
 	ServiceAccountName = "baetyl-edge-service-account"
 )
 
-func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
+func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string) error {
 	configs := map[string]*corev1.ConfigMap{}
 	secrets := map[string]*corev1.Secret{}
 	services := map[string]*corev1.Service{}
 	deploys := map[string]*appv1.Deployment{}
-	var isSysApp bool
 	for _, info := range appInfos {
 		key := makeKey(crd.KindApplication, info.Name, info.Version)
 		var app crd.Application
 		err := k.store.Get(key, &app)
 		if err != nil {
 			return err
-		}
-		// all app are of the same type
-		if _, ok := app.Labels[LabelSystemApp]; ok {
-			isSysApp = true
 		}
 		var imagePullSecrets []corev1.LocalObjectReference
 		for _, v := range app.Volumes {
@@ -103,7 +98,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 	if err := k.applySecrets(ns, secrets); err != nil {
 		return err
 	}
-	if err := k.applyDeploys(ns, deploys, isSysApp); err != nil {
+	if err := k.applyDeploys(ns, deploys, condition); err != nil {
 		return err
 	}
 	if err := k.applyServices(ns, services); err != nil {
@@ -113,15 +108,9 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo) error {
 	return nil
 }
 
-func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, isSysApp bool) error {
+func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, condition string) error {
 	deployInterface := k.cli.app.Deployments(ns)
-	var options metav1.ListOptions
-	if isSysApp {
-		options.LabelSelector = LabelSystemApp
-	} else {
-		options.LabelSelector = "!" + LabelSystemApp
-	}
-	deployList, err := deployInterface.List(options)
+	deployList, err := deployInterface.List(metav1.ListOptions {LabelSelector: condition})
 	if err != nil {
 		return err
 	}
@@ -239,29 +228,16 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 			c.Resources.Limits[corev1.ResourceName(n)] = quantity
 		}
 	}
-	envs := []corev1.EnvVar{
-		{
-			Name: KubeNodeName, Value: k.knn,
-		},
-		{
-			Name:  EnvKeyAppName,
-			Value: app.Name,
-		},
-		{
-			Name:  EnvKeyServiceName,
-			Value: service.Name,
-		},
-		{
-			Name:  EnvKeyNodeName,
-			Value: os.Getenv(EnvKeyNodeName),
-		},
+	env := corev1.EnvVar{
+		Name:  KubeNodeName,
+		Value: k.knn,
 	}
+	c.Env = append(c.Env, env)
 	if sc := service.SecurityContext; sc != nil {
 		c.SecurityContext = &corev1.SecurityContext{
 			Privileged: &sc.Privileged,
 		}
 	}
-	c.Env = append(c.Env, envs...)
 	var containers []corev1.Container
 	containers = append(containers, c)
 
