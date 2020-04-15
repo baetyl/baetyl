@@ -280,7 +280,7 @@ func TestKubeToDeploy(t *testing.T) {
 					},
 					Containers: []v1.Container{{
 						Env: []v1.EnvVar{
-							{Name: KubeNodeName, Value: "node1"},},
+							{Name: KubeNodeName, Value: "node1"}},
 						Name: "svc",
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{

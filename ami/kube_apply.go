@@ -110,7 +110,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string)
 
 func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, condition string) error {
 	deployInterface := k.cli.app.Deployments(ns)
-	deployList, err := deployInterface.List(metav1.ListOptions {LabelSelector: condition})
+	deployList, err := deployInterface.List(metav1.ListOptions{LabelSelector: condition})
 	if err != nil {
 		return err
 	}

@@ -113,7 +113,7 @@ func (e *Engine) reportAndDesireAsync() error {
 		if err != nil {
 			return err
 		}
-		err = e.Ami.Apply(e.ns, apps, "!" + ami.LabelSystemApp)
+		err = e.Ami.Apply(e.ns, apps, "!"+ami.LabelSystemApp)
 		if err != nil {
 			return err
 		}
@@ -144,17 +144,17 @@ func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
 		}
 		var services []crd.Service
 		for _, svc := range app.Services {
-			env := []crd.Environment {
+			env := []crd.Environment{
 				{
-					Name:EnvKeyAppName,
+					Name:  EnvKeyAppName,
 					Value: app.Name,
 				},
 				{
-					Name: EnvKeyServiceName,
+					Name:  EnvKeyServiceName,
 					Value: svc.Name,
 				},
 				{
-					Name: EnvKeyNodeName,
+					Name:  EnvKeyNodeName,
 					Value: os.Getenv(EnvKeyNodeName),
 				},
 			}
