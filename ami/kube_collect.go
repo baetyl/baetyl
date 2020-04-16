@@ -48,6 +48,7 @@ func (k *kubeImpl) Collect(ns string) (specv1.Report, error) {
 		}
 		sysApps = append(sysApps, app)
 	}
+	appStatus = append(appStatus, sysAppStatus...)
 	r := specv1.Report{
 		"time":      time.Now(),
 		"node":      nodeInfo,
