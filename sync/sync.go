@@ -85,6 +85,10 @@ func (s *Sync) ReportAndDesire() error {
 		return nil
 	}
 
+	err = s.syncResources(desire.AppInfos())
+	if err != nil {
+		return err
+	}
 	err = s.syncResources(desire.SysAppInfos())
 	if err != nil {
 		return err
