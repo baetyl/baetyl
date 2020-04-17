@@ -3,9 +3,12 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	routing "github.com/qiangxue/fasthttp-routing"
+	"github.com/valyala/fasthttp"
 	"io/ioutil"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/baetyl/baetyl-core/store"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
@@ -166,4 +169,55 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "345", apps["app3"])
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
+}
+
+func TestGetStatus(t *testing.T) {
+	f, err := ioutil.TempFile("", t.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	fmt.Println("-->tempfile", f.Name())
+
+	s, err := store.NewBoltHold(f.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, s)
+
+	ss, err := NewNode(s)
+	assert.NoError(t, err)
+	assert.NotNil(t, ss)
+
+	router := routing.New()
+	router.Get("/node/status", ss.GetStatus)
+	go fasthttp.ListenAndServe(":50020", router.HandleRequest)
+	time.Sleep(100 * time.Millisecond)
+
+	client := &fasthttp.Client{}
+	req := fasthttp.AcquireRequest()
+	resp := fasthttp.AcquireResponse()
+	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50020", "/node/status")
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+	err = client.Do(req, resp)
+	assert.NoError(t, err)
+	assert.Equal(t, resp.StatusCode(), 200)
+
+	report := v1.Report{"apps": []map[string]string{
+		{
+			"name":    "baetyl1",
+			"version": "version1",
+		},
+		{
+			"name":    "baetyl2",
+			"version": "version2",
+		},
+	}}
+	_, err = ss.Report(report)
+	assert.NoError(t, err)
+
+	req2 := fasthttp.AcquireRequest()
+	resp2 := fasthttp.AcquireResponse()
+	req2.SetRequestURI(url)
+	req2.Header.SetMethod("GET")
+	err = client.Do(req2, resp2)
+	assert.NoError(t, err)
+	assert.Equal(t, resp2.StatusCode(), 200)
 }

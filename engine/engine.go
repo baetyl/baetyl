@@ -2,17 +2,21 @@ package engine
 
 import (
 	"errors"
-	"github.com/baetyl/baetyl-go/spec/crd"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
+	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/spec/crd"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 )
 
@@ -37,15 +41,14 @@ func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node) (*Engine,
 	if err != nil {
 		return nil, err
 	}
-	e := &Engine{
+	return &Engine{
 		Ami: kube,
 		sto: sto,
 		nod: nod,
 		cfg: cfg,
 		ns:  "baetyl-edge",
 		log: log.With(log.Any("engine", cfg.Kind)),
-	}
-	return e, nil
+	}, nil
 }
 
 func (e *Engine) Start() {
@@ -54,6 +57,26 @@ func (e *Engine) Start() {
 
 func (e *Engine) ReportAndDesire() error {
 	return e.reportAndDesireAsync()
+}
+
+func (e *Engine) GetServiceLog(ctx *routing.Context) error {
+	service := ctx.Param("service")
+	tailLines := string(ctx.QueryArgs().Peek("tailLines"))
+	sinceSeconds := string(ctx.QueryArgs().Peek("sinceSeconds"))
+
+	tail, since, err := e.validParam(tailLines, sinceSeconds)
+	if err != nil {
+		http.RespondMsg(ctx, 400, "RequestParamInvalid", err.Error())
+		return nil
+	}
+
+	reader, err := e.Ami.FetchLog(e.ns, service, tail, since)
+	if err != nil {
+		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
+		return nil
+	}
+	http.RespondStream(ctx, 200, reader, -1)
+	return nil
 }
 
 func (e *Engine) reporting() error {
@@ -168,6 +191,28 @@ func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
 		}
 	}
 	return nil
+}
+
+func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceSeconds int64, err error) {
+	if tailLines != "" {
+		if itailLines, err = strconv.ParseInt(tailLines, 10, 64); err != nil {
+			return
+		}
+		if itailLines < 0 {
+			err = fmt.Errorf("The request parameter is invalid.(%s)", "tailLines is invalid")
+			return
+		}
+	}
+	if sinceSeconds != "" {
+		if isinceSeconds, err = strconv.ParseInt(sinceSeconds, 10, 64); err != nil {
+			return
+		}
+		if isinceSeconds < 0 {
+			err = fmt.Errorf("The request parameter is invalid.(%s)", "sinceSeconds is invalid")
+			return
+		}
+	}
+	return
 }
 
 func (e *Engine) Close() {

@@ -7,6 +7,7 @@ package mock
 import (
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	gomock "github.com/golang/mock/gomock"
+	io "io"
 	reflect "reflect"
 )
 
@@ -60,4 +61,19 @@ func (m *MockAMI) Collect(arg0 string) (v1.Report, error) {
 func (mr *MockAMIMockRecorder) Collect(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collect", reflect.TypeOf((*MockAMI)(nil).Collect), arg0)
+}
+
+// FetchLog mocks base method
+func (m *MockAMI) FetchLog(arg0, arg1 string, arg2, arg3 int64) (io.ReadCloser, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FetchLog", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(io.ReadCloser)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FetchLog indicates an expected call of FetchLog
+func (mr *MockAMIMockRecorder) FetchLog(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchLog", reflect.TypeOf((*MockAMI)(nil).FetchLog), arg0, arg1, arg2, arg3)
 }

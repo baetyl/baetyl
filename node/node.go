@@ -5,11 +5,15 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/baetyl/baetyl-go/http"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
 )
+
+const OfflineDuration = 40 * time.Second
 
 // Node node
 type Node struct {
@@ -128,6 +132,24 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 		return err
 	})
 	return
+}
+
+// GetStatus get status
+func (s *Node) GetStatus(ctx *routing.Context) error {
+	node, err := s.Get()
+	if err != nil {
+		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
+		return nil
+	}
+
+	view := node.View(OfflineDuration)
+	res, err := json.Marshal(view)
+	if err != nil {
+		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
+		return nil
+	}
+	http.Respond(ctx, 200, res)
+	return nil
 }
 
 // Get insert the whole shadow data

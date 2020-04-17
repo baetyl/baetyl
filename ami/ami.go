@@ -4,6 +4,7 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	bh "github.com/timshannon/bolthold"
+	"io"
 	"os"
 )
 
@@ -11,8 +12,9 @@ import (
 
 // AMI app model interfaces
 type AMI interface {
-	Collect(string) (specv1.Report, error)
-	Apply(string, []specv1.AppInfo, string) error
+	Collect(namespace string) (specv1.Report, error)
+	Apply(namespace string, appInfos []specv1.AppInfo, condition string) error
+	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
 const (

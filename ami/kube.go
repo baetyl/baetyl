@@ -19,6 +19,7 @@ type kubeImpl struct {
 	knn   string // kube node name
 	cli   *client
 	store *bh.Store
+	conf  *config.KubernetesConfig
 	log   *log.Logger
 }
 
@@ -30,9 +31,10 @@ func newKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
 	}
 	knn := os.Getenv(KubeNodeName)
 	model := &kubeImpl{
+		knn:   knn,
 		cli:   cli,
 		store: sto,
-		knn:   knn,
+		conf:  &cfg,
 		log:   log.With(log.Any("ami", "kube")),
 	}
 	return model, nil

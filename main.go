@@ -1,9 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"time"
-
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-core/node"
@@ -15,8 +12,6 @@ import (
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
 )
-
-const OfflineDuration = 40 * time.Second
 
 type core struct {
 	cfg config.Config
@@ -50,6 +45,7 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
+
 	c.eng.Start()
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
 	if err != nil {
@@ -79,25 +75,9 @@ func (c *core) Close() {
 
 func (c *core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
-	router.Get("/shadow", c.getStatus)
+	router.Get("/node/status", c.sha.GetStatus)
+	router.Get("/services/<service>/log", c.eng.GetServiceLog)
 	return router.HandleRequest
-}
-
-func (c *core) getStatus(ctx *routing.Context) error {
-	node, err := c.sha.Get()
-	if err != nil {
-		http.RespondMsg(ctx, 500, "ERR_DB", err.Error())
-		return nil
-	}
-
-	view := node.View(OfflineDuration)
-	res, err := json.Marshal(view)
-	if err != nil {
-		http.RespondMsg(ctx, 500, "ERR_JSON", err.Error())
-		return nil
-	}
-	http.Respond(ctx, 200, res)
-	return nil
 }
 
 func main() {

@@ -26,8 +26,15 @@ type EngineConfig struct {
 }
 
 type KubernetesConfig struct {
-	InCluster  bool   `yaml:"inCluster" json:"inCluster" default:"false"`
-	ConfigPath string `yaml:"configPath" json:"configPath"`
+	InCluster  bool                `yaml:"inCluster" json:"inCluster" default:"false"`
+	ConfigPath string              `yaml:"configPath" json:"configPath"`
+	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"`
+}
+
+type KubernetesLogConfig struct {
+	Follow     bool `yaml:"follow" json:"follow"`
+	Previous   bool `yaml:"previous" json:"previous"`
+	TimeStamps bool `yaml:"timestamps" json:"timestamps"`
 }
 
 type StoreConfig struct {

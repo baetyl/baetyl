@@ -2,17 +2,18 @@ package ami
 
 import (
 	"fmt"
+	"io/ioutil"
+	"testing"
+
 	"github.com/baetyl/baetyl-core/store"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
-	"testing"
 )
 
 func TestCollectNodeInfo(t *testing.T) {
