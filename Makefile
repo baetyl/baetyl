@@ -1,6 +1,5 @@
-MODULE:=core
+MODULE:=baetyl
 INIT:=init
-BIN:=baetyl-$(MODULE)
 SRC_FILES:=$(shell find . -type f -name '*.go')
 PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/arm/v7
 
@@ -31,8 +30,8 @@ XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g'
 
 .PHONY: all
 all: $(SRC_FILES)
-	@echo "BUILD $(BIN)"
-	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(BIN) $(GO_FLAGS) .
+	@echo "BUILD $(MODULE)"
+	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(MODULE) $(GO_FLAGS) .
 
 .PHONY: image
 image:
@@ -61,4 +60,4 @@ fmt:
 
 .PHONY: clean
 clean:
-	@rm -rf $(BIN)
+	@rm -rf $(MODULE)
