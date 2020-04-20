@@ -1,9 +1,9 @@
-name: unittest
-on: pull_request
+name: build
+on: push
 
 jobs:
-  test:
-    name: unittest
+  build:
+    name: build
     runs-on: ubuntu-latest
     steps:
       - name: Setup Go
@@ -12,10 +12,10 @@ jobs:
           go-version: 1.13
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: Build
-        run: make all
       - name: Run unittest
         run: make test
+      - name: Build
+        run: make build
       - name: Upload coverage to Codecov  
         uses: codecov/codecov-action@v1
         with:
