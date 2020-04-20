@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/baetyl/baetyl/master/engine"
-	baetyl "github.com/baetyl/baetyl/sdk/baetyl-go"
+	"github.com/baetyl/baetyl/sdk/baetyl-go"
 	"github.com/docker/distribution/uuid"
 )
 
