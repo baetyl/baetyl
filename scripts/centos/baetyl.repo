@@ -1,6 +1,0 @@
-[baetyl]
-name=baetyl
-baseurl=http://dl.baetyl.tech/linux/centos/7/$basearch
-enabled=1
-gpgcheck=1
-gpgkey=http://dl.baetyl.tech/key.public

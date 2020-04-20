@@ -1,3 +1,0 @@
-functions:
-  - name: sql-filter
-    handler: 'select qos() as qos, topic() as topic, * where id < 10'
