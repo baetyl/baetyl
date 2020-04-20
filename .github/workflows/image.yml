@@ -22,7 +22,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: build and publish baetyl image
+      - name: build and publish baetyl-core image
         run: |
           make image PLATFORMS=all XFLAGS=--push REGISTRY=baetyltechtest/
       - name: build and publish baetyl-init image
