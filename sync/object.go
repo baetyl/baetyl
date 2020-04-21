@@ -42,12 +42,14 @@ func (s *Sync) downloadObject(obj *v1.CRDConfigObject, dir, name string, zip boo
 		return fmt.Errorf("failed to prepare volume (%s): %s", name, err.Error())
 	}
 
-	md5, err := utils.CalculateFileMD5(name)
-	if err != nil {
-		return fmt.Errorf("failed to calculate MD5 of volume (%s): %s", name, err.Error())
-	}
-	if md5 != obj.MD5 {
-		return fmt.Errorf("MD5 of volume (%s) invalid", name)
+	if obj.MD5 != "" {
+		md5, err := utils.CalculateFileMD5(name)
+		if err != nil {
+			return fmt.Errorf("failed to calculate MD5 of volume (%s): %s", name, err.Error())
+		}
+		if md5 != obj.MD5 {
+			return fmt.Errorf("MD5 of volume (%s) invalid", name)
+		}
 	}
 
 	if zip {
