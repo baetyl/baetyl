@@ -48,6 +48,8 @@ func (m *Master) startServices(cur baetyl.ComposeAppConfig) error {
 }
 
 func (m *Master) stopServices(keepServices map[string]struct{}) {
+	m.Lock()
+	defer m.Unlock()
 	var wg sync.WaitGroup
 	for item := range m.services.IterBuffered() {
 		s := item.Val.(engine.Service)
@@ -84,6 +86,8 @@ func (m *Master) ReportInstance(serviceName, instanceName string, partialStats e
 
 // StartInstance starts a service instance
 func (m *Master) StartInstance(service, instance string, dynamicConfig map[string]string) error {
+	m.RLock()
+	defer m.RUnlock()
 	s, ok := m.services.Get(service)
 	if !ok {
 		return fmt.Errorf("service (%s) not found", service)

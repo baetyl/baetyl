@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"sync"
 	"syscall"
 
 	"github.com/baetyl/baetyl/logger"
@@ -26,6 +27,7 @@ type Master struct {
 	infostats *infoStats
 	sig       chan os.Signal
 	log       logger.Logger
+	sync.RWMutex
 }
 
 // New creates a new master
