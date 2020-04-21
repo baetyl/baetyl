@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDownloadObject(t *testing.T) {
+func TestSyncDownloadObject(t *testing.T) {
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
@@ -89,7 +89,7 @@ func TestDownloadObject(t *testing.T) {
 	file5 := filepath.Join(dir, "file5")
 	obj.MD5 = ""
 	err = syn.downloadObject(obj, dir, file5, false)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 
 	// not zip file
 	file6 := filepath.Join(dir, "file6")
