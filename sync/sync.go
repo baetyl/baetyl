@@ -114,8 +114,6 @@ func (s *Sync) reporting() error {
 			err := s.reportAndDesireAsync()
 			if err != nil {
 				s.log.Error("failed to report cloud shadow", log.Error(err))
-			} else {
-				s.log.Debug("sync reports cloud shadow")
 			}
 		case <-s.tomb.Dying():
 			return nil
@@ -151,6 +149,7 @@ func (s *Sync) report() (v1.Desire, error) {
 	if err != nil {
 		return nil, err
 	}
+	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
 	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
 	if err != nil {
 		return nil, err

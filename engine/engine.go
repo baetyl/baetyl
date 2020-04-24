@@ -3,7 +3,6 @@ package engine
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -88,7 +87,6 @@ func (e *Engine) reporting() error {
 	for {
 		select {
 		case <-t.C:
-			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
 			err := e.reportAndDesireAsync()
 			if err != nil {
 				e.log.Error("failed to report local shadow", log.Error(err))
