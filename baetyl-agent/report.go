@@ -45,6 +45,9 @@ func (a *agent) report(pgs ...*progress) *config.Inspect {
 		i = baetyl.NewInspect()
 		i.Error = err.Error()
 	}
+	if utils.FileExists(a.cfg.OTA.Logger.Path) && len(pgs) == 0 {
+		return nil
+	}
 
 	io := &config.Inspect{Inspect: i}
 	for _, pg := range pgs {
