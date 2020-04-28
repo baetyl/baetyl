@@ -25,7 +25,7 @@ const (
 	ServiceAccountName = "baetyl-edge-service-account"
 )
 
-func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string) error {
+func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string, delete bool) error {
 	configs := map[string]*corev1.ConfigMap{}
 	secrets := map[string]*corev1.Secret{}
 	services := map[string]*corev1.Service{}
@@ -98,7 +98,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string)
 	if err := k.applySecrets(ns, secrets); err != nil {
 		return err
 	}
-	if err := k.applyDeploys(ns, deploys, condition); err != nil {
+	if err := k.applyDeploys(ns, deploys, condition, delete); err != nil {
 		return err
 	}
 	if err := k.applyServices(ns, services); err != nil {
@@ -108,24 +108,26 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string)
 	return nil
 }
 
-func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, condition string) error {
+func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment, condition string, delete bool) error {
 	deployInterface := k.cli.app.Deployments(ns)
-	deployList, err := deployInterface.List(metav1.ListOptions{LabelSelector: condition})
-	if err != nil {
-		return err
-	}
-	deletes := map[string]struct{}{}
-	if deployList != nil {
-		for _, d := range deployList.Items {
-			if _, ok := deploys[d.Name]; !ok {
-				deletes[d.Name] = struct{}{}
-			}
-		}
-	}
-	for n := range deletes {
-		err := deployInterface.Delete(n, &metav1.DeleteOptions{})
+	if delete {
+		deployList, err := deployInterface.List(metav1.ListOptions{LabelSelector: condition})
 		if err != nil {
 			return err
+		}
+		deletes := map[string]struct{}{}
+		if deployList != nil {
+			for _, d := range deployList.Items {
+				if _, ok := deploys[d.Name]; !ok {
+					deletes[d.Name] = struct{}{}
+				}
+			}
+		}
+		for n := range deletes {
+			err := deployInterface.Delete(n, &metav1.DeleteOptions{})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	for _, d := range deploys {
@@ -261,10 +263,6 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 		}
 		volumes = append(volumes, volume)
 	}
-	restartPolicy := corev1.RestartPolicyAlways
-	if service.Restart != nil {
-		restartPolicy = corev1.RestartPolicy(service.Restart.Policy)
-	}
 	replica := new(int32)
 	*replica = int32(service.Replica)
 	deploy := &appv1.Deployment{
@@ -293,7 +291,6 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 					ServiceAccountName: ServiceAccountName,
 					Volumes:            volumes,
 					Containers:         containers,
-					RestartPolicy:      restartPolicy,
 					ImagePullSecrets:   imagePullSecrets,
 					HostNetwork:        service.HostNetwork,
 				},

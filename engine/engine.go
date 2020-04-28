@@ -55,7 +55,7 @@ func (e *Engine) Start() {
 }
 
 func (e *Engine) ReportAndDesire() error {
-	return e.reportAndDesireAsync()
+	return e.reportAndDesireAsync(false)
 }
 
 func (e *Engine) GetServiceLog(ctx *routing.Context) error {
@@ -87,7 +87,7 @@ func (e *Engine) reporting() error {
 	for {
 		select {
 		case <-t.C:
-			err := e.reportAndDesireAsync()
+			err := e.reportAndDesireAsync(true)
 			if err != nil {
 				e.log.Error("failed to report local shadow", log.Error(err))
 			} else {
@@ -99,7 +99,7 @@ func (e *Engine) reporting() error {
 	}
 }
 
-func (e *Engine) reportAndDesireAsync() error {
+func (e *Engine) reportAndDesireAsync(delete bool) error {
 	// to collect app status
 	info, err := e.Ami.Collect(e.ns)
 	if err != nil {
@@ -132,10 +132,12 @@ func (e *Engine) reportAndDesireAsync() error {
 	if apps != nil {
 		err = e.injectEnv(apps)
 		if err != nil {
+			e.log.Error("failed to inject env to apps", log.Error(err))
 			return err
 		}
-		err = e.Ami.Apply(e.ns, apps, "!"+ami.LabelSystemApp)
+		err = e.Ami.Apply(e.ns, apps, "!"+ami.LabelSystemApp, delete)
 		if err != nil {
+			e.log.Error("failed to apply apps", log.Error(err))
 			return err
 		}
 		e.log.Info("to apply apps", log.Any("apps", apps))
@@ -144,10 +146,12 @@ func (e *Engine) reportAndDesireAsync() error {
 	if sysApps != nil {
 		err = e.injectEnv(sysApps)
 		if err != nil {
+			e.log.Error("failed to inject env to sys apps", log.Error(err))
 			return err
 		}
-		err = e.Ami.Apply(e.ns, sysApps, ami.LabelSystemApp)
+		err = e.Ami.Apply(e.ns, sysApps, ami.LabelSystemApp, delete)
 		if err != nil {
+			e.log.Error("failed to apply sys apps", log.Error(err))
 			return err
 		}
 		e.log.Info("to apply sys apps", log.Any("apps", sysApps))
