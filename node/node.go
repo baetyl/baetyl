@@ -32,11 +32,11 @@ func NewNode(store *bh.Store) (*Node, error) {
 				BinVersion:  utils.VERSION,
 				GitRevision: utils.REVISION,
 			},
-			"node": nil,
+			"node":      nil,
 			"nodestats": nil,
-			"apps": nil,
-			"sysapps": nil,
-			"appstats": nil,
+			"apps":      nil,
+			"sysapps":   nil,
+			"appstats":  nil,
 		},
 	}
 	s := &Node{

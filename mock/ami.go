@@ -35,17 +35,17 @@ func (m *MockAMI) EXPECT() *MockAMIMockRecorder {
 }
 
 // Apply mocks base method
-func (m *MockAMI) Apply(arg0 string, arg1 []v1.AppInfo, arg2 string) error {
+func (m *MockAMI) Apply(arg0 string, arg1 []v1.AppInfo, arg2 string, arg3 bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Apply", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Apply", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Apply indicates an expected call of Apply
-func (mr *MockAMIMockRecorder) Apply(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockAMIMockRecorder) Apply(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockAMI)(nil).Apply), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Apply", reflect.TypeOf((*MockAMI)(nil).Apply), arg0, arg1, arg2, arg3)
 }
 
 // Collect mocks base method

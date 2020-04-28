@@ -80,7 +80,7 @@ func TestEngineReport(t *testing.T) {
 			assert.NoError(t, err)
 			return r1, nil
 		}).Times(1),
-		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo, cond string) error {
+		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo, cond string, delete bool) error {
 			fmt.Println("2", apps)
 			sd, err := nod.Get()
 			assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestEngineReport(t *testing.T) {
 			assert.NoError(t, err)
 			return r1, nil
 		}).Times(1),
-		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo, cond string) error {
+		mockAmi.EXPECT().Apply(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []v1.AppInfo, cond string, delete bool) error {
 			fmt.Println("5", apps)
 			defer wg.Done()
 			sd, err := nod.Get()

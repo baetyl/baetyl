@@ -64,7 +64,7 @@ func TestKubeApply(t *testing.T) {
 		Name:    "app1",
 		Version: "a1",
 	}}
-	err = ami.Apply(ns, infos, "")
+	err = ami.Apply(ns, infos, "", true)
 	assert.NoError(t, err)
 }
 
@@ -197,7 +197,6 @@ func TestKubeToDeploy(t *testing.T) {
 		}, {
 			Name: "hostPath",
 		}},
-		Restart: &crd.RestartPolicyInfo{Policy: "Never"},
 		Resources: &crd.Resources{
 			Limits: map[string]string{
 				"cpu":    "1",
@@ -296,7 +295,6 @@ func TestKubeToDeploy(t *testing.T) {
 							Name: "hostPath",
 						}},
 					}},
-					RestartPolicy: "Never",
 				},
 			},
 			Strategy: appv1.DeploymentStrategy{
@@ -321,7 +319,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d2", Namespace: ns, Labels: lables},
 		},
 	}
-	err := ami.applyDeploys(ns, ds, "")
+	err := ami.applyDeploys(ns, ds, "", true)
 	assert.NoError(t, err)
 
 	wrongDs := map[string]*appv1.Deployment{
@@ -332,7 +330,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: "default", Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(ns, wrongDs, "")
+	err = ami.applyDeploys(ns, wrongDs, "", true)
 	assert.Error(t, err)
 
 	deleteDs := map[string]*appv1.Deployment{
@@ -340,7 +338,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: ns, Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(ns, deleteDs, "")
+	err = ami.applyDeploys(ns, deleteDs, "", true)
 	assert.NoError(t, err)
 	_, err = ami.cli.app.Deployments(ns).Get("d1", metav1.GetOptions{})
 	assert.Error(t, err)

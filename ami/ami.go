@@ -13,7 +13,7 @@ import (
 // AMI app model interfaces
 type AMI interface {
 	Collect(namespace string) (specv1.Report, error)
-	Apply(namespace string, appInfos []specv1.AppInfo, condition string) error
+	Apply(namespace string, appInfos []specv1.AppInfo, condition string, delete bool) error
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
