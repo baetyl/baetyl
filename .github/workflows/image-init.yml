@@ -22,10 +22,7 @@ jobs:
           docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
       - name: Checkout code
         uses: actions/checkout@v1
-      - name: build and publish baetyl-core image
-        run: |
-          make image PLATFORMS=all XFLAGS=--push REGISTRY=hub.baidubce.com/btl-test/
-      - name: build and publish baetyl-init image
+      - name: build and publish init image
         run: |
           make init PLATFORMS=all XFLAGS=--push REGISTRY=hub.baidubce.com/btl-test/
 
