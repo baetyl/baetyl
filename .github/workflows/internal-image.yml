@@ -19,7 +19,7 @@ jobs:
           docker -v
       - name: docker login
         run: |
-          docker login -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
+          docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
       - name: Checkout code
         uses: actions/checkout@v1
       - name: build and publish baetyl-core image
