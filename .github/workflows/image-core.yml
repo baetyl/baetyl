@@ -25,7 +25,4 @@ jobs:
       - name: build and publish baetyl-core image
         run: |
           make image PLATFORMS=all XFLAGS=--push REGISTRY=hub.baidubce.com/btl-test/
-      - name: build and publish baetyl-init image
-        run: |
-          make init PLATFORMS=all XFLAGS=--push REGISTRY=hub.baidubce.com/btl-test/
 
