@@ -1,8 +1,5 @@
 name: image
-on:
-  push:
-    tags:
-      - '*'
+on: push
 
 jobs:
   image:
