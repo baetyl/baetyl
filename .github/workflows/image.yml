@@ -29,8 +29,8 @@ jobs:
         run: |
           make init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltechtest/
       - name: docker login
-          run: |
-            docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
+        run: |
+          docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
       - name: build and publish baetyl-core image
         run: |
           make image PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/core' REGISTRY=hub.baidubce.com/btl-test/
