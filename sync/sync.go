@@ -149,7 +149,7 @@ func (s *Sync) report() (v1.Desire, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
+	s.log.Debug("sync reports cloud shadow", log.Any("report", sd.Report))
 	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
 	if err != nil {
 		return nil, err
