@@ -35,12 +35,24 @@ The main differences between the v2 and v1 versions are as follows:
 ![Architecture](./docs/arch_v2.svg)
 
 ### Edge Computing Framework
+
+The Edge Computing Framework runs on Kubernetes at the edge node,
+manages and deploys all applications which provide various capabilities.
+Applications include system applications and common applications.
+All system applications are officially provided by Baetyl,
+and you do not need to configure them.
+
+There are currently several system applications:
 * baetyl-init: responsible for activating the edge node to the cloud
-and initializing baetyl-core.
+and initializing baetyl-core, and will exit after all tasks are completed.
 * baetyl-core: responsible for local node management (node),
 data synchronization with cloud (sync) and application deployment (engine).
-* baetyl-function: the proxy for all function runtime service,
+* baetyl-function: the proxy for all function runtime services,
 function invocations are passed through this module.
+
+Currently the framework supports Linux/amd64, Linux/arm64, Linux/armv7,
+If the resources of the edge nodes are limited,
+consider to use the lightweight kubernetes: [K3S](https://k3s.io/).
 
 ## Contact us
 

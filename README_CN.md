@@ -27,10 +27,19 @@ v2和v1版本的主要区别如下：
 
 ![Architecture](./docs/arch_v2.svg)
 
-### Edge Computing Framework
-* baetyl-init：负责激活边缘节点到云端，并初始化 baetyl-core。
+### 边缘计算框架
+
+边缘计算框架（Edge Computing Framework）运行在边缘节点的 Kubernetes 上，
+管理和部署所有应用，通过应用服务提供各式各样的能力。
+应用包含系统应用和普通应用，系统应用全部由 Baetyl 官方提供，用户无需配置。
+
+目前有如下几个系统应用：
+* baetyl-init：负责激活边缘节点到云端，并初始化 baetyl-core，任务完成后就会退出。
 * baetyl-core：负责本地节点管理（node）、端云数据同步（sync）和应用部署（engine）。
 * baetyl-function: 所有函数运行时服务的代理模块，函数调用都到通过这个模块。
+
+目前框架支持 Linux/amd64、Linux/arm64、Linux/armv7，
+如果边缘节点的资源有限，可考虑使用轻量版 Kubernetes：[K3S](https://k3s.io/)。
 
 ## 联系我们
 
