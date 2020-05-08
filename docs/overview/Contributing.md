@@ -44,9 +44,8 @@ Baetyl use this [Git branching model](https://nvie.com/posts/a-successful-git-br
 
 ## Merge Rule
 
-- Please run command `govendor fmt +local` before push changes, more details refer to [govendor](https://github.com/kardianos/govendor)
-- Must run command `make test` before push changes(unit test should be contained), and make sure all unit test and data race test passed
-- Only the passed(unit test and data race test) code can be allowed to submit to Baetyl official repository
+- Must run command `make test` before push changes (unit test should be contained), and make sure all unit test and data race test passed
+- Only the passed (unit test and data race test) code can be allowed to submit to Baetyl official repository
 - At least one reviewer approved code can be merged into Baetyl official repository
 
 **Note**: The document's contribution rules are the same as the rules above.
