@@ -18,10 +18,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
-// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
-var ErrSyncTLSConfigMissing = errors.New("certificate bidirectional authentication is required for connection with cloud")
+var (
+	// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
+	ErrSyncTLSConfigMissing = errors.New("certificate bidirectional authentication is required for connection with cloud")
+)
 
-const EnvKeyNodeName = "BAETYL_NODE_NAME"
+const (
+	EnvKeyNodeName = "BAETYL_NODE_NAME"
+)
 
 // Sync sync shadow and resources with cloud
 type Sync struct {
@@ -76,29 +80,31 @@ func (s *Sync) Close() {
 	s.tomb.Wait()
 }
 
-func (s *Sync) ReportAndDesire() error {
-	desire, err := s.report()
+func (s *Sync) Report(r v1.Report) (v1.Desire, error) {
+	pld, err := json.Marshal(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if len(desire) == 0 {
-		return nil
+	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
+	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
+	if err != nil {
+		return nil, err
 	}
+	var desire v1.Desire
+	err = json.Unmarshal(data, &desire)
+	if err != nil {
+		return nil, err
+	}
+	return desire, nil
+}
 
-	err = s.syncResources(desire.AppInfos())
+func (s *Sync) Desire(ds v1.Desire) error {
+	err := s.syncResources(ds.SysAppInfos())
 	if err != nil {
 		return err
 	}
-	err = s.syncResources(desire.SysAppInfos())
-	if err != nil {
-		return err
-	}
-	_, err = s.nod.Desire(desire)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err = s.nod.Desire(ds)
+	return err
 }
 
 func (s *Sync) reporting() error {
@@ -122,7 +128,11 @@ func (s *Sync) reporting() error {
 }
 
 func (s *Sync) reportAndDesireAsync() error {
-	desire, err := s.report()
+	sd, err := s.nod.Get()
+	if err != nil {
+		return err
+	}
+	desire, err := s.Report(sd.Report)
 	if err != nil {
 		return err
 	}
@@ -138,28 +148,6 @@ func (s *Sync) reportAndDesireAsync() error {
 	case <-s.tomb.Dying():
 	}
 	return nil
-}
-
-func (s *Sync) report() (v1.Desire, error) {
-	sd, err := s.nod.Get()
-	if err != nil {
-		return nil, err
-	}
-	pld, err := json.Marshal(sd.Report)
-	if err != nil {
-		return nil, err
-	}
-	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
-	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
-	if err != nil {
-		return nil, err
-	}
-	var desire v1.Desire
-	err = json.Unmarshal(data, &desire)
-	if err != nil {
-		return nil, err
-	}
-	return desire, nil
 }
 
 func (s *Sync) desiring() error {
