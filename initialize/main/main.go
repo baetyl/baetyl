@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-core/initialize"
@@ -8,6 +10,7 @@ import (
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
+	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 )
@@ -73,7 +76,6 @@ func main() {
 		if err != nil {
 			return err
 		}
-		defer c.Close()
 
 		err = c.syn.ReportAndDesire()
 		if err != nil {
@@ -83,7 +85,17 @@ func main() {
 		if err != nil {
 			return err
 		}
+		c.Close()
 
-		return nil
+		for {
+			r, err := c.eng.Ami.Collect("baetyl-edge")
+			if err != nil {
+				ctx.Log().Error("init collect error", log.Any("Main", err))
+			}
+			if err := c.syn.Report(r); err != nil {
+				ctx.Log().Error("init report error", log.Any("Main", err))
+			}
+			time.Sleep(c.cfg.Sync.Cloud.Report.Interval)
+		}
 	})
 }

@@ -18,10 +18,17 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
-// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
-var ErrSyncTLSConfigMissing = errors.New("certificate bidirectional authentication is required for connection with cloud")
+var (
+	// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
+	ErrSyncTLSConfigMissing = errors.New("certificate bidirectional authentication is required for connection with cloud")
+	// ErrSysappCoreMissing system application baetyl-core is required for connection with cloud
+	ErrSysappCoreMissing = errors.New("system application baetyl-core is required for connection with cloud")
+)
 
-const EnvKeyNodeName = "BAETYL_NODE_NAME"
+const (
+	BaetylCore     = "baetyl-core"
+	EnvKeyNodeName = "BAETYL_NODE_NAME"
+)
 
 // Sync sync shadow and resources with cloud
 type Sync struct {
@@ -76,29 +83,54 @@ func (s *Sync) Close() {
 	s.tomb.Wait()
 }
 
+func (s *Sync) Report(r v1.Report) error {
+	ds, err := s.report(r)
+	s.log.Debug("init report info", log.Any("Report", r))
+	s.log.Debug("init desire info", log.Any("Report", ds))
+	return err
+}
+
 func (s *Sync) ReportAndDesire() error {
-	desire, err := s.report()
+	for {
+		err := s.desireCore()
+		if err != ErrSysappCoreMissing {
+			return err
+		}
+		time.Sleep(s.cfg.Cloud.Report.Interval)
+	}
+}
+
+func (s *Sync) desireCore() error {
+	sd, err := s.nod.Get()
 	if err != nil {
 		return err
 	}
-	if len(desire) == 0 {
-		return nil
+	desire, err := s.report(sd.Report)
+	if err != nil {
+		s.log.Error("sync report error", log.Any("ReportAndDesire", err))
+		return ErrSysappCoreMissing
+	}
+	if len(desire) == 0 || len(desire.SysAppInfos()) == 0 {
+		return ErrSysappCoreMissing
 	}
 
-	err = s.syncResources(desire.AppInfos())
-	if err != nil {
-		return err
+	for _, app := range desire.SysAppInfos() {
+		if strings.Contains(app.Name, BaetylCore) {
+			ds := v1.Desire{
+				"sysapps": []v1.AppInfo{app},
+			}
+			err = s.syncResources(ds.SysAppInfos())
+			if err != nil {
+				return err
+			}
+			_, err = s.nod.Desire(ds)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
 	}
-	err = s.syncResources(desire.SysAppInfos())
-	if err != nil {
-		return err
-	}
-	_, err = s.nod.Desire(desire)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ErrSysappCoreMissing
 }
 
 func (s *Sync) reporting() error {
@@ -122,7 +154,11 @@ func (s *Sync) reporting() error {
 }
 
 func (s *Sync) reportAndDesireAsync() error {
-	desire, err := s.report()
+	sd, err := s.nod.Get()
+	if err != nil {
+		return err
+	}
+	desire, err := s.report(sd.Report)
 	if err != nil {
 		return err
 	}
@@ -140,12 +176,8 @@ func (s *Sync) reportAndDesireAsync() error {
 	return nil
 }
 
-func (s *Sync) report() (v1.Desire, error) {
-	sd, err := s.nod.Get()
-	if err != nil {
-		return nil, err
-	}
-	pld, err := json.Marshal(sd.Report)
+func (s *Sync) report(r v1.Report) (v1.Desire, error) {
+	pld, err := json.Marshal(r)
 	if err != nil {
 		return nil, err
 	}

@@ -165,6 +165,7 @@ func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
 		var app crd.Application
 		err := e.sto.Get(key, &app)
 		if err != nil {
+			e.log.Error("injectEnv store get error", log.Any("key", key))
 			return err
 		}
 		var services []crd.Service
@@ -189,6 +190,7 @@ func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
 		app.Services = services
 		err = e.sto.Upsert(key, app)
 		if err != nil {
+			e.log.Error("injectEnv store update error", log.Any("key", key))
 			return err
 		}
 	}
