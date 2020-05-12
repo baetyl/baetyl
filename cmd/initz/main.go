@@ -81,8 +81,14 @@ func NewCore(ctx context.Context) (*core, error) {
 }
 
 func (c *core) Close() {
+	if c.eng != nil {
+		c.eng.Close()
+	}
 	if c.sto != nil {
 		c.sto.Close()
+	}
+	if c.syn != nil {
+		c.syn.Close()
 	}
 }
 
@@ -92,10 +98,8 @@ func (c *core) reportAndDesire() error {
 		return err
 	}
 	ds, err := c.syn.Report(r)
-	c.log.Debug("init report info", log.Any("report", r))
-	c.log.Debug("init desire info", log.Any("desire", ds))
 	if err != nil {
-		c.log.Error("sync report error", log.Any("sync", err))
+		c.log.Error("failed to report app info", log.Error(err))
 		return ErrSysappCoreMissing
 	}
 	if len(ds) == 0 || len(ds.SysAppInfos()) == 0 {
@@ -124,24 +128,17 @@ func main() {
 		}
 		defer c.Close()
 
-		for {
-			err := c.reportAndDesire()
-			if err == nil {
-				break
-			}
-			if err != ErrSysappCoreMissing {
-				c.log.Error("init get core error", log.Any("error", err))
-				return err
-			}
-			time.Sleep(c.cfg.Sync.Cloud.Report.Interval)
+		err = c.reportAndDesire()
+		if err != nil {
+			return err
 		}
 		err = c.eng.ReportAndDesire()
 		if err != nil {
 			return err
 		}
-		err = c.sto.Close()
-		if err != nil {
-			return err
+		if c.sto != nil {
+			c.sto.Close()
+			c.sto = nil
 		}
 
 		t := time.NewTicker(c.cfg.Sync.Cloud.Report.Interval)
@@ -151,10 +148,10 @@ func main() {
 			case <-t.C:
 				r, err := c.eng.Ami.Collect("baetyl-edge")
 				if err != nil {
-					c.log.Error("init collect error", log.Any("collect", err))
+					c.log.Error("failed to collect app info", log.Error(err))
 				}
 				if _, err := c.syn.Report(r); err != nil {
-					c.log.Error("init report error", log.Any("report", err))
+					c.log.Error("failed to report info", log.Error(err))
 				}
 			case <-ctx.WaitChan():
 				return nil

@@ -64,7 +64,7 @@ func (init *Initialize) Start() {
 	} else {
 		err := init.tomb.Go(init.startServer)
 		if err != nil {
-			init.log.Error("init", log.Any("server start err", err))
+			init.log.Error("init", log.Error(err))
 		}
 	}
 }
