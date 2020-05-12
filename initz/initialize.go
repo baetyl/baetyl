@@ -1,4 +1,4 @@
-package initialize
+package initz
 
 import (
 	"github.com/baetyl/baetyl-core/ami"

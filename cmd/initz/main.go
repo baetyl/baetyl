@@ -7,7 +7,7 @@ import (
 
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
-	"github.com/baetyl/baetyl-core/initialize"
+	"github.com/baetyl/baetyl-core/initz"
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
@@ -64,7 +64,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 
 	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
-		i, err := initialize.NewInit(&cfg, c.eng.Ami)
+		i, err := initz.NewInit(&cfg, c.eng.Ami)
 		if err != nil {
 			i.Close()
 			return nil, err

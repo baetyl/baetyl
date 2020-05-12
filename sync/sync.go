@@ -111,7 +111,6 @@ func (s *Sync) reporting() error {
 	s.log.Info("sync starts to report")
 	defer s.log.Info("sync has stopped reporting")
 
-	time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
 	err := s.reportAndDesireAsync()
 	if err != nil {
 		s.log.Error("failed to report cloud shadow", log.Error(err))

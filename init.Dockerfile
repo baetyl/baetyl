@@ -4,5 +4,5 @@ RUN cd /go/src/ && make init
 
 FROM --platform=$TARGETPLATFORM busybox
 COPY --from=devel /go/src/baetyl-init /bin/
-COPY /initialize/res/*.template /var/lib/baetyl/page/
+COPY /initz /var/lib/baetyl/page/
 ENTRYPOINT ["baetyl-init"]
