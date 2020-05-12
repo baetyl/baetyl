@@ -3,6 +3,7 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-go/spec/crd"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -112,14 +113,33 @@ func TestSync_ReportAndDesire(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
-	bi := &v1.Desire{"apps": map[string]interface{}{"app1": "123"}}
+	bi := &v1.Desire{"sysapps": []v1.AppInfo{
+		{
+			Name:    "baetyl-core-923jdsn",
+			Version: "32451",
+		},
+	}}
 	data, err := json.Marshal(bi)
+	assert.NoError(t, err)
+
+	appRes := &crd.Application{
+		Name:      "baetyl-core-923jdsn",
+		Namespace: "baetyl-edge",
+		Version:   "32451",
+	}
+	appData, err := json.Marshal(appRes)
 	assert.NoError(t, err)
 
 	tlssvr, err := utils.NewTLSConfigServer(utils.Certificate{CA: "./testcert/ca.pem", Key: "./testcert/server.key", Cert: "./testcert/server.pem"})
 	assert.NoError(t, err)
 	assert.NotNil(t, tlssvr)
-	ms := mock.NewServer(tlssvr, mock.NewResponse(200, data))
+
+	resp := []*mock.Response{
+		mock.NewResponse(200, data),
+		mock.NewResponse(200, appData),
+		mock.NewResponse(200, data),
+	}
+	ms := mock.NewServer(tlssvr, resp...)
 	assert.NotNil(t, ms)
 	defer ms.Close()
 
@@ -135,8 +155,8 @@ func TestSync_ReportAndDesire(t *testing.T) {
 
 	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
-	err = syn.ReportAndDesire()
+	ds, err := syn.Report(v1.Report{})
 	assert.NoError(t, err)
-	err = syn.ReportAndDesire()
-	assert.NotNil(t, err)
+	err = syn.Desire(ds)
+	assert.NoError(t, err)
 }

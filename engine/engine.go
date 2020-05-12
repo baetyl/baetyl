@@ -165,6 +165,7 @@ func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
 		var app crd.Application
 		err := e.sto.Get(key, &app)
 		if err != nil {
+			e.log.Error("failed to get key from store", log.Any("key", key), log.Error(err))
 			return err
 		}
 		var services []crd.Service
@@ -189,6 +190,7 @@ func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
 		app.Services = services
 		err = e.sto.Upsert(key, app)
 		if err != nil {
+			e.log.Error("failed to get key from store", log.Any("key", key), log.Error(err))
 			return err
 		}
 	}

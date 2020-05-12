@@ -1,8 +1,8 @@
 FROM --platform=$TARGETPLATFORM golang:1.13.5-stretch as devel
 COPY / /go/src/
-RUN cd /go/src/initialize/main && make all
+RUN cd /go/src/ && make init
 
 FROM --platform=$TARGETPLATFORM busybox
-COPY --from=devel /go/src/initialize/main/baetyl-init /bin/
-COPY /initialize/res/*.template /var/lib/baetyl/page/
+COPY --from=devel /go/src/baetyl-init /bin/
+COPY /initz /var/lib/baetyl/page/
 ENTRYPOINT ["baetyl-init"]
