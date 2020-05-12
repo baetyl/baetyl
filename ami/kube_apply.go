@@ -35,7 +35,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string,
 		var app crd.Application
 		err := k.store.Get(key, &app)
 		if err != nil {
-			k.log.Error("apply application resource error", log.Any("key", key))
+			k.log.Error("failed to apply application resource", log.Any("key", key), log.Error(err))
 			return err
 		}
 		var imagePullSecrets []corev1.LocalObjectReference
@@ -45,7 +45,7 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string,
 				var config crd.Configuration
 				err := k.store.Get(key, &config)
 				if err != nil {
-					k.log.Error("apply config resource error", log.Any("key", key))
+					k.log.Error("failed to apply config resource", log.Any("key", key), log.Error(err))
 					return err
 				}
 				configMap, err := k.prepareConfigMap(ns, &config)
