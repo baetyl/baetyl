@@ -140,11 +140,11 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 		if err != nil {
 			return nil, nil, err
 		}
-		ref, err := reference.GetReference(scheme.Scheme, &deploy)
+		ref, err := reference.GetReference(scheme.Scheme, &pod)
 		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
-		for _, e := range events.Items {
-			if e.Type == "Warning" {
-				status.Cause += e.Message + "\n"
+		if l := len(events.Items); l > 0 {
+			if e := events.Items[l-1]; e.Type == "Warning" {
+				status.Cause = e.Message
 			}
 		}
 		if status.ServiceInfos == nil {
