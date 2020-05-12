@@ -143,7 +143,7 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 		ref, err := reference.GetReference(scheme.Scheme, &pod)
 		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
 		if l := len(events.Items); l > 0 {
-			if e := events.Items[l - 1]; e.Type == "Warning" {
+			if e := events.Items[l-1]; e.Type == "Warning" {
 				status.Cause = e.Message
 			}
 		}

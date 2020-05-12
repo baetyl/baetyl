@@ -22,6 +22,7 @@ output
 /etc
 /**/var
 baetyl-core
+baetyl-init
 .idea
 .vscode
 /vendor
