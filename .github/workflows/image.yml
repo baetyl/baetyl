@@ -24,20 +24,20 @@ jobs:
         uses: actions/checkout@v1
       - name: build and publish baetyl-core image
         run: |
-          make image PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/core' REGISTRY=baetyltechtest/
+          make image-core PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/core' REGISTRY=baetyltechtest/
       - name: build and publish baetyl-init image
         run: |
-          make init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltechtest/
+          make image-init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltechtest/
       - name: docker login
         run: |
           docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
       - name: build and publish baetyl-core image
         run: |
-          make image PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/core' REGISTRY=hub.baidubce.com/btl-test/
+          make image-core PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/core' REGISTRY=hub.baidubce.com/btl-test/
       - name: docker login
         run: |
           docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
       - name: build and publish baetyl-init image
         run: |
-          make init PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/init' REGISTRY=hub.baidubce.com/btl-test/
+          make image-init PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/init' REGISTRY=hub.baidubce.com/btl-test/
 
