@@ -79,8 +79,6 @@ func TestSync_Report(t *testing.T) {
 	syn, err = NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 	syn.Start()
-	err = syn.reportAndDesireAsync()
-	assert.Error(t, err)
 
 	ms = mock.NewServer(tlssvr, mock.NewResponse(500, []byte{}))
 	sc = config.SyncConfig{}
@@ -94,8 +92,7 @@ func TestSync_Report(t *testing.T) {
 	syn, err = NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 	syn.Start()
-	err = syn.reportAndDesireAsync()
-	assert.Error(t, err)
+	time.Sleep(time.Second * 2)
 	syn.Close()
 }
 
