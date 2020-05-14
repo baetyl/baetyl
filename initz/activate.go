@@ -7,6 +7,8 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 	"io/ioutil"
 	"math/rand"
+	"os"
+	"path"
 	"time"
 
 	"github.com/baetyl/baetyl-go/http"
@@ -70,12 +72,12 @@ func (init *Initialize) activate() {
 	var res v1.ActiveResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		init.log.Error("error to unmarshal activate response data returned", log.Error(err))
+		init.log.Error("failed to unmarshal activate response data returned", log.Error(err))
 		return
 	}
 
 	if err := init.genCert(res.Certificate); err != nil {
-		init.log.Error("error to create cert file", log.Error(err))
+		init.log.Error("failed to create cert file", log.Error(err))
 		return
 	}
 
@@ -83,13 +85,26 @@ func (init *Initialize) activate() {
 }
 
 func (init *Initialize) genCert(c utils.Certificate) error {
-	if err := ioutil.WriteFile(init.cfg.Sync.Cloud.HTTP.CA, []byte(c.CA), 0755); err != nil {
+	if err := init.createFile(init.cfg.Sync.Cloud.HTTP.CA, []byte(c.CA)); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(init.cfg.Sync.Cloud.HTTP.Cert, []byte(c.Cert), 0755); err != nil {
+	if err := init.createFile(init.cfg.Sync.Cloud.HTTP.Cert, []byte(c.Cert)); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(init.cfg.Sync.Cloud.HTTP.Key, []byte(c.Key), 0755); err != nil {
+	if err := init.createFile(init.cfg.Sync.Cloud.HTTP.Key, []byte(c.Key)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (init *Initialize) createFile(filePath string, data []byte) error {
+	dir := path.Dir(filePath)
+	if !utils.DirExists(dir) {
+		if err := os.Mkdir(dir, 0755); err != nil {
+			return err
+		}
+	}
+	if err := ioutil.WriteFile(filePath, data, 0755); err != nil {
 		return err
 	}
 	return nil
