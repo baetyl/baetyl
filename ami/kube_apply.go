@@ -295,6 +295,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 					Containers:         containers,
 					ImagePullSecrets:   imagePullSecrets,
 					HostNetwork:        service.HostNetwork,
+					NodeName:           k.knn,
 				},
 			},
 		},
