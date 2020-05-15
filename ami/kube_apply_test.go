@@ -250,7 +250,7 @@ func TestKubeToDeploy(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					NodeName:           KubeNodeName,
+					NodeName:           "node1",
 					ServiceAccountName: ServiceAccountName,
 					Volumes: []v1.Volume{
 						{
