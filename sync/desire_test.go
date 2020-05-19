@@ -12,17 +12,16 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
-	"github.com/baetyl/baetyl-go/spec/crd"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSyncMakeKey(t *testing.T) {
-	key := makeKey(crd.KindApplication, "app", "a1")
+	key := makeKey(specv1.KindApplication, "app", "a1")
 	expected := "application-app-a1"
 	assert.Equal(t, key, expected)
-	key = makeKey(crd.KindApplication, "", "a1")
+	key = makeKey(specv1.KindApplication, "", "a1")
 	assert.Equal(t, key, "")
 }
 
@@ -35,28 +34,28 @@ func TestSyncStore(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 	syn := Sync{store: sto}
-	app := &crd.Application{
+	app := &specv1.Application{
 		Name:    "app",
 		Version: "a1",
 	}
 	err = syn.storeApplication(app)
 	assert.NoError(t, err)
 
-	var expectedApp crd.Application
-	err = sto.Get(makeKey(crd.KindApplication, app.Name, app.Version), &expectedApp)
+	var expectedApp specv1.Application
+	err = sto.Get(makeKey(specv1.KindApplication, app.Name, app.Version), &expectedApp)
 	assert.NoError(t, err)
 	assert.Equal(t, app, &expectedApp)
 	app.Name = ""
 	err = syn.storeApplication(app)
 	assert.Error(t, err)
 
-	sec := &crd.Secret{
+	sec := &specv1.Secret{
 		Name:    "sec",
 		Version: "s1",
 	}
 	err = syn.storeSecret(sec)
-	var expectedSec crd.Secret
-	err = sto.Get(makeKey(crd.KindSecret, sec.Name, sec.Version), &expectedSec)
+	var expectedSec specv1.Secret
+	err = sto.Get(makeKey(specv1.KindSecret, sec.Name, sec.Version), &expectedSec)
 	assert.NoError(t, err)
 	assert.Equal(t, sec, &expectedSec)
 	sec.Version = ""
@@ -110,15 +109,15 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	syn, err := NewSync(sc, sto, nil)
 	assert.NoError(t, err)
 
-	volume := &crd.Volume{
+	volume := &specv1.Volume{
 		Name:         "cfg",
-		VolumeSource: crd.VolumeSource{Config: &crd.ObjectReference{Name: "cfg", Version: "c1"}},
+		VolumeSource: specv1.VolumeSource{Config: &specv1.ObjectReference{Name: "cfg", Version: "c1"}},
 	}
-	cfg := &crd.Configuration{Name: "cfg", Version: "c1"}
+	cfg := &specv1.Configuration{Name: "cfg", Version: "c1"}
 	err = syn.processConfiguration(volume, cfg)
 	assert.NoError(t, err)
-	var expectedCfg crd.Configuration
-	err = sto.Get(makeKey(crd.KindConfiguration, "cfg", "c1"), &expectedCfg)
+	var expectedCfg specv1.Configuration
+	err = sto.Get(makeKey(specv1.KindConfiguration, "cfg", "c1"), &expectedCfg)
 	assert.NoError(t, err)
 	cfg.Name = ""
 	err = syn.processConfiguration(volume, cfg)
@@ -133,7 +132,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	file1 := filepath.Join(dir, "file1")
 	ioutil.WriteFile(file1, content, 0644)
 	md5, err := utils.CalculateFileMD5(file1)
-	obj := specv1.CRDConfigObject{
+	obj := specv1.ConfigurationObject{
 		URL: objMs.URL,
 		MD5: md5,
 	}
@@ -174,15 +173,15 @@ func TestSyncResources(t *testing.T) {
 	appName := "test-app"
 	appVer := "v1"
 	namespace := "baetyl-edge"
-	app := crd.Application{
+	app := specv1.Application{
 		Name:      appName,
 		Namespace: namespace,
 		Version:   appVer,
-		Volumes: []crd.Volume{
+		Volumes: []specv1.Volume{
 			{
 				Name: "test-cfg",
-				VolumeSource: crd.VolumeSource{
-					Config: &crd.ObjectReference{
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
 						Name:    "test-cfg",
 						Version: "c1",
 					},
@@ -190,8 +189,8 @@ func TestSyncResources(t *testing.T) {
 			},
 			{
 				Name: "test-sec",
-				VolumeSource: crd.VolumeSource{
-					Secret: &crd.ObjectReference{
+				VolumeSource: specv1.VolumeSource{
+					Secret: &specv1.ObjectReference{
 						Name:    "test-sec",
 						Version: "s1",
 					},
@@ -201,34 +200,34 @@ func TestSyncResources(t *testing.T) {
 	}
 	cfgName := "test-cfg"
 	cfgVer := "c1"
-	cfg := crd.Configuration{
+	cfg := specv1.Configuration{
 		Name:      cfgName,
 		Namespace: namespace,
 		Version:   cfgVer,
 	}
 	secName := "test-sec"
 	secVer := "s1"
-	sec := crd.Secret{
+	sec := specv1.Secret{
 		Name:      secName,
 		Namespace: namespace,
 		Version:   secVer,
 	}
-	appCrd := specv1.CRDResponse{
-		CRDDatas: []specv1.CRDData{{
-			CRDInfo: specv1.CRDInfo{Kind: crd.KindApplication, Name: appName, Version: appVer},
-			Value:   specv1.VariableValue{Value: app},
+	appCrd := specv1.DesireResponse{
+		CRDDatas: []specv1.ResourceValue{{
+			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindApplication, Name: appName, Version: appVer},
+			Value:        specv1.VariableValue{Value: app},
 		}},
 	}
-	cfgCrd := specv1.CRDResponse{
-		CRDDatas: []specv1.CRDData{{
-			CRDInfo: specv1.CRDInfo{Kind: crd.KindConfiguration, Name: cfgName, Version: cfgVer},
-			Value:   specv1.VariableValue{Value: cfg},
+	cfgCrd := specv1.DesireResponse{
+		CRDDatas: []specv1.ResourceValue{{
+			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindConfiguration, Name: cfgName, Version: cfgVer},
+			Value:        specv1.VariableValue{Value: cfg},
 		}},
 	}
-	secCrd := specv1.CRDResponse{
-		CRDDatas: []specv1.CRDData{{
-			CRDInfo: specv1.CRDInfo{Kind: crd.KindSecret, Name: secName, Version: secVer},
-			Value:   specv1.VariableValue{Value: sec},
+	secCrd := specv1.DesireResponse{
+		CRDDatas: []specv1.ResourceValue{{
+			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindSecret, Name: secName, Version: secVer},
+			Value:        specv1.VariableValue{Value: sec},
 		}},
 	}
 	appData, _ := json.Marshal(appCrd)
@@ -252,16 +251,16 @@ func TestSyncResources(t *testing.T) {
 	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 	err = syn.syncResources([]specv1.AppInfo{specv1.AppInfo{Name: "desire-app", Version: "v1"}})
-	var appRes crd.Application
-	err = sto.Get(makeKey(crd.KindApplication, appName, appVer), &appRes)
+	var appRes specv1.Application
+	err = sto.Get(makeKey(specv1.KindApplication, appName, appVer), &appRes)
 	assert.NoError(t, err)
 	assert.Equal(t, appRes, app)
-	var cfgRes crd.Configuration
-	err = sto.Get(makeKey(crd.KindConfiguration, cfgName, cfgVer), &cfgRes)
+	var cfgRes specv1.Configuration
+	err = sto.Get(makeKey(specv1.KindConfiguration, cfgName, cfgVer), &cfgRes)
 	assert.NoError(t, err)
 	assert.Equal(t, cfgRes, cfg)
-	var secRes crd.Secret
-	err = sto.Get(makeKey(crd.KindSecret, secName, secVer), &secRes)
+	var secRes specv1.Secret
+	err = sto.Get(makeKey(specv1.KindSecret, secName, secVer), &secRes)
 	assert.NoError(t, err)
 	assert.Equal(t, secRes, sec)
 	ms.Close()

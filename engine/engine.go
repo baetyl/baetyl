@@ -12,8 +12,7 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/crd"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
@@ -159,18 +158,18 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	return nil
 }
 
-func (e *Engine) injectEnv(appInfos []v1.AppInfo) error {
+func (e *Engine) injectEnv(appInfos []specv1.AppInfo) error {
 	for _, info := range appInfos {
-		key := makeKey(crd.KindApplication, info.Name, info.Version)
-		var app crd.Application
+		key := makeKey(specv1.KindApplication, info.Name, info.Version)
+		var app specv1.Application
 		err := e.sto.Get(key, &app)
 		if err != nil {
 			e.log.Error("failed to get key from store", log.Any("key", key), log.Error(err))
 			return err
 		}
-		var services []crd.Service
+		var services []specv1.Service
 		for _, svc := range app.Services {
-			env := []crd.Environment{
+			env := []specv1.Environment{
 				{
 					Name:  EnvKeyAppName,
 					Value: app.Name,
@@ -224,22 +223,22 @@ func (e *Engine) Close() {
 	e.tomb.Wait()
 }
 
-func makeKey(kind crd.Kind, name, ver string) string {
+func makeKey(kind specv1.Kind, name, ver string) string {
 	if name == "" || ver == "" {
 		return ""
 	}
 	return string(kind) + "-" + name + "-" + ver
 }
 
-func alignApps(reApps, deApps []v1.AppInfo) []v1.AppInfo {
+func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 	if len(reApps) == 0 || len(deApps) == 0 {
 		return reApps
 	}
-	as := map[string]v1.AppInfo{}
+	as := map[string]specv1.AppInfo{}
 	for _, a := range reApps {
 		as[a.Name] = a
 	}
-	var res []v1.AppInfo
+	var res []specv1.AppInfo
 	for _, a := range deApps {
 		if r, ok := as[a.Name]; ok {
 			res = append(res, r)

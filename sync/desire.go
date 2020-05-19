@@ -10,8 +10,7 @@ import (
 	"strings"
 
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/crd"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 )
 
 // extended features of config resourece
@@ -20,7 +19,7 @@ const (
 	configValueZip  = "zip"
 )
 
-func (s *Sync) syncResources(ais []v1.AppInfo) error {
+func (s *Sync) syncResources(ais []specv1.AppInfo) error {
 	if len(ais) == 0 {
 		return nil
 	}
@@ -29,14 +28,14 @@ func (s *Sync) syncResources(ais []v1.AppInfo) error {
 	for _, a := range ais {
 		appInfo[a.Name] = a.Version
 	}
-	crds, err := s.syncCRDs(s.genCRDInfos(crd.KindApplication, appInfo))
+	crds, err := s.syncCRDs(s.genResourceInfos(specv1.KindApplication, appInfo))
 	if err != nil {
 		s.log.Error("failed to sync application resource", log.Error(err))
 		return err
 	}
 	cInfo := map[string]string{}
 	sInfo := map[string]string{}
-	apps := map[string]*crd.Application{}
+	apps := map[string]*specv1.Application{}
 	for _, r := range crds {
 		if app := r.App(); app != nil {
 			apps[app.Name] = app
@@ -52,12 +51,12 @@ func (s *Sync) syncResources(ais []v1.AppInfo) error {
 		}
 	}
 
-	crds, err = s.syncCRDs(s.genCRDInfos(crd.KindConfiguration, cInfo))
+	crds, err = s.syncCRDs(s.genResourceInfos(specv1.KindConfiguration, cInfo))
 	if err != nil {
 		s.log.Error("failed to sync configuration resource", log.Error(err))
 		return err
 	}
-	configs := map[string]*crd.Configuration{}
+	configs := map[string]*specv1.Configuration{}
 	for _, r := range crds {
 		if cfg := r.Config(); cfg != nil {
 			configs[cfg.Name] = cfg
@@ -66,12 +65,12 @@ func (s *Sync) syncResources(ais []v1.AppInfo) error {
 		}
 	}
 
-	crds, err = s.syncCRDs(s.genCRDInfos(crd.KindSecret, sInfo))
+	crds, err = s.syncCRDs(s.genResourceInfos(specv1.KindSecret, sInfo))
 	if err != nil {
 		s.log.Error("failed to sync secret resource", log.Error(err))
 		return err
 	}
-	secrets := map[string]*crd.Secret{}
+	secrets := map[string]*specv1.Secret{}
 	for _, r := range crds {
 		if secret := r.Secret(); secret != nil {
 			secrets[secret.Name] = secret
@@ -96,11 +95,11 @@ func (s *Sync) syncResources(ais []v1.AppInfo) error {
 	return nil
 }
 
-func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
+func (s *Sync) syncCRDs(crds []specv1.ResourceInfo) ([]specv1.ResourceValue, error) {
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := v1.CRDRequest{CRDInfos: crds}
+	req := specv1.DesireRequest{CRDInfos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -109,7 +108,7 @@ func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
 	}
-	var res v1.CRDResponse
+	var res specv1.DesireResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		return nil, err
@@ -117,7 +116,7 @@ func (s *Sync) syncCRDs(crds []v1.CRDInfo) ([]v1.CRDData, error) {
 	return res.CRDDatas, nil
 }
 
-func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Configuration, secrets map[string]*crd.Secret) error {
+func (s *Sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {
 	for i := range volumes {
 		if cfg := volumes[i].VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
 			err := s.processConfiguration(&volumes[i], configs[cfg.Name])
@@ -134,7 +133,7 @@ func (s *Sync) processVolumes(volumes []crd.Volume, configs map[string]*crd.Conf
 	return nil
 }
 
-func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) error {
+func (s *Sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configuration) error {
 	var base, dir string
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
@@ -146,7 +145,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 					return err
 				}
 			}
-			obj := new(v1.CRDConfigObject)
+			obj := new(specv1.ConfigurationObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
@@ -161,7 +160,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 			// change app.volume from config to host path of downloaded file path
 			if volume.HostPath == nil {
 				volume.Config = nil
-				volume.HostPath = &crd.HostPathVolumeSource{
+				volume.HostPath = &specv1.HostPathVolumeSource{
 					Path: dir,
 				}
 				err = cleanDir(base, cfg.Version)
@@ -171,7 +170,7 @@ func (s *Sync) processConfiguration(volume *crd.Volume, cfg *crd.Configuration) 
 			}
 		}
 	}
-	key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
+	key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 	if key == "" {
 		return fmt.Errorf("configuration does not have name or version")
 	}
@@ -188,26 +187,26 @@ func cleanDir(dir, retain string) error {
 	return nil
 }
 
-func (s *Sync) storeApplication(app *crd.Application) error {
-	key := makeKey(crd.KindApplication, app.Name, app.Version)
+func (s *Sync) storeApplication(app *specv1.Application) error {
+	key := makeKey(specv1.KindApplication, app.Name, app.Version)
 	if key == "" {
 		return fmt.Errorf("app does not have name or version")
 	}
 	return s.store.Upsert(key, app)
 }
 
-func (s *Sync) storeSecret(secret *crd.Secret) error {
-	key := makeKey(crd.KindSecret, secret.Name, secret.Version)
+func (s *Sync) storeSecret(secret *specv1.Secret) error {
+	key := makeKey(specv1.KindSecret, secret.Name, secret.Version)
 	if key == "" {
 		return fmt.Errorf("secret does not have name or version")
 	}
 	return s.store.Upsert(key, secret)
 }
 
-func (s *Sync) genCRDInfos(kind crd.Kind, infos map[string]string) []v1.CRDInfo {
-	var crds []v1.CRDInfo
+func (s *Sync) genResourceInfos(kind specv1.Kind, infos map[string]string) []specv1.ResourceInfo {
+	var crds []specv1.ResourceInfo
 	for name, version := range infos {
-		crds = append(crds, v1.CRDInfo{
+		crds = append(crds, specv1.ResourceInfo{
 			Kind:    kind,
 			Name:    name,
 			Version: version,
@@ -216,7 +215,7 @@ func (s *Sync) genCRDInfos(kind crd.Kind, infos map[string]string) []v1.CRDInfo 
 	return crds
 }
 
-func makeKey(kind crd.Kind, name, ver string) string {
+func makeKey(kind specv1.Kind, name, ver string) string {
 	if name == "" || ver == "" {
 		return ""
 	}

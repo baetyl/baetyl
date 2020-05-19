@@ -2,7 +2,6 @@ package ami
 
 import (
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/crd"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
@@ -31,8 +30,8 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string,
 	services := map[string]*corev1.Service{}
 	deploys := map[string]*appv1.Deployment{}
 	for _, info := range appInfos {
-		key := makeKey(crd.KindApplication, info.Name, info.Version)
-		var app crd.Application
+		key := makeKey(specv1.KindApplication, info.Name, info.Version)
+		var app specv1.Application
 		err := k.store.Get(key, &app)
 		if err != nil {
 			k.log.Error("failed to apply application resource", log.Any("key", key), log.Error(err))
@@ -41,8 +40,8 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string,
 		var imagePullSecrets []corev1.LocalObjectReference
 		for _, v := range app.Volumes {
 			if cfg := v.Config; cfg != nil {
-				key := makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
-				var config crd.Configuration
+				key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+				var config specv1.Configuration
 				err := k.store.Get(key, &config)
 				if err != nil {
 					k.log.Error("failed to apply config resource", log.Any("key", key), log.Error(err))
@@ -56,8 +55,8 @@ func (k *kubeImpl) Apply(ns string, appInfos []specv1.AppInfo, condition string,
 			}
 
 			if sec := v.Secret; sec != nil {
-				key := makeKey(crd.KindSecret, sec.Name, sec.Version)
-				var secret crd.Secret
+				key := makeKey(specv1.KindSecret, sec.Name, sec.Version)
+				var secret specv1.Secret
 				err := k.store.Get(key, &secret)
 				if err != nil {
 					return err
@@ -210,9 +209,9 @@ func (k *kubeImpl) applySecrets(ns string, secrets map[string]*corev1.Secret) er
 	return nil
 }
 
-func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.Service, vols []crd.Volume,
+func (k *kubeImpl) prepareDeploy(ns string, app *specv1.Application, service *specv1.Service, vols []specv1.Volume,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
-	volMap := map[string]crd.Volume{}
+	volMap := map[string]specv1.Volume{}
 	for _, v := range vols {
 		volMap[v.Name] = v
 	}
@@ -303,7 +302,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app *crd.Application, service *crd.S
 	return deploy, nil
 }
 
-func (k *kubeImpl) prepareConfigMap(ns string, config *crd.Configuration) (*corev1.ConfigMap, error) {
+func (k *kubeImpl) prepareConfigMap(ns string, config *specv1.Configuration) (*corev1.ConfigMap, error) {
 	configMap := &corev1.ConfigMap{}
 	err := copier.Copy(configMap, config)
 	if err != nil {
@@ -313,7 +312,7 @@ func (k *kubeImpl) prepareConfigMap(ns string, config *crd.Configuration) (*core
 	return configMap, nil
 }
 
-func (k *kubeImpl) prepareSecret(ns string, sec *crd.Secret) (*corev1.Secret, error) {
+func (k *kubeImpl) prepareSecret(ns string, sec *specv1.Secret) (*corev1.Secret, error) {
 	// secret for docker config
 	if isRegistrySecret(sec) {
 		return k.generateRegistrySecret(ns, sec.Name, string(sec.Data[RegistryAddress]),
@@ -329,7 +328,7 @@ func (k *kubeImpl) prepareSecret(ns string, sec *crd.Secret) (*corev1.Secret, er
 	return secret, nil
 }
 
-func (k *kubeImpl) prepareService(ns string, svc *crd.Service) (*corev1.Service, error) {
+func (k *kubeImpl) prepareService(ns string, svc *specv1.Service) (*corev1.Service, error) {
 	if len(svc.Ports) == 0 {
 		return nil, nil
 	}
@@ -357,14 +356,14 @@ func (k *kubeImpl) prepareService(ns string, svc *crd.Service) (*corev1.Service,
 	return service, nil
 }
 
-func makeKey(kind crd.Kind, name, ver string) string {
+func makeKey(kind specv1.Kind, name, ver string) string {
 	if name == "" || ver == "" {
 		return ""
 	}
 	return string(kind) + "-" + name + "-" + ver
 }
 
-func isRegistrySecret(secret *crd.Secret) bool {
-	registry, ok := secret.Labels[crd.SecretLabel]
-	return ok && registry == crd.SecretRegistry
+func isRegistrySecret(secret *specv1.Secret) bool {
+	registry, ok := secret.Labels[specv1.SecretLabel]
+	return ok && registry == specv1.SecretRegistry
 }

@@ -9,7 +9,6 @@ import (
 
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/crd"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
@@ -24,41 +23,41 @@ import (
 func TestKubeApply(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
-	app := &crd.Application{
+	app := &specv1.Application{
 		Name:      "app1",
 		Namespace: ns,
 		Version:   "a1",
-		Services: []crd.Service{{
+		Services: []specv1.Service{{
 			Name: "svc1",
-			Ports: []crd.ContainerPort{{
+			Ports: []specv1.ContainerPort{{
 				HostPort:      80,
 				ContainerPort: 80,
 			}},
 		}},
-		Volumes: []crd.Volume{{
+		Volumes: []specv1.Volume{{
 			Name:         "cfg1",
-			VolumeSource: crd.VolumeSource{Config: &crd.ObjectReference{Name: "cfg1", Version: "c1"}},
+			VolumeSource: specv1.VolumeSource{Config: &specv1.ObjectReference{Name: "cfg1", Version: "c1"}},
 		}, {
 			Name:         "sec1",
-			VolumeSource: crd.VolumeSource{Secret: &crd.ObjectReference{Name: "sec1", Version: "s1"}},
+			VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: "sec1", Version: "s1"}},
 		}},
 	}
-	key := makeKey(crd.KindApplication, app.Name, app.Version)
+	key := makeKey(specv1.KindApplication, app.Name, app.Version)
 	err := ami.store.Upsert(key, app)
 	assert.NoError(t, err)
-	cfg := &crd.Configuration{
+	cfg := &specv1.Configuration{
 		Name:      "cfg1",
 		Namespace: ns,
 		Version:   "c1",
 	}
-	key = makeKey(crd.KindConfiguration, cfg.Name, cfg.Version)
+	key = makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 	err = ami.store.Upsert(key, cfg)
-	sec := &crd.Secret{
+	sec := &specv1.Secret{
 		Name:      "sec1",
 		Namespace: ns,
 		Version:   "s1",
 	}
-	key = makeKey(crd.KindSecret, sec.Name, sec.Version)
+	key = makeKey(specv1.KindSecret, sec.Name, sec.Version)
 	err = ami.store.Upsert(key, sec)
 	infos := []specv1.AppInfo{{
 		Name:    "app1",
@@ -71,7 +70,7 @@ func TestKubeApply(t *testing.T) {
 func TestKubePrepareConfigMap(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
-	config := &crd.Configuration{
+	config := &specv1.Configuration{
 		Name:      "cfg",
 		Namespace: ns,
 		Data: map[string]string{
@@ -92,7 +91,7 @@ func TestKubePrepareConfigMap(t *testing.T) {
 func TestKubeToSecret(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
-	sec := &crd.Secret{
+	sec := &specv1.Secret{
 		Name:      "sec",
 		Namespace: ns,
 	}
@@ -112,9 +111,9 @@ func TestKubeToSecret(t *testing.T) {
 	assert.Equal(t, secret, expected)
 
 	// registry
-	reg := &crd.Secret{Name: "registry"}
+	reg := &specv1.Secret{Name: "registry"}
 	reg.Labels = map[string]string{
-		crd.SecretLabel: crd.SecretRegistry,
+		specv1.SecretLabel: specv1.SecretRegistry,
 	}
 	reg.Data = map[string][]byte{
 		RegistryAddress:  []byte("server"),
@@ -147,9 +146,9 @@ func TestKubeToService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	svcName := "svc"
 	ns := "baetyl-edge"
-	svc := &crd.Service{
+	svc := &specv1.Service{
 		Name:  svcName,
-		Ports: []crd.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
+		Ports: []specv1.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
 	}
 	service, err := ami.prepareService(ns, svc)
 	assert.NoError(t, err)
@@ -170,7 +169,7 @@ func TestKubeToService(t *testing.T) {
 		},
 	}
 	assert.Equal(t, service, expected)
-	svc = &crd.Service{
+	svc = &specv1.Service{
 		Name: svcName,
 	}
 	service, err = ami.prepareService(ns, svc)
@@ -182,22 +181,22 @@ func TestKubeToDeploy(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	svcName := "svc"
-	app := &crd.Application{
+	app := &specv1.Application{
 		Name:      "app",
 		Namespace: ns,
 		Version:   "a1",
 	}
-	svc := &crd.Service{
+	svc := &specv1.Service{
 		Name:    svcName,
 		Replica: 1,
-		VolumeMounts: []crd.VolumeMount{{
+		VolumeMounts: []specv1.VolumeMount{{
 			Name: "cfg",
 		}, {
 			Name: "sec",
 		}, {
 			Name: "hostPath",
 		}},
-		Resources: &crd.Resources{
+		Resources: &specv1.Resources{
 			Limits: map[string]string{
 				"cpu":    "1",
 				"memory": "456456",
@@ -206,24 +205,24 @@ func TestKubeToDeploy(t *testing.T) {
 	}
 	cpuQuan, _ := resource.ParseQuantity("1")
 	memoryQuan, _ := resource.ParseQuantity("456456")
-	volumes := []crd.Volume{{
+	volumes := []specv1.Volume{{
 		Name: "cfg",
-		VolumeSource: crd.VolumeSource{
-			Config: &crd.ObjectReference{
+		VolumeSource: specv1.VolumeSource{
+			Config: &specv1.ObjectReference{
 				Name: "cfg",
 			},
 		},
 	}, {
 		Name: "sec",
-		VolumeSource: crd.VolumeSource{
-			Secret: &crd.ObjectReference{
+		VolumeSource: specv1.VolumeSource{
+			Secret: &specv1.ObjectReference{
 				Name: "sec",
 			},
 		},
 	}, {
 		Name: "hostPath",
-		VolumeSource: crd.VolumeSource{
-			HostPath: &crd.HostPathVolumeSource{Path: "/var/lib/baetyl"},
+		VolumeSource: specv1.VolumeSource{
+			HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
 	deploy, err := ami.prepareDeploy(ns, app, svc, volumes, nil)
