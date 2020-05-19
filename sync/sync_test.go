@@ -3,7 +3,6 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-go/spec/crd"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -12,7 +11,7 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +30,7 @@ func TestSync_Report(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
-	bi := &v1.Desire{"apps": map[string]interface{}{"app1": "123"}}
+	bi := &specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
 	data, err := json.Marshal(bi)
 	assert.NoError(t, err)
 
@@ -57,7 +56,7 @@ func TestSync_Report(t *testing.T) {
 	syn.Start()
 
 	desire := <-syn.fifo
-	assert.Equal(t, v1.Desire{"apps": map[string]interface{}{"app1": "123"}}, desire)
+	assert.Equal(t, specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}, desire)
 
 	sc = config.SyncConfig{}
 	_, err = NewSync(sc, sto, nod)
@@ -110,7 +109,7 @@ func TestSync_ReportAndDesire(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
-	bi := &v1.Desire{"sysapps": []v1.AppInfo{
+	bi := &specv1.Desire{"sysapps": []specv1.AppInfo{
 		{
 			Name:    "baetyl-core-923jdsn",
 			Version: "32451",
@@ -119,7 +118,7 @@ func TestSync_ReportAndDesire(t *testing.T) {
 	data, err := json.Marshal(bi)
 	assert.NoError(t, err)
 
-	appRes := &crd.Application{
+	appRes := &specv1.Application{
 		Name:      "baetyl-core-923jdsn",
 		Namespace: "baetyl-edge",
 		Version:   "32451",
@@ -152,7 +151,7 @@ func TestSync_ReportAndDesire(t *testing.T) {
 
 	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
-	ds, err := syn.Report(v1.Report{})
+	ds, err := syn.Report(specv1.Report{})
 	assert.NoError(t, err)
 	err = syn.Desire(ds)
 	assert.NoError(t, err)

@@ -11,7 +11,7 @@ import (
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,7 +58,7 @@ func TestSyncDownloadObject(t *testing.T) {
 	assert.NoError(t, err)
 
 	md5, _ := utils.CalculateFileMD5(file1)
-	obj := &v1.CRDConfigObject{
+	obj := &specv1.ConfigurationObject{
 		URL: objMs.URL,
 		MD5: md5,
 	}
