@@ -28,7 +28,7 @@ func (s *Sync) syncResources(ais []specv1.AppInfo) error {
 	for _, a := range ais {
 		appInfo[a.Name] = a.Version
 	}
-	crds, err := s.syncCRDs(s.genResourceInfos(specv1.KindApplication, appInfo))
+	crds, err := s.syncResourceValues(s.genResourceInfos(specv1.KindApplication, appInfo))
 	if err != nil {
 		s.log.Error("failed to sync application resource", log.Error(err))
 		return err
@@ -51,7 +51,7 @@ func (s *Sync) syncResources(ais []specv1.AppInfo) error {
 		}
 	}
 
-	crds, err = s.syncCRDs(s.genResourceInfos(specv1.KindConfiguration, cInfo))
+	crds, err = s.syncResourceValues(s.genResourceInfos(specv1.KindConfiguration, cInfo))
 	if err != nil {
 		s.log.Error("failed to sync configuration resource", log.Error(err))
 		return err
@@ -65,7 +65,7 @@ func (s *Sync) syncResources(ais []specv1.AppInfo) error {
 		}
 	}
 
-	crds, err = s.syncCRDs(s.genResourceInfos(specv1.KindSecret, sInfo))
+	crds, err = s.syncResourceValues(s.genResourceInfos(specv1.KindSecret, sInfo))
 	if err != nil {
 		s.log.Error("failed to sync secret resource", log.Error(err))
 		return err
@@ -95,11 +95,11 @@ func (s *Sync) syncResources(ais []specv1.AppInfo) error {
 	return nil
 }
 
-func (s *Sync) syncCRDs(crds []specv1.ResourceInfo) ([]specv1.ResourceValue, error) {
+func (s *Sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.ResourceValue, error) {
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := specv1.DesireRequest{CRDInfos: crds}
+	req := specv1.DesireRequest{Infos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,11 @@ func (s *Sync) syncCRDs(crds []specv1.ResourceInfo) ([]specv1.ResourceValue, err
 	if err != nil {
 		return nil, err
 	}
-	return res.CRDDatas, nil
+	// TODO: remove compatible code
+	if len(res.CRDDatas) != 0 {
+		res.Values = res.CRDDatas
+	}
+	return res.Values, nil
 }
 
 func (s *Sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {
