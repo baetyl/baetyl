@@ -53,10 +53,11 @@ func TestSync_Report(t *testing.T) {
 
 	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
-	syn.Start()
 
-	desire := <-syn.fifo
-	assert.Equal(t, specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}, desire)
+	err = syn.reportAndDesireAsync()
+	assert.NoError(t, err)
+	no, _ := syn.nod.Get()
+	assert.Equal(t, specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}, no.Desire)
 
 	sc = config.SyncConfig{}
 	_, err = NewSync(sc, sto, nod)
@@ -91,11 +92,11 @@ func TestSync_Report(t *testing.T) {
 	syn, err = NewSync(sc, sto, nod)
 	assert.NoError(t, err)
 	syn.Start()
-	time.Sleep(time.Second * 2)
+	//time.Sleep(time.Second * 2)
 	syn.Close()
 }
 
-func TestSync_ReportAndDesire(t *testing.T) {
+func TestSyncResource(t *testing.T) {
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
@@ -109,19 +110,21 @@ func TestSync_ReportAndDesire(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
+	appName := "baetyl-core-923jdsn"
+	appVer := "32451"
 	bi := &specv1.Desire{"sysapps": []specv1.AppInfo{
 		{
-			Name:    "baetyl-core-923jdsn",
-			Version: "32451",
+			Name:    appName,
+			Version: appVer,
 		},
 	}}
 	data, err := json.Marshal(bi)
 	assert.NoError(t, err)
 
 	appRes := &specv1.Application{
-		Name:      "baetyl-core-923jdsn",
+		Name:      appName,
 		Namespace: "baetyl-edge",
-		Version:   "32451",
+		Version:   appVer,
 	}
 	appData, err := json.Marshal(appRes)
 	assert.NoError(t, err)
@@ -153,6 +156,13 @@ func TestSync_ReportAndDesire(t *testing.T) {
 	assert.NoError(t, err)
 	ds, err := syn.Report(specv1.Report{})
 	assert.NoError(t, err)
-	err = syn.Desire(ds)
-	assert.NoError(t, err)
+	expected := specv1.Desire{
+		"sysapps": []interface{}{
+			map[string]interface{}{
+				"name":    appName,
+				"version": appVer,
+			},
+		},
+	}
+	assert.Equal(t, ds, expected)
 }

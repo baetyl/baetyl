@@ -1,13 +1,13 @@
 package engine
 
 import (
-	"errors"
 	"fmt"
+	"github.com/baetyl/baetyl-core/sync"
 	"os"
 	"strconv"
+	gosync "sync"
 	"time"
 
-	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-go/http"
@@ -25,27 +25,31 @@ const (
 )
 
 type Engine struct {
-	Ami  ami.AMI
-	nod  *node.Node
-	cfg  config.EngineConfig
-	tomb utils.Tomb
-	sto  *bh.Store
-	log  *log.Logger
-	ns   string
+	syn   *sync.Sync
+	Ami   AMI
+	nod   *node.Node
+	cfg   config.EngineConfig
+	tomb  utils.Tomb
+	sto   *bh.Store
+	log   *log.Logger
+	ns    string
+	sysns string
 }
 
-func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node) (*Engine, error) {
-	kube, err := ami.GenAMI(cfg, sto)
+func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn *sync.Sync) (*Engine, error) {
+	kube, err := GenAMI(cfg, sto)
 	if err != nil {
 		return nil, err
 	}
 	return &Engine{
-		Ami: kube,
-		sto: sto,
-		nod: nod,
-		cfg: cfg,
-		ns:  "baetyl-edge",
-		log: log.With(log.Any("engine", cfg.Kind)),
+		Ami:   kube,
+		sto:   sto,
+		syn:   syn,
+		nod:   nod,
+		cfg:   cfg,
+		ns:    "baetyl-edge",
+		sysns: "baetyl-edge-system",
+		log:   log.With(log.Any("engine", cfg.Kind)),
 	}, nil
 }
 
@@ -99,101 +103,213 @@ func (e *Engine) reporting() error {
 }
 
 func (e *Engine) reportAndDesireAsync(delete bool) error {
-	// to collect app status
-	info, err := e.Ami.Collect(e.ns)
-	if err != nil {
+	if err := e.reportAndApply(e.sysns, specv1.SYSTEM, delete); err != nil {
 		return err
 	}
-	if len(info) == 0 {
-		return errors.New("no status collected")
-	}
-	no, err := e.nod.Get()
-	if err != nil {
+	if err := e.reportAndApply(e.ns, specv1.USER, delete); err != nil {
 		return err
-	}
-	if info["apps"] != nil {
-		info["apps"] = alignApps(info.AppInfos(), no.Desire.AppInfos())
-	}
-	if info["sysapps"] != nil {
-		info["sysapps"] = alignApps(info.SysAppInfos(), no.Desire.SysAppInfos())
-	}
-
-	// to report app status into local shadow, and return shadow delta
-	delta, err := e.nod.Report(info)
-	if err != nil {
-		return err
-	}
-	// if apps are updated, to apply new apps
-	if delta == nil {
-		return nil
-	}
-	apps := delta.AppInfos()
-	if apps != nil {
-		err = e.injectEnv(apps)
-		if err != nil {
-			e.log.Error("failed to inject env to apps", log.Error(err))
-			return err
-		}
-		err = e.Ami.Apply(e.ns, apps, "!"+ami.LabelSystemApp, delete)
-		if err != nil {
-			e.log.Error("failed to apply apps", log.Error(err))
-			return err
-		}
-		e.log.Info("to apply apps", log.Any("apps", apps))
-	}
-	sysApps := delta.SysAppInfos()
-	if sysApps != nil {
-		err = e.injectEnv(sysApps)
-		if err != nil {
-			e.log.Error("failed to inject env to sys apps", log.Error(err))
-			return err
-		}
-		err = e.Ami.Apply(e.ns, sysApps, ami.LabelSystemApp, delete)
-		if err != nil {
-			e.log.Error("failed to apply sys apps", log.Error(err))
-			return err
-		}
-		e.log.Info("to apply sys apps", log.Any("apps", sysApps))
 	}
 	return nil
 }
 
-func (e *Engine) injectEnv(appInfos []specv1.AppInfo) error {
-	for _, info := range appInfos {
-		key := makeKey(specv1.KindApplication, info.Name, info.Version)
+func (e Engine) Collect(ns string, scope specv1.Scope) (specv1.Report, error) {
+	var stats string
+	if scope == specv1.SYSTEM {
+		stats = "sysappstats"
+	} else {
+		stats = "appstats"
+	}
+	nodeInfo, err := e.Ami.CollectNodeInfo()
+	if err != nil {
+		e.log.Warn("failed to collect node info", log.Error(err))
+	}
+	nodeStats, err := e.Ami.CollectNodeStats()
+	if err != nil {
+		e.log.Warn("failed to collect node stats", log.Error(err))
+	}
+	appStats, err := e.Ami.CollectAppStatus(ns)
+	if err != nil {
+		e.log.Warn("failed to collect app stats", log.Error(err))
+	}
+	no, err := e.nod.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	apps := make([]specv1.AppInfo, 0)
+	for _, info := range appStats {
+		app := specv1.AppInfo{
+			Name:    info.Name,
+			Version: info.Version,
+		}
+		apps = append(apps, app)
+	}
+	rapps := alignApps(apps, no.Desire.AppInfos(scope))
+	// to report app status into local shadow, and return shadow delta
+	r := specv1.Report{
+		"time":      time.Now(),
+		"node":      nodeInfo,
+		"nodestats": nodeStats,
+		stats:       appStats,
+	}
+	r.SetAppInfos(scope, rapps)
+	return r, nil
+}
+
+func (e Engine) reportAndApply(ns string, scope specv1.Scope, delete bool) error {
+	r, err := e.Collect(ns, scope)
+	if err != nil {
+		return err
+	}
+	rapps := r.AppInfos(scope)
+	delta, err := e.nod.Report(r)
+	if err != nil {
+		return err
+	}
+	// if apps are updated, to apply new apps
+	if delta != nil {
+		dapps := delta.AppInfos(scope)
+		if dapps != nil {
+			if delete {
+				if err := e.deleteApps(ns, dapps, rapps); err != nil {
+					e.log.Error("failed to delete sys apps", log.Error(err))
+				}
+			}
+			e.applyApps(ns, dapps, rapps)
+			e.log.Info("to apply sys apps", log.Any("apps", dapps))
+		}
+	}
+	return nil
+}
+
+func (e Engine) applyApps(ns string, desires []specv1.AppInfo, reports []specv1.AppInfo) {
+	rs := make(map[string]specv1.AppInfo)
+	for _, r := range reports {
+		rs[r.Name] = r
+	}
+	var wg gosync.WaitGroup
+	for _, appInfo := range desires {
+		if _, ok := rs[appInfo.Name]; !ok {
+			wg.Add(1)
+			go func(wg *gosync.WaitGroup, info specv1.AppInfo) {
+				if err := e.applyApp(ns, info); err != nil {
+					e.log.Error("failed to apply application", log.Any("app info", appInfo), log.Error(err))
+				}
+				wg.Done()
+			}(&wg, appInfo)
+		}
+	}
+	wg.Wait()
+}
+
+func (e Engine) deleteApps(ns string, desire, report []specv1.AppInfo) error {
+	del := make(map[string]specv1.AppInfo)
+	for _, app := range report {
+		del[app.Name] = app
+	}
+	for _, app := range desire {
+		if d, ok := del[app.Name]; ok && d.Version == app.Version {
+			delete(del, app.Name)
+		}
+	}
+	for _, app := range del {
+		key := makeKey(specv1.KindApplication, app.Name, app.Version)
+		if key == "" {
+			return fmt.Errorf("failed to get app name: (%s) version: (%s)", app.Name, app.Version)
+		}
 		var app specv1.Application
-		err := e.sto.Get(key, &app)
-		if err != nil {
-			e.log.Error("failed to get key from store", log.Any("key", key), log.Error(err))
+		if err := e.sto.Get(key, &app); err != nil {
 			return err
 		}
-		var services []specv1.Service
-		for _, svc := range app.Services {
-			env := []specv1.Environment{
-				{
-					Name:  EnvKeyAppName,
-					Value: app.Name,
-				},
-				{
-					Name:  EnvKeyServiceName,
-					Value: svc.Name,
-				},
-				{
-					Name:  EnvKeyNodeName,
-					Value: os.Getenv(EnvKeyNodeName),
-				},
-			}
-			svc.Env = append(svc.Env, env...)
-			services = append(services, svc)
-		}
-		app.Services = services
-		err = e.sto.Upsert(key, app)
-		if err != nil {
-			e.log.Error("failed to get key from store", log.Any("key", key), log.Error(err))
+		if err := e.Ami.DeleteApplication(ns, app); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
+	if err := e.syn.SyncResource(info); err != nil {
+		e.log.Error("failed to sync resource", log.Any("info", info), log.Error(err))
+		return err
+	}
+	app, err := e.injectEnv(info)
+	if err != nil {
+		e.log.Error("failed to inject env to sys apps", log.Error(err))
+		return err
+	}
+	cfgs := make(map[string]specv1.Configuration)
+	secs := make(map[string]specv1.Secret)
+	for _, v := range app.Volumes {
+		if cfg := v.VolumeSource.Config; cfg != nil {
+			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			if key == "" {
+				return fmt.Errorf("failed to get configuration name: (%s) version: (%s)", cfg.Name, cfg.Version)
+			}
+			var config specv1.Configuration
+			if err := e.sto.Get(key, &config); err != nil {
+				return err
+			}
+			cfgs[config.Name] = config
+		} else if sec := v.VolumeSource.Secret; sec != nil {
+			key := makeKey(specv1.KindSecret, sec.Name, sec.Version)
+			if key == "" {
+				return fmt.Errorf("failed to get secret name: (%s) version: (%s)", sec.Name, sec.Version)
+			}
+			var secret specv1.Secret
+			if err := e.sto.Get(key, &secret); err != nil {
+				return err
+			}
+			secs[secret.Name] = secret
+		}
+	}
+	if err := e.Ami.ApplyConfigurations(ns, cfgs); err != nil {
+		return err
+	}
+	if err := e.Ami.ApplySecrets(ns, secs); err != nil {
+		return err
+	}
+	var imagePullSecs []string
+	for n, sec := range secs {
+		if isRegistrySecret(sec) {
+			imagePullSecs = append(imagePullSecs, n)
+		}
+	}
+	if err := e.Ami.ApplyApplication(ns, *app, imagePullSecs); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
+	key := makeKey(specv1.KindApplication, info.Name, info.Version)
+	app := new(specv1.Application)
+	err := e.sto.Get(key, app)
+	if err != nil {
+		e.log.Error("failed to get resource from store", log.Any("key", key), log.Error(err))
+		return nil, err
+	}
+	var services []specv1.Service
+	for _, svc := range app.Services {
+		env := []specv1.Environment{
+			{
+				Name:  EnvKeyAppName,
+				Value: app.Name,
+			},
+			{
+				Name:  EnvKeyServiceName,
+				Value: svc.Name,
+			},
+			{
+				Name:  EnvKeyNodeName,
+				Value: os.Getenv(EnvKeyNodeName),
+			},
+		}
+		svc.Env = append(svc.Env, env...)
+		services = append(services, svc)
+	}
+	app.Services = services
+	return app, nil
 }
 
 func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceSeconds int64, err error) {
@@ -230,6 +346,7 @@ func makeKey(kind specv1.Kind, name, ver string) string {
 	return string(kind) + "-" + name + "-" + ver
 }
 
+// ensuring apps have same order in report and desire list
 func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 	if len(reApps) == 0 || len(deApps) == 0 {
 		return reApps
@@ -249,4 +366,9 @@ func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 		res = append(res, a)
 	}
 	return res
+}
+
+func isRegistrySecret(secret specv1.Secret) bool {
+	registry, ok := secret.Labels[specv1.SecretLabel]
+	return ok && registry == specv1.SecretRegistry
 }

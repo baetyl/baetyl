@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"strings"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
 	"github.com/baetyl/baetyl-go/log"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
 	bh "github.com/timshannon/bolthold"
 )
@@ -58,10 +58,6 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha)
-	if err != nil {
-		return nil, err
-	}
 
 	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
 		i, err := initz.NewInit(&cfg, c.eng.Ami)
@@ -74,6 +70,11 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
+	if err != nil {
+		return nil, err
+	}
+
+	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.syn)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +94,7 @@ func (c *core) Close() {
 }
 
 func (c *core) reportAndDesire() error {
-	r, err := c.eng.Ami.Collect("baetyl-edge")
+	r, err := c.eng.Collect("baetyl-edge-system", specv1.SYSTEM)
 	if err != nil {
 		return err
 	}
@@ -102,16 +103,13 @@ func (c *core) reportAndDesire() error {
 		c.log.Error("failed to report app info", log.Error(err))
 		return ErrSysappCoreMissing
 	}
-	if len(ds) == 0 || len(ds.SysAppInfos()) == 0 {
+	if len(ds) == 0 || len(ds.AppInfos(specv1.SYSTEM)) == 0 {
 		return ErrSysappCoreMissing
 	}
 
-	for _, app := range ds.SysAppInfos() {
+	for _, app := range ds.AppInfos(specv1.SYSTEM) {
 		if strings.Contains(app.Name, BaetylCore) {
-			err := c.syn.Desire(v1.Desire{
-				"sysapps": []v1.AppInfo{app},
-			})
-			if err != nil {
+			if _, err := c.sha.Desire(specv1.Desire{"sysapps": []specv1.AppInfo{app}}); err != nil {
 				return err
 			}
 			return nil
@@ -146,9 +144,9 @@ func main() {
 		for {
 			select {
 			case <-t.C:
-				r, err := c.eng.Ami.Collect("baetyl-edge")
+				r, err := c.eng.Collect("baetyl-edge-system", specv1.SYSTEM)
 				if err != nil {
-					c.log.Error("failed to collect app info", log.Error(err))
+					c.log.Error("failed to collect info", log.Error(err))
 				}
 				if _, err := c.syn.Report(r); err != nil {
 					c.log.Error("failed to report info", log.Error(err))

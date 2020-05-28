@@ -141,19 +141,17 @@ func TestInitialize_Activate(t *testing.T) {
 	c.Init = *ic
 	c.Sync = *is
 
-	inspect := v1.Report{
-		"node": v1.NodeInfo{
-			Hostname:         "docker-desktop",
-			Address:          "192.168.1.77",
-			Arch:             "amd64",
-			KernelVersion:    "4.19.76-linuxkit",
-			OS:               "linux",
-			ContainerRuntime: "docker://19.3.5",
-			MachineID:        "b49d5b1b-1c0a-42a9-9ee5-5cf69f9f8070",
-			BootID:           "76a0634a-23c7-4c97-aecd-64f2b02cb267",
-			SystemUUID:       "16ac43e0-0000-0000-9230-395ecd46631c",
-			OSImage:          "Docker Desktop",
-		},
+	nodeInfo := &v1.NodeInfo{
+		Hostname:         "docker-desktop",
+		Address:          "192.168.1.77",
+		Arch:             "amd64",
+		KernelVersion:    "4.19.76-linuxkit",
+		OS:               "linux",
+		ContainerRuntime: "docker://19.3.5",
+		MachineID:        "b49d5b1b-1c0a-42a9-9ee5-5cf69f9f8070",
+		BootID:           "76a0634a-23c7-4c97-aecd-64f2b02cb267",
+		SystemUUID:       "16ac43e0-0000-0000-9230-395ecd46631c",
+		OSImage:          "Docker Desktop",
 	}
 
 	f, err := ioutil.TempFile("", t.Name())
@@ -168,7 +166,7 @@ func TestInitialize_Activate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect(gomock.Any()).Return(inspect, nil).Times(len(goodCases))
+	ami.EXPECT().CollectNodeInfo().Return(nodeInfo, nil).Times(len(goodCases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
@@ -215,10 +213,8 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 	c := &config.Config{}
 	c.Init = *ic
 
-	inspect := v1.Report{
-		"node": v1.NodeInfo{
-			Hostname: "docker-desktop",
-		},
+	nodeInfo := &v1.NodeInfo{
+		Hostname: "docker-desktop",
 	}
 
 	f, err := ioutil.TempFile("", t.Name())
@@ -233,7 +229,7 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().Collect(gomock.Any()).Return(inspect, nil).AnyTimes()
+	ami.EXPECT().CollectNodeInfo().Return(nodeInfo, nil).AnyTimes()
 
 	init, err := NewInit(c, ami)
 	assert.Nil(t, err)

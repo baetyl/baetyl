@@ -18,10 +18,9 @@ import (
 
 func TestCollectNodeInfo(t *testing.T) {
 	ami := initCollectKubeAMI(t)
-	node, err := ami.cli.core.Nodes().Get("node1", metav1.GetOptions{})
+	res, err := ami.CollectNodeInfo()
 	assert.NoError(t, err)
-	res := ami.collectNodeInfo(node)
-	expected := specv1.NodeInfo{
+	expected := &specv1.NodeInfo{
 		Hostname:         "hostname",
 		Address:          "nodeip",
 		Arch:             "arch",
