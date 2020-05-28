@@ -30,7 +30,6 @@ const (
 // Sync sync shadow and resources with cloud
 type Sync struct {
 	cfg   config.SyncConfig
-	fifo  chan v1.Desire
 	http  *http.Client
 	store *bh.Store
 	nod   *node.Node
@@ -52,7 +51,6 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, err
 		store: store,
 		nod:   nod,
 		http:  http.NewClient(ops),
-		fifo:  make(chan v1.Desire, 1),
 		log:   log.With(log.Any("core", "sync")),
 	}
 	if len(ops.TLSConfig.Certificates) == 1 && len(ops.TLSConfig.Certificates[0].Certificate) == 1 {
@@ -72,7 +70,7 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, err
 }
 
 func (s *Sync) Start() {
-	s.tomb.Go(s.reporting, s.desiring)
+	s.tomb.Go(s.reporting)
 }
 
 func (s *Sync) Close() {
@@ -96,15 +94,6 @@ func (s *Sync) Report(r v1.Report) (v1.Desire, error) {
 		return nil, err
 	}
 	return desire, nil
-}
-
-func (s *Sync) Desire(ds v1.Desire) error {
-	err := s.syncResources(ds.SysAppInfos())
-	if err != nil {
-		return err
-	}
-	_, err = s.nod.Desire(ds)
-	return err
 }
 
 func (s *Sync) reporting() error {
@@ -144,44 +133,10 @@ func (s *Sync) reportAndDesireAsync() error {
 	if len(desire) == 0 {
 		return nil
 	}
-
-	select {
-	case s.fifo <- desire:
-	case e := <-s.fifo:
-		s.log.Info("ignore shadow desire", log.Any("desire", e))
-		s.fifo <- desire
-	case <-s.tomb.Dying():
+	_, err = s.nod.Desire(desire)
+	if err != nil {
+		s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+		return err
 	}
 	return nil
-}
-
-func (s *Sync) desiring() error {
-	s.log.Info("sync starts to desire")
-	defer s.log.Info("sync has stopped desiring")
-
-	for {
-		select {
-		case e := <-s.fifo:
-			// to prepare resources
-			err := s.syncResources(e.AppInfos())
-			if err != nil {
-				s.log.Error("failed to sync resources", log.Any("desire", e), log.Error(err))
-				continue
-			}
-			// to prepare resources
-			err = s.syncResources(e.SysAppInfos())
-			if err != nil {
-				s.log.Error("failed to sync sys resources", log.Any("desire", e), log.Error(err))
-				continue
-			}
-			// to persist desire
-			_, err = s.nod.Desire(e)
-			if err != nil {
-				s.log.Error("failed to persist shadow desire", log.Any("desire", e), log.Error(err))
-				continue
-			}
-		case <-s.tomb.Dying():
-			return nil
-		}
-	}
 }

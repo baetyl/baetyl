@@ -19,15 +19,8 @@ const (
 	configValueZip  = "zip"
 )
 
-func (s *Sync) syncResources(ais []specv1.AppInfo) error {
-	if len(ais) == 0 {
-		return nil
-	}
-
-	appInfo := map[string]string{}
-	for _, a := range ais {
-		appInfo[a.Name] = a.Version
-	}
+func (s *Sync) SyncResource(info specv1.AppInfo) error {
+	appInfo := map[string]string{info.Name: info.Version}
 	crds, err := s.syncResourceValues(s.genResourceInfos(specv1.KindApplication, appInfo))
 	if err != nil {
 		s.log.Error("failed to sync application resource", log.Error(err))
@@ -178,6 +171,10 @@ func (s *Sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 	if key == "" {
 		return fmt.Errorf("configuration does not have name or version")
 	}
+	if err := s.store.Get(key, &specv1.Configuration{}); err == nil {
+		s.log.Info("configuration resource already exists", log.Any("configuration key", key))
+		return nil
+	}
 	return s.store.Upsert(key, cfg)
 }
 
@@ -196,6 +193,10 @@ func (s *Sync) storeApplication(app *specv1.Application) error {
 	if key == "" {
 		return fmt.Errorf("app does not have name or version")
 	}
+	if err := s.store.Get(key, &specv1.Application{}); err == nil {
+		s.log.Info("application resource already exists", log.Any("app key", key))
+		return nil
+	}
 	return s.store.Upsert(key, app)
 }
 
@@ -203,6 +204,10 @@ func (s *Sync) storeSecret(secret *specv1.Secret) error {
 	key := makeKey(specv1.KindSecret, secret.Name, secret.Version)
 	if key == "" {
 		return fmt.Errorf("secret does not have name or version")
+	}
+	if err := s.store.Get(key, &specv1.Secret{}); err == nil {
+		s.log.Info("secret resource already exists", log.Any("secret key", key))
+		return nil
 	}
 	return s.store.Upsert(key, secret)
 }

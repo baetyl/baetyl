@@ -250,7 +250,7 @@ func TestSyncResources(t *testing.T) {
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 	syn, err := NewSync(sc, sto, nod)
 	assert.NoError(t, err)
-	err = syn.syncResources([]specv1.AppInfo{specv1.AppInfo{Name: "desire-app", Version: "v1"}})
+	err = syn.SyncResource(specv1.AppInfo{Name: "desire-app", Version: "v1"})
 	var appRes specv1.Application
 	err = sto.Get(makeKey(specv1.KindApplication, appName, appVer), &appRes)
 	assert.NoError(t, err)
@@ -276,7 +276,7 @@ func TestSyncResources(t *testing.T) {
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 	syn, err = NewSync(sc, sto, nod)
 	assert.NoError(t, err)
-	err = syn.syncResources([]specv1.AppInfo{})
-	assert.NoError(t, err)
+	err = syn.SyncResource(specv1.AppInfo{})
+	assert.Error(t, err)
 	ms.Close()
 }

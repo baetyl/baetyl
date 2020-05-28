@@ -20,15 +20,19 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestKubeApply(t *testing.T) {
+func TestApplyApplication(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
-	app := &specv1.Application{
-		Name:      "app1",
+	aname := "app1"
+	ver := "a1"
+	sname := "svc1"
+	app := specv1.Application{
+		Name:      aname,
 		Namespace: ns,
-		Version:   "a1",
+		Version:   ver,
 		Services: []specv1.Service{{
-			Name: "svc1",
+			Name:  sname,
+			Image: "image1",
 			Ports: []specv1.ContainerPort{{
 				HostPort:      80,
 				ContainerPort: 80,
@@ -42,107 +46,12 @@ func TestKubeApply(t *testing.T) {
 			VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: "sec1", Version: "s1"}},
 		}},
 	}
-	key := makeKey(specv1.KindApplication, app.Name, app.Version)
-	err := ami.store.Upsert(key, app)
-	assert.NoError(t, err)
-	cfg := &specv1.Configuration{
-		Name:      "cfg1",
-		Namespace: ns,
-		Version:   "c1",
-	}
-	key = makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
-	err = ami.store.Upsert(key, cfg)
-	sec := &specv1.Secret{
-		Name:      "sec1",
-		Namespace: ns,
-		Version:   "s1",
-	}
-	key = makeKey(specv1.KindSecret, sec.Name, sec.Version)
-	err = ami.store.Upsert(key, sec)
-	infos := []specv1.AppInfo{{
-		Name:    "app1",
-		Version: "a1",
-	}}
-	err = ami.Apply(ns, infos, "", true)
+	secs := []string{"sec1"}
+	err := ami.ApplyApplication(ns, app, secs)
 	assert.NoError(t, err)
 }
 
-func TestKubePrepareConfigMap(t *testing.T) {
-	ami := initApplyKubeAMI(t)
-	ns := "baetyl-edge"
-	config := &specv1.Configuration{
-		Name:      "cfg",
-		Namespace: ns,
-		Data: map[string]string{
-			"test-key": "test-val",
-		},
-	}
-	expected := &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{Name: "cfg", Namespace: "baetyl-edge"},
-		Data: map[string]string{
-			"test-key": "test-val",
-		},
-	}
-	configMap, err := ami.prepareConfigMap(ns, config)
-	assert.NoError(t, err)
-	assert.Equal(t, configMap, expected)
-}
-
-func TestKubeToSecret(t *testing.T) {
-	ami := initApplyKubeAMI(t)
-	ns := "baetyl-edge"
-	sec := &specv1.Secret{
-		Name:      "sec",
-		Namespace: ns,
-	}
-	secKey := "sec-key"
-	secVal := "sec-val"
-	sec.Data = map[string][]byte{
-		secKey: []byte(secVal),
-	}
-	secret, err := ami.prepareSecret(ns, sec)
-	assert.NoError(t, err)
-	expected := &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{Name: "sec", Namespace: "baetyl-edge"},
-	}
-	expected.Data = map[string][]byte{
-		secKey: []byte(secVal),
-	}
-	assert.Equal(t, secret, expected)
-
-	// registry
-	reg := &specv1.Secret{Name: "registry"}
-	reg.Labels = map[string]string{
-		specv1.SecretLabel: specv1.SecretRegistry,
-	}
-	reg.Data = map[string][]byte{
-		RegistryAddress:  []byte("server"),
-		RegistryUsername: []byte("test"),
-		RegistryPassword: []byte("1234"),
-	}
-	registry, err := ami.prepareSecret(ns, reg)
-	assert.NoError(t, err)
-	expected = &v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{Name: "registry", Namespace: ns},
-		Type:       v1.SecretTypeDockerConfigJson,
-	}
-	auths := map[string]interface{}{
-		"auths": map[string]auth{
-			"server": {
-				Username: "test",
-				Password: "1234",
-				Auth:     base64.StdEncoding.EncodeToString([]byte("test:1234")),
-			},
-		},
-	}
-	data, _ := json.Marshal(auths)
-	expected.Data = map[string][]byte{
-		v1.DockerConfigJsonKey: data,
-	}
-	assert.Equal(t, registry, expected)
-}
-
-func TestKubeToService(t *testing.T) {
+func TestPrepareService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	svcName := "svc"
 	ns := "baetyl-edge"
@@ -177,16 +86,16 @@ func TestKubeToService(t *testing.T) {
 	assert.Nil(t, service)
 }
 
-func TestKubeToDeploy(t *testing.T) {
+func TestPrepareDeploy(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	svcName := "svc"
-	app := &specv1.Application{
+	app := specv1.Application{
 		Name:      "app",
 		Namespace: ns,
 		Version:   "a1",
 	}
-	svc := &specv1.Service{
+	svc := specv1.Service{
 		Name:    svcName,
 		Replica: 1,
 		VolumeMounts: []specv1.VolumeMount{{
@@ -205,7 +114,7 @@ func TestKubeToDeploy(t *testing.T) {
 	}
 	cpuQuan, _ := resource.ParseQuantity("1")
 	memoryQuan, _ := resource.ParseQuantity("456456")
-	volumes := []specv1.Volume{{
+	app.Volumes = []specv1.Volume{{
 		Name: "cfg",
 		VolumeSource: specv1.VolumeSource{
 			Config: &specv1.ObjectReference{
@@ -225,7 +134,7 @@ func TestKubeToDeploy(t *testing.T) {
 			HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := ami.prepareDeploy(ns, app, svc, volumes, nil)
+	deploy, err := ami.prepareDeploy(ns, app, svc, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1
@@ -249,8 +158,7 @@ func TestKubeToDeploy(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					NodeName:           "node1",
-					ServiceAccountName: ServiceAccountName,
+					NodeName: "node1",
 					Volumes: []v1.Volume{
 						{
 							Name: "cfg",
@@ -305,7 +213,7 @@ func TestKubeToDeploy(t *testing.T) {
 	assert.Equal(t, deploy, expected)
 }
 
-func TestKubeApplyDeploy(t *testing.T) {
+func TestApplyDeploys(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	lables := map[string]string{
@@ -319,7 +227,7 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d2", Namespace: ns, Labels: lables},
 		},
 	}
-	err := ami.applyDeploys(ns, ds, "", true)
+	err := ami.applyDeploys(ns, ds)
 	assert.NoError(t, err)
 
 	wrongDs := map[string]*appv1.Deployment{
@@ -330,71 +238,130 @@ func TestKubeApplyDeploy(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: "default", Labels: lables},
 		},
 	}
-	err = ami.applyDeploys(ns, wrongDs, "", true)
-	assert.Error(t, err)
-
-	deleteDs := map[string]*appv1.Deployment{
-		"d3": {
-			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: ns, Labels: lables},
-		},
-	}
-	err = ami.applyDeploys(ns, deleteDs, "", true)
-	assert.NoError(t, err)
-	_, err = ami.cli.app.Deployments(ns).Get("d1", metav1.GetOptions{})
+	err = ami.applyDeploys(ns, wrongDs)
 	assert.Error(t, err)
 }
 
-func TestKubeApplySecret(t *testing.T) {
+func TestDeleteApplication(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
-	secs := map[string]*v1.Secret{
+	sname := "svc1"
+	app := specv1.Application{
+		Name:      "app1",
+		Namespace: ns,
+		Version:   "a1",
+		Services: []specv1.Service{{
+			Name:  sname,
+			Image: "image1",
+			Ports: []specv1.ContainerPort{{
+				HostPort:      80,
+				ContainerPort: 80,
+			}},
+		}},
+	}
+	err := ami.ApplyApplication(ns, app, nil)
+	assert.NoError(t, err)
+	d, err := ami.cli.app.Deployments(ns).Get(sname, metav1.GetOptions{})
+	assert.NotNil(t, d)
+	assert.NoError(t, err)
+	s, err := ami.cli.core.Services(ns).Get(sname, metav1.GetOptions{})
+	assert.NotNil(t, s)
+	assert.NoError(t, err)
+
+	err = ami.DeleteApplication(ns, app)
+	assert.NoError(t, err)
+	d, _ = ami.cli.app.Deployments(ns).Get(sname, metav1.GetOptions{})
+	assert.Nil(t, d)
+	s, _ = ami.cli.core.Services(ns).Get(sname, metav1.GetOptions{})
+	assert.Nil(t, s)
+}
+
+func TestApplySecret(t *testing.T) {
+	ami := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	secs := map[string]specv1.Secret{
 		"sec1": {
-			ObjectMeta: metav1.ObjectMeta{Name: "sec1", Namespace: ns},
+			Name: "sec1", Namespace: ns,
 		},
 		"sec2": {
-			ObjectMeta: metav1.ObjectMeta{Name: "sec2", Namespace: ns},
+			Name: "sec2", Namespace: ns,
 		},
 	}
-	err := ami.applySecrets(ns, secs)
+	err := ami.ApplySecrets(ns, secs)
 	assert.NoError(t, err)
-	wrongSecs := map[string]*v1.Secret{
-		"sec1": {
-			ObjectMeta: metav1.ObjectMeta{Name: "sec1", Namespace: "default"},
-		},
-		"sec3": {
-			ObjectMeta: metav1.ObjectMeta{Name: "sec3", Namespace: "default"},
+
+	sec := specv1.Secret{
+		Name:      "sec",
+		Namespace: ns,
+	}
+	secKey := "sec-key"
+	secVal := "sec-val"
+	sec.Data = map[string][]byte{
+		secKey: []byte(secVal),
+	}
+	secs = map[string]specv1.Secret{"sec": sec}
+	err = ami.ApplySecrets(ns, secs)
+	assert.NoError(t, err)
+	expected := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "sec", Namespace: "baetyl-edge"},
+	}
+	expected.Data = map[string][]byte{
+		secKey: []byte(secVal),
+	}
+	res, err := ami.cli.core.Secrets(ns).Get("sec", metav1.GetOptions{})
+	assert.Equal(t, res, expected)
+
+	// registry
+	reg := specv1.Secret{Name: "registry"}
+	reg.Labels = map[string]string{
+		specv1.SecretLabel: specv1.SecretRegistry,
+	}
+	reg.Data = map[string][]byte{
+		RegistryAddress:  []byte("server"),
+		RegistryUsername: []byte("test"),
+		RegistryPassword: []byte("1234"),
+	}
+	regs := map[string]specv1.Secret{"registry": reg}
+	err = ami.ApplySecrets(ns, regs)
+	assert.NoError(t, err)
+	expected = &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "registry", Namespace: ns},
+		Type:       v1.SecretTypeDockerConfigJson,
+	}
+	auths := map[string]interface{}{
+		"auths": map[string]auth{
+			"server": {
+				Username: "test",
+				Password: "1234",
+				Auth:     base64.StdEncoding.EncodeToString([]byte("test:1234")),
+			},
 		},
 	}
-	err = ami.applySecrets(ns, wrongSecs)
-	assert.Error(t, err)
+	data, _ := json.Marshal(auths)
+	expected.Data = map[string][]byte{
+		v1.DockerConfigJsonKey: data,
+	}
+	res, err = ami.cli.core.Secrets(ns).Get("registry", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, res, expected)
 }
 
-func TestKubeApplyConfigMap(t *testing.T) {
+func TestApplyConfigMap(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
-	cfgs := map[string]*v1.ConfigMap{
+	cfgs := map[string]specv1.Configuration{
 		"cfg1": {
-			ObjectMeta: metav1.ObjectMeta{Name: "cfg1", Namespace: ns},
+			Name: "cfg1", Namespace: ns,
 		},
 		"cfg2": {
-			ObjectMeta: metav1.ObjectMeta{Name: "cfg2", Namespace: ns},
+			Name: "cfg2", Namespace: ns,
 		},
 	}
-	err := ami.applyConfigMaps(ns, cfgs)
+	err := ami.ApplyConfigurations(ns, cfgs)
 	assert.NoError(t, err)
-	wrongCfgs := map[string]*v1.ConfigMap{
-		"cfg1": {
-			ObjectMeta: metav1.ObjectMeta{Name: "cfg1", Namespace: "default"},
-		},
-		"cfg3": {
-			ObjectMeta: metav1.ObjectMeta{Name: "cfg3", Namespace: "default"},
-		},
-	}
-	err = ami.applyConfigMaps(ns, wrongCfgs)
-	assert.Error(t, err)
 }
 
-func TestKubeApplyService(t *testing.T) {
+func TestApplyService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	svcs := map[string]*v1.Service{

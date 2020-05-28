@@ -4,6 +4,8 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go v0.38.0/go.mod h1:990N+gfupTy94rShfmMCWGDn0LpTmnzTp2qbd1dvSRU=
 github.com/256dpi/gomqtt v0.13.0 h1:kpIBQ8oMyY3Wg+MqIpiH9Y2TTcjhw9Ed+CcoueOLiNk=
 github.com/256dpi/gomqtt v0.13.0/go.mod h1:vWiB7Vt8R/9Jx9WAD6YDvBN3SKzWMRbdOcLf0cbPUkI=
+github.com/256dpi/gomqtt v0.14.2 h1:TBUKjqBJtU8tfZwiRbpZevzvMWUlzZlbhuzL0hIghok=
+github.com/256dpi/gomqtt v0.14.2/go.mod h1:2y4qpvxskFCnQpLIdEY5HG55zqXgAjB88xqrBbZsQRg=
 github.com/256dpi/mercury v0.2.0 h1:ImB0JYuZ28kwp2MpqnMdQFSD3z9mgaNYHrSjYuyP0LI=
 github.com/256dpi/mercury v0.2.0/go.mod h1:xxgxZSQO7VUwxGLpk8yRVe/WF0MKH7nCIwSh4kUVMy4=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 h1:w+iIsaOQNcT7OZ575w+acHgRric5iCyQh+xv+KJ4HB8=
@@ -35,6 +37,12 @@ github.com/baetyl/baetyl-go v0.1.56 h1:69KXBszXe7r0EWasYQBiYgq7VArKvY6y1qjW6wreL
 github.com/baetyl/baetyl-go v0.1.56/go.mod h1:lqA3j1j2/uS9irRs+2j1vjORjkq8NpBrgyRaEcmaRdo=
 github.com/baetyl/baetyl-go v0.1.58 h1:KH0S0sCANkgD7U/8awCmEQl7+tQ4N7/JgEAv/2UWJlA=
 github.com/baetyl/baetyl-go v0.1.58/go.mod h1:lqA3j1j2/uS9irRs+2j1vjORjkq8NpBrgyRaEcmaRdo=
+github.com/baetyl/baetyl-go v0.1.61 h1:/h7QdAr8Nsd1DtHoTe+gDlIdA4ZO/Cx/lf/icVonRj0=
+github.com/baetyl/baetyl-go v0.1.61/go.mod h1:RJtE4dPY4tJHiuBubdhfnTsOKnSFkzarq2iToRZMaZw=
+github.com/baetyl/baetyl-go v0.1.62 h1:Rjub2LauXAvQCEl4WkW9Yg2SYsK7jp+h+m7qyr25iZY=
+github.com/baetyl/baetyl-go v0.1.62/go.mod h1:RJtE4dPY4tJHiuBubdhfnTsOKnSFkzarq2iToRZMaZw=
+github.com/baetyl/baetyl-go v0.1.65 h1:zBIeMltnDvj7ZCapc/u+BliK7QUqUQZnHmi0HzkTJug=
+github.com/baetyl/baetyl-go v0.1.65/go.mod h1:RJtE4dPY4tJHiuBubdhfnTsOKnSFkzarq2iToRZMaZw=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/blang/semver v3.5.0+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=

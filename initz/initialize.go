@@ -1,8 +1,8 @@
 package initz
 
 import (
-	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
@@ -22,14 +22,14 @@ type Initialize struct {
 	tomb  utils.Tomb
 	http  *http.Client
 	srv   *gohttp.Server
-	ami   ami.AMI
+	ami   engine.AMI
 	batch *batch
 	attrs map[string]string
 	sig   chan bool
 }
 
 // NewInit to activate, success add node info
-func NewInit(cfg *config.Config, ami ami.AMI) (*Initialize, error) {
+func NewInit(cfg *config.Config, ami engine.AMI) (*Initialize, error) {
 	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err

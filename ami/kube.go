@@ -24,7 +24,7 @@ type kubeImpl struct {
 }
 
 // TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
-func newKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (AMI, error) {
+func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (*kubeImpl, error) {
 	cli, err := newClient(cfg)
 	if err != nil {
 		return nil, err

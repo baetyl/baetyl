@@ -2,14 +2,12 @@ package ami
 
 import (
 	"fmt"
-	"github.com/jinzhu/copier"
-	kl "k8s.io/apimachinery/pkg/labels"
-	"time"
-
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kl "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
 )
@@ -18,52 +16,46 @@ const (
 	LabelSystemApp = "baetyl-sysapp"
 )
 
-func (k *kubeImpl) Collect(ns string) (specv1.Report, error) {
+//func (k *kubeImpl) Collect(ns string) (specv1.Report, error) {
+//	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
+//	if err != nil {
+//		return nil, err
+//	}
+//	nodeInfo := k.collectNodeInfo(node)
+//	nodeStats, err := k.collectNodeStats(node)
+//	if err != nil {
+//		k.log.Error("failed to collect node status", log.Error(err))
+//	}
+//	appStatus, err := k.collectAppStatus(ns)
+//	if err != nil {
+//		k.log.Error("failed to collect app status", log.Error(err))
+//	}
+//	apps := make([]specv1.AppInfo, 0)
+//	for _, info := range appStatus {
+//		app := specv1.AppInfo{
+//			Name:    info.Name,
+//			Version: info.Version,
+//		}
+//		apps = append(apps, app)
+//	}
+//	r := specv1.Report{
+//		"time":      time.Now(),
+//		"node":      nodeInfo,
+//		"nodestats": nodeStats,
+//		"apps":      apps,
+//		"appstats":  appStatus,
+//	}
+//	k.log.Debug("ami collects status", log.Any("report", r))
+//	return r, nil
+//}
+
+func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo := k.collectNodeInfo(node)
-	nodeStats, err := k.collectNodeStats(node)
-	if err != nil {
-		k.log.Error("failed to collect node status", log.Error(err))
-	}
-	sysAppStatus, appStatus, err := k.collectAppStatus(ns)
-	if err != nil {
-		k.log.Error("failed to collect app status", log.Error(err))
-	}
-	var apps []specv1.AppInfo
-	for _, info := range appStatus {
-		app := specv1.AppInfo{
-			Name:    info.Name,
-			Version: info.Version,
-		}
-		apps = append(apps, app)
-	}
-	var sysApps []specv1.AppInfo
-	for _, info := range sysAppStatus {
-		app := specv1.AppInfo{
-			Name:    info.Name,
-			Version: info.Version,
-		}
-		sysApps = append(sysApps, app)
-	}
-	appStatus = append(appStatus, sysAppStatus...)
-	r := specv1.Report{
-		"time":      time.Now(),
-		"node":      nodeInfo,
-		"nodestats": nodeStats,
-		"apps":      apps,
-		"sysapps":   sysApps,
-		"appstats":  appStatus,
-	}
-	k.log.Debug("ami collects status", log.Any("report", r))
-	return r, nil
-}
-
-func (k *kubeImpl) collectNodeInfo(node *corev1.Node) specv1.NodeInfo {
 	ni := node.Status.NodeInfo
-	nodeInfo := specv1.NodeInfo{
+	nodeInfo := &specv1.NodeInfo{
 		Arch:             ni.Architecture,
 		KernelVersion:    ni.KernelVersion,
 		OS:               ni.OperatingSystem,
@@ -80,17 +72,21 @@ func (k *kubeImpl) collectNodeInfo(node *corev1.Node) specv1.NodeInfo {
 			nodeInfo.Hostname = addr.Address
 		}
 	}
-	return nodeInfo
+	return nodeInfo, nil
 }
 
-func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error) {
-	nodeStats := specv1.NodeStatus{
+func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStatus, error) {
+	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	nodeStats := &specv1.NodeStatus{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
 	}
 	nodeMetric, err := k.cli.metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
-		return nodeStats, err
+		return nil, err
 	}
 	for res, quan := range nodeMetric.Usage {
 		nodeStats.Usage[string(res)] = quan.String()
@@ -103,16 +99,15 @@ func (k *kubeImpl) collectNodeStats(node *corev1.Node) (specv1.NodeStatus, error
 	return nodeStats, nil
 }
 
-func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.AppStatus, error) {
+func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
+	}
+	if deploys == nil {
+		return nil, nil
 	}
 	appStatuses := map[string]*specv1.AppStatus{}
-	sysAppStatuses := map[string]*specv1.AppStatus{}
-	if deploys == nil {
-		return nil, nil, nil
-	}
 	for _, deploy := range deploys.Items {
 		ls := kl.Set{}
 		selector := deploy.Spec.Selector.MatchLabels
@@ -121,7 +116,7 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 			LabelSelector: ls.String(),
 		})
 		if pods == nil || len(pods.Items) == 0 {
-			return nil, nil, fmt.Errorf("no pod or more than one pod exists")
+			return nil, fmt.Errorf("no pod exists")
 		}
 		pod := pods.Items[0]
 		appName := pod.Labels[AppName]
@@ -138,7 +133,7 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 			}}
 		}
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		ref, err := reference.GetReference(scheme.Scheme, &pod)
 		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
@@ -152,14 +147,13 @@ func (k *kubeImpl) collectAppStatus(ns string) ([]specv1.AppStatus, []specv1.App
 		}
 		status.ServiceInfos[serviceName] = k.collectServiceInfo(ns, serviceName, &pod)
 		status.Status = getDeployStatus(status.ServiceInfos)
-		if _, ok := deploy.Labels[LabelSystemApp]; ok {
-			sysAppStatuses[appName] = status
-		} else {
-			appStatuses[appName] = status
-		}
-
+		appStatuses[appName] = status
 	}
-	return transformAppStatus(sysAppStatuses), transformAppStatus(appStatuses), nil
+	var res []specv1.AppStatus
+	for _, status := range appStatuses {
+		res = append(res, *status)
+	}
+	return res, nil
 }
 
 func getDeployStatus(infos map[string]*specv1.ServiceInfo) string {
@@ -175,14 +169,6 @@ func getDeployStatus(infos map[string]*specv1.ServiceInfo) string {
 		return string(corev1.PodPending)
 	}
 	return string(corev1.PodRunning)
-}
-
-func transformAppStatus(appStatus map[string]*specv1.AppStatus) []specv1.AppStatus {
-	var res []specv1.AppStatus
-	for _, status := range appStatus {
-		res = append(res, *status)
-	}
-	return res
 }
 
 func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {

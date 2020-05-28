@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/baetyl/baetyl-core/config"
-	v1 "github.com/baetyl/baetyl-go/spec/v1"
 )
 
 // TODO: can be configured by cloud
@@ -26,12 +25,10 @@ func (init *Initialize) collect() (string, error) {
 	if len(fs) == 0 {
 		return "", nil
 	}
-	ns := "baetyl-edge"
-	report, err := init.ami.Collect(ns)
+	nodeInfo, err := init.ami.CollectNodeInfo()
 	if err != nil {
 		return "", err
 	}
-	nodeInfo := report["node"]
 	for _, f := range fs {
 		switch f.Proof {
 		case config.ProofInput:
@@ -48,22 +45,22 @@ func (init *Initialize) collect() (string, error) {
 			if nodeInfo == nil {
 				return "", ErrProofValueNotFound
 			}
-			return nodeInfo.(v1.NodeInfo).Hostname, nil
+			return nodeInfo.Hostname, nil
 		case config.ProofMachineID:
 			if nodeInfo == nil {
 				return "", ErrProofValueNotFound
 			}
-			return nodeInfo.(v1.NodeInfo).MachineID, nil
+			return nodeInfo.MachineID, nil
 		case config.ProofSystemUUID:
 			if nodeInfo == nil {
 				return "", ErrProofValueNotFound
 			}
-			return nodeInfo.(v1.NodeInfo).SystemUUID, nil
+			return nodeInfo.SystemUUID, nil
 		case config.ProofBootID:
 			if nodeInfo == nil {
 				return "", ErrProofValueNotFound
 			}
-			return nodeInfo.(v1.NodeInfo).BootID, nil
+			return nodeInfo.BootID, nil
 		default:
 			return "", ErrProofTypeNotSupported
 		}

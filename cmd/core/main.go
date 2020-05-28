@@ -40,19 +40,21 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, err
 	}
-	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha)
-	if err != nil {
-		c.Close()
-		return nil, err
-	}
-
-	c.eng.Start()
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
 	if err != nil {
 		c.Close()
 		return nil, err
 	}
 	c.syn.Start()
+
+	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.syn)
+	if err != nil {
+		c.Close()
+		return nil, err
+	}
+
+	c.eng.Start()
+
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
 	c.svr.Start()
 	return c, nil
