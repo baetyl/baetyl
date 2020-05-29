@@ -37,7 +37,7 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn *sync.Sync) (*Engine, error) {
-	kube, err := GenAMI(cfg, sto)
+	kube, err := GenAMI(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -167,51 +167,61 @@ func (e Engine) reportAndApply(ns string, scope specv1.Scope, delete bool) error
 		return err
 	}
 	// if apps are updated, to apply new apps
-	if delta != nil {
-		dapps := delta.AppInfos(scope)
-		if dapps != nil {
-			if delete {
-				if err := e.deleteApps(ns, dapps, rapps); err != nil {
-					e.log.Error("failed to delete sys apps", log.Error(err))
-				}
-			}
-			e.applyApps(ns, dapps, rapps)
-			e.log.Info("to apply sys apps", log.Any("apps", dapps))
+	if delta == nil {
+		return nil
+	}
+	dapps := delta.AppInfos(scope)
+	if dapps == nil {
+		return nil
+	}
+	del, update := getDeleteAndUpdate(dapps, rapps)
+	if delete {
+		if err := e.deleteApps(ns, del); err != nil {
+			e.log.Error("failed to delete sys apps", log.Error(err))
 		}
 	}
+	e.applyApps(ns, update)
+	e.log.Info("to apply sys apps", log.Any("apps", dapps))
 	return nil
 }
 
-func (e Engine) applyApps(ns string, desires []specv1.AppInfo, reports []specv1.AppInfo) {
-	rs := make(map[string]specv1.AppInfo)
-	for _, r := range reports {
-		rs[r.Name] = r
+func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.AppInfo, map[string]specv1.AppInfo) {
+	del := make(map[string]specv1.AppInfo)
+	for _, app := range reports {
+		del[app.Name] = app
 	}
-	var wg gosync.WaitGroup
-	for _, appInfo := range desires {
-		if _, ok := rs[appInfo.Name]; !ok {
-			wg.Add(1)
-			go func(wg *gosync.WaitGroup, info specv1.AppInfo) {
-				if err := e.applyApp(ns, info); err != nil {
-					e.log.Error("failed to apply application", log.Any("app info", appInfo), log.Error(err))
-				}
-				wg.Done()
-			}(&wg, appInfo)
+	for _, app := range desires {
+		if _, ok := del[app.Name]; ok {
+			delete(del, app.Name)
 		}
+	}
+	update := make(map[string]specv1.AppInfo)
+	for _, d := range desires {
+		update[d.Name] = d
+	}
+	for _, r := range reports {
+		if app, ok := update[r.Name]; ok && app.Version == r.Version {
+			delete(update, app.Name)
+		}
+	}
+	return del, update
+}
+
+func (e Engine) applyApps(ns string, infos map[string]specv1.AppInfo) {
+	var wg gosync.WaitGroup
+	for _, info := range infos {
+		wg.Add(1)
+		go func(wg *gosync.WaitGroup, info specv1.AppInfo) {
+			if err := e.applyApp(ns, info); err != nil {
+				e.log.Error("failed to apply application", log.Any("info", info), log.Error(err))
+			}
+			wg.Done()
+		}(&wg, info)
 	}
 	wg.Wait()
 }
 
-func (e Engine) deleteApps(ns string, desire, report []specv1.AppInfo) error {
-	del := make(map[string]specv1.AppInfo)
-	for _, app := range report {
-		del[app.Name] = app
-	}
-	for _, app := range desire {
-		if d, ok := del[app.Name]; ok && d.Version == app.Version {
-			delete(del, app.Name)
-		}
-	}
+func (e Engine) deleteApps(ns string, del map[string]specv1.AppInfo) error {
 	for _, app := range del {
 		key := makeKey(specv1.KindApplication, app.Name, app.Version)
 		if key == "" {

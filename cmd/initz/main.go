@@ -103,7 +103,7 @@ func (c *core) reportAndDesire() error {
 		c.log.Error("failed to report app info", log.Error(err))
 		return ErrSysappCoreMissing
 	}
-	if len(ds) == 0 || len(ds.AppInfos(specv1.SYSTEM)) == 0 {
+	if len(ds) == 0 {
 		return ErrSysappCoreMissing
 	}
 

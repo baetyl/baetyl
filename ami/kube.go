@@ -1,6 +1,7 @@
 package ami
 
 import (
+	"github.com/baetyl/baetyl-core/engine"
 	"os"
 
 	"github.com/baetyl/baetyl-core/config"
@@ -23,19 +24,21 @@ type kubeImpl struct {
 	log   *log.Logger
 }
 
-// TODO: move store and shadow to engine. kubemodel only implement the interfaces of omi
-func NewKubeImpl(cfg config.KubernetesConfig, sto *bh.Store) (*kubeImpl, error) {
-	cli, err := newClient(cfg)
+func init() {
+	engine.Register(engine.Kubernetes, NewKubeImpl)
+}
+
+func NewKubeImpl(cfg config.EngineConfig) (engine.AMI, error) {
+	cli, err := newClient(cfg.Kubernetes)
 	if err != nil {
 		return nil, err
 	}
 	knn := os.Getenv(KubeNodeName)
 	model := &kubeImpl{
-		knn:   knn,
-		cli:   cli,
-		store: sto,
-		conf:  &cfg,
-		log:   log.With(log.Any("ami", "kube")),
+		knn:  knn,
+		cli:  cli,
+		conf: &cfg.Kubernetes,
+		log:  log.With(log.Any("ami", "kube")),
 	}
 	return model, nil
 }
