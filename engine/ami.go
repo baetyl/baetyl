@@ -1,12 +1,12 @@
 package engine
 
 import (
-	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
-	bh "github.com/timshannon/bolthold"
 	"io"
 	"os"
+	"sync"
 )
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl-core/engine AMI
@@ -14,6 +14,13 @@ import (
 const (
 	Kubernetes = "kubernetes"
 )
+
+var mu sync.Mutex
+
+type New func(cfg config.EngineConfig) (AMI, error)
+
+var amiNews = map[string]New{}
+var amis = map[string]AMI{}
 
 // AMI app model interfaces
 type AMI interface {
@@ -27,11 +34,34 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
-func GenAMI(cfg config.EngineConfig, sto *bh.Store) (AMI, error) {
-	switch cfg.Kind {
-	case Kubernetes:
-		return ami.NewKubeImpl(cfg.Kubernetes, sto)
-	default:
+func GenAMI(cfg config.EngineConfig) (AMI, error) {
+	name := cfg.Kind
+	mu.Lock()
+	defer mu.Unlock()
+	if ami, ok := amis[name]; ok {
+		return ami, nil
+	}
+	amiNew, ok := amiNews[name]
+	if !ok {
+		log.L().Error("ami generator not exists", log.Any("generator", name))
 		return nil, os.ErrInvalid
 	}
+	ami, err := amiNew(cfg)
+	if err != nil {
+		log.L().Error("failed to generate ami", log.Any("generator", name))
+		return nil, err
+	}
+	amis[name] = ami
+	return ami, nil
+}
+
+func Register(name string, n New) {
+	mu.Lock()
+	defer mu.Unlock()
+	if _, ok := amiNews[name]; ok {
+		log.L().Info("ami generator already exists, skip", log.Any("generator", name))
+		return
+	}
+	log.L().Info("ami generator registered", log.Any("generator", name))
+	amiNews[name] = n
 }

@@ -12,43 +12,6 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-const (
-	LabelSystemApp = "baetyl-sysapp"
-)
-
-//func (k *kubeImpl) Collect(ns string) (specv1.Report, error) {
-//	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
-//	if err != nil {
-//		return nil, err
-//	}
-//	nodeInfo := k.collectNodeInfo(node)
-//	nodeStats, err := k.collectNodeStats(node)
-//	if err != nil {
-//		k.log.Error("failed to collect node status", log.Error(err))
-//	}
-//	appStatus, err := k.collectAppStatus(ns)
-//	if err != nil {
-//		k.log.Error("failed to collect app status", log.Error(err))
-//	}
-//	apps := make([]specv1.AppInfo, 0)
-//	for _, info := range appStatus {
-//		app := specv1.AppInfo{
-//			Name:    info.Name,
-//			Version: info.Version,
-//		}
-//		apps = append(apps, app)
-//	}
-//	r := specv1.Report{
-//		"time":      time.Now(),
-//		"node":      nodeInfo,
-//		"nodestats": nodeStats,
-//		"apps":      apps,
-//		"appstats":  appStatus,
-//	}
-//	k.log.Debug("ami collects status", log.Any("report", r))
-//	return r, nil
-//}
-
 func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {

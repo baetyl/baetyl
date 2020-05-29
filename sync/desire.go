@@ -172,7 +172,7 @@ func (s *Sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 		return fmt.Errorf("configuration does not have name or version")
 	}
 	if err := s.store.Get(key, &specv1.Configuration{}); err == nil {
-		s.log.Info("configuration resource already exists", log.Any("configuration key", key))
+		s.log.Info("configuration resource already exists", log.Any("key", key))
 		return nil
 	}
 	return s.store.Upsert(key, cfg)
@@ -194,7 +194,7 @@ func (s *Sync) storeApplication(app *specv1.Application) error {
 		return fmt.Errorf("app does not have name or version")
 	}
 	if err := s.store.Get(key, &specv1.Application{}); err == nil {
-		s.log.Info("application resource already exists", log.Any("app key", key))
+		s.log.Info("application resource already exists", log.Any("key", key))
 		return nil
 	}
 	return s.store.Upsert(key, app)
@@ -206,7 +206,7 @@ func (s *Sync) storeSecret(secret *specv1.Secret) error {
 		return fmt.Errorf("secret does not have name or version")
 	}
 	if err := s.store.Get(key, &specv1.Secret{}); err == nil {
-		s.log.Info("secret resource already exists", log.Any("secret key", key))
+		s.log.Info("secret resource already exists", log.Any("key", key))
 		return nil
 	}
 	return s.store.Upsert(key, secret)
