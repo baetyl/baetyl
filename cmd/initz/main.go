@@ -94,7 +94,7 @@ func (c *core) Close() {
 }
 
 func (c *core) reportAndDesire() error {
-	r, err := c.eng.Collect("baetyl-edge-system", specv1.SYSTEM)
+	r, err := c.eng.Collect("baetyl-edge-system", true)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (c *core) reportAndDesire() error {
 		return ErrSysappCoreMissing
 	}
 
-	for _, app := range ds.AppInfos(specv1.SYSTEM) {
+	for _, app := range ds.AppInfos(true) {
 		if strings.Contains(app.Name, BaetylCore) {
 			if _, err := c.sha.Desire(specv1.Desire{"sysapps": []specv1.AppInfo{app}}); err != nil {
 				return err
@@ -144,7 +144,7 @@ func main() {
 		for {
 			select {
 			case <-t.C:
-				r, err := c.eng.Collect("baetyl-edge-system", specv1.SYSTEM)
+				r, err := c.eng.Collect("baetyl-edge-system", true)
 				if err != nil {
 					c.log.Error("failed to collect info", log.Error(err))
 				}
