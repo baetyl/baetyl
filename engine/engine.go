@@ -103,22 +103,16 @@ func (e *Engine) reporting() error {
 }
 
 func (e *Engine) reportAndDesireAsync(delete bool) error {
-	if err := e.reportAndApply(e.sysns, specv1.SYSTEM, delete); err != nil {
+	if err := e.reportAndApply(e.sysns, true, delete); err != nil {
 		return err
 	}
-	if err := e.reportAndApply(e.ns, specv1.USER, delete); err != nil {
+	if err := e.reportAndApply(e.ns, false, delete); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (e Engine) Collect(ns string, scope specv1.Scope) (specv1.Report, error) {
-	var stats string
-	if scope == specv1.SYSTEM {
-		stats = "sysappstats"
-	} else {
-		stats = "appstats"
-	}
+func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
 	nodeInfo, err := e.Ami.CollectNodeInfo()
 	if err != nil {
 		e.log.Warn("failed to collect node info", log.Error(err))
@@ -144,24 +138,24 @@ func (e Engine) Collect(ns string, scope specv1.Scope) (specv1.Report, error) {
 		}
 		apps = append(apps, app)
 	}
-	rapps := alignApps(apps, no.Desire.AppInfos(scope))
+	rapps := alignApps(apps, no.Desire.AppInfos(isSys))
 	// to report app status into local shadow, and return shadow delta
 	r := specv1.Report{
 		"time":      time.Now(),
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
-		stats:       appStats,
 	}
-	r.SetAppInfos(scope, rapps)
+	r.SetAppInfos(isSys, rapps)
+	r.SetAppStats(isSys, appStats)
 	return r, nil
 }
 
-func (e Engine) reportAndApply(ns string, scope specv1.Scope, delete bool) error {
-	r, err := e.Collect(ns, scope)
+func (e Engine) reportAndApply(ns string, isSys, delete bool) error {
+	r, err := e.Collect(ns, isSys)
 	if err != nil {
 		return err
 	}
-	rapps := r.AppInfos(scope)
+	rapps := r.AppInfos(isSys)
 	delta, err := e.nod.Report(r)
 	if err != nil {
 		return err
@@ -170,7 +164,7 @@ func (e Engine) reportAndApply(ns string, scope specv1.Scope, delete bool) error
 	if delta == nil {
 		return nil
 	}
-	dapps := delta.AppInfos(scope)
+	dapps := delta.AppInfos(isSys)
 	if dapps == nil {
 		return nil
 	}
