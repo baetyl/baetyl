@@ -27,8 +27,16 @@ const (
 	EnvKeyNodeName = "BAETYL_NODE_NAME"
 )
 
+//go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl-core/sync Sync
+type Sync interface {
+	Start()
+	Close()
+	Report(r v1.Report) (v1.Desire, error)
+	SyncResource(v1.AppInfo) error
+}
+
 // Sync sync shadow and resources with cloud
-type Sync struct {
+type sync struct {
 	cfg   config.SyncConfig
 	http  *http.Client
 	store *bh.Store
@@ -38,7 +46,7 @@ type Sync struct {
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, error) {
+func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, error) {
 	ops, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
@@ -46,7 +54,7 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, err
 	if ops.TLSConfig == nil {
 		return nil, ErrSyncTLSConfigMissing
 	}
-	s := &Sync{
+	s := &sync{
 		cfg:   cfg,
 		store: store,
 		nod:   nod,
@@ -69,16 +77,16 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (*Sync, err
 	return s, nil
 }
 
-func (s *Sync) Start() {
+func (s *sync) Start() {
 	s.tomb.Go(s.reporting)
 }
 
-func (s *Sync) Close() {
+func (s *sync) Close() {
 	s.tomb.Kill(nil)
 	s.tomb.Wait()
 }
 
-func (s *Sync) Report(r v1.Report) (v1.Desire, error) {
+func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	pld, err := json.Marshal(r)
 	if err != nil {
 		return nil, err
@@ -96,7 +104,7 @@ func (s *Sync) Report(r v1.Report) (v1.Desire, error) {
 	return desire, nil
 }
 
-func (s *Sync) reporting() error {
+func (s *sync) reporting() error {
 	s.log.Info("sync starts to report")
 	defer s.log.Info("sync has stopped reporting")
 
@@ -121,7 +129,7 @@ func (s *Sync) reporting() error {
 	}
 }
 
-func (s *Sync) reportAndDesireAsync() error {
+func (s *sync) reportAndDesireAsync() error {
 	sd, err := s.nod.Get()
 	if err != nil {
 		return err

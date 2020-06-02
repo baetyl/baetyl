@@ -3,6 +3,8 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/log"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -51,8 +53,15 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 	sc.Cloud.Report.Interval = time.Millisecond * 500
 
-	syn, err := NewSync(sc, sto, nod)
+	ops, err := sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	syn := &sync{
+		cfg:   sc,
+		store: sto,
+		nod:   nod,
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("test", "sync")),
+	}
 
 	err = syn.reportAndDesireAsync()
 	assert.NoError(t, err)
@@ -76,8 +85,9 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, nod)
+	ops, err = sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	syn = &sync{cfg: sc, store: sto, nod: nod, http: http.NewClient(ops), log: log.With(log.Any("test", "sync"))}
 	syn.Start()
 
 	ms = mock.NewServer(tlssvr, mock.NewResponse(500, []byte{}))
@@ -89,10 +99,16 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, nod)
+	ops, err = sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	syn = &sync{
+		cfg:   sc,
+		store: sto,
+		nod:   nod,
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("test", "sync")),
+	}
 	syn.Start()
-	//time.Sleep(time.Second * 2)
 	syn.Close()
 }
 

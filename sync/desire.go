@@ -19,7 +19,7 @@ const (
 	configValueZip  = "zip"
 )
 
-func (s *Sync) SyncResource(info specv1.AppInfo) error {
+func (s *sync) SyncResource(info specv1.AppInfo) error {
 	appInfo := map[string]string{info.Name: info.Version}
 	crds, err := s.syncResourceValues(s.genResourceInfos(specv1.KindApplication, appInfo))
 	if err != nil {
@@ -88,7 +88,7 @@ func (s *Sync) SyncResource(info specv1.AppInfo) error {
 	return nil
 }
 
-func (s *Sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.ResourceValue, error) {
+func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.ResourceValue, error) {
 	if len(crds) == 0 {
 		return nil, nil
 	}
@@ -113,7 +113,7 @@ func (s *Sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	return res.Values, nil
 }
 
-func (s *Sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {
+func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {
 	for i := range volumes {
 		if cfg := volumes[i].VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
 			err := s.processConfiguration(&volumes[i], configs[cfg.Name])
@@ -130,7 +130,7 @@ func (s *Sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv
 	return nil
 }
 
-func (s *Sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configuration) error {
+func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configuration) error {
 	var base, dir string
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
@@ -188,7 +188,7 @@ func cleanDir(dir, retain string) error {
 	return nil
 }
 
-func (s *Sync) storeApplication(app *specv1.Application) error {
+func (s *sync) storeApplication(app *specv1.Application) error {
 	key := makeKey(specv1.KindApplication, app.Name, app.Version)
 	if key == "" {
 		return fmt.Errorf("app does not have name or version")
@@ -200,7 +200,7 @@ func (s *Sync) storeApplication(app *specv1.Application) error {
 	return s.store.Upsert(key, app)
 }
 
-func (s *Sync) storeSecret(secret *specv1.Secret) error {
+func (s *sync) storeSecret(secret *specv1.Secret) error {
 	key := makeKey(specv1.KindSecret, secret.Name, secret.Version)
 	if key == "" {
 		return fmt.Errorf("secret does not have name or version")
@@ -212,7 +212,7 @@ func (s *Sync) storeSecret(secret *specv1.Secret) error {
 	return s.store.Upsert(key, secret)
 }
 
-func (s *Sync) genResourceInfos(kind specv1.Kind, infos map[string]string) []specv1.ResourceInfo {
+func (s *sync) genResourceInfos(kind specv1.Kind, infos map[string]string) []specv1.ResourceInfo {
 	var crds []specv1.ResourceInfo
 	for name, version := range infos {
 		crds = append(crds, specv1.ResourceInfo{

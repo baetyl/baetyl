@@ -19,7 +19,7 @@ type core struct {
 	sto *bh.Store
 	sha *node.Node
 	eng *engine.Engine
-	syn *sync.Sync
+	syn sync.Sync
 	svr *http.Server
 }
 
