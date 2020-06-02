@@ -281,7 +281,7 @@ func TestReportAndApply(t *testing.T) {
 	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
 	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(nil)
-	err = eng.reportAndApply(ns, false, true)
+	err = eng.reportAndApply(false, true)
 	assert.NoError(t, err)
 
 	// desire app is nil
@@ -297,7 +297,7 @@ func TestReportAndApply(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = nod.Desire(deApp)
 	assert.NoError(t, err)
-	err = eng.reportAndApply(ns, false, true)
+	err = eng.reportAndApply(false, true)
 	assert.NoError(t, err)
 }
 
