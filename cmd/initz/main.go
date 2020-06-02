@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-core/initz"
