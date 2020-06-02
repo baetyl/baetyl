@@ -147,7 +147,11 @@ func (s *Node) GetStatus(ctx *routing.Context) error {
 		return nil
 	}
 
-	view := node.View(OfflineDuration)
+	view, err := node.View(OfflineDuration)
+	if err != nil {
+		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
+		return nil
+	}
 	res, err := json.Marshal(view)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
