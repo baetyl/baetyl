@@ -21,12 +21,16 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		}
 	}
 
+	headers := make(map[string]string)
+	if obj.Metadata.Source == "baidubos" {
+		headers["x-bce-security-token"] = obj.Metadata.Token
+	}
 	// TODO: streaming mode
-	resp, err := s.http.Get(obj.URL)
+	resp, err := s.http.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
 		// retry
 		time.Sleep(time.Second)
-		resp, err = s.http.Get(obj.URL)
+		resp, err := s.http.GetURL(obj.URL, headers)
 		if err != nil || resp == nil {
 			return fmt.Errorf("failed to download file (%s)", name)
 		}

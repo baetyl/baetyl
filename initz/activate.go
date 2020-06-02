@@ -58,7 +58,10 @@ func (init *Initialize) activate() {
 	init.log.Debug("init", log.Any("info data", string(data)))
 
 	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, init.cfg.Init.Cloud.Active.URL)
-	resp, err := init.http.Post(url, "application/json", bytes.NewReader(data))
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+	resp, err := init.http.PostURL(url, bytes.NewReader(data), headers)
 
 	if err != nil {
 		init.log.Error("failed to send activate data", log.Error(err))
