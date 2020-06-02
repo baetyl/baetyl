@@ -34,7 +34,7 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
-func GenAMI(cfg config.EngineConfig) (AMI, error) {
+func NewAMI(cfg config.EngineConfig) (AMI, error) {
 	name := cfg.Kind
 	mu.Lock()
 	defer mu.Unlock()

@@ -37,7 +37,7 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	kube, err := GenAMI(cfg)
+	kube, err := NewAMI(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +103,10 @@ func (e *Engine) reporting() error {
 }
 
 func (e *Engine) reportAndDesireAsync(delete bool) error {
-	if err := e.reportAndApply(e.sysns, true, delete); err != nil {
+	if err := e.reportAndApply(true, delete); err != nil {
 		return err
 	}
-	if err := e.reportAndApply(e.ns, false, delete); err != nil {
+	if err := e.reportAndApply(false, delete); err != nil {
 		return err
 	}
 	return nil
@@ -150,7 +150,13 @@ func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
 	return r, nil
 }
 
-func (e Engine) reportAndApply(ns string, isSys, delete bool) error {
+func (e Engine) reportAndApply(isSys, delete bool) error {
+	var ns string
+	if isSys {
+		ns = e.sysns
+	} else {
+		ns = e.ns
+	}
 	r, err := e.Collect(ns, isSys)
 	if err != nil {
 		return err

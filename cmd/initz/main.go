@@ -109,7 +109,9 @@ func (c *core) reportAndDesire() error {
 
 	for _, app := range ds.AppInfos(true) {
 		if strings.Contains(app.Name, BaetylCore) {
-			if _, err := c.sha.Desire(specv1.Desire{"sysapps": []specv1.AppInfo{app}}); err != nil {
+			n := specv1.Desire{}
+			n.SetAppInfos(true, []specv1.AppInfo{app})
+			if _, err := c.sha.Desire(n); err != nil {
 				return err
 			}
 			return nil
