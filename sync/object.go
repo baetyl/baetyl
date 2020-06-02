@@ -11,7 +11,7 @@ import (
 	"github.com/baetyl/baetyl-go/utils"
 )
 
-func (s *Sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
+func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
 	// file exists
 	if utils.FileExists(name) {
 		md5, err := utils.CalculateFileMD5(name)

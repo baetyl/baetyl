@@ -25,7 +25,7 @@ const (
 )
 
 type Engine struct {
-	syn   *sync.Sync
+	syn   sync.Sync
 	Ami   AMI
 	nod   *node.Node
 	cfg   config.EngineConfig
@@ -36,7 +36,7 @@ type Engine struct {
 	sysns string
 }
 
-func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn *sync.Sync) (*Engine, error) {
+func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
 	kube, err := GenAMI(cfg)
 	if err != nil {
 		return nil, err
@@ -181,21 +181,19 @@ func (e Engine) reportAndApply(ns string, isSys, delete bool) error {
 
 func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.AppInfo, map[string]specv1.AppInfo) {
 	del := make(map[string]specv1.AppInfo)
-	for _, app := range reports {
-		del[app.Name] = app
-	}
-	for _, app := range desires {
-		if _, ok := del[app.Name]; ok {
-			delete(del, app.Name)
-		}
-	}
 	update := make(map[string]specv1.AppInfo)
 	for _, d := range desires {
 		update[d.Name] = d
 	}
 	for _, r := range reports {
+		del[r.Name] = r
 		if app, ok := update[r.Name]; ok && app.Version == r.Version {
 			delete(update, app.Name)
+		}
+	}
+	for _, app := range desires {
+		if _, ok := del[app.Name]; ok {
+			delete(del, app.Name)
 		}
 	}
 	return del, update

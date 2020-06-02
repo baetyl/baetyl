@@ -44,92 +44,261 @@ func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
 	return no, cfg, sto
 }
 
+func TestCollect(t *testing.T) {
+	nod, _, _ := prepare(t)
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockAmi := mock.NewMockAMI(mockCtl)
+	ns := "baetyl-edge"
+	e := Engine{
+		Ami: mockAmi,
+		cfg: config.EngineConfig{},
+		ns:  ns,
+		nod: nod,
+		log: log.With(log.Any("engine", "test")),
+	}
+	assert.NotNil(t, e)
+	nodeInfo := &specv1.NodeInfo{}
+	nodeStats := &specv1.NodeStatus{}
+	info := specv1.AppInfo{
+		Name:    "app1",
+		Version: "v1",
+	}
+	apps := []specv1.AppInfo{info}
+	appStats := []specv1.AppStatus{{AppInfo: info}}
+	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
+	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
+	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	res, err := e.Collect(ns, false)
+	assert.NoError(t, err)
+	resNode := res["node"]
+	resNodeStats := res["nodestats"]
+	resApps := res["apps"]
+	resAppStats := res["appstats"]
+	assert.Equal(t, resNode, nodeInfo)
+	assert.Equal(t, resNodeStats, nodeStats)
+	assert.Equal(t, resApps, apps)
+	assert.Equal(t, resAppStats, appStats)
+
+	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
+	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
+	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	res, err = e.Collect(ns, false)
+	assert.NoError(t, err)
+	resNode = res["node"]
+	assert.Nil(t, resNode)
+
+	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
+	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
+	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	res, err = e.Collect(ns, false)
+	assert.NoError(t, err)
+	resNodeStats = res["nodestats"]
+	assert.Nil(t, resNodeStats)
+
+	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
+	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
+	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
+	res, err = e.Collect(ns, false)
+	assert.NoError(t, err)
+	resApps = res["apps"]
+	resAppStats = res["appstats"]
+	assert.Equal(t, resApps, []specv1.AppInfo{})
+	assert.Nil(t, resAppStats)
+}
+
 func TestEngine(t *testing.T) {
 	eng, err := NewEngine(config.EngineConfig{}, nil, nil, nil)
 	assert.Error(t, err, os.ErrInvalid.Error())
 	assert.Nil(t, eng)
 }
 
-func TestEngineReport(t *testing.T) {
-	//nod, cfg, sto := prepare(t)
-	//mockCtl := gomock.NewController(t)
-	//defer mockCtl.Finish()
-	//mockAmi := mock.NewMockAMI(mockCtl)
-	//r0 := specv1.Report{
-	//	"apps": []specv1.AppInfo{},
-	//}
-	//r1 := specv1.Report{
-	//	"apps": []specv1.AppInfo{{Name: "app", Version: "v1"}},
-	//}
-	//r2 := specv1.Report{
-	//	"apps": []specv1.AppInfo{{Name: "app", Version: "v2"}},
-	//}
-	//ns := "baetyl-edge"
-	//app := specv1.Application{}
-	//err := sto.Upsert(makeKey(specv1.KindApplication, "app", "v2"), app)
-	//assert.NoError(t, err)
-	//var wg sync.WaitGroup
-	//wg.Add(1)
-	//gomock.InOrder(
-	//	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).DoAndReturn(func(ns string) (specv1.Report, error) {
-	//		fmt.Println("1")
-	//		_, err := nod.Desire(specv1.Desire(r0))
-	//		assert.NoError(t, err)
-	//		return r1, nil
-	//	}).Times(1),
-	//	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil).Times(1),
-	//	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil).Times(1),
-	//	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []specv1.AppInfo, cond string, delete bool) error {
-	//		fmt.Println("2", apps)
-	//		sd, err := nod.Get()
-	//		assert.NoError(t, err)
-	//		assert.Len(t, sd.Desire.AppInfos(specv1.USER), 0)
-	//		return nil
-	//	}).Times(1),
-	//	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).DoAndReturn(func(ns string) (specv1.Report, error) {
-	//		fmt.Println("3")
-	//		_, err := nod.Desire(specv1.Desire(r1))
-	//		assert.NoError(t, err)
-	//		return r1, nil
-	//	}).Times(1),
-	//	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil).Times(1),
-	//	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).DoAndReturn(func(ns string) (specv1.Report, error) {
-	//		fmt.Println("4")
-	//		_, err := nod.Desire(specv1.Desire(r2))
-	//		assert.NoError(t, err)
-	//		return r1, nil
-	//	}).Times(1),
-	//	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil).Times(1),
-	//	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil).Times(1),
-	//	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ns string, apps []specv1.AppInfo, cond string, delete bool) error {
-	//		fmt.Println("5", apps)
-	//		defer wg.Done()
-	//		sd, err := nod.Get()
-	//		assert.NoError(t, err)
-	//		assert.Equal(t, "v2", sd.Desire.AppInfos(specv1.USER)[0].Version)
-	//		return nil
-	//	}).Times(1),
-	//)
-	//
-	//e := &Engine{
-	//	nod: nod,
-	//	sto: sto,
-	//	Ami: mockAmi,
-	//	cfg: cfg,
-	//	ns:  ns,
-	//	log: log.With(log.Any("engine", cfg.Kind)),
-	//}
-	//e.tomb.Go(e.reporting)
-	//defer e.Close()
-	//wg.Wait()
+func TestApplyApp(t *testing.T) {
+	nod, _, sto := prepare(t)
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockAmi := mock.NewMockAMI(mockCtl)
+	mockSync := mock.NewMockSync(mockCtl)
+	ns := "baetyl-edge"
+	eng := Engine{
+		Ami: mockAmi,
+		cfg: config.EngineConfig{},
+		ns:  ns,
+		sto: sto,
+		syn: mockSync,
+		nod: nod,
+		log: log.With(log.Any("engine", "test")),
+	}
+	assert.NotNil(t, eng)
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
+	app := specv1.Application{
+		Name:     "app1",
+		Version:  "v1",
+		Services: []specv1.Service{{}},
+		Volumes: []specv1.Volume{
+			{
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg1",
+						Version: "c1",
+					}}},
+			{
+				VolumeSource: specv1.VolumeSource{
+					Secret: &specv1.ObjectReference{
+						Name:    "sec1",
+						Version: "s1",
+					},
+				}},
+		},
+	}
+	cfg := specv1.Configuration{
+		Name:    "cfg1",
+		Version: "c1",
+	}
+	sec := specv1.Secret{
+		Name:    "sec1",
+		Version: "s1",
+	}
+	key := makeKey(specv1.KindApplication, "app1", "v1")
+	err := sto.Upsert(key, app)
+	assert.NoError(t, err)
+	key = makeKey(specv1.KindConfiguration, "cfg1", "c1")
+	err = sto.Upsert(key, cfg)
+	assert.NoError(t, err)
+	key = makeKey(specv1.KindSecret, "sec1", "s1")
+	err = sto.Upsert(key, sec)
+	assert.NoError(t, err)
+	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	info := specv1.AppInfo{Name: "app1", Version: "v1"}
+	err = eng.applyApp(ns, info)
+	assert.NoError(t, err)
+
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(errors.New("failed to sync resource"))
+	err = eng.applyApp(ns, info)
+	assert.Error(t, err)
+
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(errors.New("failed to apply configuration"))
+	err = eng.applyApp(ns, info)
+	assert.Error(t, err)
+
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(errors.New("failed to apply secret"))
+	err = eng.applyApp(ns, info)
+	assert.Error(t, err)
+
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to apply application"))
+	err = eng.applyApp(ns, info)
+	assert.Error(t, err)
+	eng.Close()
+}
+
+func TestDeleteApps(t *testing.T) {
+	nod, _, sto := prepare(t)
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockAmi := mock.NewMockAMI(mockCtl)
+	mockSync := mock.NewMockSync(mockCtl)
+	ns := "baetyl-edge"
+	eng := Engine{
+		Ami: mockAmi,
+		cfg: config.EngineConfig{},
+		ns:  ns,
+		sto: sto,
+		syn: mockSync,
+		nod: nod,
+		log: log.With(log.Any("engine", "test")),
+	}
+	assert.NotNil(t, eng)
+	del := map[string]specv1.AppInfo{
+		"app1": {Name: "app1", Version: "v1"},
+	}
+	app := specv1.Application{}
+	err := sto.Upsert(makeKey(specv1.KindApplication, "app1", "v1"), app)
+	assert.NoError(t, err)
+	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(nil)
+	err = eng.deleteApps(ns, del)
+	assert.NoError(t, err)
+
+	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(errors.New("failed to delete application"))
+	err = eng.deleteApps(ns, del)
+	assert.Error(t, err)
+
+	wrongDel := map[string]specv1.AppInfo{
+		"app1": {Name: "app1", Version: ""},
+	}
+	err = eng.deleteApps(ns, wrongDel)
+	assert.Error(t, err)
+	eng.Close()
+}
+
+func TestReportAndApply(t *testing.T) {
+	nod, _, sto := prepare(t)
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockAmi := mock.NewMockAMI(mockCtl)
+	mockSync := mock.NewMockSync(mockCtl)
+	ns := "baetyl-edge"
+	eng := Engine{
+		Ami: mockAmi,
+		cfg: config.EngineConfig{},
+		ns:  ns,
+		sto: sto,
+		syn: mockSync,
+		nod: nod,
+		log: log.With(log.Any("engine", "test")),
+	}
+	assert.NotNil(t, eng)
+	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
+	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
+	appStats := []specv1.AppStatus{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
+	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+
+	reApp := specv1.Report{
+		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}, {Name: "app2", Version: "v2"}},
+	}
+	deApp := specv1.Desire{
+		"apps": []specv1.AppInfo{{Name: "app2", Version: "v2"}, {Name: "app3", Version: "v3"}},
+	}
+	_, err := nod.Report(reApp)
+	assert.NoError(t, err)
+	_, err = nod.Desire(deApp)
+	assert.NoError(t, err)
+
+	app1 := specv1.Application{Name: "app1", Version: "v1"}
+	err = sto.Upsert(makeKey(specv1.KindApplication, "app1", "v1"), app1)
+	assert.NoError(t, err)
+	app3 := specv1.Application{Name: "app3", Version: "v3"}
+	err = sto.Upsert(makeKey(specv1.KindApplication, "app3", "v3"), app3)
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(nil)
+	err = eng.reportAndApply(ns, false, true)
+	assert.NoError(t, err)
+
+	// desire app is nil
+	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
+	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
+	appStats = []specv1.AppStatus{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
+	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	reApp = specv1.Report{
+		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}},
+	}
+	deApp = specv1.Desire{"apps": nil}
+	_, err = nod.Report(reApp)
+	assert.NoError(t, err)
+	_, err = nod.Desire(deApp)
+	assert.NoError(t, err)
+	err = eng.reportAndApply(ns, false, true)
+	assert.NoError(t, err)
 }
 
 func TestSortApp(t *testing.T) {

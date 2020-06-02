@@ -2,6 +2,8 @@ package sync
 
 import (
 	"fmt"
+	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/log"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -54,8 +56,15 @@ func TestSyncDownloadObject(t *testing.T) {
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 
-	syn, err := NewSync(sc, sto, nod)
+	//syn, err := NewSync(sc, sto, nod)
+	ops, err := sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	syn := &sync{
+		store: sto,
+		nod:   nod,
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("test", "sync")),
+	}
 
 	md5, _ := utils.CalculateFileMD5(file1)
 	obj := &specv1.ConfigurationObject{

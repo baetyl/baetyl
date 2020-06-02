@@ -3,6 +3,8 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/log"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -33,7 +35,7 @@ func TestSyncStore(t *testing.T) {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
-	syn := Sync{store: sto}
+	syn := sync{store: sto}
 	app := &specv1.Application{
 		Name:    "app",
 		Version: "a1",
@@ -106,9 +108,14 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err := NewSync(sc, sto, nil)
+	ops, err := sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
-
+	syn := &sync{
+		cfg:   sc,
+		store: sto,
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("test", "sync")),
+	}
 	volume := &specv1.Volume{
 		Name:         "cfg",
 		VolumeSource: specv1.VolumeSource{Config: &specv1.ObjectReference{Name: "cfg", Version: "c1"}},
@@ -248,8 +255,14 @@ func TestSyncResources(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err := NewSync(sc, sto, nod)
+	ops, err := sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	syn := &sync{
+		cfg:   sc,
+		store: sto,
+		nod:   nod,
+		http:  http.NewClient(ops),
+	}
 	err = syn.SyncResource(specv1.AppInfo{Name: "desire-app", Version: "v1"})
 	var appRes specv1.Application
 	err = sto.Get(makeKey(specv1.KindApplication, appName, appVer), &appRes)
@@ -274,8 +287,15 @@ func TestSyncResources(t *testing.T) {
 	sc.Cloud.HTTP.Key = "./testcert/client.key"
 	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
 	sc.Cloud.HTTP.InsecureSkipVerify = true
-	syn, err = NewSync(sc, sto, nod)
+	ops, err = sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	syn = &sync{
+		store: sto,
+		nod:   nod,
+		cfg:   sc,
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("test", "sync")),
+	}
 	err = syn.SyncResource(specv1.AppInfo{})
 	assert.Error(t, err)
 	ms.Close()

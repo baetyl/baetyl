@@ -25,10 +25,10 @@ type kubeImpl struct {
 }
 
 func init() {
-	engine.Register(engine.Kubernetes, NewKubeImpl)
+	engine.Register(engine.Kubernetes, newKubeImpl)
 }
 
-func NewKubeImpl(cfg config.EngineConfig) (engine.AMI, error) {
+func newKubeImpl(cfg config.EngineConfig) (engine.AMI, error) {
 	cli, err := newClient(cfg.Kubernetes)
 	if err != nil {
 		return nil, err
