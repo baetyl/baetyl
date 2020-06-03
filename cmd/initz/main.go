@@ -94,7 +94,7 @@ func (c *core) Close() {
 	}
 }
 
-func (c *core) reportAndDesire() error {
+func (c *core) reportAndDesireCloud() error {
 	r, err := c.eng.Collect("baetyl-edge-system", true)
 	if err != nil {
 		return err
@@ -112,10 +112,8 @@ func (c *core) reportAndDesire() error {
 		if strings.Contains(app.Name, BaetylCore) {
 			n := specv1.Desire{}
 			n.SetAppInfos(true, []specv1.AppInfo{app})
-			if _, err := c.sha.Desire(n); err != nil {
-				return err
-			}
-			return nil
+			_, err = c.sha.Desire(n)
+			return err
 		}
 	}
 	return ErrSysappCoreMissing
@@ -129,7 +127,7 @@ func main() {
 		}
 		defer c.Close()
 
-		err = c.reportAndDesire()
+		err = c.reportAndDesireCloud()
 		if err != nil {
 			return err
 		}
@@ -147,11 +145,14 @@ func main() {
 		for {
 			select {
 			case <-t.C:
+				c.log.Info("collect stats from edge", log.Error(err))
 				r, err := c.eng.Collect("baetyl-edge-system", true)
 				if err != nil {
 					c.log.Error("failed to collect info", log.Error(err))
 				}
-				if _, err := c.syn.Report(r); err != nil {
+				c.log.Info("report stats to cloud", log.Error(err))
+				_, err = c.syn.Report(r)
+				if err != nil {
 					c.log.Error("failed to report info", log.Error(err))
 				}
 			case <-ctx.WaitChan():
