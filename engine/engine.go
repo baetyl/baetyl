@@ -178,13 +178,13 @@ func (e Engine) reportAndApply(isSys, delete bool) error {
 	if delete {
 		for n := range del {
 			if err := e.Ami.DeleteApplication(ns, n); err != nil {
-				e.log.Error("failed to delete sys apps", log.Error(err))
+				e.log.Error("failed to delete applications", log.Any("system", isSys), log.Error(err))
 				return err
 			}
 		}
 	}
 	e.applyApps(ns, update)
-	e.log.Info("to apply sys apps", log.Any("apps", dapps))
+	e.log.Info("to apply applications", log.Any("system", isSys), log.Any("apps", dapps))
 	return nil
 }
 
@@ -229,7 +229,7 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 	}
 	app, err := e.injectEnv(info)
 	if err != nil {
-		e.log.Error("failed to inject env to sys apps", log.Error(err))
+		e.log.Error("failed to inject env to applications", log.Any("info", info), log.Error(err))
 		return err
 	}
 	cfgs := make(map[string]specv1.Configuration)
