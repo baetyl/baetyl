@@ -1,7 +1,6 @@
 package ami
 
 import (
-	"github.com/baetyl/baetyl-core/engine"
 	"os"
 
 	"github.com/baetyl/baetyl-core/config"
@@ -25,10 +24,10 @@ type kubeImpl struct {
 }
 
 func init() {
-	engine.Register(engine.Kubernetes, newKubeImpl)
+	Register(Kubernetes, newKubeImpl)
 }
 
-func newKubeImpl(cfg config.EngineConfig) (engine.AMI, error) {
+func newKubeImpl(cfg config.EngineConfig) (AMI, error) {
 	cli, err := newClient(cfg.Kubernetes)
 	if err != nil {
 		return nil, err
