@@ -2,8 +2,9 @@ package ami
 
 import (
 	"fmt"
-	"github.com/jinzhu/copier"
 	"io"
+
+	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"

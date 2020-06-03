@@ -1,6 +1,8 @@
 package ami
 
 import (
+	"strings"
+
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
@@ -10,7 +12,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"strings"
 )
 
 const (

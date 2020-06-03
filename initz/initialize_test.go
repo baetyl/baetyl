@@ -3,7 +3,7 @@ package initz
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-core/engine"
+	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
@@ -100,7 +100,7 @@ var (
 	}
 )
 
-func genInitialize(t *testing.T, cfg *config.Config, ami engine.AMI) *Initialize {
+func genInitialize(t *testing.T, cfg *config.Config, ami ami.AMI) *Initialize {
 	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
 	init := &Initialize{

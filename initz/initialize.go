@@ -1,12 +1,13 @@
 package initz
 
 import (
+	gohttp "net/http"
+
+	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
-	gohttp "net/http"
 )
 
 type batch struct {
@@ -22,7 +23,7 @@ type Initialize struct {
 	tomb  utils.Tomb
 	http  *http.Client
 	srv   *gohttp.Server
-	ami   engine.AMI
+	ami   ami.AMI
 	batch *batch
 	attrs map[string]string
 	sig   chan bool
@@ -52,7 +53,7 @@ func NewInit(cfg *config.Config) (*Initialize, error) {
 		init.attrs[a.Name] = a.Value
 	}
 
-	init.ami, err = engine.NewAMI(cfg.Engine)
+	init.ami, err = ami.NewAMI(cfg.Engine)
 	if err != nil {
 		return nil, err
 	}

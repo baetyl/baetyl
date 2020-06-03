@@ -2,14 +2,15 @@ package engine
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-core/sync"
 	"os"
 	"strconv"
 	gosync "sync"
 	"time"
 
+	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
+	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
@@ -26,7 +27,7 @@ const (
 
 type Engine struct {
 	syn   sync.Sync
-	Ami   AMI
+	Ami   ami.AMI
 	nod   *node.Node
 	cfg   config.EngineConfig
 	tomb  utils.Tomb
@@ -37,7 +38,7 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	kube, err := NewAMI(cfg)
+	kube, err := ami.NewAMI(cfg)
 	if err != nil {
 		return nil, err
 	}

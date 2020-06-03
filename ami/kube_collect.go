@@ -2,6 +2,7 @@ package ami
 
 import (
 	"fmt"
+
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"

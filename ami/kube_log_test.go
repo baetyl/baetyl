@@ -2,12 +2,13 @@ package ami
 
 import (
 	"fmt"
+	"io/ioutil"
+	"testing"
+
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"testing"
 )
 
 func TestToLogOptions(t *testing.T) {

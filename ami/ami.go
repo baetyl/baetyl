@@ -1,26 +1,26 @@
-package engine
+package ami
 
 import (
-	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-go/log"
-	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"io"
 	"os"
 	"sync"
+
+	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-go/log"
+	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 )
 
-//go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl-core/engine AMI
+//go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl-core/ami AMI
 
 const (
 	Kubernetes = "kubernetes"
 )
 
 var mu sync.Mutex
+var amiNews = map[string]New{}
+var amiImpls = map[string]AMI{}
 
 type New func(cfg config.EngineConfig) (AMI, error)
-
-var amiNews = map[string]New{}
-var amis = map[string]AMI{}
 
 // AMI app model interfaces
 type AMI interface {
@@ -38,7 +38,7 @@ func NewAMI(cfg config.EngineConfig) (AMI, error) {
 	name := cfg.Kind
 	mu.Lock()
 	defer mu.Unlock()
-	if ami, ok := amis[name]; ok {
+	if ami, ok := amiImpls[name]; ok {
 		return ami, nil
 	}
 	amiNew, ok := amiNews[name]
@@ -51,7 +51,7 @@ func NewAMI(cfg config.EngineConfig) (AMI, error) {
 		log.L().Error("failed to generate ami", log.Any("generator", name))
 		return nil, err
 	}
-	amis[name] = ami
+	amiImpls[name] = ami
 	return ami, nil
 }
 
