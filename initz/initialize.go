@@ -29,14 +29,14 @@ type Initialize struct {
 }
 
 // NewInit to activate, success add node info
-func NewInit(cfg *config.Config, ami engine.AMI) (*Initialize, error) {
+func NewInit(cfg *config.Config) (*Initialize, error) {
 	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, err
 	}
+
 	init := &Initialize{
 		cfg:   cfg,
-		ami:   ami,
 		sig:   make(chan bool, 1),
 		http:  http.NewClient(ops),
 		attrs: map[string]string{},
@@ -50,6 +50,11 @@ func NewInit(cfg *config.Config, ami engine.AMI) (*Initialize, error) {
 	}
 	for _, a := range cfg.Init.ActivateConfig.Attributes {
 		init.attrs[a.Name] = a.Value
+	}
+
+	init.ami, err = engine.NewAMI(cfg.Engine)
+	if err != nil {
+		return nil, err
 	}
 	return init, nil
 }

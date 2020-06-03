@@ -61,13 +61,14 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 
 	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
-		i, err := initz.NewInit(&cfg, c.eng.Ami)
+		i, err := initz.NewInit(&cfg)
 		if err != nil {
 			i.Close()
 			return nil, err
 		}
 		i.Start()
 		i.WaitAndClose()
+		c.log.Info("init active success")
 	}
 
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
