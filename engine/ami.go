@@ -27,7 +27,7 @@ type AMI interface {
 	CollectNodeInfo() (*specv1.NodeInfo, error)
 	CollectNodeStats() (*specv1.NodeStatus, error)
 	CollectAppStatus(string) ([]specv1.AppStatus, error)
-	DeleteApplication(string, specv1.Application) error
+	DeleteApplication(string, string) error
 	ApplyApplication(string, specv1.Application, []string) error
 	ApplyConfigurations(string, map[string]specv1.Configuration) error
 	ApplySecrets(string, map[string]specv1.Secret) error
