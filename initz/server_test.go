@@ -113,12 +113,14 @@ func TestServer(t *testing.T) {
 		{Name: "fingerprintValue"},
 	}
 
+	init, err := NewInit(c)
+	assert.Error(t, err)
+
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
+	init = genInitialize(t, c, ami)
 
-	init, err := NewInit(c, ami)
-	assert.Nil(t, err)
 	init.Start()
 
 	w := &httptest.ResponseRecorder{

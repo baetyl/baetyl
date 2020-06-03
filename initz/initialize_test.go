@@ -3,7 +3,10 @@ package initz
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl-core/engine"
 	"github.com/baetyl/baetyl-core/store"
+	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/log"
 	"io/ioutil"
 	gohttp "net/http"
 	"os"
@@ -97,6 +100,29 @@ var (
 	}
 )
 
+func genInitialize(t *testing.T, cfg *config.Config, ami engine.AMI) *Initialize {
+	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
+	assert.NoError(t, err)
+	init := &Initialize{
+		cfg:   cfg,
+		ami:   ami,
+		sig:   make(chan bool, 1),
+		http:  http.NewClient(ops),
+		attrs: map[string]string{},
+		log:   log.With(log.Any("core", "Initialize")),
+	}
+	init.batch = &batch{
+		name:         cfg.Init.Batch.Name,
+		namespace:    cfg.Init.Batch.Namespace,
+		securityType: cfg.Init.Batch.SecurityType,
+		securityKey:  cfg.Init.Batch.SecurityKey,
+	}
+	for _, a := range cfg.Init.ActivateConfig.Attributes {
+		init.attrs[a.Name] = a.Value
+	}
+	return init
+}
+
 func TestInitialize_Activate(t *testing.T) {
 	data, err := json.Marshal(resp)
 	assert.NoError(t, err)
@@ -177,8 +203,7 @@ func TestInitialize_Activate(t *testing.T) {
 	for _, tt := range goodCases {
 		t.Run(tt.name, func(t *testing.T) {
 			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
-			init, err := NewInit(c, ami)
-			assert.Nil(t, err)
+			init := genInitialize(t, c, ami)
 			init.Start()
 			init.WaitAndClose()
 			responseEqual(t, *tt.want, c.Sync)
@@ -231,8 +256,7 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 	ami := mc.NewMockAMI(mockCtl)
 	ami.EXPECT().CollectNodeInfo().Return(nodeInfo, nil).AnyTimes()
 
-	init, err := NewInit(c, ami)
-	assert.Nil(t, err)
+	init := genInitialize(t, c, ami)
 	init.Start()
 	init.srv = &gohttp.Server{}
 	init.Close()
