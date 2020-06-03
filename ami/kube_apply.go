@@ -8,6 +8,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"strings"
 )
@@ -84,36 +85,30 @@ func (k *kubeImpl) ApplySecrets(ns string, secs map[string]specv1.Secret) error 
 	return nil
 }
 
-func (k *kubeImpl) DeleteApplication(ns string, app specv1.Application) error {
-	services := make(map[string]*corev1.Service)
-	deploys := make(map[string]*appv1.Deployment)
-	for _, svc := range app.Services {
-		if deploy, err := k.prepareDeploy(ns, app, svc, nil); err == nil {
-			deploys[deploy.Name] = deploy
-		} else {
-			return err
-		}
-		if service, err := k.prepareService(ns, &svc); err == nil {
-			if service != nil {
-				services[service.Name] = service
-			}
-		} else {
-			return err
-		}
+func (k *kubeImpl) DeleteApplication(ns, name string) error {
+	set := labels.Set{AppName: name}
+	selector := labels.SelectorFromSet(set)
+	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return err
+	}
+	services, err := k.cli.core.Services(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return err
 	}
 	deployInterface := k.cli.app.Deployments(ns)
-	for n := range deploys {
-		if err := deployInterface.Delete(n, &metav1.DeleteOptions{}); err != nil {
+	for _, d := range deploys.Items {
+		if err := deployInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
 			return err
 		}
 	}
 	svcInterface := k.cli.core.Services(ns)
-	for n := range services {
-		if err := svcInterface.Delete(n, &metav1.DeleteOptions{}); err != nil {
+	for _, s := range services.Items {
+		if err := svcInterface.Delete(s.Name, &metav1.DeleteOptions{}); err != nil {
 			return err
 		}
 	}
-	k.log.Info("ami delete apps", log.Any("apps", app))
+	k.log.Info("ami delete app", log.Any("name", name))
 	return nil
 }
 
@@ -143,7 +138,7 @@ func (k *kubeImpl) ApplyApplication(ns string, app specv1.Application, imagePull
 		} else {
 			return err
 		}
-		if service, err := k.prepareService(ns, &svc); err == nil {
+		if service, err := k.prepareService(ns, app.Name, &svc); err == nil {
 			if service != nil {
 				services[service.Name] = service
 			}
@@ -248,6 +243,10 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 	}
 	replica := new(int32)
 	*replica = int32(service.Replica)
+	if app.Labels == nil {
+		app.Labels = map[string]string{}
+	}
+	app.Labels[AppName] = app.Name
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
@@ -260,9 +259,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 				Type: appv1.RecreateDeploymentStrategyType,
 			},
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					ServiceName: service.Name,
-				},
+				MatchLabels: map[string]string{ServiceName: service.Name},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
@@ -286,7 +283,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 	return deploy, nil
 }
 
-func (k *kubeImpl) prepareService(ns string, svc *specv1.Service) (*corev1.Service, error) {
+func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) (*corev1.Service, error) {
 	if len(svc.Ports) == 0 {
 		return nil, nil
 	}
@@ -302,11 +299,10 @@ func (k *kubeImpl) prepareService(ns string, svc *specv1.Service) (*corev1.Servi
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svc.Name,
 			Namespace: ns,
+			Labels:    map[string]string{AppName: appName},
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				ServiceName: svc.Name,
-			},
+			Selector:  map[string]string{ServiceName: svc.Name},
 			ClusterIP: "None",
 			Ports:     ports,
 		},

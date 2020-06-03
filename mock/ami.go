@@ -122,7 +122,7 @@ func (mr *MockAMIMockRecorder) CollectNodeStats() *gomock.Call {
 }
 
 // DeleteApplication mocks base method.
-func (m *MockAMI) DeleteApplication(arg0 string, arg1 v1.Application) error {
+func (m *MockAMI) DeleteApplication(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteApplication", arg0, arg1)
 	ret0, _ := ret[0].(error)

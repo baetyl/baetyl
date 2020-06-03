@@ -59,10 +59,10 @@ func TestPrepareService(t *testing.T) {
 		Name:  svcName,
 		Ports: []specv1.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
 	}
-	service, err := ami.prepareService(ns, svc)
+	service, err := ami.prepareService(ns, "", svc)
 	assert.NoError(t, err)
 	expected := &v1.Service{
-		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: ns},
+		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: ns, Labels: map[string]string{AppName: ""}},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{{
 				Port:       80,
@@ -81,7 +81,7 @@ func TestPrepareService(t *testing.T) {
 	svc = &specv1.Service{
 		Name: svcName,
 	}
-	service, err = ami.prepareService(ns, svc)
+	service, err = ami.prepareService(ns, "", svc)
 	assert.NoError(t, err)
 	assert.Nil(t, service)
 }
@@ -141,7 +141,9 @@ func TestPrepareDeploy(t *testing.T) {
 	expected := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svcName,
-			Namespace: ns},
+			Namespace: ns,
+			Labels:    map[string]string{AppName: app.Name},
+		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: replica,
 			Selector: &metav1.LabelSelector{
@@ -268,7 +270,7 @@ func TestDeleteApplication(t *testing.T) {
 	assert.NotNil(t, s)
 	assert.NoError(t, err)
 
-	err = ami.DeleteApplication(ns, app)
+	err = ami.DeleteApplication(ns, app.Name)
 	assert.NoError(t, err)
 	d, _ = ami.cli.app.Deployments(ns).Get(sname, metav1.GetOptions{})
 	assert.Nil(t, d)

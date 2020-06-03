@@ -176,8 +176,11 @@ func (e Engine) reportAndApply(isSys, delete bool) error {
 	}
 	del, update := getDeleteAndUpdate(dapps, rapps)
 	if delete {
-		if err := e.deleteApps(ns, del); err != nil {
-			e.log.Error("failed to delete sys apps", log.Error(err))
+		for n := range del {
+			if err := e.Ami.DeleteApplication(ns, n); err != nil {
+				e.log.Error("failed to delete sys apps", log.Error(err))
+				return err
+			}
 		}
 	}
 	e.applyApps(ns, update)
@@ -217,23 +220,6 @@ func (e Engine) applyApps(ns string, infos map[string]specv1.AppInfo) {
 		}(&wg, info)
 	}
 	wg.Wait()
-}
-
-func (e Engine) deleteApps(ns string, del map[string]specv1.AppInfo) error {
-	for _, app := range del {
-		key := makeKey(specv1.KindApplication, app.Name, app.Version)
-		if key == "" {
-			return fmt.Errorf("failed to get app name: (%s) version: (%s)", app.Name, app.Version)
-		}
-		var app specv1.Application
-		if err := e.sto.Get(key, &app); err != nil {
-			return err
-		}
-		if err := e.Ami.DeleteApplication(ns, app); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (e Engine) applyApp(ns string, info specv1.AppInfo) error {

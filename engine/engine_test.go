@@ -199,45 +199,6 @@ func TestApplyApp(t *testing.T) {
 	eng.Close()
 }
 
-func TestDeleteApps(t *testing.T) {
-	nod, _, sto := prepare(t)
-	mockCtl := gomock.NewController(t)
-	defer mockCtl.Finish()
-	mockAmi := mock.NewMockAMI(mockCtl)
-	mockSync := mock.NewMockSync(mockCtl)
-	ns := "baetyl-edge"
-	eng := Engine{
-		Ami: mockAmi,
-		cfg: config.EngineConfig{},
-		ns:  ns,
-		sto: sto,
-		syn: mockSync,
-		nod: nod,
-		log: log.With(log.Any("engine", "test")),
-	}
-	assert.NotNil(t, eng)
-	del := map[string]specv1.AppInfo{
-		"app1": {Name: "app1", Version: "v1"},
-	}
-	app := specv1.Application{}
-	err := sto.Upsert(makeKey(specv1.KindApplication, "app1", "v1"), app)
-	assert.NoError(t, err)
-	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(nil)
-	err = eng.deleteApps(ns, del)
-	assert.NoError(t, err)
-
-	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(errors.New("failed to delete application"))
-	err = eng.deleteApps(ns, del)
-	assert.Error(t, err)
-
-	wrongDel := map[string]specv1.AppInfo{
-		"app1": {Name: "app1", Version: ""},
-	}
-	err = eng.deleteApps(ns, wrongDel)
-	assert.Error(t, err)
-	eng.Close()
-}
-
 func TestReportAndApply(t *testing.T) {
 	nod, _, sto := prepare(t)
 	mockCtl := gomock.NewController(t)
