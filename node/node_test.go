@@ -6,6 +6,7 @@ import (
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -127,6 +128,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
+	defer os.RemoveAll(f.Name())
 
 	s, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
@@ -176,6 +178,7 @@ func TestGetStatus(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
+	defer os.RemoveAll(f.Name())
 
 	s, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
@@ -220,4 +223,5 @@ func TestGetStatus(t *testing.T) {
 	err = client.Do(req2, resp2)
 	assert.NoError(t, err)
 	assert.Equal(t, resp2.StatusCode(), 200)
+
 }

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/pkg/errors"
+	"github.com/baetyl/baetyl-go/errors"
 	bh "github.com/timshannon/bolthold"
 )
 
@@ -13,7 +13,7 @@ import (
 func NewBoltHold(filename string) (*bh.Store, error) {
 	err := os.MkdirAll(path.Dir(filename), 0755)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	ops := &bh.Options{
 		Encoder: func(value interface{}) ([]byte, error) {
@@ -24,5 +24,5 @@ func NewBoltHold(filename string) (*bh.Store, error) {
 		},
 	}
 	s, err := bh.Open(filename, 0666, ops)
-	return s, errors.WithStack(err)
+	return s, errors.Trace(err)
 }

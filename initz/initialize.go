@@ -5,10 +5,10 @@ import (
 
 	"github.com/baetyl/baetyl-core/ami"
 	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
-	"github.com/pkg/errors"
 )
 
 type batch struct {
@@ -34,7 +34,7 @@ type Initialize struct {
 func NewInit(cfg *config.Config) (*Initialize, error) {
 	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 
 	init := &Initialize{
@@ -56,7 +56,7 @@ func NewInit(cfg *config.Config) (*Initialize, error) {
 
 	init.ami, err = ami.NewAMI(cfg.Engine)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	return init, nil
 }

@@ -1,11 +1,13 @@
 package initz
 
 import (
-	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/utils"
 	"html/template"
 	"net/http"
+
+	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-go/errors"
+	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/utils"
 )
 
 func (init *Initialize) startServer() error {
@@ -16,7 +18,7 @@ func (init *Initialize) startServer() error {
 	srv.Handler = mux
 	srv.Addr = init.cfg.Init.ActivateConfig.Server.Listen
 	init.srv = srv
-	return init.srv.ListenAndServe()
+	return errors.Trace(init.srv.ListenAndServe())
 }
 
 func (init *Initialize) closeServer() {

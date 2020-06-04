@@ -5,6 +5,7 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	mc "github.com/baetyl/baetyl-core/mock"
 	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -99,7 +100,7 @@ func TestInitialize_Activate_Err_Collector(t *testing.T) {
 			if tt.fingerprints[0].Proof == config.ProofSN {
 				assert.NotNil(t, err)
 			} else {
-				assert.Equal(t, tt.err, err)
+				assert.Equal(t, tt.err, errors.Cause(err))
 			}
 		})
 	}

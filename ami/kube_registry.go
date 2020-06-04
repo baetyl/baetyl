@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/pkg/errors"
+	"github.com/baetyl/baetyl-go/errors"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -32,7 +32,7 @@ func (k *kubeImpl) generateRegistrySecret(ns, name, server, username, password s
 	}
 	data, err := json.Marshal(auths)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	secret.Data = map[string][]byte{
 		v1.DockerConfigJsonKey: data,

@@ -8,6 +8,7 @@ import (
 	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
@@ -28,30 +29,30 @@ func NewCore(ctx context.Context) (*core, error) {
 	var cfg config.Config
 	err := ctx.LoadCustomConfig(&cfg)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	c := &core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	c.sha, err = node.NewNode(c.sto)
 	if err != nil {
 		c.Close()
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
 	if err != nil {
 		c.Close()
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	c.syn.Start()
 
 	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.syn)
 	if err != nil {
 		c.Close()
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	c.eng.Start()
@@ -87,7 +88,7 @@ func main() {
 	context.Run(func(ctx context.Context) error {
 		c, err := NewCore(ctx)
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 		defer c.Close()
 		ctx.Wait()

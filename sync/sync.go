@@ -3,24 +3,25 @@ package sync
 import (
 	"crypto/x509"
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
-	"github.com/pkg/errors"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 var (
 	// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
-	ErrSyncTLSConfigMissing = errors.New("certificate bidirectional authentication is required for connection with cloud")
+	ErrSyncTLSConfigMissing = fmt.Errorf("certificate bidirectional authentication is required for connection with cloud")
 )
 
 const (
@@ -49,10 +50,10 @@ type sync struct {
 func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, error) {
 	ops, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	if ops.TLSConfig == nil {
-		return nil, ErrSyncTLSConfigMissing
+		return nil, errors.Trace(ErrSyncTLSConfigMissing)
 	}
 	s := &sync{
 		cfg:   cfg,
@@ -89,17 +90,17 @@ func (s *sync) Close() {
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	pld, err := json.Marshal(r)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
 	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	var desire v1.Desire
 	err = json.Unmarshal(data, &desire)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	return desire, nil
 }
@@ -132,11 +133,11 @@ func (s *sync) reporting() error {
 func (s *sync) reportAndDesireAsync() error {
 	sd, err := s.nod.Get()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	desire, err := s.Report(sd.Report)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if len(desire) == 0 {
 		return nil
@@ -144,7 +145,7 @@ func (s *sync) reportAndDesireAsync() error {
 	_, err = s.nod.Desire(desire)
 	if err != nil {
 		s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
-		return err
+		return errors.Trace(err)
 	}
 	return nil
 }

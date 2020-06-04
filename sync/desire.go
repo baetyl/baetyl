@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
-	"github.com/pkg/errors"
 )
 
 // extended features of config resourece
@@ -24,7 +24,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 	crds, err := s.syncResourceValues(s.genResourceInfos(specv1.KindApplication, appInfo))
 	if err != nil {
 		s.log.Error("failed to sync application resource", log.Error(err))
-		return err
+		return errors.Trace(err)
 	}
 	cInfo := map[string]string{}
 	sInfo := map[string]string{}
@@ -47,7 +47,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 	crds, err = s.syncResourceValues(s.genResourceInfos(specv1.KindConfiguration, cInfo))
 	if err != nil {
 		s.log.Error("failed to sync configuration resource", log.Error(err))
-		return err
+		return errors.Trace(err)
 	}
 	configs := map[string]*specv1.Configuration{}
 	for _, r := range crds {
@@ -61,7 +61,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 	crds, err = s.syncResourceValues(s.genResourceInfos(specv1.KindSecret, sInfo))
 	if err != nil {
 		s.log.Error("failed to sync secret resource", log.Error(err))
-		return err
+		return errors.Trace(err)
 	}
 	secrets := map[string]*specv1.Secret{}
 	for _, r := range crds {
@@ -76,13 +76,13 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 		err = s.processVolumes(app.Volumes, configs, secrets)
 		if err != nil {
 			s.log.Error("failed to process volumes", log.Error(err))
-			return err
+			return errors.Trace(err)
 		}
 		// app.volume may change when processing Volumes
 		err := s.storeApplication(app)
 		if err != nil {
 			s.log.Error("failed to store application", log.Error(err))
-			return err
+			return errors.Trace(err)
 		}
 	}
 	return nil
@@ -95,7 +95,7 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	req := specv1.DesireRequest{Infos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	data, err = s.http.PostJSON(s.cfg.Cloud.Desire.URL, data)
 	if err != nil {
@@ -104,7 +104,7 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	var res specv1.DesireResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	// TODO: remove compatible code
 	if len(res.CRDDatas) != 0 {
@@ -118,12 +118,12 @@ func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv
 		if cfg := volumes[i].VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
 			err := s.processConfiguration(&volumes[i], configs[cfg.Name])
 			if err != nil {
-				return err
+				return errors.Trace(err)
 			}
 		} else if secret := volumes[i].VolumeSource.Secret; secret != nil && secrets[secret.Name] != nil {
 			err := s.storeSecret(secrets[secret.Name])
 			if err != nil {
-				return err
+				return errors.Trace(err)
 			}
 		}
 	}
@@ -139,14 +139,14 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				dir = filepath.Join(base, cfg.Version)
 				err := os.MkdirAll(dir, 0755)
 				if err != nil {
-					return errors.WithStack(err)
+					return errors.Trace(err)
 				}
 			}
 			obj := new(specv1.ConfigurationObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
-				return errors.WithStack(err)
+				return errors.Trace(err)
 			}
 			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
 			err = s.downloadObject(obj, dir, filename, obj.Compression == configValueZip)
@@ -162,7 +162,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				}
 				err = cleanDir(base, cfg.Version)
 				if err != nil {
-					return err
+					return errors.Trace(err)
 				}
 			}
 		}
@@ -175,7 +175,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 		s.log.Info("configuration resource already exists", log.Any("key", key))
 		return nil
 	}
-	return errors.WithStack(s.store.Upsert(key, cfg))
+	return errors.Trace(s.store.Upsert(key, cfg))
 }
 
 func cleanDir(dir, retain string) error {
@@ -197,7 +197,7 @@ func (s *sync) storeApplication(app *specv1.Application) error {
 		s.log.Info("application resource already exists", log.Any("key", key))
 		return nil
 	}
-	return errors.WithStack(s.store.Upsert(key, app))
+	return errors.Trace(s.store.Upsert(key, app))
 }
 
 func (s *sync) storeSecret(secret *specv1.Secret) error {
@@ -209,7 +209,7 @@ func (s *sync) storeSecret(secret *specv1.Secret) error {
 		s.log.Info("secret resource already exists", log.Any("key", key))
 		return nil
 	}
-	return errors.WithStack(s.store.Upsert(key, secret))
+	return errors.Trace(s.store.Upsert(key, secret))
 }
 
 func (s *sync) genResourceInfos(kind specv1.Kind, infos map[string]string) []specv1.ResourceInfo {
