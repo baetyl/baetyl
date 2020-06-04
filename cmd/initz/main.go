@@ -151,11 +151,13 @@ func main() {
 				r, err := c.eng.Collect("baetyl-edge-system", true)
 				if err != nil {
 					c.log.Error("failed to collect info", log.Error(err))
+					return errors.Trace(err)
 				}
 				c.log.Info("report stats to cloud", log.Error(err))
 				_, err = c.syn.Report(r)
 				if err != nil {
 					c.log.Error("failed to report info", log.Error(err))
+					return errors.Trace(err)
 				}
 			case <-ctx.WaitChan():
 				return nil
