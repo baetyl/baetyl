@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	gosync "sync"
@@ -15,6 +14,7 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/pkg/errors"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 )
@@ -27,7 +27,7 @@ const (
 
 type Engine struct {
 	syn   sync.Sync
-	Ami   ami.AMI
+	ami   ami.AMI
 	nod   *node.Node
 	cfg   config.EngineConfig
 	tomb  utils.Tomb
@@ -43,7 +43,7 @@ func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.
 		return nil, err
 	}
 	return &Engine{
-		Ami:   kube,
+		ami:   kube,
 		sto:   sto,
 		syn:   syn,
 		nod:   nod,
@@ -73,7 +73,7 @@ func (e *Engine) GetServiceLog(ctx *routing.Context) error {
 		return nil
 	}
 
-	reader, err := e.Ami.FetchLog(e.ns, service, tail, since)
+	reader, err := e.ami.FetchLog(e.ns, service, tail, since)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
@@ -114,15 +114,15 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 }
 
 func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
-	nodeInfo, err := e.Ami.CollectNodeInfo()
+	nodeInfo, err := e.ami.CollectNodeInfo()
 	if err != nil {
 		e.log.Warn("failed to collect node info", log.Error(err))
 	}
-	nodeStats, err := e.Ami.CollectNodeStats()
+	nodeStats, err := e.ami.CollectNodeStats()
 	if err != nil {
 		e.log.Warn("failed to collect node stats", log.Error(err))
 	}
-	appStats, err := e.Ami.CollectAppStatus(ns)
+	appStats, err := e.ami.CollectAppStatus(ns)
 	if err != nil {
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
@@ -178,7 +178,7 @@ func (e Engine) reportAndApply(isSys, delete bool) error {
 	del, update := getDeleteAndUpdate(dapps, rapps)
 	if delete {
 		for n := range del {
-			if err := e.Ami.DeleteApplication(ns, n); err != nil {
+			if err := e.ami.DeleteApplication(ns, n); err != nil {
 				e.log.Error("failed to delete applications", log.Any("system", isSys), log.Error(err))
 				return err
 			}
@@ -239,7 +239,7 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 		if cfg := v.VolumeSource.Config; cfg != nil {
 			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if key == "" {
-				return fmt.Errorf("failed to get configuration name: (%s) version: (%s)", cfg.Name, cfg.Version)
+				return errors.Errorf("failed to get configuration name: (%s) version: (%s)", cfg.Name, cfg.Version)
 			}
 			var config specv1.Configuration
 			if err := e.sto.Get(key, &config); err != nil {
@@ -249,7 +249,7 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 		} else if sec := v.VolumeSource.Secret; sec != nil {
 			key := makeKey(specv1.KindSecret, sec.Name, sec.Version)
 			if key == "" {
-				return fmt.Errorf("failed to get secret name: (%s) version: (%s)", sec.Name, sec.Version)
+				return errors.Errorf("failed to get secret name: (%s) version: (%s)", sec.Name, sec.Version)
 			}
 			var secret specv1.Secret
 			if err := e.sto.Get(key, &secret); err != nil {
@@ -258,10 +258,10 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 			secs[secret.Name] = secret
 		}
 	}
-	if err := e.Ami.ApplyConfigurations(ns, cfgs); err != nil {
+	if err := e.ami.ApplyConfigurations(ns, cfgs); err != nil {
 		return err
 	}
-	if err := e.Ami.ApplySecrets(ns, secs); err != nil {
+	if err := e.ami.ApplySecrets(ns, secs); err != nil {
 		return err
 	}
 	var imagePullSecs []string
@@ -270,7 +270,7 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 			imagePullSecs = append(imagePullSecs, n)
 		}
 	}
-	if err := e.Ami.ApplyApplication(ns, *app, imagePullSecs); err != nil {
+	if err := e.ami.ApplyApplication(ns, *app, imagePullSecs); err != nil {
 		return err
 	}
 	return nil
@@ -313,7 +313,7 @@ func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceS
 			return
 		}
 		if itailLines < 0 {
-			err = fmt.Errorf("The request parameter is invalid.(%s)", "tailLines is invalid")
+			err = errors.Errorf("The request parameter is invalid.(%s)", "tailLines is invalid")
 			return
 		}
 	}
@@ -322,7 +322,7 @@ func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceS
 			return
 		}
 		if isinceSeconds < 0 {
-			err = fmt.Errorf("The request parameter is invalid.(%s)", "sinceSeconds is invalid")
+			err = errors.Errorf("The request parameter is invalid.(%s)", "sinceSeconds is invalid")
 			return
 		}
 	}

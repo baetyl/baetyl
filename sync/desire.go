@@ -2,7 +2,6 @@ package sync
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/pkg/errors"
 )
 
 // extended features of config resourece
@@ -40,7 +40,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 				}
 			}
 		} else {
-			return fmt.Errorf("failed to sync application (%s) (%s)", r.Name, r.Version)
+			return errors.Errorf("failed to sync application (%s) (%s)", r.Name, r.Version)
 		}
 	}
 
@@ -54,7 +54,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 		if cfg := r.Config(); cfg != nil {
 			configs[cfg.Name] = cfg
 		} else {
-			return fmt.Errorf("failed to sync configuration (%s) (%s)", r.Name, r.Version)
+			return errors.Errorf("failed to sync configuration (%s) (%s)", r.Name, r.Version)
 		}
 	}
 
@@ -68,7 +68,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 		if secret := r.Secret(); secret != nil {
 			secrets[secret.Name] = secret
 		} else {
-			return fmt.Errorf("failed to sync secret (%s) (%s)", r.Name, r.Version)
+			return errors.Errorf("failed to sync secret (%s) (%s)", r.Name, r.Version)
 		}
 	}
 
@@ -95,16 +95,16 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	req := specv1.DesireRequest{Infos: crds}
 	data, err := json.Marshal(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	data, err = s.http.PostJSON(s.cfg.Cloud.Desire.URL, data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send resource request: %s", err.Error())
+		return nil, errors.Errorf("failed to send resource request: %s", err.Error())
 	}
 	var res specv1.DesireResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	// TODO: remove compatible code
 	if len(res.CRDDatas) != 0 {
@@ -139,20 +139,20 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				dir = filepath.Join(base, cfg.Version)
 				err := os.MkdirAll(dir, 0755)
 				if err != nil {
-					return err
+					return errors.WithStack(err)
 				}
 			}
 			obj := new(specv1.ConfigurationObject)
 			err := json.Unmarshal([]byte(v), &obj)
 			if err != nil {
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
-				return err
+				return errors.WithStack(err)
 			}
 			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
 			err = s.downloadObject(obj, dir, filename, obj.Compression == configValueZip)
 			if err != nil {
 				os.RemoveAll(dir)
-				return fmt.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
+				return errors.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
 			// change app.volume from config to host path of downloaded file path
 			if volume.HostPath == nil {
@@ -169,13 +169,13 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 	}
 	key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 	if key == "" {
-		return fmt.Errorf("configuration does not have name or version")
+		return errors.Errorf("configuration does not have name or version")
 	}
 	if err := s.store.Get(key, &specv1.Configuration{}); err == nil {
 		s.log.Info("configuration resource already exists", log.Any("key", key))
 		return nil
 	}
-	return s.store.Upsert(key, cfg)
+	return errors.WithStack(s.store.Upsert(key, cfg))
 }
 
 func cleanDir(dir, retain string) error {
@@ -191,25 +191,25 @@ func cleanDir(dir, retain string) error {
 func (s *sync) storeApplication(app *specv1.Application) error {
 	key := makeKey(specv1.KindApplication, app.Name, app.Version)
 	if key == "" {
-		return fmt.Errorf("app does not have name or version")
+		return errors.Errorf("app does not have name or version")
 	}
 	if err := s.store.Get(key, &specv1.Application{}); err == nil {
 		s.log.Info("application resource already exists", log.Any("key", key))
 		return nil
 	}
-	return s.store.Upsert(key, app)
+	return errors.WithStack(s.store.Upsert(key, app))
 }
 
 func (s *sync) storeSecret(secret *specv1.Secret) error {
 	key := makeKey(specv1.KindSecret, secret.Name, secret.Version)
 	if key == "" {
-		return fmt.Errorf("secret does not have name or version")
+		return errors.Errorf("secret does not have name or version")
 	}
 	if err := s.store.Get(key, &specv1.Secret{}); err == nil {
 		s.log.Info("secret resource already exists", log.Any("key", key))
 		return nil
 	}
-	return s.store.Upsert(key, secret)
+	return errors.WithStack(s.store.Upsert(key, secret))
 }
 
 func (s *sync) genResourceInfos(kind specv1.Kind, infos map[string]string) []specv1.ResourceInfo {

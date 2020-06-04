@@ -3,7 +3,6 @@ package sync
 import (
 	"crypto/x509"
 	"encoding/json"
-	"errors"
 	"os"
 	"strings"
 	"time"
@@ -14,6 +13,7 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/pkg/errors"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
@@ -49,7 +49,7 @@ type sync struct {
 func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, error) {
 	ops, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if ops.TLSConfig == nil {
 		return nil, ErrSyncTLSConfigMissing
@@ -89,17 +89,17 @@ func (s *sync) Close() {
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	pld, err := json.Marshal(r)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
 	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	var desire v1.Desire
 	err = json.Unmarshal(data, &desire)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return desire, nil
 }

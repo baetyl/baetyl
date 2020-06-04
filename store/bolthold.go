@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/pkg/errors"
 	bh "github.com/timshannon/bolthold"
 )
 
@@ -12,7 +13,7 @@ import (
 func NewBoltHold(filename string) (*bh.Store, error) {
 	err := os.MkdirAll(path.Dir(filename), 0755)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	ops := &bh.Options{
 		Encoder: func(value interface{}) ([]byte, error) {
@@ -22,5 +23,6 @@ func NewBoltHold(filename string) (*bh.Store, error) {
 			return json.Unmarshal(data, value)
 		},
 	}
-	return bh.Open(filename, 0666, ops)
+	s, err := bh.Open(filename, 0666, ops)
+	return s, errors.WithStack(err)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/pkg/errors"
 )
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl-core/ami AMI
@@ -43,13 +44,11 @@ func NewAMI(cfg config.EngineConfig) (AMI, error) {
 	}
 	amiNew, ok := amiNews[name]
 	if !ok {
-		log.L().Error("ami generator not exists", log.Any("generator", name))
-		return nil, os.ErrInvalid
+		return nil, errors.Wrapf(os.ErrInvalid, "ami (%s) not exists", name)
 	}
 	ami, err := amiNew(cfg)
 	if err != nil {
-		log.L().Error("failed to generate ami", log.Any("generator", name))
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to create ami (%s)", name)
 	}
 	amiImpls[name] = ami
 	return ami, nil

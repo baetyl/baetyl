@@ -8,6 +8,7 @@ import (
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/pkg/errors"
 )
 
 type batch struct {
@@ -33,7 +34,7 @@ type Initialize struct {
 func NewInit(cfg *config.Config) (*Initialize, error) {
 	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	init := &Initialize{

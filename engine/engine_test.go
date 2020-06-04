@@ -51,7 +51,7 @@ func TestCollect(t *testing.T) {
 	mockAmi := mock.NewMockAMI(mockCtl)
 	ns := "baetyl-edge"
 	e := Engine{
-		Ami: mockAmi,
+		ami: mockAmi,
 		cfg: config.EngineConfig{},
 		ns:  ns,
 		nod: nod,
@@ -121,7 +121,7 @@ func TestApplyApp(t *testing.T) {
 	mockSync := mock.NewMockSync(mockCtl)
 	ns := "baetyl-edge"
 	eng := Engine{
-		Ami: mockAmi,
+		ami: mockAmi,
 		cfg: config.EngineConfig{},
 		ns:  ns,
 		sto: sto,
@@ -207,7 +207,7 @@ func TestReportAndApply(t *testing.T) {
 	mockSync := mock.NewMockSync(mockCtl)
 	ns := "baetyl-edge"
 	eng := Engine{
-		Ami: mockAmi,
+		ami: mockAmi,
 		cfg: config.EngineConfig{},
 		ns:  ns,
 		sto: sto,
@@ -318,7 +318,7 @@ func TestGetServiceLog(t *testing.T) {
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
 	e := Engine{
-		Ami: mockAmi,
+		ami: mockAmi,
 		sto: nil,
 		nod: nil,
 		cfg: config.EngineConfig{},

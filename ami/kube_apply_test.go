@@ -59,8 +59,7 @@ func TestPrepareService(t *testing.T) {
 		Name:  svcName,
 		Ports: []specv1.ContainerPort{{ContainerPort: 80}, {ContainerPort: 8080}},
 	}
-	service, err := ami.prepareService(ns, "", svc)
-	assert.NoError(t, err)
+	service := ami.prepareService(ns, "", svc)
 	expected := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: ns, Labels: map[string]string{AppName: ""}},
 		Spec: v1.ServiceSpec{
@@ -81,8 +80,7 @@ func TestPrepareService(t *testing.T) {
 	svc = &specv1.Service{
 		Name: svcName,
 	}
-	service, err = ami.prepareService(ns, "", svc)
-	assert.NoError(t, err)
+	service = ami.prepareService(ns, "", svc)
 	assert.Nil(t, service)
 }
 
