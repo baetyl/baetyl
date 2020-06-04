@@ -8,6 +8,7 @@ import (
 	"github.com/baetyl/baetyl-go/http"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/pkg/errors"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
@@ -45,7 +46,7 @@ func NewNode(store *bh.Store) (*Node, error) {
 	}
 	err := s.insert(m)
 	if err != nil && err != bh.ErrKeyExists {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	// report some core info
 	_, err = s.Report(m.Report)
@@ -61,10 +62,10 @@ func (s *Node) Get() (m *v1.Node, err error) {
 		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
-			return bh.ErrNotFound
+			return errors.WithStack(bh.ErrNotFound)
 		}
 		m = &v1.Node{}
-		return json.Unmarshal(prev, m)
+		return errors.WithStack(json.Unmarshal(prev, m))
 	})
 	return
 }
@@ -80,7 +81,7 @@ func (s *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 		m := &v1.Node{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		if m.Desire == nil {
 			m.Desire = desired
@@ -92,7 +93,7 @@ func (s *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 		}
 		curr, err := json.Marshal(m)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		err = b.Put(s.id, curr)
 		if err != nil {
@@ -115,7 +116,7 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 		m := &v1.Node{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		if m.Report == nil {
 			m.Report = reported
@@ -127,11 +128,11 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 		}
 		curr, err := json.Marshal(m)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		err = b.Put(s.id, curr)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		delta, err = m.Desire.Diff(m.Report)
 		return err
@@ -140,6 +141,7 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 }
 
 // GetStatus get status
+// TODO: add an error handling middleware like baetyl-cloud @chensheng
 func (s *Node) GetStatus(ctx *routing.Context) error {
 	node, err := s.Get()
 	if err != nil {
@@ -166,7 +168,7 @@ func (s *Node) insert(m *v1.Node) error {
 	return s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(s.id)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		data := b.Get(s.id)
 		if len(data) != 0 {
@@ -174,8 +176,8 @@ func (s *Node) insert(m *v1.Node) error {
 		}
 		data, err = json.Marshal(m)
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
-		return b.Put(s.id, data)
+		return errors.WithStack(b.Put(s.id, data))
 	})
 }

@@ -1,11 +1,10 @@
 package ami
 
 import (
-	"fmt"
-
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"
@@ -16,7 +15,7 @@ import (
 func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	ni := node.Status.NodeInfo
 	nodeInfo := &specv1.NodeInfo{
@@ -42,7 +41,7 @@ func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStatus, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	nodeStats := &specv1.NodeStatus{
 		Usage:    map[string]string{},
@@ -50,7 +49,7 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStatus, error) {
 	}
 	nodeMetric, err := k.cli.metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	for res, quan := range nodeMetric.Usage {
 		nodeStats.Usage[string(res)] = quan.String()
@@ -66,7 +65,7 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStatus, error) {
 func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if deploys == nil {
 		return nil, nil
@@ -76,11 +75,17 @@ func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 		ls := kl.Set{}
 		selector := deploy.Spec.Selector.MatchLabels
 		err := copier.Copy(&ls, &selector)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
 		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{
 			LabelSelector: ls.String(),
 		})
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
 		if pods == nil || len(pods.Items) == 0 {
-			return nil, fmt.Errorf("no pod exists")
+			continue
 		}
 		pod := pods.Items[0]
 		appName := pod.Labels[AppName]
@@ -96,10 +101,10 @@ func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 				Version: appVersion,
 			}}
 		}
-		if err != nil {
-			return nil, err
-		}
 		ref, err := reference.GetReference(scheme.Scheme, &pod)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
 		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
 		if l := len(events.Items); l > 0 {
 			if e := events.Items[l-1]; e.Type == "Warning" {
@@ -138,6 +143,10 @@ func getDeployStatus(infos map[string]*specv1.ServiceInfo) string {
 func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {
 	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
+	if err != nil {
+		k.log.Warn("failed to get service reference", log.Error(err))
+		return info
+	}
 	events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
 	for _, e := range events.Items {
 		if e.Type == "Warning" {

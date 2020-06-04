@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-go/utils"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -13,7 +12,9 @@ import (
 
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/spec/v1"
+	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl-go/utils"
+	"github.com/pkg/errors"
 )
 
 func (init *Initialize) activating() error {
@@ -104,11 +105,11 @@ func (init *Initialize) createFile(filePath string, data []byte) error {
 	dir := path.Dir(filePath)
 	if !utils.DirExists(dir) {
 		if err := os.Mkdir(dir, 0755); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	if err := ioutil.WriteFile(filePath, data, 0755); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }

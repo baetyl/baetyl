@@ -1,12 +1,12 @@
 package initz
 
 import (
-	"errors"
 	"io/ioutil"
 	"path"
 	"strings"
 
 	"github.com/baetyl/baetyl-core/config"
+	"github.com/pkg/errors"
 )
 
 // TODO: can be configured by cloud
@@ -38,7 +38,7 @@ func (init *Initialize) collect() (string, error) {
 		case config.ProofSN:
 			snByte, err := ioutil.ReadFile(path.Join(defaultSNPath, f.Value))
 			if err != nil {
-				return "", err
+				return "", errors.WithStack(err)
 			}
 			return strings.TrimSpace(string(snByte)), nil
 		case config.ProofHostName:

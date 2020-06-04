@@ -5,6 +5,7 @@ import (
 
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/pkg/errors"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/client-go/kubernetes"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
@@ -52,22 +53,20 @@ func newClient(cfg config.KubernetesConfig) (*client, error) {
 	kubeConfig, err := func() (*rest.Config, error) {
 		if cfg.InCluster {
 			return rest.InClusterConfig()
-
 		}
-		return clientcmd.BuildConfigFromFlags(
-			"", cfg.ConfigPath)
+		return clientcmd.BuildConfigFromFlags("", cfg.ConfigPath)
 	}()
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	metricsCli, err := clientset.NewForConfig(kubeConfig)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &client{
 		core:    kubeClient.CoreV1(),

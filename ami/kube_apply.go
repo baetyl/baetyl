@@ -6,6 +6,7 @@ import (
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,7 +33,7 @@ func (k *kubeImpl) ApplyConfigurations(ns string, cfgs map[string]specv1.Configu
 	for _, cfg := range cfgs {
 		cm := &corev1.ConfigMap{}
 		if err := copier.Copy(cm, &cfg); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		cm.Namespace = ns
 		cmInterface := k.cli.core.ConfigMaps(ns)
@@ -40,11 +41,11 @@ func (k *kubeImpl) ApplyConfigurations(ns string, cfgs map[string]specv1.Configu
 		if ocm != nil && err == nil {
 			cm.ResourceVersion = ocm.ResourceVersion
 			if _, err := cmInterface.Update(cm); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		} else {
 			if _, err := cmInterface.Create(cm); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		}
 	}
@@ -64,7 +65,7 @@ func (k *kubeImpl) ApplySecrets(ns string, secs map[string]specv1.Secret) error 
 			}
 		} else {
 			if err := copier.Copy(secret, &sec); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		}
 		secret.Namespace = ns
@@ -74,12 +75,12 @@ func (k *kubeImpl) ApplySecrets(ns string, secs map[string]specv1.Secret) error 
 			secret.ResourceVersion = osec.ResourceVersion
 			_, err := secretInterface.Update(secret)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		} else {
 			_, err := secretInterface.Create(secret)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		}
 	}
@@ -91,22 +92,22 @@ func (k *kubeImpl) DeleteApplication(ns, name string) error {
 	selector := labels.SelectorFromSet(set)
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	services, err := k.cli.core.Services(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
 		if err := deployInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	svcInterface := k.cli.core.Services(ns)
 	for _, s := range services.Items {
 		if err := svcInterface.Delete(s.Name, &metav1.DeleteOptions{}); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	k.log.Info("ami delete app", log.Any("name", name))
@@ -139,12 +140,8 @@ func (k *kubeImpl) ApplyApplication(ns string, app specv1.Application, imagePull
 		} else {
 			return err
 		}
-		if service, err := k.prepareService(ns, app.Name, &svc); err == nil {
-			if service != nil {
-				services[service.Name] = service
-			}
-		} else {
-			return err
+		if service := k.prepareService(ns, app.Name, &svc); service != nil {
+			services[service.Name] = service
 		}
 	}
 	if err := k.applyDeploys(ns, deploys); err != nil {
@@ -164,11 +161,11 @@ func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment)
 		if deploy != nil && err == nil {
 			d.ResourceVersion = deploy.ResourceVersion
 			if _, err = deployInterface.Update(d); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		} else {
 			if _, err = deployInterface.Create(d); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		}
 	}
@@ -182,11 +179,11 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 		if osvc != nil && err == nil {
 			svc.ResourceVersion = osvc.ResourceVersion
 			if _, err := svcInterface.Update(svc); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		} else {
 			if _, err := svcInterface.Create(svc); err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 		}
 	}
@@ -198,14 +195,14 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 	var c corev1.Container
 	var volumes []corev1.Volume
 	if err := copier.Copy(&c, &service); err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	if service.Resources != nil {
 		c.Resources.Limits = corev1.ResourceList{}
 		for n, value := range service.Resources.Limits {
 			quantity, err := resource.ParseQuantity(value)
 			if err != nil {
-				return nil, err
+				return nil, errors.WithStack(err)
 			}
 			c.Resources.Limits[corev1.ResourceName(n)] = quantity
 		}
@@ -284,9 +281,9 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 	return deploy, nil
 }
 
-func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) (*corev1.Service, error) {
+func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) *corev1.Service {
 	if len(svc.Ports) == 0 {
-		return nil, nil
+		return nil
 	}
 	var ports []corev1.ServicePort
 	for _, p := range svc.Ports {
@@ -308,7 +305,7 @@ func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) (*cor
 			Ports:     ports,
 		},
 	}
-	return service, nil
+	return service
 }
 
 func isRegistrySecret(secret specv1.Secret) bool {
