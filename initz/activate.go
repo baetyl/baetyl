@@ -63,7 +63,6 @@ func (init *Initialize) activate() {
 		"Content-Type": "application/json",
 	}
 	resp, err := init.http.PostURL(url, bytes.NewReader(data), headers)
-
 	if err != nil {
 		init.log.Error("failed to send activate data", log.Error(err))
 		return

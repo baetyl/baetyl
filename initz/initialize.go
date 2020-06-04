@@ -1,6 +1,9 @@
 package initz
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	gohttp "net/http"
 
 	"github.com/baetyl/baetyl-go/errors"
@@ -36,6 +39,15 @@ func NewInit(cfg *config.Config) (*Initialize, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+
+	ca, err := ioutil.ReadFile(cfg.Init.Cloud.HTTP.CA)
+	if err != nil {
+		return nil, err
+	}
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(ca)
+	ops.TLSConfig = &tls.Config{RootCAs: pool}
+	ops.TLSConfig.InsecureSkipVerify = cfg.Init.Cloud.HTTP.InsecureSkipVerify
 
 	init := &Initialize{
 		cfg:   cfg,
