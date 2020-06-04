@@ -69,7 +69,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
-	res, err := e.Collect(ns, false)
+	res, err := e.Collect(ns, false, nil)
 	assert.NoError(t, err)
 	resNode := res["node"]
 	resNodeStats := res["nodestats"]
@@ -83,7 +83,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
-	res, err = e.Collect(ns, false)
+	res, err = e.Collect(ns, false, nil)
 	assert.NoError(t, err)
 	resNode = res["node"]
 	assert.Nil(t, resNode)
@@ -91,7 +91,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
-	res, err = e.Collect(ns, false)
+	res, err = e.Collect(ns, false, nil)
 	assert.NoError(t, err)
 	resNodeStats = res["nodestats"]
 	assert.Nil(t, resNodeStats)
@@ -99,7 +99,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
-	res, err = e.Collect(ns, false)
+	res, err = e.Collect(ns, false, nil)
 	assert.NoError(t, err)
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
@@ -242,7 +242,7 @@ func TestReportAndApply(t *testing.T) {
 	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
 	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(nil)
-	err = eng.reportAndApply(false, true)
+	err = eng.reportAndApply(false, true, nil)
 	assert.NoError(t, err)
 
 	// desire app is nil
@@ -258,7 +258,7 @@ func TestReportAndApply(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = nod.Desire(deApp)
 	assert.NoError(t, err)
-	err = eng.reportAndApply(false, true)
+	err = eng.reportAndApply(false, true, nil)
 	assert.NoError(t, err)
 }
 

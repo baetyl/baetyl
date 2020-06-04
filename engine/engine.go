@@ -104,16 +104,20 @@ func (e *Engine) reporting() error {
 }
 
 func (e *Engine) reportAndDesireAsync(delete bool) error {
-	if err := e.reportAndApply(true, delete); err != nil {
+	node, err := e.nod.Get()
+	if err != nil {
 		return errors.Trace(err)
 	}
-	if err := e.reportAndApply(false, delete); err != nil {
+	if err := e.reportAndApply(true, delete, node.Desire); err != nil {
+		return errors.Trace(err)
+	}
+	if err := e.reportAndApply(false, delete, node.Desire); err != nil {
 		return errors.Trace(err)
 	}
 	return nil
 }
 
-func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
+func (e Engine) Collect(ns string, isSys bool, desire specv1.Desire) (specv1.Report, error) {
 	nodeInfo, err := e.ami.CollectNodeInfo()
 	if err != nil {
 		e.log.Warn("failed to collect node info", log.Error(err))
@@ -126,11 +130,6 @@ func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
 	if err != nil {
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
-	no, err := e.nod.Get()
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
 	apps := make([]specv1.AppInfo, 0)
 	for _, info := range appStats {
 		app := specv1.AppInfo{
@@ -139,26 +138,27 @@ func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
 		}
 		apps = append(apps, app)
 	}
-	rapps := alignApps(apps, no.Desire.AppInfos(isSys))
-	// to report app status into local shadow, and return shadow delta
+	if desire != nil {
+		apps = alignApps(apps, desire.AppInfos(isSys))
+	}
 	r := specv1.Report{
 		"time":      time.Now(),
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
 	}
-	r.SetAppInfos(isSys, rapps)
+	r.SetAppInfos(isSys, apps)
 	r.SetAppStats(isSys, appStats)
 	return r, nil
 }
 
-func (e Engine) reportAndApply(isSys, delete bool) error {
+func (e Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 	var ns string
 	if isSys {
 		ns = e.sysns
 	} else {
 		ns = e.ns
 	}
-	r, err := e.Collect(ns, isSys)
+	r, err := e.Collect(ns, isSys, desire)
 	if err != nil {
 		return errors.Trace(err)
 	}

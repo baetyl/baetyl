@@ -99,7 +99,7 @@ func (c *core) Close() {
 }
 
 func (c *core) reportAndDesireCloud() error {
-	r, err := c.eng.Collect("baetyl-edge-system", true)
+	r, err := c.eng.Collect("baetyl-edge-system", true, nil)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -131,14 +131,19 @@ func main() {
 		}
 		defer c.Close()
 
+		c.log.Info("collect and report stats to cloud")
 		err = c.reportAndDesireCloud()
 		if err != nil {
 			return errors.Trace(err)
 		}
+
+		c.log.Info("collect and report stats, then apply applications at edge")
 		err = c.eng.ReportAndDesire()
 		if err != nil {
 			return errors.Trace(err)
 		}
+
+		// close store which shared with baetyl-core
 		if c.sto != nil {
 			c.sto.Close()
 			c.sto = nil
@@ -150,15 +155,13 @@ func main() {
 			select {
 			case <-t.C:
 				c.log.Info("collect stats from edge", log.Error(err))
-				r, err := c.eng.Collect("baetyl-edge-system", true)
+				r, err := c.eng.Collect("baetyl-edge-system", true, nil)
 				if err != nil {
-					c.log.Error("failed to collect info", log.Error(err))
 					return errors.Trace(err)
 				}
 				c.log.Info("report stats to cloud", log.Error(err))
 				_, err = c.syn.Report(r)
 				if err != nil {
-					c.log.Error("failed to report info", log.Error(err))
 					return errors.Trace(err)
 				}
 			case <-ctx.WaitChan():
