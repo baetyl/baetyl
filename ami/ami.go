@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
-	"github.com/pkg/errors"
 )
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl-core/ami AMI
@@ -44,11 +44,11 @@ func NewAMI(cfg config.EngineConfig) (AMI, error) {
 	}
 	amiNew, ok := amiNews[name]
 	if !ok {
-		return nil, errors.Wrapf(os.ErrInvalid, "ami (%s) not exists", name)
+		return nil, errors.Trace(os.ErrInvalid)
 	}
 	ami, err := amiNew(cfg)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create ami (%s)", name)
+		return nil, errors.Trace(err)
 	}
 	amiImpls[name] = ami
 	return ami, nil

@@ -5,10 +5,10 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
-	"github.com/pkg/errors"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
@@ -45,13 +45,13 @@ func NewNode(store *bh.Store) (*Node, error) {
 		store: store,
 	}
 	err := s.insert(m)
-	if err != nil && err != bh.ErrKeyExists {
-		return nil, errors.WithStack(err)
+	if err != nil && errors.Cause(err) != bh.ErrKeyExists {
+		return nil, errors.Trace(err)
 	}
 	// report some core info
 	_, err = s.Report(m.Report)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	return s, nil
 }
@@ -62,10 +62,10 @@ func (s *Node) Get() (m *v1.Node, err error) {
 		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
-			return errors.WithStack(bh.ErrNotFound)
+			return errors.Trace(bh.ErrNotFound)
 		}
 		m = &v1.Node{}
-		return errors.WithStack(json.Unmarshal(prev, m))
+		return errors.Trace(json.Unmarshal(prev, m))
 	})
 	return
 }
@@ -76,31 +76,31 @@ func (s *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
-			return bh.ErrNotFound
+			return errors.Trace(bh.ErrNotFound)
 		}
 		m := &v1.Node{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
 		if m.Desire == nil {
 			m.Desire = desired
 		} else {
 			err = m.Desire.Merge(desired)
 			if err != nil {
-				return err
+				return errors.Trace(err)
 			}
 		}
 		curr, err := json.Marshal(m)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
 		err = b.Put(s.id, curr)
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 		delta, err = m.Desire.Diff(m.Report)
-		return err
+		return errors.Trace(err)
 	})
 	return
 }
@@ -111,31 +111,31 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 		b := tx.Bucket(s.id)
 		prev := b.Get(s.id)
 		if len(prev) == 0 {
-			return bh.ErrNotFound
+			return errors.Trace(bh.ErrNotFound)
 		}
 		m := &v1.Node{}
 		err := json.Unmarshal(prev, m)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
 		if m.Report == nil {
 			m.Report = reported
 		} else {
 			err = m.Report.Merge(reported)
 			if err != nil {
-				return err
+				return errors.Trace(err)
 			}
 		}
 		curr, err := json.Marshal(m)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
 		err = b.Put(s.id, curr)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
 		delta, err = m.Desire.Diff(m.Report)
-		return err
+		return errors.Trace(err)
 	})
 	return
 }
@@ -168,16 +168,16 @@ func (s *Node) insert(m *v1.Node) error {
 	return s.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(s.id)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
 		data := b.Get(s.id)
 		if len(data) != 0 {
-			return bh.ErrKeyExists
+			return errors.Trace(bh.ErrKeyExists)
 		}
 		data, err = json.Marshal(m)
 		if err != nil {
-			return errors.WithStack(err)
+			return errors.Trace(err)
 		}
-		return errors.WithStack(b.Put(s.id, data))
+		return errors.Trace(b.Put(s.id, data))
 	})
 }

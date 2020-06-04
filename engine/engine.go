@@ -10,11 +10,11 @@ import (
 	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-core/sync"
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
-	"github.com/pkg/errors"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 )
@@ -40,7 +40,7 @@ type Engine struct {
 func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
 	kube, err := ami.NewAMI(cfg)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	return &Engine{
 		ami:   kube,
@@ -59,7 +59,7 @@ func (e *Engine) Start() {
 }
 
 func (e *Engine) ReportAndDesire() error {
-	return e.reportAndDesireAsync(false)
+	return errors.Trace(e.reportAndDesireAsync(false))
 }
 
 func (e *Engine) GetServiceLog(ctx *routing.Context) error {
@@ -105,10 +105,10 @@ func (e *Engine) reporting() error {
 
 func (e *Engine) reportAndDesireAsync(delete bool) error {
 	if err := e.reportAndApply(true, delete); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if err := e.reportAndApply(false, delete); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	return nil
 }
@@ -128,7 +128,7 @@ func (e Engine) Collect(ns string, isSys bool) (specv1.Report, error) {
 	}
 	no, err := e.nod.Get()
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	apps := make([]specv1.AppInfo, 0)
@@ -160,12 +160,12 @@ func (e Engine) reportAndApply(isSys, delete bool) error {
 	}
 	r, err := e.Collect(ns, isSys)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	rapps := r.AppInfos(isSys)
 	delta, err := e.nod.Report(r)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	// if apps are updated, to apply new apps
 	if delta == nil {
@@ -180,7 +180,7 @@ func (e Engine) reportAndApply(isSys, delete bool) error {
 		for n := range del {
 			if err := e.ami.DeleteApplication(ns, n); err != nil {
 				e.log.Error("failed to delete applications", log.Any("system", isSys), log.Error(err))
-				return err
+				return errors.Trace(err)
 			}
 		}
 	}
@@ -226,12 +226,12 @@ func (e Engine) applyApps(ns string, infos map[string]specv1.AppInfo) {
 func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 	if err := e.syn.SyncResource(info); err != nil {
 		e.log.Error("failed to sync resource", log.Any("info", info), log.Error(err))
-		return err
+		return errors.Trace(err)
 	}
 	app, err := e.injectEnv(info)
 	if err != nil {
 		e.log.Error("failed to inject env to applications", log.Any("info", info), log.Error(err))
-		return err
+		return errors.Trace(err)
 	}
 	cfgs := make(map[string]specv1.Configuration)
 	secs := make(map[string]specv1.Secret)
@@ -243,7 +243,7 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 			}
 			var config specv1.Configuration
 			if err := e.sto.Get(key, &config); err != nil {
-				return err
+				return errors.Trace(err)
 			}
 			cfgs[config.Name] = config
 		} else if sec := v.VolumeSource.Secret; sec != nil {
@@ -253,16 +253,16 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 			}
 			var secret specv1.Secret
 			if err := e.sto.Get(key, &secret); err != nil {
-				return err
+				return errors.Trace(err)
 			}
 			secs[secret.Name] = secret
 		}
 	}
 	if err := e.ami.ApplyConfigurations(ns, cfgs); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if err := e.ami.ApplySecrets(ns, secs); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	var imagePullSecs []string
 	for n, sec := range secs {
@@ -271,7 +271,7 @@ func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
 		}
 	}
 	if err := e.ami.ApplyApplication(ns, *app, imagePullSecs); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	return nil
 }
@@ -282,7 +282,7 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 	err := e.sto.Get(key, app)
 	if err != nil {
 		e.log.Error("failed to get resource from store", log.Any("key", key), log.Error(err))
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	var services []specv1.Service
 	for _, svc := range app.Services {

@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
-	"github.com/pkg/errors"
 )
 
 func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
@@ -38,7 +38,7 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 	data, err := http.HandleResponse(resp)
 	if err != nil {
 		s.log.Error("failed to send report data", log.Error(err))
-		return errors.WithStack(err)
+		return errors.Trace(err)
 	}
 
 	err = utils.WriteFile(name, bytes.NewBuffer(data))

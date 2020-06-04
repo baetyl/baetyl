@@ -1,12 +1,13 @@
 package initz
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
 
 	"github.com/baetyl/baetyl-core/config"
-	"github.com/pkg/errors"
+	"github.com/baetyl/baetyl-go/errors"
 )
 
 // TODO: can be configured by cloud
@@ -15,10 +16,10 @@ const (
 )
 
 // ErrProofTypeNotSupported the proof type is not supported
-var ErrProofTypeNotSupported = errors.New("the proof type is not supported")
+var ErrProofTypeNotSupported = fmt.Errorf("the proof type is not supported")
 
 // ErrProofValueNotFound the proof value is not found
-var ErrProofValueNotFound = errors.New("the proof value is not found")
+var ErrProofValueNotFound = fmt.Errorf("the proof value is not found")
 
 func (init *Initialize) collect() (string, error) {
 	fs := init.cfg.Init.ActivateConfig.Fingerprints
@@ -27,7 +28,7 @@ func (init *Initialize) collect() (string, error) {
 	}
 	nodeInfo, err := init.ami.CollectNodeInfo()
 	if err != nil {
-		return "", err
+		return "", errors.Trace(err)
 	}
 	for _, f := range fs {
 		switch f.Proof {
@@ -38,31 +39,31 @@ func (init *Initialize) collect() (string, error) {
 		case config.ProofSN:
 			snByte, err := ioutil.ReadFile(path.Join(defaultSNPath, f.Value))
 			if err != nil {
-				return "", errors.WithStack(err)
+				return "", errors.Trace(err)
 			}
 			return strings.TrimSpace(string(snByte)), nil
 		case config.ProofHostName:
 			if nodeInfo == nil {
-				return "", ErrProofValueNotFound
+				return "", errors.Trace(ErrProofValueNotFound)
 			}
 			return nodeInfo.Hostname, nil
 		case config.ProofMachineID:
 			if nodeInfo == nil {
-				return "", ErrProofValueNotFound
+				return "", errors.Trace(ErrProofValueNotFound)
 			}
 			return nodeInfo.MachineID, nil
 		case config.ProofSystemUUID:
 			if nodeInfo == nil {
-				return "", ErrProofValueNotFound
+				return "", errors.Trace(ErrProofValueNotFound)
 			}
 			return nodeInfo.SystemUUID, nil
 		case config.ProofBootID:
 			if nodeInfo == nil {
-				return "", ErrProofValueNotFound
+				return "", errors.Trace(ErrProofValueNotFound)
 			}
 			return nodeInfo.BootID, nil
 		default:
-			return "", ErrProofTypeNotSupported
+			return "", errors.Trace(ErrProofTypeNotSupported)
 		}
 	}
 	return "", nil

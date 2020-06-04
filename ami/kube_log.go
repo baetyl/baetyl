@@ -1,11 +1,10 @@
 package ami
 
 import (
-	"fmt"
 	"io"
 
+	"github.com/baetyl/baetyl-go/errors"
 	"github.com/jinzhu/copier"
-	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kl "k8s.io/apimachinery/pkg/labels"
@@ -14,29 +13,29 @@ import (
 func (k *kubeImpl) FetchLog(ns, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
 	deploy, err := k.cli.app.Deployments(ns).Get(service, metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	if deploy == nil {
-		return nil, fmt.Errorf("service doesn't exist")
+		return nil, errors.Errorf("service doesn't exist")
 	}
 	ls := kl.Set{}
 	selector := deploy.Spec.Selector.MatchLabels
 	err = copier.Copy(&ls, &selector)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{
 		LabelSelector: ls.String(),
 	})
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	if pods == nil || len(pods.Items) == 0 {
 		return nil, errors.New("no pod or more than one pod exists")
 	}
 	s, err := k.cli.core.Pods(ns).GetLogs(pods.Items[0].Name, k.toLogOptions(tailLines, sinceSeconds)).Stream()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, errors.Trace(err)
 	}
 	return s, nil
 }
