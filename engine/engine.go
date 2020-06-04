@@ -38,7 +38,7 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	kube, err := ami.NewAMI(cfg)
+	kube, err := ami.NewAMI(cfg.AmiConfig)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

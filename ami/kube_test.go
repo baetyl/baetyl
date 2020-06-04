@@ -7,7 +7,7 @@ import (
 )
 
 func Test_newKubeImpl(t *testing.T) {
-	c := config.EngineConfig{}
+	c := config.AmiConfig{}
 	c.Kind = "kubernetes"
 	c.Kubernetes.InCluster = true
 

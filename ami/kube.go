@@ -28,7 +28,7 @@ func init() {
 	Register(Kubernetes, newKubeImpl)
 }
 
-func newKubeImpl(cfg config.EngineConfig) (AMI, error) {
+func newKubeImpl(cfg config.AmiConfig) (AMI, error) {
 	cli, err := newClient(cfg.Kubernetes)
 	if err != nil {
 		return nil, err

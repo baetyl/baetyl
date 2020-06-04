@@ -42,7 +42,7 @@ func NewInit(cfg *config.Config) (*Initialize, error) {
 		sig:   make(chan bool, 1),
 		http:  http.NewClient(ops),
 		attrs: map[string]string{},
-		log:   log.With(log.Any("core", "Initialize")),
+		log:   log.With(log.Any("init", "active")),
 	}
 	init.batch = &batch{
 		name:         cfg.Init.Batch.Name,
@@ -54,7 +54,7 @@ func NewInit(cfg *config.Config) (*Initialize, error) {
 		init.attrs[a.Name] = a.Value
 	}
 
-	init.ami, err = ami.NewAMI(cfg.Engine)
+	init.ami, err = ami.NewAMI(cfg.Engine.AmiConfig)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

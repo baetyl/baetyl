@@ -21,7 +21,7 @@ var mu sync.Mutex
 var amiNews = map[string]New{}
 var amiImpls = map[string]AMI{}
 
-type New func(cfg config.EngineConfig) (AMI, error)
+type New func(cfg config.AmiConfig) (AMI, error)
 
 // AMI app model interfaces
 type AMI interface {
@@ -35,7 +35,7 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
-func NewAMI(cfg config.EngineConfig) (AMI, error) {
+func NewAMI(cfg config.AmiConfig) (AMI, error) {
 	name := cfg.Kind
 	mu.Lock()
 	defer mu.Unlock()

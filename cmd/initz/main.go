@@ -38,7 +38,7 @@ type core struct {
 	log *log.Logger
 }
 
-// NewCore creats a new core
+// NewCore creates a new core
 func NewCore(ctx context.Context) (*core, error) {
 	var cfg config.Config
 	err := ctx.LoadCustomConfig(&cfg)
@@ -46,9 +46,20 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, errors.Trace(err)
 	}
 
+	// to activate if no node cert
+	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
+		i, err := initz.NewInit(&cfg)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		i.Start()
+		i.WaitAndClose()
+		ctx.Log().Info("init activates node success")
+	}
+
 	c := &core{
 		cfg: cfg,
-		log: log.With(log.Any("initz", "main")),
+		log: log.With(log.Any("init", "sync")),
 	}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
@@ -61,24 +72,15 @@ func NewCore(ctx context.Context) (*core, error) {
 		return nil, errors.Trace(err)
 	}
 
-	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
-		i, err := initz.NewInit(&cfg)
-		if err != nil {
-			i.Close()
-			return nil, errors.Trace(err)
-		}
-		i.Start()
-		i.WaitAndClose()
-		c.log.Info("init active success")
-	}
-
 	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
 	if err != nil {
+		c.Close()
 		return nil, errors.Trace(err)
 	}
 
 	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.syn)
 	if err != nil {
+		c.Close()
 		return nil, errors.Trace(err)
 	}
 	return c, nil

@@ -17,10 +17,14 @@ type Config struct {
 	Logger log.Config        `yaml:"logger" json:"logger"`
 }
 
-type EngineConfig struct {
+type AmiConfig struct {
 	Kind       string           `yaml:"kind" json:"kind" default:"kubernetes"`
 	Kubernetes KubernetesConfig `yaml:"kubernetes" json:"kubernetes"`
-	Report     struct {
+}
+
+type EngineConfig struct {
+	AmiConfig `yaml:",inline" json:",inline"`
+	Report    struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
 }
