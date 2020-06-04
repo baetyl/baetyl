@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
 )
 

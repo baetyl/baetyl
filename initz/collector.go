@@ -6,8 +6,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/errors"
+	"github.com/baetyl/baetyl/config"
 )
 
 // TODO: can be configured by cloud

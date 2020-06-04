@@ -3,12 +3,12 @@ package initz
 import (
 	gohttp "net/http"
 
-	"github.com/baetyl/baetyl-core/ami"
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/config"
 )
 
 type batch struct {

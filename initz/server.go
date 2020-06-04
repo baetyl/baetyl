@@ -4,10 +4,10 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl/config"
 )
 
 func (init *Initialize) startServer() error {

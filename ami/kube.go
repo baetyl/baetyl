@@ -3,9 +3,9 @@ package ami
 import (
 	"os"
 
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl/config"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/client-go/kubernetes"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"

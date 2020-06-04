@@ -1,15 +1,15 @@
 package main
 
 import (
-	_ "github.com/baetyl/baetyl-core/ami"
-	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/engine"
-	"github.com/baetyl/baetyl-core/node"
-	"github.com/baetyl/baetyl-core/store"
-	"github.com/baetyl/baetyl-core/sync"
 	"github.com/baetyl/baetyl-go/context"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
+	_ "github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/engine"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/sync"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"

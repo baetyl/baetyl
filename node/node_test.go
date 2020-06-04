@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baetyl/baetyl-core/store"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
 )
 

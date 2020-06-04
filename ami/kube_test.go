@@ -1,7 +1,7 @@
 package ami
 
 import (
-	"github.com/baetyl/baetyl-core/config"
+	"github.com/baetyl/baetyl/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

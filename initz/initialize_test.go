@@ -3,10 +3,6 @@ package initz
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl-core/ami"
-	"github.com/baetyl/baetyl-core/store"
-	"github.com/baetyl/baetyl-go/http"
-	"github.com/baetyl/baetyl-go/log"
 	"io/ioutil"
 	gohttp "net/http"
 	"os"
@@ -14,11 +10,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baetyl/baetyl-core/config"
-	mc "github.com/baetyl/baetyl-core/mock"
+	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/mock"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/config"
+	mc "github.com/baetyl/baetyl/mock"
+	"github.com/baetyl/baetyl/store"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )

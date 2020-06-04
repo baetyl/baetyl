@@ -2,8 +2,8 @@ package initz
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-core/config"
-	mc "github.com/baetyl/baetyl-core/mock"
+	"github.com/baetyl/baetyl/config"
+	mc "github.com/baetyl/baetyl/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

@@ -9,12 +9,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/node"
-	"github.com/baetyl/baetyl-core/store"
 	"github.com/baetyl/baetyl-go/mock"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
 )
 

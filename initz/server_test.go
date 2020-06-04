@@ -1,8 +1,8 @@
 package initz
 
 import (
-	"github.com/baetyl/baetyl-core/config"
-	mc "github.com/baetyl/baetyl-core/mock"
+	"github.com/baetyl/baetyl/config"
+	mc "github.com/baetyl/baetyl/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"

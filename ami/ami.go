@@ -5,13 +5,13 @@ import (
 	"os"
 	"sync"
 
-	"github.com/baetyl/baetyl-core/config"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
+	"github.com/baetyl/baetyl/config"
 )
 
-//go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl-core/ami AMI
+//go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl/ami AMI
 
 const (
 	Kubernetes = "kubernetes"

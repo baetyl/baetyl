@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baetyl/baetyl-core/config"
-	"github.com/baetyl/baetyl-core/node"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	v1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/node"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
@@ -28,7 +28,7 @@ const (
 	EnvKeyNodeName = "BAETYL_NODE_NAME"
 )
 
-//go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl-core/sync Sync
+//go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl/sync Sync
 type Sync interface {
 	Start()
 	Close()
