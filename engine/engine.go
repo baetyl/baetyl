@@ -64,6 +64,7 @@ func (e *Engine) ReportAndDesire() error {
 
 func (e *Engine) GetServiceLog(ctx *routing.Context) error {
 	service := ctx.Param("service")
+	isSys   := string(ctx.QueryArgs().Peek("system"))
 	tailLines := string(ctx.QueryArgs().Peek("tailLines"))
 	sinceSeconds := string(ctx.QueryArgs().Peek("sinceSeconds"))
 
@@ -72,8 +73,11 @@ func (e *Engine) GetServiceLog(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 400, "RequestParamInvalid", err.Error())
 		return nil
 	}
-
-	reader, err := e.ami.FetchLog(e.ns, service, tail, since)
+	ns := e.ns
+	if isSys == "true" {
+		ns = e.sysns
+	}
+	reader, err := e.ami.FetchLog(ns, service, tail, since)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
