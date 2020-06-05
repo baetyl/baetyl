@@ -245,6 +245,8 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 		app.Labels = map[string]string{}
 	}
 	app.Labels[AppName] = app.Name
+	app.Labels[AppVersion] = app.Version
+	app.Labels[ServiceName] = service.Name
 	deploy := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
@@ -256,15 +258,9 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 			Strategy: appv1.DeploymentStrategy{
 				Type: appv1.RecreateDeploymentStrategyType,
 			},
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{ServiceName: service.Name},
-			},
+			Selector: &metav1.LabelSelector{MatchLabels: map[string]string{ServiceName: service.Name}},
 			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
-					AppName:     app.Name,
-					AppVersion:  app.Version,
-					ServiceName: service.Name,
-				}},
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{ServiceName: service.Name}},
 				Spec: corev1.PodSpec{
 					Volumes:          volumes,
 					Containers:       containers,

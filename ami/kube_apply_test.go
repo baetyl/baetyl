@@ -140,7 +140,11 @@ func TestPrepareDeploy(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svcName,
 			Namespace: ns,
-			Labels:    map[string]string{AppName: app.Name},
+			Labels: map[string]string{
+				AppName:     app.Name,
+				AppVersion:  app.Version,
+				ServiceName: svcName,
+			},
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: replica,
@@ -152,8 +156,6 @@ func TestPrepareDeploy(t *testing.T) {
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						AppName:     app.Name,
-						AppVersion:  app.Version,
 						ServiceName: svcName,
 					},
 				},

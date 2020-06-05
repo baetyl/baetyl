@@ -4,10 +4,9 @@ import (
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
-	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kl "k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
 )
@@ -67,30 +66,11 @@ func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if deploys == nil {
-		return nil, nil
-	}
 	appStatuses := map[string]*specv1.AppStatus{}
 	for _, deploy := range deploys.Items {
-		ls := kl.Set{}
-		selector := deploy.Spec.Selector.MatchLabels
-		err := copier.Copy(&ls, &selector)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{
-			LabelSelector: ls.String(),
-		})
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		if pods == nil || len(pods.Items) == 0 {
-			continue
-		}
-		pod := pods.Items[0]
-		appName := pod.Labels[AppName]
-		appVersion := pod.Labels[AppVersion]
-		serviceName := pod.Labels[ServiceName]
+		appName := deploy.Labels[AppName]
+		appVersion := deploy.Labels[AppVersion]
+		serviceName := deploy.Labels[ServiceName]
 		if appName == "" || serviceName == "" {
 			continue
 		}
@@ -101,16 +81,39 @@ func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 				Version: appVersion,
 			}}
 		}
-		ref, err := reference.GetReference(scheme.Scheme, &pod)
+		dRef, err := reference.GetReference(scheme.Scheme, &deploy)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
+		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, dRef)
 		if l := len(events.Items); l > 0 {
 			if e := events.Items[l-1]; e.Type == "Warning" {
-				status.Cause = e.Message
+				status.Cause += e.Message
 			}
 		}
+		rs, err := k.cli.app.ReplicaSets(ns).Get(deploy.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		rRef, err := reference.GetReference(scheme.Scheme, rs)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		events, _ = k.cli.core.Events(ns).Search(scheme.Scheme, rRef)
+		if l := len(events.Items); l > 0 {
+			if e := events.Items[l-1]; e.Type == "Warning" {
+				status.Cause += e.Message
+			}
+		}
+		selector := labels.SelectorFromSet(deploy.Spec.Selector.MatchLabels)
+		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		if pods == nil || len(pods.Items) == 0 {
+			continue
+		}
+		pod := pods.Items[0]
 		if status.ServiceInfos == nil {
 			status.ServiceInfos = map[string]*specv1.ServiceInfo{}
 		}
