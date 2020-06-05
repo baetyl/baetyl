@@ -91,20 +91,6 @@ func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 				status.Cause += e.Message
 			}
 		}
-		rs, err := k.cli.app.ReplicaSets(ns).Get(deploy.Name, metav1.GetOptions{})
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		rRef, err := reference.GetReference(scheme.Scheme, rs)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		events, _ = k.cli.core.Events(ns).Search(scheme.Scheme, rRef)
-		if l := len(events.Items); l > 0 {
-			if e := events.Items[l-1]; e.Type == "Warning" {
-				status.Cause += e.Message
-			}
-		}
 		selector := labels.SelectorFromSet(deploy.Spec.Selector.MatchLabels)
 		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
 		if err != nil {
