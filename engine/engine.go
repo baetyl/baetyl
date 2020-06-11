@@ -21,6 +21,7 @@ import (
 
 const (
 	EnvKeyAppName     = "BAETYL_APP_NAME"
+	EnvKeyAppVersion  = "BAETYL_APP_VERSION"
 	EnvKeyNodeName    = "BAETYL_NODE_NAME"
 	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
 )
@@ -64,7 +65,7 @@ func (e *Engine) ReportAndDesire() error {
 
 func (e *Engine) GetServiceLog(ctx *routing.Context) error {
 	service := ctx.Param("service")
-	isSys   := string(ctx.QueryArgs().Peek("system"))
+	isSys := string(ctx.QueryArgs().Peek("system"))
 	tailLines := string(ctx.QueryArgs().Peek("tailLines"))
 	sinceSeconds := string(ctx.QueryArgs().Peek("sinceSeconds"))
 
@@ -298,6 +299,10 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 			{
 				Name:  EnvKeyServiceName,
 				Value: svc.Name,
+			},
+			{
+				Name:  EnvKeyAppVersion,
+				Value: app.Version,
 			},
 			{
 				Name:  EnvKeyNodeName,
