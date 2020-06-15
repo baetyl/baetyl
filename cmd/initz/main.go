@@ -99,10 +99,7 @@ func (c *core) Close() {
 }
 
 func (c *core) reportAndDesireCloud() error {
-	r, err := c.eng.Collect("baetyl-edge-system", true, nil)
-	if err != nil {
-		return errors.Trace(err)
-	}
+	r, _ := c.eng.Collect("baetyl-edge-system", true, nil)
 	ds, err := c.syn.Report(r)
 	if err != nil {
 		c.log.Error("failed to report app info", log.Error(err))
@@ -155,10 +152,7 @@ func main() {
 			select {
 			case <-t.C:
 				c.log.Info("collect stats from edge", log.Error(err))
-				r, err := c.eng.Collect("baetyl-edge-system", true, nil)
-				if err != nil {
-					return errors.Trace(err)
-				}
+				r, _ := c.eng.Collect("baetyl-edge-system", true, nil)
 				c.log.Info("report stats to cloud", log.Error(err))
 				_, err = c.syn.Report(r)
 				if err != nil {

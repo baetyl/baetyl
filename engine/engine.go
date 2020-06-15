@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	gosync "sync"
@@ -122,7 +123,7 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	return nil
 }
 
-func (e Engine) Collect(ns string, isSys bool, desire specv1.Desire) (specv1.Report, error) {
+func (e *Engine) Collect(ns string, isSys bool, desire specv1.Desire) (specv1.Report, []specv1.AppStatus) {
 	nodeInfo, err := e.ami.CollectNodeInfo()
 	if err != nil {
 		e.log.Warn("failed to collect node info", log.Error(err))
@@ -153,19 +154,20 @@ func (e Engine) Collect(ns string, isSys bool, desire specv1.Desire) (specv1.Rep
 	}
 	r.SetAppInfos(isSys, apps)
 	r.SetAppStats(isSys, appStats)
-	return r, nil
+	return r, appStats
 }
 
-func (e Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
+func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 	var ns string
 	if isSys {
 		ns = e.sysns
 	} else {
 		ns = e.ns
 	}
-	r, err := e.Collect(ns, isSys, desire)
-	if err != nil {
-		return errors.Trace(err)
+	r, appStats := e.Collect(ns, isSys, desire)
+	stats := map[string]specv1.AppStatus{}
+	for _, s := range appStats {
+		stats[s.Name] = s
 	}
 	rapps := r.AppInfos(isSys)
 	delta, err := e.nod.Report(r)
@@ -180,7 +182,13 @@ func (e Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 	if dapps == nil {
 		return nil
 	}
-	del, update := getDeleteAndUpdate(dapps, rapps)
+	del, exist, update := getDeleteAndUpdate(dapps, rapps)
+	if err = e.checkService(dapps, exist, update, stats); err != nil {
+		return errors.Trace(err)
+	}
+	if err = e.reportAppStats(isSys, r, stats); err != nil {
+		return errors.Trace(err)
+	}
 	if delete {
 		for n := range del {
 			if err := e.ami.DeleteApplication(ns, n); err != nil {
@@ -189,14 +197,72 @@ func (e Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 			}
 		}
 	}
-	e.applyApps(ns, update)
+	e.applyApps(ns, update, stats)
+	if err = e.reportAppStats(isSys, r, stats); err != nil {
+		return errors.Trace(err)
+	}
 	e.log.Info("to apply applications", log.Any("system", isSys), log.Any("apps", dapps))
 	return nil
 }
 
-func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.AppInfo, map[string]specv1.AppInfo) {
+func (e *Engine) checkService(dapps []specv1.AppInfo, exist, update map[string]specv1.AppInfo, stats map[string]specv1.AppStatus) error {
+	apps := map[string]*specv1.Application{}
+	for _, info := range dapps {
+		crds, err := e.syn.SyncAppResource(info)
+		if err != nil {
+			return err
+		}
+		for _, r := range crds {
+			if app := r.App(); app != nil {
+				apps[app.Name] = app
+			}
+		}
+	}
+	svcs := map[string]string{}
+	for n := range exist {
+		if app, ok := apps[n]; ok {
+			for _, svc := range app.Services {
+				svcs[svc.Name] = n
+			}
+		}
+	}
+	for n := range update {
+		if app, ok := apps[n]; ok {
+			for _, svc := range app.Services {
+				if appName, ok := svcs[svc.Name]; ok {
+					delete(update, n)
+					stat, ok := stats[n]
+					if !ok {
+						stat = specv1.AppStatus{}
+					}
+					stat.Cause += fmt.Sprintf("service [%s] in application [%s] collide with application [%s]", svc.Name, n, appName)
+					stats[n] = stat
+				} else {
+					svcs[svc.Name] = n
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (e *Engine) reportAppStats(isSys bool, r specv1.Report, stats map[string]specv1.AppStatus) error {
+	appStats := make([]specv1.AppStatus, 0)
+	for _, s := range stats {
+		appStats = append(appStats, s)
+	}
+	r.SetAppStats(isSys, appStats)
+	_, err := e.nod.Report(r)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.AppInfo, map[string]specv1.AppInfo, map[string]specv1.AppInfo) {
 	del := make(map[string]specv1.AppInfo)
 	update := make(map[string]specv1.AppInfo)
+	exist := make(map[string]specv1.AppInfo)
 	for _, d := range desires {
 		update[d.Name] = d
 	}
@@ -204,6 +270,7 @@ func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.Ap
 		del[r.Name] = r
 		if app, ok := update[r.Name]; ok && app.Version == r.Version {
 			delete(update, app.Name)
+			exist[app.Name] = app
 		}
 	}
 	for _, app := range desires {
@@ -211,16 +278,19 @@ func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.Ap
 			delete(del, app.Name)
 		}
 	}
-	return del, update
+	return del, exist, update
 }
 
-func (e Engine) applyApps(ns string, infos map[string]specv1.AppInfo) {
+func (e *Engine) applyApps(ns string, infos map[string]specv1.AppInfo, stats map[string]specv1.AppStatus) {
 	var wg gosync.WaitGroup
 	for _, info := range infos {
 		wg.Add(1)
 		go func(wg *gosync.WaitGroup, info specv1.AppInfo) {
 			if err := e.applyApp(ns, info); err != nil {
 				e.log.Error("failed to apply application", log.Any("info", info), log.Error(err))
+				stat := stats[info.Name]
+				stat.Cause += err.Error()
+				stats[info.Name] = stat
 			}
 			wg.Done()
 		}(&wg, info)
@@ -228,7 +298,7 @@ func (e Engine) applyApps(ns string, infos map[string]specv1.AppInfo) {
 	wg.Wait()
 }
 
-func (e Engine) applyApp(ns string, info specv1.AppInfo) error {
+func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 	if err := e.syn.SyncResource(info); err != nil {
 		e.log.Error("failed to sync resource", log.Any("info", info), log.Error(err))
 		return errors.Trace(err)
