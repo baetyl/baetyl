@@ -233,15 +233,16 @@ func (e *Engine) checkService(apps map[string]specv1.Application, stats map[stri
 			}
 		}
 		for _, aName := range aNames {
-			if aName != first {
-				delete(update, aName)
-				stat, ok := stats[aName]
-				if !ok {
-					stat = specv1.AppStatus{}
-				}
-				stat.Cause += fmt.Sprintf("service [%s] in application [%s] collide with application [%s]", sName, aName, first)
-				stats[aName] = stat
+			if aName == first {
+				continue
 			}
+			delete(update, aName)
+			stat, ok := stats[aName]
+			if !ok {
+				stat = specv1.AppStatus{}
+			}
+			stat.Cause += fmt.Sprintf("service [%s] in application [%s] collide with application [%s]", sName, aName, first)
+			stats[aName] = stat
 		}
 	}
 }
