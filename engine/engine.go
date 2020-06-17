@@ -217,38 +217,42 @@ func (e *Engine) checkService(apps map[string]specv1.Application, stats map[stri
 	}
 	var first string
 	for sName, aNames := range svcs {
-		if len(aNames) > 1 {
-			first = ""
-			for _, aName := range aNames {
-				if first == "" {
-					first = aName
-				}
-				if _, ok := stats[aName]; ok {
-					first = aName
-				}
+		if len(aNames) <= 1 {
+			continue
+		}
+		// when multiple apps have same service name, it will only launch the first app
+		// or not launch any app by deleting update map
+		// if there was one app existed which is in stats
+		first = ""
+		for _, aName := range aNames {
+			if first == "" {
+				first = aName
 			}
-			for _, aName := range aNames {
-				if aName != first {
-					delete(update, aName)
-					stat, ok := stats[aName]
-					if !ok {
-						stat = specv1.AppStatus{}
-					}
-					stat.Cause += fmt.Sprintf("service [%s] in application [%s] collide with application [%s]", sName, aName, first)
-					stats[aName] = stat
+			if _, ok := stats[aName]; ok {
+				first = aName
+			}
+		}
+		for _, aName := range aNames {
+			if aName != first {
+				delete(update, aName)
+				stat, ok := stats[aName]
+				if !ok {
+					stat = specv1.AppStatus{}
 				}
+				stat.Cause += fmt.Sprintf("service [%s] in application [%s] collide with application [%s]", sName, aName, first)
+				stats[aName] = stat
 			}
 		}
 	}
 }
 
 func (e *Engine) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map[string]specv1.AppStatus) error {
+	if len(stats) == 0 {
+		return nil
+	}
 	appStats := make([]specv1.AppStatus, 0)
 	for _, s := range stats {
 		appStats = append(appStats, s)
-	}
-	if len(appStats) == 0 {
-		return nil
 	}
 	r.SetAppStats(isSys, appStats)
 	_, err := e.nod.Report(r)
