@@ -69,7 +69,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
-	res, _ := e.Collect(ns, false, nil)
+	res := e.Collect(ns, false, nil)
 	resNode := res["node"]
 	resNodeStats := res["nodestats"]
 	resApps := res["apps"]
@@ -82,21 +82,21 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
-	res, _ = e.Collect(ns, false, nil)
+	res = e.Collect(ns, false, nil)
 	resNode = res["node"]
 	assert.Nil(t, resNode)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
-	res, _ = e.Collect(ns, false, nil)
+	res = e.Collect(ns, false, nil)
 	resNodeStats = res["nodestats"]
 	assert.Nil(t, resNodeStats)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
-	res, _ = e.Collect(ns, false, nil)
+	res = e.Collect(ns, false, nil)
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
 	assert.Equal(t, resApps, []specv1.AppInfo{})
@@ -234,7 +234,7 @@ func TestReportAndApply(t *testing.T) {
 	app3 := specv1.Application{Name: "app3", Version: "v3"}
 	err = sto.Upsert(makeKey(specv1.KindApplication, "app3", "v3"), app3)
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
-	mockSync.EXPECT().SyncAppResource(gomock.Any()).Return(nil, nil).Times(2)
+	mockSync.EXPECT().SyncApps(gomock.Any()).Return(nil, nil)
 	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
 	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
 	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)

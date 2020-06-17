@@ -72,19 +72,19 @@ func (mr *MockSyncMockRecorder) Start() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSync)(nil).Start))
 }
 
-// SyncAppResource mocks base method.
-func (m *MockSync) SyncAppResource(arg0 v1.AppInfo) ([]v1.ResourceValue, error) {
+// SyncApps mocks base method.
+func (m *MockSync) SyncApps(arg0 []v1.AppInfo) (map[string]v1.Application, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncAppResource", arg0)
-	ret0, _ := ret[0].([]v1.ResourceValue)
+	ret := m.ctrl.Call(m, "SyncApps", arg0)
+	ret0, _ := ret[0].(map[string]v1.Application)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// SyncAppResource indicates an expected call of SyncAppResource.
-func (mr *MockSyncMockRecorder) SyncAppResource(arg0 interface{}) *gomock.Call {
+// SyncApps indicates an expected call of SyncApps.
+func (mr *MockSyncMockRecorder) SyncApps(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncAppResource", reflect.TypeOf((*MockSync)(nil).SyncAppResource), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncApps", reflect.TypeOf((*MockSync)(nil).SyncApps), arg0)
 }
 
 // SyncResource mocks base method.
