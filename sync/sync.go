@@ -34,6 +34,7 @@ type Sync interface {
 	Close()
 	Report(r v1.Report) (v1.Desire, error)
 	SyncResource(v1.AppInfo) error
+	SyncApps(infos []v1.AppInfo) (map[string]v1.Application, error)
 }
 
 // Sync sync shadow and resources with cloud

@@ -19,6 +19,25 @@ const (
 	configValueZip  = "zip"
 )
 
+func (s *sync) SyncApps(infos []specv1.AppInfo) (map[string]specv1.Application, error) {
+	appInfo := make(map[string]string)
+	for _, info := range infos {
+		appInfo[info.Name] = info.Version
+	}
+	crds, err := s.syncResourceValues(s.genResourceInfos(specv1.KindApplication, appInfo))
+	if err != nil {
+		s.log.Error("failed to sync application resource", log.Error(err))
+		return nil, errors.Trace(err)
+	}
+	apps := make(map[string]specv1.Application)
+	for _, r := range crds {
+		if app := r.App(); app != nil {
+			apps[app.Name] = *app
+		}
+	}
+	return apps, nil
+}
+
 func (s *sync) SyncResource(info specv1.AppInfo) error {
 	appInfo := map[string]string{info.Name: info.Version}
 	crds, err := s.syncResourceValues(s.genResourceInfos(specv1.KindApplication, appInfo))
