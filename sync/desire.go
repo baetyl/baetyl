@@ -168,7 +168,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				return errors.Trace(err)
 			}
 			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
-			err = s.downloadObject(obj, dir, filename, obj.Compression == configValueZip)
+			err = s.downloadObject(obj, dir, filename, obj.Unpack == configValueZip)
 			if err != nil {
 				os.RemoveAll(dir)
 				return errors.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
