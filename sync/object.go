@@ -22,8 +22,8 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 	}
 
 	headers := make(map[string]string)
-	if obj.Metadata.Source == "baidubos" {
-		headers["x-bce-security-token"] = obj.Metadata.Token
+	if obj.Token != "" {
+		headers["x-bce-security-token"] = obj.Token
 	}
 	// TODO: streaming mode
 	resp, err := s.http.GetURL(obj.URL, headers)
