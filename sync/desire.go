@@ -17,6 +17,7 @@ import (
 const (
 	configKeyObject = "_object_"
 	configValueZip  = "zip"
+	appDataHostPath = "/var/lib/baetyl/app-data"
 )
 
 func (s *sync) SyncApps(infos []specv1.AppInfo) (map[string]specv1.Application, error) {
@@ -144,6 +145,15 @@ func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv
 			if err != nil {
 				return errors.Trace(err)
 			}
+		} else if hostPath := volumes[i].VolumeSource.HostPath; hostPath != nil {
+			if strings.HasPrefix(hostPath.Path, "/") {
+				continue
+			}
+			fullPath := path.Join(appDataHostPath, hostPath.Path)
+			if err := os.MkdirAll(fullPath, 0755); err != nil {
+				return errors.Trace(err)
+			}
+			volumes[i].HostPath = &specv1.HostPathVolumeSource{Path: fullPath}
 		}
 	}
 	return nil
