@@ -149,9 +149,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	}
 	err = syn.processConfiguration(volume, cfg)
 	assert.NoError(t, err)
-	assert.Nil(t, volume.Config)
 	hostPath := filepath.Join(dir, "cfg", "c1")
-	assert.Equal(t, volume.HostPath.Path, hostPath)
 	data, err := ioutil.ReadFile(filepath.Join(hostPath, "file2"))
 	assert.NoError(t, err)
 	assert.Equal(t, data, content)

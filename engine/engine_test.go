@@ -52,23 +52,23 @@ func TestCollect(t *testing.T) {
 	ns := "baetyl-edge"
 	e := Engine{
 		ami: mockAmi,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  ns,
 		nod: nod,
 		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, e)
 	nodeInfo := &specv1.NodeInfo{}
-	nodeStats := &specv1.NodeStatus{}
+	nodeStats := &specv1.NodeStats{}
 	info := specv1.AppInfo{
 		Name:    "app1",
 		Version: "v1",
 	}
 	apps := []specv1.AppInfo{info}
-	appStats := []specv1.AppStatus{{AppInfo: info}}
+	appStats := []specv1.AppStats{{AppInfo: info}}
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	res := e.Collect(ns, false, nil)
 	resNode := res["node"]
 	resNodeStats := res["nodestats"]
@@ -81,21 +81,21 @@ func TestCollect(t *testing.T) {
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	res = e.Collect(ns, false, nil)
 	resNode = res["node"]
 	assert.Nil(t, resNode)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	res = e.Collect(ns, false, nil)
 	resNodeStats = res["nodestats"]
 	assert.Nil(t, resNodeStats)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
 	res = e.Collect(ns, false, nil)
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
@@ -104,7 +104,7 @@ func TestCollect(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	eng, err := NewEngine(config.EngineConfig{}, nil, nil, nil)
+	eng, err := NewEngine(config.Config{}, nil, nil, nil)
 	assert.Error(t, err, os.ErrInvalid.Error())
 	assert.Nil(t, eng)
 }
@@ -118,7 +118,7 @@ func TestApplyApp(t *testing.T) {
 	ns := "baetyl-edge"
 	eng := Engine{
 		ami: mockAmi,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  ns,
 		sto: sto,
 		syn: mockSync,
@@ -204,7 +204,7 @@ func TestReportAndApply(t *testing.T) {
 	ns := "baetyl-edge"
 	eng := Engine{
 		ami: mockAmi,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  ns,
 		sto: sto,
 		syn: mockSync,
@@ -214,8 +214,8 @@ func TestReportAndApply(t *testing.T) {
 	assert.NotNil(t, eng)
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
-	appStats := []specv1.AppStatus{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 
 	reApp := specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}, {Name: "app2", Version: "v2"}},
@@ -245,8 +245,8 @@ func TestReportAndApply(t *testing.T) {
 	// desire app is nil
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
-	appStats = []specv1.AppStatus{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	appStats = []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	reApp = specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}},
 	}
@@ -318,7 +318,7 @@ func TestGetServiceLog(t *testing.T) {
 		ami: mockAmi,
 		sto: nil,
 		nod: nil,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  "baetyl-edge",
 		log: log.With(log.Any("engine", "any")),
 	}

@@ -173,12 +173,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				os.RemoveAll(dir)
 				return errors.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
-			// change app.volume from config to host path of downloaded file path
 			if volume.HostPath == nil {
-				volume.Config = nil
-				volume.HostPath = &specv1.HostPathVolumeSource{
-					Path: dir,
-				}
 				err = cleanDir(base, cfg.Version)
 				if err != nil {
 					return errors.Trace(err)
