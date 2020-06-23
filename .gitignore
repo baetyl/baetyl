@@ -21,8 +21,6 @@ output
 .*.swo
 /etc
 /**/var
-baetyl-core
-baetyl-init
 .idea
 .vscode
 /vendor
@@ -31,3 +29,7 @@ baetyl-init
 /etc
 coverage.txt
 coverage.html
+.DS_Store
+
+baetyl-core
+baetyl-init
