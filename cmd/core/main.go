@@ -49,7 +49,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	}
 	c.syn.Start()
 
-	c.eng, err = engine.NewEngine(cfg.Engine, c.sto, c.sha, c.syn)
+	c.eng, err = engine.NewEngine(cfg, c.sto, c.sha, c.syn)
 	if err != nil {
 		c.Close()
 		return nil, errors.Trace(err)

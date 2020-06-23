@@ -17,7 +17,6 @@ import (
 const (
 	configKeyObject = "_object_"
 	configValueZip  = "zip"
-	appDataHostPath = "/var/lib/baetyl/app-data"
 )
 
 func (s *sync) SyncApps(infos []specv1.AppInfo) (map[string]specv1.Application, error) {
@@ -145,15 +144,6 @@ func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv
 			if err != nil {
 				return errors.Trace(err)
 			}
-		} else if hostPath := volumes[i].VolumeSource.HostPath; hostPath != nil {
-			if strings.HasPrefix(hostPath.Path, "/") {
-				continue
-			}
-			fullPath := path.Join(appDataHostPath, hostPath.Path)
-			if err := os.MkdirAll(fullPath, 0755); err != nil {
-				return errors.Trace(err)
-			}
-			volumes[i].HostPath = &specv1.HostPathVolumeSource{Path: fullPath}
 		}
 	}
 	return nil
@@ -183,12 +173,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				os.RemoveAll(dir)
 				return errors.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
-			// change app.volume from config to host path of downloaded file path
 			if volume.HostPath == nil {
-				volume.Config = nil
-				volume.HostPath = &specv1.HostPathVolumeSource{
-					Path: dir,
-				}
 				err = cleanDir(base, cfg.Version)
 				if err != nil {
 					return errors.Trace(err)

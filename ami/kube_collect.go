@@ -37,12 +37,12 @@ func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
-func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStatus, error) {
+func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStats, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	nodeStats := &specv1.NodeStatus{
+	nodeStats := &specv1.NodeStats{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
 	}
@@ -61,12 +61,12 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStatus, error) {
 	return nodeStats, nil
 }
 
-func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
+func (k *kubeImpl) CollectAppStats(ns string) ([]specv1.AppStats, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	appStatuses := map[string]*specv1.AppStatus{}
+	appStats := map[string]specv1.AppStats{}
 	for _, deploy := range deploys.Items {
 		appName := deploy.Labels[AppName]
 		appVersion := deploy.Labels[AppVersion]
@@ -74,98 +74,80 @@ func (k *kubeImpl) CollectAppStatus(ns string) ([]specv1.AppStatus, error) {
 		if appName == "" || serviceName == "" {
 			continue
 		}
-		var status *specv1.AppStatus
-		if status = appStatuses[appName]; status == nil {
-			status = &specv1.AppStatus{AppInfo: specv1.AppInfo{
-				Name:    appName,
-				Version: appVersion,
-			}}
-		}
-		dRef, err := reference.GetReference(scheme.Scheme, &deploy)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, dRef)
-		if l := len(events.Items); l > 0 {
-			if e := events.Items[l-1]; e.Type == "Warning" {
-				status.Cause += e.Message
-			}
+		stats, ok := appStats[appName]
+		if !ok {
+			stats = specv1.AppStats{AppInfo: specv1.AppInfo{Name: appName, Version: appVersion}}
 		}
 		selector := labels.SelectorFromSet(deploy.Spec.Selector.MatchLabels)
 		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
+		for _, pod := range pods.Items {
+			if stats.InstanceStats == nil {
+				stats.InstanceStats = map[string]specv1.InstanceStats{}
+			}
+			stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, &pod)
+		}
 		if pods == nil || len(pods.Items) == 0 {
 			continue
 		}
-		pod := pods.Items[0]
-		if status.ServiceInfos == nil {
-			status.ServiceInfos = map[string]*specv1.ServiceInfo{}
-		}
-		status.ServiceInfos[serviceName] = k.collectServiceInfo(ns, serviceName, &pod)
-		status.Status = getDeployStatus(status.ServiceInfos)
-		appStatuses[appName] = status
+		stats.Status = getDeployStatus(stats.InstanceStats)
+		appStats[appName] = stats
 	}
-	var res []specv1.AppStatus
-	for _, status := range appStatuses {
-		res = append(res, *status)
+	var res []specv1.AppStats
+	for _, stats := range appStats {
+		res = append(res, stats)
 	}
 	return res, nil
 }
 
-func getDeployStatus(infos map[string]*specv1.ServiceInfo) string {
+func getDeployStatus(infos map[string]specv1.InstanceStats) specv1.Status {
 	var pending = false
 	for _, info := range infos {
-		if info.Status == string(corev1.PodPending) {
+		if info.Status == specv1.Pending {
 			pending = true
-		} else if info.Status == string(corev1.PodFailed) {
+		} else if info.Status == specv1.Failed {
 			return info.Status
 		}
 	}
 	if pending {
-		return string(corev1.PodPending)
+		return specv1.Pending
 	}
-	return string(corev1.PodRunning)
+	return specv1.Running
 }
 
-func (k *kubeImpl) collectServiceInfo(ns, serviceName string, pod *corev1.Pod) *specv1.ServiceInfo {
-	info := &specv1.ServiceInfo{Name: serviceName, Usage: map[string]string{}}
+func (k *kubeImpl) collectInstanceStats(ns, serviceName string, pod *corev1.Pod) specv1.InstanceStats {
+	stats := specv1.InstanceStats{Name: pod.Name, ServiceName: serviceName, Usage: map[string]string{}}
 	ref, err := reference.GetReference(scheme.Scheme, pod)
 	if err != nil {
 		k.log.Warn("failed to get service reference", log.Error(err))
-		return info
+		return stats
 	}
 	events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
-	for _, e := range events.Items {
-		if e.Type == "Warning" {
-			info.Cause += e.Message + "\n"
+	if l := len(events.Items); l > 0 {
+		if e := events.Items[l-1]; e.Type == "Warning" {
+			stats.Cause += e.Message
 		}
 	}
-	info.CreateTime = pod.CreationTimestamp.Local()
-	for _, cont := range pod.Status.ContainerStatuses {
-		if cont.Name == serviceName {
-			info.Container.Name = serviceName
-			info.Container.ID = cont.ContainerID
-		}
-	}
-	info.Status = string(pod.Status.Phase)
+	stats.CreateTime = pod.CreationTimestamp.Local()
+	stats.Status = specv1.Status(pod.Status.Phase)
 	for _, st := range pod.Status.ContainerStatuses {
 		if st.State.Waiting != nil {
-			info.Status = string(corev1.PodPending)
+			stats.Status = specv1.Status(corev1.PodPending)
 		}
 	}
 	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
-		return info
+		return stats
 	}
 	for _, cont := range podMetric.Containers {
 		if cont.Name == serviceName {
 			for res, quan := range cont.Usage {
-				info.Usage[string(res)] = quan.String()
+				stats.Usage[string(res)] = quan.String()
 			}
 		}
 	}
-	return info
+	return stats
 }

@@ -1,9 +1,11 @@
 package engine
 
 import (
-	"fmt"
 	"os"
+	"path"
+	"path/filepath"
 	"strconv"
+	"strings"
 	gosync "sync"
 	"time"
 
@@ -31,7 +33,7 @@ type Engine struct {
 	syn   sync.Sync
 	ami   ami.AMI
 	nod   *node.Node
-	cfg   config.EngineConfig
+	cfg   config.Config
 	tomb  utils.Tomb
 	sto   *bh.Store
 	log   *log.Logger
@@ -39,8 +41,8 @@ type Engine struct {
 	sysns string
 }
 
-func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	kube, err := ami.NewAMI(cfg.AmiConfig)
+func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
+	kube, err := ami.NewAMI(cfg.Engine.AmiConfig)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -52,7 +54,7 @@ func NewEngine(cfg config.EngineConfig, sto *bh.Store, nod *node.Node, syn sync.
 		cfg:   cfg,
 		ns:    "baetyl-edge",
 		sysns: "baetyl-edge-system",
-		log:   log.With(log.Any("engine", cfg.Kind)),
+		log:   log.With(log.Any("engine", cfg.Engine.Kind)),
 	}, nil
 }
 
@@ -92,7 +94,7 @@ func (e *Engine) reporting() error {
 	e.log.Info("engine starts to report")
 	defer e.log.Info("engine has stopped reporting")
 
-	t := time.NewTicker(e.cfg.Report.Interval)
+	t := time.NewTicker(e.cfg.Engine.Report.Interval)
 	defer t.Stop()
 	for {
 		select {
@@ -132,7 +134,7 @@ func (e *Engine) Collect(ns string, isSys bool, desire specv1.Desire) specv1.Rep
 	if err != nil {
 		e.log.Warn("failed to collect node stats", log.Error(err))
 	}
-	appStats, err := e.ami.CollectAppStatus(ns)
+	appStats, err := e.ami.CollectAppStats(ns)
 	if err != nil {
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
@@ -179,7 +181,7 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 		return nil
 	}
 	del, update := getDeleteAndUpdate(dapps, rapps)
-	stats := map[string]specv1.AppStatus{}
+	stats := map[string]specv1.AppStats{}
 	for _, s := range r.AppStats(isSys) {
 		stats[s.Name] = s
 	}
@@ -189,6 +191,7 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 	}
 	// will remove invalid app info in update
 	checkService(appData, stats, update)
+	checkPort(appData, stats, update)
 	if err = e.reportAppStatsIfNeed(isSys, r, stats); err != nil {
 		return errors.Trace(err)
 	}
@@ -208,60 +211,11 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 	return nil
 }
 
-func checkService(apps map[string]specv1.Application, stats map[string]specv1.AppStatus, update map[string]specv1.AppInfo) {
-	svcs := make(map[string][]string)
-	ports := make(map[string][]string)
-	for n, app := range apps {
-		for _, svc := range app.Services {
-			svcs[svc.Name] = append(svcs[svc.Name], n)
-			for _, p := range svc.Ports {
-				port := strconv.FormatInt(int64(p.HostPort), 10)
-				ports[port] = append(ports[port], n)
-			}
-		}
-	}
-	check("service", svcs, stats, update)
-	check("hostPort", ports, stats, update)
-}
-
-func check(res string, items map[string][]string, stats map[string]specv1.AppStatus, update map[string]specv1.AppInfo) {
-	var first string
-	for item, aNames := range items {
-		if len(aNames) <= 1 {
-			continue
-		}
-		// when multiple apps have same service name or same host port,
-		// it will only launch the first app or not launch any app by deleting update map
-		// if there was one app existed which is in stats
-		first = ""
-		for _, aName := range aNames {
-			if first == "" {
-				first = aName
-			}
-			if _, ok := stats[aName]; ok {
-				first = aName
-			}
-		}
-		for _, aName := range aNames {
-			if aName == first {
-				continue
-			}
-			delete(update, aName)
-			stat, ok := stats[aName]
-			if !ok {
-				stat = specv1.AppStatus{}
-			}
-			stat.Cause += fmt.Sprintf("%s [%v] in application [%s] collide with application [%s]", res, item, aName, first)
-			stats[aName] = stat
-		}
-	}
-}
-
-func (e *Engine) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map[string]specv1.AppStatus) error {
+func (e *Engine) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map[string]specv1.AppStats) error {
 	if len(stats) == 0 {
 		return nil
 	}
-	appStats := make([]specv1.AppStatus, 0)
+	appStats := make([]specv1.AppStats, 0)
 	for _, s := range stats {
 		appStats = append(appStats, s)
 	}
@@ -293,7 +247,7 @@ func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.Ap
 	return del, update
 }
 
-func (e *Engine) applyApps(ns string, infos map[string]specv1.AppInfo, stats map[string]specv1.AppStatus) {
+func (e *Engine) applyApps(ns string, infos map[string]specv1.AppInfo, stats map[string]specv1.AppStats) {
 	var wg gosync.WaitGroup
 	for _, info := range infos {
 		wg.Add(1)
@@ -344,6 +298,10 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 			}
 			secs[secret.Name] = secret
 		}
+	}
+	if err := e.reviseApp(app, cfgs); err != nil {
+		e.log.Error("failed to revise applications", log.Any("app", app), log.Error(err))
+		return errors.Trace(err)
 	}
 	if err := e.ami.ApplyConfigurations(ns, cfgs); err != nil {
 		return errors.Trace(err)
@@ -398,6 +356,41 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 	return app, nil
 }
 
+func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Configuration) error {
+	if app == nil {
+		return nil
+	}
+	for i := range app.Volumes {
+		if hostPath := app.Volumes[i].HostPath; hostPath != nil {
+			if strings.HasPrefix(hostPath.Path, "/") {
+				continue
+			}
+			fullPath := path.Join(appDataHostPath, hostPath.Path)
+			if err := os.MkdirAll(fullPath, 0755); err != nil {
+				return err
+			}
+			app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{Path: fullPath}
+		} else if config := app.Volumes[i].Config; config != nil {
+			cfg, ok := cfgs[config.Name]
+			if !ok {
+				continue
+			}
+			for k := range cfg.Data {
+				if !strings.HasPrefix(k, configKeyObject) {
+					continue
+				}
+				if app.Volumes[i].HostPath == nil {
+					app.Volumes[i].Config = nil
+					app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{
+						Path: filepath.Join(e.cfg.Sync.Edge.DownloadPath, cfg.Name, cfg.Version),
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceSeconds int64, err error) {
 	if tailLines != "" {
 		if itailLines, err = strconv.ParseInt(tailLines, 10, 64); err != nil {
@@ -423,38 +416,4 @@ func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceS
 func (e *Engine) Close() {
 	e.tomb.Kill(nil)
 	e.tomb.Wait()
-}
-
-func makeKey(kind specv1.Kind, name, ver string) string {
-	if name == "" || ver == "" {
-		return ""
-	}
-	return string(kind) + "-" + name + "-" + ver
-}
-
-// ensuring apps have same order in report and desire list
-func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
-	if len(reApps) == 0 || len(deApps) == 0 {
-		return reApps
-	}
-	as := map[string]specv1.AppInfo{}
-	for _, a := range reApps {
-		as[a.Name] = a
-	}
-	var res []specv1.AppInfo
-	for _, a := range deApps {
-		if r, ok := as[a.Name]; ok {
-			res = append(res, r)
-			delete(as, a.Name)
-		}
-	}
-	for _, a := range as {
-		res = append(res, a)
-	}
-	return res
-}
-
-func isRegistrySecret(secret specv1.Secret) bool {
-	registry, ok := secret.Labels[specv1.SecretLabel]
-	return ok && registry == specv1.SecretRegistry
 }

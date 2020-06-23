@@ -52,23 +52,23 @@ func TestCollect(t *testing.T) {
 	ns := "baetyl-edge"
 	e := Engine{
 		ami: mockAmi,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  ns,
 		nod: nod,
 		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, e)
 	nodeInfo := &specv1.NodeInfo{}
-	nodeStats := &specv1.NodeStatus{}
+	nodeStats := &specv1.NodeStats{}
 	info := specv1.AppInfo{
 		Name:    "app1",
 		Version: "v1",
 	}
 	apps := []specv1.AppInfo{info}
-	appStats := []specv1.AppStatus{{AppInfo: info}}
+	appStats := []specv1.AppStats{{AppInfo: info}}
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	res := e.Collect(ns, false, nil)
 	resNode := res["node"]
 	resNodeStats := res["nodestats"]
@@ -81,21 +81,21 @@ func TestCollect(t *testing.T) {
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	res = e.Collect(ns, false, nil)
 	resNode = res["node"]
 	assert.Nil(t, resNode)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	res = e.Collect(ns, false, nil)
 	resNodeStats = res["nodestats"]
 	assert.Nil(t, resNodeStats)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
 	res = e.Collect(ns, false, nil)
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
@@ -104,7 +104,7 @@ func TestCollect(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	eng, err := NewEngine(config.EngineConfig{}, nil, nil, nil)
+	eng, err := NewEngine(config.Config{}, nil, nil, nil)
 	assert.Error(t, err, os.ErrInvalid.Error())
 	assert.Nil(t, eng)
 }
@@ -118,7 +118,7 @@ func TestApplyApp(t *testing.T) {
 	ns := "baetyl-edge"
 	eng := Engine{
 		ami: mockAmi,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  ns,
 		sto: sto,
 		syn: mockSync,
@@ -204,7 +204,7 @@ func TestReportAndApply(t *testing.T) {
 	ns := "baetyl-edge"
 	eng := Engine{
 		ami: mockAmi,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  ns,
 		sto: sto,
 		syn: mockSync,
@@ -214,8 +214,8 @@ func TestReportAndApply(t *testing.T) {
 	assert.NotNil(t, eng)
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
-	appStats := []specv1.AppStatus{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 
 	reApp := specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}, {Name: "app2", Version: "v2"}},
@@ -245,8 +245,8 @@ func TestReportAndApply(t *testing.T) {
 	// desire app is nil
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
-	appStats = []specv1.AppStatus{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
-	mockAmi.EXPECT().CollectAppStatus(gomock.Any()).Return(appStats, nil)
+	appStats = []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
+	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
 	reApp = specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}},
 	}
@@ -318,7 +318,7 @@ func TestGetServiceLog(t *testing.T) {
 		ami: mockAmi,
 		sto: nil,
 		nod: nil,
-		cfg: config.EngineConfig{},
+		cfg: config.Config{},
 		ns:  "baetyl-edge",
 		log: log.With(log.Any("engine", "any")),
 	}
@@ -369,172 +369,4 @@ func TestGetServiceLog(t *testing.T) {
 	err4 := client.Do(req4, resp4)
 	assert.NoError(t, err4)
 	assert.Equal(t, resp4.StatusCode(), 400)
-}
-
-func TestCheckService(t *testing.T) {
-	tests := []struct {
-		apps       map[string]specv1.Application
-		stats      map[string]specv1.AppStatus
-		update     map[string]specv1.AppInfo
-		expected   map[string]specv1.AppInfo
-		statsNames []string
-	}{
-		{
-			apps: map[string]specv1.Application{
-				"app1": {
-					Name: "app1",
-					Services: []specv1.Service{{
-						Name: "svc1",
-					}},
-				},
-				"app2": {
-					Name: "app2",
-					Services: []specv1.Service{{
-						Name: "svc1",
-					}},
-				},
-			},
-			stats: map[string]specv1.AppStatus{},
-			update: map[string]specv1.AppInfo{
-				"app1": {
-					Name:    "app1",
-					Version: "v1",
-				},
-				"app2": {
-					Name:    "app2",
-					Version: "v1",
-				},
-			},
-			expected: map[string]specv1.AppInfo{
-				"app1": {
-					Name:    "app1",
-					Version: "v1",
-				},
-			},
-			statsNames: []string{"app2"},
-		},
-		{
-			apps: map[string]specv1.Application{
-				"app1": {
-					Name: "app1",
-					Services: []specv1.Service{{
-						Name: "svc1",
-					}},
-				},
-				"app2": {
-					Name: "app2",
-					Services: []specv1.Service{{
-						Name: "svc1",
-					}},
-				},
-			},
-			stats: map[string]specv1.AppStatus{
-				"app2": {},
-			},
-			update: map[string]specv1.AppInfo{
-				"app1": {
-					Name:    "app1",
-					Version: "v1",
-				},
-				"app2": {
-					Name:    "app2",
-					Version: "v2",
-				},
-			},
-			expected: map[string]specv1.AppInfo{
-				"app2": {
-					Name:    "app2",
-					Version: "v2",
-				},
-			},
-			statsNames: []string{"app1"},
-		},
-		{
-			apps: map[string]specv1.Application{
-				"app1": {
-					Name: "app1",
-					Services: []specv1.Service{{
-						Name: "svc1",
-						Ports: []specv1.ContainerPort{{
-							HostPort: 1883,
-						}},
-					}},
-				},
-				"app2": {
-					Name: "app2",
-					Services: []specv1.Service{{
-						Name: "svc2",
-						Ports: []specv1.ContainerPort{{
-							HostPort: 1883,
-						}},
-					}},
-				},
-			},
-			stats: map[string]specv1.AppStatus{"app2": {}},
-			update: map[string]specv1.AppInfo{
-				"app1": {
-					Name:    "app1",
-					Version: "v1",
-				},
-				"app2": {
-					Name:    "app2",
-					Version: "v2",
-				},
-			},
-			expected: map[string]specv1.AppInfo{
-				"app2": {
-					Name:    "app2",
-					Version: "v2",
-				},
-			},
-			statsNames: []string{"app1"},
-		},
-		{
-			apps: map[string]specv1.Application{
-				"app1": {
-					Name: "app1",
-					Services: []specv1.Service{{
-						Name: "svc1",
-						Ports: []specv1.ContainerPort{{
-							HostPort: 1883,
-						}},
-					}},
-				},
-				"app2": {
-					Name: "app2",
-					Services: []specv1.Service{{
-						Name: "svc2",
-						Ports: []specv1.ContainerPort{{
-							HostPort: 1883,
-						}},
-					}},
-				},
-			},
-			stats: map[string]specv1.AppStatus{"app2": {}},
-			update: map[string]specv1.AppInfo{
-				"app1": {
-					Name:    "app1",
-					Version: "v1",
-				},
-				"app2": {
-					Name:    "app2",
-					Version: "v2",
-				},
-			},
-			expected: map[string]specv1.AppInfo{
-				"app2": {
-					Name:    "app2",
-					Version: "v2",
-				},
-			},
-			statsNames: []string{"app1"},
-		},
-	}
-	for _, tt := range tests {
-		checkService(tt.apps, tt.stats, tt.update)
-		assert.Equal(t, tt.update, tt.expected)
-		for _, n := range tt.statsNames {
-			assert.NotEmpty(t, tt.stats[n].Cause)
-		}
-	}
 }
