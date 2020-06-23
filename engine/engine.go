@@ -3,7 +3,6 @@ package engine
 import (
 	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	gosync "sync"
@@ -382,7 +381,7 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 				if app.Volumes[i].HostPath == nil {
 					app.Volumes[i].Config = nil
 					app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{
-						Path: filepath.Join(e.cfg.Sync.Edge.DownloadPath, cfg.Name, cfg.Version),
+						Path: path.Join(e.cfg.Sync.Edge.DownloadPath, cfg.Name, cfg.Version),
 					}
 				}
 			}
