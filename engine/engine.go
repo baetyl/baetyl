@@ -365,7 +365,7 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 			if strings.HasPrefix(hostPath.Path, "/") {
 				continue
 			}
-			fullPath := path.Join(appDataHostPath, hostPath.Path)
+			fullPath := path.Join(appDataHostPath, path.Join("/", hostPath.Path))
 			if err := os.MkdirAll(fullPath, 0755); err != nil {
 				return err
 			}
