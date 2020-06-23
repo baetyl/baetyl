@@ -26,7 +26,7 @@ v2 和 v1 版本的主要区别如下：
 
 ![Architecture](./docs/baetyl-arch-v2.svg)
 
-### 边缘计算框架（本项目）
+### [边缘计算框架（本项目）](./README_CN.md)
 
 边缘计算框架（Edge Computing Framework）运行在边缘节点的 Kubernetes 上，
 管理和部署节点的所有应用，通过应用服务提供各式各样的能力。
@@ -40,7 +40,7 @@ v2 和 v1 版本的主要区别如下：
 目前框架支持 Linux/amd64、Linux/arm64、Linux/armv7，
 如果边缘节点的资源有限，可考虑使用轻量版 Kubernetes：[K3S](https://k3s.io/)。
 
-### 云端管理套件
+### [云端管理套件](https://github.com/baetyl/baetyl-cloud)
 
 云端管理套件（Cloud Management Suite）负责管理所有资源，包括节点、应用、配置、部署等。所有功能的实现都插件化，方便功能扩展和第三方服务的接入，提供丰富的应用。云端管理套件的部署非常灵活，即可部署在公有云上，又可部署在私有化环境中，还可部署在普通设备上，支持 K8S/K3S 部署，支持单租户和多租户。
 

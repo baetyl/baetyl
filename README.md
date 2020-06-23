@@ -26,7 +26,7 @@ The main differences between v2 and v1 versions are as follows:
 
 ![Architecture](./docs/baetyl-arch-v2.svg)
 
-### Edge Computing Framework (this project)
+### [Edge Computing Framework (this project)](./README.md)
 
 The Edge Computing Framework runs on Kubernetes at the edge node,
 manages and deploys all applications which provide various capabilities.
@@ -46,7 +46,7 @@ Currently the framework supports Linux/amd64, Linux/arm64, Linux/armv7,
 If the resources of the edge nodes are limited,
 consider to use the lightweight kubernetes: [K3S](https://k3s.io/).
 
-### Cloud Management Suite
+### [Cloud Management Suite](https://github.com/baetyl/baetyl-cloud)
 
 The Cloud Management Suite is responsible for managing all resources, including nodes, applications, configuration, and deployment. The realization of all functions is plug-in, which is convenient for function expansion and third-party service access, and provides rich applications. The deployment of the cloud management suite is very flexible. It can be deployed on public clouds, private cloud environments, and common devices. It supports K8S/K3S deployment, and supports single-tenancy and multi-tenancy.
 
