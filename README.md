@@ -12,29 +12,21 @@
 
 **[Baetyl](https://baetyl.io) is an open edge computing framework of
 [Linux Foundation Edge](https://www.lfedge.org) that extends cloud computing,
-data and service seamlessly to edge devices.** It can provide temporary offline,
-low-latency computing services include device connection, message routing,
-remote synchronization, function computing, video capture, AI inference,
-status reporting, configuration ota etc.
+data and service seamlessly to edge devices.** It can provide temporary offline, low-latency computing services include device connection, message routing, remote synchronization, function computing, video capture, AI inference, status reporting, configuration ota etc.
 
-The new version of Baetyl (v2) consists of two parts,
-namely **Edge Computing Framework (this project)** and **Cloud Management Suite**,
-You can manage all resources such as edge nodes,
-applications and configuration in the cloud,
-automatically deploy applications to edge nodes,
-and meet all kinds of edge computing scenarios.
+Baetyl v2 provides a new edge cloud integration platform, which adopts cloud management and edge operation solutions, and is divided into [**Edge Computing Framework (this project)**](https://github.com/baetyl/baetyl) and [**Cloud Management Suite**](https://github.com/baetyl/baetyl-cloud) supports varius deployment methods. It can manage all resources in the cloud, such as nodes, applications, configuration, etc., and automatically deploy applications to edge nodes to meet various edge computing scenarios. It is especially suitable for emerging strong edge devices, such as AI all-in-one machines and 5G roadside boxes.
 
-The main differences between the v2 and v1 versions are as follows:
-* All edge modules are containerized and can run on k8s/k3s.
-* Introduce declarative design, realize ota through report/desire.
-* Does not support native running mode, increasing resource consumption.
-* Will support edge node clusters in the future.
+The main differences between v2 and v1 versions are as follows:
+* Edge and cloud frameworks have all evolved to cloud native, and already support running on K8S or K3S.
+* Introduce declarative design, realize data synchronization (OTA) through shadow (Report/Desire).
+* The edge framework does not support native process mode currently. Since it runs on K3S, the overall resource overhead will increase.
+* The edge framework will support edge node clusters in the future.
 
 ## Architecture
 
-![Architecture](./docs/arch_v2.svg)
+![Architecture](./docs/baetyl-arch-v2.svg)
 
-### Edge Computing Framework
+### Edge Computing Framework (this project)
 
 The Edge Computing Framework runs on Kubernetes at the edge node,
 manages and deploys all applications which provide various capabilities.
@@ -53,6 +45,33 @@ function invocations are passed through this module.
 Currently the framework supports Linux/amd64, Linux/arm64, Linux/armv7,
 If the resources of the edge nodes are limited,
 consider to use the lightweight kubernetes: [K3S](https://k3s.io/).
+
+### Cloud Management Suite
+
+The Cloud Management Suite is responsible for managing all resources, including nodes, applications, configuration, and deployment. The realization of all functions is plug-in, which is convenient for function expansion and third-party service access, and provides rich applications. The deployment of the cloud management suite is very flexible. It can be deployed on public clouds, private cloud environments, and common devices. It supports K8S/K3S deployment, and supports single-tenancy and multi-tenancy.
+
+The basic functions provided by the cloud management suite in this project are as follows:
+* Edge node management
+     * Online installation of edge computing framework
+     * Synchronization (shadow) between edge and cloud
+     * Node information collection
+     * Node status collection
+     * Application status collection
+* Application deployment management
+     * Container application
+     * Function application
+     * Node matching (automatic)
+* Configuration management
+     * Common configuration
+     * Function configuration
+     * Secrets
+     * Certificates
+     * Registry credentials
+* Node provisioning management
+     * Node batch management
+     * Registration and activation
+
+_The open source version contains the RESTful API of all the above functions, but does not include the front-end dashboard. _
 
 ## Contact us
 
