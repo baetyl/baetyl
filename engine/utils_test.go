@@ -164,6 +164,29 @@ func TestCheckService(t *testing.T) {
 			},
 			statsNames: []string{"app1"},
 		},
+		{
+			apps: map[string]specv1.Application{
+				"app1": {
+					Name: "app1",
+					Services: []specv1.Service{{
+						Name: "svc1",
+						Ports: []specv1.ContainerPort{{
+							HostPort: 1883,
+						}},
+						Replica: 3,
+					}},
+				},
+			},
+			stats: map[string]specv1.AppStats{},
+			update: map[string]specv1.AppInfo{
+				"app1": {
+					Name:    "app1",
+					Version: "v1",
+				},
+			},
+			expected:   map[string]specv1.AppInfo{},
+			statsNames: []string{"app1"},
+		},
 	}
 	for _, tt := range tests {
 		checkService(tt.apps, tt.stats, tt.update)
