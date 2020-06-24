@@ -13,11 +13,15 @@ const (
 	configKeyObject = "_object_"
 )
 
-func checkService(apps map[string]specv1.Application, stats map[string]specv1.AppStats, update map[string]specv1.AppInfo) {
+func checkService(infos []specv1.AppInfo, apps map[string]specv1.Application, stats map[string]specv1.AppStats, update map[string]specv1.AppInfo) {
 	svcs := make(map[string][]string)
-	for n, app := range apps {
+	for _, info := range infos {
+		app, ok := apps[info.Name]
+		if !ok {
+			continue
+		}
 		for _, svc := range app.Services {
-			svcs[svc.Name] = append(svcs[svc.Name], n)
+			svcs[svc.Name] = append(svcs[svc.Name], app.Name)
 		}
 	}
 	del := make(map[string]struct{})
@@ -36,6 +40,7 @@ func checkService(apps map[string]specv1.Application, stats map[string]specv1.Ap
 			}
 			if _, ok := stats[aName]; ok {
 				first = aName
+				break
 			}
 		}
 		for _, aName := range aNames {
@@ -66,23 +71,27 @@ func checkService(apps map[string]specv1.Application, stats map[string]specv1.Ap
 	}
 }
 
-func checkPort(apps map[string]specv1.Application, stats map[string]specv1.AppStats, update map[string]specv1.AppInfo) {
+func checkPort(infos []specv1.AppInfo, apps map[string]specv1.Application, stats map[string]specv1.AppStats, update map[string]specv1.AppInfo) {
 	ports := make(map[int32][]string)
 	svcs := make(map[string]string)
 	del := make(map[string]struct{})
-	for n, app := range apps {
+	for _, info := range infos {
+		app, ok := apps[info.Name]
+		if !ok {
+			continue
+		}
 		for _, svc := range app.Services {
-			svcs[svc.Name] = n
+			svcs[svc.Name] = app.Name
 			for _, p := range svc.Ports {
 				if p.HostPort == 0 {
 					continue
 				}
 				// service with replica greater than 1 can not configure host port
 				if svc.Replica > 1 {
-					stat, ok := stats[n]
+					stat, ok := stats[app.Name]
 					if !ok {
 						stat = specv1.AppStats{
-							AppInfo:       specv1.AppInfo{Name: n, Version: app.Version},
+							AppInfo:       specv1.AppInfo{Name: app.Name, Version: app.Version},
 							Status:        specv1.Unknown,
 							InstanceStats: map[string]specv1.InstanceStats{},
 						}
@@ -93,8 +102,8 @@ func checkPort(apps map[string]specv1.Application, stats map[string]specv1.AppSt
 					}
 					iStat.Cause += fmt.Sprintf("service [%s] with relica > 1 can not configure host port", svc.Name)
 					stat.InstanceStats[svc.Name] = iStat
-					stats[n] = stat
-					del[n] = struct{}{}
+					stats[app.Name] = stat
+					del[app.Name] = struct{}{}
 				} else {
 					ports[p.HostPort] = append(ports[p.HostPort], svc.Name)
 				}
@@ -118,6 +127,7 @@ func checkPort(apps map[string]specv1.Application, stats map[string]specv1.AppSt
 			if stat, ok := stats[aName]; ok {
 				if _, ok := stat.InstanceStats[sName]; ok {
 					first = sName
+					break
 				}
 			}
 		}
