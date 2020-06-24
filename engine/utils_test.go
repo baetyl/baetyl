@@ -8,6 +8,7 @@ import (
 
 func TestCheckService(t *testing.T) {
 	tests := []struct {
+		infos      []specv1.AppInfo
 		apps       map[string]specv1.Application
 		stats      map[string]specv1.AppStats
 		update     map[string]specv1.AppInfo
@@ -15,6 +16,10 @@ func TestCheckService(t *testing.T) {
 		statsNames []string
 	}{
 		{
+			infos: []specv1.AppInfo{
+				{Name: "app1", Version: "v1"},
+				{Name: "app2", Version: "v1"},
+			},
 			apps: map[string]specv1.Application{
 				"app1": {
 					Name: "app1",
@@ -49,6 +54,10 @@ func TestCheckService(t *testing.T) {
 			statsNames: []string{"app2"},
 		},
 		{
+			infos: []specv1.AppInfo{
+				{Name: "app1", Version: "v1"},
+				{Name: "app2", Version: "v2"},
+			},
 			apps: map[string]specv1.Application{
 				"app1": {
 					Name: "app1",
@@ -85,6 +94,10 @@ func TestCheckService(t *testing.T) {
 			statsNames: []string{"app1"},
 		},
 		{
+			infos: []specv1.AppInfo{
+				{Name: "app1", Version: "v1"},
+				{Name: "app2", Version: "v2"},
+			},
 			apps: map[string]specv1.Application{
 				"app1": {
 					Name: "app1",
@@ -125,6 +138,10 @@ func TestCheckService(t *testing.T) {
 			statsNames: []string{"app1"},
 		},
 		{
+			infos: []specv1.AppInfo{
+				{Name: "app1", Version: "v1"},
+				{Name: "app2", Version: "v2"},
+			},
 			apps: map[string]specv1.Application{
 				"app1": {
 					Name: "app1",
@@ -164,11 +181,37 @@ func TestCheckService(t *testing.T) {
 			},
 			statsNames: []string{"app1"},
 		},
+		{
+			infos: []specv1.AppInfo{
+				{Name: "app1", Version: "v1"},
+			},
+			apps: map[string]specv1.Application{
+				"app1": {
+					Name: "app1",
+					Services: []specv1.Service{{
+						Name: "svc1",
+						Ports: []specv1.ContainerPort{{
+							HostPort: 1883,
+						}},
+						Replica: 3,
+					}},
+				},
+			},
+			stats: map[string]specv1.AppStats{},
+			update: map[string]specv1.AppInfo{
+				"app1": {
+					Name:    "app1",
+					Version: "v1",
+				},
+			},
+			expected:   map[string]specv1.AppInfo{},
+			statsNames: []string{"app1"},
+		},
 	}
-	for _, tt := range tests {
-		checkService(tt.apps, tt.stats, tt.update)
-		checkPort(tt.apps, tt.stats, tt.update)
-		assert.Equal(t, tt.update, tt.expected)
+	for i, tt := range tests {
+		checkService(tt.infos, tt.apps, tt.stats, tt.update)
+		checkPort(tt.infos, tt.apps, tt.stats, tt.update)
+		assert.Equal(t, tt.expected, tt.update, i)
 		for _, n := range tt.statsNames {
 			assert.NotNil(t, tt.stats[n].InstanceStats)
 		}

@@ -189,8 +189,8 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 		return errors.Trace(err)
 	}
 	// will remove invalid app info in update
-	checkService(appData, stats, update)
-	checkPort(appData, stats, update)
+	checkService(dapps, appData, stats, update)
+	checkPort(dapps, appData, stats, update)
 	if err = e.reportAppStatsIfNeed(isSys, r, stats); err != nil {
 		return errors.Trace(err)
 	}
