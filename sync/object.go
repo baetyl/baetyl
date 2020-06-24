@@ -14,6 +14,10 @@ import (
 func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
 	// file exists
 	if utils.FileExists(name) {
+		if obj.MD5 == "" {
+			return nil
+		}
+
 		md5, err := utils.CalculateFileMD5(name)
 		if err == nil && md5 == obj.MD5 {
 			s.log.Debug("file exists", log.Any("name", name))
