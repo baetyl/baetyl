@@ -1,13 +1,13 @@
 package initz
 
 import (
-	"html/template"
-	"net/http"
-
+	"context"
 	"github.com/baetyl/baetyl-go/errors"
 	"github.com/baetyl/baetyl-go/log"
 	"github.com/baetyl/baetyl-go/utils"
 	"github.com/baetyl/baetyl/config"
+	"html/template"
+	"net/http"
 )
 
 func (init *Initialize) startServer() error {
@@ -22,7 +22,7 @@ func (init *Initialize) startServer() error {
 }
 
 func (init *Initialize) closeServer() {
-	err := init.srv.Close()
+	err := init.srv.Shutdown(context.Background())
 	if err != nil {
 		init.log.Error("init", log.Any("server err", err))
 	}
