@@ -1,14 +1,19 @@
 package sync
 
 import (
-	"bytes"
+	"io"
+	"os"
+	"syscall"
 	"time"
 
 	"github.com/baetyl/baetyl-go/errors"
-	"github.com/baetyl/baetyl-go/http"
 	"github.com/baetyl/baetyl-go/log"
 	specv1 "github.com/baetyl/baetyl-go/spec/v1"
 	"github.com/baetyl/baetyl-go/utils"
+)
+
+const (
+	flockRetryTimeout = time.Second
 )
 
 func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
@@ -17,7 +22,24 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		if obj.MD5 == "" {
 			return nil
 		}
-
+		md5, err := utils.CalculateFileMD5(name)
+		if err == nil && md5 == obj.MD5 {
+			s.log.Debug("file exists", log.Any("name", name))
+			return nil
+		}
+	}
+	file, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	if err = flock(file, 0); err != nil {
+		return err
+	}
+	defer funlock(file)
+	if utils.FileExists(name) {
+		if obj.MD5 == "" {
+			return nil
+		}
 		md5, err := utils.CalculateFileMD5(name)
 		if err == nil && md5 == obj.MD5 {
 			s.log.Debug("file exists", log.Any("name", name))
@@ -29,7 +51,6 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
 	}
-	// TODO: streaming mode
 	resp, err := s.http.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
 		// retry
@@ -39,15 +60,9 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 			return errors.Errorf("failed to download file (%s)", name)
 		}
 	}
-	data, err := http.HandleResponse(resp)
-	if err != nil {
-		s.log.Error("failed to send report data", log.Error(err))
+	if _, err = io.Copy(file, resp.Body); err != nil {
+		s.log.Error("failed to download data", log.Error(err))
 		return errors.Trace(err)
-	}
-
-	err = utils.WriteFile(name, bytes.NewBuffer(data))
-	if err != nil {
-		return errors.Errorf("failed to prepare volume (%s): %s", name, err.Error())
 	}
 
 	if obj.MD5 != "" {
@@ -67,4 +82,29 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		}
 	}
 	return nil
+}
+
+func flock(file *os.File, timeout time.Duration) error {
+	var t time.Time
+	if timeout != 0 {
+		t = time.Now()
+	}
+	fd := file.Fd()
+	flag := syscall.LOCK_NB | syscall.LOCK_EX
+	for {
+		err := syscall.Flock(int(fd), flag)
+		if err == nil {
+			return nil
+		} else if err != syscall.EWOULDBLOCK {
+			return err
+		}
+		if timeout != 0 && time.Since(t) > timeout-flockRetryTimeout {
+			return errors.Errorf("time out")
+		}
+		time.Sleep(flockRetryTimeout)
+	}
+}
+
+func funlock(file *os.File) error {
+	return syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
 }
