@@ -13,22 +13,11 @@ import (
 )
 
 const (
-	flockRetryTimeout = time.Second
+	flockRetryTimeout = time.Microsecond * 100
 )
 
 func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
-	// file exists
-	if utils.FileExists(name) {
-		if obj.MD5 == "" {
-			return nil
-		}
-		md5, err := utils.CalculateFileMD5(name)
-		if err == nil && md5 == obj.MD5 {
-			s.log.Debug("file exists", log.Any("name", name))
-			return nil
-		}
-	}
-	file, err := os.Create(name)
+	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
@@ -36,15 +25,13 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		return err
 	}
 	defer funlock(file)
-	if utils.FileExists(name) {
-		if obj.MD5 == "" {
-			return nil
-		}
-		md5, err := utils.CalculateFileMD5(name)
-		if err == nil && md5 == obj.MD5 {
-			s.log.Debug("file exists", log.Any("name", name))
-			return nil
-		}
+	if obj.MD5 == "" {
+		return nil
+	}
+	md5, err := utils.CalculateFileMD5(name)
+	if err == nil && md5 == obj.MD5 {
+		s.log.Debug("file exists", log.Any("name", name))
+		return nil
 	}
 
 	headers := make(map[string]string)
@@ -59,6 +46,9 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		if err != nil || resp == nil {
 			return errors.Errorf("failed to download file (%s)", name)
 		}
+	}
+	if err := file.Truncate(0); err != nil {
+		return errors.Trace(err)
 	}
 	if _, err = io.Copy(file, resp.Body); err != nil {
 		s.log.Error("failed to download data", log.Error(err))
@@ -84,6 +74,7 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 	return nil
 }
 
+// only works on unix
 func flock(file *os.File, timeout time.Duration) error {
 	var t time.Time
 	if timeout != 0 {
