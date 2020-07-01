@@ -123,6 +123,9 @@ func TestSyncDownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
+	res, err := ioutil.ReadFile(file7)
+	assert.NoError(t, err)
+	assert.Equal(t, res, content)
 
 	// download file which already exist (multiple routine)
 	file8 := filepath.Join(dir, "file8")
@@ -137,6 +140,9 @@ func TestSyncDownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
+	res, err = ioutil.ReadFile(file8)
+	assert.NoError(t, err)
+	assert.Equal(t, res, content)
 
 	// download file with wrong content exist (multiple routine)
 	file9 := filepath.Join(dir, "file9")
@@ -151,7 +157,7 @@ func TestSyncDownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
-	res, err := ioutil.ReadFile(file9)
+	res, err = ioutil.ReadFile(file9)
 	assert.NoError(t, err)
 	assert.Equal(t, res, content)
 }

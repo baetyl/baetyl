@@ -2,6 +2,7 @@ package sync
 
 import (
 	"io"
+	gohttp "net/http"
 	"os"
 	"syscall"
 	"time"
@@ -47,6 +48,10 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 			return errors.Errorf("failed to download file (%s)", name)
 		}
 	}
+	if resp.StatusCode != gohttp.StatusOK {
+		return errors.Errorf("[%d] %s", resp.StatusCode, resp.Status)
+	}
+	defer resp.Body.Close()
 	if err := file.Truncate(0); err != nil {
 		return errors.Trace(err)
 	}
