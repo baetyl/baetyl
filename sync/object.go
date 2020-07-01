@@ -26,13 +26,12 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		return err
 	}
 	defer funlock(file)
-	if obj.MD5 == "" {
-		return nil
-	}
-	md5, err := utils.CalculateFileMD5(name)
-	if err == nil && md5 == obj.MD5 {
-		s.log.Debug("file exists", log.Any("name", name))
-		return nil
+	if obj.MD5 != "" {
+		md5, err := utils.CalculateFileMD5(name)
+		if err == nil && md5 == obj.MD5 {
+			s.log.Debug("file exists", log.Any("name", name))
+			return nil
+		}
 	}
 
 	headers := make(map[string]string)
