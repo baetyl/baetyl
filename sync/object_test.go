@@ -98,12 +98,6 @@ func TestSyncDownloadObject(t *testing.T) {
 	assert.Error(t, err)
 	os.Chmod(dir, 0755)
 
-	// md5 error
-	file5 := filepath.Join(dir, "file5")
-	obj.MD5 = ""
-	err = syn.downloadObject(obj, dir, file5, false)
-	assert.NoError(t, err)
-
 	// not zip file
 	file6 := filepath.Join(dir, "file6")
 	obj.MD5 = md5
