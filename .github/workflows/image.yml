@@ -18,7 +18,7 @@ jobs:
           sudo apt install docker-ce
           docker -v
       - name: Checkout code
-          uses: actions/checkout@v1
+        uses: actions/checkout@v1
       - name: docker login
         run: |
           docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
