@@ -1,0 +1,66 @@
+name: image-develop
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  core-image:
+    name: docker build core image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install deps
+        run: sudo apt update -y && sudo apt install -y qemu qemu-user-static
+      - name: Install Docker CE for buildx
+        run: |
+          sudo apt update
+          sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          sudo apt update
+          sudo apt install docker-ce
+          docker -v
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: docker login
+        run: |
+          docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
+      - name: build and publish baetyl-core image
+        run: |
+          make image-core PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/core' REGISTRY=baetyltechtest/
+      - name: docker login internal
+        run: |
+          docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
+      - name: build and publish core image to internal storage
+        run: |
+          make image-core PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/core' REGISTRY=hub.baidubce.com/baetyl-test/
+
+  init-image:
+    name: docker build init image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install deps
+        run: sudo apt update -y && sudo apt install -y qemu qemu-user-static
+      - name: Install Docker CE for buildx
+        run: |
+          sudo apt update
+          sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+          sudo apt update
+          sudo apt install docker-ce
+          docker -v
+      - name: docker login
+        run: |
+          docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: build and publish baetyl-init image
+        run: |
+          make image-init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltechtest/
+      - name: docker login internal
+        run: |
+          docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
+      - name: build and publish init image to internal storage
+        run: |
+          make image-init PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/init' REGISTRY=hub.baidubce.com/baetyl-test/
