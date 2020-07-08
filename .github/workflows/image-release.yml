@@ -31,13 +31,7 @@ jobs:
       - name: build and publish baetyl-core image
         run: |
           make image-core PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/core' REGISTRY=baetyltech/ GIT_TAG=${{ steps.version.outputs.version }}
-      - name: docker login internal
-        run: |
-          docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
-      - name: build and publish core image to internal storage
-        run: |
-          make image-core PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/core' REGISTRY=hub.baidubce.com/baetyl/ GIT_TAG=${{ steps.version.outputs.version }}
-
+     
   init-image:
     name: docker build init image
     runs-on: ubuntu-latest
@@ -64,9 +58,4 @@ jobs:
       - name: build and publish baetyl-init image
         run: |
           make image-init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltech/ GIT_TAG=${{ steps.version.outputs.version }}
-      - name: docker login internal
-        run: |
-          docker login hub.baidubce.com -u ${{ secrets.DOCKER_REGISTRY_ID_INTERNAL }} -p ${{ secrets.DOCKER_REGISTRY_PASS_INTERNAL }}
-      - name: build and publish init image to internal storage
-        run: |
-          make image-init PLATFORMS=all XFLAGS='--push --cache-from=type=local,src=/tmp/init' REGISTRY=hub.baidubce.com/baetyl/ GIT_TAG=${{ steps.version.outputs.version }}
+     
