@@ -22,15 +22,12 @@ jobs:
           docker -v
       - name: Checkout code
         uses: actions/checkout@v1
-      - id: version
-        run: |
-          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
       - name: docker login
         run: |
           docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
       - name: build and publish baetyl-core image
         run: |
-          make image-core PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/core' REGISTRY=baetyltech/ GIT_TAG=${{ steps.version.outputs.version }}
+          make image-core PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/core' REGISTRY=baetyltech/
      
   init-image:
     name: docker build init image
@@ -52,10 +49,7 @@ jobs:
           docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
       - name: Checkout code
         uses: actions/checkout@v1
-      - id: version
-        run: |
-          echo ::set-output name=version::$(echo ${GITHUB_REF:10})
       - name: build and publish baetyl-init image
         run: |
-          make image-init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltech/ GIT_TAG=${{ steps.version.outputs.version }}
+          make image-init PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/init' REGISTRY=baetyltech/
      
