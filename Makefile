@@ -11,23 +11,23 @@ GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
 
-GO_FLAGS?=-ldflags '-s -w -X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)"'
-GO_TEST_FLAGS?=-race -short -covermode=atomic -coverprofile=coverage.txt
-GO_TEST_PKGS?=$(shell go list ./...)
+GO_FLAGS:=-ldflags '-s -w -X "github.com/baetyl/baetyl-go/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/utils.VERSION=$(VERSION)"'
+GO_TEST_FLAGS:=-race -short -covermode=atomic -coverprofile=coverage.txt
+GO_TEST_PKGS:=$(shell go list ./...)
 ifndef PLATFORMS
-        GO_OS:=$(shell go env GOOS)
-        GO_ARCH:=$(shell go env GOARCH)
-        GO_ARM:=$(shell go env GOARM)
-        PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
-        ifeq ($(GO_OS),darwin)
-                PLATFORMS+=linux/amd64
-        endif
+	GO_OS:=$(shell go env GOOS)
+	GO_ARCH:=$(shell go env GOARCH)
+	GO_ARM:=$(shell go env GOARM)
+	PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
+	ifeq ($(GO_OS),darwin)
+		PLATFORMS+=linux/amd64
+	endif
 else ifeq ($(PLATFORMS),all)
-        override PLATFORMS:=$(PLATFORM_ALL)
+	override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
-REGISTRY?=
-XFLAGS?=--load
+REGISTRY:=
+XFLAGS:=--load
 XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g')
 
 .PHONY: all
