@@ -3,7 +3,7 @@ module github.com/baetyl/baetyl
 go 1.13
 
 require (
-	github.com/baetyl/baetyl-go v0.1.90
+	github.com/baetyl/baetyl-go v0.1.92
 	github.com/golang/mock v1.3.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/pkg/errors v0.8.1
