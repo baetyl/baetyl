@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/baetyl/baetyl-go/context"
-	"github.com/baetyl/baetyl-go/errors"
-	"github.com/baetyl/baetyl-go/http"
+	"github.com/baetyl/baetyl-go/v2/context"
+	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/http"
 	_ "github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/engine"

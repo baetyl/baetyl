@@ -6,7 +6,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/baetyl/baetyl-go/errors"
+	"github.com/baetyl/baetyl-go/v2/errors"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
 )

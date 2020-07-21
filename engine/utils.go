@@ -2,7 +2,7 @@ package engine
 
 import (
 	"fmt"
-	specv1 "github.com/baetyl/baetyl-go/spec/v1"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 )
 
 const (

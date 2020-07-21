@@ -3,8 +3,8 @@ package ami
 import (
 	"os"
 
-	"github.com/baetyl/baetyl-go/errors"
-	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl/config"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/client-go/kubernetes"

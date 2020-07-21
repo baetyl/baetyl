@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	gohttp "net/http"
 
-	"github.com/baetyl/baetyl-go/errors"
-	"github.com/baetyl/baetyl-go/http"
-	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/http"
+	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 )

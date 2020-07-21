@@ -2,11 +2,11 @@ package sync
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-go/http"
-	"github.com/baetyl/baetyl-go/log"
-	"github.com/baetyl/baetyl-go/mock"
-	specv1 "github.com/baetyl/baetyl-go/spec/v1"
-	"github.com/baetyl/baetyl-go/utils"
+	"github.com/baetyl/baetyl-go/v2/http"
+	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/mock"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"

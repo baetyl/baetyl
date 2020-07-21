@@ -3,7 +3,7 @@ package ami
 import (
 	"io"
 
-	"github.com/baetyl/baetyl-go/errors"
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/jinzhu/copier"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
