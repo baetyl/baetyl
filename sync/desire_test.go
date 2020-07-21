@@ -218,19 +218,19 @@ func TestSyncResources(t *testing.T) {
 		Version:   secVer,
 	}
 	appCrd := specv1.DesireResponse{
-		CRDDatas: []specv1.ResourceValue{{
+		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindApplication, Name: appName, Version: appVer},
 			Value:        specv1.VariableValue{Value: app},
 		}},
 	}
 	cfgCrd := specv1.DesireResponse{
-		CRDDatas: []specv1.ResourceValue{{
+		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindConfiguration, Name: cfgName, Version: cfgVer},
 			Value:        specv1.VariableValue{Value: cfg},
 		}},
 	}
 	secCrd := specv1.DesireResponse{
-		CRDDatas: []specv1.ResourceValue{{
+		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindSecret, Name: secName, Version: secVer},
 			Value:        specv1.VariableValue{Value: sec},
 		}},
