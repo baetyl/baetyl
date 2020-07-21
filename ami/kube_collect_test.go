@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	specv1 "github.com/baetyl/baetyl-go/spec/v1"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"

@@ -3,18 +3,19 @@ package config
 import (
 	"time"
 
-	"github.com/baetyl/baetyl-go/http"
-	"github.com/baetyl/baetyl-go/log"
+	"github.com/baetyl/baetyl-go/v2/http"
+	"github.com/baetyl/baetyl-go/v2/log"
 )
 
 // Config the core config
 type Config struct {
-	Engine EngineConfig      `yaml:"engine" json:"engine"`
-	Sync   SyncConfig        `yaml:"sync" json:"sync"`
-	Store  StoreConfig       `yaml:"store" json:"store"`
-	Init   InitConfig        `yaml:"init" json:"init"`
-	Server http.ServerConfig `yaml:"server" json:"server"`
-	Logger log.Config        `yaml:"logger" json:"logger"`
+	Engine   EngineConfig      `yaml:"engine" json:"engine"`
+	Sync     SyncConfig        `yaml:"sync" json:"sync"`
+	Store    StoreConfig       `yaml:"store" json:"store"`
+	Init     InitConfig        `yaml:"init" json:"init"`
+	Security SecurityConfig    `yaml:"security" json:"security"`
+	Server   http.ServerConfig `yaml:"server" json:"server"`
+	Logger   log.Config        `yaml:"logger" json:"logger"`
 }
 
 type AmiConfig struct {
@@ -83,6 +84,16 @@ type InitConfig struct {
 		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
 		Server       Server        `yaml:"server" json:"server"`
 	} `yaml:"active" json:"active"`
+}
+
+type SecurityConfig struct {
+	Kind      string    `yaml:"kind" json:"kind" default:"pki"`
+	PKIConfig PKIConfig `yaml:"pki" json:"pki"`
+}
+
+type PKIConfig struct {
+	KeyFile string `yaml:"key" json:"key"`
+	CrtFile string `yaml:"crt" json:"crt"`
 }
 
 // Server manually activated server configuration
