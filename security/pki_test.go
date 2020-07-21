@@ -81,7 +81,7 @@ func genPkiMockCert() *models.Cert {
 
 func TestNewPKI(t *testing.T) {
 	// bad case 1
-	_, err := NewPKI(config.PKIConfig{}, nil)
+	_, err := newPKIImpl(config.SecurityConfig{}, nil)
 	assert.Error(t, err)
 }
 
