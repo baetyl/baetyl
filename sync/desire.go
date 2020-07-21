@@ -125,10 +125,6 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	// TODO: remove compatible code
-	if len(res.CRDDatas) != 0 {
-		res.Values = res.CRDDatas
-	}
 	return res.Values, nil
 }
 
