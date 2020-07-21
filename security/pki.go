@@ -42,7 +42,7 @@ func newPKIImpl(cfg config.SecurityConfig, bhSto *bh.Store) (Security, error) {
 		cfg: cfg.PKIConfig,
 		log: log.With(log.Any("security", cfg.Kind)),
 	}
-	err = defaultCli.insertSubCA()
+	err = defaultCli.setSubCA()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -123,7 +123,7 @@ func (p *defaultPkiClient) RotateCertificate(certId string) (*PEMCredential, err
 	return p.IssueCertificate(certInfo[0].Subject.CommonName, alt)
 }
 
-func (p *defaultPkiClient) insertSubCA() error {
+func (p *defaultPkiClient) setSubCA() error {
 	crt, err := ioutil.ReadFile(p.cfg.CrtFile)
 	if err != nil {
 		return errors.Trace(err)
@@ -137,9 +137,18 @@ func (p *defaultPkiClient) insertSubCA() error {
 		Content:    base64.StdEncoding.EncodeToString(crt),
 		PrivateKey: base64.StdEncoding.EncodeToString(priv),
 	}
-	err = p.sto.CreateCert(subCA)
-	if err != nil {
+
+	res, err := p.sto.GetCert(subCA.CertId)
+	if err != nil && err.Error() != bh.ErrNotFound.Error() {
 		return errors.Trace(err)
+	}
+	if err != nil {
+		return p.sto.CreateCert(subCA)
+	}
+
+	if res.Content != subCA.Content || res.PrivateKey != subCA.PrivateKey {
+		// TODO: when the sub-root certificate is updated, the certificates of all modules need to be re-issued
+		return p.sto.UpdateCert(subCA)
 	}
 	return nil
 }

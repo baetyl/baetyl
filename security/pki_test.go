@@ -2,7 +2,10 @@ package security
 
 import (
 	"encoding/base64"
+	"errors"
+	bh "github.com/timshannon/bolthold"
 	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -79,21 +82,37 @@ func genPkiMockCert() *models.Cert {
 	}
 }
 
-func TestNewPKI(t *testing.T) {
-	// bad case 1
+func Test_NewPKIImpl(t *testing.T) {
+	// bad case
 	_, err := newPKIImpl(config.SecurityConfig{}, nil)
 	assert.Error(t, err)
+
+	// good case
+	cfg := config.SecurityConfig{
+		Kind: "pki",
+	}
+	cfg.PKIConfig = genPKIConf(t)
+	bhSto := genBolthold(t)
+	res, err := newPKIImpl(cfg, bhSto)
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
 }
 
 func TestDefaultPkiClient_GetCA(t *testing.T) {
 	p, mcSto := genDefaultPkiClient(t)
 
+	// good case
 	cert := genPkiMockCert()
 	mcSto.EXPECT().GetCert(baetylSubCA).Return(cert, nil).Times(1)
 
 	res, err := p.GetCA()
 	assert.NoError(t, err)
 	assert.EqualValues(t, []byte(caCrt), res)
+
+	//bad case
+	mcSto.EXPECT().GetCert(baetylSubCA).Return(nil, bh.ErrNotFound).Times(1)
+	_, err = p.GetCA()
+	assert.Error(t, err, bh.ErrNotFound)
 }
 
 func TestDefaultPkiClient_IssueCertificate(t *testing.T) {
@@ -112,10 +131,16 @@ func TestDefaultPkiClient_IssueCertificate(t *testing.T) {
 func TestDefaultPkiClient_RevokeCertificate(t *testing.T) {
 	p, mcSto := genDefaultPkiClient(t)
 
+	// good case
 	cert := genPkiMockCert()
 	mcSto.EXPECT().DeleteCert(cert.CertId).Return(nil).Times(1)
 	err := p.RevokeCertificate(cert.CertId)
 	assert.NoError(t, err)
+
+	// bad case
+	mcSto.EXPECT().DeleteCert(cert.CertId).Return(os.ErrInvalid).Times(1)
+	err = p.RevokeCertificate(cert.CertId)
+	assert.Error(t, err)
 }
 
 func TestDefaultPkiClient_RotateCertificate(t *testing.T) {
@@ -131,11 +156,40 @@ func TestDefaultPkiClient_RotateCertificate(t *testing.T) {
 	assert.EqualValues(t, caCrt, string(res.CertPEM))
 }
 
-func TestDefaultPkiClient_insertSubCA(t *testing.T) {
+func TestDefaultPkiClient_setSubCA(t *testing.T) {
 	p, mcSto := genDefaultPkiClient(t)
-
 	cert := genPkiMockCert()
+
+	// good case 1:create new sub ca
+	mcSto.EXPECT().GetCert(baetylSubCA).Return(nil, bh.ErrNotFound).Times(1)
 	mcSto.EXPECT().CreateCert(*cert).Return(nil).Times(1)
-	err := p.insertSubCA()
+	err := p.setSubCA()
 	assert.NoError(t, err)
+
+	// good case 2: no change
+	mcSto.EXPECT().GetCert(baetylSubCA).Return(cert, nil).Times(1)
+	err = p.setSubCA()
+	assert.NoError(t, err)
+
+	// good case 3: upgrade ca
+	mcSto.EXPECT().GetCert(baetylSubCA).Return(&models.Cert{}, nil).Times(1)
+	mcSto.EXPECT().UpdateCert(*cert).Return(nil).Times(1)
+	err = p.setSubCA()
+	assert.NoError(t, err)
+
+	// bad case 1: get cert error
+	mcSto.EXPECT().GetCert(baetylSubCA).Return(nil, errors.New("err")).Times(1)
+	mcSto.EXPECT().CreateCert(*cert).Return(nil).Times(1)
+	err = p.setSubCA()
+	assert.Error(t, err)
+
+	// bad case 2: read key file error
+	p.cfg.KeyFile = ""
+	err = p.setSubCA()
+	assert.Error(t, err)
+
+	// bad case 3: read crt file error
+	p.cfg.CrtFile = ""
+	err = p.setSubCA()
+	assert.Error(t, err)
 }
