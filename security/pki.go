@@ -26,17 +26,21 @@ type defaultPkiClient struct {
 	log *log.Logger
 }
 
-func NewPKI(cfg config.PKIConfig, bhSto *bh.Store) (Security, error) {
+func init() {
+	Register(PKI, newPKIImpl)
+}
+
+func newPKIImpl(cfg config.SecurityConfig, bhSto *bh.Store) (Security, error) {
 	sto := NewStorage(bhSto)
-	cli, err := pki.NewPKIClient(cfg.KeyFile, cfg.CrtFile, sto)
+	cli, err := pki.NewPKIClient(cfg.PKIConfig.KeyFile, cfg.PKIConfig.CrtFile, sto)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	defaultCli := &defaultPkiClient{
 		cli: cli,
 		sto: sto,
-		cfg: cfg,
-		log: log.With(log.Any("security", "pki")),
+		cfg: cfg.PKIConfig,
+		log: log.With(log.Any("security", cfg.Kind)),
 	}
 	err = defaultCli.insertSubCA()
 	if err != nil {
