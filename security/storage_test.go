@@ -3,7 +3,6 @@ package security
 import (
 	"io/ioutil"
 	"testing"
-	"time"
 
 	"github.com/baetyl/baetyl-go/v2/pki/models"
 	"github.com/baetyl/baetyl/store"
@@ -32,8 +31,6 @@ func genStorageMockCert() models.Cert {
 		Content:     "Content",
 		PrivateKey:  "PrivateKey",
 		Description: "Description",
-		NotBefore:   time.Unix(1000, 1),
-		NotAfter:    time.Unix(1000, 1),
 	}
 }
 
