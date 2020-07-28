@@ -92,8 +92,8 @@ type SecurityConfig struct {
 }
 
 type PKIConfig struct {
-	KeyFile string `yaml:"key" json:"key"`
-	CrtFile string `yaml:"crt" json:"crt"`
+	SubDuration  time.Duration `yaml:"subDuration" json:"subDuration" default:"175200h"`   // 20*365*24
+	RootDuration time.Duration `yaml:"rootDuration" json:"rootDuration" default:"438000h"` // 50*365*24
 }
 
 // Server manually activated server configuration
