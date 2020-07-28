@@ -55,17 +55,7 @@ func (p *defaultPkiClient) IssueCertificate(cn string, alt AltNames) (*pki.CertP
 		return nil, errors.Trace(err)
 	}
 
-	cert, err := p.cli.CreateSubCertWithKey(genCsr(cn, alt), (int)(p.cfg.PKIConfig.SubDuration.Hours()/24), ca)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	// save cert
-	err = p.putCert(genStoKey(cn), *cert)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	return cert, nil
+	return p.cli.CreateSubCertWithKey(genCsr(cn, alt), (int)(p.cfg.PKIConfig.SubDuration.Hours()/24), ca)
 }
 
 func (p *defaultPkiClient) RevokeCertificate(cn string) error {
