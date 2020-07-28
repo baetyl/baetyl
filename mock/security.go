@@ -5,6 +5,7 @@
 package mock
 
 import (
+	pki "github.com/baetyl/baetyl-go/v2/pki"
 	security "github.com/baetyl/baetyl/security"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -49,10 +50,10 @@ func (mr *MockSecurityMockRecorder) GetCA() *gomock.Call {
 }
 
 // IssueCertificate mocks base method
-func (m *MockSecurity) IssueCertificate(arg0 string, arg1 security.AltNames) (*security.PEMCredential, error) {
+func (m *MockSecurity) IssueCertificate(arg0 string, arg1 security.AltNames) (*pki.CertPem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IssueCertificate", arg0, arg1)
-	ret0, _ := ret[0].(*security.PEMCredential)
+	ret0, _ := ret[0].(*pki.CertPem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -78,10 +79,10 @@ func (mr *MockSecurityMockRecorder) RevokeCertificate(arg0 interface{}) *gomock.
 }
 
 // RotateCertificate mocks base method
-func (m *MockSecurity) RotateCertificate(arg0 string) (*security.PEMCredential, error) {
+func (m *MockSecurity) RotateCertificate(arg0 string) (*pki.CertPem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RotateCertificate", arg0)
-	ret0, _ := ret[0].(*security.PEMCredential)
+	ret0, _ := ret[0].(*pki.CertPem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

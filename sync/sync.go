@@ -25,7 +25,8 @@ var (
 )
 
 const (
-	EnvKeyNodeName = "BAETYL_NODE_NAME"
+	EnvKeyNodeName      = "BAETYL_NODE_NAME"
+	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
 )
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl/sync Sync
@@ -71,6 +72,7 @@ func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, erro
 				s.log.Error("failed to parse node name from cert")
 			} else {
 				os.Setenv(EnvKeyNodeName, res[1])
+				os.Setenv(EnvKeyNodeNamespace, res[0])
 			}
 		} else {
 			s.log.Error("certificate format error")

@@ -1,20 +1,18 @@
 package security
 
 import (
-	"encoding/base64"
-	"errors"
+	"fmt"
+	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/sync"
 	bh "github.com/timshannon/bolthold"
 	"io/ioutil"
 	"os"
-	"path"
 	"testing"
+	"time"
 
 	"github.com/baetyl/baetyl-go/v2/log"
-	mc "github.com/baetyl/baetyl-go/v2/mock/pki"
 	"github.com/baetyl/baetyl-go/v2/pki"
-	"github.com/baetyl/baetyl-go/v2/pki/models"
 	"github.com/baetyl/baetyl/config"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,151 +43,150 @@ MAoGCCqGSM49BAMCA0kAMEYCIQDaTuoQ9CMNNRFKT5vFI8cvz1oZ4xQtkqtvk/p3
 `
 )
 
-func genPKIConf(t *testing.T) config.PKIConfig {
-	tempDir, err := ioutil.TempDir("", "")
+func genBolthold(t *testing.T) *bh.Store {
+	f, err := ioutil.TempFile("", "")
 	assert.NoError(t, err)
+	assert.NotNil(t, f)
 
-	err = ioutil.WriteFile(path.Join(tempDir, "ca.crt"), []byte(caCrt), 777)
+	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(tempDir, "ca.key"), []byte(caKey), 777)
-	assert.NoError(t, err)
-	return config.PKIConfig{
-		KeyFile: path.Join(tempDir, "ca.key"),
-		CrtFile: path.Join(tempDir, "ca.crt"),
-	}
+	assert.NotNil(t, sto)
+	return sto
 }
 
-func genDefaultPkiClient(t *testing.T) (*defaultPkiClient, *mc.MockStorage) {
-	cfg := genPKIConf(t)
-	ctl := gomock.NewController(t)
-	mcSto := mc.NewMockStorage(ctl)
-	cli, err := pki.NewPKIClient(cfg.KeyFile, cfg.CrtFile, mcSto)
+func genDefaultPkiClient(t *testing.T) *defaultPkiClient {
+	sto := genBolthold(t)
+	cli, err := pki.NewPKIClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, cli)
 	return &defaultPkiClient{
 		cli: cli,
-		sto: mcSto,
-		cfg: cfg,
+		sto: sto,
+		cfg: config.SecurityConfig{
+			Kind: "pki",
+			PKIConfig: config.PKIConfig{
+				SubDuration:  5 * 365 * 24 * time.Hour,
+				RootDuration: 10 * 365 * 24 * time.Hour,
+			},
+		},
 		log: log.With(log.Any("security", "pki")),
-	}, mcSto
-}
-
-func genPkiMockCert() *models.Cert {
-	return &models.Cert{
-		CertId:     baetylSubCA,
-		Content:    base64.StdEncoding.EncodeToString([]byte(caCrt)),
-		PrivateKey: base64.StdEncoding.EncodeToString([]byte(caKey)),
 	}
 }
 
-func Test_NewPKIImpl(t *testing.T) {
+func Test_NewPKI(t *testing.T) {
+	// good case
+	sto := genBolthold(t)
+	_, err := NewPKI(config.SecurityConfig{
+		Kind: "pki",
+		PKIConfig: config.PKIConfig{
+			SubDuration:  5 * 365 * 24 * time.Hour,
+			RootDuration: 10 * 365 * 24 * time.Hour,
+		},
+	}, sto)
+	assert.NoError(t, err)
+}
+
+func TestDefaultPkiClient_GetCA(t *testing.T) {
+	p := genDefaultPkiClient(t)
+
 	// bad case
-	_, err := newPKIImpl(config.SecurityConfig{}, nil)
-	assert.Error(t, err)
+	res, err := p.GetCA()
+	assert.Error(t, err, bh.ErrNotFound)
+	assert.Nil(t, res)
 
 	// good case
-	cfg := config.SecurityConfig{
-		Kind: "pki",
+	cn := fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName))
+	key := genStoKey(cn)
+	cert := pki.CertPem{
+		Crt: []byte(caCrt),
+		Key: []byte(caKey),
 	}
-	cfg.PKIConfig = genPKIConf(t)
-	bhSto := genBolthold(t)
-	res, err := newPKIImpl(cfg, bhSto)
+	err = p.putCert(key, cert)
+	assert.NoError(t, err)
+
+	res, err = p.GetCA()
+	assert.NoError(t, err)
+	assert.EqualValues(t, cert.Crt, res)
+}
+
+func TestDefaultPkiClient_IssueCertificate(t *testing.T) {
+	p := genDefaultPkiClient(t)
+	// bad case
+	res, err := p.IssueCertificate("cn", AltNames{})
+	assert.Error(t, err, bh.ErrNotFound)
+	assert.Nil(t, res)
+
+	// good case
+	cn := fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName))
+	key := genStoKey(cn)
+	cert := pki.CertPem{
+		Crt: []byte(caCrt),
+		Key: []byte(caKey),
+	}
+	err = p.putCert(key, cert)
+	assert.NoError(t, err)
+
+	res, err = p.IssueCertificate("cn", AltNames{})
 	assert.NoError(t, err)
 	assert.NotNil(t, res)
 }
 
-func TestDefaultPkiClient_GetCA(t *testing.T) {
-	p, mcSto := genDefaultPkiClient(t)
-
-	// good case
-	cert := genPkiMockCert()
-	mcSto.EXPECT().GetCert(baetylSubCA).Return(cert, nil).Times(1)
-
-	res, err := p.GetCA()
-	assert.NoError(t, err)
-	assert.EqualValues(t, []byte(caCrt), res)
-
-	//bad case
-	mcSto.EXPECT().GetCert(baetylSubCA).Return(nil, bh.ErrNotFound).Times(1)
-	_, err = p.GetCA()
-	assert.Error(t, err, bh.ErrNotFound)
-}
-
-func TestDefaultPkiClient_IssueCertificate(t *testing.T) {
-	p, mcSto := genDefaultPkiClient(t)
-
-	cert := genPkiMockCert()
-	// good case
-	mcSto.EXPECT().GetCert(gomock.Any()).Return(cert, nil).Times(2)
-	mcSto.EXPECT().CreateCert(gomock.Any()).Return(nil).Times(1)
-
-	res, err := p.IssueCertificate("cn", AltNames{})
-	assert.NoError(t, err)
-	assert.EqualValues(t, caCrt, string(res.CertPEM))
-}
-
 func TestDefaultPkiClient_RevokeCertificate(t *testing.T) {
-	p, mcSto := genDefaultPkiClient(t)
+	p := genDefaultPkiClient(t)
+	// bad case
+	err := p.RevokeCertificate("cn")
+	assert.Error(t, err, bh.ErrNotFound)
 
 	// good case
-	cert := genPkiMockCert()
-	mcSto.EXPECT().DeleteCert(cert.CertId).Return(nil).Times(1)
-	err := p.RevokeCertificate(cert.CertId)
+	key := genStoKey("cn")
+	cert := pki.CertPem{
+		Crt: []byte(caCrt),
+		Key: []byte(caKey),
+	}
+	err = p.putCert(key, cert)
 	assert.NoError(t, err)
 
-	// bad case
-	mcSto.EXPECT().DeleteCert(cert.CertId).Return(os.ErrInvalid).Times(1)
-	err = p.RevokeCertificate(cert.CertId)
-	assert.Error(t, err)
+	err = p.RevokeCertificate("cn")
+	assert.NoError(t, err)
 }
 
 func TestDefaultPkiClient_RotateCertificate(t *testing.T) {
-	p, mcSto := genDefaultPkiClient(t)
+	p := genDefaultPkiClient(t)
+	// bad case
+	res, err := p.RotateCertificate("cn")
+	assert.Error(t, err, bh.ErrNotFound)
+	assert.Nil(t, res)
 
-	cert := genPkiMockCert()
-	mcSto.EXPECT().GetCert(gomock.Any()).Return(cert, nil).Times(3)
-	mcSto.EXPECT().DeleteCert(cert.CertId).Return(nil).Times(1)
-	mcSto.EXPECT().CreateCert(gomock.Any()).Return(nil).Times(1)
-
-	res, err := p.RotateCertificate(cert.CertId)
+	// good case
+	rootKey := genStoKey(fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName)))
+	key := genStoKey("cn")
+	cert := pki.CertPem{
+		Crt: []byte(caCrt),
+		Key: []byte(caKey),
+	}
+	err = p.putCert(rootKey, cert) // root ca
 	assert.NoError(t, err)
-	assert.EqualValues(t, caCrt, string(res.CertPEM))
+	err = p.putCert(key, cert) // old cert
+	assert.NoError(t, err)
+
+	res, err = p.RotateCertificate("cn")
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
 }
 
-func TestDefaultPkiClient_setSubCA(t *testing.T) {
-	p, mcSto := genDefaultPkiClient(t)
-	cert := genPkiMockCert()
+func TestDefaultPkiClient_putCert(t *testing.T) {
+	p := genDefaultPkiClient(t)
+	key := genStoKey("cn")
+	cert := pki.CertPem{
+		Crt: []byte(caCrt),
+		Key: []byte(caKey),
+	}
 
-	// good case 1:create new sub ca
-	mcSto.EXPECT().GetCert(baetylSubCA).Return(nil, bh.ErrNotFound).Times(1)
-	mcSto.EXPECT().CreateCert(*cert).Return(nil).Times(1)
-	err := p.setSubCA()
+	// good case 0
+	err := p.putCert(key, cert)
 	assert.NoError(t, err)
 
-	// good case 2: no change
-	mcSto.EXPECT().GetCert(baetylSubCA).Return(cert, nil).Times(1)
-	err = p.setSubCA()
+	// good case 1
+	err = p.putCert(key, cert)
 	assert.NoError(t, err)
-
-	// good case 3: upgrade ca
-	mcSto.EXPECT().GetCert(baetylSubCA).Return(&models.Cert{}, nil).Times(1)
-	mcSto.EXPECT().UpdateCert(*cert).Return(nil).Times(1)
-	err = p.setSubCA()
-	assert.NoError(t, err)
-
-	// bad case 1: get cert error
-	mcSto.EXPECT().GetCert(baetylSubCA).Return(nil, errors.New("err")).Times(1)
-	mcSto.EXPECT().CreateCert(*cert).Return(nil).Times(1)
-	err = p.setSubCA()
-	assert.Error(t, err)
-
-	// bad case 2: read key file error
-	p.cfg.KeyFile = ""
-	err = p.setSubCA()
-	assert.Error(t, err)
-
-	// bad case 3: read crt file error
-	p.cfg.CrtFile = ""
-	err = p.setSubCA()
-	assert.Error(t, err)
 }

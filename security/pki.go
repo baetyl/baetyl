@@ -1,48 +1,40 @@
 package security
 
 import (
-	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/base64"
-	"io/ioutil"
+	"fmt"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/sync"
+	"net"
+	"os"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
-	"github.com/baetyl/baetyl-go/v2/pki/models"
-	"github.com/baetyl/baetyl/config"
 	bh "github.com/timshannon/bolthold"
 )
 
-const (
-	baetylSubCA = "baetylSubCA"
-)
-
 type defaultPkiClient struct {
+	cfg config.SecurityConfig
 	cli pki.PKI
-	sto pki.Storage
-	cfg config.PKIConfig
+	sto *bh.Store
 	log *log.Logger
 }
 
-func init() {
-	Register(PKI, newPKIImpl)
-}
-
-func newPKIImpl(cfg config.SecurityConfig, bhSto *bh.Store) (Security, error) {
-	sto := NewStorage(bhSto)
-	cli, err := pki.NewPKIClient(cfg.PKIConfig.KeyFile, cfg.PKIConfig.CrtFile, sto)
+func NewPKI(cfg config.SecurityConfig, sto *bh.Store) (Security, error) {
+	cli, err := pki.NewPKIClient()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	defaultCli := &defaultPkiClient{
+		cfg: cfg,
 		cli: cli,
 		sto: sto,
-		cfg: cfg.PKIConfig,
 		log: log.With(log.Any("security", cfg.Kind)),
 	}
-	err = defaultCli.setSubCA()
+
+	err = defaultCli.genSelfSignedCACertificate()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -50,68 +42,58 @@ func newPKIImpl(cfg config.SecurityConfig, bhSto *bh.Store) (Security, error) {
 }
 
 func (p *defaultPkiClient) GetCA() ([]byte, error) {
-	ca, err := p.cli.GetCert(baetylSubCA)
+	cert, err := p.getCA()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return ca, nil
+	return cert.Crt, nil
 }
 
-func (p *defaultPkiClient) IssueCertificate(cn string, alt AltNames) (*PEMCredential, error) {
-	priv, err := pki.GenCertPrivateKey(pki.DefaultDSA, pki.DefaultRSABits)
+func (p *defaultPkiClient) IssueCertificate(cn string, alt AltNames) (*pki.CertPem, error) {
+	ca, err := p.getCA()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	keyPem, err := pki.EncodeCertPrivateKey(priv)
+	cert, err := p.cli.CreateSubCertWithKey(genCsr(cn, alt), (int)(p.cfg.PKIConfig.SubDuration.Hours()/24), ca)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	csr, err := x509.CreateCertificateRequest(rand.Reader, genCsr(cn, alt), priv.Key)
+	// save cert
+	err = p.putCert(genStoKey(cn), *cert)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-
-	certId, err := p.cli.CreateSubCert(csr, baetylSubCA)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	certPem, err := p.cli.GetCert(certId)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	return &PEMCredential{
-		CertPEM: certPem,
-		KeyPEM:  keyPem,
-		CertId:  certId,
-	}, nil
+	return cert, nil
 }
 
-func (p *defaultPkiClient) RevokeCertificate(certId string) error {
-	err := p.cli.DeleteSubCert(certId)
+func (p *defaultPkiClient) RevokeCertificate(cn string) error {
+	tp := pki.CertPem{}
+	err := p.sto.Delete(genStoKey(cn), tp)
 	if err != nil {
 		return errors.Trace(err)
 	}
 	return nil
 }
 
-func (p *defaultPkiClient) RotateCertificate(certId string) (*PEMCredential, error) {
-	cert, err := p.cli.GetCert(certId)
+func (p *defaultPkiClient) RotateCertificate(cn string) (*pki.CertPem, error) {
+	key := genStoKey(cn)
+	cert := &pki.CertPem{}
+	err := p.sto.Get(key, cert)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	err = p.RevokeCertificate(certId)
+	err = p.RevokeCertificate(cn)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	certInfo, err := pki.ParseCertificates(cert)
+	certInfo, err := pki.ParseCertificates(cert.Crt)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	if len(certInfo) != 1 {
-		return nil, errors.Trace(errors.Errorf("rotate certificate error (not exist)"))
+		return nil, errors.Trace(errors.Errorf("rotate certificate error"))
 	}
 
 	alt := AltNames{
@@ -123,34 +105,54 @@ func (p *defaultPkiClient) RotateCertificate(certId string) (*PEMCredential, err
 	return p.IssueCertificate(certInfo[0].Subject.CommonName, alt)
 }
 
-func (p *defaultPkiClient) setSubCA() error {
-	crt, err := ioutil.ReadFile(p.cfg.CrtFile)
+func (p *defaultPkiClient) genSelfSignedCACertificate() error {
+	cn := fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName))
+	csrInfo := genCsr(cn, AltNames{
+		IPs: []net.IP{
+			net.IPv4(0, 0, 0, 0),
+			net.IPv4(127, 0, 0, 1),
+		},
+	})
+	cert, err := p.cli.CreateSelfSignedRootCert(csrInfo, (int)(p.cfg.PKIConfig.RootDuration.Hours()/24))
 	if err != nil {
 		return errors.Trace(err)
 	}
-	priv, err := ioutil.ReadFile(p.cfg.KeyFile)
+	// save root ca
+	err = p.putCert(genStoKey(cn), *cert)
 	if err != nil {
 		return errors.Trace(err)
-	}
-	subCA := models.Cert{
-		CertId:     baetylSubCA,
-		Content:    base64.StdEncoding.EncodeToString(crt),
-		PrivateKey: base64.StdEncoding.EncodeToString(priv),
-	}
-
-	res, err := p.sto.GetCert(subCA.CertId)
-	if err != nil && err.Error() != bh.ErrNotFound.Error() {
-		return errors.Trace(err)
-	}
-	if err != nil {
-		return p.sto.CreateCert(subCA)
-	}
-
-	if res.Content != subCA.Content || res.PrivateKey != subCA.PrivateKey {
-		// TODO: when the sub-root certificate is updated, the certificates of all modules need to be re-issued
-		return p.sto.UpdateCert(subCA)
 	}
 	return nil
+}
+
+func (p *defaultPkiClient) getCA() (*pki.CertPem, error) {
+	cn := fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName))
+	key := genStoKey(cn)
+	cert := &pki.CertPem{}
+	err := p.sto.Get(key, cert)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return cert, nil
+}
+
+func (p *defaultPkiClient) putCert(key string, cert pki.CertPem) error {
+	err := p.sto.Insert(key, cert)
+	if err != nil && err.Error() != bh.ErrKeyExists.Error() {
+		return errors.Trace(err)
+	}
+	if err != nil {
+		p.log.Warn("baetyl internal certificate already exists.", log.Any("key", key))
+		err = p.sto.Update(key, cert)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	}
+	return nil
+}
+
+func genStoKey(cn string) string {
+	return fmt.Sprintf("%s-%s", "baetyl-cert", cn)
 }
 
 func genCsr(cn string, alt AltNames) *x509.CertificateRequest {

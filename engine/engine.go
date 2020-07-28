@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"net"
 	"os"
 	"path"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/security"
 	"github.com/baetyl/baetyl/sync"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
@@ -26,6 +28,10 @@ const (
 	EnvKeyAppVersion  = "BAETYL_APP_VERSION"
 	EnvKeyNodeName    = "BAETYL_NODE_NAME"
 	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
+
+	InternalCertVolumePrefix = "baetyl-internal-cert-volume-"
+	InternalCertSecretPrefix = "baetyl-internal-cert-secret-"
+	InternalCertPath         = "/var/lib/baetyl/internal-cert"
 )
 
 type Engine struct {
@@ -38,6 +44,7 @@ type Engine struct {
 	log   *log.Logger
 	ns    string
 	sysns string
+	sec   security.Security
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
@@ -45,7 +52,7 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return &Engine{
+	e := &Engine{
 		ami:   kube,
 		sto:   sto,
 		syn:   syn,
@@ -54,7 +61,14 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 		ns:    "baetyl-edge",
 		sysns: "baetyl-edge-system",
 		log:   log.With(log.Any("engine", cfg.Engine.Kind)),
-	}, nil
+	}
+	sec, err := security.NewPKI(cfg.Security, sto)
+	if err != nil {
+		// compatible with version v2.0.0, so it will not exit, but certificate injection will not be performed later
+		e.log.Error("security plugin initialization error", log.Any("err", err))
+	}
+	e.sec = sec
+	return e, nil
 }
 
 func (e *Engine) Start() {
@@ -302,6 +316,12 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 		e.log.Error("failed to revise applications", log.Any("app", app), log.Error(err))
 		return errors.Trace(err)
 	}
+	// inject internal cert
+	if e.sec != nil {
+		if err := e.injectCert(app, secs); err != nil {
+			return errors.Trace(err)
+		}
+	}
 	if err := e.ami.ApplyConfigurations(ns, cfgs); err != nil {
 		return errors.Trace(err)
 	}
@@ -387,6 +407,68 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 			}
 		}
 	}
+	return nil
+}
+
+func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secret) error {
+	ca, err := e.sec.GetCA()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	var services []specv1.Service
+	for _, svc := range app.Services {
+		// generate cert
+		cert, err := e.sec.IssueCertificate(svc.Name, security.AltNames{
+			IPs: []net.IP{
+				net.IPv4(0, 0, 0, 0),
+				net.IPv4(127, 0, 0, 1),
+			},
+		})
+		if err != nil {
+			return errors.Trace(err)
+		}
+		secretName := InternalCertSecretPrefix + svc.Name
+		if _, ok := secs[secretName]; ok {
+			e.log.Warn("the secret will be overwritten for internal communication",
+				log.Any("secret name", secretName))
+		}
+
+		secret := specv1.Secret{
+			Name:      secretName,
+			Namespace: app.Namespace,
+			Labels: map[string]string{
+				"baetyl-app-name": app.Name,
+				"security-type":   "certificate",
+			},
+			Data: map[string][]byte{
+				"crt.pem": cert.Crt,
+				"key.pem": cert.Key,
+				"ca.pem":  ca,
+			},
+			System: app.Namespace == e.sysns,
+		}
+		secs[secretName] = secret
+
+		// generate volume mount
+		volName := InternalCertVolumePrefix + svc.Name
+		volMount := specv1.VolumeMount{
+			Name:      volName,
+			MountPath: InternalCertPath,
+			ReadOnly:  true,
+		}
+		svc.VolumeMounts = append(svc.VolumeMounts, volMount)
+
+		// generate volume
+		vol := specv1.Volume{
+			Name:         volName,
+			VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: secret.Name}},
+		}
+		app.Volumes = append(app.Volumes, vol)
+
+		services = append(services, svc)
+	}
+	app.Services = services
 	return nil
 }
 
