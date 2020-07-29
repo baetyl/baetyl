@@ -4,14 +4,14 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/sync"
 	"net"
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/sync"
 	bh "github.com/timshannon/bolthold"
 )
 
@@ -132,11 +132,7 @@ func (p *defaultPkiClient) putCert(key string, cert pki.CertPem) error {
 		return errors.Trace(err)
 	}
 	if err != nil {
-		p.log.Warn("baetyl internal certificate already exists.", log.Any("key", key))
-		err = p.sto.Update(key, cert)
-		if err != nil {
-			return errors.Trace(err)
-		}
+		p.log.Info("baetyl internal certificate already exists.", log.Any("key", key))
 	}
 	return nil
 }

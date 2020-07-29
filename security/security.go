@@ -1,9 +1,10 @@
 package security
 
 import (
-	"github.com/baetyl/baetyl-go/v2/pki"
 	"net"
 	"net/url"
+
+	"github.com/baetyl/baetyl-go/v2/pki"
 )
 
 //go:generate mockgen -destination=../mock/security.go -package=mock github.com/baetyl/baetyl/security Security
