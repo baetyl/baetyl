@@ -5,6 +5,7 @@ import (
 	"crypto/x509/pkix"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -15,7 +16,7 @@ import (
 	bh "github.com/timshannon/bolthold"
 )
 
-type defaultPkiClient struct {
+type pkiClient struct {
 	cfg config.SecurityConfig
 	cli pki.PKI
 	sto *bh.Store
@@ -27,7 +28,7 @@ func NewPKI(cfg config.SecurityConfig, sto *bh.Store) (Security, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	defaultCli := &defaultPkiClient{
+	defaultCli := &pkiClient{
 		cfg: cfg,
 		cli: cli,
 		sto: sto,
@@ -41,7 +42,7 @@ func NewPKI(cfg config.SecurityConfig, sto *bh.Store) (Security, error) {
 	return defaultCli, nil
 }
 
-func (p *defaultPkiClient) GetCA() ([]byte, error) {
+func (p *pkiClient) GetCA() ([]byte, error) {
 	cert, err := p.getCA()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -49,7 +50,7 @@ func (p *defaultPkiClient) GetCA() ([]byte, error) {
 	return cert.Crt, nil
 }
 
-func (p *defaultPkiClient) IssueCertificate(cn string, alt AltNames) (*pki.CertPem, error) {
+func (p *pkiClient) IssueCertificate(cn string, alt AltNames) (*pki.CertPem, error) {
 	ca, err := p.getCA()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -58,7 +59,7 @@ func (p *defaultPkiClient) IssueCertificate(cn string, alt AltNames) (*pki.CertP
 	return p.cli.CreateSubCertWithKey(genCsr(cn, alt), (int)(p.cfg.PKIConfig.SubDuration.Hours()/24), ca)
 }
 
-func (p *defaultPkiClient) RevokeCertificate(cn string) error {
+func (p *pkiClient) RevokeCertificate(cn string) error {
 	tp := pki.CertPem{}
 	err := p.sto.Delete(genStoKey(cn), tp)
 	if err != nil {
@@ -67,7 +68,7 @@ func (p *defaultPkiClient) RevokeCertificate(cn string) error {
 	return nil
 }
 
-func (p *defaultPkiClient) RotateCertificate(cn string) (*pki.CertPem, error) {
+func (p *pkiClient) RotateCertificate(cn string) (*pki.CertPem, error) {
 	key := genStoKey(cn)
 	cert := &pki.CertPem{}
 	err := p.sto.Get(key, cert)
@@ -95,12 +96,18 @@ func (p *defaultPkiClient) RotateCertificate(cn string) (*pki.CertPem, error) {
 	return p.IssueCertificate(certInfo[0].Subject.CommonName, alt)
 }
 
-func (p *defaultPkiClient) genSelfSignedCACertificate() error {
+func (p *pkiClient) genSelfSignedCACertificate() error {
 	cn := fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName))
 	csrInfo := genCsr(cn, AltNames{
 		IPs: []net.IP{
 			net.IPv4(0, 0, 0, 0),
 			net.IPv4(127, 0, 0, 1),
+		},
+		URIs: []*url.URL{
+			{
+				Scheme: "https",
+				Host:   "localhost",
+			},
 		},
 	})
 	cert, err := p.cli.CreateSelfSignedRootCert(csrInfo, (int)(p.cfg.PKIConfig.RootDuration.Hours()/24))
@@ -115,7 +122,7 @@ func (p *defaultPkiClient) genSelfSignedCACertificate() error {
 	return nil
 }
 
-func (p *defaultPkiClient) getCA() (*pki.CertPem, error) {
+func (p *pkiClient) getCA() (*pki.CertPem, error) {
 	cn := fmt.Sprintf("%s.%s", os.Getenv(sync.EnvKeyNodeNamespace), os.Getenv(sync.EnvKeyNodeName))
 	key := genStoKey(cn)
 	cert := &pki.CertPem{}
@@ -126,7 +133,7 @@ func (p *defaultPkiClient) getCA() (*pki.CertPem, error) {
 	return cert, nil
 }
 
-func (p *defaultPkiClient) putCert(key string, cert pki.CertPem) error {
+func (p *pkiClient) putCert(key string, cert pki.CertPem) error {
 	err := p.sto.Insert(key, cert)
 	if err != nil && err.Error() != bh.ErrKeyExists.Error() {
 		return errors.Trace(err)

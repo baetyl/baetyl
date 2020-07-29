@@ -1,7 +1,9 @@
 package engine
 
 import (
+	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
@@ -29,9 +31,9 @@ const (
 	EnvKeyNodeName    = "BAETYL_NODE_NAME"
 	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
 
-	InternalCertVolumePrefix = "baetyl-internal-cert-volume-"
-	InternalCertSecretPrefix = "baetyl-internal-cert-secret-"
-	InternalCertPath         = "/var/lib/baetyl/internal-cert"
+	SystemCertVolumePrefix = "baetyl-system-cert-volume-"
+	SystemCertSecretPrefix = "baetyl-system-cert-secret-"
+	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
 type Engine struct {
@@ -52,23 +54,21 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	e := &Engine{
+	sec, err := security.NewPKI(cfg.Security, sto)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return &Engine{
 		ami:   kube,
 		sto:   sto,
 		syn:   syn,
 		nod:   nod,
 		cfg:   cfg,
+		sec:   sec,
 		ns:    "baetyl-edge",
 		sysns: "baetyl-edge-system",
 		log:   log.With(log.Any("engine", cfg.Engine.Kind)),
-	}
-	sec, err := security.NewPKI(cfg.Security, sto)
-	if err != nil {
-		// compatible with version v2.0.0, so it will not exit, but certificate injection will not be performed later
-		e.log.Error("security plugin initialization error", log.Any("err", err))
-	}
-	e.sec = sec
-	return e, nil
+	}, nil
 }
 
 func (e *Engine) Start() {
@@ -419,19 +419,26 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 	var services []specv1.Service
 	for _, svc := range app.Services {
 		// generate cert
-		cert, err := e.sec.IssueCertificate(svc.Name, security.AltNames{
+		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
+		cert, err := e.sec.IssueCertificate(commonName, security.AltNames{
 			IPs: []net.IP{
 				net.IPv4(0, 0, 0, 0),
 				net.IPv4(127, 0, 0, 1),
+			},
+			URIs: []*url.URL{
+				{
+					Scheme: "https",
+					Host:   "localhost",
+				},
 			},
 		})
 		if err != nil {
 			return errors.Trace(err)
 		}
-		secretName := InternalCertSecretPrefix + svc.Name
+		secretName := SystemCertSecretPrefix + commonName
 		if _, ok := secs[secretName]; ok {
 			e.log.Warn("the secret will be overwritten for internal communication",
-				log.Any("secret name", secretName))
+				log.Any("name", secretName))
 		}
 
 		secret := specv1.Secret{
@@ -451,10 +458,10 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 		secs[secretName] = secret
 
 		// generate volume mount
-		volName := InternalCertVolumePrefix + svc.Name
+		volName := SystemCertVolumePrefix + commonName
 		volMount := specv1.VolumeMount{
 			Name:      volName,
-			MountPath: InternalCertPath,
+			MountPath: SystemCertPath,
 			ReadOnly:  true,
 		}
 		svc.VolumeMounts = append(svc.VolumeMounts, volMount)
