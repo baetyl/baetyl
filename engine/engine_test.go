@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -443,12 +444,17 @@ func TestInjectCert(t *testing.T) {
 				VolumeMounts: []specv1.VolumeMount{},
 			},
 			{
-				Name:         "s1",
+				Name:         "s1234567890",
 				VolumeMounts: []specv1.VolumeMount{},
 			},
 		},
 		Volumes: []specv1.Volume{},
 	}
+
+	cn0 := app.Name + ".s0"
+	cn1 := app.Name + ".s1234567890"
+	suffix0 := fmt.Sprintf("%x", md5.Sum([]byte(cn0))) + "-s0"
+	suffix1 := fmt.Sprintf("%x", md5.Sum([]byte(cn1))) + "-s123456789"
 
 	mockSecurity.EXPECT().GetCA().Return([]byte(caCrt), nil).Times(1)
 	mockSecurity.EXPECT().IssueCertificate(gomock.Any(), gomock.Any()).Return(&pki.CertPem{
@@ -461,8 +467,8 @@ func TestInjectCert(t *testing.T) {
 	assert.NoError(t, err)
 
 	expSec := map[string]specv1.Secret{
-		SystemCertSecretPrefix + "s0": {
-			Name:      SystemCertSecretPrefix + "s0",
+		SystemCertSecretPrefix + suffix0: {
+			Name:      SystemCertSecretPrefix + suffix0,
 			Namespace: app.Namespace,
 			Labels: map[string]string{
 				"baetyl-app-name": app.Name,
@@ -475,8 +481,8 @@ func TestInjectCert(t *testing.T) {
 			},
 			System: app.Namespace == eng.sysns,
 		},
-		SystemCertSecretPrefix + "s1": {
-			Name:      SystemCertSecretPrefix + "s1",
+		SystemCertSecretPrefix + suffix1: {
+			Name:      SystemCertSecretPrefix + suffix1,
 			Namespace: app.Namespace,
 			Labels: map[string]string{
 				"baetyl-app-name": app.Name,
@@ -500,17 +506,17 @@ func TestInjectCert(t *testing.T) {
 				Name: "s0",
 				VolumeMounts: []specv1.VolumeMount{
 					{
-						Name:      SystemCertVolumePrefix + "s0",
+						Name:      SystemCertVolumePrefix + suffix0,
 						MountPath: SystemCertPath,
 						ReadOnly:  true,
 					},
 				},
 			},
 			{
-				Name: "s1",
+				Name: "s1234567890",
 				VolumeMounts: []specv1.VolumeMount{
 					{
-						Name:      SystemCertVolumePrefix + "s1",
+						Name:      SystemCertVolumePrefix + suffix1,
 						MountPath: SystemCertPath,
 						ReadOnly:  true,
 					},
@@ -519,17 +525,17 @@ func TestInjectCert(t *testing.T) {
 		},
 		Volumes: []specv1.Volume{
 			{
-				Name:         SystemCertVolumePrefix + "s0",
-				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "s0"}},
+				Name:         SystemCertVolumePrefix + suffix0,
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + suffix0}},
 			},
 			{
-				Name:         SystemCertVolumePrefix + "s1",
-				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "s1"}},
+				Name:         SystemCertVolumePrefix + suffix1,
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + suffix1}},
 			},
 		},
 	}
 
-	assert.EqualValues(t, app, expApp)
+	assert.EqualValues(t, expApp, app)
 	assert.EqualValues(t, expSec, secs)
 	eng.Close()
 }

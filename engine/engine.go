@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"crypto/md5"
 	"fmt"
 	"net"
 	"net/url"
@@ -31,8 +32,8 @@ const (
 	EnvKeyNodeName    = "BAETYL_NODE_NAME"
 	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
 
-	SystemCertVolumePrefix = "baetyl-"
-	SystemCertSecretPrefix = "baetyl-"
+	SystemCertVolumePrefix = "baetyl-cert-volume-"
+	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
@@ -419,7 +420,13 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 	var services []specv1.Service
 	for _, svc := range app.Services {
 		// generate cert
-		commonName := svc.Name
+		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
+		suffix := fmt.Sprintf("%x", md5.Sum([]byte(commonName)))
+		if len(svc.Name) > 10 {
+			suffix += "-" + svc.Name[0:10]
+		} else {
+			suffix += "-" + svc.Name
+		}
 		cert, err := e.sec.IssueCertificate(commonName, security.AltNames{
 			IPs: []net.IP{
 				net.IPv4(0, 0, 0, 0),
@@ -443,7 +450,7 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 		if err != nil {
 			return errors.Trace(err)
 		}
-		secretName := SystemCertSecretPrefix + commonName
+		secretName := SystemCertSecretPrefix + suffix
 		if _, ok := secs[secretName]; ok {
 			e.log.Warn("the secret will be overwritten for internal communication",
 				log.Any("name", secretName))
@@ -466,7 +473,7 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 		secs[secretName] = secret
 
 		// generate volume mount
-		volName := SystemCertVolumePrefix + commonName
+		volName := SystemCertVolumePrefix + suffix
 		volMount := specv1.VolumeMount{
 			Name:      volName,
 			MountPath: SystemCertPath,
