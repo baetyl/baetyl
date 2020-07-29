@@ -461,8 +461,8 @@ func TestInjectCert(t *testing.T) {
 	assert.NoError(t, err)
 
 	expSec := map[string]specv1.Secret{
-		InternalCertSecretPrefix + "s0": {
-			Name:      InternalCertSecretPrefix + "s0",
+		SystemCertSecretPrefix + "app1.s0": {
+			Name:      SystemCertSecretPrefix + "app1.s0",
 			Namespace: app.Namespace,
 			Labels: map[string]string{
 				"baetyl-app-name": app.Name,
@@ -475,8 +475,8 @@ func TestInjectCert(t *testing.T) {
 			},
 			System: app.Namespace == eng.sysns,
 		},
-		InternalCertSecretPrefix + "s1": {
-			Name:      InternalCertSecretPrefix + "s1",
+		SystemCertSecretPrefix + "app1.s1": {
+			Name:      SystemCertSecretPrefix + "app1.s1",
 			Namespace: app.Namespace,
 			Labels: map[string]string{
 				"baetyl-app-name": app.Name,
@@ -500,8 +500,8 @@ func TestInjectCert(t *testing.T) {
 				Name: "s0",
 				VolumeMounts: []specv1.VolumeMount{
 					{
-						Name:      InternalCertVolumePrefix + "s0",
-						MountPath: InternalCertPath,
+						Name:      SystemCertVolumePrefix + "app1.s0",
+						MountPath: SystemCertPath,
 						ReadOnly:  true,
 					},
 				},
@@ -510,8 +510,8 @@ func TestInjectCert(t *testing.T) {
 				Name: "s1",
 				VolumeMounts: []specv1.VolumeMount{
 					{
-						Name:      InternalCertVolumePrefix + "s1",
-						MountPath: InternalCertPath,
+						Name:      SystemCertVolumePrefix + "app1.s1",
+						MountPath: SystemCertPath,
 						ReadOnly:  true,
 					},
 				},
@@ -519,12 +519,12 @@ func TestInjectCert(t *testing.T) {
 		},
 		Volumes: []specv1.Volume{
 			{
-				Name:         InternalCertVolumePrefix + "s0",
-				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: InternalCertSecretPrefix + "s0"}},
+				Name:         SystemCertVolumePrefix + "app1.s0",
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "app1.s0"}},
 			},
 			{
-				Name:         InternalCertVolumePrefix + "s1",
-				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: InternalCertSecretPrefix + "s1"}},
+				Name:         SystemCertVolumePrefix + "app1.s1",
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "app1.s1"}},
 			},
 		},
 	}

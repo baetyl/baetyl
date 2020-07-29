@@ -54,12 +54,12 @@ func genBolthold(t *testing.T) *bh.Store {
 	return sto
 }
 
-func genDefaultPkiClient(t *testing.T) *defaultPkiClient {
+func genDefaultPkiClient(t *testing.T) *pkiClient {
 	sto := genBolthold(t)
 	cli, err := pki.NewPKIClient()
 	assert.NoError(t, err)
 	assert.NotNil(t, cli)
-	return &defaultPkiClient{
+	return &pkiClient{
 		cli: cli,
 		sto: sto,
 		cfg: config.SecurityConfig{
