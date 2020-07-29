@@ -31,8 +31,8 @@ const (
 	EnvKeyNodeName    = "BAETYL_NODE_NAME"
 	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
 
-	SystemCertVolumePrefix = "baetyl-edge-system-cert-volume-"
-	SystemCertSecretPrefix = "baetyl-edge-system-cert-secret-"
+	SystemCertVolumePrefix = "baetyl-"
+	SystemCertSecretPrefix = "baetyl-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
@@ -419,7 +419,7 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 	var services []specv1.Service
 	for _, svc := range app.Services {
 		// generate cert
-		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
+		commonName := svc.Name
 		cert, err := e.sec.IssueCertificate(commonName, security.AltNames{
 			IPs: []net.IP{
 				net.IPv4(0, 0, 0, 0),

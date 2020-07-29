@@ -461,8 +461,8 @@ func TestInjectCert(t *testing.T) {
 	assert.NoError(t, err)
 
 	expSec := map[string]specv1.Secret{
-		SystemCertSecretPrefix + "app1.s0": {
-			Name:      SystemCertSecretPrefix + "app1.s0",
+		SystemCertSecretPrefix + "s0": {
+			Name:      SystemCertSecretPrefix + "s0",
 			Namespace: app.Namespace,
 			Labels: map[string]string{
 				"baetyl-app-name": app.Name,
@@ -475,8 +475,8 @@ func TestInjectCert(t *testing.T) {
 			},
 			System: app.Namespace == eng.sysns,
 		},
-		SystemCertSecretPrefix + "app1.s1": {
-			Name:      SystemCertSecretPrefix + "app1.s1",
+		SystemCertSecretPrefix + "s1": {
+			Name:      SystemCertSecretPrefix + "s1",
 			Namespace: app.Namespace,
 			Labels: map[string]string{
 				"baetyl-app-name": app.Name,
@@ -500,7 +500,7 @@ func TestInjectCert(t *testing.T) {
 				Name: "s0",
 				VolumeMounts: []specv1.VolumeMount{
 					{
-						Name:      SystemCertVolumePrefix + "app1.s0",
+						Name:      SystemCertVolumePrefix + "s0",
 						MountPath: SystemCertPath,
 						ReadOnly:  true,
 					},
@@ -510,7 +510,7 @@ func TestInjectCert(t *testing.T) {
 				Name: "s1",
 				VolumeMounts: []specv1.VolumeMount{
 					{
-						Name:      SystemCertVolumePrefix + "app1.s1",
+						Name:      SystemCertVolumePrefix + "s1",
 						MountPath: SystemCertPath,
 						ReadOnly:  true,
 					},
@@ -519,12 +519,12 @@ func TestInjectCert(t *testing.T) {
 		},
 		Volumes: []specv1.Volume{
 			{
-				Name:         SystemCertVolumePrefix + "app1.s0",
-				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "app1.s0"}},
+				Name:         SystemCertVolumePrefix + "s0",
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "s0"}},
 			},
 			{
-				Name:         SystemCertVolumePrefix + "app1.s1",
-				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "app1.s1"}},
+				Name:         SystemCertVolumePrefix + "s1",
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: SystemCertSecretPrefix + "s1"}},
 			},
 		},
 	}
