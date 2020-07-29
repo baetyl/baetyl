@@ -31,8 +31,8 @@ const (
 	EnvKeyNodeName    = "BAETYL_NODE_NAME"
 	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
 
-	SystemCertVolumePrefix = "baetyl-system-cert-volume-"
-	SystemCertSecretPrefix = "baetyl-system-cert-secret-"
+	SystemCertVolumePrefix = "baetyl-edge-system-cert-volume-"
+	SystemCertSecretPrefix = "baetyl-edge-system-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
@@ -429,6 +429,14 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 				{
 					Scheme: "https",
 					Host:   "localhost",
+				},
+				{
+					Scheme: "https",
+					Host:   svc.Name,
+				},
+				{
+					Scheme: "https",
+					Host:   fmt.Sprintf("%s.%s", svc.Name, e.sysns),
 				},
 			},
 		})
