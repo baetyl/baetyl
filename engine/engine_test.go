@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/pki"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/mock"
@@ -20,6 +21,52 @@ import (
 	"github.com/stretchr/testify/assert"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
+)
+
+const (
+	caCrt = `
+-----BEGIN CERTIFICATE-----
+MIICjTCCAjKgAwIBAgIIFiYYXpptZ7AwCgYIKoZIzj0EAwIwgawxCzAJBgNVBAYT
+AkNOMRAwDgYDVQQIEwdCZWlqaW5nMRkwFwYDVQQHExBIYWlkaWFuIERpc3RyaWN0
+MRUwEwYDVQQJEwxCYWlkdSBDYW1wdXMxDzANBgNVBBETBjEwMDA5MzEeMBwGA1UE
+ChMVTGludXggRm91bmRhdGlvbiBFZGdlMQ8wDQYDVQQLEwZCQUVUWUwxFzAVBgNV
+BAMTDmRlZmF1bHQuMDcyOTAxMCAXDTIwMDcyOTAyMzE1MloYDzIwNzAwNzE3MDIz
+MTUyWjCBrDELMAkGA1UEBhMCQ04xEDAOBgNVBAgTB0JlaWppbmcxGTAXBgNVBAcT
+EEhhaWRpYW4gRGlzdHJpY3QxFTATBgNVBAkTDEJhaWR1IENhbXB1czEPMA0GA1UE
+ERMGMTAwMDkzMR4wHAYDVQQKExVMaW51eCBGb3VuZGF0aW9uIEVkZ2UxDzANBgNV
+BAsTBkJBRVRZTDEXMBUGA1UEAxMOZGVmYXVsdC4wNzI5MDEwWTATBgcqhkjOPQIB
+BggqhkjOPQMBBwNCAASIpuCgm+W8OIb6njb4K8XCBnuGCNNkGwmFX1S45Y0A0Nm1
+Fbi/bmTL4zeyxfzDYkMSzzb3rVra9r07OMd4zTeLozowODAOBgNVHQ8BAf8EBAMC
+AYYwDwYDVR0TAQH/BAUwAwEB/zAVBgNVHREEDjAMhwQAAAAAhwR/AAABMAoGCCqG
+SM49BAMCA0kAMEYCIQCDw7CMJ8V2ZvKwPx4uRpb0WFOfDn28mah0FqiCenbGqQIh
+AM2I0IByWzc+9vOcoHB1sl8DY2128sSWwTBlMPU8A6yt
+-----END CERTIFICATE-----
+`
+	crt = `
+-----BEGIN CERTIFICATE-----
+MIICmDCCAj+gAwIBAgIIFiYYYP2g1WgwCgYIKoZIzj0EAwIwgawxCzAJBgNVBAYT
+AkNOMRAwDgYDVQQIEwdCZWlqaW5nMRkwFwYDVQQHExBIYWlkaWFuIERpc3RyaWN0
+MRUwEwYDVQQJEwxCYWlkdSBDYW1wdXMxDzANBgNVBBETBjEwMDA5MzEeMBwGA1UE
+ChMVTGludXggRm91bmRhdGlvbiBFZGdlMQ8wDQYDVQQLEwZCQUVUWUwxFzAVBgNV
+BAMTDmRlZmF1bHQuMDcyOTAxMB4XDTIwMDcyOTAyMzIwMloXDTQwMDcyNDAyMzIw
+Mlowga0xCzAJBgNVBAYTAkNOMRAwDgYDVQQIEwdCZWlqaW5nMRkwFwYDVQQHExBI
+YWlkaWFuIERpc3RyaWN0MRUwEwYDVQQJEwxCYWlkdSBDYW1wdXMxDzANBgNVBBET
+BjEwMDA5MzEeMBwGA1UEChMVTGludXggRm91bmRhdGlvbiBFZGdlMQ8wDQYDVQQL
+EwZCQUVUWUwxGDAWBgNVBAMTD2JhZXR5bC1mdW5jdGlvbjBZMBMGByqGSM49AgEG
+CCqGSM49AwEHA0IABH0y7lZWNCo512UgbZFzbZodPk+aO0fX14TXzITqnmYoK7Rk
+9rTSprk8lx7JwVxTz6Opv7XKh7yDknpPSSLq7QKjSDBGMA4GA1UdDwEB/wQEAwIF
+oDAPBgNVHSUECDAGBgRVHSUAMAwGA1UdEwEB/wQCMAAwFQYDVR0RBA4wDIcEAAAA
+AIcEfwAAATAKBggqhkjOPQQDAgNHADBEAiAC3PluuUxcoVnvz8JtaHrQumEJNeo/
+Ja9CCrkp24b8rQIgT/+ZbszAFlVO76iI7AtgoJ0cg7hUFjZHVgxh3diCuhY=
+-----END CERTIFICATE-----
+`
+	key = `
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEILraKdvNbV2kwWHbCNecVCvaWJezGthwxTZfMtDCAV4aoAoGCCqGSM49
+AwEHoUQDQgAEfTLuVlY0KjnXZSBtkXNtmh0+T5o7R9fXhNfMhOqeZigrtGT2tNKm
+uTyXHsnBXFPPo6m/tcqHvIOSek9JIurtAg==
+-----END EC PRIVATE KEY-----
+`
 )
 
 func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
@@ -369,4 +416,120 @@ func TestGetServiceLog(t *testing.T) {
 	err4 := client.Do(req4, resp4)
 	assert.NoError(t, err4)
 	assert.Equal(t, resp4.StatusCode(), 400)
+}
+
+func TestInjectCert(t *testing.T) {
+	nod, _, sto := prepare(t)
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockSecurity := mock.NewMockSecurity(mockCtl)
+	ns := "baetyl-edge"
+	eng := Engine{
+		cfg: config.Config{},
+		ns:  ns,
+		sto: sto,
+		nod: nod,
+		sec: mockSecurity,
+		log: log.With(log.Any("engine", "test")),
+	}
+
+	app := &specv1.Application{
+		Name:      "app1",
+		Namespace: "default",
+		Version:   "v1",
+		Services: []specv1.Service{
+			{
+				Name:         "s0",
+				VolumeMounts: []specv1.VolumeMount{},
+			},
+			{
+				Name:         "s1",
+				VolumeMounts: []specv1.VolumeMount{},
+			},
+		},
+		Volumes: []specv1.Volume{},
+	}
+
+	mockSecurity.EXPECT().GetCA().Return([]byte(caCrt), nil).Times(1)
+	mockSecurity.EXPECT().IssueCertificate(gomock.Any(), gomock.Any()).Return(&pki.CertPem{
+		Crt: []byte(crt),
+		Key: []byte(key),
+	}, nil).Times(2)
+
+	secs := map[string]specv1.Secret{}
+	err := eng.injectCert(app, secs)
+	assert.NoError(t, err)
+
+	expSec := map[string]specv1.Secret{
+		InternalCertSecretPrefix + "s0": {
+			Name:      InternalCertSecretPrefix + "s0",
+			Namespace: app.Namespace,
+			Labels: map[string]string{
+				"baetyl-app-name": app.Name,
+				"security-type":   "certificate",
+			},
+			Data: map[string][]byte{
+				"crt.pem": []byte(crt),
+				"key.pem": []byte(key),
+				"ca.pem":  []byte(caCrt),
+			},
+			System: app.Namespace == eng.sysns,
+		},
+		InternalCertSecretPrefix + "s1": {
+			Name:      InternalCertSecretPrefix + "s1",
+			Namespace: app.Namespace,
+			Labels: map[string]string{
+				"baetyl-app-name": app.Name,
+				"security-type":   "certificate",
+			},
+			Data: map[string][]byte{
+				"crt.pem": []byte(crt),
+				"key.pem": []byte(key),
+				"ca.pem":  []byte(caCrt),
+			},
+			System: app.Namespace == eng.sysns,
+		},
+	}
+
+	expApp := &specv1.Application{
+		Name:      "app1",
+		Namespace: "default",
+		Version:   "v1",
+		Services: []specv1.Service{
+			{
+				Name: "s0",
+				VolumeMounts: []specv1.VolumeMount{
+					{
+						Name:      InternalCertVolumePrefix + "s0",
+						MountPath: InternalCertPath,
+						ReadOnly:  true,
+					},
+				},
+			},
+			{
+				Name: "s1",
+				VolumeMounts: []specv1.VolumeMount{
+					{
+						Name:      InternalCertVolumePrefix + "s1",
+						MountPath: InternalCertPath,
+						ReadOnly:  true,
+					},
+				},
+			},
+		},
+		Volumes: []specv1.Volume{
+			{
+				Name:         InternalCertVolumePrefix + "s0",
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: InternalCertSecretPrefix + "s0"}},
+			},
+			{
+				Name:         InternalCertVolumePrefix + "s1",
+				VolumeSource: specv1.VolumeSource{Secret: &specv1.ObjectReference{Name: InternalCertSecretPrefix + "s1"}},
+			},
+		},
+	}
+
+	assert.EqualValues(t, app, expApp)
+	assert.EqualValues(t, expSec, secs)
+	eng.Close()
 }

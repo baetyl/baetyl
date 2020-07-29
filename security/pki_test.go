@@ -2,9 +2,6 @@ package security
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl/store"
-	"github.com/baetyl/baetyl/sync"
-	bh "github.com/timshannon/bolthold"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -13,7 +10,10 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
 	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/sync"
 	"github.com/stretchr/testify/assert"
+	bh "github.com/timshannon/bolthold"
 )
 
 const (
