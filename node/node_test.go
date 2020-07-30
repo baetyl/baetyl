@@ -6,8 +6,10 @@ import (
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/valyala/fasthttp"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"reflect"
+	"runtime"
 	"testing"
 	"time"
 
@@ -173,7 +175,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "", apps["app5"])
 }
 
-func TestGetStatus(t *testing.T) {
+func TestGetStats(t *testing.T) {
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
@@ -189,30 +191,73 @@ func TestGetStatus(t *testing.T) {
 	assert.NotNil(t, ss)
 
 	router := routing.New()
-	router.Get("/node/status", ss.GetStatus)
+	router.Get("/node/stats", ss.GetStats)
 	go fasthttp.ListenAndServe(":50020", router.HandleRequest)
 	time.Sleep(100 * time.Millisecond)
 
 	client := &fasthttp.Client{}
 	req := fasthttp.AcquireRequest()
 	resp := fasthttp.AcquireResponse()
-	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50020", "/node/status")
+	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50020", "/node/stats")
 	req.SetRequestURI(url)
 	req.Header.SetMethod("GET")
 	err = client.Do(req, resp)
 	assert.NoError(t, err)
 	assert.Equal(t, resp.StatusCode(), 200)
 
-	report := v1.Report{"apps": []map[string]string{
-		{
-			"name":    "baetyl1",
-			"version": "version1",
+	appInfo := make([]v1.AppInfo, 4)// Node.View  =>  cap=4
+	appInfo[0] = v1.AppInfo{
+		Name:    "app1",
+		Version: "version1",
+	}
+	appStats := make([]v1.AppStats, 4)
+	appStats[0] = v1.AppStats{
+		AppInfo: appInfo[0],
+	}
+	sysappInfo := make([]v1.AppInfo, 4)
+	sysappInfo[0] = v1.AppInfo{
+		Name:    "baetyl1",
+		Version: "version1",
+	}
+	sysappStats := make([]v1.AppStats, 4)
+	sysappStats[0] = v1.AppStats{
+		AppInfo: sysappInfo[0],
+	}
+
+	core := &v1.CoreInfo{
+		GoVersion:   runtime.Version(),
+	}
+	reportView := v1.ReportView{
+		Apps: appInfo,
+		SysApps: sysappInfo,
+		Core: core,
+		AppStats: appStats,
+		SysAppStats: sysappStats,
+		Node: &v1.NodeInfo{
+			Hostname:         "hostname",
+			Address:          "nodeip",
+			Arch:             "arch",
+			KernelVersion:    "kernel",
+			OS:               "os",
+			ContainerRuntime: "runtime",
+			MachineID:        "machine",
+			BootID:           "boot",
+			SystemUUID:       "system",
+			OSImage:          "image",
 		},
-		{
-			"name":    "baetyl2",
-			"version": "version2",
+		NodeStats: &v1.NodeStats{
 		},
-	}}
+	}
+	nodeView := v1.NodeView{
+		Report: &reportView,
+	}
+	report := v1.Report{
+		"core": core,
+	}
+	report.SetAppInfos(false, appInfo)
+	report.SetAppInfos(true, sysappInfo)
+	report.SetAppStats(false, appStats)
+	report.SetAppStats(true, sysappStats)
 	_, err = ss.Report(report)
 	assert.NoError(t, err)
 
@@ -223,5 +268,20 @@ func TestGetStatus(t *testing.T) {
 	err = client.Do(req2, resp2)
 	assert.NoError(t, err)
 	assert.Equal(t, resp2.StatusCode(), 200)
+	// time unequal
+	var respNodeView v1.NodeView
+	json.Unmarshal(resp2.Body(), &respNodeView)
 
+	respNodeView.Report.Time = nodeView.Report.Time
+	respNodeView.CreationTimestamp = nodeView.CreationTimestamp
+	assert.Equal(t, http.StatusOK, resp2.StatusCode())
+	assertEqualNodeView(t, nodeView.Report, respNodeView.Report)
+}
+
+func assertEqualNodeView(t *testing.T, view1 *v1.ReportView, view2 *v1.ReportView){
+	assert.EqualValues(t, view1.AppStats, view2.AppStats)
+	assert.EqualValues(t, view1.Apps, view2.Apps)
+	assert.EqualValues(t, view1.SysApps, view2.SysApps)
+	assert.EqualValues(t, view1.SysAppStats, view2.SysAppStats)
+	assert.EqualValues(t, view1.Core, view2.Core)
 }
