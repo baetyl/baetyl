@@ -9,6 +9,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/pki"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/mock"
 	"github.com/baetyl/baetyl/node"
