@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
@@ -22,7 +21,6 @@ import (
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/security"
 	"github.com/baetyl/baetyl/sync"
-	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 )
 
@@ -78,30 +76,6 @@ func (e *Engine) Start() {
 
 func (e *Engine) ReportAndDesire() error {
 	return errors.Trace(e.reportAndDesireAsync(false))
-}
-
-func (e *Engine) GetServiceLog(ctx *routing.Context) error {
-	service := ctx.Param("service")
-	isSys := string(ctx.QueryArgs().Peek("system"))
-	tailLines := string(ctx.QueryArgs().Peek("tailLines"))
-	sinceSeconds := string(ctx.QueryArgs().Peek("sinceSeconds"))
-
-	tail, since, err := e.validParam(tailLines, sinceSeconds)
-	if err != nil {
-		http.RespondMsg(ctx, 400, "RequestParamInvalid", err.Error())
-		return nil
-	}
-	ns := e.ns
-	if isSys == "true" {
-		ns = e.sysns
-	}
-	reader, err := e.ami.FetchLog(ns, service, tail, since)
-	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
-	}
-	http.RespondStream(ctx, 200, reader, -1)
-	return nil
 }
 
 func (e *Engine) reporting() error {

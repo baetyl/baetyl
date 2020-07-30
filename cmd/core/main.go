@@ -81,6 +81,7 @@ func (c *core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
 	router.Get("/node/status", c.sha.GetStatus)
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
+	router.Get("/node/stats", c.eng.CollectReport)
 	return router.HandleRequest
 }
 
