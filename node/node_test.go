@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	routing "github.com/qiangxue/fasthttp-routing"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl/store"
+	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/stretchr/testify/assert"
 	"github.com/valyala/fasthttp"
 )
@@ -205,25 +205,28 @@ func TestGetStats(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, resp.StatusCode(), 200)
 
-	appInfo := make([]v1.AppInfo, 4)// Node.View  =>  cap=4
-	appInfo[0] = v1.AppInfo{
-		Name:    "app1",
-		Version: "version1",
+	appInfo := []v1.AppInfo{
+		{
+			Name:    "app1",
+			Version: "version1",
+		},
 	}
-	appStats := make([]v1.AppStats, 4)
-	appStats[0] = v1.AppStats{
-		AppInfo: appInfo[0],
+	appStats := []v1.AppStats{
+		{
+			AppInfo: appInfo[0],
+		},
 	}
-	sysappInfo := make([]v1.AppInfo, 4)
-	sysappInfo[0] = v1.AppInfo{
-		Name:    "baetyl1",
-		Version: "version1",
+	sysappInfo := []v1.AppInfo{
+		{
+			Name:    "baetyl1",
+			Version: "version1",
+		},
 	}
-	sysappStats := make([]v1.AppStats, 4)
-	sysappStats[0] = v1.AppStats{
-		AppInfo: sysappInfo[0],
+	sysappStats := []v1.AppStats{
+		{
+			AppInfo: sysappInfo[0],
+		},
 	}
-
 	core := &v1.CoreInfo{
 		GoVersion:   runtime.Version(),
 	}
@@ -279,9 +282,9 @@ func TestGetStats(t *testing.T) {
 }
 
 func assertEqualNodeView(t *testing.T, view1 *v1.ReportView, view2 *v1.ReportView){
-	assert.EqualValues(t, view1.AppStats, view2.AppStats)
-	assert.EqualValues(t, view1.Apps, view2.Apps)
-	assert.EqualValues(t, view1.SysApps, view2.SysApps)
-	assert.EqualValues(t, view1.SysAppStats, view2.SysAppStats)
-	assert.EqualValues(t, view1.Core, view2.Core)
+	assert.Equal(t, view1.AppStats, view2.AppStats)
+	assert.Equal(t, view1.Apps, view2.Apps)
+	assert.Equal(t, view1.SysApps, view2.SysApps)
+	assert.Equal(t, view1.SysAppStats, view2.SysAppStats)
+	assert.Equal(t, view1.Core, view2.Core)
 }
