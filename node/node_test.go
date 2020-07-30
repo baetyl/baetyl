@@ -3,8 +3,6 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	routing "github.com/qiangxue/fasthttp-routing"
-	"github.com/valyala/fasthttp"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,9 +11,11 @@ import (
 	"testing"
 	"time"
 
+	routing "github.com/qiangxue/fasthttp-routing"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
+	"github.com/valyala/fasthttp"
 )
 
 func TestNodeShadow(t *testing.T) {
