@@ -2,6 +2,8 @@ package node
 
 import (
 	"encoding/json"
+	"github.com/baetyl/baetyl-go/v2/context"
+	"os"
 	"runtime"
 	"time"
 
@@ -148,7 +150,7 @@ func (s *Node) GetStats(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-
+	node.Name = os.Getenv(context.EnvKeyNodeName)
 	view, err := node.View(OfflineDuration)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
