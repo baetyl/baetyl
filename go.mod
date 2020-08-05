@@ -3,11 +3,14 @@ module github.com/baetyl/baetyl
 go 1.13
 
 require (
-	github.com/baetyl/baetyl-go/v2 v2.0.15
+	github.com/baetyl/baetyl-go/v2 v2.0.17
 	github.com/golang/mock v1.3.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
+	github.com/kardianos/service v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
+	github.com/spf13/cobra v0.0.5
+	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.5.1
 	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
 	github.com/valyala/fasthttp v1.9.0
