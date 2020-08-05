@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	"github.com/baetyl/baetyl-go/v2/context"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -417,6 +418,76 @@ func TestGetServiceLog(t *testing.T) {
 	err4 := client.Do(req4, resp4)
 	assert.NoError(t, err4)
 	assert.Equal(t, resp4.StatusCode(), 400)
+}
+
+func TestInjectEnv(t *testing.T) {
+	nod, _, sto := prepare(t)
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	ns := "baetyl-edge"
+	eng := Engine{
+		cfg: config.Config{},
+		ns:  ns,
+		sto: sto,
+		nod: nod,
+		log: log.With(log.Any("engine", "test")),
+	}
+
+	info := specv1.AppInfo{
+		Name:    "app1",
+		Version: "v1",
+	}
+
+	app := specv1.Application{
+		Name:    "app1",
+		Version: "v1",
+		Services: []specv1.Service{
+			{Name: "s0"},
+		},
+		Volumes: []specv1.Volume{},
+	}
+	key := makeKey(specv1.KindApplication, "app1", "v1")
+	err := sto.Upsert(key, app)
+	assert.NoError(t, err)
+
+	err = os.Setenv(context.EnvKeyNodeName, "node01")
+	assert.NoError(t, err)
+
+	expApp := &specv1.Application{
+		Name:    "app1",
+		Version: "v1",
+		Services: []specv1.Service{
+			{
+				Name: "s0",
+				Env: []specv1.Environment{
+					{
+						Name:  context.EnvKeyAppName,
+						Value: app.Name,
+					},
+					{
+						Name:  context.EnvKeyServiceName,
+						Value: "s0",
+					},
+					{
+						Name:  EnvKeyAppVersion,
+						Value: app.Version,
+					},
+					{
+						Name:  context.EnvKeyNodeName,
+						Value: "node01",
+					},
+					{
+						Name:  context.EnvKeyCertPath,
+						Value: SystemCertPath,
+					},
+				},
+			},
+		},
+	}
+
+	res, err := eng.injectEnv(info)
+	assert.NoError(t, err)
+	assert.EqualValues(t, expApp, res)
 }
 
 func TestInjectCert(t *testing.T) {

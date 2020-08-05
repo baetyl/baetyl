@@ -3,6 +3,7 @@ package engine
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/baetyl/baetyl-go/v2/context"
 	"net"
 	"net/url"
 	"os"
@@ -27,10 +28,7 @@ import (
 )
 
 const (
-	EnvKeyAppName     = "BAETYL_APP_NAME"
-	EnvKeyAppVersion  = "BAETYL_APP_VERSION"
-	EnvKeyNodeName    = "BAETYL_NODE_NAME"
-	EnvKeyServiceName = "BAETYL_SERVICE_NAME"
+	EnvKeyAppVersion = "BAETYL_APP_VERSION"
 
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
@@ -353,11 +351,11 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 	for _, svc := range app.Services {
 		env := []specv1.Environment{
 			{
-				Name:  EnvKeyAppName,
+				Name:  context.EnvKeyAppName,
 				Value: app.Name,
 			},
 			{
-				Name:  EnvKeyServiceName,
+				Name:  context.EnvKeyServiceName,
 				Value: svc.Name,
 			},
 			{
@@ -365,8 +363,12 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 				Value: app.Version,
 			},
 			{
-				Name:  EnvKeyNodeName,
-				Value: os.Getenv(EnvKeyNodeName),
+				Name:  context.EnvKeyNodeName,
+				Value: os.Getenv(context.EnvKeyNodeName),
+			},
+			{
+				Name:  context.EnvKeyCertPath,
+				Value: SystemCertPath,
 			},
 		}
 		svc.Env = append(svc.Env, env...)
