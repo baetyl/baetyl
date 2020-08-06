@@ -3,7 +3,6 @@ package engine
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/context"
 	"net"
 	"net/url"
 	"os"
@@ -13,6 +12,7 @@ import (
 	gosync "sync"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
