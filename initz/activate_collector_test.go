@@ -74,7 +74,7 @@ var (
 	}
 )
 
-func TestInitialize_Activate_Err_Collector(t *testing.T) {
+func TestActivate_Err_Collector(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 
@@ -83,20 +83,20 @@ func TestInitialize_Activate_Err_Collector(t *testing.T) {
 	c.Engine.Kubernetes.InCluster = true
 	c.Init.Cloud.Active.Interval = 5 * time.Second
 
-	init, err := NewInit(c)
+	active, err := NewActivate(c)
 	assert.Error(t, err)
 
 	ami := mc.NewMockAMI(mockCtl)
 	ami.EXPECT().CollectNodeInfo().Return(nil, nil).AnyTimes()
-	init = genInitialize(t, c, ami)
+	active = genActivate(t, c, ami)
 
-	init.Start()
-	init.Close()
+	active.Start()
+	active.Close()
 
 	for _, tt := range collectorBadCases {
 		t.Run(tt.name, func(t *testing.T) {
 			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
-			_, err := init.collect()
+			_, err := active.collect()
 			if tt.fingerprints[0].Proof == config.ProofSN {
 				assert.NotNil(t, err)
 			} else {
@@ -106,7 +106,7 @@ func TestInitialize_Activate_Err_Collector(t *testing.T) {
 	}
 }
 
-func TestInitialize_Activate_Err_Ami(t *testing.T) {
+func TestActivate_Err_Ami(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 
@@ -116,7 +116,7 @@ func TestInitialize_Activate_Err_Ami(t *testing.T) {
 	c := &config.Config{}
 	c.Init.Cloud.Active.Interval = 5 * time.Second
 	c.Init.ActivateConfig.Fingerprints = collectorBadCases[0].fingerprints
-	init := genInitialize(t, c, ami)
-	_, err := init.collect()
+	active := genActivate(t, c, ami)
+	_, err := active.collect()
 	assert.NotNil(t, err)
 }

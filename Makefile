@@ -1,7 +1,4 @@
-MODULE_CORE:=core
-MODULE_INIT:=init
-BIN_CORE:=baetyl-$(MODULE_CORE)
-BIN_INIT:=baetyl-$(MODULE_INIT)
+MODULE:=baetyl
 SRC_FILES:=$(shell find . -type f -name '*.go')
 PLATFORM_ALL:=darwin/amd64 linux/amd64 linux/arm64 linux/arm/v7
 
@@ -31,36 +28,21 @@ XFLAGS:=--load
 XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g')
 
 .PHONY: all
-all: core init
+all: build
 
-.PHONY: core
-core: $(SRC_FILES)
-	@echo "BUILD $(BIN_CORE)"
-	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(BIN_CORE) $(GO_FLAGS) ./cmd/core
-
-.PHONY: init
-init: $(SRC_FILES)
-	@echo "BUILD $(BIN_INIT)"
-	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(BIN_INIT) $(GO_FLAGS) ./cmd/initz
+.PHONY: build
+build: $(SRC_FILES)
+	@echo "BUILD $(MODULE)"
+	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(MODULE) $(GO_FLAGS) .
+	@chmod +x $(MODULE)
 
 .PHONY: image
-image: image-core image-init
-
-.PHONY: image-core
-image-core:
-	@echo "BUILDX: $(REGISTRY)$(MODULE_CORE):$(VERSION)"
+image:
+	@echo "BUILDX: $(REGISTRY)$(MODULE):$(VERSION)"
 	@-docker buildx create --name baetyl
 	@docker buildx use baetyl
 	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE_CORE):$(VERSION) -f Dockerfile .
-
-.PHONY: image-init
-image-init:
-	@echo "BUILDX: $(REGISTRY)$(MODULE_INIT):$(VERSION)"
-	@-docker buildx create --name baetyl
-	@docker buildx use baetyl
-	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE_INIT):$(VERSION) -f init.Dockerfile .
+	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE):$(VERSION) -f Dockerfile .
 
 .PHONY: test
 test: fmt
@@ -73,5 +55,4 @@ fmt:
 
 .PHONY: clean
 clean:
-	@rm -rf $(BIN_CORE)
-	@rm -rf $(BIN_INIT)
+	@rm -rf $(MODULE)

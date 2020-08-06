@@ -34,16 +34,16 @@ const (
 )
 
 type Engine struct {
+	cfg   config.Config
 	syn   sync.Sync
 	ami   ami.AMI
 	nod   *node.Node
-	cfg   config.Config
-	tomb  utils.Tomb
 	sto   *bh.Store
 	log   *log.Logger
 	ns    string
 	sysns string
 	sec   security.Security
+	tomb  utils.Tomb
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {

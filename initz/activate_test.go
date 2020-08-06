@@ -100,30 +100,30 @@ var (
 	}
 )
 
-func genInitialize(t *testing.T, cfg *config.Config, ami ami.AMI) *Initialize {
+func genActivate(t *testing.T, cfg *config.Config, ami ami.AMI) *Activate {
 	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
-	init := &Initialize{
+	active := &Activate{
 		cfg:   cfg,
 		ami:   ami,
 		sig:   make(chan bool, 1),
 		http:  http.NewClient(ops),
 		attrs: map[string]string{},
-		log:   log.With(log.Any("core", "Initialize")),
+		log:   log.With(log.Any("core", "Activate")),
 	}
-	init.batch = &batch{
+	active.batch = &batch{
 		name:         cfg.Init.Batch.Name,
 		namespace:    cfg.Init.Batch.Namespace,
 		securityType: cfg.Init.Batch.SecurityType,
 		securityKey:  cfg.Init.Batch.SecurityKey,
 	}
 	for _, a := range cfg.Init.ActivateConfig.Attributes {
-		init.attrs[a.Name] = a.Value
+		active.attrs[a.Name] = a.Value
 	}
-	return init
+	return active
 }
 
-func TestInitialize_Activate(t *testing.T) {
+func TestActivate(t *testing.T) {
 	data, err := json.Marshal(resp)
 	assert.NoError(t, err)
 
@@ -203,15 +203,15 @@ func TestInitialize_Activate(t *testing.T) {
 	for _, tt := range goodCases {
 		t.Run(tt.name, func(t *testing.T) {
 			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
-			init := genInitialize(t, c, ami)
-			init.Start()
-			init.WaitAndClose()
+			active := genActivate(t, c, ami)
+			active.Start()
+			active.WaitAndClose()
 			responseEqual(t, *tt.want, c.Sync)
 		})
 	}
 }
 
-func TestInitialize_Activate_Err_Response(t *testing.T) {
+func TestActivate_Err_Response(t *testing.T) {
 	errResp := map[string]string{
 		"code": "ErrParam",
 		"msg":  "error msg",
@@ -256,10 +256,10 @@ func TestInitialize_Activate_Err_Response(t *testing.T) {
 	ami := mc.NewMockAMI(mockCtl)
 	ami.EXPECT().CollectNodeInfo().Return(nodeInfo, nil).AnyTimes()
 
-	init := genInitialize(t, c, ami)
-	init.Start()
-	init.srv = &gohttp.Server{}
-	init.Close()
+	active := genActivate(t, c, ami)
+	active.Start()
+	active.srv = &gohttp.Server{}
+	active.Close()
 }
 
 func responseEqual(t *testing.T, resp v1.ActiveResponse, sc config.SyncConfig) {

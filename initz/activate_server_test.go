@@ -102,7 +102,7 @@ func initTemplate(t *testing.T) string {
 	return tmpDir
 }
 
-func TestServer(t *testing.T) {
+func TestActivate_Server(t *testing.T) {
 	tmpDir := initTemplate(t)
 	defer os.RemoveAll(tmpDir)
 	c := &config.Config{}
@@ -113,22 +113,22 @@ func TestServer(t *testing.T) {
 		{Name: "fingerprintValue"},
 	}
 
-	init, err := NewInit(c)
+	active, err := NewActivate(c)
 	assert.Error(t, err)
 
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	init = genInitialize(t, c, ami)
+	active = genActivate(t, c, ami)
 
-	init.Start()
+	active.Start()
 
 	w := &httptest.ResponseRecorder{
 		Code:    http.StatusOK,
 		Body:    nil,
 		Flushed: false,
 	}
-	init.handleView(w, nil)
+	active.handleView(w, nil)
 	form := url.Values{}
 	for k, v := range attrs {
 		form.Set(k, v)
@@ -139,16 +139,16 @@ func TestServer(t *testing.T) {
 		Form:     form,
 		PostForm: form,
 	}
-	init.handleUpdate(w, req)
-	assert.Equal(t, attrs, init.attrs)
+	active.handleUpdate(w, req)
+	assert.Equal(t, attrs, active.attrs)
 
 	req = &http.Request{
 		Method: http.MethodGet,
 	}
-	init.handleUpdate(w, req)
+	active.handleUpdate(w, req)
 	req = &http.Request{
 		Method: http.MethodPost,
 		Form:   nil,
 	}
-	init.handleUpdate(w, req)
+	active.handleUpdate(w, req)
 }

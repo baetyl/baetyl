@@ -1,10 +1,8 @@
-package main
+package core
 
 import (
-	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
-	_ "github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/engine"
 	"github.com/baetyl/baetyl/node"
@@ -15,7 +13,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type core struct {
+type Core struct {
 	cfg config.Config
 	sto *bh.Store
 	sha *node.Node
@@ -24,15 +22,10 @@ type core struct {
 	svr *http.Server
 }
 
-// NewCore creats a new core
-func NewCore(ctx context.Context) (*core, error) {
-	var cfg config.Config
-	err := ctx.LoadCustomConfig(&cfg)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-
-	c := &core{}
+// NewCore creates a new core
+func NewCore(cfg config.Config) (*Core, error) {
+	c := &Core{}
+	var err error
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -54,7 +47,6 @@ func NewCore(ctx context.Context) (*core, error) {
 		c.Close()
 		return nil, errors.Trace(err)
 	}
-
 	c.eng.Start()
 
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
@@ -62,7 +54,7 @@ func NewCore(ctx context.Context) (*core, error) {
 	return c, nil
 }
 
-func (c *core) Close() {
+func (c *Core) Close() {
 	if c.svr != nil {
 		c.svr.Close()
 	}
@@ -77,21 +69,9 @@ func (c *core) Close() {
 	}
 }
 
-func (c *core) initRouter() fasthttp.RequestHandler {
+func (c *Core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
 	router.Get("/node/stats", c.sha.GetStats)
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
 	return router.HandleRequest
-}
-
-func main() {
-	context.Run(func(ctx context.Context) error {
-		c, err := NewCore(ctx)
-		if err != nil {
-			return errors.Trace(err)
-		}
-		defer c.Close()
-		ctx.Wait()
-		return nil
-	})
 }

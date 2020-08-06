@@ -1,105 +1,158 @@
 package initz
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
-	gohttp "net/http"
-
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
+	"time"
 )
 
-type batch struct {
-	name         string
-	namespace    string
-	securityType string
-	securityKey  string
-}
+import (
+	"fmt"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	_ "github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/engine"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/sync"
+	bh "github.com/timshannon/bolthold"
+	"strings"
+)
+
+var (
+	// ErrSysAppCoreMissing system application baetyl-core is required for connection with cloud
+	ErrSysAppCoreMissing = fmt.Errorf("system application baetyl-core is required for connection with cloud")
+)
+
+const (
+	BaetylCore = "baetyl-core"
+)
 
 type Initialize struct {
-	log   *log.Logger
-	cfg   *config.Config
-	tomb  utils.Tomb
-	http  *http.Client
-	srv   *gohttp.Server
-	ami   ami.AMI
-	batch *batch
-	attrs map[string]string
-	sig   chan bool
+	cfg  config.Config
+	sto  *bh.Store
+	sha  *node.Node
+	eng  *engine.Engine
+	syn  sync.Sync
+	log  *log.Logger
+	tomb utils.Tomb
 }
 
-// NewInit to activate, success add node info
-func NewInit(cfg *config.Config) (*Initialize, error) {
-	// TODO 优化ToClientOptions 支持只配置ca的单向认证
-	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
-	if err != nil {
-		return nil, errors.Trace(err)
+// NewInitialize creates a new core
+func NewInitialize(cfg config.Config) (*Initialize, error) {
+	// to activate if no node cert
+	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
+		active, err := NewActivate(&cfg)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		active.Start()
+		active.WaitAndClose()
+		log.L().Info("init activates node success")
 	}
 
-	ca, err := ioutil.ReadFile(cfg.Init.Cloud.HTTP.CA)
-	if err != nil {
-		return nil, err
-	}
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(ca)
-	ops.TLSConfig = &tls.Config{RootCAs: pool}
-	ops.TLSConfig.InsecureSkipVerify = cfg.Init.Cloud.HTTP.InsecureSkipVerify
-
+	var err error
 	init := &Initialize{
-		cfg:   cfg,
-		sig:   make(chan bool, 1),
-		http:  http.NewClient(ops),
-		attrs: map[string]string{},
-		log:   log.With(log.Any("init", "active")),
+		cfg: cfg,
+		log: log.With(log.Any("init", "sync")),
 	}
-	init.batch = &batch{
-		name:         cfg.Init.Batch.Name,
-		namespace:    cfg.Init.Batch.Namespace,
-		securityType: cfg.Init.Batch.SecurityType,
-		securityKey:  cfg.Init.Batch.SecurityKey,
-	}
-	for _, a := range cfg.Init.ActivateConfig.Attributes {
-		init.attrs[a.Name] = a.Value
-	}
-
-	init.ami, err = ami.NewAMI(cfg.Engine.AmiConfig)
+	init.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+
+	init.sha, err = node.NewNode(init.sto)
+	if err != nil {
+		init.Close()
+		return nil, errors.Trace(err)
+	}
+
+	init.syn, err = sync.NewSync(cfg.Sync, init.sto, init.sha)
+	if err != nil {
+		init.Close()
+		return nil, errors.Trace(err)
+	}
+
+	init.eng, err = engine.NewEngine(cfg, init.sto, init.sha, init.syn)
+	if err != nil {
+		init.Close()
+		return nil, errors.Trace(err)
+	}
+	init.tomb.Go(init.start)
 	return init, nil
 }
 
-func (init *Initialize) Start() {
-	if init.cfg.Init.ActivateConfig.Server.Listen == "" {
-		err := init.tomb.Go(init.activating)
-		if err != nil {
-			init.log.Error("failed to start report and process routine", log.Error(err))
-			return
-		}
-	} else {
-		err := init.tomb.Go(init.startServer)
-		if err != nil {
-			init.log.Error("init", log.Error(err))
+func (init *Initialize) start() error {
+	init.log.Info("collect and report stats to cloud")
+	err := init.reportAndDesireCloud()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	init.log.Info("collect and report stats, then apply applications at edge")
+	err = init.eng.ReportAndDesire()
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	// close store which shared with baetyl-core
+	if init.sto != nil {
+		init.sto.Close()
+		init.sto = nil
+	}
+
+	t := time.NewTicker(init.cfg.Sync.Cloud.Report.Interval)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			init.log.Info("collect stats from edge", log.Error(err))
+			r := init.eng.Collect("baetyl-edge-system", true, nil)
+			init.log.Info("report stats to cloud", log.Error(err))
+			_, err = init.syn.Report(r)
+			if err != nil {
+				return errors.Trace(err)
+			}
+		case <-init.tomb.Dying():
+			return nil
 		}
 	}
 }
 
 func (init *Initialize) Close() {
-	if init.srv != nil {
-		init.closeServer()
-	}
 	init.tomb.Kill(nil)
 	init.tomb.Wait()
+
+	if init.eng != nil {
+		init.eng.Close()
+	}
+	if init.sto != nil {
+		init.sto.Close()
+	}
+	if init.syn != nil {
+		init.syn.Close()
+	}
 }
 
-func (init *Initialize) WaitAndClose() {
-	if _, ok := <-init.sig; !ok {
-		init.log.Error("Initialize get sig error")
+func (init *Initialize) reportAndDesireCloud() error {
+	r := init.eng.Collect("baetyl-edge-system", true, nil)
+	ds, err := init.syn.Report(r)
+	if err != nil {
+		init.log.Error("failed to report app info", log.Error(err))
+		return errors.Trace(ErrSysAppCoreMissing)
 	}
-	init.Close()
+	if len(ds) == 0 {
+		return errors.Trace(ErrSysAppCoreMissing)
+	}
+
+	for _, app := range ds.AppInfos(true) {
+		if strings.Contains(app.Name, BaetylCore) {
+			n := specv1.Desire{}
+			n.SetAppInfos(true, []specv1.AppInfo{app})
+			_, err = init.sha.Desire(n)
+			return errors.Trace(err)
+		}
+	}
+	return errors.Trace(ErrSysAppCoreMissing)
 }
