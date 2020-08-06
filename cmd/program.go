@@ -2,12 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"os/exec"
+
+	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
-	"log"
-	"os"
-	"os/exec"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func init() {
@@ -19,17 +23,31 @@ var programCmd = &cobra.Command{
 	Short: "Control a program by Baetyl",
 	Long:  `Baetyl loads program's information from program.yml, then starts and waits the program to stop.`,
 	Run: func(_ *cobra.Command, _ []string) {
-		startProgramService()
+		if err := startProgramService(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	},
 }
 
-func startProgramService() {
+func startProgramService() error {
 	prg := &program{
 		exit: make(chan struct{}),
+		log:  os.Stdout,
 	}
 	err := utils.LoadYAML("program.yml", &prg.cfg)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Trace(err)
+	}
+
+	if prg.cfg.Logger.Filename != "" {
+		prg.log = &lumberjack.Logger{
+			Compress:   prg.cfg.Logger.Compress,
+			Filename:   prg.cfg.Logger.Filename,
+			MaxAge:     prg.cfg.Logger.MaxAge,
+			MaxSize:    prg.cfg.Logger.MaxSize,
+			MaxBackups: prg.cfg.Logger.MaxBackups,
+		}
 	}
 
 	svcCfg := &service.Config{
@@ -40,28 +58,10 @@ func startProgramService() {
 
 	prg.svc, err = service.New(prg, svcCfg)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Trace(err)
 	}
 
-	errs := make(chan error, 5)
-	logger, err = prg.svc.Logger(errs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go func() {
-		for {
-			err := <-errs
-			if err != nil {
-				log.Print(err)
-			}
-		}
-	}()
-
-	err = prg.svc.Run()
-	if err != nil {
-		logger.Error(err)
-	}
+	return errors.Trace(prg.svc.Run())
 }
 
 // Config is the runner app config structure.
@@ -75,17 +75,15 @@ type Config struct {
 	Args []string `yaml:"args" json:"args"`
 	Env  []string `yaml:"env" json:"env"`
 
-	Stderr string `yaml:"stderr" json:"stderr"`
-	Stdout string `yaml:"stdout" json:"stdout"`
+	Logger log.Config `yaml:"logger" json:"logger"`
 }
-
-var logger service.Logger
 
 type program struct {
 	cfg  Config
 	cmd  *exec.Cmd
 	svc  service.Service
 	exit chan struct{}
+	log  io.Writer
 }
 
 func (p *program) Start(s service.Service) error {
@@ -93,60 +91,36 @@ func (p *program) Start(s service.Service) error {
 	// Verify home directory.
 	fullExec, err := exec.LookPath(p.cfg.Exec)
 	if err != nil {
-		return fmt.Errorf("Failed to find executable %q: %v", p.cfg.Exec, err)
+		return errors.Trace(err)
 	}
 
 	p.cmd = exec.Command(fullExec, p.cfg.Args...)
 	p.cmd.Dir = p.cfg.Dir
 	p.cmd.Env = append(os.Environ(), p.cfg.Env...)
+	p.cmd.Stderr = p.log
+	p.cmd.Stdout = p.log
 
 	go p.run()
 	return nil
 }
 func (p *program) run() {
-	logger.Info("Starting ", p.cfg.DisplayName)
-	defer func() {
-		if service.Interactive() {
-			p.Stop(p.svc)
-		} else {
-			p.svc.Stop()
-		}
-	}()
-
-	if p.cfg.Stderr != "" {
-		f, err := os.OpenFile(p.cfg.Stderr, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
-		if err != nil {
-			logger.Warningf("Failed to open std err %q: %v", p.cfg.Stderr, err)
-			return
-		}
-		defer f.Close()
-		p.cmd.Stderr = f
-	}
-	if p.cfg.Stdout != "" {
-		f, err := os.OpenFile(p.cfg.Stdout, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
-		if err != nil {
-			logger.Warningf("Failed to open std out %q: %v", p.cfg.Stdout, err)
-			return
-		}
-		defer f.Close()
-		p.cmd.Stdout = f
-	}
+	fmt.Fprintln(p.log, "Program starting", p.cfg.DisplayName)
+	defer p.Stop(p.svc)
 
 	err := p.cmd.Run()
 	if err != nil {
-		logger.Warningf("Error running: %v", err)
+		fmt.Fprintln(p.log, "Program error:", err)
 	}
-
 	return
 }
 func (p *program) Stop(s service.Service) error {
 	close(p.exit)
-	logger.Info("Stopping ", p.cfg.DisplayName)
+
+	fmt.Fprintln(p.log, "Program stopping", p.cfg.DisplayName)
 	if p.cmd.Process != nil {
 		p.cmd.Process.Kill()
 	}
-	if service.Interactive() {
-		os.Exit(0)
-	}
+
+	os.Exit(0)
 	return nil
 }
