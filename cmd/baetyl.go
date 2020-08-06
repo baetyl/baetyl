@@ -29,7 +29,7 @@ func Execute() {
 	rootCmd.SetVersionTemplate(utils.Version())
 	cobra.OnInitialize(initConfig)
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr,err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
