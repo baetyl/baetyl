@@ -228,13 +228,13 @@ func TestGetStats(t *testing.T) {
 		},
 	}
 	core := &v1.CoreInfo{
-		GoVersion:   runtime.Version(),
+		GoVersion: runtime.Version(),
 	}
 	reportView := v1.ReportView{
-		Apps: appInfo,
-		SysApps: sysappInfo,
-		Core: core,
-		AppStats: appStats,
+		Apps:        appInfo,
+		SysApps:     sysappInfo,
+		Core:        core,
+		AppStats:    appStats,
 		SysAppStats: sysappStats,
 		Node: &v1.NodeInfo{
 			Hostname:         "hostname",
@@ -248,8 +248,7 @@ func TestGetStats(t *testing.T) {
 			SystemUUID:       "system",
 			OSImage:          "image",
 		},
-		NodeStats: &v1.NodeStats{
-		},
+		NodeStats: &v1.NodeStats{},
 	}
 	nodeView := v1.NodeView{
 		Report: &reportView,
@@ -281,7 +280,7 @@ func TestGetStats(t *testing.T) {
 	assertEqualNodeView(t, nodeView.Report, respNodeView.Report)
 }
 
-func assertEqualNodeView(t *testing.T, view1 *v1.ReportView, view2 *v1.ReportView){
+func assertEqualNodeView(t *testing.T, view1 *v1.ReportView, view2 *v1.ReportView) {
 	assert.Equal(t, view1.AppStats, view2.AppStats)
 	assert.Equal(t, view1.Apps, view2.Apps)
 	assert.Equal(t, view1.SysApps, view2.SysApps)
