@@ -6,8 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
 	"io/ioutil"
 	"math/rand"
 	gohttp "net/http"
@@ -20,6 +18,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/config"
 )
 
 type batch struct {

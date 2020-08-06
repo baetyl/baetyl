@@ -2,12 +2,13 @@ package initz
 
 import (
 	"context"
+	"html/template"
+	"net/http"
+
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/config"
-	"html/template"
-	"net/http"
 )
 
 func (active *Activate) startServer() error {
