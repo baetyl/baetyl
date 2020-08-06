@@ -17,10 +17,51 @@ func init() {
 var programCmd = &cobra.Command{
 	Use:   "program",
 	Short: "Control a program by Baetyl",
-	Long:  `Loads program's information from program.yml, then starts and waits the program to stop.`,
+	Long:  `Baetyl loads program's information from program.yml, then starts and waits the program to stop.`,
 	Run: func(_ *cobra.Command, _ []string) {
-		run()
+		startProgramService()
 	},
+}
+
+func startProgramService() {
+	prg := &program{
+		exit: make(chan struct{}),
+	}
+	err := utils.LoadYAML("program.yml", &prg.cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	svcCfg := &service.Config{
+		Name:        prg.cfg.Name,
+		DisplayName: prg.cfg.DisplayName,
+		Description: prg.cfg.Description,
+	}
+
+	prg.svc, err = service.New(prg, svcCfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	errs := make(chan error, 5)
+	logger, err = prg.svc.Logger(errs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	go func() {
+		for {
+			err := <-errs
+			if err != nil {
+				log.Print(err)
+			}
+		}
+	}()
+
+	err = prg.svc.Run()
+	if err != nil {
+		logger.Error(err)
+	}
 }
 
 // Config is the runner app config structure.
@@ -108,45 +149,4 @@ func (p *program) Stop(s service.Service) error {
 		os.Exit(0)
 	}
 	return nil
-}
-
-func run() {
-	prg := &program{
-		exit: make(chan struct{}),
-	}
-	err := utils.LoadYAML("program.yml", &prg.cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	svcCfg := &service.Config{
-		Name:        prg.cfg.Name,
-		DisplayName: prg.cfg.DisplayName,
-		Description: prg.cfg.Description,
-	}
-
-	prg.svc, err = service.New(prg, svcCfg)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	errs := make(chan error, 5)
-	logger, err = prg.svc.Logger(errs)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go func() {
-		for {
-			err := <-errs
-			if err != nil {
-				log.Print(err)
-			}
-		}
-	}()
-
-	err = prg.svc.Run()
-	if err != nil {
-		logger.Error(err)
-	}
 }

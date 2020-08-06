@@ -2,10 +2,15 @@ package initz
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/config"
 	"io/ioutil"
 	"math/rand"
+	gohttp "net/http"
 	"os"
 	"path"
 	"time"
@@ -17,90 +22,180 @@ import (
 	"github.com/baetyl/baetyl-go/v2/utils"
 )
 
-func (init *Initialize) activating() error {
-	init.activate()
-	t := time.NewTicker(init.cfg.Init.Cloud.Active.Interval)
+type batch struct {
+	name         string
+	namespace    string
+	securityType string
+	securityKey  string
+}
+
+type Activate struct {
+	log   *log.Logger
+	cfg   *config.Config
+	tomb  utils.Tomb
+	http  *http.Client
+	srv   *gohttp.Server
+	ami   ami.AMI
+	batch *batch
+	attrs map[string]string
+	sig   chan bool
+}
+
+// NewActivate creates a new activate
+func NewActivate(cfg *config.Config) (*Activate, error) {
+	// TODO 优化ToClientOptions 支持只配置ca的单向认证
+	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	ca, err := ioutil.ReadFile(cfg.Init.Cloud.HTTP.CA)
+	if err != nil {
+		return nil, err
+	}
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(ca)
+	ops.TLSConfig = &tls.Config{RootCAs: pool}
+	ops.TLSConfig.InsecureSkipVerify = cfg.Init.Cloud.HTTP.InsecureSkipVerify
+
+	active := &Activate{
+		cfg:   cfg,
+		sig:   make(chan bool, 1),
+		http:  http.NewClient(ops),
+		attrs: map[string]string{},
+		log:   log.With(log.Any("init", "active")),
+	}
+	active.batch = &batch{
+		name:         cfg.Init.Batch.Name,
+		namespace:    cfg.Init.Batch.Namespace,
+		securityType: cfg.Init.Batch.SecurityType,
+		securityKey:  cfg.Init.Batch.SecurityKey,
+	}
+	for _, a := range cfg.Init.ActivateConfig.Attributes {
+		active.attrs[a.Name] = a.Value
+	}
+
+	active.ami, err = ami.NewAMI(cfg.Engine.AmiConfig)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return active, nil
+}
+
+func (active *Activate) Start() {
+	if active.cfg.Init.ActivateConfig.Server.Listen == "" {
+		err := active.tomb.Go(active.activating)
+		if err != nil {
+			active.log.Error("failed to start report and process routine", log.Error(err))
+			return
+		}
+	} else {
+		err := active.tomb.Go(active.startServer)
+		if err != nil {
+			active.log.Error("active", log.Error(err))
+		}
+	}
+}
+
+func (active *Activate) Close() {
+	if active.srv != nil {
+		active.closeServer()
+	}
+	active.tomb.Kill(nil)
+	active.tomb.Wait()
+}
+
+func (active *Activate) WaitAndClose() {
+	if _, ok := <-active.sig; !ok {
+		active.log.Error("Activate get sig error")
+	}
+	active.Close()
+}
+
+func (active *Activate) activating() error {
+	active.activate()
+	t := time.NewTicker(active.cfg.Init.Cloud.Active.Interval)
 	defer t.Stop()
 	for {
 		select {
 		case <-t.C:
 			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-			init.activate()
-		case <-init.tomb.Dying():
+			active.activate()
+		case <-active.tomb.Dying():
 			return nil
 		}
 	}
 }
 
 // Report reports info
-func (init *Initialize) activate() {
+func (active *Activate) activate() {
 	info := v1.ActiveRequest{
-		BatchName:     init.batch.name,
-		Namespace:     init.batch.namespace,
-		SecurityType:  init.batch.securityType,
-		SecurityValue: init.batch.securityKey,
-		PenetrateData: init.attrs,
+		BatchName:     active.batch.name,
+		Namespace:     active.batch.namespace,
+		SecurityType:  active.batch.securityType,
+		SecurityValue: active.batch.securityKey,
+		PenetrateData: active.attrs,
 	}
-	fv, err := init.collect()
+	fv, err := active.collect()
 	if err != nil {
-		init.log.Error("failed to get fingerprint value", log.Error(err))
+		active.log.Error("failed to get fingerprint value", log.Error(err))
 		return
 	}
 	if fv == "" {
-		init.log.Error("fingerprint value is null", log.Error(err))
+		active.log.Error("fingerprint value is null", log.Error(err))
 		return
 	}
 	info.FingerprintValue = fv
 	data, err := json.Marshal(info)
 	if err != nil {
-		init.log.Error("failed to marshal activate info", log.Error(err))
+		active.log.Error("failed to marshal activate info", log.Error(err))
 		return
 	}
-	init.log.Debug("init", log.Any("info data", string(data)))
+	active.log.Debug("active", log.Any("info data", string(data)))
 
-	url := fmt.Sprintf("%s%s", init.cfg.Init.Cloud.HTTP.Address, init.cfg.Init.Cloud.Active.URL)
+	url := fmt.Sprintf("%s%s", active.cfg.Init.Cloud.HTTP.Address, active.cfg.Init.Cloud.Active.URL)
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}
-	resp, err := init.http.PostURL(url, bytes.NewReader(data), headers)
+	resp, err := active.http.PostURL(url, bytes.NewReader(data), headers)
 	if err != nil {
-		init.log.Error("failed to send activate data", log.Error(err))
+		active.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
 	data, err = http.HandleResponse(resp)
 	if err != nil {
-		init.log.Error("failed to send activate data", log.Error(err))
+		active.log.Error("failed to send activate data", log.Error(err))
 		return
 	}
 	var res v1.ActiveResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
-		init.log.Error("failed to unmarshal activate response data returned", log.Error(err))
+		active.log.Error("failed to unmarshal activate response data returned", log.Error(err))
 		return
 	}
 
-	if err := init.genCert(res.Certificate); err != nil {
-		init.log.Error("failed to create cert file", log.Error(err))
+	if err := active.genCert(res.Certificate); err != nil {
+		active.log.Error("failed to create cert file", log.Error(err))
 		return
 	}
 
-	init.sig <- true
+	active.sig <- true
 }
 
-func (init *Initialize) genCert(c utils.Certificate) error {
-	if err := init.createFile(init.cfg.Sync.Cloud.HTTP.CA, []byte(c.CA)); err != nil {
+func (active *Activate) genCert(c utils.Certificate) error {
+	if err := active.createFile(active.cfg.Sync.Cloud.HTTP.CA, []byte(c.CA)); err != nil {
 		return err
 	}
-	if err := init.createFile(init.cfg.Sync.Cloud.HTTP.Cert, []byte(c.Cert)); err != nil {
+	if err := active.createFile(active.cfg.Sync.Cloud.HTTP.Cert, []byte(c.Cert)); err != nil {
 		return err
 	}
-	if err := init.createFile(init.cfg.Sync.Cloud.HTTP.Key, []byte(c.Key)); err != nil {
+	if err := active.createFile(active.cfg.Sync.Cloud.HTTP.Key, []byte(c.Key)); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (init *Initialize) createFile(filePath string, data []byte) error {
+func (active *Activate) createFile(filePath string, data []byte) error {
 	dir := path.Dir(filePath)
 	if !utils.DirExists(dir) {
 		if err := os.Mkdir(dir, 0755); err != nil {

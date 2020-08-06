@@ -15,26 +15,27 @@ const (
 	defaultSNPath = "var/lib/baetyl/sn"
 )
 
-// ErrProofTypeNotSupported the proof type is not supported
-var ErrProofTypeNotSupported = fmt.Errorf("the proof type is not supported")
+var (
+	// ErrProofTypeNotSupported the proof type is not supported
+	ErrProofTypeNotSupported = fmt.Errorf("the proof type is not supported")
+	// ErrProofValueNotFound the proof value is not found
+	ErrProofValueNotFound = fmt.Errorf("the proof value is not found")
+)
 
-// ErrProofValueNotFound the proof value is not found
-var ErrProofValueNotFound = fmt.Errorf("the proof value is not found")
-
-func (init *Initialize) collect() (string, error) {
-	fs := init.cfg.Init.ActivateConfig.Fingerprints
+func (active *Activate) collect() (string, error) {
+	fs := active.cfg.Init.ActivateConfig.Fingerprints
 	if len(fs) == 0 {
 		return "", nil
 	}
-	nodeInfo, err := init.ami.CollectNodeInfo()
+	nodeInfo, err := active.ami.CollectNodeInfo()
 	if err != nil {
 		return "", errors.Trace(err)
 	}
 	for _, f := range fs {
 		switch f.Proof {
 		case config.ProofInput:
-			if init.attrs != nil {
-				return init.attrs[f.Value], nil
+			if active.attrs != nil {
+				return active.attrs[f.Value], nil
 			}
 		case config.ProofSN:
 			snByte, err := ioutil.ReadFile(path.Join(defaultSNPath, f.Value))

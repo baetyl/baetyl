@@ -10,27 +10,27 @@ import (
 	"net/http"
 )
 
-func (init *Initialize) startServer() error {
+func (active *Activate) startServer() error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", init.handleView)
-	mux.HandleFunc("/update", init.handleUpdate)
+	mux.HandleFunc("/", active.handleView)
+	mux.HandleFunc("/update", active.handleUpdate)
 	srv := &http.Server{}
 	srv.Handler = mux
-	srv.Addr = init.cfg.Init.ActivateConfig.Server.Listen
-	init.srv = srv
-	return errors.Trace(init.srv.ListenAndServe())
+	srv.Addr = active.cfg.Init.ActivateConfig.Server.Listen
+	active.srv = srv
+	return errors.Trace(active.srv.ListenAndServe())
 }
 
-func (init *Initialize) closeServer() {
-	err := init.srv.Shutdown(context.Background())
+func (active *Activate) closeServer() {
+	err := active.srv.Shutdown(context.Background())
 	if err != nil {
-		init.log.Error("init", log.Any("server err", err))
+		active.log.Error("active", log.Any("server err", err))
 	}
 }
 
-func (init *Initialize) handleView(w http.ResponseWriter, req *http.Request) {
-	attrs := map[string][]config.Attribute{"Attributes": init.cfg.Init.ActivateConfig.Attributes}
-	tpl, err := template.ParseFiles(init.cfg.Init.ActivateConfig.Server.Pages + "/active.html.template")
+func (active *Activate) handleView(w http.ResponseWriter, req *http.Request) {
+	attrs := map[string][]config.Attribute{"Attributes": active.cfg.Init.ActivateConfig.Attributes}
+	tpl, err := template.ParseFiles(active.cfg.Init.ActivateConfig.Server.Pages + "/active.html.template")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -42,7 +42,7 @@ func (init *Initialize) handleView(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (init *Initialize) handleUpdate(w http.ResponseWriter, req *http.Request) {
+func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		http.Error(w, "post only", http.StatusMethodNotAllowed)
 		return
@@ -53,7 +53,7 @@ func (init *Initialize) handleUpdate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	attributes := make(map[string]string)
-	for _, attr := range init.cfg.Init.ActivateConfig.Attributes {
+	for _, attr := range active.cfg.Init.ActivateConfig.Attributes {
 		val := req.Form.Get(attr.Name)
 		if val == "" {
 			attributes[attr.Name] = attr.Value
@@ -61,16 +61,16 @@ func (init *Initialize) handleUpdate(w http.ResponseWriter, req *http.Request) {
 			attributes[attr.Name] = val
 		}
 	}
-	init.log.Info("init", log.Any("server attrs", attributes))
-	init.attrs = attributes
+	active.log.Info("active", log.Any("server attrs", attributes))
+	active.attrs = attributes
 
 	var tpl *template.Template
 	page := "/success.html.template"
-	init.activate()
-	if !utils.FileExists(init.cfg.Sync.Cloud.HTTP.Cert) {
+	active.activate()
+	if !utils.FileExists(active.cfg.Sync.Cloud.HTTP.Cert) {
 		page = "/failed.html.template"
 	}
-	tpl, err = template.ParseFiles(init.cfg.Init.ActivateConfig.Server.Pages + page)
+	tpl, err = template.ParseFiles(active.cfg.Init.ActivateConfig.Server.Pages + page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -58,9 +58,9 @@ func Register(name string, n New) {
 	mu.Lock()
 	defer mu.Unlock()
 	if _, ok := amiNews[name]; ok {
-		log.L().Info("ami generator already exists, skip", log.Any("generator", name))
+		log.L().Warn("ami generator already exists, skip", log.Any("generator", name))
 		return
 	}
-	log.L().Info("ami generator registered", log.Any("generator", name))
+	log.L().Debug("ami generator registered", log.Any("generator", name))
 	amiNews[name] = n
 }
