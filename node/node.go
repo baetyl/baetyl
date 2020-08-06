@@ -2,9 +2,11 @@ package node
 
 import (
 	"encoding/json"
+	"os"
 	"runtime"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -142,13 +144,13 @@ func (s *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 
 // GetStatus get status
 // TODO: add an error handling middleware like baetyl-cloud @chensheng
-func (s *Node) GetStatus(ctx *routing.Context) error {
+func (s *Node) GetStats(ctx *routing.Context) error {
 	node, err := s.Get()
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-
+	node.Name = os.Getenv(context.EnvKeyNodeName)
 	view, err := node.View(OfflineDuration)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
