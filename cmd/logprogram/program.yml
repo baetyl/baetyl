@@ -1,0 +1,8 @@
+name: "logprogram"
+displayName: "log program"
+description: "A log program"
+exec: "./logprogram"
+env:
+  - "BAETYL_NODE_NAME=node"
+  - "BAETYL_APP_NAME=log"
+  - "BAETYL_SERVICE_NAME=log"

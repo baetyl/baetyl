@@ -34,4 +34,4 @@ coverage.html
 baetyl
 baetyl-core
 baetyl-init
-logservice
+cmd/logprogram/logprogram
