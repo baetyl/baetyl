@@ -28,8 +28,6 @@ import (
 )
 
 const (
-	EnvKeyAppVersion = "BAETYL_APP_VERSION"
-
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
@@ -359,7 +357,7 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 				Value: svc.Name,
 			},
 			{
-				Name:  EnvKeyAppVersion,
+				Name:  context.EnvKeyAppVersion,
 				Value: app.Version,
 			},
 			{

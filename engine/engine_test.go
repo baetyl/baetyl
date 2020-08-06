@@ -4,13 +4,13 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/context"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -469,7 +469,7 @@ func TestInjectEnv(t *testing.T) {
 						Value: "s0",
 					},
 					{
-						Name:  EnvKeyAppVersion,
+						Name:  context.EnvKeyAppVersion,
 						Value: app.Version,
 					},
 					{
