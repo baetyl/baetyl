@@ -19,7 +19,7 @@ Baetyl v2 provides a new edge cloud integration platform, which adopts cloud man
 The main differences between v2 and v1 versions are as follows:
 * Edge and cloud frameworks have all evolved to cloud native, and already support running on K8S or K3S.
 * Introduce declarative design, realize data synchronization (OTA) through shadow (Report/Desire).
-* The edge framework does not support native process mode currently. Since it runs on K3S, the overall resource overhead will increase.
+* The edge framework currently supports Kube mode. Because it runs on K3S, the overall resource overhead is relatively large (1G memory); the Native mode is under development, which can greatly reduce resource consumption.
 * The edge framework will support edge node clusters in the future.
 
 ## Architecture
