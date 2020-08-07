@@ -1,24 +1,20 @@
 package initz
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/config"
-)
-
-import (
-	"fmt"
-	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	_ "github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/engine"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/baetyl/baetyl/sync"
 	bh "github.com/timshannon/bolthold"
-	"strings"
 )
 
 var (

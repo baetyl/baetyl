@@ -1,10 +1,11 @@
-package ami
+package kube
 
 import (
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/client-go/kubernetes"
@@ -25,10 +26,11 @@ type kubeImpl struct {
 }
 
 func init() {
-	Register(Kubernetes, newKubeImpl)
+	ami.Register("kube", newKubeImpl)
+	ami.Register("kubernetes", newKubeImpl)
 }
 
-func newKubeImpl(cfg config.AmiConfig) (AMI, error) {
+func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 	cli, err := newClient(cfg.Kubernetes)
 	if err != nil {
 		return nil, err
