@@ -17,8 +17,8 @@ func init() {
 
 var serviceCmd = &cobra.Command{
 	Use:   "service",
-	Short: "Control the service of Baetyl",
-	Long:  `Baetyl can control the services by following commands: start, stop, restart.`,
+	Short: "Control all services of Baetyl",
+	Long:  `Baetyl can control all services by following commands: start, stop, restart.`,
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(_ *cobra.Command, args []string) {
 		action := args[0]
