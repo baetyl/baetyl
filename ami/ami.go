@@ -13,10 +13,6 @@ import (
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl/ami AMI
 
-const (
-	Kubernetes = "kubernetes"
-)
-
 var mu sync.Mutex
 var amiNews = map[string]New{}
 var amiImpls = map[string]AMI{}

@@ -1,4 +1,4 @@
-package ami
+package kube
 
 import (
 	"github.com/baetyl/baetyl/config"
