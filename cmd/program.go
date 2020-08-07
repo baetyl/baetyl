@@ -20,8 +20,8 @@ func init() {
 
 var programCmd = &cobra.Command{
 	Use:   "program",
-	Short: "Control a program by Baetyl",
-	Long:  `Baetyl loads program's information from program.yml, then starts and waits the program to stop.`,
+	Short: "Run a program of Baetyl",
+	Long:  `Baetyl loads program's configuration from program.yml, then runs and waits the program to stop.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		if err := startProgramService(); err != nil {
 			fmt.Fprintln(os.Stderr, err)

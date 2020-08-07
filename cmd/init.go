@@ -15,8 +15,8 @@ func init() {
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Start init app of Baetyl",
-	Long:  `Baetyl starts the init app to sync with cloud and start core app.`,
+	Short: "Run init program of Baetyl",
+	Long:  `Baetyl runs the init program to sync with cloud and start core service.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		startInitService()
 	},

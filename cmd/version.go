@@ -11,8 +11,8 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of Baetyl",
-	Long:  `All software has versions. This is Baetyl's`,
+	Short: "Print the version of Baetyl",
+	Long:  `The versions of Baetyl is as follows`,
 	Run: func(_ *cobra.Command, _ []string) {
 		utils.PrintVersion()
 	},
