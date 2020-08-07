@@ -2,6 +2,8 @@ package sync
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/baetyl/baetyl/plugin"
 	"io/ioutil"
 	"os"
 	"path"
@@ -111,21 +113,20 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := specv1.DesireRequest{Infos: crds}
-	data, err := json.Marshal(req)
+	msg := &plugin.Message{
+		URI:     s.cfg.Cloud.Desire.URL,
+		Header:  map[string]string{RequestType: DesireRequest},
+		Content: specv1.DesireRequest{Infos: crds},
+	}
+	res, err := s.link.Request(msg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	data, err = s.http.PostJSON(s.cfg.Cloud.Desire.URL, data)
-	if err != nil {
-		return nil, errors.Errorf("failed to send resource request: %s", err.Error())
+	desire, ok := res.Content.(specv1.DesireResponse)
+	if !ok {
+		return nil, fmt.Errorf("unrecognized desrie response data")
 	}
-	var res specv1.DesireResponse
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	return res.Values, nil
+	return desire.Values, nil
 }
 
 func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {

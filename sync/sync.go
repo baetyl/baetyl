@@ -1,15 +1,12 @@
 package sync
 
 import (
-	"crypto/x509"
-	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
+	"github.com/baetyl/baetyl-go/v2/http"
+	"github.com/baetyl/baetyl/plugin"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
@@ -29,6 +26,12 @@ const (
 	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
 )
 
+const (
+	RequestType   = "request-type"
+	ReportRequest = "report-request"
+	DesireRequest = "desire-request"
+)
+
 //go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl/sync Sync
 type Sync interface {
 	Start()
@@ -40,44 +43,35 @@ type Sync interface {
 
 // Sync sync shadow and resources with cloud
 type sync struct {
-	cfg   config.SyncConfig
-	http  *http.Client
-	store *bh.Store
-	nod   *node.Node
-	tomb  utils.Tomb
-	log   *log.Logger
+	cfg    config.SyncConfig
+	link   plugin.Link
+	store  *bh.Store
+	nod    *node.Node
+	tomb   utils.Tomb
+	log    *log.Logger
+	http   *http.Client
+	isSync bool
 }
 
 // NewSync create a new sync
 func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, error) {
+	link, err := plugin.GetPlugin("link")
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 	ops, err := cfg.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if ops.TLSConfig == nil {
-		return nil, errors.Trace(ErrSyncTLSConfigMissing)
-	}
 	s := &sync{
 		cfg:   cfg,
+		http:  http.NewClient(ops),
 		store: store,
 		nod:   nod,
-		http:  http.NewClient(ops),
+		link:  link.(plugin.Link),
 		log:   log.With(log.Any("core", "sync")),
 	}
-	if len(ops.TLSConfig.Certificates) == 1 && len(ops.TLSConfig.Certificates[0].Certificate) == 1 {
-		cert, err := x509.ParseCertificate(ops.TLSConfig.Certificates[0].Certificate[0])
-		if err == nil {
-			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
-			if len(res) != 2 || res[0] == "" || res[1] == "" {
-				s.log.Error("failed to parse node name from cert")
-			} else {
-				os.Setenv(EnvKeyNodeName, res[1])
-				os.Setenv(EnvKeyNodeNamespace, res[0])
-			}
-		} else {
-			s.log.Error("certificate format error")
-		}
-	}
+	s.isSync = s.link.IsAsyncSupported()
 	return s, nil
 }
 
@@ -91,19 +85,19 @@ func (s *sync) Close() {
 }
 
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
-	pld, err := json.Marshal(r)
+	msg := &plugin.Message{
+		URI:     s.cfg.Cloud.Report.URL,
+		Header:  map[string]string{RequestType: ReportRequest},
+		Content: r,
+	}
+	res, err := s.link.Request(msg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
-	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	var desire v1.Desire
-	err = json.Unmarshal(data, &desire)
-	if err != nil {
-		return nil, errors.Trace(err)
+	s.log.Debug("sync reports cloud shadow", log.Any("report", msg))
+	desire, ok := res.Content.(v1.Desire)
+	if !ok {
+		return nil, fmt.Errorf("unrecognized desire data")
 	}
 	return desire, nil
 }
