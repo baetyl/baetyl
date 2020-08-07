@@ -32,6 +32,4 @@ coverage.html
 .DS_Store
 
 baetyl
-baetyl-core
-baetyl-init
-cmd/logprogram/logprogram
+cmd/demoprogram/demoprogram

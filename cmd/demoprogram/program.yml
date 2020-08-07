@@ -1,0 +1,8 @@
+name: "demoprogram"
+displayName: "demo program"
+description: "A demo program"
+exec: "./demoprogram"
+env:
+  - "BAETYL_NODE_NAME=demo"
+  - "BAETYL_APP_NAME=demo"
+  - "BAETYL_SERVICE_NAME=demo"
