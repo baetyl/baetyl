@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/mock"
+	"github.com/baetyl/baetyl/mock/plugin"
+	"github.com/golang/mock/gomock"
 	"io/ioutil"
 	"testing"
 	"time"
 
-	"github.com/baetyl/baetyl-go/v2/mock"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/config"
@@ -53,9 +55,13 @@ func TestSync_Report(t *testing.T) {
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 	sc.Cloud.Report.Interval = time.Millisecond * 500
 
+	mockCtl := gomock.NewController(t)
+	link := plugin.NewMockLink(mockCtl)
 	ops, err := sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+
 	syn := &sync{
+		link:  link,
 		cfg:   sc,
 		store: sto,
 		nod:   nod,
@@ -63,17 +69,17 @@ func TestSync_Report(t *testing.T) {
 		log:   log.With(log.Any("test", "sync")),
 	}
 
-	err = syn.reportAndDesireAsync()
+	err = syn.reportAndDesire()
 	assert.NoError(t, err)
 	no, _ := syn.nod.Get()
 	assert.Equal(t, specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}, no.Desire)
 
 	sc = config.SyncConfig{}
-	_, err = NewSync(sc, sto, nod)
+	_, err = NewSync(config.Config{Sync: sc}, sto, nod)
 	assert.Error(t, err, ErrSyncTLSConfigMissing.Error())
 
 	sc.Cloud.HTTP.Cert = "./testcert/notexist.pem"
-	_, err = NewSync(sc, sto, nod)
+	_, err = NewSync(config.Config{Sync: sc}, sto, nod)
 	assert.Error(t, err)
 
 	ms = mock.NewServer(tlssvr, mock.NewResponse(200, []byte{}))
@@ -168,7 +174,7 @@ func TestSyncResource(t *testing.T) {
 	sc.Cloud.HTTP.InsecureSkipVerify = true
 	sc.Cloud.Report.Interval = time.Millisecond * 500
 
-	syn, err := NewSync(sc, sto, nod)
+	syn, err := NewSync(config.Config{Sync: sc}, sto, nod)
 	assert.NoError(t, err)
 	ds, err := syn.Report(specv1.Report{})
 	assert.NoError(t, err)

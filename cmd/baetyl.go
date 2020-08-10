@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/utils"
-	_ "github.com/baetyl/baetyl/plugin/http"
 	"github.com/spf13/cobra"
 )
 

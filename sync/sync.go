@@ -26,12 +26,6 @@ const (
 	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
 )
 
-const (
-	RequestType   = "request-type"
-	ReportRequest = "report-request"
-	DesireRequest = "desire-request"
-)
-
 //go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl/sync Sync
 type Sync interface {
 	Start()
@@ -50,33 +44,62 @@ type sync struct {
 	tomb   utils.Tomb
 	log    *log.Logger
 	http   *http.Client
-	isSync bool
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, error) {
-	link, err := plugin.GetPlugin("link")
+func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
+	link, err := plugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	ops, err := cfg.Cloud.HTTP.ToClientOptions()
+	ops, err := cfg.Sync.Cloud.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	s := &sync{
-		cfg:   cfg,
+		cfg:   cfg.Sync,
 		http:  http.NewClient(ops),
 		store: store,
 		nod:   nod,
 		link:  link.(plugin.Link),
 		log:   log.With(log.Any("core", "sync")),
 	}
-	s.isSync = s.link.IsAsyncSupported()
 	return s, nil
 }
 
 func (s *sync) Start() {
+	if s.link.IsAsyncSupported() {
+		s.tomb.Go(s.receiving)
+	}
 	s.tomb.Go(s.reporting)
+}
+
+func (s *sync) receiving() error {
+	for {
+		select {
+		case <-s.tomb.Dying():
+			return nil
+		default:
+			msg, err := s.link.Receive()
+			if err != nil {
+				s.log.Error("failed to receive msg", log.Error(err))
+				continue
+			}
+			desire, ok := msg.Content.(v1.Desire)
+			if !ok {
+				s.log.Error("receive unrecognized desire data")
+				continue
+			}
+			if len(desire) == 0 {
+				return nil
+			}
+			_, err = s.nod.Desire(desire)
+			if err != nil {
+				s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+				continue
+			}
+		}
+	}
 }
 
 func (s *sync) Close() {
@@ -84,10 +107,22 @@ func (s *sync) Close() {
 	s.tomb.Wait()
 }
 
+func (s *sync) reportAsync(r v1.Report) error {
+	msg := &plugin.Message{
+		Kind:    plugin.ReportKind,
+		Content: r,
+	}
+	err := s.link.Send(msg)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	s.log.Debug("reports cloud shadow async", log.Any("report", msg))
+	return nil
+}
+
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	msg := &plugin.Message{
-		URI:     s.cfg.Cloud.Report.URL,
-		Header:  map[string]string{RequestType: ReportRequest},
+		Kind: plugin.ReportKind,
 		Content: r,
 	}
 	res, err := s.link.Request(msg)
@@ -106,7 +141,7 @@ func (s *sync) reporting() error {
 	s.log.Info("sync starts to report")
 	defer s.log.Info("sync has stopped reporting")
 
-	err := s.reportAndDesireAsync()
+	err := s.reportAndDesire()
 	if err != nil {
 		s.log.Error("failed to report cloud shadow", log.Error(err))
 	}
@@ -117,7 +152,7 @@ func (s *sync) reporting() error {
 		select {
 		case <-t.C:
 			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-			err := s.reportAndDesireAsync()
+			err := s.reportAndDesire()
 			if err != nil {
 				s.log.Error("failed to report cloud shadow", log.Error(err))
 			}
@@ -127,22 +162,29 @@ func (s *sync) reporting() error {
 	}
 }
 
-func (s *sync) reportAndDesireAsync() error {
+func (s *sync) reportAndDesire() error {
 	sd, err := s.nod.Get()
 	if err != nil {
 		return errors.Trace(err)
 	}
-	desire, err := s.Report(sd.Report)
-	if err != nil {
-		return errors.Trace(err)
-	}
-	if len(desire) == 0 {
-		return nil
-	}
-	_, err = s.nod.Desire(desire)
-	if err != nil {
-		s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
-		return errors.Trace(err)
+	if s.link.IsAsyncSupported() {
+		err := s.reportAsync(sd.Report)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	} else {
+		desire, err := s.Report(sd.Report)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		if len(desire) == 0 {
+			return nil
+		}
+		_, err = s.nod.Desire(desire)
+		if err != nil {
+			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+			return errors.Trace(err)
+		}
 	}
 	return nil
 }

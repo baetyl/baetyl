@@ -114,8 +114,7 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 		return nil, nil
 	}
 	msg := &plugin.Message{
-		URI:     s.cfg.Cloud.Desire.URL,
-		Header:  map[string]string{RequestType: DesireRequest},
+		Kind: plugin.DesireKind,
 		Content: specv1.DesireRequest{Infos: crds},
 	}
 	res, err := s.link.Request(msg)

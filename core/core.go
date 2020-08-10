@@ -35,7 +35,7 @@ func NewCore(cfg config.Config) (*Core, error) {
 		c.Close()
 		return nil, errors.Trace(err)
 	}
-	c.syn, err = sync.NewSync(cfg.Sync, c.sto, c.sha)
+	c.syn, err = sync.NewSync(cfg, c.sto, c.sha)
 	if err != nil {
 		c.Close()
 		return nil, errors.Trace(err)

@@ -65,7 +65,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.syn, err = sync.NewSync(cfg.Sync, init.sto, init.sha)
+	init.syn, err = sync.NewSync(cfg, init.sto, init.sha)
 	if err != nil {
 		init.Close()
 		return nil, errors.Trace(err)

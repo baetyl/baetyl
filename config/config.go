@@ -16,6 +16,9 @@ type Config struct {
 	Security SecurityConfig    `yaml:"security" json:"security"`
 	Server   http.ServerConfig `yaml:"server" json:"server"`
 	Logger   log.Config        `yaml:"logger" json:"logger"`
+	Plugin struct {
+		Link string `yaml:"link" json:"link" default:"http"`
+	} `yaml:"plugin" json:"plugin"`
 }
 
 type AmiConfig struct {
@@ -50,12 +53,8 @@ type SyncConfig struct {
 	Cloud struct {
 		HTTP   http.ClientConfig `yaml:"http" json:"http"`
 		Report struct {
-			URL      string        `yaml:"url" json:"url" default:"v1/sync/report"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 		} `yaml:"report" json:"report"`
-		Desire struct {
-			URL string `yaml:"url" json:"url" default:"v1/sync/desire"`
-		} `yaml:"desire" json:"desire"`
 	} `yaml:"cloud" json:"cloud"`
 	Edge struct {
 		DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
