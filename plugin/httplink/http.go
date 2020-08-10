@@ -1,10 +1,8 @@
-package http
+package httplink
 
 import (
 	"crypto/x509"
 	"encoding/json"
-	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl-go/v2/utils"
 	"os"
 	"strings"
 
@@ -12,6 +10,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/plugin"
 )
 
@@ -49,7 +49,7 @@ func New() (plugin.Plugin, error) {
 	link := &httpLink{
 		cfg:  cfg,
 		http: http.NewClient(ops),
-		log:  log.With(log.Any("plugin", "http")),
+		log:  log.With(log.Any("plugin", "httplink")),
 	}
 	if len(ops.TLSConfig.Certificates) == 1 && len(ops.TLSConfig.Certificates[0].Certificate) == 1 {
 		cert, err := x509.ParseCertificate(ops.TLSConfig.Certificates[0].Certificate[0])
@@ -68,9 +68,10 @@ func New() (plugin.Plugin, error) {
 	return link, nil
 }
 
-func (l *httpLink) Receive() (*plugin.Message, error) {
+func (l *httpLink) Receive() (<-chan *plugin.Message, <-chan error) {
 	return nil, nil
 }
+
 func (l *httpLink) Request(msg *plugin.Message) (*plugin.Message, error) {
 	l.log.Debug("http link send request message", log.Any("message", msg))
 	pld, err := json.Marshal(msg.Content)
@@ -81,7 +82,7 @@ func (l *httpLink) Request(msg *plugin.Message) (*plugin.Message, error) {
 	res := &plugin.Message{Kind: msg.Kind}
 	switch msg.Kind {
 	case plugin.ReportKind:
-		data, err = l.http.PostJSON(l.cfg.HTTPLink.Report.URL, pld)
+		data, err = l.http.PostJSON(l.cfg.HTTPLink.ReportURL, pld)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -91,7 +92,7 @@ func (l *httpLink) Request(msg *plugin.Message) (*plugin.Message, error) {
 		}
 		res.Content = desire
 	case plugin.DesireKind:
-		data, err = l.http.PostJSON(l.cfg.HTTPLink.Desire.URL, pld)
+		data, err = l.http.PostJSON(l.cfg.HTTPLink.DesireURL, pld)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}

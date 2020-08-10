@@ -37,13 +37,14 @@ type Sync interface {
 
 // Sync sync shadow and resources with cloud
 type sync struct {
-	cfg    config.SyncConfig
-	link   plugin.Link
-	store  *bh.Store
-	nod    *node.Node
-	tomb   utils.Tomb
-	log    *log.Logger
-	http   *http.Client
+	cfg   config.SyncConfig
+	link  plugin.Link
+	store *bh.Store
+	nod   *node.Node
+	tomb  utils.Tomb
+	log   *log.Logger
+	// for downloading object
+	http *http.Client
 }
 
 // NewSync create a new sync
@@ -52,7 +53,7 @@ func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	ops, err := cfg.Sync.Cloud.HTTP.ToClientOptions()
+	ops, err := cfg.Sync.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -75,16 +76,12 @@ func (s *sync) Start() {
 }
 
 func (s *sync) receiving() error {
+	msgCh, errCh := s.link.Receive()
 	for {
 		select {
 		case <-s.tomb.Dying():
 			return nil
-		default:
-			msg, err := s.link.Receive()
-			if err != nil {
-				s.log.Error("failed to receive msg", log.Error(err))
-				continue
-			}
+		case msg := <-msgCh:
 			desire, ok := msg.Content.(v1.Desire)
 			if !ok {
 				s.log.Error("receive unrecognized desire data")
@@ -93,9 +90,14 @@ func (s *sync) receiving() error {
 			if len(desire) == 0 {
 				return nil
 			}
-			_, err = s.nod.Desire(desire)
+			_, err := s.nod.Desire(desire)
 			if err != nil {
 				s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+				continue
+			}
+		case err := <-errCh:
+			if err != nil {
+				s.log.Error("failed to receive msg", log.Error(err))
 				continue
 			}
 		}
@@ -122,7 +124,7 @@ func (s *sync) reportAsync(r v1.Report) error {
 
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	msg := &plugin.Message{
-		Kind: plugin.ReportKind,
+		Kind:    plugin.ReportKind,
 		Content: r,
 	}
 	res, err := s.link.Request(msg)
@@ -146,7 +148,7 @@ func (s *sync) reporting() error {
 		s.log.Error("failed to report cloud shadow", log.Error(err))
 	}
 
-	t := time.NewTicker(s.cfg.Cloud.Report.Interval)
+	t := time.NewTicker(s.cfg.ReportInterval)
 	defer t.Stop()
 	for {
 		select {

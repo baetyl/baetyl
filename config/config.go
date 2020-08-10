@@ -16,8 +16,8 @@ type Config struct {
 	Security SecurityConfig    `yaml:"security" json:"security"`
 	Server   http.ServerConfig `yaml:"server" json:"server"`
 	Logger   log.Config        `yaml:"logger" json:"logger"`
-	Plugin struct {
-		Link string `yaml:"link" json:"link" default:"http"`
+	Plugin   struct {
+		Link string `yaml:"link" json:"link" default:"httplink"`
 	} `yaml:"plugin" json:"plugin"`
 }
 
@@ -50,15 +50,9 @@ type StoreConfig struct {
 }
 
 type SyncConfig struct {
-	Cloud struct {
-		HTTP   http.ClientConfig `yaml:"http" json:"http"`
-		Report struct {
-			Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
-		} `yaml:"report" json:"report"`
-	} `yaml:"cloud" json:"cloud"`
-	Edge struct {
-		DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
-	} `yaml:"edge" json:"edge"`
+	HTTP   http.ClientConfig `yaml:"httplink" json:"httplink"`
+	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
+	DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
 }
 
 type InitConfig struct {
@@ -69,7 +63,7 @@ type InitConfig struct {
 		SecurityKey  string `yaml:"securityKey" json:"securityKey"`
 	} `yaml:"batch" json:"batch"`
 	Cloud struct {
-		HTTP   http.ClientConfig `yaml:"http" json:"http"`
+		HTTP   http.ClientConfig `yaml:"httplink" json:"httplink"`
 		Active struct {
 			URL      string        `yaml:"url" json:"url" default:"/v1/active"`
 			Interval time.Duration `yaml:"interval" json:"interval" default:"45s"`

@@ -198,7 +198,7 @@ func TestGetStats(t *testing.T) {
 	client := &fasthttp.Client{}
 	req := fasthttp.AcquireRequest()
 	resp := fasthttp.AcquireResponse()
-	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50020", "/node/stats")
+	url := fmt.Sprintf("%s%s", "httplink://127.0.0.1:50020", "/node/stats")
 	req.SetRequestURI(url)
 	req.Header.SetMethod("GET")
 	err = client.Do(req, resp)

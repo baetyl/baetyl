@@ -48,16 +48,16 @@ func TestSync_Report(t *testing.T) {
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.Cloud.HTTP.Address = ms.URL
-	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
-	sc.Cloud.HTTP.Key = "./testcert/client.key"
-	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
-	sc.Cloud.HTTP.InsecureSkipVerify = true
-	sc.Cloud.Report.Interval = time.Millisecond * 500
+	sc.HTTP.Address = ms.URL
+	sc.HTTP.CA = "./testcert/ca.pem"
+	sc.HTTP.Key = "./testcert/client.key"
+	sc.HTTP.Cert = "./testcert/client.pem"
+	sc.HTTP.InsecureSkipVerify = true
+	sc.ReportInterval = time.Millisecond * 500
 
 	mockCtl := gomock.NewController(t)
 	link := plugin.NewMockLink(mockCtl)
-	ops, err := sc.Cloud.HTTP.ToClientOptions()
+	ops, err := sc.HTTP.ToClientOptions()
 	assert.NoError(t, err)
 
 	syn := &sync{

@@ -68,7 +68,7 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	var tpl *template.Template
 	page := "/success.html.template"
 	active.activate()
-	if !utils.FileExists(active.cfg.Sync.Cloud.HTTP.Cert) {
+	if !utils.FileExists(active.cfg.Sync.HTTP.Cert) {
 		page = "/failed.html.template"
 	}
 	tpl, err = template.ParseFiles(active.cfg.Init.ActivateConfig.Server.Pages + page)

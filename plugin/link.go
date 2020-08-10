@@ -20,7 +20,7 @@ type Message struct {
 
 //go:generate mockgen -destination=../mock/plugin/link.go -package=plugin -source=link.go
 type Link interface {
-	Receive() (*Message, error)
+	Receive() (<-chan *Message, <-chan error)
 	Request(msg *Message) (*Message, error)
 	Send(msg *Message) error
 	IsAsyncSupported() bool
