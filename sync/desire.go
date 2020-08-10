@@ -3,7 +3,6 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/baetyl/baetyl/plugin"
 	"io/ioutil"
 	"os"
 	"path"
@@ -113,8 +112,8 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	msg := &plugin.Message{
-		Kind: plugin.DesireKind,
+	msg := &specv1.Message{
+		Kind:    specv1.MessageDesire,
 		Content: specv1.DesireRequest{Infos: crds},
 	}
 	res, err := s.link.Request(msg)

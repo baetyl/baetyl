@@ -6,7 +6,6 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/plugin"
 	"github.com/stretchr/testify/assert"
 	gohttp "net/http"
 	"net/http/httptest"
@@ -21,8 +20,8 @@ func TestRequest(t *testing.T) {
 	appRes := specv1.DesireResponse{Values: []specv1.ResourceValue{
 		{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindApplication},
-			Value: specv1.VariableValue{Value: &specv1.Application{Name:    "app1", Version: "123"}}},
-		},
+			Value:        specv1.VariableValue{Value: &specv1.Application{Name: "app1", Version: "123"}}},
+	},
 	}
 	data2, err := json.Marshal(appRes)
 	assert.NoError(t, err)
@@ -58,17 +57,17 @@ func TestRequest(t *testing.T) {
 		http: http.NewClient(ops),
 		log:  log.With(log.Any("plugin", "httplink")),
 	}
-	msg := &plugin.Message{
-		Kind: plugin.ReportKind,
+	msg := &specv1.Message{
+		Kind: specv1.MessageReport,
 	}
 	res, err := link.Request(msg)
 	assert.NotNil(t, res)
 	desire := res.Content.(specv1.Desire)
 	assert.Equal(t, desire["apps"], apps)
-	assert.Equal(t, res.Kind, plugin.ReportKind)
+	assert.Equal(t, res.Kind, specv1.MessageReport)
 
-	msg = &plugin.Message{
-		Kind: plugin.DesireKind,
+	msg = &specv1.Message{
+		Kind: specv1.MessageDesire,
 	}
 	res, err = link.Request(msg)
 	assert.NotNil(t, res)

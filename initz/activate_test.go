@@ -101,7 +101,7 @@ var (
 )
 
 func genActivate(t *testing.T, cfg *config.Config, ami ami.AMI) *Activate {
-	ops, err := cfg.Init.Cloud.HTTP.ToClientOptions()
+	ops, err := cfg.Init.HTTP.ToClientOptions()
 	assert.NoError(t, err)
 	active := &Activate{
 		cfg:   cfg,
@@ -139,12 +139,12 @@ func TestActivate(t *testing.T) {
 	ic := &config.InitConfig{}
 	err = utils.UnmarshalYAML(nil, ic)
 	assert.NoError(t, err)
-	ic.Cloud.Active.Interval = 5 * time.Second
+	ic.Active.Interval = 5 * time.Second
 	ic.Batch.Name = "batch.test"
 	ic.Batch.Namespace = "default"
 	ic.Batch.SecurityType = "Token"
 	ic.Batch.SecurityKey = "123456"
-	ic.Cloud.HTTP.Address = ms.URL
+	ic.HTTP.Address = ms.URL
 	ic.ActivateConfig.Attributes = []config.Attribute{
 		{
 			Name:  "abc",
@@ -156,9 +156,9 @@ func TestActivate(t *testing.T) {
 	is := &config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, is)
 	assert.NoError(t, err)
-	is.Cloud.HTTP.Key = path.Join(certPath, "client.key")
-	is.Cloud.HTTP.Cert = path.Join(certPath, "client.pem")
-	is.Cloud.HTTP.CA = path.Join(certPath, "ca.pem")
+	is.HTTP.Key = path.Join(certPath, "client.key")
+	is.HTTP.Cert = path.Join(certPath, "client.pem")
+	is.HTTP.CA = path.Join(certPath, "ca.pem")
 	err = os.MkdirAll(certPath, 0755)
 	assert.Nil(t, err)
 	defer os.RemoveAll(path.Dir(certPath))
@@ -228,8 +228,8 @@ func TestActivate_Err_Response(t *testing.T) {
 	ic := &config.InitConfig{}
 	err = utils.UnmarshalYAML(nil, ic)
 	assert.NoError(t, err)
-	ic.Cloud.Active.Interval = 5 * time.Second
-	ic.Cloud.HTTP.Address = ms.URL
+	ic.Active.Interval = 5 * time.Second
+	ic.HTTP.Address = ms.URL
 	ic.ActivateConfig.Fingerprints = []config.Fingerprint{{
 		Proof: config.ProofHostName,
 	}}
@@ -263,13 +263,13 @@ func TestActivate_Err_Response(t *testing.T) {
 }
 
 func responseEqual(t *testing.T, resp v1.ActiveResponse, sc config.SyncConfig) {
-	cert, err := ioutil.ReadFile(sc.Cloud.HTTP.Cert)
+	cert, err := ioutil.ReadFile(sc.HTTP.Cert)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Cert, string(cert))
-	ca, err := ioutil.ReadFile(sc.Cloud.HTTP.CA)
+	ca, err := ioutil.ReadFile(sc.HTTP.CA)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.CA, string(ca))
-	key, err := ioutil.ReadFile(sc.Cloud.HTTP.Key)
+	key, err := ioutil.ReadFile(sc.HTTP.Key)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Key, string(key))
 }

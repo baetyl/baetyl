@@ -2,6 +2,14 @@ package sync
 
 import (
 	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"path/filepath"
+	gosync "sync"
+	"testing"
+	"time"
+
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mock"
@@ -11,13 +19,6 @@ import (
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"math/rand"
-	"os"
-	"path/filepath"
-	gosync "sync"
-	"testing"
-	"time"
 )
 
 func TestSyncDownloadObject(t *testing.T) {
@@ -54,14 +55,14 @@ func TestSyncDownloadObject(t *testing.T) {
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.Cloud.HTTP.Address = objMs.URL
-	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
-	sc.Cloud.HTTP.Key = "./testcert/client.key"
-	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
-	sc.Cloud.HTTP.InsecureSkipVerify = true
+	sc.HTTP.Address = objMs.URL
+	sc.HTTP.CA = "./testcert/ca.pem"
+	sc.HTTP.Key = "./testcert/client.key"
+	sc.HTTP.Cert = "./testcert/client.pem"
+	sc.HTTP.InsecureSkipVerify = true
 
 	//syn, err := NewSync(sc, sto, nod)
-	ops, err := sc.Cloud.HTTP.ToClientOptions()
+	ops, err := sc.HTTP.ToClientOptions()
 	assert.NoError(t, err)
 	syn := &sync{
 		store: sto,

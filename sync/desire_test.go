@@ -2,19 +2,23 @@ package sync
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/http"
-	"github.com/baetyl/baetyl-go/v2/log"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/baetyl/baetyl-go/v2/http"
+	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mock"
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/mock/plugin"
+	"github.com/baetyl/baetyl/node"
+	"github.com/golang/mock/gomock"
+
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
 )
@@ -103,12 +107,12 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.Cloud.HTTP.Address = objMs.URL
-	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
-	sc.Cloud.HTTP.Key = "./testcert/client.key"
-	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
-	sc.Cloud.HTTP.InsecureSkipVerify = true
-	ops, err := sc.Cloud.HTTP.ToClientOptions()
+	sc.HTTP.Address = objMs.URL
+	sc.HTTP.CA = "./testcert/ca.pem"
+	sc.HTTP.Key = "./testcert/client.key"
+	sc.HTTP.Cert = "./testcert/client.pem"
+	sc.HTTP.InsecureSkipVerify = true
+	ops, err := sc.HTTP.ToClientOptions()
 	assert.NoError(t, err)
 	syn := &sync{
 		cfg:   sc,
@@ -135,7 +139,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	dir, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, dir)
-	syn.cfg.Edge.DownloadPath = dir
+	syn.cfg.DownloadPath = dir
 	file1 := filepath.Join(dir, "file1")
 	ioutil.WriteFile(file1, content, 0644)
 	md5, err := utils.CalculateFileMD5(file1)
@@ -220,47 +224,51 @@ func TestSyncResources(t *testing.T) {
 	appCrd := specv1.DesireResponse{
 		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindApplication, Name: appName, Version: appVer},
-			Value:        specv1.VariableValue{Value: app},
+			Value:        specv1.VariableValue{Value: &app},
 		}},
 	}
 	cfgCrd := specv1.DesireResponse{
 		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindConfiguration, Name: cfgName, Version: cfgVer},
-			Value:        specv1.VariableValue{Value: cfg},
+			Value:        specv1.VariableValue{Value: &cfg},
 		}},
 	}
 	secCrd := specv1.DesireResponse{
 		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindSecret, Name: secName, Version: secVer},
-			Value:        specv1.VariableValue{Value: sec},
+			Value:        specv1.VariableValue{Value: &sec},
 		}},
 	}
-	appData, _ := json.Marshal(appCrd)
-	cfgData, _ := json.Marshal(cfgCrd)
-	secData, _ := json.Marshal(secCrd)
+	msg1 := &specv1.Message{
+		Kind:    specv1.MessageDesire,
+		Content: appCrd,
+	}
+	msg2 := &specv1.Message{
+		Kind:    specv1.MessageDesire,
+		Content: cfgCrd,
+	}
+	msg3 := &specv1.Message{
+		Kind:    specv1.MessageDesire,
+		Content: secCrd,
+	}
 
-	tlssvr, err := utils.NewTLSConfigServer(utils.Certificate{CA: "./testcert/ca.pem", Key: "./testcert/server.key", Cert: "./testcert/server.pem"})
-	assert.NoError(t, err)
-	assert.NotNil(t, tlssvr)
-	ms := mock.NewServer(tlssvr, mock.NewResponse(200, appData),
-		mock.NewResponse(200, cfgData), mock.NewResponse(200, secData))
-	assert.NotNil(t, ms)
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.Cloud.HTTP.Address = ms.URL
-	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
-	sc.Cloud.HTTP.Key = "./testcert/client.key"
-	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
-	sc.Cloud.HTTP.InsecureSkipVerify = true
-	ops, err := sc.Cloud.HTTP.ToClientOptions()
 	assert.NoError(t, err)
+	mockCtl := gomock.NewController(t)
+	link := plugin.NewMockLink(mockCtl)
+	link.EXPECT().Request(gomock.Any()).Return(msg1, nil)
+	link.EXPECT().Request(gomock.Any()).Return(msg2, nil)
+	link.EXPECT().Request(gomock.Any()).Return(msg3, nil)
 	syn := &sync{
+		link:  link,
 		cfg:   sc,
 		store: sto,
+		log:   log.With(log.Any("test", "sync")),
 		nod:   nod,
-		http:  http.NewClient(ops),
 	}
+
 	err = syn.SyncResource(specv1.AppInfo{Name: "desire-app", Version: "v1"})
 	var appRes specv1.Application
 	err = sto.Get(makeKey(specv1.KindApplication, appName, appVer), &appRes)
@@ -274,27 +282,8 @@ func TestSyncResources(t *testing.T) {
 	err = sto.Get(makeKey(specv1.KindSecret, secName, secVer), &secRes)
 	assert.NoError(t, err)
 	assert.Equal(t, secRes, sec)
-	ms.Close()
 
-	ms = mock.NewServer(tlssvr)
-	assert.NotNil(t, ms)
-	err = utils.UnmarshalYAML(nil, &sc)
-	assert.NoError(t, err)
-	sc.Cloud.HTTP.Address = ms.URL
-	sc.Cloud.HTTP.CA = "./testcert/ca.pem"
-	sc.Cloud.HTTP.Key = "./testcert/client.key"
-	sc.Cloud.HTTP.Cert = "./testcert/client.pem"
-	sc.Cloud.HTTP.InsecureSkipVerify = true
-	ops, err = sc.Cloud.HTTP.ToClientOptions()
-	assert.NoError(t, err)
-	syn = &sync{
-		store: sto,
-		nod:   nod,
-		cfg:   sc,
-		http:  http.NewClient(ops),
-		log:   log.With(log.Any("test", "sync")),
-	}
+	link.EXPECT().Request(gomock.Any()).Return(nil, errors.New("failed to sync resource"))
 	err = syn.SyncResource(specv1.AppInfo{})
 	assert.Error(t, err)
-	ms.Close()
 }

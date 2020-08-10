@@ -110,8 +110,8 @@ func (s *sync) Close() {
 }
 
 func (s *sync) reportAsync(r v1.Report) error {
-	msg := &plugin.Message{
-		Kind:    plugin.ReportKind,
+	msg := &v1.Message{
+		Kind:    v1.MessageReport,
 		Content: r,
 	}
 	err := s.link.Send(msg)
@@ -123,8 +123,8 @@ func (s *sync) reportAsync(r v1.Report) error {
 }
 
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
-	msg := &plugin.Message{
-		Kind:    plugin.ReportKind,
+	msg := &v1.Message{
+		Kind:    v1.MessageReport,
 		Content: r,
 	}
 	res, err := s.link.Request(msg)

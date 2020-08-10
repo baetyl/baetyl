@@ -50,7 +50,7 @@ const (
 <head>
     <meta charset="utf8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta httplink-equiv="refresh" content="3; url=/">
+    <meta http-equiv="refresh" content="3; url=/">
     <title>激活失败</title>
     <style type="text/css">
         div.active-title {font-family:Menlo; height: 50px; margin-top:20%; vertical-align: middle; text-align:center}

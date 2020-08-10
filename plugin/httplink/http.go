@@ -68,20 +68,20 @@ func New() (plugin.Plugin, error) {
 	return link, nil
 }
 
-func (l *httpLink) Receive() (<-chan *plugin.Message, <-chan error) {
+func (l *httpLink) Receive() (<-chan *specv1.Message, <-chan error) {
 	return nil, nil
 }
 
-func (l *httpLink) Request(msg *plugin.Message) (*plugin.Message, error) {
+func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	l.log.Debug("http link send request message", log.Any("message", msg))
 	pld, err := json.Marshal(msg.Content)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	var data []byte
-	res := &plugin.Message{Kind: msg.Kind}
+	res := &specv1.Message{Kind: msg.Kind}
 	switch msg.Kind {
-	case plugin.ReportKind:
+	case specv1.MessageReport:
 		data, err = l.http.PostJSON(l.cfg.HTTPLink.ReportURL, pld)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -91,7 +91,7 @@ func (l *httpLink) Request(msg *plugin.Message) (*plugin.Message, error) {
 			return nil, errors.Trace(err)
 		}
 		res.Content = desire
-	case plugin.DesireKind:
+	case specv1.MessageDesire:
 		data, err = l.http.PostJSON(l.cfg.HTTPLink.DesireURL, pld)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -107,7 +107,7 @@ func (l *httpLink) Request(msg *plugin.Message) (*plugin.Message, error) {
 	return res, nil
 }
 
-func (l *httpLink) Send(msg *plugin.Message) error {
+func (l *httpLink) Send(msg *specv1.Message) error {
 	return nil
 }
 

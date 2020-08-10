@@ -50,9 +50,9 @@ type StoreConfig struct {
 }
 
 type SyncConfig struct {
-	HTTP   http.ClientConfig `yaml:"httplink" json:"httplink"`
-	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
-	DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
+	HTTP           http.ClientConfig `yaml:"http" json:"http"`
+	ReportInterval time.Duration     `yaml:"reportInterval" json:"reportInterval" default:"20s"`
+	DownloadPath   string            `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
 }
 
 type InitConfig struct {
@@ -62,16 +62,12 @@ type InitConfig struct {
 		SecurityType string `yaml:"securityType" json:"securityType"`
 		SecurityKey  string `yaml:"securityKey" json:"securityKey"`
 	} `yaml:"batch" json:"batch"`
-	Cloud struct {
-		HTTP   http.ClientConfig `yaml:"httplink" json:"httplink"`
-		Active struct {
-			URL      string        `yaml:"url" json:"url" default:"/v1/active"`
-			Interval time.Duration `yaml:"interval" json:"interval" default:"45s"`
-		} `yaml:"active" json:"active"`
-	} `yaml:"cloud" json:"cloud"`
-	Edge struct {
-		DownloadPath string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
-	} `yaml:"edge" json:"edge"`
+	HTTP   http.ClientConfig `yaml:"http" json:"http"`
+	Active struct {
+		URL      string        `yaml:"url" json:"url" default:"/v1/active"`
+		Interval time.Duration `yaml:"interval" json:"interval" default:"45s"`
+	} `yaml:"active" json:"active"`
+	DownloadPath   string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
 	ActivateConfig struct {
 		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`

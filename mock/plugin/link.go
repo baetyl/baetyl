@@ -5,6 +5,7 @@
 package plugin
 
 import (
+	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -33,11 +34,11 @@ func (m *MockLink) EXPECT() *MockLinkMockRecorder {
 }
 
 // Receive mocks base method.
-func (m *MockLink) Receive() (*Message, error) {
+func (m *MockLink) Receive() (<-chan *v1.Message, <-chan error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Receive")
-	ret0, _ := ret[0].(*Message)
-	ret1, _ := ret[1].(error)
+	ret0, _ := ret[0].(<-chan *v1.Message)
+	ret1, _ := ret[1].(<-chan error)
 	return ret0, ret1
 }
 
@@ -48,10 +49,10 @@ func (mr *MockLinkMockRecorder) Receive() *gomock.Call {
 }
 
 // Request mocks base method.
-func (m *MockLink) Request(msg *Message) (*Message, error) {
+func (m *MockLink) Request(msg *v1.Message) (*v1.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Request", msg)
-	ret0, _ := ret[0].(*Message)
+	ret0, _ := ret[0].(*v1.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -63,7 +64,7 @@ func (mr *MockLinkMockRecorder) Request(msg interface{}) *gomock.Call {
 }
 
 // Send mocks base method.
-func (m *MockLink) Send(msg *Message) error {
+func (m *MockLink) Send(msg *v1.Message) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Send", msg)
 	ret0, _ := ret[0].(error)
