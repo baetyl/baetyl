@@ -2,9 +2,11 @@ package sync
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/http"
-	"github.com/baetyl/baetyl/plugin"
 	"time"
+
+	"github.com/baetyl/baetyl-go/v2/http"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl/plugin"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -49,7 +51,7 @@ type sync struct {
 
 // NewSync create a new sync
 func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
-	link, err := plugin.GetPlugin(cfg.Plugin.Link)
+	link, err := v2plugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
