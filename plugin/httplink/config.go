@@ -8,8 +8,8 @@ import (
 type Config struct {
 	HTTPLink struct {
 		HTTP      http.ClientConfig `yaml:"http" json:"http"`
-		Cert      utils.Certificate `yaml:"cert" json:"cert"`
 		ReportURL string            `yaml:"reportUrl" json:"reportUrl" default:"v1/sync/report"`
 		DesireURL string            `yaml:"desireUrl" json:"desireUrl" default:"v1/sync/desire"`
 	} `yaml:"httplink" json:"httplink"`
+	Cert utils.Certificate `yaml:"cert" json:"cert"`
 }

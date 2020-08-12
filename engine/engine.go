@@ -2,7 +2,6 @@ package engine
 
 import (
 	"crypto/md5"
-	"crypto/x509"
 	"fmt"
 	"net"
 	"net/url"
@@ -32,7 +31,6 @@ const (
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
-	EnvKeyNodeNamespace    = "BAETYL_NODE_NAMESPACE"
 )
 
 type Engine struct {
@@ -67,24 +65,6 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 		ns:    "baetyl-edge",
 		sysns: "baetyl-edge-system",
 		log:   log.With(log.Any("engine", cfg.Engine.Kind)),
-	}
-	tlsConfig, err := utils.NewTLSConfigClient(cfg.Cert)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	if len(tlsConfig.Certificates) == 1 && len(tlsConfig.Certificates[0].Certificate) == 1 {
-		cert, err := x509.ParseCertificate(tlsConfig.Certificates[0].Certificate[0])
-		if err == nil {
-			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
-			if len(res) != 2 || res[0] == "" || res[1] == "" {
-				eng.log.Error("failed to parse node name from cert")
-			} else {
-				os.Setenv(context.EnvKeyNodeName, res[1])
-				os.Setenv(EnvKeyNodeNamespace, res[0])
-			}
-		} else {
-			eng.log.Error("certificate format error")
-		}
 	}
 	return eng, nil
 }

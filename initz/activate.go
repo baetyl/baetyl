@@ -44,19 +44,19 @@ type Activate struct {
 // NewActivate creates a new activate
 func NewActivate(cfg *config.Config) (*Activate, error) {
 	// TODO 优化ToClientOptions 支持只配置ca的单向认证
-	ops, err := cfg.Init.HTTP.ToClientOptions()
+	ops, err := cfg.Init.Active.ToClientOptions()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
-	ca, err := ioutil.ReadFile(cfg.Init.HTTP.CA)
+	ca, err := ioutil.ReadFile(cfg.Init.Active.CA)
 	if err != nil {
 		return nil, err
 	}
 	pool := x509.NewCertPool()
 	pool.AppendCertsFromPEM(ca)
 	ops.TLSConfig = &tls.Config{RootCAs: pool}
-	ops.TLSConfig.InsecureSkipVerify = cfg.Init.HTTP.InsecureSkipVerify
+	ops.TLSConfig.InsecureSkipVerify = cfg.Init.Active.InsecureSkipVerify
 
 	active := &Activate{
 		cfg:   cfg,
@@ -153,7 +153,7 @@ func (active *Activate) activate() {
 	}
 	active.log.Debug("active", log.Any("info data", string(data)))
 
-	url := fmt.Sprintf("%s%s", active.cfg.Init.HTTP.Address, active.cfg.Init.Active.URL)
+	url := fmt.Sprintf("%s%s", active.cfg.Init.Active.Address, active.cfg.Init.Active.URL)
 	headers := map[string]string{
 		"Content-Type": "application/json",
 	}

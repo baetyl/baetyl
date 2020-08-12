@@ -66,12 +66,14 @@ type InitConfig struct {
 		SecurityType string `yaml:"securityType" json:"securityType"`
 		SecurityKey  string `yaml:"securityKey" json:"securityKey"`
 	} `yaml:"batch" json:"batch"`
-	HTTP   http.ClientConfig `yaml:"http" json:"http"`
 	Active struct {
-		URL      string        `yaml:"url" json:"url" default:"/v1/active"`
-		Interval time.Duration `yaml:"interval" json:"interval" default:"45s"`
+		http.ClientConfig `yaml:",inline" json:",inline"`
+		URL               string        `yaml:"url" json:"url" default:"/v1/active"`
+		Interval          time.Duration `yaml:"interval" json:"interval" default:"45s"`
 	} `yaml:"active" json:"active"`
-	DownloadPath   string `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
+	Download struct {
+		Path string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
+	} `yaml:"download" json:"download"`
 	ActivateConfig struct {
 		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`

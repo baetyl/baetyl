@@ -101,7 +101,7 @@ var (
 )
 
 func genActivate(t *testing.T, cfg *config.Config, ami ami.AMI) *Activate {
-	ops, err := cfg.Init.HTTP.ToClientOptions()
+	ops, err := cfg.Init.Active.ToClientOptions()
 	assert.NoError(t, err)
 	active := &Activate{
 		cfg:   cfg,
@@ -144,7 +144,7 @@ func TestActivate(t *testing.T) {
 	ic.Batch.Namespace = "default"
 	ic.Batch.SecurityType = "Token"
 	ic.Batch.SecurityKey = "123456"
-	ic.HTTP.Address = ms.URL
+	ic.Active.Address = ms.URL
 	ic.ActivateConfig.Attributes = []config.Attribute{
 		{
 			Name:  "abc",
@@ -229,7 +229,7 @@ func TestActivate_Err_Response(t *testing.T) {
 	err = utils.UnmarshalYAML(nil, ic)
 	assert.NoError(t, err)
 	ic.Active.Interval = 5 * time.Second
-	ic.HTTP.Address = ms.URL
+	ic.Active.Address = ms.URL
 	ic.ActivateConfig.Fingerprints = []config.Fingerprint{{
 		Proof: config.ProofHostName,
 	}}
