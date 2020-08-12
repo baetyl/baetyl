@@ -55,20 +55,20 @@ func TestSyncDownloadObject(t *testing.T) {
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.HTTP.Address = objMs.URL
-	sc.HTTP.CA = "./testcert/ca.pem"
-	sc.HTTP.Key = "./testcert/client.key"
-	sc.HTTP.Cert = "./testcert/client.pem"
-	sc.HTTP.InsecureSkipVerify = true
+	sc.Download.Address = objMs.URL
+	sc.Download.CA = "./testcert/ca.pem"
+	sc.Download.Key = "./testcert/client.key"
+	sc.Download.Cert = "./testcert/client.pem"
+	sc.Download.InsecureSkipVerify = true
 
 	//syn, err := NewSync(sc, sto, nod)
-	ops, err := sc.HTTP.ToClientOptions()
+	ops, err := sc.Download.ToClientOptions()
 	assert.NoError(t, err)
 	syn := &sync{
-		store: sto,
-		nod:   nod,
-		http:  http.NewClient(ops),
-		log:   log.With(log.Any("test", "sync")),
+		store:    sto,
+		nod:      nod,
+		download: http.NewClient(ops),
+		log:      log.With(log.Any("test", "sync")),
 	}
 
 	md5, _ := utils.CalculateFileMD5(file1)

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -11,6 +12,7 @@ import (
 type Config struct {
 	Engine   EngineConfig      `yaml:"engine" json:"engine"`
 	Sync     SyncConfig        `yaml:"sync" json:"sync"`
+	Cert     utils.Certificate `yaml:"cert" json:"cert"`
 	Store    StoreConfig       `yaml:"store" json:"store"`
 	Init     InitConfig        `yaml:"init" json:"init"`
 	Security SecurityConfig    `yaml:"security" json:"security"`
@@ -50,9 +52,11 @@ type StoreConfig struct {
 }
 
 type SyncConfig struct {
-	HTTP           http.ClientConfig `yaml:"http" json:"http"`
-	ReportInterval time.Duration     `yaml:"reportInterval" json:"reportInterval" default:"20s"`
-	DownloadPath   string            `yaml:"downloadPath" json:"downloadPath" default:"var/lib/baetyl/download"`
+	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
+	Download       struct {
+		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
+		http.ClientConfig `yaml:",inline" json:",inline"`
+	} `yaml:"download" json:"download"`
 }
 
 type InitConfig struct {

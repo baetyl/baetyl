@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -149,7 +148,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
 			if base == "" {
-				base = filepath.Join(s.cfg.DownloadPath, cfg.Name)
+				base = filepath.Join(s.cfg.Download.Path, cfg.Name)
 				dir = filepath.Join(base, cfg.Version)
 				err := os.MkdirAll(dir, 0755)
 				if err != nil {
@@ -162,7 +161,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
 				return errors.Trace(err)
 			}
-			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
+			filename := filepath.Join(dir, strings.TrimPrefix(k, configKeyObject))
 			err = s.downloadObject(obj, dir, filename, obj.Unpack == configValueZip)
 			if err != nil {
 				os.RemoveAll(dir)

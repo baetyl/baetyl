@@ -39,7 +39,7 @@ type Initialize struct {
 // NewInitialize creates a new core
 func NewInitialize(cfg config.Config) (*Initialize, error) {
 	// to activate if no node cert
-	if !utils.FileExists(cfg.Sync.HTTP.Cert) {
+	if !utils.FileExists(cfg.Cert.Cert) {
 		active, err := NewActivate(&cfg)
 		if err != nil {
 			return nil, errors.Trace(err)

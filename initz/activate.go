@@ -183,13 +183,13 @@ func (active *Activate) activate() {
 }
 
 func (active *Activate) genCert(c utils.Certificate) error {
-	if err := active.createFile(active.cfg.Sync.HTTP.CA, []byte(c.CA)); err != nil {
+	if err := active.createFile(active.cfg.Cert.CA, []byte(c.CA)); err != nil {
 		return err
 	}
-	if err := active.createFile(active.cfg.Sync.HTTP.Cert, []byte(c.Cert)); err != nil {
+	if err := active.createFile(active.cfg.Cert.Cert, []byte(c.Cert)); err != nil {
 		return err
 	}
-	if err := active.createFile(active.cfg.Sync.HTTP.Key, []byte(c.Key)); err != nil {
+	if err := active.createFile(active.cfg.Cert.Key, []byte(c.Key)); err != nil {
 		return err
 	}
 	return nil

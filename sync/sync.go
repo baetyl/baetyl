@@ -46,7 +46,7 @@ type sync struct {
 	tomb  utils.Tomb
 	log   *log.Logger
 	// for downloading object
-	http *http.Client
+	download *http.Client
 }
 
 // NewSync create a new sync
@@ -55,17 +55,17 @@ func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	ops, err := cfg.Sync.HTTP.ToClientOptions()
+	ops, err := cfg.Sync.Download.ToClientOptions()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	s := &sync{
-		cfg:   cfg.Sync,
-		http:  http.NewClient(ops),
-		store: store,
-		nod:   nod,
-		link:  link.(plugin.Link),
-		log:   log.With(log.Any("core", "sync")),
+		cfg:      cfg.Sync,
+		download: http.NewClient(ops),
+		store:    store,
+		nod:      nod,
+		link:     link.(plugin.Link),
+		log:      log.With(log.Any("core", "sync")),
 	}
 	return s, nil
 }

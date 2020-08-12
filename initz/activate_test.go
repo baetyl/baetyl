@@ -153,19 +153,19 @@ func TestActivate(t *testing.T) {
 	}
 
 	certPath := "var/lib/baetyl/cert"
-	is := &config.SyncConfig{}
-	err = utils.UnmarshalYAML(nil, is)
+	var cert utils.Certificate
+	err = utils.UnmarshalYAML(nil, &cert)
 	assert.NoError(t, err)
-	is.HTTP.Key = path.Join(certPath, "client.key")
-	is.HTTP.Cert = path.Join(certPath, "client.pem")
-	is.HTTP.CA = path.Join(certPath, "ca.pem")
+	cert.Key = path.Join(certPath, "client.key")
+	cert.Cert = path.Join(certPath, "client.pem")
+	cert.CA = path.Join(certPath, "ca.pem")
 	err = os.MkdirAll(certPath, 0755)
 	assert.Nil(t, err)
 	defer os.RemoveAll(path.Dir(certPath))
 
 	c := &config.Config{}
 	c.Init = *ic
-	c.Sync = *is
+	c.Cert = cert
 
 	nodeInfo := &v1.NodeInfo{
 		Hostname:         "docker-desktop",
@@ -206,7 +206,7 @@ func TestActivate(t *testing.T) {
 			active := genActivate(t, c, ami)
 			active.Start()
 			active.WaitAndClose()
-			responseEqual(t, *tt.want, c.Sync)
+			responseEqual(t, *tt.want, c.Cert)
 		})
 	}
 }
@@ -262,14 +262,14 @@ func TestActivate_Err_Response(t *testing.T) {
 	active.Close()
 }
 
-func responseEqual(t *testing.T, resp v1.ActiveResponse, sc config.SyncConfig) {
-	cert, err := ioutil.ReadFile(sc.HTTP.Cert)
+func responseEqual(t *testing.T, resp v1.ActiveResponse, sc utils.Certificate) {
+	cert, err := ioutil.ReadFile(sc.Cert)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Cert, string(cert))
-	ca, err := ioutil.ReadFile(sc.HTTP.CA)
+	ca, err := ioutil.ReadFile(sc.CA)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.CA, string(ca))
-	key, err := ioutil.ReadFile(sc.HTTP.Key)
+	key, err := ioutil.ReadFile(sc.Key)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Key, string(key))
 }

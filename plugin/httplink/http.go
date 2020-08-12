@@ -1,12 +1,7 @@
 package httplink
 
 import (
-	"crypto/x509"
 	"encoding/json"
-	"os"
-	"strings"
-
-	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -14,11 +9,6 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/plugin"
-)
-
-const (
-	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
-	DefaultConfFile     = "etc/baetyl/service.yml"
 )
 
 func init() {
@@ -37,7 +27,7 @@ func (l *httpLink) Close() error {
 
 func New() (v2plugin.Plugin, error) {
 	var cfg Config
-	if err := utils.LoadYAML(DefaultConfFile, &cfg); err != nil {
+	if err := utils.LoadYAML(plugin.ConfFile, &cfg); err != nil {
 		return nil, errors.Trace(err)
 	}
 	ops, err := cfg.HTTPLink.HTTP.ToClientOptions()
@@ -51,20 +41,6 @@ func New() (v2plugin.Plugin, error) {
 		cfg:  cfg,
 		http: http.NewClient(ops),
 		log:  log.With(log.Any("plugin", "httplink")),
-	}
-	if len(ops.TLSConfig.Certificates) == 1 && len(ops.TLSConfig.Certificates[0].Certificate) == 1 {
-		cert, err := x509.ParseCertificate(ops.TLSConfig.Certificates[0].Certificate[0])
-		if err == nil {
-			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
-			if len(res) != 2 || res[0] == "" || res[1] == "" {
-				link.log.Error("failed to parse node name from cert")
-			} else {
-				os.Setenv(context.EnvKeyNodeName, res[1])
-				os.Setenv(EnvKeyNodeNamespace, res[0])
-			}
-		} else {
-			link.log.Error("certificate format error")
-		}
 	}
 	return link, nil
 }

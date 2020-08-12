@@ -8,6 +8,7 @@ import (
 var (
 	// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
 	ErrLinkTLSConfigMissing = fmt.Errorf("certificate bidirectional authentication is required for connection with cloud")
+	ConfFile                string
 )
 
 //go:generate mockgen -destination=../mock/plugin/link.go -package=plugin -source=link.go

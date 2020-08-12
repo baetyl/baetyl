@@ -107,18 +107,18 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.HTTP.Address = objMs.URL
-	sc.HTTP.CA = "./testcert/ca.pem"
-	sc.HTTP.Key = "./testcert/client.key"
-	sc.HTTP.Cert = "./testcert/client.pem"
-	sc.HTTP.InsecureSkipVerify = true
-	ops, err := sc.HTTP.ToClientOptions()
+	sc.Download.Address = objMs.URL
+	sc.Download.CA = "./testcert/ca.pem"
+	sc.Download.Key = "./testcert/client.key"
+	sc.Download.Cert = "./testcert/client.pem"
+	sc.Download.InsecureSkipVerify = true
+	ops, err := sc.Download.ToClientOptions()
 	assert.NoError(t, err)
 	syn := &sync{
-		cfg:   sc,
-		store: sto,
-		http:  http.NewClient(ops),
-		log:   log.With(log.Any("test", "sync")),
+		cfg:      sc,
+		store:    sto,
+		download: http.NewClient(ops),
+		log:      log.With(log.Any("test", "sync")),
 	}
 	volume := &specv1.Volume{
 		Name:         "cfg",
@@ -139,7 +139,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	dir, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, dir)
-	syn.cfg.DownloadPath = dir
+	syn.cfg.Download.Path = dir
 	file1 := filepath.Join(dir, "file1")
 	ioutil.WriteFile(file1, content, 0644)
 	md5, err := utils.CalculateFileMD5(file1)
