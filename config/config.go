@@ -71,9 +71,6 @@ type InitConfig struct {
 		URL               string        `yaml:"url" json:"url" default:"/v1/active"`
 		Interval          time.Duration `yaml:"interval" json:"interval" default:"45s"`
 	} `yaml:"active" json:"active"`
-	Download struct {
-		Path string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
-	} `yaml:"download" json:"download"`
 	ActivateConfig struct {
 		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`

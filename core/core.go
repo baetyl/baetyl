@@ -3,6 +3,9 @@ package core
 import (
 	"crypto/x509"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -15,8 +18,6 @@ import (
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
-	"os"
-	"strings"
 )
 
 type Core struct {
@@ -34,23 +35,9 @@ const (
 
 // NewCore creates a new core
 func NewCore(cfg config.Config) (*Core, error) {
-	tlsConfig, err := utils.NewTLSConfigClient(cfg.Cert)
+	err := extractNodeInfo(cfg)
 	if err != nil {
 		return nil, errors.Trace(err)
-	}
-	if len(tlsConfig.Certificates) == 1 && len(tlsConfig.Certificates[0].Certificate) == 1 {
-		cert, err := x509.ParseCertificate(tlsConfig.Certificates[0].Certificate[0])
-		if err == nil {
-			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
-			if len(res) != 2 || res[0] == "" || res[1] == "" {
-				return nil, fmt.Errorf("failed to parse node name from cert")
-			} else {
-				os.Setenv(context.EnvKeyNodeName, res[1])
-				os.Setenv(EnvKeyNodeNamespace, res[0])
-			}
-		} else {
-			return nil, fmt.Errorf("certificate format error")
-		}
 	}
 	c := &Core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
@@ -101,4 +88,26 @@ func (c *Core) initRouter() fasthttp.RequestHandler {
 	router.Get("/node/stats", c.sha.GetStats)
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
 	return router.HandleRequest
+}
+
+func extractNodeInfo(cfg config.Config) error {
+	tlsConfig, err := utils.NewTLSConfigClient(cfg.Cert)
+	if err != nil {
+		return err
+	}
+	if len(tlsConfig.Certificates) == 1 && len(tlsConfig.Certificates[0].Certificate) == 1 {
+		cert, err := x509.ParseCertificate(tlsConfig.Certificates[0].Certificate[0])
+		if err == nil {
+			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
+			if len(res) != 2 || res[0] == "" || res[1] == "" {
+				return fmt.Errorf("failed to parse node name from cert")
+			} else {
+				os.Setenv(context.EnvKeyNodeName, res[1])
+				os.Setenv(EnvKeyNodeNamespace, res[0])
+			}
+		} else {
+			return fmt.Errorf("certificate format error")
+		}
+	}
+	return nil
 }
