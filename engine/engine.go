@@ -6,7 +6,7 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	gosync "sync"
@@ -55,7 +55,7 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return &Engine{
+	eng := &Engine{
 		ami:   kube,
 		sto:   sto,
 		syn:   syn,
@@ -65,7 +65,8 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 		ns:    "baetyl-edge",
 		sysns: "baetyl-edge-system",
 		log:   log.With(log.Any("engine", cfg.Engine.Kind)),
-	}, nil
+	}
+	return eng, nil
 }
 
 func (e *Engine) Start() {
@@ -385,7 +386,7 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 			if strings.HasPrefix(hostPath.Path, "/") {
 				continue
 			}
-			fullPath := path.Join(appDataHostPath, path.Join("/", hostPath.Path))
+			fullPath := filepath.Join(appDataHostPath, filepath.Join("/", hostPath.Path))
 			if err := os.MkdirAll(fullPath, 0755); err != nil {
 				return err
 			}
@@ -402,7 +403,7 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 				if app.Volumes[i].HostPath == nil {
 					app.Volumes[i].Config = nil
 					app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{
-						Path: path.Join(e.cfg.Sync.Edge.DownloadPath, cfg.Name, cfg.Version),
+						Path: filepath.Join(e.cfg.Sync.Download.Path, cfg.Name, cfg.Version),
 					}
 				}
 			}

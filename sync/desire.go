@@ -2,9 +2,9 @@ package sync
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -111,21 +111,19 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	if len(crds) == 0 {
 		return nil, nil
 	}
-	req := specv1.DesireRequest{Infos: crds}
-	data, err := json.Marshal(req)
+	msg := &specv1.Message{
+		Kind:    specv1.MessageDesire,
+		Content: specv1.DesireRequest{Infos: crds},
+	}
+	res, err := s.link.Request(msg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	data, err = s.http.PostJSON(s.cfg.Cloud.Desire.URL, data)
-	if err != nil {
-		return nil, errors.Errorf("failed to send resource request: %s", err.Error())
+	desire, ok := res.Content.(specv1.DesireResponse)
+	if !ok {
+		return nil, fmt.Errorf("unrecognized desrie response data")
 	}
-	var res specv1.DesireResponse
-	err = json.Unmarshal(data, &res)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	return res.Values, nil
+	return desire.Values, nil
 }
 
 func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {
@@ -150,7 +148,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 	for k, v := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
 			if base == "" {
-				base = filepath.Join(s.cfg.Edge.DownloadPath, cfg.Name)
+				base = filepath.Join(s.cfg.Download.Path, cfg.Name)
 				dir = filepath.Join(base, cfg.Version)
 				err := os.MkdirAll(dir, 0755)
 				if err != nil {
@@ -163,7 +161,7 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
 				return errors.Trace(err)
 			}
-			filename := path.Join(dir, strings.TrimPrefix(k, configKeyObject))
+			filename := filepath.Join(dir, strings.TrimPrefix(k, configKeyObject))
 			err = s.downloadObject(obj, dir, filename, obj.Unpack == configValueZip)
 			if err != nil {
 				os.RemoveAll(dir)

@@ -38,11 +38,11 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
 	}
-	resp, err := s.http.GetURL(obj.URL, headers)
+	resp, err := s.download.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
 		// retry
 		time.Sleep(time.Second)
-		resp, err := s.http.GetURL(obj.URL, headers)
+		resp, err := s.download.GetURL(obj.URL, headers)
 		if err != nil || resp == nil {
 			return errors.Errorf("failed to download file (%s)", name)
 		}

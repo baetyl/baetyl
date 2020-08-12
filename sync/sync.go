@@ -1,15 +1,14 @@
 package sync
 
 import (
-	"crypto/x509"
-	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
 	"time"
 
-	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl/plugin"
+
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
@@ -41,48 +40,70 @@ type Sync interface {
 // Sync sync shadow and resources with cloud
 type sync struct {
 	cfg   config.SyncConfig
-	http  *http.Client
+	link  plugin.Link
 	store *bh.Store
 	nod   *node.Node
 	tomb  utils.Tomb
 	log   *log.Logger
+	// for downloading object
+	download *http.Client
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.SyncConfig, store *bh.Store, nod *node.Node) (Sync, error) {
-	ops, err := cfg.Cloud.HTTP.ToClientOptions()
+func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
+	link, err := v2plugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if ops.TLSConfig == nil {
-		return nil, errors.Trace(ErrSyncTLSConfigMissing)
+	ops, err := cfg.Sync.Download.ToClientOptions()
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 	s := &sync{
-		cfg:   cfg,
-		store: store,
-		nod:   nod,
-		http:  http.NewClient(ops),
-		log:   log.With(log.Any("core", "sync")),
-	}
-	if len(ops.TLSConfig.Certificates) == 1 && len(ops.TLSConfig.Certificates[0].Certificate) == 1 {
-		cert, err := x509.ParseCertificate(ops.TLSConfig.Certificates[0].Certificate[0])
-		if err == nil {
-			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
-			if len(res) != 2 || res[0] == "" || res[1] == "" {
-				s.log.Error("failed to parse node name from cert")
-			} else {
-				os.Setenv(EnvKeyNodeName, res[1])
-				os.Setenv(EnvKeyNodeNamespace, res[0])
-			}
-		} else {
-			s.log.Error("certificate format error")
-		}
+		cfg:      cfg.Sync,
+		download: http.NewClient(ops),
+		store:    store,
+		nod:      nod,
+		link:     link.(plugin.Link),
+		log:      log.With(log.Any("core", "sync")),
 	}
 	return s, nil
 }
 
 func (s *sync) Start() {
+	if s.link.IsAsyncSupported() {
+		s.tomb.Go(s.receiving)
+	}
 	s.tomb.Go(s.reporting)
+}
+
+func (s *sync) receiving() error {
+	msgCh, errCh := s.link.Receive()
+	for {
+		select {
+		case <-s.tomb.Dying():
+			return nil
+		case msg := <-msgCh:
+			desire, ok := msg.Content.(v1.Desire)
+			if !ok {
+				s.log.Error("receive unrecognized desire data")
+				continue
+			}
+			if len(desire) == 0 {
+				return nil
+			}
+			_, err := s.nod.Desire(desire)
+			if err != nil {
+				s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+				continue
+			}
+		case err := <-errCh:
+			if err != nil {
+				s.log.Error("failed to receive msg", log.Error(err))
+				continue
+			}
+		}
+	}
 }
 
 func (s *sync) Close() {
@@ -90,20 +111,32 @@ func (s *sync) Close() {
 	s.tomb.Wait()
 }
 
+func (s *sync) reportAsync(r v1.Report) error {
+	msg := &v1.Message{
+		Kind:    v1.MessageReport,
+		Content: r,
+	}
+	err := s.link.Send(msg)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	s.log.Debug("reports cloud shadow async", log.Any("report", msg))
+	return nil
+}
+
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
-	pld, err := json.Marshal(r)
+	msg := &v1.Message{
+		Kind:    v1.MessageReport,
+		Content: r,
+	}
+	res, err := s.link.Request(msg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	s.log.Debug("sync reports cloud shadow", log.Any("report", string(pld)))
-	data, err := s.http.PostJSON(s.cfg.Cloud.Report.URL, pld)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	var desire v1.Desire
-	err = json.Unmarshal(data, &desire)
-	if err != nil {
-		return nil, errors.Trace(err)
+	s.log.Debug("sync reports cloud shadow", log.Any("report", msg))
+	desire, ok := res.Content.(v1.Desire)
+	if !ok {
+		return nil, fmt.Errorf("unrecognized desire data")
 	}
 	return desire, nil
 }
@@ -112,18 +145,18 @@ func (s *sync) reporting() error {
 	s.log.Info("sync starts to report")
 	defer s.log.Info("sync has stopped reporting")
 
-	err := s.reportAndDesireAsync()
+	err := s.reportAndDesire()
 	if err != nil {
 		s.log.Error("failed to report cloud shadow", log.Error(err))
 	}
 
-	t := time.NewTicker(s.cfg.Cloud.Report.Interval)
+	t := time.NewTicker(s.cfg.ReportInterval)
 	defer t.Stop()
 	for {
 		select {
 		case <-t.C:
 			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-			err := s.reportAndDesireAsync()
+			err := s.reportAndDesire()
 			if err != nil {
 				s.log.Error("failed to report cloud shadow", log.Error(err))
 			}
@@ -133,22 +166,29 @@ func (s *sync) reporting() error {
 	}
 }
 
-func (s *sync) reportAndDesireAsync() error {
+func (s *sync) reportAndDesire() error {
 	sd, err := s.nod.Get()
 	if err != nil {
 		return errors.Trace(err)
 	}
-	desire, err := s.Report(sd.Report)
-	if err != nil {
-		return errors.Trace(err)
-	}
-	if len(desire) == 0 {
-		return nil
-	}
-	_, err = s.nod.Desire(desire)
-	if err != nil {
-		s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
-		return errors.Trace(err)
+	if s.link.IsAsyncSupported() {
+		err := s.reportAsync(sd.Report)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	} else {
+		desire, err := s.Report(sd.Report)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		if len(desire) == 0 {
+			return nil
+		}
+		_, err = s.nod.Desire(desire)
+		if err != nil {
+			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+			return errors.Trace(err)
+		}
 	}
 	return nil
 }
