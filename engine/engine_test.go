@@ -450,7 +450,7 @@ func TestInjectEnv(t *testing.T) {
 	err := sto.Upsert(key, app)
 	assert.NoError(t, err)
 
-	err = os.Setenv(context.EnvKeyNodeName, "node01")
+	err = os.Setenv(context.KeyNodeName, "node01")
 	assert.NoError(t, err)
 
 	expApp := &specv1.Application{
@@ -461,24 +461,20 @@ func TestInjectEnv(t *testing.T) {
 				Name: "s0",
 				Env: []specv1.Environment{
 					{
-						Name:  context.EnvKeyAppName,
+						Name:  context.KeyAppName,
 						Value: app.Name,
 					},
 					{
-						Name:  context.EnvKeyServiceName,
+						Name:  context.KeySvcName,
 						Value: "s0",
 					},
 					{
-						Name:  context.EnvKeyAppVersion,
+						Name:  context.KeyAppVersion,
 						Value: app.Version,
 					},
 					{
-						Name:  context.EnvKeyNodeName,
+						Name:  context.KeyNodeName,
 						Value: "node01",
-					},
-					{
-						Name:  context.EnvKeyCertPath,
-						Value: SystemCertPath,
 					},
 				},
 			},
