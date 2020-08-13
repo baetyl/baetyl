@@ -2,20 +2,20 @@ package native
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl/program"
-	"github.com/kardianos/service"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/program"
+	"github.com/kardianos/service"
+	"gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -33,7 +33,7 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 }
 
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
-	appDir := filepath.Join(baetylRunDir, ns, app.Name, app.Version)
+	appDir := filepath.Join(runRootDir, ns, app.Name, app.Version)
 	err := os.MkdirAll(appDir, 0755)
 	if err != nil {
 		return errors.Trace(err)
@@ -83,7 +83,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
 			}
 			prgCfg := program.Config{
-				Name:        fmt.Sprintf("%s.%s.%s.%s.%d", ns, app.Name, app.Version, s.Name, i),
+				Name:        fmt.Sprintf("%s.%s.%s.%d", app.Name, app.Version, s.Name, i),
 				DisplayName: fmt.Sprintf("%s %s", app.Name, s.Name),
 				Description: app.Description,
 				Dir:         insDir,
@@ -92,7 +92,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Env:         env,
 				Logger: log.Config{
 					Level:    "debug",
-					Filename: filepath.Join(baetylLogDir, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
+					Filename: filepath.Join(logRootDir, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
 				},
 			}
 			prgYml, err := yaml.Marshal(prgCfg)
@@ -118,11 +118,91 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 }
 
 func (impl *nativeImpl) StatsApp(ns string) ([]v1.AppStats, error) {
-	return nil, nil
+	var stats []v1.AppStats
+
+	nsRootDir := filepath.Join(runRootDir, ns)
+	// scan app
+	appDirs, err := ioutil.ReadDir(nsRootDir)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	for _, appDir := range appDirs {
+		if !appDir.IsDir() {
+			continue
+		}
+
+		// scan app version
+		curAppName := appDir.Name()
+		appVerDirs, err := ioutil.ReadDir(filepath.Join(nsRootDir, curAppName))
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		for _, appVerDir := range appVerDirs {
+			if !appVerDir.IsDir() {
+				continue
+			}
+
+			curAppStats := v1.AppStats{}
+			curAppStats.Name = appDir.Name()
+			curAppStats.Version = appVerDir.Name()
+			curAppStats.InstanceStats = map[string]v1.InstanceStats{}
+			stats = append(stats, curAppStats)
+
+			// scan service
+			curAppVer := appVerDir.Name()
+			svcDirs, err := ioutil.ReadDir(filepath.Join(nsRootDir, curAppName, curAppVer))
+			if err != nil {
+				return nil, errors.Trace(err)
+			}
+			for _, svcDir := range svcDirs {
+				if !svcDir.IsDir() {
+					continue
+				}
+
+				// scan service instance
+				curSvcName := svcDir.Name()
+				svcInsDirs, err := ioutil.ReadDir(filepath.Join(nsRootDir, curAppName, curAppVer, curSvcName))
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				for _, svcInsDir := range svcInsDirs {
+					if !svcInsDir.IsDir() {
+						continue
+					}
+
+					curSvcIns := svcInsDir.Name()
+					curPrgName := fmt.Sprintf("%s.%s.%s.%s", curAppName, curAppVer, curSvcName, curSvcIns)
+					svc, err := service.New(nil, &service.Config{
+						Name:             curPrgName,
+						WorkingDirectory: svcInsDir.Name(),
+					})
+					curInsStats := v1.InstanceStats{
+						ServiceName: curSvcName,
+						Name:        curPrgName,
+					}
+					status, err := svc.Status()
+					if err != nil {
+						curInsStats.Status = v1.Unknown
+						curInsStats.Cause = err.Error()
+					} else {
+						curInsStats.Status = prgStatusToSpecStatus(status)
+					}
+					curAppStats.InstanceStats[curPrgName] = curInsStats
+				}
+			}
+		}
+	}
+	return stats, nil
 }
 
 func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
-	appRootDir := filepath.Join(baetylRunDir, ns, appName)
+	appRootDir := filepath.Join(runRootDir, ns, appName)
+	defer func() {
+		err := os.RemoveAll(appRootDir)
+		if err != nil {
+			impl.log.Error("failed to remove app dir", log.Any("ns", ns), log.Any("app", appName), log.Error(err))
+		}
+	}()
 
 	// scan app version
 	appVerDirs, err := ioutil.ReadDir(appRootDir)
@@ -154,7 +234,7 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 					continue
 				}
 				curSvcIns := svcInsDir.Name()
-				prgName := fmt.Sprintf("%s.%s.%s.%s.%s", ns, appName, curAppVer, curSvcName, curSvcIns)
+				prgName := fmt.Sprintf("%s.%s.%s.%s", appName, curAppVer, curSvcName, curSvcIns)
 				svc, err := service.New(nil, &service.Config{
 					Name:             prgName,
 					WorkingDirectory: svcInsDir.Name(),
@@ -166,6 +246,17 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 		}
 	}
 	return nil
+}
+
+func prgStatusToSpecStatus(status service.Status) v1.Status {
+	switch status {
+	case service.StatusRunning:
+		return v1.Running
+	case service.StatusStopped:
+		return v1.Pending
+	default:
+		return v1.Unknown
+	}
 }
 
 // TODO: remove
