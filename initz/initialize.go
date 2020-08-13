@@ -39,7 +39,7 @@ type Initialize struct {
 // NewInitialize creates a new core
 func NewInitialize(cfg config.Config) (*Initialize, error) {
 	// to activate if no node cert
-	if !utils.FileExists(cfg.Sync.Cloud.HTTP.Cert) {
+	if !utils.FileExists(cfg.Cert.Cert) {
 		active, err := NewActivate(&cfg)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -65,7 +65,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.syn, err = sync.NewSync(cfg.Sync, init.sto, init.sha)
+	init.syn, err = sync.NewSync(cfg, init.sto, init.sha)
 	if err != nil {
 		init.Close()
 		return nil, errors.Trace(err)
@@ -99,7 +99,7 @@ func (init *Initialize) start() error {
 		init.sto = nil
 	}
 
-	t := time.NewTicker(init.cfg.Sync.Cloud.Report.Interval)
+	t := time.NewTicker(init.cfg.Sync.ReportInterval)
 	defer t.Stop()
 	for {
 		select {

@@ -5,6 +5,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/core"
+	"github.com/baetyl/baetyl/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +29,7 @@ func startCoreService() {
 		if err != nil {
 			return errors.Trace(err)
 		}
+		plugin.ConfFile = ctx.ConfFile()
 
 		c, err := core.NewCore(cfg)
 		if err != nil {

@@ -81,7 +81,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 	c := &config.Config{}
 	c.Engine.Kind = "kubernetes"
 	c.Engine.Kubernetes.InCluster = true
-	c.Init.Cloud.Active.Interval = 5 * time.Second
+	c.Init.Active.Interval = 5 * time.Second
 
 	active, err := NewActivate(c)
 	assert.Error(t, err)
@@ -114,7 +114,7 @@ func TestActivate_Err_Ami(t *testing.T) {
 	ami.EXPECT().CollectNodeInfo().Return(nil, fmt.Errorf("ami error")).AnyTimes()
 
 	c := &config.Config{}
-	c.Init.Cloud.Active.Interval = 5 * time.Second
+	c.Init.Active.Interval = 5 * time.Second
 	c.Init.ActivateConfig.Fingerprints = collectorBadCases[0].fingerprints
 	active := genActivate(t, c, ami)
 	_, err := active.collect()
