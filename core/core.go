@@ -102,7 +102,7 @@ func extractNodeInfo(cfg config.Config) error {
 			if len(res) != 2 || res[0] == "" || res[1] == "" {
 				return fmt.Errorf("failed to parse node name from cert")
 			} else {
-				os.Setenv(context.EnvKeyNodeName, res[1])
+				os.Setenv(context.KeyNodeName, res[1])
 				os.Setenv(EnvKeyNodeNamespace, res[0])
 			}
 		} else {
