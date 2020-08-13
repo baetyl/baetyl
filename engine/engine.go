@@ -350,24 +350,20 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 	for _, svc := range app.Services {
 		env := []specv1.Environment{
 			{
-				Name:  context.EnvKeyAppName,
+				Name:  context.KeyAppName,
 				Value: app.Name,
 			},
 			{
-				Name:  context.EnvKeyServiceName,
+				Name:  context.KeySvcName,
 				Value: svc.Name,
 			},
 			{
-				Name:  context.EnvKeyAppVersion,
+				Name:  context.KeyAppVersion,
 				Value: app.Version,
 			},
 			{
-				Name:  context.EnvKeyNodeName,
-				Value: os.Getenv(context.EnvKeyNodeName),
-			},
-			{
-				Name:  context.EnvKeyCertPath,
-				Value: SystemCertPath,
+				Name:  context.KeyNodeName,
+				Value: os.Getenv(context.KeyNodeName),
 			},
 		}
 		svc.Env = append(svc.Env, env...)

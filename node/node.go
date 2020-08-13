@@ -150,7 +150,7 @@ func (s *Node) GetStats(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-	node.Name = os.Getenv(context.EnvKeyNodeName)
+	node.Name = os.Getenv(context.KeyNodeName)
 	view, err := node.View(OfflineDuration)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())

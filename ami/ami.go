@@ -23,11 +23,19 @@ type New func(cfg config.AmiConfig) (AMI, error)
 type AMI interface {
 	CollectNodeInfo() (*specv1.NodeInfo, error)
 	CollectNodeStats() (*specv1.NodeStats, error)
+
+	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error
+	StatsApp(string) ([]specv1.AppStats, error)
+	DeleteApp(string, string) error
+
+	// TODO: deprecated
 	CollectAppStats(string) ([]specv1.AppStats, error)
-	DeleteApplication(string, string) error
 	ApplyApplication(string, specv1.Application, []string) error
 	ApplyConfigurations(string, map[string]specv1.Configuration) error
 	ApplySecrets(string, map[string]specv1.Secret) error
+	DeleteApplication(string, string) error
+
+	// TODO: update
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
