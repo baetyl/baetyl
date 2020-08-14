@@ -5,7 +5,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -22,30 +21,32 @@ type New func(cfg config.AmiConfig) (AMI, error)
 
 // AMI app model interfaces
 type AMI interface {
-	// node
 	CollectNodeInfo() (*specv1.NodeInfo, error)
 	CollectNodeStats() (*specv1.NodeStats, error)
 
-	// app
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error
 	DeleteApp(string, string) error
 	StatsApps(string) ([]specv1.AppStats, error)
+
+	// TODO: deprecated
+	CollectAppStats(string) ([]specv1.AppStats, error)
+	ApplyApplication(string, specv1.Application, []string) error
+	ApplyConfigurations(string, map[string]specv1.Configuration) error
+	ApplySecrets(string, map[string]specv1.Secret) error
+	DeleteApplication(string, string) error
 
 	// TODO: update
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
 func NewAMI(cfg config.AmiConfig) (AMI, error) {
-	mode := os.Getenv(context.KeyRunMode)
-	if mode == "" {
-		mode = "kube"
-	}
+	name := cfg.Kind
 	mu.Lock()
 	defer mu.Unlock()
-	if ami, ok := amiImpls[mode]; ok {
+	if ami, ok := amiImpls[name]; ok {
 		return ami, nil
 	}
-	amiNew, ok := amiNews[mode]
+	amiNew, ok := amiNews[name]
 	if !ok {
 		return nil, errors.Trace(os.ErrInvalid)
 	}
@@ -53,7 +54,7 @@ func NewAMI(cfg config.AmiConfig) (AMI, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	amiImpls[mode] = ami
+	amiImpls[name] = ami
 	return ami, nil
 }
 
