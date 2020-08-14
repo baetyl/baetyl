@@ -178,17 +178,17 @@ func (mr *MockAMIMockRecorder) FetchLog(arg0, arg1, arg2, arg3 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchLog", reflect.TypeOf((*MockAMI)(nil).FetchLog), arg0, arg1, arg2, arg3)
 }
 
-// StatsApp mocks base method
-func (m *MockAMI) StatsApp(arg0 string) ([]v1.AppStats, error) {
+// StatsApps mocks base method
+func (m *MockAMI) StatsApps(arg0 string) ([]v1.AppStats, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StatsApp", arg0)
+	ret := m.ctrl.Call(m, "StatsApps", arg0)
 	ret0, _ := ret[0].([]v1.AppStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StatsApp indicates an expected call of StatsApp
-func (mr *MockAMIMockRecorder) StatsApp(arg0 interface{}) *gomock.Call {
+// StatsApps indicates an expected call of StatsApps
+func (mr *MockAMIMockRecorder) StatsApps(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatsApp", reflect.TypeOf((*MockAMI)(nil).StatsApp), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatsApps", reflect.TypeOf((*MockAMI)(nil).StatsApps), arg0)
 }

@@ -10,30 +10,30 @@ import (
 	reflect "reflect"
 )
 
-// MockLink is a mock of Link interface.
+// MockLink is a mock of Link interface
 type MockLink struct {
 	ctrl     *gomock.Controller
 	recorder *MockLinkMockRecorder
 }
 
-// MockLinkMockRecorder is the mock recorder for MockLink.
+// MockLinkMockRecorder is the mock recorder for MockLink
 type MockLinkMockRecorder struct {
 	mock *MockLink
 }
 
-// NewMockLink creates a new mock instance.
+// NewMockLink creates a new mock instance
 func NewMockLink(ctrl *gomock.Controller) *MockLink {
 	mock := &MockLink{ctrl: ctrl}
 	mock.recorder = &MockLinkMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockLink) EXPECT() *MockLinkMockRecorder {
 	return m.recorder
 }
 
-// Receive mocks base method.
+// Receive mocks base method
 func (m *MockLink) Receive() (<-chan *v1.Message, <-chan error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Receive")
@@ -42,13 +42,13 @@ func (m *MockLink) Receive() (<-chan *v1.Message, <-chan error) {
 	return ret0, ret1
 }
 
-// Receive indicates an expected call of Receive.
+// Receive indicates an expected call of Receive
 func (mr *MockLinkMockRecorder) Receive() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Receive", reflect.TypeOf((*MockLink)(nil).Receive))
 }
 
-// Request mocks base method.
+// Request mocks base method
 func (m *MockLink) Request(msg *v1.Message) (*v1.Message, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Request", msg)
@@ -57,13 +57,13 @@ func (m *MockLink) Request(msg *v1.Message) (*v1.Message, error) {
 	return ret0, ret1
 }
 
-// Request indicates an expected call of Request.
+// Request indicates an expected call of Request
 func (mr *MockLinkMockRecorder) Request(msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockLink)(nil).Request), msg)
 }
 
-// Send mocks base method.
+// Send mocks base method
 func (m *MockLink) Send(msg *v1.Message) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Send", msg)
@@ -71,13 +71,13 @@ func (m *MockLink) Send(msg *v1.Message) error {
 	return ret0
 }
 
-// Send indicates an expected call of Send.
+// Send indicates an expected call of Send
 func (mr *MockLinkMockRecorder) Send(msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockLink)(nil).Send), msg)
 }
 
-// IsAsyncSupported mocks base method.
+// IsAsyncSupported mocks base method
 func (m *MockLink) IsAsyncSupported() bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsAsyncSupported")
@@ -85,7 +85,7 @@ func (m *MockLink) IsAsyncSupported() bool {
 	return ret0
 }
 
-// IsAsyncSupported indicates an expected call of IsAsyncSupported.
+// IsAsyncSupported indicates an expected call of IsAsyncSupported
 func (mr *MockLinkMockRecorder) IsAsyncSupported() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsAsyncSupported", reflect.TypeOf((*MockLink)(nil).IsAsyncSupported))

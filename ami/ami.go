@@ -25,8 +25,8 @@ type AMI interface {
 	CollectNodeStats() (*specv1.NodeStats, error)
 
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error
-	StatsApp(string) ([]specv1.AppStats, error)
 	DeleteApp(string, string) error
+	StatsApps(string) ([]specv1.AppStats, error)
 
 	// TODO: deprecated
 	CollectAppStats(string) ([]specv1.AppStats, error)
