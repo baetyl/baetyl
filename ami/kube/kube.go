@@ -42,10 +42,10 @@ func (k *kubeImpl) ApplyApp(s string, application specv1.Application, m map[stri
 	panic("implement me")
 }
 
-func (k *kubeImpl) StatsApp(s string) ([]specv1.AppStats, error) {
+func (k *kubeImpl) DeleteApp(s string, s2 string) error {
 	panic("implement me")
 }
 
-func (k *kubeImpl) DeleteApp(s string, s2 string) error {
+func (k *kubeImpl) StatsApps(s string) ([]specv1.AppStats, error) {
 	panic("implement me")
 }

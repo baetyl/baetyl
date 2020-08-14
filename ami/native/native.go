@@ -33,7 +33,7 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 }
 
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
-	appDir := filepath.Join(runRootDir, ns, app.Name, app.Version)
+	appDir := filepath.Join(runRootPath, ns, app.Name, app.Version)
 	err := os.MkdirAll(appDir, 0755)
 	if err != nil {
 		return errors.Trace(err)
@@ -92,7 +92,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Env:         env,
 				Logger: log.Config{
 					Level:    "debug",
-					Filename: filepath.Join(logRootDir, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
+					Filename: filepath.Join(logRootPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
 				},
 			}
 			prgYml, err := yaml.Marshal(prgCfg)
@@ -117,64 +117,125 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 	return nil
 }
 
-func (impl *nativeImpl) StatsApp(ns string) ([]v1.AppStats, error) {
-	var stats []v1.AppStats
+func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
+	// scan app version
+	curAppDir := filepath.Join(runRootPath, ns, appName)
+	appVerFiles, err := ioutil.ReadDir(curAppDir)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	for _, appVerFile := range appVerFiles {
+		if !appVerFile.IsDir() {
+			continue
+		}
+		// scan service
+		curAppVer := appVerFile.Name()
+		curAppVerDir := filepath.Join(curAppDir, curAppVer)
+		svcFiles, err := ioutil.ReadDir(curAppVerDir)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		for _, svcFile := range svcFiles {
+			if !svcFile.IsDir() {
+				continue
+			}
+			// scan service instance
+			curSvcName := svcFile.Name()
+			curSvcDir := filepath.Join(curAppVerDir, curSvcName)
+			svcInsFiles, err := ioutil.ReadDir(curSvcDir)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			for _, svcInsFile := range svcInsFiles {
+				if !svcInsFile.IsDir() {
+					continue
+				}
+				curSvcIns := svcInsFile.Name()
+				curSvcInsDir := filepath.Join(curSvcDir, curSvcIns)
+				svc, err := service.New(nil, &service.Config{
+					Name:             fmt.Sprintf("%s.%s.%s.%s", appName, curAppVer, curSvcName, curSvcIns),
+					WorkingDirectory: svcInsFile.Name(),
+				})
+				if err = svc.Uninstall(); err != nil {
+					return errors.Trace(err)
+				}
+				err = os.RemoveAll(curSvcInsDir)
+				if err != nil {
+					return errors.Trace(err)
+				}
+			}
+			err = os.RemoveAll(curSvcDir)
+			if err != nil {
+				return errors.Trace(err)
+			}
+		}
+		err = os.RemoveAll(curAppVerDir)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	}
+	return errors.Trace(os.RemoveAll(curAppDir))
+}
 
-	nsRootDir := filepath.Join(runRootDir, ns)
+func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
+	var stats []v1.AppStats
 	// scan app
-	appDirs, err := ioutil.ReadDir(nsRootDir)
+	curNsPath := filepath.Join(runRootPath, ns)
+	appFiles, err := ioutil.ReadDir(curNsPath)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	for _, appDir := range appDirs {
-		if !appDir.IsDir() {
+	for _, appFile := range appFiles {
+		if !appFile.IsDir() {
 			continue
 		}
-
 		// scan app version
-		curAppName := appDir.Name()
-		appVerDirs, err := ioutil.ReadDir(filepath.Join(nsRootDir, curAppName))
+		curAppName := appFile.Name()
+		curAppPath := filepath.Join(curNsPath, curAppName)
+		appVerFiles, err := ioutil.ReadDir(curAppPath)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		for _, appVerDir := range appVerDirs {
-			if !appVerDir.IsDir() {
+		for _, appVerFile := range appVerFiles {
+			if !appVerFile.IsDir() {
 				continue
 			}
 
 			curAppStats := v1.AppStats{}
-			curAppStats.Name = appDir.Name()
-			curAppStats.Version = appVerDir.Name()
+			curAppStats.Name = appFile.Name()
+			curAppStats.Version = appVerFile.Name()
 			curAppStats.InstanceStats = map[string]v1.InstanceStats{}
 			stats = append(stats, curAppStats)
 
 			// scan service
-			curAppVer := appVerDir.Name()
-			svcDirs, err := ioutil.ReadDir(filepath.Join(nsRootDir, curAppName, curAppVer))
+			curAppVer := appVerFile.Name()
+			curAppVerPath := filepath.Join(curAppPath, curAppVer)
+			svcFiles, err := ioutil.ReadDir(curAppVerPath)
 			if err != nil {
 				return nil, errors.Trace(err)
 			}
-			for _, svcDir := range svcDirs {
-				if !svcDir.IsDir() {
+			for _, svcFile := range svcFiles {
+				if !svcFile.IsDir() {
 					continue
 				}
 
 				// scan service instance
-				curSvcName := svcDir.Name()
-				svcInsDirs, err := ioutil.ReadDir(filepath.Join(nsRootDir, curAppName, curAppVer, curSvcName))
+				curSvcName := svcFile.Name()
+				curSvcPath := filepath.Join(curAppVerPath, curSvcName)
+				svcInsFiles, err := ioutil.ReadDir(curSvcPath)
 				if err != nil {
 					return nil, errors.Trace(err)
 				}
-				for _, svcInsDir := range svcInsDirs {
-					if !svcInsDir.IsDir() {
+				for _, svcInsFile := range svcInsFiles {
+					if !svcInsFile.IsDir() {
 						continue
 					}
 
-					curSvcIns := svcInsDir.Name()
+					curSvcIns := svcInsFile.Name()
 					curPrgName := fmt.Sprintf("%s.%s.%s.%s", curAppName, curAppVer, curSvcName, curSvcIns)
 					svc, err := service.New(nil, &service.Config{
 						Name:             curPrgName,
-						WorkingDirectory: svcInsDir.Name(),
+						WorkingDirectory: svcInsFile.Name(),
 					})
 					curInsStats := v1.InstanceStats{
 						ServiceName: curSvcName,
@@ -193,59 +254,6 @@ func (impl *nativeImpl) StatsApp(ns string) ([]v1.AppStats, error) {
 		}
 	}
 	return stats, nil
-}
-
-func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
-	appRootDir := filepath.Join(runRootDir, ns, appName)
-	defer func() {
-		err := os.RemoveAll(appRootDir)
-		if err != nil {
-			impl.log.Error("failed to remove app dir", log.Any("ns", ns), log.Any("app", appName), log.Error(err))
-		}
-	}()
-
-	// scan app version
-	appVerDirs, err := ioutil.ReadDir(appRootDir)
-	if err != nil {
-		return errors.Trace(err)
-	}
-	for _, appVerDir := range appVerDirs {
-		if !appVerDir.IsDir() {
-			continue
-		}
-		curAppVer := appVerDir.Name()
-		// scan service
-		svcDirs, err := ioutil.ReadDir(filepath.Join(appRootDir, curAppVer))
-		if err != nil {
-			return errors.Trace(err)
-		}
-		for _, svcDir := range svcDirs {
-			if !svcDir.IsDir() {
-				continue
-			}
-			curSvcName := svcDir.Name()
-			// scan service instance
-			svcInsDirs, err := ioutil.ReadDir(filepath.Join(appRootDir, curAppVer, curSvcName))
-			if err != nil {
-				return errors.Trace(err)
-			}
-			for _, svcInsDir := range svcInsDirs {
-				if !svcInsDir.IsDir() {
-					continue
-				}
-				curSvcIns := svcInsDir.Name()
-				prgName := fmt.Sprintf("%s.%s.%s.%s", appName, curAppVer, curSvcName, curSvcIns)
-				svc, err := service.New(nil, &service.Config{
-					Name:             prgName,
-					WorkingDirectory: svcInsDir.Name(),
-				})
-				if err = svc.Uninstall(); err != nil {
-					return errors.Trace(err)
-				}
-			}
-		}
-	}
-	return nil
 }
 
 func prgStatusToSpecStatus(status service.Status) v1.Status {
