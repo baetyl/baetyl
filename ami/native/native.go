@@ -2,6 +2,7 @@ package native
 
 import (
 	"fmt"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"io"
 	"io/ioutil"
 	"os"
@@ -180,8 +181,16 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 
 func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	var stats []v1.AppStats
-	// scan app
+	if utils.DirExists(runRootPath) {
+		return stats, nil
+	}
+
 	curNsPath := filepath.Join(runRootPath, ns)
+	if utils.DirExists(curNsPath) {
+		return stats, nil
+	}
+
+	// scan app
 	appFiles, err := ioutil.ReadDir(curNsPath)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -190,9 +199,12 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 		if !appFile.IsDir() {
 			continue
 		}
-		// scan app version
 		curAppName := appFile.Name()
 		curAppPath := filepath.Join(curNsPath, curAppName)
+		if utils.DirExists(curAppPath) {
+			continue
+		}
+		// scan app version
 		appVerFiles, err := ioutil.ReadDir(curAppPath)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -208,9 +220,12 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 			curAppStats.InstanceStats = map[string]v1.InstanceStats{}
 			stats = append(stats, curAppStats)
 
-			// scan service
 			curAppVer := appVerFile.Name()
 			curAppVerPath := filepath.Join(curAppPath, curAppVer)
+			if utils.DirExists(curAppVerPath) {
+				continue
+			}
+			// scan service
 			svcFiles, err := ioutil.ReadDir(curAppVerPath)
 			if err != nil {
 				return nil, errors.Trace(err)
@@ -220,9 +235,12 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					continue
 				}
 
-				// scan service instance
 				curSvcName := svcFile.Name()
 				curSvcPath := filepath.Join(curAppVerPath, curSvcName)
+				if utils.DirExists(curSvcPath) {
+					continue
+				}
+				// scan service instance
 				svcInsFiles, err := ioutil.ReadDir(curSvcPath)
 				if err != nil {
 					return nil, errors.Trace(err)

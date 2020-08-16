@@ -10,7 +10,7 @@ sync:
     path: var/lib/baetyl/core-data
 httplink:
   http:
-    address: https://106.12.34.129:30005
+    address: https://sync.edge.baidubce.com
 logger:
-  filename: var/log/baetyl/service.log
+#  filename: var/log/baetyl/service.log
   level: debug
