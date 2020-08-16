@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -269,31 +270,17 @@ func prgStatusToSpecStatus(status service.Status) v1.Status {
 
 // TODO: remove
 func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
-	panic("implement me")
+	return &v1.NodeInfo{
+		Arch: runtime.GOARCH,
+		OS:   runtime.GOOS,
+	}, nil
 }
 
 func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
-	panic("implement me")
-}
-
-func (impl *nativeImpl) CollectAppStats(s string) ([]v1.AppStats, error) {
-	panic("implement me")
-}
-
-func (impl *nativeImpl) ApplyApplication(s string, application v1.Application, strings []string) error {
-	panic("implement me")
-}
-
-func (impl *nativeImpl) ApplyConfigurations(s string, m map[string]v1.Configuration) error {
-	panic("implement me")
-}
-
-func (impl *nativeImpl) ApplySecrets(s string, m map[string]v1.Secret) error {
-	panic("implement me")
-}
-
-func (impl *nativeImpl) DeleteApplication(s string, s2 string) error {
-	panic("implement me")
+	return &v1.NodeStats{
+		Usage:    map[string]string{},
+		Capacity: map[string]string{},
+	}, nil
 }
 
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
