@@ -47,7 +47,7 @@ func TestApplyApplication(t *testing.T) {
 		}},
 	}
 	secs := []string{"sec1"}
-	err := ami.ApplyApplication(ns, app, secs)
+	err := ami.applyApplication(ns, app, secs)
 	assert.NoError(t, err)
 }
 
@@ -261,7 +261,7 @@ func TestDeleteApplication(t *testing.T) {
 			}},
 		}},
 	}
-	err := ami.ApplyApplication(ns, app, nil)
+	err := ami.applyApplication(ns, app, nil)
 	assert.NoError(t, err)
 	d, err := ami.cli.app.Deployments(ns).Get(sname, metav1.GetOptions{})
 	assert.NotNil(t, d)
@@ -270,7 +270,7 @@ func TestDeleteApplication(t *testing.T) {
 	assert.NotNil(t, s)
 	assert.NoError(t, err)
 
-	err = ami.DeleteApplication(ns, app.Name)
+	err = ami.deleteApplication(ns, app.Name)
 	assert.NoError(t, err)
 	d, _ = ami.cli.app.Deployments(ns).Get(sname, metav1.GetOptions{})
 	assert.Nil(t, d)
@@ -289,7 +289,7 @@ func TestApplySecret(t *testing.T) {
 			Name: "sec2", Namespace: ns,
 		},
 	}
-	err := ami.ApplySecrets(ns, secs)
+	err := ami.applySecrets(ns, secs)
 	assert.NoError(t, err)
 
 	sec := specv1.Secret{
@@ -302,7 +302,7 @@ func TestApplySecret(t *testing.T) {
 		secKey: []byte(secVal),
 	}
 	secs = map[string]specv1.Secret{"sec": sec}
-	err = ami.ApplySecrets(ns, secs)
+	err = ami.applySecrets(ns, secs)
 	assert.NoError(t, err)
 	expected := &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "sec", Namespace: "baetyl-edge"},
@@ -324,7 +324,7 @@ func TestApplySecret(t *testing.T) {
 		RegistryPassword: []byte("1234"),
 	}
 	regs := map[string]specv1.Secret{"registry": reg}
-	err = ami.ApplySecrets(ns, regs)
+	err = ami.applySecrets(ns, regs)
 	assert.NoError(t, err)
 	expected = &v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: "registry", Namespace: ns},
@@ -359,7 +359,7 @@ func TestApplyConfigMap(t *testing.T) {
 			Name: "cfg2", Namespace: ns,
 		},
 	}
-	err := ami.ApplyConfigurations(ns, cfgs)
+	err := ami.applyConfigurations(ns, cfgs)
 	assert.NoError(t, err)
 }
 

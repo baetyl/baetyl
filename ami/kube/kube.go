@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -14,7 +15,7 @@ type kubeImpl struct {
 	knn   string // kube node name
 	cli   *client
 	store *bh.Store
-	conf  *config.KubernetesConfig
+	conf  *config.KubeConfig
 	log   *log.Logger
 }
 
@@ -24,7 +25,7 @@ func init() {
 }
 
 func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
-	cli, err := newClient(cfg.Kubernetes)
+	cli, err := newClient(cfg.Kube)
 	if err != nil {
 		return nil, err
 	}
@@ -32,20 +33,35 @@ func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 	model := &kubeImpl{
 		knn:  knn,
 		cli:  cli,
-		conf: &cfg.Kubernetes,
+		conf: &cfg.Kube,
 		log:  log.With(log.Any("ami", "kube")),
 	}
 	return model, nil
 }
 
-func (k *kubeImpl) ApplyApp(s string, application specv1.Application, m map[string]specv1.Configuration, m2 map[string]specv1.Secret) error {
-	panic("implement me")
+func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]specv1.Configuration, secs map[string]specv1.Secret) error {
+	if err := k.applyConfigurations(ns, cfgs); err != nil {
+		return errors.Trace(err)
+	}
+	if err := k.applySecrets(ns, secs); err != nil {
+		return errors.Trace(err)
+	}
+	var imagePullSecs []string
+	for n, sec := range secs {
+		if isRegistrySecret(sec) {
+			imagePullSecs = append(imagePullSecs, n)
+		}
+	}
+	if err := k.applyApplication(ns, app, imagePullSecs); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
-func (k *kubeImpl) DeleteApp(s string, s2 string) error {
-	panic("implement me")
+func (k *kubeImpl) DeleteApp(ns string, app string) error {
+	return k.deleteApplication(ns, app)
 }
 
-func (k *kubeImpl) StatsApps(s string) ([]specv1.AppStats, error) {
-	panic("implement me")
+func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
+	return k.collectAppStats(ns)
 }

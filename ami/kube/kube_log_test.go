@@ -42,7 +42,7 @@ func initLogKubeAMI(t *testing.T) *kubeImpl {
 		cli:   nil,
 		store: sto,
 		knn:   "node1",
-		conf: &config.KubernetesConfig{
+		conf: &config.KubeConfig{
 			LogConfig: config.KubernetesLogConfig{
 				Follow:     false,
 				Previous:   false,

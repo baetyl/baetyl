@@ -61,7 +61,7 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStats, error) {
 	return nodeStats, nil
 }
 
-func (k *kubeImpl) CollectAppStats(ns string) ([]specv1.AppStats, error) {
+func (k *kubeImpl) collectAppStats(ns string) ([]specv1.AppStats, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)

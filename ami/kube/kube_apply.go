@@ -29,7 +29,7 @@ const (
 	BaetylCore         = "baetyl-core"
 )
 
-func (k *kubeImpl) ApplyConfigurations(ns string, cfgs map[string]specv1.Configuration) error {
+func (k *kubeImpl) applyConfigurations(ns string, cfgs map[string]specv1.Configuration) error {
 	for _, cfg := range cfgs {
 		cm := &corev1.ConfigMap{}
 		if err := copier.Copy(cm, &cfg); err != nil {
@@ -52,7 +52,7 @@ func (k *kubeImpl) ApplyConfigurations(ns string, cfgs map[string]specv1.Configu
 	return nil
 }
 
-func (k *kubeImpl) ApplySecrets(ns string, secs map[string]specv1.Secret) error {
+func (k *kubeImpl) applySecrets(ns string, secs map[string]specv1.Secret) error {
 	for _, sec := range secs {
 		secret := &corev1.Secret{}
 		// secret for docker repository authentication
@@ -87,7 +87,7 @@ func (k *kubeImpl) ApplySecrets(ns string, secs map[string]specv1.Secret) error 
 	return nil
 }
 
-func (k *kubeImpl) DeleteApplication(ns, name string) error {
+func (k *kubeImpl) deleteApplication(ns, name string) error {
 	set := labels.Set{AppName: name}
 	selector := labels.SelectorFromSet(set)
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
@@ -114,7 +114,7 @@ func (k *kubeImpl) DeleteApplication(ns, name string) error {
 	return nil
 }
 
-func (k *kubeImpl) ApplyApplication(ns string, app specv1.Application, imagePullSecs []string) error {
+func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePullSecs []string) error {
 	var imagePullSecrets []corev1.LocalObjectReference
 	secs := make(map[string]struct{})
 	for _, sec := range imagePullSecs {
