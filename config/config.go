@@ -1,11 +1,11 @@
 package config
 
 import (
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
-	"github.com/baetyl/baetyl-go/v2/utils"
 )
 
 // Config the core config
@@ -23,29 +23,28 @@ type Config struct {
 	} `yaml:"plugin" json:"plugin"`
 }
 
+type AmiConfig struct {
+	Kind   string       `yaml:"kind" json:"kind" default:"kube"`
+	Kube   KubeConfig   `yaml:"kube" json:"kube"`
+	Native NativeConfig `yaml:"native" json:"native"`
+}
+
 type EngineConfig struct {
 	AmiConfig `yaml:",inline" json:",inline"`
 	Report    struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
-	HostPath string `yaml:"hostPath" json:"hostPath" default:"/var/lib/baetyl/hostpath"`
-}
-
-type AmiConfig struct {
-	Kube   KubeConfig   `yaml:"kube" json:"kube"`
-	Native NativeConfig `yaml:"native" json:"native"`
 }
 
 type KubeConfig struct {
-	InCluster  bool                `yaml:"inCluster" json:"inCluster"`
+	InCluster  bool                `yaml:"inCluster" json:"inCluster" default:"false"`
 	ConfigPath string              `yaml:"configPath" json:"configPath"`
-	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"` // TODO: remove
+	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"`
 }
 
 type NativeConfig struct {
 }
 
-// TODO: remove
 type KubernetesLogConfig struct {
 	Follow     bool `yaml:"follow" json:"follow"`
 	Previous   bool `yaml:"previous" json:"previous"`
@@ -53,15 +52,13 @@ type KubernetesLogConfig struct {
 }
 
 type StoreConfig struct {
-	Path string `yaml:"path" json:"path" default:"/var/lib/baetyl/store/core.db"`
+	Path string `yaml:"path" json:"path" default:"var/lib/baetyl/store/core.db"`
 }
 
 type SyncConfig struct {
-	Report struct {
-		Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
-	} `yaml:"report" json:"report"`
-	Download struct {
-		Path              string `yaml:"path" json:"path" default:"/var/lib/baetyl/download"`
+	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
+	Download       struct {
+		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`
 }
