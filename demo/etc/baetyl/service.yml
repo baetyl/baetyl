@@ -1,0 +1,16 @@
+engine:
+  kind: native
+cert:
+  ca: var/lib/baetyl/cert/sync/ca.pem
+  key: var/lib/baetyl/cert/sync/client.key
+  cert: var/lib/baetyl/cert/sync/client.pem
+  insecureSkipVerify: true
+sync:
+  download:
+    path: var/lib/baetyl/core-data
+httplink:
+  http:
+    address: https://106.12.34.129:30005
+logger:
+  filename: var/log/baetyl/service.log
+  level: debug

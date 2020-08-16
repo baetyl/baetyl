@@ -19,17 +19,15 @@
 output
 .*.swp
 .*.swo
-/etc
 /**/var
 .idea
 .vscode
 /vendor
 /coverage.out
 /output*
-/etc
 coverage.txt
 coverage.html
 .DS_Store
 
-baetyl
+/baetyl
 cmd/demoprogram/demoprogram
