@@ -21,9 +21,11 @@ type New func(cfg config.AmiConfig) (AMI, error)
 
 // AMI app model interfaces
 type AMI interface {
+	// node
 	CollectNodeInfo() (*specv1.NodeInfo, error)
 	CollectNodeStats() (*specv1.NodeStats, error)
 
+	// app
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error
 	DeleteApp(string, string) error
 	StatsApps(string) ([]specv1.AppStats, error)
