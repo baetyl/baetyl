@@ -24,8 +24,9 @@ type Config struct {
 }
 
 type AmiConfig struct {
-	Kind       string           `yaml:"kind" json:"kind" default:"kubernetes"`
-	Kubernetes KubernetesConfig `yaml:"kubernetes" json:"kubernetes"`
+	Kind   string       `yaml:"kind" json:"kind" default:"kube"`
+	Kube   KubeConfig   `yaml:"kube" json:"kube"`
+	Native NativeConfig `yaml:"native" json:"native"`
 }
 
 type EngineConfig struct {
@@ -35,10 +36,13 @@ type EngineConfig struct {
 	} `yaml:"report" json:"report"`
 }
 
-type KubernetesConfig struct {
+type KubeConfig struct {
 	InCluster  bool                `yaml:"inCluster" json:"inCluster" default:"false"`
 	ConfigPath string              `yaml:"configPath" json:"configPath"`
 	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"`
+}
+
+type NativeConfig struct {
 }
 
 type KubernetesLogConfig struct {

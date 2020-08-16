@@ -80,7 +80,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 
 	c := &config.Config{}
 	c.Engine.Kind = "kubernetes"
-	c.Engine.Kubernetes.InCluster = true
+	c.Engine.Kube.InCluster = true
 	c.Init.Active.Interval = 5 * time.Second
 
 	active, err := NewActivate(c)

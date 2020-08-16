@@ -9,7 +9,7 @@ import (
 func Test_newKubeImpl(t *testing.T) {
 	c := config.AmiConfig{}
 	c.Kind = "kubernetes"
-	c.Kubernetes.InCluster = true
+	c.Kube.InCluster = true
 
 	_, err := newKubeImpl(c)
 	assert.Error(t, err)

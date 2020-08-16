@@ -117,7 +117,7 @@ func TestCollect(t *testing.T) {
 	appStats := []specv1.AppStats{{AppInfo: info}}
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
 	res := e.Collect(ns, false, nil)
 	resNode := res["node"]
 	resNodeStats := res["nodestats"]
@@ -130,21 +130,21 @@ func TestCollect(t *testing.T) {
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
 	res = e.Collect(ns, false, nil)
 	resNode = res["node"]
 	assert.Nil(t, resNode)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
-	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
 	res = e.Collect(ns, false, nil)
 	resNodeStats = res["nodestats"]
 	assert.Nil(t, resNodeStats)
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
-	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
+	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
 	res = e.Collect(ns, false, nil)
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
@@ -213,9 +213,7 @@ func TestApplyApp(t *testing.T) {
 	key = makeKey(specv1.KindSecret, "sec1", "s1")
 	err = sto.Upsert(key, sec)
 	assert.NoError(t, err)
-	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	info := specv1.AppInfo{Name: "app1", Version: "v1"}
 	err = eng.applyApp(ns, info)
 	assert.NoError(t, err)
@@ -225,20 +223,17 @@ func TestApplyApp(t *testing.T) {
 	assert.Error(t, err)
 
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(errors.New("failed to apply configuration"))
+	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to apply configuration"))
 	err = eng.applyApp(ns, info)
 	assert.Error(t, err)
 
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(errors.New("failed to apply secret"))
+	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to apply secret"))
 	err = eng.applyApp(ns, info)
 	assert.Error(t, err)
 
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to apply application"))
+	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("failed to apply application"))
 	err = eng.applyApp(ns, info)
 	assert.Error(t, err)
 	eng.Close()
@@ -264,7 +259,7 @@ func TestReportAndApply(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
 	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
-	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
 
 	reApp := specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}, {Name: "app2", Version: "v2"}},
@@ -284,10 +279,8 @@ func TestReportAndApply(t *testing.T) {
 	err = sto.Upsert(makeKey(specv1.KindApplication, "app3", "v3"), app3)
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
 	mockSync.EXPECT().SyncApps(gomock.Any()).Return(nil, nil)
-	mockAmi.EXPECT().ApplyConfigurations(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplySecrets(gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().ApplyApplication(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-	mockAmi.EXPECT().DeleteApplication(gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockAmi.EXPECT().DeleteApp(gomock.Any(), gomock.Any()).Return(nil)
 	err = eng.reportAndApply(false, true, nil)
 	assert.NoError(t, err)
 
@@ -295,7 +288,7 @@ func TestReportAndApply(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
 	appStats = []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
-	mockAmi.EXPECT().CollectAppStats(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
 	reApp = specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}},
 	}

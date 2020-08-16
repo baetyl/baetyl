@@ -48,63 +48,6 @@ func (mr *MockAMIMockRecorder) ApplyApp(arg0, arg1, arg2, arg3 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyApp", reflect.TypeOf((*MockAMI)(nil).ApplyApp), arg0, arg1, arg2, arg3)
 }
 
-// ApplyApplication mocks base method
-func (m *MockAMI) ApplyApplication(arg0 string, arg1 v1.Application, arg2 []string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyApplication", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplyApplication indicates an expected call of ApplyApplication
-func (mr *MockAMIMockRecorder) ApplyApplication(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyApplication", reflect.TypeOf((*MockAMI)(nil).ApplyApplication), arg0, arg1, arg2)
-}
-
-// ApplyConfigurations mocks base method
-func (m *MockAMI) ApplyConfigurations(arg0 string, arg1 map[string]v1.Configuration) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplyConfigurations", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplyConfigurations indicates an expected call of ApplyConfigurations
-func (mr *MockAMIMockRecorder) ApplyConfigurations(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyConfigurations", reflect.TypeOf((*MockAMI)(nil).ApplyConfigurations), arg0, arg1)
-}
-
-// ApplySecrets mocks base method
-func (m *MockAMI) ApplySecrets(arg0 string, arg1 map[string]v1.Secret) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ApplySecrets", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ApplySecrets indicates an expected call of ApplySecrets
-func (mr *MockAMIMockRecorder) ApplySecrets(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplySecrets", reflect.TypeOf((*MockAMI)(nil).ApplySecrets), arg0, arg1)
-}
-
-// CollectAppStats mocks base method
-func (m *MockAMI) CollectAppStats(arg0 string) ([]v1.AppStats, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CollectAppStats", arg0)
-	ret0, _ := ret[0].([]v1.AppStats)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CollectAppStats indicates an expected call of CollectAppStats
-func (mr *MockAMIMockRecorder) CollectAppStats(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectAppStats", reflect.TypeOf((*MockAMI)(nil).CollectAppStats), arg0)
-}
-
 // CollectNodeInfo mocks base method
 func (m *MockAMI) CollectNodeInfo() (*v1.NodeInfo, error) {
 	m.ctrl.T.Helper()
@@ -147,20 +90,6 @@ func (m *MockAMI) DeleteApp(arg0, arg1 string) error {
 func (mr *MockAMIMockRecorder) DeleteApp(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteApp", reflect.TypeOf((*MockAMI)(nil).DeleteApp), arg0, arg1)
-}
-
-// DeleteApplication mocks base method
-func (m *MockAMI) DeleteApplication(arg0, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteApplication", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteApplication indicates an expected call of DeleteApplication
-func (mr *MockAMIMockRecorder) DeleteApplication(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteApplication", reflect.TypeOf((*MockAMI)(nil).DeleteApplication), arg0, arg1)
 }
 
 // FetchLog mocks base method

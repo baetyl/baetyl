@@ -144,7 +144,7 @@ func (e *Engine) Collect(ns string, isSys bool, desire specv1.Desire) specv1.Rep
 	if err != nil {
 		e.log.Warn("failed to collect node stats", log.Error(err))
 	}
-	appStats, err := e.ami.CollectAppStats(ns)
+	appStats, err := e.ami.StatsApps(ns)
 	if err != nil {
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
@@ -207,7 +207,7 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 	}
 	if delete {
 		for n := range del {
-			if err := e.ami.DeleteApplication(ns, n); err != nil {
+			if err := e.ami.DeleteApp(ns, n); err != nil {
 				e.log.Error("failed to delete applications", log.Any("system", isSys), log.Error(err))
 				return errors.Trace(err)
 			}
@@ -313,28 +313,14 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 		e.log.Error("failed to revise applications", log.Any("app", app), log.Error(err))
 		return errors.Trace(err)
 	}
-	// inject internal cert
+	// inject system cert
 	if e.sec != nil {
 		if err := e.injectCert(app, secs); err != nil {
 			return errors.Trace(err)
 		}
 	}
-	if err := e.ami.ApplyConfigurations(ns, cfgs); err != nil {
-		return errors.Trace(err)
-	}
-	if err := e.ami.ApplySecrets(ns, secs); err != nil {
-		return errors.Trace(err)
-	}
-	var imagePullSecs []string
-	for n, sec := range secs {
-		if isRegistrySecret(sec) {
-			imagePullSecs = append(imagePullSecs, n)
-		}
-	}
-	if err := e.ami.ApplyApplication(ns, *app, imagePullSecs); err != nil {
-		return errors.Trace(err)
-	}
-	return nil
+	// apply app
+	return errors.Trace(e.ami.ApplyApp(ns, *app, cfgs, secs))
 }
 
 func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {

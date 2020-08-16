@@ -18,7 +18,7 @@ type client struct {
 	metrics metricsv1beta1.MetricsV1beta1Interface
 }
 
-func newClient(cfg config.KubernetesConfig) (*client, error) {
+func newClient(cfg config.KubeConfig) (*client, error) {
 	kubeConfig, err := func() (*rest.Config, error) {
 		if cfg.InCluster {
 			return rest.InClusterConfig()
