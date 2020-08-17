@@ -121,8 +121,13 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				WorkingDirectory: insDir,
 				Arguments:        []string{"program"},
 			})
-			if err = svc.Install(); err != nil {
-				return errors.Trace(err)
+			err = svc.Install()
+			if err != nil {
+				impl.log.Warn("failed to install service", log.Any("program", prgCfg.Name), log.Error(err))
+			}
+			err = svc.Start()
+			if err != nil {
+				impl.log.Warn("failed to start service", log.Any("program", prgCfg.Name), log.Error(err))
 			}
 		}
 	}
@@ -191,12 +196,12 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 
 func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	var stats []v1.AppStats
-	if utils.DirExists(runRootPath) {
+	if !utils.DirExists(runRootPath) {
 		return stats, nil
 	}
 
 	curNsPath := filepath.Join(runRootPath, ns)
-	if utils.DirExists(curNsPath) {
+	if !utils.DirExists(curNsPath) {
 		return stats, nil
 	}
 
@@ -211,7 +216,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 		}
 		curAppName := appFile.Name()
 		curAppPath := filepath.Join(curNsPath, curAppName)
-		if utils.DirExists(curAppPath) {
+		if !utils.DirExists(curAppPath) {
 			continue
 		}
 		// scan app version
@@ -232,7 +237,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 
 			curAppVer := appVerFile.Name()
 			curAppVerPath := filepath.Join(curAppPath, curAppVer)
-			if utils.DirExists(curAppVerPath) {
+			if !utils.DirExists(curAppVerPath) {
 				continue
 			}
 			// scan service
@@ -247,7 +252,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 
 				curSvcName := svcFile.Name()
 				curSvcPath := filepath.Join(curAppVerPath, curSvcName)
-				if utils.DirExists(curSvcPath) {
+				if !utils.DirExists(curSvcPath) {
 					continue
 				}
 				// scan service instance
@@ -296,7 +301,6 @@ func prgStatusToSpecStatus(status service.Status) v1.Status {
 	}
 }
 
-// TODO: remove
 func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
 	return &v1.NodeInfo{
 		Arch: runtime.GOARCH,
