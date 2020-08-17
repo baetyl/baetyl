@@ -2,7 +2,6 @@ package native
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/utils"
 	"io"
 	"io/ioutil"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/program"
@@ -58,21 +58,31 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				if !ok {
 					return errors.Errorf("volume (%s) not found in app volumes", vm.Name)
 				}
+
 				if av.HostPath != nil {
 					os.Symlink(av.HostPath.Path, filepath.Join(insDir, vm.MountPath))
-				} else if av.Config != nil {
+					continue
+				}
+
+				// create mount path
+				dir := filepath.Join(insDir, vm.MountPath)
+				if err = os.MkdirAll(dir, 0755); err != nil {
+					return errors.Trace(err)
+				}
+
+				if av.Config != nil {
 					vc := configs[av.Config.Name]
 					for name, data := range vc.Data {
-						file := filepath.Join(insDir, vm.MountPath, name)
-						if err = ioutil.WriteFile(file, []byte(data), 0755); err != nil {
+						err = ioutil.WriteFile(filepath.Join(dir, name), []byte(data), 0755)
+						if err != nil {
 							return errors.Trace(err)
 						}
 					}
 				} else if av.Secret != nil {
-					vs := secrets[av.Config.Name]
+					vs := secrets[av.Secret.Name]
 					for name, data := range vs.Data {
-						file := filepath.Join(insDir, vm.MountPath, name)
-						if err = ioutil.WriteFile(file, data, 0755); err != nil {
+						err = ioutil.WriteFile(filepath.Join(dir, name), data, 0755)
+						if err != nil {
 							return errors.Trace(err)
 						}
 					}
