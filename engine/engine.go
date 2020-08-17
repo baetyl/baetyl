@@ -178,6 +178,8 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 		ns = e.ns
 	}
 	r := e.Collect(ns, isSys, desire)
+	e.log.Debug("collect stats of node and apps", log.Any("report", r))
+
 	rapps := r.AppInfos(isSys)
 	delta, err := e.nod.Report(r)
 	if err != nil {

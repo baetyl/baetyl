@@ -14,3 +14,4 @@ httplink:
 logger:
 #  filename: var/log/baetyl/service.log
   level: debug
+  encoding: console
