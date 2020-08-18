@@ -9,14 +9,15 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-const DefaultProgramYaml = "program.yml"
+const DefaultProgramEntryYaml = "program.yml"
+const DefaultProgramServiceYaml = "service.yml"
 
 func Run() error {
 	prg := &Program{
 		exit: make(chan struct{}),
 		log:  os.Stdout,
 	}
-	err := utils.LoadYAML(DefaultProgramYaml, &prg.cfg)
+	err := utils.LoadYAML(DefaultProgramServiceYaml, &prg.cfg)
 	if err != nil {
 		return errors.Trace(err)
 	}

@@ -18,7 +18,7 @@ const (
 )
 
 func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string, zip bool) error {
-	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0666)
+	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		return err
 	}

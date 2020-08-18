@@ -6,10 +6,6 @@ import (
 )
 
 const (
-	// TODO
-	// when baetyl-init applies the beatyl-core deployment yaml， passes the app data
-	// path in host through env to baetyl-core, does not hardcode the value here because the host path may be changed during baetyl installation
-	appDataHostPath = "/var/lib/baetyl/app-data"
 	configKeyObject = "_object_"
 )
 
