@@ -15,7 +15,7 @@ func init() {
 var programCmd = &cobra.Command{
 	Use:   "program",
 	Short: "Run a program of Baetyl",
-	Long:  `Baetyl loads program's configuration from program.yml, then runs and waits the program to stop.`,
+	Long:  `Baetyl loads program's configuration from program_service.yml, then runs and waits the program to stop.`,
 	Run: func(_ *cobra.Command, _ []string) {
 		if err := program.Run(); err != nil {
 			fmt.Fprintln(os.Stderr, err)

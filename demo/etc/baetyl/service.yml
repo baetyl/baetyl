@@ -5,9 +5,6 @@ cert:
   key: var/lib/baetyl/cert/sync/client.key
   cert: var/lib/baetyl/cert/sync/client.pem
   insecureSkipVerify: true
-sync:
-  download:
-    path: var/lib/baetyl/core-data
 httplink:
   http:
     address: https://sync.edge.baidubce.com

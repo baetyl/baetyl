@@ -126,9 +126,10 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if err := e.reportAndApply(true, delete, node.Desire); err != nil {
-		return errors.Trace(err)
-	}
+	// TODO: uncomment
+	//if err := e.reportAndApply(true, delete, node.Desire); err != nil {
+	//	return errors.Trace(err)
+	//}
 	if err := e.reportAndApply(false, delete, node.Desire); err != nil {
 		return errors.Trace(err)
 	}
@@ -369,7 +370,7 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 			if strings.HasPrefix(hostPath.Path, "/") {
 				continue
 			}
-			fullPath := filepath.Join(appDataHostPath, filepath.Join("/", hostPath.Path))
+			fullPath := filepath.Join(e.cfg.Engine.HostPath, filepath.Join("/", hostPath.Path))
 			if err := os.MkdirAll(fullPath, 0755); err != nil {
 				return err
 			}

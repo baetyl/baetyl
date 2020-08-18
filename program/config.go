@@ -2,7 +2,7 @@ package program
 
 import "github.com/baetyl/baetyl-go/v2/log"
 
-// Config is the runner app config structure.
+// Config is the program config.
 type Config struct {
 	Name        string `yaml:"name" json:"name" validate:"nonzero"`
 	DisplayName string `yaml:"displayName" json:"displayName"`
@@ -14,4 +14,8 @@ type Config struct {
 	Env  []string `yaml:"env" json:"env"`
 
 	Logger log.Config `yaml:"logger" json:"logger"`
+}
+
+type Entry struct {
+	Entry string `yaml:"entry" json:"entry" validate:"nonzero"`
 }
