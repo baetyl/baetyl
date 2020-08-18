@@ -2,13 +2,6 @@ package native
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strconv"
-
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -18,6 +11,12 @@ import (
 	"github.com/baetyl/baetyl/program"
 	"github.com/kardianos/service"
 	"gopkg.in/yaml.v2"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
 )
 
 func init() {
@@ -44,8 +43,11 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 	for _, v := range app.Volumes {
 		avs[v.Name] = v
 	}
+
 	for _, s := range app.Services {
 		for i := 1; i <= s.Replica; i++ {
+			var prgExec string
+
 			// generate instance path
 			insDir := filepath.Join(appDir, s.Name, strconv.Itoa(i))
 			if err = os.MkdirAll(insDir, 0755); err != nil {
@@ -60,7 +62,18 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				}
 
 				if av.HostPath != nil {
-					os.Symlink(av.HostPath.Path, filepath.Join(insDir, vm.MountPath))
+					mp := filepath.Join(insDir, vm.MountPath)
+					os.Symlink(av.HostPath.Path, mp)
+
+					impl.log.Debug("volume mount", log.Any("vm", vm))
+					if vm.Name == s.Image {
+						var entry program.Entry
+						err = utils.LoadYAML(filepath.Join(mp, program.DefaultProgramEntryYaml), &entry)
+						if err != nil {
+							return errors.Trace(err)
+						}
+						prgExec = filepath.Join(mp, filepath.Join("/", entry.Entry))
+					}
 					continue
 				}
 
@@ -89,6 +102,10 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				}
 			}
 
+			if prgExec == "" {
+				return errors.Errorf("program config is not mounted")
+			}
+
 			// apply service
 			var env []string
 			for _, item := range s.Env {
@@ -99,7 +116,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				DisplayName: fmt.Sprintf("%s %s", app.Name, s.Name),
 				Description: app.Description,
 				Dir:         insDir,
-				Exec:        s.Image,
+				Exec:        prgExec,
 				Args:        s.Args,
 				Env:         env,
 				Logger: log.Config{
@@ -111,7 +128,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			if err != nil {
 				return errors.Trace(err)
 			}
-			err = ioutil.WriteFile(filepath.Join(insDir, program.DefaultProgramYaml), prgYml, 0755)
+			err = ioutil.WriteFile(filepath.Join(insDir, program.DefaultProgramServiceYaml), prgYml, 0755)
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -233,7 +250,6 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 			curAppStats.Name = appFile.Name()
 			curAppStats.Version = appVerFile.Name()
 			curAppStats.InstanceStats = map[string]v1.InstanceStats{}
-			stats = append(stats, curAppStats)
 
 			curAppVer := appVerFile.Name()
 			curAppVerPath := filepath.Join(curAppPath, curAppVer)
@@ -284,6 +300,10 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					}
 					curAppStats.InstanceStats[curPrgName] = curInsStats
 				}
+			}
+
+			if len(curAppStats.InstanceStats) > 0 {
+				stats = append(stats, curAppStats)
 			}
 		}
 	}

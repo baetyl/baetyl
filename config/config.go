@@ -1,11 +1,11 @@
 package config
 
 import (
-	"github.com/baetyl/baetyl-go/v2/utils"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/utils"
 )
 
 // Config the core config
@@ -34,6 +34,7 @@ type EngineConfig struct {
 	Report    struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
+	HostPath string `yaml:"hostPath" json:"hostPath" default:"/var/lib/baetyl/hostpath"`
 }
 
 type KubeConfig struct {
@@ -52,13 +53,13 @@ type KubernetesLogConfig struct {
 }
 
 type StoreConfig struct {
-	Path string `yaml:"path" json:"path" default:"var/lib/baetyl/store/core.db"`
+	Path string `yaml:"path" json:"path" default:"/var/lib/baetyl/store/core.db"`
 }
 
 type SyncConfig struct {
 	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
 	Download       struct {
-		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
+		Path              string `yaml:"path" json:"path" default:"/var/lib/baetyl/download"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`
 }
