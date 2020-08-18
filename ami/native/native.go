@@ -34,8 +34,13 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 }
 
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
+	err := impl.DeleteApp(ns, app.Name)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
 	appDir := filepath.Join(runRootPath, ns, app.Name, app.Version)
-	err := os.MkdirAll(appDir, 0755)
+	err = os.MkdirAll(appDir, 0755)
 	if err != nil {
 		return errors.Trace(err)
 	}

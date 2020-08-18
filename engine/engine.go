@@ -127,10 +127,9 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	// TODO: uncomment
-	//if err := e.reportAndApply(true, delete, node.Desire); err != nil {
-	//	return errors.Trace(err)
-	//}
+	if err := e.reportAndApply(true, delete, node.Desire); err != nil {
+		return errors.Trace(err)
+	}
 	if err := e.reportAndApply(false, delete, node.Desire); err != nil {
 		return errors.Trace(err)
 	}
