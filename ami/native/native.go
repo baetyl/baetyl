@@ -145,11 +145,11 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			})
 			err = svc.Install()
 			if err != nil {
-				impl.log.Warn("failed to install service", log.Any("program", prgCfg.Name), log.Error(err))
+				return errors.Trace(err)
 			}
 			err = svc.Start()
 			if err != nil {
-				impl.log.Warn("failed to start service", log.Any("program", prgCfg.Name), log.Error(err))
+				return errors.Trace(err)
 			}
 		}
 	}
