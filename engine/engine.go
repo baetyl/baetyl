@@ -433,6 +433,7 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 			},
 			DNSNames: []string{
 				fmt.Sprintf("%s.%s", svc.Name, ns),
+				fmt.Sprintf("%s", svc.Name),
 				"localhost",
 			},
 		})
