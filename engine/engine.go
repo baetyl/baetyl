@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -416,6 +415,10 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 
 	var services []specv1.Service
 	for _, svc := range app.Services {
+		ns := e.ns
+		if app.System {
+			ns = e.sysns
+		}
 		// generate cert
 		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
 		max := len(svc.Name)
@@ -428,19 +431,9 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 				net.IPv4(0, 0, 0, 0),
 				net.IPv4(127, 0, 0, 1),
 			},
-			URIs: []*url.URL{
-				{
-					Scheme: "https",
-					Host:   "localhost",
-				},
-				{
-					Scheme: "https",
-					Host:   svc.Name,
-				},
-				{
-					Scheme: "https",
-					Host:   fmt.Sprintf("%s.%s", svc.Name, e.sysns),
-				},
+			DNSNames: []string{
+				fmt.Sprintf("%s.%s", svc.Name, ns),
+				"localhost",
 			},
 		})
 		if err != nil {
