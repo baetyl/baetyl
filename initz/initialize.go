@@ -99,7 +99,7 @@ func (init *Initialize) start() error {
 		init.sto = nil
 	}
 
-	t := time.NewTicker(init.cfg.Sync.ReportInterval)
+	t := time.NewTicker(init.cfg.Sync.Report.Interval)
 	defer t.Stop()
 	for {
 		select {

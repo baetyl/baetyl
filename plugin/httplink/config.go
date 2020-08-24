@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	HTTPLink struct {
-		HTTP      http.ClientConfig `yaml:"http" json:"http"`
+		HTTP      http.ClientConfig `yaml:",inline" json:",inline"`
 		ReportURL string            `yaml:"reportUrl" json:"reportUrl" default:"v1/sync/report"`
 		DesireURL string            `yaml:"desireUrl" json:"desireUrl" default:"v1/sync/desire"`
 	} `yaml:"httplink" json:"httplink"`

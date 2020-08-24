@@ -23,12 +23,6 @@ type Config struct {
 	} `yaml:"plugin" json:"plugin"`
 }
 
-type AmiConfig struct {
-	Kind   string       `yaml:"kind" json:"kind" default:"kube"`
-	Kube   KubeConfig   `yaml:"kube" json:"kube"`
-	Native NativeConfig `yaml:"native" json:"native"`
-}
-
 type EngineConfig struct {
 	AmiConfig `yaml:",inline" json:",inline"`
 	Report    struct {
@@ -37,15 +31,21 @@ type EngineConfig struct {
 	HostPath string `yaml:"hostPath" json:"hostPath" default:"/var/lib/baetyl/hostpath"`
 }
 
+type AmiConfig struct {
+	Kube   KubeConfig   `yaml:"kube" json:"kube"`
+	Native NativeConfig `yaml:"native" json:"native"`
+}
+
 type KubeConfig struct {
-	InCluster  bool                `yaml:"inCluster" json:"inCluster" default:"false"`
+	InCluster  bool                `yaml:"inCluster" json:"inCluster"`
 	ConfigPath string              `yaml:"configPath" json:"configPath"`
-	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"`
+	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"` // TODO: remove
 }
 
 type NativeConfig struct {
 }
 
+// TODO: remove
 type KubernetesLogConfig struct {
 	Follow     bool `yaml:"follow" json:"follow"`
 	Previous   bool `yaml:"previous" json:"previous"`
@@ -57,8 +57,10 @@ type StoreConfig struct {
 }
 
 type SyncConfig struct {
-	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
-	Download       struct {
+	Report struct {
+		Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
+	} `yaml:"report" json:"report"`
+	Download struct {
 		Path              string `yaml:"path" json:"path" default:"/var/lib/baetyl/download"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`

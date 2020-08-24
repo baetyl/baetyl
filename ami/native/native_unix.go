@@ -1,6 +1,6 @@
 package native
 
 const (
-	runRootPath = "/var/run/baetyl"
+	runRootPath = "/var/lib/baetyl/services"
 	logRootPath = "/var/log/baetyl"
 )

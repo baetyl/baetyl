@@ -33,20 +33,18 @@ const (
 )
 
 type Engine struct {
-	cfg   config.Config
-	syn   sync.Sync
-	ami   ami.AMI
-	nod   *node.Node
-	sto   *bh.Store
-	log   *log.Logger
-	ns    string
-	sysns string
-	sec   security.Security
-	tomb  utils.Tomb
+	cfg  config.Config
+	syn  sync.Sync
+	ami  ami.AMI
+	nod  *node.Node
+	sto  *bh.Store
+	log  *log.Logger
+	sec  security.Security
+	tomb utils.Tomb
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	kube, err := ami.NewAMI(cfg.Engine.AmiConfig)
+	am, err := ami.NewAMI(cfg.Engine.AmiConfig)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -55,15 +53,13 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 		return nil, errors.Trace(err)
 	}
 	eng := &Engine{
-		ami:   kube,
-		sto:   sto,
-		syn:   syn,
-		nod:   nod,
-		cfg:   cfg,
-		sec:   sec,
-		ns:    "baetyl-edge",
-		sysns: "baetyl-edge-system",
-		log:   log.With(log.Any("engine", cfg.Engine.Kind)),
+		ami: am,
+		sto: sto,
+		syn: syn,
+		nod: nod,
+		cfg: cfg,
+		sec: sec,
+		log: log.With(),
 	}
 	return eng, nil
 }
@@ -87,9 +83,9 @@ func (e *Engine) GetServiceLog(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 400, "RequestParamInvalid", err.Error())
 		return nil
 	}
-	ns := e.ns
+	ns := context.BaetylEdgeNamespace
 	if isSys == "true" {
-		ns = e.sysns
+		ns = context.BaetylEdgeSystemNamespace
 	}
 	reader, err := e.ami.FetchLog(ns, service, tail, since)
 	if err != nil {
@@ -172,9 +168,9 @@ func (e *Engine) Collect(ns string, isSys bool, desire specv1.Desire) specv1.Rep
 func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 	var ns string
 	if isSys {
-		ns = e.sysns
+		ns = context.BaetylEdgeSystemNamespace
 	} else {
-		ns = e.ns
+		ns = context.BaetylEdgeNamespace
 	}
 	r := e.Collect(ns, isSys, desire)
 	e.log.Debug("collect stats of node and apps", log.Any("report", r))
@@ -403,9 +399,9 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 
 	var services []specv1.Service
 	for _, svc := range app.Services {
-		ns := e.ns
+		ns := context.BaetylEdgeNamespace
 		if app.System {
-			ns = e.sysns
+			ns = context.BaetylEdgeSystemNamespace
 		}
 		// generate cert
 		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
@@ -446,7 +442,7 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 				"key.pem": cert.Key,
 				"ca.pem":  ca,
 			},
-			System: app.Namespace == e.sysns,
+			System: app.Namespace == context.BaetylEdgeSystemNamespace,
 		}
 		secs[secretName] = secret
 
