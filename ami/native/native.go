@@ -2,6 +2,13 @@ package native
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
+
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -11,12 +18,6 @@ import (
 	"github.com/baetyl/baetyl/program"
 	"github.com/kardianos/service"
 	"gopkg.in/yaml.v2"
-	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strconv"
 )
 
 func init() {

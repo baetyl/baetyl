@@ -150,7 +150,7 @@ func (s *sync) reporting() error {
 		s.log.Error("failed to report cloud shadow", log.Error(err))
 	}
 
-	t := time.NewTicker(s.cfg.ReportInterval)
+	t := time.NewTicker(s.cfg.Report.Interval)
 	defer t.Stop()
 	for {
 		select {

@@ -79,7 +79,6 @@ func TestActivate_Err_Collector(t *testing.T) {
 	defer mockCtl.Finish()
 
 	c := &config.Config{}
-	c.Engine.Kind = "kubernetes"
 	c.Engine.Kube.InCluster = true
 	c.Init.Active.Interval = 5 * time.Second
 

@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -35,13 +36,16 @@ type AMI interface {
 }
 
 func NewAMI(cfg config.AmiConfig) (AMI, error) {
-	name := cfg.Kind
+	mode := os.Getenv(context.KeyRunMode)
+	if mode == "" {
+		mode = "kube"
+	}
 	mu.Lock()
 	defer mu.Unlock()
-	if ami, ok := amiImpls[name]; ok {
+	if ami, ok := amiImpls[mode]; ok {
 		return ami, nil
 	}
-	amiNew, ok := amiNews[name]
+	amiNew, ok := amiNews[mode]
 	if !ok {
 		return nil, errors.Trace(os.ErrInvalid)
 	}
@@ -49,7 +53,7 @@ func NewAMI(cfg config.AmiConfig) (AMI, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	amiImpls[name] = ami
+	amiImpls[mode] = ami
 	return ami, nil
 }
 

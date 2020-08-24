@@ -88,7 +88,6 @@ func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
 	assert.NotNil(t, no)
 
 	cfg := config.EngineConfig{}
-	cfg.Kind = "kubernetes"
 	cfg.Report.Interval = time.Second
 	return no, cfg, sto
 }
@@ -98,11 +97,9 @@ func TestCollect(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
-	ns := "baetyl-edge"
 	e := Engine{
 		ami: mockAmi,
 		cfg: config.Config{},
-		ns:  ns,
 		nod: nod,
 		log: log.With(log.Any("engine", "test")),
 	}
@@ -113,6 +110,7 @@ func TestCollect(t *testing.T) {
 		Name:    "app1",
 		Version: "v1",
 	}
+	ns := context.BaetylEdgeNamespace
 	apps := []specv1.AppInfo{info}
 	appStats := []specv1.AppStats{{AppInfo: info}}
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
@@ -168,7 +166,6 @@ func TestApplyApp(t *testing.T) {
 	eng := Engine{
 		ami: mockAmi,
 		cfg: config.Config{},
-		ns:  ns,
 		sto: sto,
 		syn: mockSync,
 		nod: nod,
@@ -245,11 +242,9 @@ func TestReportAndApply(t *testing.T) {
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
 	mockSync := mock.NewMockSync(mockCtl)
-	ns := "baetyl-edge"
 	eng := Engine{
 		ami: mockAmi,
 		cfg: config.Config{},
-		ns:  ns,
 		sto: sto,
 		syn: mockSync,
 		nod: nod,
@@ -361,7 +356,6 @@ func TestGetServiceLog(t *testing.T) {
 		sto: nil,
 		nod: nil,
 		cfg: config.Config{},
-		ns:  "baetyl-edge",
 		log: log.With(log.Any("engine", "any")),
 	}
 	assert.NotNil(t, e)
@@ -417,10 +411,8 @@ func TestInjectEnv(t *testing.T) {
 	nod, _, sto := prepare(t)
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
-	ns := "baetyl-edge"
 	eng := Engine{
 		cfg: config.Config{},
-		ns:  ns,
 		sto: sto,
 		nod: nod,
 		log: log.With(log.Any("engine", "test")),
@@ -484,10 +476,8 @@ func TestInjectCert(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockSecurity := mock.NewMockSecurity(mockCtl)
-	ns := "baetyl-edge"
 	eng := Engine{
 		cfg: config.Config{},
-		ns:  ns,
 		sto: sto,
 		nod: nod,
 		sec: mockSecurity,
@@ -539,7 +529,7 @@ func TestInjectCert(t *testing.T) {
 				"key.pem": []byte(key),
 				"ca.pem":  []byte(caCrt),
 			},
-			System: app.Namespace == eng.sysns,
+			System: app.Namespace == context.BaetylEdgeSystemNamespace,
 		},
 		SystemCertSecretPrefix + suffix1: {
 			Name:      SystemCertSecretPrefix + suffix1,
@@ -553,7 +543,7 @@ func TestInjectCert(t *testing.T) {
 				"key.pem": []byte(key),
 				"ca.pem":  []byte(caCrt),
 			},
-			System: app.Namespace == eng.sysns,
+			System: app.Namespace == context.BaetylEdgeSystemNamespace,
 		},
 	}
 
