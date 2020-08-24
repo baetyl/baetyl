@@ -6,6 +6,7 @@ import (
 	_ "github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/initz"
+	"github.com/baetyl/baetyl/plugin"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +30,7 @@ func startInitService() {
 		if err != nil {
 			return errors.Trace(err)
 		}
+		plugin.ConfFile = ctx.ConfFile()
 
 		init, err := initz.NewInitialize(cfg)
 		if err != nil {
