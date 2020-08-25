@@ -40,7 +40,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 		return errors.Trace(err)
 	}
 
-	appDir := filepath.Join(runRootPath, ns, app.Name, app.Version)
+	appDir := filepath.Join(appsHostRootPath, ns, app.Name, app.Version)
 	err = os.MkdirAll(appDir, 0755)
 	if err != nil {
 		return errors.Trace(err)
@@ -127,7 +127,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Env:         env,
 				Logger: log.Config{
 					Level:    "debug",
-					Filename: filepath.Join(logRootPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
+					Filename: filepath.Join(logsHostRootPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
 				},
 			}
 			prgYml, err := yaml.Marshal(prgCfg)
@@ -159,7 +159,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 
 func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 	// scan app version
-	curAppDir := filepath.Join(runRootPath, ns, appName)
+	curAppDir := filepath.Join(appsHostRootPath, ns, appName)
 	appVerFiles, err := ioutil.ReadDir(curAppDir)
 	if err != nil {
 		return errors.Trace(err)
@@ -219,11 +219,11 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 
 func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	var stats []v1.AppStats
-	if !utils.DirExists(runRootPath) {
+	if !utils.DirExists(appsHostRootPath) {
 		return stats, nil
 	}
 
-	curNsPath := filepath.Join(runRootPath, ns)
+	curNsPath := filepath.Join(appsHostRootPath, ns)
 	if !utils.DirExists(curNsPath) {
 		return stats, nil
 	}
