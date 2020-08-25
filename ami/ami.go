@@ -33,6 +33,8 @@ type AMI interface {
 
 	// TODO: update
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
+
+	CheckRecycle() (bool, error)
 }
 
 func NewAMI(cfg config.AmiConfig) (AMI, error) {

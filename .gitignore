@@ -21,6 +21,7 @@ output
 .*.swo
 /**/var
 .idea
+/etc
 .vscode
 /vendor
 /coverage.out

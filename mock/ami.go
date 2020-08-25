@@ -11,30 +11,30 @@ import (
 	reflect "reflect"
 )
 
-// MockAMI is a mock of AMI interface
+// MockAMI is a mock of AMI interface.
 type MockAMI struct {
 	ctrl     *gomock.Controller
 	recorder *MockAMIMockRecorder
 }
 
-// MockAMIMockRecorder is the mock recorder for MockAMI
+// MockAMIMockRecorder is the mock recorder for MockAMI.
 type MockAMIMockRecorder struct {
 	mock *MockAMI
 }
 
-// NewMockAMI creates a new mock instance
+// NewMockAMI creates a new mock instance.
 func NewMockAMI(ctrl *gomock.Controller) *MockAMI {
 	mock := &MockAMI{ctrl: ctrl}
 	mock.recorder = &MockAMIMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAMI) EXPECT() *MockAMIMockRecorder {
 	return m.recorder
 }
 
-// ApplyApp mocks base method
+// ApplyApp mocks base method.
 func (m *MockAMI) ApplyApp(arg0 string, arg1 v1.Application, arg2 map[string]v1.Configuration, arg3 map[string]v1.Secret) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyApp", arg0, arg1, arg2, arg3)
@@ -42,13 +42,28 @@ func (m *MockAMI) ApplyApp(arg0 string, arg1 v1.Application, arg2 map[string]v1.
 	return ret0
 }
 
-// ApplyApp indicates an expected call of ApplyApp
+// ApplyApp indicates an expected call of ApplyApp.
 func (mr *MockAMIMockRecorder) ApplyApp(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyApp", reflect.TypeOf((*MockAMI)(nil).ApplyApp), arg0, arg1, arg2, arg3)
 }
 
-// CollectNodeInfo mocks base method
+// CheckRecycle mocks base method.
+func (m *MockAMI) CheckRecycle() (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckRecycle")
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckRecycle indicates an expected call of CheckRecycle.
+func (mr *MockAMIMockRecorder) CheckRecycle() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRecycle", reflect.TypeOf((*MockAMI)(nil).CheckRecycle))
+}
+
+// CollectNodeInfo mocks base method.
 func (m *MockAMI) CollectNodeInfo() (*v1.NodeInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectNodeInfo")
@@ -57,13 +72,13 @@ func (m *MockAMI) CollectNodeInfo() (*v1.NodeInfo, error) {
 	return ret0, ret1
 }
 
-// CollectNodeInfo indicates an expected call of CollectNodeInfo
+// CollectNodeInfo indicates an expected call of CollectNodeInfo.
 func (mr *MockAMIMockRecorder) CollectNodeInfo() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectNodeInfo", reflect.TypeOf((*MockAMI)(nil).CollectNodeInfo))
 }
 
-// CollectNodeStats mocks base method
+// CollectNodeStats mocks base method.
 func (m *MockAMI) CollectNodeStats() (*v1.NodeStats, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectNodeStats")
@@ -72,13 +87,13 @@ func (m *MockAMI) CollectNodeStats() (*v1.NodeStats, error) {
 	return ret0, ret1
 }
 
-// CollectNodeStats indicates an expected call of CollectNodeStats
+// CollectNodeStats indicates an expected call of CollectNodeStats.
 func (mr *MockAMIMockRecorder) CollectNodeStats() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectNodeStats", reflect.TypeOf((*MockAMI)(nil).CollectNodeStats))
 }
 
-// DeleteApp mocks base method
+// DeleteApp mocks base method.
 func (m *MockAMI) DeleteApp(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteApp", arg0, arg1)
@@ -86,13 +101,13 @@ func (m *MockAMI) DeleteApp(arg0, arg1 string) error {
 	return ret0
 }
 
-// DeleteApp indicates an expected call of DeleteApp
+// DeleteApp indicates an expected call of DeleteApp.
 func (mr *MockAMIMockRecorder) DeleteApp(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteApp", reflect.TypeOf((*MockAMI)(nil).DeleteApp), arg0, arg1)
 }
 
-// FetchLog mocks base method
+// FetchLog mocks base method.
 func (m *MockAMI) FetchLog(arg0, arg1 string, arg2, arg3 int64) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FetchLog", arg0, arg1, arg2, arg3)
@@ -101,13 +116,13 @@ func (m *MockAMI) FetchLog(arg0, arg1 string, arg2, arg3 int64) (io.ReadCloser, 
 	return ret0, ret1
 }
 
-// FetchLog indicates an expected call of FetchLog
+// FetchLog indicates an expected call of FetchLog.
 func (mr *MockAMIMockRecorder) FetchLog(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchLog", reflect.TypeOf((*MockAMI)(nil).FetchLog), arg0, arg1, arg2, arg3)
 }
 
-// StatsApps mocks base method
+// StatsApps mocks base method.
 func (m *MockAMI) StatsApps(arg0 string) ([]v1.AppStats, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StatsApps", arg0)
@@ -116,7 +131,7 @@ func (m *MockAMI) StatsApps(arg0 string) ([]v1.AppStats, error) {
 	return ret0, ret1
 }
 
-// StatsApps indicates an expected call of StatsApps
+// StatsApps indicates an expected call of StatsApps.
 func (mr *MockAMIMockRecorder) StatsApps(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StatsApps", reflect.TypeOf((*MockAMI)(nil).StatsApps), arg0)

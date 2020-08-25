@@ -11,6 +11,25 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
+func (k *kubeImpl) CheckRecycle() (bool, error) {
+	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
+	if err != nil {
+		return false, errors.Trace(err)
+	}
+	for _, cond := range node.Status.Conditions {
+		if cond.Type == corev1.NodeDiskPressure {
+			if cond.Status == corev1.ConditionTrue {
+				return true, nil
+			} else if cond.Status == corev1.ConditionFalse {
+				return false, nil
+			} else {
+				return false, errors.Errorf("unknown status")
+			}
+		}
+	}
+	return false, errors.Errorf("failed to get node resource usage status")
+}
+
 func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {

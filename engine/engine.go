@@ -22,6 +22,7 @@ import (
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/security"
 	"github.com/baetyl/baetyl/sync"
+	lru "github.com/hashicorp/golang-lru"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 )
@@ -30,17 +31,19 @@ const (
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
+	CacheSize              = 1024
 )
 
 type Engine struct {
-	cfg  config.Config
-	syn  sync.Sync
-	ami  ami.AMI
-	nod  *node.Node
-	sto  *bh.Store
-	log  *log.Logger
-	sec  security.Security
-	tomb utils.Tomb
+	cfg   config.Config
+	syn   sync.Sync
+	ami   ami.AMI
+	nod   *node.Node
+	sto   *bh.Store
+	log   *log.Logger
+	sec   security.Security
+	tomb  utils.Tomb
+	cache *lru.Cache
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
@@ -52,20 +55,26 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	cache, err := lru.New(CacheSize)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 	eng := &Engine{
-		ami: am,
-		sto: sto,
-		syn: syn,
-		nod: nod,
-		cfg: cfg,
-		sec: sec,
-		log: log.With(),
+		ami:   am,
+		sto:   sto,
+		syn:   syn,
+		nod:   nod,
+		cfg:   cfg,
+		sec:   sec,
+		cache: cache,
+		log:   log.With(),
 	}
 	return eng, nil
 }
 
 func (e *Engine) Start() {
 	e.tomb.Go(e.reporting)
+	e.tomb.Go(e.gc)
 }
 
 func (e *Engine) ReportAndDesire() error {
@@ -375,16 +384,22 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 			if !ok {
 				continue
 			}
+			var dir string
 			for k := range cfg.Data {
 				if !strings.HasPrefix(k, configKeyObject) {
 					continue
 				}
 				if app.Volumes[i].HostPath == nil {
 					app.Volumes[i].Config = nil
+					dir = filepath.Join(e.cfg.Sync.Download.Path, cfg.Name, cfg.Version)
 					app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{
-						Path: filepath.Join(e.cfg.Sync.Download.Path, cfg.Name, cfg.Version),
+						Path: dir,
 					}
 				}
+			}
+			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			if evict := e.cache.Add(key, dir); evict {
+				e.log.Warn("eviction appeared when add configuration", log.Any("configuration", cfg))
 			}
 		}
 	}

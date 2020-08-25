@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
+	lru "github.com/hashicorp/golang-lru"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -163,13 +164,16 @@ func TestApplyApp(t *testing.T) {
 	mockAmi := mock.NewMockAMI(mockCtl)
 	mockSync := mock.NewMockSync(mockCtl)
 	ns := "baetyl-edge"
+	cache, err := lru.New(10)
+	assert.NoError(t, err)
 	eng := Engine{
-		ami: mockAmi,
-		cfg: config.Config{},
-		sto: sto,
-		syn: mockSync,
-		nod: nod,
-		log: log.With(log.Any("engine", "test")),
+		ami:   mockAmi,
+		cfg:   config.Config{},
+		sto:   sto,
+		syn:   mockSync,
+		nod:   nod,
+		cache: cache,
+		log:   log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, eng)
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
@@ -202,7 +206,7 @@ func TestApplyApp(t *testing.T) {
 		Version: "s1",
 	}
 	key := makeKey(specv1.KindApplication, "app1", "v1")
-	err := sto.Upsert(key, app)
+	err = sto.Upsert(key, app)
 	assert.NoError(t, err)
 	key = makeKey(specv1.KindConfiguration, "cfg1", "c1")
 	err = sto.Upsert(key, cfg)
