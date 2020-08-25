@@ -362,10 +362,10 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 	}
 	for i := range app.Volumes {
 		if hostPath := app.Volumes[i].HostPath; hostPath != nil {
-			if strings.HasPrefix(hostPath.Path, "/") {
+			if filepath.IsAbs(hostPath.Path) {
 				continue
 			}
-			fullPath := filepath.Join(e.cfg.Engine.HostPath, filepath.Join("/", hostPath.Path))
+			fullPath := filepath.Join(e.cfg.Engine.Host.RootPath, filepath.Join("/", hostPath.Path))
 			if err := os.MkdirAll(fullPath, 0755); err != nil {
 				return err
 			}

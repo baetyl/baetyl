@@ -28,7 +28,10 @@ type EngineConfig struct {
 	Report    struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
-	HostPath string `yaml:"hostPath" json:"hostPath" default:"/var/lib/baetyl/hostpath"`
+	Host struct {
+		// the root path on host if the relative path is set for 'hostpath' volume mount
+		RootPath string `yaml:"rootPath" json:"rootPath" default:"/var/lib/baetyl/hostpath"`
+	} `yaml:"host" json:"host"`
 }
 
 type AmiConfig struct {
@@ -53,7 +56,7 @@ type KubernetesLogConfig struct {
 }
 
 type StoreConfig struct {
-	Path string `yaml:"path" json:"path" default:"/var/lib/baetyl/store/core.db"`
+	Path string `yaml:"path" json:"path" default:"var/lib/baetyl/store/core.db"`
 }
 
 type SyncConfig struct {
@@ -61,7 +64,7 @@ type SyncConfig struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 	} `yaml:"report" json:"report"`
 	Download struct {
-		Path              string `yaml:"path" json:"path" default:"/var/lib/baetyl/download"`
+		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`
 }
