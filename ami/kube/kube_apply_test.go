@@ -73,7 +73,6 @@ func TestPrepareService(t *testing.T) {
 			Selector: map[string]string{
 				ServiceName: svcName,
 			},
-			ClusterIP: "None",
 		},
 	}
 	assert.Equal(t, service, expected)
