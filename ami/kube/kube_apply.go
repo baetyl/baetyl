@@ -296,9 +296,8 @@ func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) *core
 			Labels:    map[string]string{AppName: appName},
 		},
 		Spec: corev1.ServiceSpec{
-			Selector:  map[string]string{ServiceName: svc.Name},
-			ClusterIP: "None",
-			Ports:     ports,
+			Selector: map[string]string{ServiceName: svc.Name},
+			Ports:    ports,
 		},
 	}
 	return service
