@@ -34,6 +34,7 @@ type EngineConfig struct {
 	Report    struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
+	// the root path on host for hostpath volume mount if the relative path is set
 	HostPath string `yaml:"hostPath" json:"hostPath" default:"/var/lib/baetyl/hostpath"`
 }
 
@@ -53,13 +54,15 @@ type KubernetesLogConfig struct {
 }
 
 type StoreConfig struct {
-	Path string `yaml:"path" json:"path" default:"/var/lib/baetyl/store/core.db"`
+	Path string `yaml:"path" json:"path" default:"var/lib/baetyl/store/core.db"`
 }
 
 type SyncConfig struct {
-	ReportInterval time.Duration `yaml:"reportInterval" json:"reportInterval" default:"20s"`
-	Download       struct {
-		Path              string `yaml:"path" json:"path" default:"/var/lib/baetyl/download"`
+	Report struct {
+		Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
+	} `yaml:"report" json:"report"`
+	Download struct {
+		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`
 }
@@ -96,7 +99,7 @@ type PKIConfig struct {
 // Server manually activated server configuration
 type Server struct {
 	Listen string `yaml:"listen" json:"listen"`
-	Pages  string `yaml:"pages" json:"pages" default:"etc/baetyl/pages"`
+	Pages  string `yaml:"pages" json:"pages" default:"var/lib/baetyl/pages"`
 }
 
 // Fingerprint type to be collected
