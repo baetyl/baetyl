@@ -152,7 +152,7 @@ func TestActivate(t *testing.T) {
 		},
 	}
 
-	certPath := "var/lib/baetyl/cert"
+	certPath := "var/lib/baetyl/node/certs"
 	var cert utils.Certificate
 	err = utils.UnmarshalYAML(nil, &cert)
 	assert.NoError(t, err)

@@ -64,7 +64,7 @@ type SyncConfig struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 	} `yaml:"report" json:"report"`
 	Download struct {
-		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/download"`
+		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/objects"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`
 }
