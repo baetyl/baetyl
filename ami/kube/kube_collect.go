@@ -11,25 +11,6 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-func (k *kubeImpl) CheckRecycle() (bool, error) {
-	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
-	if err != nil {
-		return false, errors.Trace(err)
-	}
-	for _, cond := range node.Status.Conditions {
-		if cond.Type == corev1.NodeDiskPressure {
-			if cond.Status == corev1.ConditionTrue {
-				return true, nil
-			} else if cond.Status == corev1.ConditionFalse {
-				return false, nil
-			} else {
-				return false, errors.Errorf("unknown status")
-			}
-		}
-	}
-	return false, errors.Errorf("failed to get node resource usage status")
-}
-
 func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
 	if err != nil {
@@ -75,6 +56,24 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStats, error) {
 	for res, quan := range node.Status.Capacity {
 		if _, ok := nodeStats.Usage[string(res)]; ok {
 			nodeStats.Capacity[string(res)] = quan.String()
+		}
+	}
+	for _, cond := range node.Status.Conditions {
+		if cond.Status == corev1.ConditionTrue {
+			switch cond.Type {
+			case corev1.NodeDiskPressure:
+				nodeStats.DiskPressure = true
+			case corev1.NodeMemoryPressure:
+				nodeStats.MemoryPressure = true
+			case corev1.NodeReady:
+				nodeStats.Ready = true
+			case corev1.NodePIDPressure:
+				nodeStats.PIDPressure = true
+			case corev1.NodeNetworkUnavailable:
+				nodeStats.NetworkUnavailable = true
+			default:
+				k.log.Error("unsupported condition type", log.Any("type", cond.Type))
+			}
 		}
 	}
 	return nodeStats, nil

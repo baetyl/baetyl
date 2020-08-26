@@ -31,7 +31,6 @@ const (
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
-	CacheSize              = 1024
 )
 
 type Engine struct {
@@ -120,24 +119,34 @@ func (e *Engine) reporting() error {
 }
 
 func (e *Engine) reportAndDesireAsync(delete bool) error {
-	recycle, err := e.ami.CheckRecycle()
-	if err != nil {
-		return errors.Trace(err)
-	}
-	if recycle {
-		if err := e.recycle(); err != nil {
-			e.log.Error("failed to recycle", log.Error(err))
-		}
-	}
 	node, err := e.nod.Get()
 	if err != nil {
 		return errors.Trace(err)
+	}
+	if err := e.checkRecycle(node); err != nil {
+		e.log.Error("failed to recycle", log.Error(err))
 	}
 	if err := e.reportAndApply(true, delete, node.Desire); err != nil {
 		return errors.Trace(err)
 	}
 	if err := e.reportAndApply(false, delete, node.Desire); err != nil {
 		return errors.Trace(err)
+	}
+	return nil
+}
+
+func (e *Engine) checkRecycle(node *specv1.Node) error {
+	report := node.Report
+	val, ok := report["nodestats"]
+	if !ok {
+		return errors.Errorf("node stats not exist in report data")
+	}
+	nodeStats, ok := val.(specv1.NodeStats)
+	if !ok {
+		return errors.Errorf("illegal node stats format")
+	}
+	if nodeStats.DiskPressure {
+		return e.recycle()
 	}
 	return nil
 }

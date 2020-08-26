@@ -344,7 +344,3 @@ func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
 	panic("implement me")
 }
-
-func (impl *nativeImpl) CheckRecycle() (bool, error) {
-	return false, nil
-}

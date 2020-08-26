@@ -32,6 +32,8 @@ github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRF
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/baetyl/baetyl-go/v2 v2.0.27 h1:57jJIXpNZLqxB0v1jS6XxACYiCetpPM47T0/BJ/4sbY=
 github.com/baetyl/baetyl-go/v2 v2.0.27/go.mod h1:J4hBGXtzd43Ie1skV4jIRKUxKWLBhgk18gS+BlKvJkk=
+github.com/baetyl/baetyl-go/v2 v2.0.28 h1:vLGHDWoOE5n+VtZVA7q+9OiqGT4R2Fe9FvYvwnWPAJI=
+github.com/baetyl/baetyl-go/v2 v2.0.28/go.mod h1:J4hBGXtzd43Ie1skV4jIRKUxKWLBhgk18gS+BlKvJkk=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/blang/semver v3.5.0+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=

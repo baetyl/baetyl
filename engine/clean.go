@@ -9,6 +9,7 @@ import (
 )
 
 func (e *Engine) recycle() error {
+	e.log.Info("start recycling useless object storage space")
 	nod, err := e.nod.Get()
 	if err != nil {
 		return errors.Trace(err)
@@ -34,19 +35,16 @@ func (e *Engine) recycle() error {
 			}
 		}
 	}
-	var cfgs []specv1.Configuration
-	if err := e.sto.Find(&cfgs, nil); err != nil {
-		return errors.Trace(err)
-	}
 	del := make(map[string]specv1.Configuration)
-	for _, cfg := range cfgs {
-		if !isObjectMetaConfig(&cfg) {
-			continue
+	if err := e.sto.ForEach(nil, func(cfg *specv1.Configuration) error {
+		if isObjectMetaConfig(cfg) {
+			if _, ok := usedCfg[makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)]; !ok {
+				del[cfg.Name] = *cfg
+			}
 		}
-		key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
-		if _, ok := usedCfg[key]; !ok {
-			del[key] = cfg
-		}
+		return nil
+	}); err != nil {
+		return errors.Trace(err)
 	}
 	for _, v := range del {
 		dir := filepath.Join(v.Name, v.Version)
@@ -55,5 +53,6 @@ func (e *Engine) recycle() error {
 			e.log.Error("failed to clean dir", log.Any("dir", dir))
 		}
 	}
+	e.log.Info("complete recycling useless object storage space")
 	return nil
 }
