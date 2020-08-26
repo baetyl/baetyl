@@ -1,0 +1,14 @@
+node:
+  ca: etc/baetyl/server_ca.pem
+  key: etc/baetyl/sync.key
+  cert: etc/baetyl/sync.crt
+
+plugin:
+  link: httplink
+
+httplink:
+  address: https://127.0.0.1:9994
+  insecureSkipVerify: true
+
+logger:
+  level: debug

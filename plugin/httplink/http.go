@@ -30,7 +30,10 @@ func New() (v2plugin.Plugin, error) {
 	if err := utils.LoadYAML(plugin.ConfFile, &cfg); err != nil {
 		return nil, errors.Trace(err)
 	}
-	cfg.HTTPLink.HTTP.Certificate = cfg.Cert
+	// to use node cert
+	cfg.HTTPLink.HTTP.Certificate.CA = cfg.Node.CA
+	cfg.HTTPLink.HTTP.Certificate.Key = cfg.Node.Key
+	cfg.HTTPLink.HTTP.Certificate.Cert = cfg.Node.Cert
 	ops, err := cfg.HTTPLink.HTTP.ToClientOptions()
 	if err != nil {
 		return nil, errors.Trace(err)

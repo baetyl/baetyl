@@ -8,7 +8,7 @@ import (
 
 func Test_newKubeImpl(t *testing.T) {
 	c := config.AmiConfig{}
-	c.Kube.InCluster = true
+	c.Kube.OutCluster = false
 
 	_, err := newKubeImpl(c)
 	assert.Error(t, err)

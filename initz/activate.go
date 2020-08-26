@@ -75,7 +75,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 		active.attrs[a.Name] = a.Value
 	}
 
-	active.ami, err = ami.NewAMI(cfg.Engine.AmiConfig)
+	active.ami, err = ami.NewAMI(cfg.AMI)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -183,13 +183,13 @@ func (active *Activate) activate() {
 }
 
 func (active *Activate) genCert(c utils.Certificate) error {
-	if err := active.createFile(active.cfg.Cert.CA, []byte(c.CA)); err != nil {
+	if err := active.createFile(active.cfg.Node.CA, []byte(c.CA)); err != nil {
 		return err
 	}
-	if err := active.createFile(active.cfg.Cert.Cert, []byte(c.Cert)); err != nil {
+	if err := active.createFile(active.cfg.Node.Cert, []byte(c.Cert)); err != nil {
 		return err
 	}
-	if err := active.createFile(active.cfg.Cert.Key, []byte(c.Key)); err != nil {
+	if err := active.createFile(active.cfg.Node.Key, []byte(c.Key)); err != nil {
 		return err
 	}
 	return nil

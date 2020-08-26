@@ -91,7 +91,7 @@ func (c *Core) initRouter() fasthttp.RequestHandler {
 }
 
 func extractNodeInfo(cfg config.Config) error {
-	tlsConfig, err := utils.NewTLSConfigClient(cfg.Cert)
+	tlsConfig, err := utils.NewTLSConfigClient(cfg.Node)
 	if err != nil {
 		return err
 	}
