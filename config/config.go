@@ -10,9 +10,10 @@ import (
 
 // Config the core config
 type Config struct {
+	Node     utils.Certificate `yaml:"node" json:"node"`
 	Engine   EngineConfig      `yaml:"engine" json:"engine"`
+	AMI      AmiConfig         `yaml:",inline" json:",inline"`
 	Sync     SyncConfig        `yaml:"sync" json:"sync"`
-	Cert     utils.Certificate `yaml:"cert" json:"cert"`
 	Store    StoreConfig       `yaml:"store" json:"store"`
 	Init     InitConfig        `yaml:"init" json:"init"`
 	Security SecurityConfig    `yaml:"security" json:"security"`
@@ -24,8 +25,7 @@ type Config struct {
 }
 
 type EngineConfig struct {
-	AmiConfig `yaml:",inline" json:",inline"`
-	Report    struct {
+	Report struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
 	Host struct {
@@ -40,8 +40,8 @@ type AmiConfig struct {
 }
 
 type KubeConfig struct {
-	InCluster  bool                `yaml:"inCluster" json:"inCluster"`
-	ConfigPath string              `yaml:"configPath" json:"configPath"`
+	OutCluster bool                `yaml:"outCluster" json:"outCluster"`
+	ConfPath   string              `yaml:"confPath" json:"confPath"`
 	LogConfig  KubernetesLogConfig `yaml:"logConfig" json:"logConfig"` // TODO: remove
 }
 

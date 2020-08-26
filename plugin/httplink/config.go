@@ -11,5 +11,5 @@ type Config struct {
 		ReportURL string            `yaml:"reportUrl" json:"reportUrl" default:"v1/sync/report"`
 		DesireURL string            `yaml:"desireUrl" json:"desireUrl" default:"v1/sync/desire"`
 	} `yaml:"httplink" json:"httplink"`
-	Cert utils.Certificate `yaml:"cert" json:"cert"`
+	Node utils.Certificate `yaml:"node" json:"node"`
 }

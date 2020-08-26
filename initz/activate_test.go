@@ -165,7 +165,7 @@ func TestActivate(t *testing.T) {
 
 	c := &config.Config{}
 	c.Init = *ic
-	c.Cert = cert
+	c.Node = cert
 
 	nodeInfo := &v1.NodeInfo{
 		Hostname:         "docker-desktop",
@@ -206,7 +206,7 @@ func TestActivate(t *testing.T) {
 			active := genActivate(t, c, ami)
 			active.Start()
 			active.WaitAndClose()
-			responseEqual(t, *tt.want, c.Cert)
+			responseEqual(t, *tt.want, c.Node)
 		})
 	}
 }

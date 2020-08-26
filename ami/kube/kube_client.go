@@ -20,10 +20,10 @@ type client struct {
 
 func newClient(cfg config.KubeConfig) (*client, error) {
 	kubeConfig, err := func() (*rest.Config, error) {
-		if cfg.InCluster {
+		if !cfg.OutCluster {
 			return rest.InClusterConfig()
 		}
-		return clientcmd.BuildConfigFromFlags("", cfg.ConfigPath)
+		return clientcmd.BuildConfigFromFlags("", cfg.ConfPath)
 	}()
 	if err != nil {
 		return nil, errors.Trace(err)

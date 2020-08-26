@@ -44,7 +44,7 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	am, err := ami.NewAMI(cfg.Engine.AmiConfig)
+	am, err := ami.NewAMI(cfg.AMI)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
