@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	lru "github.com/hashicorp/golang-lru"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -15,15 +14,16 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/mock"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
 	"github.com/golang/mock/gomock"
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/stretchr/testify/assert"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
+
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/mock"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/store"
 )
 
 const (
@@ -164,16 +164,13 @@ func TestApplyApp(t *testing.T) {
 	mockAmi := mock.NewMockAMI(mockCtl)
 	mockSync := mock.NewMockSync(mockCtl)
 	ns := "baetyl-edge"
-	cache, err := lru.New(10)
-	assert.NoError(t, err)
 	eng := Engine{
-		ami:   mockAmi,
-		cfg:   config.Config{},
-		sto:   sto,
-		syn:   mockSync,
-		nod:   nod,
-		cache: cache,
-		log:   log.With(log.Any("engine", "test")),
+		ami: mockAmi,
+		cfg: config.Config{},
+		sto: sto,
+		syn: mockSync,
+		nod: nod,
+		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, eng)
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
@@ -206,7 +203,7 @@ func TestApplyApp(t *testing.T) {
 		Version: "s1",
 	}
 	key := makeKey(specv1.KindApplication, "app1", "v1")
-	err = sto.Upsert(key, app)
+	err := sto.Upsert(key, app)
 	assert.NoError(t, err)
 	key = makeKey(specv1.KindConfiguration, "cfg1", "c1")
 	err = sto.Upsert(key, cfg)
