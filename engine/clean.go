@@ -38,17 +38,20 @@ func (e *Engine) recycle() error {
 	del := make(map[string]specv1.Configuration)
 	if err := e.sto.ForEach(nil, func(cfg *specv1.Configuration) error {
 		if isObjectMetaConfig(cfg) {
-			if _, ok := usedCfg[makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)]; !ok {
-				del[cfg.Name] = *cfg
+			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			if _, ok := usedCfg[key]; !ok {
+				del[key] = *cfg
 			}
 		}
 		return nil
 	}); err != nil {
 		return errors.Trace(err)
 	}
-	for _, v := range del {
-		dir := filepath.Join(v.Name, v.Version)
-		dir = filepath.Join(e.cfg.Sync.Download.Path, dir)
+	for k, v := range del {
+		if err := e.sto.Delete(k, specv1.Configuration{}); err != nil {
+			e.log.Error("failed to delete configuration", log.Error(err))
+		}
+		dir := filepath.Join(e.cfg.Sync.Download.Path, v.Name)
 		if err := os.RemoveAll(dir); err != nil {
 			e.log.Error("failed to clean dir", log.Any("dir", dir))
 		}

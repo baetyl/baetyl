@@ -8,6 +8,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/kardianos/service v1.1.0
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
 	github.com/spf13/cobra v0.0.5

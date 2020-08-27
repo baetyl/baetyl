@@ -3,6 +3,7 @@ package engine
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"net"
 	"os"
 	"path/filepath"
@@ -141,9 +142,9 @@ func (e *Engine) checkRecycle(node *specv1.Node) error {
 	if !ok {
 		return errors.Errorf("node stats not exist in report data")
 	}
-	nodeStats, ok := val.(specv1.NodeStats)
-	if !ok {
-		return errors.Errorf("illegal node stats format")
+	var nodeStats specv1.NodeStats
+	if err := mapstructure.Decode(val, &nodeStats); err != nil {
+		return errors.Trace(err)
 	}
 	if nodeStats.DiskPressure {
 		return e.recycle()
