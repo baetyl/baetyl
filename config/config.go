@@ -85,7 +85,7 @@ type InitConfig struct {
 		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
 		Server       Server        `yaml:"server" json:"server"`
-	} `yaml:"active" json:"active"`
+	} `yaml:"activeConfig" json:"activeConfig"`
 }
 
 type SecurityConfig struct {
