@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"strings"
 )
 
 const (
@@ -188,4 +189,13 @@ func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 func isRegistrySecret(secret specv1.Secret) bool {
 	registry, ok := secret.Labels[specv1.SecretLabel]
 	return ok && registry == specv1.SecretRegistry
+}
+
+func isObjectMetaConfig(cfg *specv1.Configuration) bool {
+	for k := range cfg.Data {
+		if strings.HasPrefix(k, configKeyObject) {
+			return true
+		}
+	}
+	return false
 }

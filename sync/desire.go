@@ -3,7 +3,6 @@ package sync
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -167,12 +166,6 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 				os.RemoveAll(dir)
 				return errors.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
 			}
-			if volume.HostPath == nil {
-				err = cleanDir(base, cfg.Version)
-				if err != nil {
-					return errors.Trace(err)
-				}
-			}
 		}
 	}
 	key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
@@ -184,16 +177,6 @@ func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configura
 		return nil
 	}
 	return errors.Trace(s.store.Upsert(key, cfg))
-}
-
-func cleanDir(dir, retain string) error {
-	files, _ := ioutil.ReadDir(dir)
-	for _, f := range files {
-		if f.Name() != retain {
-			os.RemoveAll(filepath.Join(dir, f.Name()))
-		}
-	}
-	return nil
 }
 
 func (s *sync) storeApplication(app *specv1.Application) error {

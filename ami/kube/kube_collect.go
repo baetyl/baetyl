@@ -58,6 +58,23 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStats, error) {
 			nodeStats.Capacity[string(res)] = quan.String()
 		}
 	}
+	for _, cond := range node.Status.Conditions {
+		if cond.Status == corev1.ConditionTrue {
+			switch cond.Type {
+			case corev1.NodeDiskPressure:
+				nodeStats.DiskPressure = true
+			case corev1.NodeMemoryPressure:
+				nodeStats.MemoryPressure = true
+			case corev1.NodeReady:
+				nodeStats.Ready = true
+			case corev1.NodePIDPressure:
+				nodeStats.PIDPressure = true
+			case corev1.NodeNetworkUnavailable:
+				nodeStats.NetworkUnavailable = true
+			default:
+			}
+		}
+	}
 	return nodeStats, nil
 }
 

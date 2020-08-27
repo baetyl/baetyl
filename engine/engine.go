@@ -3,6 +3,7 @@ package engine
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"net"
 	"os"
 	"path/filepath"
@@ -17,13 +18,14 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	routing "github.com/qiangxue/fasthttp-routing"
+	bh "github.com/timshannon/bolthold"
+
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/security"
 	"github.com/baetyl/baetyl/sync"
-	routing "github.com/qiangxue/fasthttp-routing"
-	bh "github.com/timshannon/bolthold"
 )
 
 const (
@@ -122,11 +124,30 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
+	if err := e.recycleIfNeed(node); err != nil {
+		e.log.Error("failed to recycle", log.Error(err))
+	}
 	if err := e.reportAndApply(true, delete, node.Desire); err != nil {
 		return errors.Trace(err)
 	}
 	if err := e.reportAndApply(false, delete, node.Desire); err != nil {
 		return errors.Trace(err)
+	}
+	return nil
+}
+
+func (e *Engine) recycleIfNeed(node *specv1.Node) error {
+	report := node.Report
+	val, ok := report["nodestats"]
+	if !ok {
+		return errors.Errorf("node stats not exist in report data")
+	}
+	var nodeStats specv1.NodeStats
+	if err := mapstructure.Decode(val, &nodeStats); err != nil {
+		return errors.Trace(err)
+	}
+	if nodeStats.DiskPressure {
+		return e.recycle()
 	}
 	return nil
 }

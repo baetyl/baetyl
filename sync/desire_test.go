@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -67,28 +66,6 @@ func TestSyncStore(t *testing.T) {
 	sec.Version = ""
 	err = syn.storeSecret(sec)
 	assert.Error(t, err)
-}
-
-func TestSyncCleanDir(t *testing.T) {
-	dir, err := ioutil.TempDir("", t.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, dir)
-	dir1 := "dir1"
-	err = os.Mkdir(filepath.Join(dir, dir1), 0755)
-	assert.NoError(t, err)
-	dir2 := "dir2"
-	err = os.Mkdir(filepath.Join(dir, dir2), 0755)
-	file1 := filepath.Join(dir, "file1")
-	err = ioutil.WriteFile(file1, []byte("test"), 0644)
-	assert.NoError(t, err)
-	err = cleanDir(dir, dir1)
-	assert.NoError(t, err)
-	dir1Exist := utils.DirExists(filepath.Join(dir, dir1))
-	assert.True(t, dir1Exist)
-	dir2Exist := utils.DirExists(dir2)
-	assert.False(t, dir2Exist)
-	file1Exist := utils.FileExists(file1)
-	assert.False(t, file1Exist)
 }
 
 func TestSyncProcessConfiguration(t *testing.T) {

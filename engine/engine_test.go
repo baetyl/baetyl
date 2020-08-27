@@ -14,15 +14,16 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/mock"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
 	"github.com/golang/mock/gomock"
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/stretchr/testify/assert"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
+
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/mock"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/store"
 )
 
 const (
