@@ -2,17 +2,19 @@ package engine
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl-go/v2/log"
-	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/baetyl/baetyl-go/v2/log"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/store"
 )
 
 func TestRecycle(t *testing.T) {
@@ -64,7 +66,7 @@ func TestRecycle(t *testing.T) {
 	sto.Upsert(appKey, app)
 
 	r := specv1.Report{}
-	info := specv1.AppInfo{Name: app.Name, Version:app.Version}
+	info := specv1.AppInfo{Name: app.Name, Version: app.Version}
 	r.SetAppInfos(false, []specv1.AppInfo{info})
 	_, err = nod.Report(r)
 	assert.NoError(t, err)

@@ -1,11 +1,12 @@
 package engine
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"os"
-	"path/filepath"
 )
 
 func (e *Engine) recycle() error {

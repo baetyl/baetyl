@@ -124,7 +124,7 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if err := e.checkRecycle(node); err != nil {
+	if err := e.recycleIfNeed(node); err != nil {
 		e.log.Error("failed to recycle", log.Error(err))
 	}
 	if err := e.reportAndApply(true, delete, node.Desire); err != nil {
@@ -136,7 +136,7 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	return nil
 }
 
-func (e *Engine) checkRecycle(node *specv1.Node) error {
+func (e *Engine) recycleIfNeed(node *specv1.Node) error {
 	report := node.Report
 	val, ok := report["nodestats"]
 	if !ok {
