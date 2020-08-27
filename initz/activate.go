@@ -71,7 +71,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 		securityType: cfg.Init.Batch.SecurityType,
 		securityKey:  cfg.Init.Batch.SecurityKey,
 	}
-	for _, a := range cfg.Init.ActivateConfig.Attributes {
+	for _, a := range cfg.Init.Active.Collector.Attributes {
 		active.attrs[a.Name] = a.Value
 	}
 
@@ -83,7 +83,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 }
 
 func (active *Activate) Start() {
-	if active.cfg.Init.ActivateConfig.Server.Listen == "" {
+	if active.cfg.Init.Active.Collector.Server.Listen == "" {
 		err := active.tomb.Go(active.activating)
 		if err != nil {
 			active.log.Error("failed to start report and process routine", log.Error(err))

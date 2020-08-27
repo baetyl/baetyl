@@ -93,7 +93,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 
 	for _, tt := range collectorBadCases {
 		t.Run(tt.name, func(t *testing.T) {
-			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
+			c.Init.Active.Collector.Fingerprints = tt.fingerprints
 			_, err := active.collect()
 			if tt.fingerprints[0].Proof == config.ProofSN {
 				assert.NotNil(t, err)
@@ -113,7 +113,7 @@ func TestActivate_Err_Ami(t *testing.T) {
 
 	c := &config.Config{}
 	c.Init.Active.Interval = 5 * time.Second
-	c.Init.ActivateConfig.Fingerprints = collectorBadCases[0].fingerprints
+	c.Init.Active.Collector.Fingerprints = collectorBadCases[0].fingerprints
 	active := genActivate(t, c, ami)
 	_, err := active.collect()
 	assert.NotNil(t, err)

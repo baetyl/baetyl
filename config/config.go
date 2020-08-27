@@ -80,12 +80,12 @@ type InitConfig struct {
 		http.ClientConfig `yaml:",inline" json:",inline"`
 		URL               string        `yaml:"url" json:"url" default:"/v1/active"`
 		Interval          time.Duration `yaml:"interval" json:"interval" default:"45s"`
+		Collector         struct {
+			Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
+			Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
+			Server       Server        `yaml:"server" json:"server"`
+		} `yaml:"collector" json:"collector"`
 	} `yaml:"active" json:"active"`
-	ActivateConfig struct {
-		Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
-		Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
-		Server       Server        `yaml:"server" json:"server"`
-	} `yaml:"activeConfig" json:"activeConfig"`
 }
 
 type SecurityConfig struct {

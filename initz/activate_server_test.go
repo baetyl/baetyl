@@ -106,8 +106,8 @@ func TestActivate_Server(t *testing.T) {
 	tmpDir := initTemplate(t)
 	defer os.RemoveAll(tmpDir)
 	c := &config.Config{}
-	c.Init.ActivateConfig.Server.Listen = "www.baidu.com"
-	c.Init.ActivateConfig.Attributes = []config.Attribute{
+	c.Init.Active.Collector.Server.Listen = "www.baidu.com"
+	c.Init.Active.Collector.Attributes = []config.Attribute{
 		{Name: "batch"},
 		{Name: "namespace"},
 		{Name: "fingerprintValue"},
