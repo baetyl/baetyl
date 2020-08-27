@@ -117,7 +117,7 @@ func genActivate(t *testing.T, cfg *config.Config, ami ami.AMI) *Activate {
 		securityType: cfg.Init.Batch.SecurityType,
 		securityKey:  cfg.Init.Batch.SecurityKey,
 	}
-	for _, a := range cfg.Init.ActivateConfig.Attributes {
+	for _, a := range cfg.Init.Active.Collector.Attributes {
 		active.attrs[a.Name] = a.Value
 	}
 	return active
@@ -145,7 +145,7 @@ func TestActivate(t *testing.T) {
 	ic.Batch.SecurityType = "Token"
 	ic.Batch.SecurityKey = "123456"
 	ic.Active.Address = ms.URL
-	ic.ActivateConfig.Attributes = []config.Attribute{
+	ic.Active.Collector.Attributes = []config.Attribute{
 		{
 			Name:  "abc",
 			Value: "abc",
@@ -202,7 +202,7 @@ func TestActivate(t *testing.T) {
 
 	for _, tt := range goodCases {
 		t.Run(tt.name, func(t *testing.T) {
-			c.Init.ActivateConfig.Fingerprints = tt.fingerprints
+			c.Init.Active.Collector.Fingerprints = tt.fingerprints
 			active := genActivate(t, c, ami)
 			active.Start()
 			active.WaitAndClose()
@@ -230,10 +230,10 @@ func TestActivate_Err_Response(t *testing.T) {
 	assert.NoError(t, err)
 	ic.Active.Interval = 5 * time.Second
 	ic.Active.Address = ms.URL
-	ic.ActivateConfig.Fingerprints = []config.Fingerprint{{
+	ic.Active.Collector.Fingerprints = []config.Fingerprint{{
 		Proof: config.ProofHostName,
 	}}
-	ic.ActivateConfig.Attributes = []config.Attribute{}
+	ic.Active.Collector.Attributes = []config.Attribute{}
 
 	c := &config.Config{}
 	c.Init = *ic

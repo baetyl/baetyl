@@ -23,7 +23,7 @@ var (
 )
 
 func (active *Activate) collect() (string, error) {
-	fs := active.cfg.Init.ActivateConfig.Fingerprints
+	fs := active.cfg.Init.Active.Collector.Fingerprints
 	if len(fs) == 0 {
 		return "", nil
 	}

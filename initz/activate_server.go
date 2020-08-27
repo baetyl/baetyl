@@ -17,7 +17,7 @@ func (active *Activate) startServer() error {
 	mux.HandleFunc("/update", active.handleUpdate)
 	srv := &http.Server{}
 	srv.Handler = mux
-	srv.Addr = active.cfg.Init.ActivateConfig.Server.Listen
+	srv.Addr = active.cfg.Init.Active.Collector.Server.Listen
 	active.srv = srv
 	return errors.Trace(active.srv.ListenAndServe())
 }
@@ -30,8 +30,8 @@ func (active *Activate) closeServer() {
 }
 
 func (active *Activate) handleView(w http.ResponseWriter, req *http.Request) {
-	attrs := map[string][]config.Attribute{"Attributes": active.cfg.Init.ActivateConfig.Attributes}
-	tpl, err := template.ParseFiles(active.cfg.Init.ActivateConfig.Server.Pages + "/active.html.template")
+	attrs := map[string][]config.Attribute{"Attributes": active.cfg.Init.Active.Collector.Attributes}
+	tpl, err := template.ParseFiles(active.cfg.Init.Active.Collector.Server.Pages + "/active.html.template")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,7 +54,7 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	attributes := make(map[string]string)
-	for _, attr := range active.cfg.Init.ActivateConfig.Attributes {
+	for _, attr := range active.cfg.Init.Active.Collector.Attributes {
 		val := req.Form.Get(attr.Name)
 		if val == "" {
 			attributes[attr.Name] = attr.Value
@@ -71,7 +71,7 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	if !utils.FileExists(active.cfg.Node.Cert) {
 		page = "/failed.html.template"
 	}
-	tpl, err = template.ParseFiles(active.cfg.Init.ActivateConfig.Server.Pages + page)
+	tpl, err = template.ParseFiles(active.cfg.Init.Active.Collector.Server.Pages + page)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
