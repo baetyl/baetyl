@@ -72,7 +72,6 @@ func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStats, error) {
 			case corev1.NodeNetworkUnavailable:
 				nodeStats.NetworkUnavailable = true
 			default:
-				k.log.Error("unsupported condition type", log.Any("type", cond.Type))
 			}
 		}
 	}
