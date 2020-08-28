@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/baetyl/baetyl-go/v2/http"
-	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
-	"github.com/baetyl/baetyl/plugin"
-
 	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/node"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
+
+	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/plugin"
 )
 
 var (
@@ -84,15 +84,16 @@ func (s *sync) receiving() error {
 		case <-s.tomb.Dying():
 			return nil
 		case msg := <-msgCh:
-			desire, ok := msg.Content.(v1.Desire)
-			if !ok {
-				s.log.Error("receive unrecognized desire data")
+			desire := v1.Desire{}
+			err := msg.Content.Unmarshal(&desire)
+			if err != nil {
+				s.log.Error("receive unrecognized desire data", log.Error(err))
 				continue
 			}
 			if len(desire) == 0 {
 				return nil
 			}
-			_, err := s.nod.Desire(desire)
+			_, err = s.nod.Desire(desire)
 			if err != nil {
 				s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 				continue
@@ -114,7 +115,7 @@ func (s *sync) Close() {
 func (s *sync) reportAsync(r v1.Report) error {
 	msg := &v1.Message{
 		Kind:    v1.MessageReport,
-		Content: r,
+		Content: v1.VariableValue{Value: r},
 	}
 	err := s.link.Send(msg)
 	if err != nil {
@@ -127,16 +128,21 @@ func (s *sync) reportAsync(r v1.Report) error {
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	msg := &v1.Message{
 		Kind:    v1.MessageReport,
-		Content: r,
+		Content: v1.VariableValue{Value: r},
 	}
 	res, err := s.link.Request(msg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	s.log.Debug("sync reports cloud shadow", log.Any("report", msg))
-	desire, ok := res.Content.(v1.Desire)
-	if !ok {
-		return nil, fmt.Errorf("unrecognized desire data")
+	desire := v1.Desire{}
+	if res.Content.Value != nil {
+		desire = res.Content.Value.(v1.Desire)
+	} else {
+		err = res.Content.Unmarshal(&desire)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
 	}
 	return desire, nil
 }

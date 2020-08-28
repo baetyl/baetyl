@@ -2,7 +2,6 @@ package kube
 
 import (
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl/config"
 	"k8s.io/client-go/kubernetes"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -10,6 +9,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientset "k8s.io/metrics/pkg/client/clientset/versioned"
 	metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
+
+	"github.com/baetyl/baetyl/config"
 )
 
 type client struct {

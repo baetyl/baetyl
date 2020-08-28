@@ -3,7 +3,6 @@ package engine
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
 	"net"
 	"os"
 	"path/filepath"
@@ -11,6 +10,8 @@ import (
 	"strings"
 	gosync "sync"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"

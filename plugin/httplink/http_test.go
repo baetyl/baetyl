@@ -2,14 +2,15 @@ package httplink
 
 import (
 	"encoding/json"
+	gohttp "net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/stretchr/testify/assert"
-	gohttp "net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestRequest(t *testing.T) {
@@ -62,7 +63,11 @@ func TestRequest(t *testing.T) {
 	}
 	res, err := link.Request(msg)
 	assert.NotNil(t, res)
-	desire := res.Content.(specv1.Desire)
+	assert.NoError(t, err)
+
+	assert.NotNil(t, res.Content.Value)
+	desire, ok := res.Content.Value.(specv1.Desire)
+	assert.True(t, ok)
 	assert.Equal(t, desire["apps"], apps)
 	assert.Equal(t, res.Kind, specv1.MessageReport)
 
@@ -72,7 +77,10 @@ func TestRequest(t *testing.T) {
 	res, err = link.Request(msg)
 	assert.NotNil(t, res)
 	assert.NoError(t, err)
-	desireRes := res.Content.(specv1.DesireResponse)
+
+	assert.NotNil(t, res.Content.Value)
+	desireRes, ok := res.Content.Value.(specv1.DesireResponse)
+	assert.True(t, ok)
 	aRes := desireRes.Values[0].App()
 	assert.Equal(t, aRes.Name, "app1")
 	assert.Equal(t, aRes.Version, "123")

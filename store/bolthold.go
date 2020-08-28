@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/log"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
 )
@@ -28,6 +29,7 @@ func NewBoltHold(filename string) (*bh.Store, error) {
 	}
 	sto, err := bh.Open(filename, 0666, ops)
 	if err != nil {
+		log.L().Error("failed to open bolthold", log.Any("path", filename))
 		return nil, errors.Trace(err)
 	}
 	return sto, nil

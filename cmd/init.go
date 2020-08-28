@@ -3,11 +3,12 @@ package cmd
 import (
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/spf13/cobra"
+
 	_ "github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/initz"
 	"github.com/baetyl/baetyl/plugin"
-	"github.com/spf13/cobra"
 )
 
 func init() {
