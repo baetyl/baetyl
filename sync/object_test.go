@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"os"
 	"path/filepath"
 	gosync "sync"
 	"testing"
@@ -15,10 +14,11 @@ import (
 	"github.com/baetyl/baetyl-go/v2/mock"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSyncDownloadObject(t *testing.T) {
@@ -90,24 +90,51 @@ func TestSyncDownloadObject(t *testing.T) {
 	obj.URL = ""
 	err = syn.downloadObject(obj, dir, file3, false)
 	assert.Error(t, err)
-
-	// failed to write into file
-	os.Chmod(dir, 0444)
-	file4 := filepath.Join(dir, "file4")
 	obj.URL = objMs.URL
-	err = syn.downloadObject(obj, dir, file4, false)
-	assert.Error(t, err)
-	os.Chmod(dir, 0755)
 
 	// not zip file
-	file6 := filepath.Join(dir, "file6")
+	file4 := filepath.Join(dir, "file4")
 	obj.MD5 = md5
-	err = syn.downloadObject(obj, dir, file6, true)
+	err = syn.downloadObject(obj, dir, file4, true)
 	assert.Error(t, err)
 
 	// download file not exist (multiple routine)
-	file7 := filepath.Join(dir, "file7")
+	file5 := filepath.Join(dir, "file5")
 	var wg gosync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(wg *gosync.WaitGroup) {
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+			err := syn.downloadObject(obj, dir, file5, false)
+			assert.NoError(t, err)
+			wg.Done()
+		}(&wg)
+	}
+	wg.Wait()
+	res, err := ioutil.ReadFile(file5)
+	assert.NoError(t, err)
+	assert.Equal(t, res, content)
+
+	// download file which already exist (multiple routine)
+	file6 := filepath.Join(dir, "file6")
+	ioutil.WriteFile(file6, content, 0644)
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func(wg *gosync.WaitGroup) {
+			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+			err := syn.downloadObject(obj, dir, file6, false)
+			assert.NoError(t, err)
+			wg.Done()
+		}(&wg)
+	}
+	wg.Wait()
+	res, err = ioutil.ReadFile(file6)
+	assert.NoError(t, err)
+	assert.Equal(t, res, content)
+
+	// download file with wrong content exist (multiple routine)
+	file7 := filepath.Join(dir, "file7")
+	ioutil.WriteFile(file7, []byte("wrong"), 0644)
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(wg *gosync.WaitGroup) {
@@ -118,41 +145,7 @@ func TestSyncDownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
-	res, err := ioutil.ReadFile(file7)
-	assert.NoError(t, err)
-	assert.Equal(t, res, content)
-
-	// download file which already exist (multiple routine)
-	file8 := filepath.Join(dir, "file8")
-	ioutil.WriteFile(file8, content, 0644)
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func(wg *gosync.WaitGroup) {
-			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-			err := syn.downloadObject(obj, dir, file8, false)
-			assert.NoError(t, err)
-			wg.Done()
-		}(&wg)
-	}
-	wg.Wait()
-	res, err = ioutil.ReadFile(file8)
-	assert.NoError(t, err)
-	assert.Equal(t, res, content)
-
-	// download file with wrong content exist (multiple routine)
-	file9 := filepath.Join(dir, "file9")
-	ioutil.WriteFile(file9, []byte("wrong"), 0644)
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func(wg *gosync.WaitGroup) {
-			time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
-			err := syn.downloadObject(obj, dir, file9, false)
-			assert.NoError(t, err)
-			wg.Done()
-		}(&wg)
-	}
-	wg.Wait()
-	res, err = ioutil.ReadFile(file9)
+	res, err = ioutil.ReadFile(file7)
 	assert.NoError(t, err)
 	assert.Equal(t, res, content)
 }
