@@ -1,20 +1,23 @@
 package sync
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"testing"
+	"time"
+
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/mock/plugin"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"io/ioutil"
-	"testing"
-	"time"
 )
 
 func TestReportSync(t *testing.T) {
@@ -47,7 +50,7 @@ func TestReportSync(t *testing.T) {
 	}
 	link.EXPECT().IsAsyncSupported().Return(false)
 	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
-	msg := &specv1.Message{Content: desire, Kind: specv1.MessageReport}
+	msg := &specv1.Message{Content: specv1.VariableValue{Value: desire}, Kind: specv1.MessageReport}
 	link.EXPECT().Request(gomock.Any()).Return(msg, nil)
 	err = syn.reportAndDesire()
 	assert.NoError(t, err)
@@ -98,7 +101,13 @@ func TestReportAsync(t *testing.T) {
 		log:   log.With(log.Any("test", "sync")),
 	}
 	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
-	msg := &specv1.Message{Content: desire, Kind: specv1.MessageReport}
+	bt, err := json.Marshal(desire)
+	assert.NoError(t, err)
+
+	msg := &specv1.Message{Content: specv1.VariableValue{}, Kind: specv1.MessageReport}
+	err = msg.Content.UnmarshalJSON(bt)
+	assert.NoError(t, err)
+
 	msgCh := make(chan *specv1.Message, 1)
 	msgCh <- msg
 	errCh := make(chan error, 1)

@@ -10,14 +10,15 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	routing "github.com/qiangxue/fasthttp-routing"
+	bh "github.com/timshannon/bolthold"
+	"github.com/valyala/fasthttp"
+
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/engine"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/baetyl/baetyl/sync"
-	routing "github.com/qiangxue/fasthttp-routing"
-	bh "github.com/timshannon/bolthold"
-	"github.com/valyala/fasthttp"
 )
 
 type Core struct {

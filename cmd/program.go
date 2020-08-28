@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/baetyl/baetyl/program"
 	"github.com/spf13/cobra"
+
+	"github.com/baetyl/baetyl/program"
 )
 
 func init() {

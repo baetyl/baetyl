@@ -2,7 +2,6 @@ package sync
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -112,16 +111,22 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	}
 	msg := &specv1.Message{
 		Kind:    specv1.MessageDesire,
-		Content: specv1.DesireRequest{Infos: crds},
+		Content: specv1.VariableValue{Value: specv1.DesireRequest{Infos: crds}},
 	}
 	res, err := s.link.Request(msg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	desire, ok := res.Content.(specv1.DesireResponse)
-	if !ok {
-		return nil, fmt.Errorf("unrecognized desrie response data")
+	desire := specv1.DesireResponse{}
+	if res.Content.Value != nil {
+		desire = res.Content.Value.(specv1.DesireResponse)
+	} else {
+		err = res.Content.Unmarshal(&desire)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
 	}
+
 	return desire.Values, nil
 }
 

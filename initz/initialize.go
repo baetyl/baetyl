@@ -9,12 +9,13 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	bh "github.com/timshannon/bolthold"
+
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/engine"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/baetyl/baetyl/sync"
-	bh "github.com/timshannon/bolthold"
 )
 
 var (
@@ -81,6 +82,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 }
 
 func (init *Initialize) start() error {
+	defer init.closeStore()
 	init.log.Info("collect and report stats to cloud")
 	err := init.reportAndDesireCloud()
 	if err != nil {
@@ -94,10 +96,7 @@ func (init *Initialize) start() error {
 	}
 
 	// close store which shared with baetyl-core
-	if init.sto != nil {
-		init.sto.Close()
-		init.sto = nil
-	}
+	init.closeStore()
 
 	t := time.NewTicker(init.cfg.Sync.Report.Interval)
 	defer t.Stop()
@@ -114,6 +113,18 @@ func (init *Initialize) start() error {
 		case <-init.tomb.Dying():
 			return nil
 		}
+	}
+}
+
+func (init *Initialize) closeStore() {
+	if init.sto != nil {
+		err := init.sto.Close()
+		if err != nil {
+			init.log.Warn("failed to close store", log.Error(err))
+		} else {
+			init.log.Info("close store")
+		}
+		init.sto = nil
 	}
 }
 

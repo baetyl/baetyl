@@ -2,12 +2,14 @@ package httplink
 
 import (
 	"encoding/json"
+
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+
 	"github.com/baetyl/baetyl/plugin"
 )
 
@@ -71,7 +73,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 		if err = json.Unmarshal(data, &desire); err != nil {
 			return nil, errors.Trace(err)
 		}
-		res.Content = desire
+		res.Content = specv1.VariableValue{Value: desire}
 	case specv1.MessageDesire:
 		data, err = l.http.PostJSON(l.cfg.HTTPLink.DesireURL, pld)
 		if err != nil {
@@ -81,7 +83,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 		if err = json.Unmarshal(data, &desireRes); err != nil {
 			return nil, errors.Trace(err)
 		}
-		res.Content = desireRes
+		res.Content = specv1.VariableValue{Value: desireRes}
 	default:
 		return nil, errors.Errorf("unsupported message kind")
 	}

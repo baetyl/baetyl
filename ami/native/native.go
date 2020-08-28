@@ -13,11 +13,12 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/kardianos/service"
+	"gopkg.in/yaml.v2"
+
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/program"
-	"github.com/kardianos/service"
-	"gopkg.in/yaml.v2"
 )
 
 func init() {

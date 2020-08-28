@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"fmt"
+
 	"github.com/baetyl/baetyl-go/v2/spec/v1"
 )
 

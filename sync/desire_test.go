@@ -11,15 +11,17 @@ import (
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mock"
+	"github.com/golang/mock/gomock"
+
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/mock/plugin"
 	"github.com/baetyl/baetyl/node"
-	"github.com/golang/mock/gomock"
 
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/store"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/baetyl/baetyl/store"
 )
 
 func TestSyncMakeKey(t *testing.T) {
@@ -217,16 +219,22 @@ func TestSyncResources(t *testing.T) {
 		}},
 	}
 	msg1 := &specv1.Message{
-		Kind:    specv1.MessageDesire,
-		Content: appCrd,
+		Kind: specv1.MessageDesire,
+		Content: specv1.VariableValue{
+			Value: appCrd,
+		},
 	}
 	msg2 := &specv1.Message{
-		Kind:    specv1.MessageDesire,
-		Content: cfgCrd,
+		Kind: specv1.MessageDesire,
+		Content: specv1.VariableValue{
+			Value: cfgCrd,
+		},
 	}
 	msg3 := &specv1.Message{
-		Kind:    specv1.MessageDesire,
-		Content: secCrd,
+		Kind: specv1.MessageDesire,
+		Content: specv1.VariableValue{
+			Value: secCrd,
+		},
 	}
 
 	sc := config.SyncConfig{}

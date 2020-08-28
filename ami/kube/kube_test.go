@@ -1,9 +1,11 @@
 package kube
 
 import (
-	"github.com/baetyl/baetyl/config"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/baetyl/baetyl/config"
 )
 
 func Test_newKubeImpl(t *testing.T) {

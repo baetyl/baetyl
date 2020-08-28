@@ -1,10 +1,6 @@
 package initz
 
 import (
-	"github.com/baetyl/baetyl/config"
-	mc "github.com/baetyl/baetyl/mock"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +8,12 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/baetyl/baetyl/config"
+	mc "github.com/baetyl/baetyl/mock"
 )
 
 const (

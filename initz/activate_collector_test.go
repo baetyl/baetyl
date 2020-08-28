@@ -2,13 +2,15 @@ package initz
 
 import (
 	"fmt"
-	"github.com/baetyl/baetyl/config"
-	mc "github.com/baetyl/baetyl/mock"
+	"testing"
+	"time"
+
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
+
+	"github.com/baetyl/baetyl/config"
+	mc "github.com/baetyl/baetyl/mock"
 )
 
 var (
