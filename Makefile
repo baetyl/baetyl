@@ -8,9 +8,18 @@ GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
 
-GO_FLAGS:=-ldflags '-s -w -X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"'
-GO_TEST_FLAGS:=-race -short -covermode=atomic -coverprofile=coverage.txt
-GO_TEST_PKGS:=$(shell go list ./...)
+GO       = go
+GO_MOD   = $(GO) mod
+GO_ENV   = env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0
+GO_FLAGS = $(BUILD_ARGS) -ldflags '-X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"'
+ifeq ($(findstring race,$(BUILD_ARGS)),race)
+GO_ENV   = env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=1
+GO_FLAGS = $(BUILD_ARGS) -ldflags '-s -w -X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"  -linkmode external -w -extldflags "-static"'
+endif
+GO_BUILD = $(GO_ENV) $(GO) build $(GO_FLAGS)
+GOTEST   = $(GO) test
+GOPKGS   = $$($(GO) list ./... | grep -vE "vendor")
+
 ifndef PLATFORMS
 	GO_OS:=$(shell go env GOOS)
 	GO_ARCH:=$(shell go env GOARCH)
@@ -33,7 +42,7 @@ all: build
 .PHONY: build
 build: $(SRC_FILES)
 	@echo "BUILD $(MODULE)"
-	@env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0 go build -o $(MODULE) $(GO_FLAGS) .
+	$(GO_BUILD) -o $(MODULE) .
 	@chmod +x $(MODULE)
 
 .PHONY: image
@@ -42,16 +51,16 @@ image:
 	@-docker buildx create --name baetyl
 	@docker buildx use baetyl
 	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE):$(VERSION) -f Dockerfile .
-
+	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE):$(VERSION) --build-arg BUILD_ARGS=$(BUILD_ARGS) -f Dockerfile .
 .PHONY: test
 test: fmt
-	@go test ${GO_TEST_FLAGS} ${GO_TEST_PKGS}
+	$(GOTEST) -race -short -covermode=atomic -coverprofile=coverage.txt $(GOPKGS)
 	@go tool cover -func=coverage.txt | grep total
 
 .PHONY: fmt
 fmt:
-	go fmt ./...
+	$(GO_MOD) tidy
+	@go fmt ./...
 
 .PHONY: clean
 clean:
