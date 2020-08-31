@@ -7,18 +7,9 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 GIT_TAG:=$(shell git tag --contains HEAD)
 GIT_REV:=git-$(shell git rev-parse --short HEAD)
 VERSION:=$(if $(GIT_TAG),$(GIT_TAG),$(GIT_REV))
-
-GO       = go
-GO_MOD   = $(GO) mod
-GO_ENV   = env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0
-GO_FLAGS = $(BUILD_ARGS) -ldflags '-X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"'
 ifeq ($(findstring race,$(BUILD_ARGS)),race)
-GO_ENV   = env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=1
-GO_FLAGS = $(BUILD_ARGS) -ldflags '-s -w -X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"  -linkmode external -w -extldflags "-static"'
+VERSION:=$(VERSION)-race
 endif
-GO_BUILD = $(GO_ENV) $(GO) build $(GO_FLAGS)
-GOTEST   = $(GO) test
-GOPKGS   = $$($(GO) list ./... | grep -vE "vendor")
 
 ifndef PLATFORMS
 	GO_OS:=$(shell go env GOOS)
@@ -31,6 +22,19 @@ ifndef PLATFORMS
 else ifeq ($(PLATFORMS),all)
 	override PLATFORMS:=$(PLATFORM_ALL)
 endif
+
+GO       := go
+GO_MOD   := $(GO) mod
+GO_ENV   := env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0
+GO_FLAGS := $(BUILD_ARGS) -ldflags '-X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"'
+ifeq ($(findstring race,$(BUILD_ARGS)),race)
+GO_ENV   := env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=1
+GO_FLAGS := $(BUILD_ARGS) -ldflags '-s -w -X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"  -linkmode external -w -extldflags "-static"'
+override PLATFORMS:= $(filter-out linux/arm/v7,$(PLATFORMS))
+endif
+GO_BUILD := $(GO_ENV) $(GO) build $(GO_FLAGS)
+GOTEST   := $(GO) test
+GOPKGS   := $$($(GO) list ./... | grep -vE "vendor")
 
 REGISTRY:=
 XFLAGS:=--load
@@ -52,6 +56,7 @@ image:
 	@docker buildx use baetyl
 	@docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 	docker buildx build $(XFLAGS) --platform $(XPLATFORMS) -t $(REGISTRY)$(MODULE):$(VERSION) --build-arg BUILD_ARGS=$(BUILD_ARGS) -f Dockerfile .
+
 .PHONY: test
 test: fmt
 	$(GOTEST) -race -short -covermode=atomic -coverprofile=coverage.txt $(GOPKGS)

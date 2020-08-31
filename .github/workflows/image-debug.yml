@@ -1,4 +1,4 @@
-name: image-develop
+name: image-debug
 on:
   push:
     branches:
@@ -27,5 +27,5 @@ jobs:
           docker login -u ${{ secrets.DOCKER_REGISTRY_ID }} -p ${{ secrets.DOCKER_REGISTRY_PASS }}
       - name: build and publish baetyl image
         run: |
-          make image PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/baetyl' REGISTRY=baetyltechtest/
+          make image PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/baetyl' REGISTRY=baetyltechtest/ BUILD_ARGS=-race
           
