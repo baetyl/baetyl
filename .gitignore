@@ -30,5 +30,5 @@ coverage.txt
 coverage.html
 .DS_Store
 
-/baetyl
+/baetyl*
 cmd/demoprogram/demoprogram

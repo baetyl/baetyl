@@ -70,3 +70,7 @@ fmt:
 .PHONY: clean
 clean:
 	@rm -rf $(MODULE)
+
+.PHONY: package
+package: build
+	zip baetyl_$(GO_OS)_$(GO_ARCH).zip program.yml baetyl
