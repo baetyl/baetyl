@@ -30,7 +30,7 @@ type EngineConfig struct {
 	} `yaml:"report" json:"report"`
 	Host struct {
 		// the root path on host if the relative path is set for 'hostpath' volume mount
-		RootPath string `yaml:"rootPath" json:"rootPath" default:"/var/lib/baetyl/hostpath"`
+		RootPath string `yaml:"rootPath" json:"rootPath" default:"/var/lib/baetyl/host"`
 	} `yaml:"host" json:"host"`
 }
 
@@ -64,7 +64,7 @@ type SyncConfig struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"20s"`
 	} `yaml:"report" json:"report"`
 	Download struct {
-		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/objects"`
+		Path              string `yaml:"path" json:"path" default:"var/lib/baetyl/object"`
 		http.ClientConfig `yaml:",inline" json:",inline"`
 	} `yaml:"download" json:"download"`
 }
