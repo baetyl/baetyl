@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -74,7 +73,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 					os.Symlink(av.HostPath.Path, mp)
 
 					impl.log.Debug("volume mount", log.Any("vm", vm))
-					if strings.ToLower(strings.Trim(vm.MountPath, "/")) == program.ProgramBinPath {
+					if vm.MountPath == program.ProgramBinPath {
 						var entry program.Entry
 						err = utils.LoadYAML(filepath.Join(mp, program.ProgramEntryYaml), &entry)
 						if err != nil {

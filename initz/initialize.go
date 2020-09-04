@@ -150,6 +150,7 @@ func (init *Initialize) reportAndDesireCloud() error {
 		init.log.Error("failed to report app info", log.Error(err))
 		return errors.Trace(ErrSysAppCoreMissing)
 	}
+	init.log.Debug("cloud response shadow desire", log.Any("desire", ds))
 	if len(ds) == 0 {
 		return errors.Trace(ErrSysAppCoreMissing)
 	}

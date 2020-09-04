@@ -69,7 +69,7 @@ fmt:
 
 .PHONY: clean
 clean:
-	@rm -rf $(MODULE)
+	@rm -f $(MODULE)*
 
 .PHONY: package
 package: build

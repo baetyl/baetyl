@@ -56,7 +56,7 @@ func (l *httpLink) Receive() (<-chan *specv1.Message, <-chan error) {
 }
 
 func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
-	l.log.Debug("http link send request message", log.Any("message", msg))
+	l.log.Debug("http link send request", log.Any("message", msg))
 	pld, err := json.Marshal(msg.Content)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -87,6 +87,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	default:
 		return nil, errors.Errorf("unsupported message kind")
 	}
+	l.log.Debug("http link receive response", log.Any("message", res))
 	return res, nil
 }
 

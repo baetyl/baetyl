@@ -9,9 +9,11 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-const ProgramBinPath = "bin"
-const ProgramEntryYaml = "program.yml" // in program package to specify entry
-const ProgramServiceYaml = "service.yml"
+const (
+	ProgramBinPath     = "/var/lib/baetyl/bin"
+	ProgramEntryYaml   = "program.yml" // in program package to specify entry
+	ProgramServiceYaml = "service.yml"
+)
 
 func Run() error {
 	prg := &Program{
