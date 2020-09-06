@@ -462,6 +462,10 @@ func TestInjectEnv(t *testing.T) {
 						Name:  context.KeyNodeName,
 						Value: "node01",
 					},
+					{
+						Name:  context.KeyRunMode,
+						Value: "",
+					},
 				},
 			},
 		},

@@ -1,14 +1,10 @@
 node:
-  ca: etc/baetyl/server_ca.pem
-  key: etc/baetyl/sync.key
-  cert: etc/baetyl/sync.crt
-
-plugin:
-  link: httplink
-
+  ca: var/lib/baetyl/node/ca.pem
+  key: var/lib/baetyl/node/client.key
+  cert: var/lib/baetyl/node/client.pem
 httplink:
-  address: https://127.0.0.1:9994
+  address: "https://localhost:30005"
   insecureSkipVerify: true
-
 logger:
   level: debug
+  encoding: console

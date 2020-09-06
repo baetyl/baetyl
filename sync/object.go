@@ -44,7 +44,7 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 		time.Sleep(time.Second)
 		resp, err := s.download.GetURL(obj.URL, headers)
 		if err != nil || resp == nil {
-			return errors.Errorf("failed to download file (%s)", name)
+			return errors.Errorf("failed to download file (%s): %v", name, err)
 		}
 	}
 	if resp.StatusCode != gohttp.StatusOK {

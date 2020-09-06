@@ -38,10 +38,10 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
 	err := impl.DeleteApp(ns, app.Name)
 	if err != nil {
-		return errors.Trace(err)
+		impl.log.Warn("failed to delete old app", log.Error(err))
 	}
 
-	appDir := filepath.Join(appsHostRootPath, ns, app.Name, app.Version)
+	appDir := filepath.Join(ami.RunHostPath, ns, app.Name, app.Version)
 	err = os.MkdirAll(appDir, 0755)
 	if err != nil {
 		return errors.Trace(err)
@@ -69,8 +69,13 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				}
 
 				if av.HostPath != nil {
-					mp := filepath.Join(insDir, vm.MountPath)
-					os.Symlink(av.HostPath.Path, mp)
+					mp := filepath.Join(insDir, filepath.Join("/", vm.MountPath))
+					if err = os.MkdirAll(filepath.Dir(mp), 0755); err != nil {
+						return errors.Trace(err)
+					}
+					if err = os.Symlink(av.HostPath.Path, mp); err != nil {
+						return errors.Trace(err)
+					}
 
 					impl.log.Debug("volume mount", log.Any("vm", vm))
 					if vm.MountPath == program.ProgramBinPath {
@@ -128,7 +133,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Env:         env,
 				Logger: log.Config{
 					Level:    "debug",
-					Filename: filepath.Join(logsHostRootPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
+					Filename: filepath.Join(ami.LogHostPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
 				},
 			}
 			prgYml, err := yaml.Marshal(prgCfg)
@@ -160,9 +165,12 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 
 func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 	// scan app version
-	curAppDir := filepath.Join(appsHostRootPath, ns, appName)
+	curAppDir := filepath.Join(ami.RunHostPath, ns, appName)
 	appVerFiles, err := ioutil.ReadDir(curAppDir)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return errors.Trace(err)
 	}
 	for _, appVerFile := range appVerFiles {
@@ -220,11 +228,11 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 
 func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	var stats []v1.AppStats
-	if !utils.DirExists(appsHostRootPath) {
+	if !utils.DirExists(ami.RunHostPath) {
 		return stats, nil
 	}
 
-	curNsPath := filepath.Join(appsHostRootPath, ns)
+	curNsPath := filepath.Join(ami.RunHostPath, ns)
 	if !utils.DirExists(curNsPath) {
 		return stats, nil
 	}

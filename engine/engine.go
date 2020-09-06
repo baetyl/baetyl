@@ -36,6 +36,7 @@ const (
 )
 
 type Engine struct {
+	mode string
 	cfg  config.Config
 	syn  sync.Sync
 	ami  ami.AMI
@@ -47,7 +48,10 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	am, err := ami.NewAMI(cfg.AMI)
+	mode := DetectRunMode()
+	log.L().Info("app running mode", log.Any("mode", mode))
+
+	am, err := ami.NewAMI(mode, cfg.AMI)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -56,13 +60,14 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 		return nil, errors.Trace(err)
 	}
 	eng := &Engine{
-		ami: am,
-		sto: sto,
-		syn: syn,
-		nod: nod,
-		cfg: cfg,
-		sec: sec,
-		log: log.With(),
+		mode: mode,
+		ami:  am,
+		sto:  sto,
+		syn:  syn,
+		nod:  nod,
+		cfg:  cfg,
+		sec:  sec,
+		log:  log.With(),
 	}
 	return eng, nil
 }
@@ -370,6 +375,10 @@ func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
 				Name:  context.KeyNodeName,
 				Value: os.Getenv(context.KeyNodeName),
 			},
+			{
+				Name:  context.KeyRunMode,
+				Value: e.mode,
+			},
 		}
 		svc.Env = append(svc.Env, env...)
 		services = append(services, svc)
@@ -404,7 +413,7 @@ func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Confi
 				if app.Volumes[i].HostPath == nil {
 					app.Volumes[i].Config = nil
 					app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{
-						Path: filepath.Join(e.cfg.Sync.Download.Path, cfg.Name, cfg.Version),
+						Path: filepath.Join(ami.ObjHostPath, cfg.Name, cfg.Version),
 					}
 				}
 			}

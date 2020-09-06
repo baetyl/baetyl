@@ -47,24 +47,20 @@ func NewCore(cfg config.Config) (*Core, error) {
 	}
 	c.sha, err = node.NewNode(c.sto)
 	if err != nil {
-		c.Close()
 		return nil, errors.Trace(err)
 	}
 	c.syn, err = sync.NewSync(cfg, c.sto, c.sha)
 	if err != nil {
-		c.Close()
 		return nil, errors.Trace(err)
 	}
-	c.syn.Start()
-
 	c.eng, err = engine.NewEngine(cfg, c.sto, c.sha, c.syn)
 	if err != nil {
-		c.Close()
 		return nil, errors.Trace(err)
 	}
-	c.eng.Start()
-
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
+
+	c.eng.Start()
+	c.syn.Start()
 	c.svr.Start()
 	return c, nil
 }

@@ -2,8 +2,10 @@ package engine
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 )
 
@@ -199,4 +201,12 @@ func isObjectMetaConfig(cfg *specv1.Configuration) bool {
 		}
 	}
 	return false
+}
+
+func DetectRunMode() string {
+	mode := os.Getenv(context.KeyRunMode)
+	if mode != "native" {
+		mode = "kube"
+	}
+	return mode
 }

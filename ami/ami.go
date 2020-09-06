@@ -5,7 +5,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -36,11 +35,7 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 }
 
-func NewAMI(cfg config.AmiConfig) (AMI, error) {
-	mode := os.Getenv(context.KeyRunMode)
-	if mode == "" {
-		mode = "kube"
-	}
+func NewAMI(mode string, cfg config.AmiConfig) (AMI, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	if ami, ok := amiImpls[mode]; ok {
