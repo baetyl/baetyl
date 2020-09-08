@@ -13,6 +13,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -21,7 +22,6 @@ import (
 
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/engine"
 )
 
 type batch struct {
@@ -77,7 +77,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 		active.attrs[a.Name] = a.Value
 	}
 
-	active.ami, err = ami.NewAMI(engine.DetectRunMode(), cfg.AMI)
+	active.ami, err = ami.NewAMI(context.RunMode(), cfg.AMI)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

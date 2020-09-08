@@ -115,7 +115,11 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			}
 
 			if prgExec == "" {
-				return errors.Errorf("program config is not mounted")
+				err = impl.DeleteApp(ns, app.Name)
+				if err != nil {
+					impl.log.Warn("failed to delete new app", log.Error(err))
+				}
+				return errors.Errorf("no program executable, the program config may not be mounted")
 			}
 
 			// apply service
@@ -124,7 +128,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
 			}
 			prgCfg := program.Config{
-				Name:        fmt.Sprintf("%s.%s.%s.%d", app.Name, app.Version, s.Name, i),
+				Name:        genServiceInstanceName(ns, app.Name, app.Version, s.Name, strconv.Itoa(i)),
 				DisplayName: fmt.Sprintf("%s %s", app.Name, s.Name),
 				Description: app.Description,
 				Dir:         insDir,
@@ -202,11 +206,11 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 				curSvcIns := svcInsFile.Name()
 				curSvcInsDir := filepath.Join(curSvcDir, curSvcIns)
 				svc, err := service.New(nil, &service.Config{
-					Name:             fmt.Sprintf("%s.%s.%s.%s", appName, curAppVer, curSvcName, curSvcIns),
+					Name:             genServiceInstanceName(ns, appName, curAppVer, curSvcName, curSvcIns),
 					WorkingDirectory: svcInsFile.Name(),
 				})
 				if err = svc.Uninstall(); err != nil {
-					return errors.Trace(err)
+					impl.log.Warn("failed to uninstall old app", log.Error(err))
 				}
 				err = os.RemoveAll(curSvcInsDir)
 				if err != nil {
@@ -297,7 +301,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					}
 
 					curSvcIns := svcInsFile.Name()
-					curPrgName := fmt.Sprintf("%s.%s.%s.%s", curAppName, curAppVer, curSvcName, curSvcIns)
+					curPrgName := genServiceInstanceName(ns, curAppName, curAppVer, curSvcName, curSvcIns)
 					svc, err := service.New(nil, &service.Config{
 						Name:             curPrgName,
 						WorkingDirectory: svcInsFile.Name(),
@@ -352,4 +356,8 @@ func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
 
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
 	panic("implement me")
+}
+
+func genServiceInstanceName(ns, appName, appVersion, svcName, instanceID string) string {
+	return fmt.Sprintf("%s.%s.%s.%s.%s", ns, appName, appVersion, svcName, instanceID)
 }

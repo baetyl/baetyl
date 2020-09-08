@@ -2,10 +2,8 @@ package engine
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/baetyl/baetyl-go/v2/context"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 )
 
@@ -189,11 +187,6 @@ func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 	return res
 }
 
-func isRegistrySecret(secret specv1.Secret) bool {
-	registry, ok := secret.Labels[specv1.SecretLabel]
-	return ok && registry == specv1.SecretRegistry
-}
-
 func isObjectMetaConfig(cfg *specv1.Configuration) bool {
 	for k := range cfg.Data {
 		if strings.HasPrefix(k, configKeyObject) {
@@ -201,12 +194,4 @@ func isObjectMetaConfig(cfg *specv1.Configuration) bool {
 		}
 	}
 	return false
-}
-
-func DetectRunMode() string {
-	mode := os.Getenv(context.KeyRunMode)
-	if mode != "native" {
-		mode = "kube"
-	}
-	return mode
 }

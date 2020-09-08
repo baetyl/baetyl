@@ -48,7 +48,7 @@ type Engine struct {
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
-	mode := DetectRunMode()
+	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 
 	am, err := ami.NewAMI(mode, cfg.AMI)

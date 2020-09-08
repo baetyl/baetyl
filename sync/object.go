@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -37,6 +38,10 @@ func (s *sync) downloadObject(obj *specv1.ConfigurationObject, dir, name string,
 	headers := make(map[string]string)
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
+	}
+	// only for native mode
+	if context.RunMode() == context.RunModeNative {
+		headers["x-baetyl-platform"] = context.PlatformString()
 	}
 	resp, err := s.download.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
