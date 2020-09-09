@@ -2,14 +2,19 @@ module github.com/baetyl/baetyl
 
 go 1.13
 
+replace github.com/kardianos/service v1.1.0 => github.com/baetyl/service v1.1.0
+
 require (
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/baetyl/baetyl-go/v2 v2.0.36
+	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/mock v1.3.1
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/kardianos/service v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
+	github.com/shirou/gopsutil v2.20.8+incompatible
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.5.1
 	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
