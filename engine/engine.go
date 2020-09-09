@@ -315,11 +315,11 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 		if cfg := v.VolumeSource.Config; cfg != nil {
 			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if key == "" {
-				return errors.Errorf("failed to get configuration name: (%s) version: (%s)", cfg.Name, cfg.Version)
+				return errors.Errorf("failed to get config name: (%s) version: (%s)", cfg.Name, cfg.Version)
 			}
 			var config specv1.Configuration
 			if err := e.sto.Get(key, &config); err != nil {
-				return errors.Trace(err)
+				return errors.Errorf("failed to get config name: (%s) version: (%s) with error: %s", cfg.Name, cfg.Version, err.Error())
 			}
 			cfgs[config.Name] = config
 		} else if sec := v.VolumeSource.Secret; sec != nil {

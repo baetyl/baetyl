@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -110,8 +111,13 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 		return nil, nil
 	}
 	msg := &specv1.Message{
-		Kind:    specv1.MessageDesire,
-		Content: specv1.VariableValue{Value: specv1.DesireRequest{Infos: crds}},
+		Kind:     specv1.MessageDesire,
+		Metadata: map[string]string{},
+		Content:  specv1.VariableValue{Value: specv1.DesireRequest{Infos: crds}},
+	}
+	// only for native mode
+	if context.RunMode() == context.RunModeNative {
+		msg.Metadata["x-baetyl-platform"] = context.PlatformString()
 	}
 	res, err := s.link.Request(msg)
 	if err != nil {
