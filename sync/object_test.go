@@ -85,13 +85,6 @@ func TestSyncDownloadObject(t *testing.T) {
 	err = syn.downloadObject(obj, dir, file2, false)
 	assert.NoError(t, err)
 
-	// invalid url
-	file3 := filepath.Join(dir, "invalidUrl")
-	obj.URL = ""
-	err = syn.downloadObject(obj, dir, file3, false)
-	assert.Error(t, err)
-	obj.URL = objMs.URL
-
 	// not zip file
 	file4 := filepath.Join(dir, "file4")
 	obj.MD5 = md5

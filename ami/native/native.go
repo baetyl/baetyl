@@ -9,12 +9,14 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/process"
 	"gopkg.in/yaml.v2"
@@ -379,9 +381,18 @@ func prgStatusToSpecStatus(status service.Status) v1.Status {
 }
 
 func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
+	plat := context.Platform()
+	ho, err := host.Info()
+	if err != nil {
+		return nil, err
+	}
+	// TODO add address
 	return &v1.NodeInfo{
-		Arch: runtime.GOARCH,
-		OS:   runtime.GOOS,
+		Arch:     runtime.GOARCH,
+		OS:       runtime.GOOS,
+		Variant:  plat.Variant,
+		HostID:   ho.HostID,
+		Hostname: ho.Hostname,
 	}, nil
 }
 
