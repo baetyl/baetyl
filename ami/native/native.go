@@ -324,7 +324,6 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					}
 					usage, err := getServiceInsStats(svc)
 					if err != nil {
-						curInsStats.Status = v1.Unknown
 						curInsStats.Cause += err.Error()
 					} else {
 						curInsStats.Usage = usage
@@ -381,11 +380,11 @@ func prgStatusToSpecStatus(status service.Status) v1.Status {
 }
 
 func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
-	plat := context.Platform()
 	ho, err := host.Info()
 	if err != nil {
 		return nil, err
 	}
+	plat := context.Platform()
 	// TODO add address
 	return &v1.NodeInfo{
 		Arch:     runtime.GOARCH,
@@ -415,6 +414,7 @@ func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
 		}
 	}
 
+	// TODO replace with more appropriate stats
 	me, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, errors.Trace(err)
