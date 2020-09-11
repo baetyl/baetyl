@@ -28,10 +28,6 @@ type EngineConfig struct {
 	Report struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
-	Host struct {
-		// the root path on host if the relative path is set for 'hostpath' volume mount
-		RootPath string `yaml:"rootPath" json:"rootPath" default:"/var/lib/baetyl/host"`
-	} `yaml:"host" json:"host"`
 }
 
 type AmiConfig struct {

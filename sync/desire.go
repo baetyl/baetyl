@@ -1,21 +1,10 @@
 package sync
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-)
-
-// extended features of config resourece
-const (
-	configKeyObject = "_object_"
-	configValueZip  = "zip"
 )
 
 func (s *sync) SyncApps(infos []specv1.AppInfo) (map[string]specv1.Application, error) {
@@ -70,6 +59,7 @@ func (s *sync) SyncResource(info specv1.AppInfo) error {
 	configs := map[string]*specv1.Configuration{}
 	for _, r := range crds {
 		if cfg := r.Config(); cfg != nil {
+			FilterConfig(cfg)
 			configs[cfg.Name] = cfg
 		} else {
 			return errors.Errorf("failed to sync configuration (%s) (%s)", r.Name, r.Version)
@@ -139,7 +129,7 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv1.Configuration, secrets map[string]*specv1.Secret) error {
 	for i := range volumes {
 		if cfg := volumes[i].VolumeSource.Config; cfg != nil && configs[cfg.Name] != nil {
-			err := s.processConfiguration(&volumes[i], configs[cfg.Name])
+			err := s.processConfiguration(configs[cfg.Name])
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -153,31 +143,10 @@ func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv
 	return nil
 }
 
-func (s *sync) processConfiguration(volume *specv1.Volume, cfg *specv1.Configuration) error {
-	var base, dir string
-	for k, v := range cfg.Data {
-		if strings.HasPrefix(k, configKeyObject) {
-			if base == "" {
-				base = filepath.Join(s.cfg.Download.Path, cfg.Name)
-				dir = filepath.Join(base, cfg.Version)
-				err := os.MkdirAll(dir, 0755)
-				if err != nil {
-					return errors.Trace(err)
-				}
-			}
-			obj := new(specv1.ConfigurationObject)
-			err := json.Unmarshal([]byte(v), &obj)
-			if err != nil {
-				s.log.Warn("process storage object of volume failed: %s", log.Any("name", volume.Name), log.Error(err))
-				return errors.Trace(err)
-			}
-			filename := filepath.Join(dir, strings.TrimPrefix(k, configKeyObject))
-			err = s.downloadObject(obj, dir, filename, obj.Unpack == configValueZip)
-			if err != nil {
-				os.RemoveAll(dir)
-				return errors.Errorf("failed to download volume (%s) with error: %s", volume.Name, err)
-			}
-		}
+func (s *sync) processConfiguration(cfg *specv1.Configuration) error {
+	err := DownloadConfig(s.download, s.cfg.Download.Path, cfg)
+	if err != nil {
+		return errors.Trace(err)
 	}
 	key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 	if key == "" {

@@ -45,7 +45,7 @@ type sync struct {
 	nod   *node.Node
 	tomb  utils.Tomb
 	log   *log.Logger
-	// for downloading object
+	// for downloading objects
 	download *http.Client
 }
 

@@ -4,14 +4,9 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 	gosync "sync"
 	"time"
-
-	"github.com/mitchellh/mapstructure"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -19,6 +14,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/mitchellh/mapstructure"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 
@@ -304,10 +300,11 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 		e.log.Error("failed to sync resource", log.Any("info", info), log.Error(err))
 		return errors.Trace(err)
 	}
-	app, err := e.injectEnv(info)
+	key := makeKey(specv1.KindApplication, info.Name, info.Version)
+	app := new(specv1.Application)
+	err := e.sto.Get(key, app)
 	if err != nil {
-		e.log.Error("failed to inject env to applications", log.Any("info", info), log.Error(err))
-		return errors.Trace(err)
+		return errors.Errorf("failed to get app name: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
 	}
 	cfgs := make(map[string]specv1.Configuration)
 	secs := make(map[string]specv1.Secret)
@@ -334,7 +331,7 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 			secs[secret.Name] = secret
 		}
 	}
-	if err := e.reviseApp(app, cfgs); err != nil {
+	if err := sync.PrepareApp(ami.HostHostPath, ami.ObjectHostPath, app, cfgs); err != nil {
 		e.log.Error("failed to revise applications", log.Any("app", app), log.Error(err))
 		return errors.Trace(err)
 	}
@@ -346,80 +343,6 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 	}
 	// apply app
 	return errors.Trace(e.ami.ApplyApp(ns, *app, cfgs, secs))
-}
-
-func (e *Engine) injectEnv(info specv1.AppInfo) (*specv1.Application, error) {
-	key := makeKey(specv1.KindApplication, info.Name, info.Version)
-	app := new(specv1.Application)
-	err := e.sto.Get(key, app)
-	if err != nil {
-		e.log.Error("failed to get resource from store", log.Any("key", key), log.Error(err))
-		return nil, errors.Trace(err)
-	}
-	var services []specv1.Service
-	for _, svc := range app.Services {
-		env := []specv1.Environment{
-			{
-				Name:  context.KeyAppName,
-				Value: app.Name,
-			},
-			{
-				Name:  context.KeySvcName,
-				Value: svc.Name,
-			},
-			{
-				Name:  context.KeyAppVersion,
-				Value: app.Version,
-			},
-			{
-				Name:  context.KeyNodeName,
-				Value: os.Getenv(context.KeyNodeName),
-			},
-			{
-				Name:  context.KeyRunMode,
-				Value: e.mode,
-			},
-		}
-		svc.Env = append(svc.Env, env...)
-		services = append(services, svc)
-	}
-	app.Services = services
-	return app, nil
-}
-
-func (e *Engine) reviseApp(app *specv1.Application, cfgs map[string]specv1.Configuration) error {
-	if app == nil {
-		return nil
-	}
-	for i := range app.Volumes {
-		if hostPath := app.Volumes[i].HostPath; hostPath != nil {
-			if filepath.IsAbs(hostPath.Path) {
-				continue
-			}
-			fullPath := filepath.Join(e.cfg.Engine.Host.RootPath, filepath.Join("/", hostPath.Path))
-			if err := os.MkdirAll(fullPath, 0755); err != nil {
-				return err
-			}
-			app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{Path: fullPath}
-		} else if config := app.Volumes[i].Config; config != nil {
-			cfg, ok := cfgs[config.Name]
-			if !ok {
-				continue
-			}
-			for k := range cfg.Data {
-				if !strings.HasPrefix(k, configKeyObject) {
-					continue
-				}
-				if app.Volumes[i].HostPath == nil {
-					app.Volumes[i].Config = nil
-					app.Volumes[i].HostPath = &specv1.HostPathVolumeSource{
-						Path: filepath.Join(ami.ObjHostPath, cfg.Name, cfg.Version),
-					}
-				}
-			}
-		}
-	}
-	return nil
 }
 
 func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secret) error {

@@ -2,13 +2,8 @@ package engine
 
 import (
 	"fmt"
-	"strings"
 
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-)
-
-const (
-	configKeyObject = "_object_"
 )
 
 func checkService(infos []specv1.AppInfo, apps map[string]specv1.Application, stats map[string]specv1.AppStats, update map[string]specv1.AppInfo) {
@@ -187,9 +182,9 @@ func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 	return res
 }
 
-func isObjectMetaConfig(cfg *specv1.Configuration) bool {
+func isObjectConfig(cfg *specv1.Configuration) bool {
 	for k := range cfg.Data {
-		if strings.HasPrefix(k, configKeyObject) {
+		if specv1.IsConfigObject(k) {
 			return true
 		}
 	}

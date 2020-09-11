@@ -38,7 +38,7 @@ func (e *Engine) recycle() error {
 	}
 	del := make(map[string]specv1.Configuration)
 	if err := e.sto.ForEach(nil, func(cfg *specv1.Configuration) error {
-		if isObjectMetaConfig(cfg) {
+		if isObjectConfig(cfg) {
 			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if _, ok := usedCfg[key]; !ok {
 				del[key] = *cfg

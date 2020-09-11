@@ -73,4 +73,4 @@ clean:
 
 .PHONY: package
 package: build
-	zip baetyl_$(GO_OS)_$(GO_ARCH).zip program.yml baetyl
+	zip $(MODULE)_$(GO_OS)-$(GO_ARCH)_$(VERSION).zip program.yml $(MODULE)
