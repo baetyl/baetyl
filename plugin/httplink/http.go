@@ -1,9 +1,7 @@
 package httplink
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -14,10 +12,6 @@ import (
 
 	"github.com/baetyl/baetyl/plugin"
 )
-
-var headers = map[string]string{
-	"Content-Type": http.ContentTypeJSON,
-}
 
 func init() {
 	v2plugin.RegisterFactory("httplink", New)
@@ -71,12 +65,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	res := &specv1.Message{Kind: msg.Kind}
 	switch msg.Kind {
 	case specv1.MessageReport:
-		url := fmt.Sprintf("%s/%s", l.cfg.HTTPLink.HTTP.Address, l.cfg.HTTPLink.ReportURL)
-		resp, err := l.http.PostURL(url, bytes.NewBuffer(pld), headers, msg.Metadata)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		data, err = http.HandleResponse(resp)
+		data, err = l.http.PostJSON(l.cfg.HTTPLink.ReportURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -86,12 +75,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 		}
 		res.Content = specv1.VariableValue{Value: desire}
 	case specv1.MessageDesire:
-		url := fmt.Sprintf("%s/%s", l.cfg.HTTPLink.HTTP.Address, l.cfg.HTTPLink.DesireURL)
-		resp, err := l.http.PostURL(url, bytes.NewBuffer(pld), headers, msg.Metadata)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		data, err = http.HandleResponse(resp)
+		data, err = l.http.PostJSON(l.cfg.HTTPLink.DesireURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}

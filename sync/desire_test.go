@@ -99,18 +99,14 @@ func TestSyncProcessConfiguration(t *testing.T) {
 		download: http.NewClient(ops),
 		log:      log.With(log.Any("test", "sync")),
 	}
-	volume := &specv1.Volume{
-		Name:         "cfg",
-		VolumeSource: specv1.VolumeSource{Config: &specv1.ObjectReference{Name: "cfg", Version: "c1"}},
-	}
 	cfg := &specv1.Configuration{Name: "cfg", Version: "c1"}
-	err = syn.processConfiguration(volume, cfg)
+	err = syn.processConfiguration(cfg)
 	assert.NoError(t, err)
 	var expectedCfg specv1.Configuration
 	err = sto.Get(makeKey(specv1.KindConfiguration, "cfg", "c1"), &expectedCfg)
 	assert.NoError(t, err)
 	cfg.Name = ""
-	err = syn.processConfiguration(volume, cfg)
+	err = syn.processConfiguration(cfg)
 	assert.Error(t, err)
 	cfg.Name = "cfg"
 
@@ -128,9 +124,9 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	}
 	objData, _ := json.Marshal(obj)
 	cfg.Data = map[string]string{
-		configKeyObject + "file2": string(objData),
+		"_object_file2": string(objData),
 	}
-	err = syn.processConfiguration(volume, cfg)
+	err = syn.processConfiguration(cfg)
 	assert.NoError(t, err)
 	hostPath := filepath.Join(dir, "cfg", "c1")
 	data, err := ioutil.ReadFile(filepath.Join(hostPath, "file2"))
@@ -138,9 +134,9 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	assert.Equal(t, data, content)
 
 	cfg.Data = map[string]string{
-		configKeyObject + "file3": "wrong",
+		"_object_file3": "wrong",
 	}
-	err = syn.processConfiguration(volume, cfg)
+	err = syn.processConfiguration(cfg)
 	assert.Error(t, err)
 }
 

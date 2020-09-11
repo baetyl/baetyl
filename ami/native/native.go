@@ -82,7 +82,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 						return errors.Trace(err)
 					}
 
-					impl.log.Debug("volume mount", log.Any("vm", vm))
+					impl.log.Info("mount a volume", log.Any("vm", vm))
 					if vm.MountPath == program.ProgramBinPath {
 						var entry program.Entry
 						err = utils.LoadYAML(filepath.Join(mp, program.ProgramEntryYaml), &entry)
@@ -161,14 +161,23 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			})
 			err = svc.Install()
 			if err != nil {
-				return errors.Trace(err)
+				svc.Uninstall()
+				err = svc.Install()
+				if err != nil {
+					return errors.Trace(err)
+				}
 			}
 			err = svc.Start()
 			if err != nil {
-				return errors.Trace(err)
+				svc.Stop()
+				err = svc.Start()
+				if err != nil {
+					return errors.Trace(err)
+				}
 			}
 		}
 	}
+	impl.log.Info("apply an app", log.Any("app", app))
 	return nil
 }
 
