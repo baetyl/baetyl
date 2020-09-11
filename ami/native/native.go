@@ -9,11 +9,16 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/host"
+	"github.com/shirou/gopsutil/mem"
+	"github.com/shirou/gopsutil/process"
 	"gopkg.in/yaml.v2"
 
 	"github.com/baetyl/baetyl/ami"
@@ -317,6 +322,12 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					} else {
 						curInsStats.Status = prgStatusToSpecStatus(status)
 					}
+					usage, err := getServiceInsStats(svc)
+					if err != nil {
+						curInsStats.Cause += err.Error()
+					} else {
+						curInsStats.Usage = usage
+					}
 					curAppStats.InstanceStats[curPrgName] = curInsStats
 				}
 			}
@@ -327,6 +338,34 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 		}
 	}
 	return stats, nil
+}
+
+func getServiceInsStats(svc service.Service) (map[string]string, error) {
+	usage := map[string]string{}
+	pid, err := svc.GetPid()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	proc, err := process.NewProcess(pid)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	mem, err := proc.MemoryInfo()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	usage["memory"] = strconv.FormatUint(mem.VMS, 10)
+	cpuinfos, err := cpu.Info()
+	if len(cpuinfos) < 1 {
+		return nil, errors.Errorf("failed to get cpu info")
+	}
+	cPercent, err := proc.CPUPercent()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	core := float64(cpuinfos[0].Cores) * cPercent
+	usage["cpu"] = strconv.FormatFloat(core, 'f', 3, 64)
+	return usage, nil
 }
 
 func prgStatusToSpecStatus(status service.Status) v1.Status {
@@ -341,17 +380,50 @@ func prgStatusToSpecStatus(status service.Status) v1.Status {
 }
 
 func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
+	ho, err := host.Info()
+	if err != nil {
+		return nil, err
+	}
+	plat := context.Platform()
+	// TODO add address
 	return &v1.NodeInfo{
-		Arch: runtime.GOARCH,
-		OS:   runtime.GOOS,
+		Arch:     runtime.GOARCH,
+		OS:       runtime.GOOS,
+		Variant:  plat.Variant,
+		HostID:   ho.HostID,
+		Hostname: ho.Hostname,
 	}, nil
 }
 
 func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
-	return &v1.NodeStats{
+	stats := &v1.NodeStats{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
-	}, nil
+	}
+	cpuinfos, err := cpu.Info()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	cPercent, err := cpu.Percent(0, false)
+	if len(cpuinfos) >= 1 {
+		cores := int(cpuinfos[0].Cores)
+		stats.Capacity["cpu"] = strconv.Itoa(cores)
+		if len(cPercent) >= 1 {
+			usage := float64(cores) * cPercent[0]
+			stats.Usage["cpu"] = strconv.FormatFloat(usage, 'f', 3, 64)
+		}
+	}
+
+	// TODO replace with more appropriate stats
+	me, err := mem.VirtualMemory()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	stats.Capacity["memory"] = strconv.FormatUint(me.Total, 10)
+	stats.Usage["memory"] = strconv.FormatUint(me.Used, 10)
+
+	// TODO add pressure flags
+	return stats, nil
 }
 
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
