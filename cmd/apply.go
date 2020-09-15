@@ -13,11 +13,16 @@ import (
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/spf13/cobra"
 
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/sync"
+)
+
+const (
+	keyBaetylHostPathLib = "BAETYL_HOST_PATH_LIB"
 )
 
 var (
@@ -70,6 +75,12 @@ func apply() {
 	if err != nil {
 		return
 	}
+	if os.Getenv(keyBaetylHostPathLib) == "" {
+		err := os.Setenv(keyBaetylHostPathLib, "/var/lib/baetyl")
+		if err != nil {
+			return
+		}
+	}
 
 	// download data
 	ops := http.NewClientOptions()
@@ -80,6 +91,10 @@ func apply() {
 	var data []byte
 	cli := http.NewClient(ops)
 	data, err = cli.GetJSON(file)
+	if err != nil {
+		return
+	}
+	data, err = utils.ParseEnv(data)
 	if err != nil {
 		return
 	}
