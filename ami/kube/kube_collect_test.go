@@ -33,7 +33,7 @@ func TestCollectNodeInfo(t *testing.T) {
 		SystemUUID:       "system",
 		OSImage:          "image",
 	}
-	assert.Equal(t, res, expected)
+	assert.Equal(t, expected, res)
 }
 
 func initCollectKubeAMI(t *testing.T) *kubeImpl {
@@ -42,6 +42,14 @@ func initCollectKubeAMI(t *testing.T) *kubeImpl {
 		core: fc.CoreV1(),
 		app:  fc.AppsV1(),
 	}
+	node, err := fc.CoreV1().Nodes().Get("node1", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.NotNil(t, node)
+
+	se, err := fc.CoreV1().Secrets("baetyl-edge").Get("sec1", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.NotNil(t, se)
+
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
@@ -56,7 +64,7 @@ func genCollectRuntime() []runtime.Object {
 	ns := "baetyl-edge"
 	rs := []runtime.Object{
 		&v1.Node{
-			ObjectMeta: metav1.ObjectMeta{Name: "node1", Namespace: ns},
+			ObjectMeta: metav1.ObjectMeta{Name: "node1"},
 			Status: v1.NodeStatus{
 				NodeInfo: v1.NodeSystemInfo{
 					Architecture:            "arch",

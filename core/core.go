@@ -16,6 +16,7 @@ import (
 
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/engine"
+	"github.com/baetyl/baetyl/helper"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/baetyl/baetyl/sync"
@@ -24,8 +25,9 @@ import (
 type Core struct {
 	cfg config.Config
 	sto *bh.Store
+	hp  helper.Helper
 	sha *node.Node
-	eng *engine.Engine
+	eng engine.Engine
 	syn sync.Sync
 	svr *http.Server
 }
@@ -49,11 +51,15 @@ func NewCore(cfg config.Config) (*Core, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c.syn, err = sync.NewSync(cfg, c.sto, c.sha)
+	c.hp, err = helper.NewHelper(cfg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c.eng, err = engine.NewEngine(cfg, c.sto, c.sha, c.syn)
+	c.syn, err = sync.NewSync(cfg, c.sto, c.sha, c.hp)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	c.eng, err = engine.NewEngine(cfg, c.sto, c.sha, c.syn, c.hp)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

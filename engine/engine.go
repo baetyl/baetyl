@@ -20,6 +20,7 @@ import (
 
 	"github.com/baetyl/baetyl/ami"
 	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/helper"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/security"
 	"github.com/baetyl/baetyl/sync"
@@ -31,19 +32,32 @@ const (
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
-type Engine struct {
-	mode string
-	cfg  config.Config
-	syn  sync.Sync
-	ami  ami.AMI
-	nod  *node.Node
-	sto  *bh.Store
-	log  *log.Logger
-	sec  security.Security
-	tomb utils.Tomb
+//go:generate mockgen -destination=../mock/engine.go -package=mock github.com/baetyl/baetyl/engine Engine
+
+type Engine interface {
+	Start()
+	ReportAndDesire() error
+	GetServiceLog(ctx *routing.Context) error
+	Collect(ns string, isSys bool, desire specv1.Desire) specv1.Report
+	Close()
 }
 
-func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (*Engine, error) {
+// pipes: remote debugging of the routing table between the router and the channel. key={ns}_{name}_{container}
+type engineImpl struct {
+	mode   string
+	cfg    config.Config
+	syn    sync.Sync
+	ami    ami.AMI
+	nod    *node.Node
+	sto    *bh.Store
+	log    *log.Logger
+	sec    security.Security
+	hp     helper.Helper
+	chains gosync.Map
+	tomb   utils.Tomb
+}
+
+func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, helper helper.Helper) (Engine, error) {
 	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 
@@ -55,28 +69,32 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	eng := &Engine{
-		mode: mode,
-		ami:  am,
-		sto:  sto,
-		syn:  syn,
-		nod:  nod,
-		cfg:  cfg,
-		sec:  sec,
-		log:  log.With(),
+
+	eng := &engineImpl{
+		mode:   mode,
+		ami:    am,
+		sto:    sto,
+		syn:    syn,
+		nod:    nod,
+		cfg:    cfg,
+		sec:    sec,
+		hp:     helper,
+		chains: gosync.Map{},
+		log:    log.With(),
 	}
 	return eng, nil
 }
 
-func (e *Engine) Start() {
+func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
+	e.hp.Subscribe(helper.TopicDownside, &handlerDownside{engineImpl: e})
 }
 
-func (e *Engine) ReportAndDesire() error {
+func (e *engineImpl) ReportAndDesire() error {
 	return errors.Trace(e.reportAndDesireAsync(false))
 }
 
-func (e *Engine) GetServiceLog(ctx *routing.Context) error {
+func (e *engineImpl) GetServiceLog(ctx *routing.Context) error {
 	service := ctx.Param("service")
 	isSys := string(ctx.QueryArgs().Peek("system"))
 	tailLines := string(ctx.QueryArgs().Peek("tailLines"))
@@ -100,7 +118,7 @@ func (e *Engine) GetServiceLog(ctx *routing.Context) error {
 	return nil
 }
 
-func (e *Engine) reporting() error {
+func (e *engineImpl) reporting() error {
 	e.log.Info("engine starts to report")
 	defer e.log.Info("engine has stopped reporting")
 
@@ -121,7 +139,7 @@ func (e *Engine) reporting() error {
 	}
 }
 
-func (e *Engine) reportAndDesireAsync(delete bool) error {
+func (e *engineImpl) reportAndDesireAsync(delete bool) error {
 	node, err := e.nod.Get()
 	if err != nil {
 		return errors.Trace(err)
@@ -138,7 +156,7 @@ func (e *Engine) reportAndDesireAsync(delete bool) error {
 	return nil
 }
 
-func (e *Engine) recycleIfNeed(node *specv1.Node) error {
+func (e *engineImpl) recycleIfNeed(node *specv1.Node) error {
 	report := node.Report
 	val, ok := report["nodestats"]
 	if !ok {
@@ -154,7 +172,7 @@ func (e *Engine) recycleIfNeed(node *specv1.Node) error {
 	return nil
 }
 
-func (e *Engine) Collect(ns string, isSys bool, desire specv1.Desire) specv1.Report {
+func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1.Report {
 	nodeInfo, err := e.ami.CollectNodeInfo()
 	if err != nil {
 		e.log.Warn("failed to collect node info", log.Error(err))
@@ -188,7 +206,7 @@ func (e *Engine) Collect(ns string, isSys bool, desire specv1.Desire) specv1.Rep
 	return r
 }
 
-func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
+func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 	var ns string
 	if isSys {
 		ns = context.BaetylEdgeSystemNamespace
@@ -242,7 +260,7 @@ func (e *Engine) reportAndApply(isSys, delete bool, desire specv1.Desire) error 
 	return nil
 }
 
-func (e *Engine) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map[string]specv1.AppStats) error {
+func (e *engineImpl) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map[string]specv1.AppStats) error {
 	if len(stats) == 0 {
 		return nil
 	}
@@ -278,7 +296,7 @@ func getDeleteAndUpdate(desires, reports []specv1.AppInfo) (map[string]specv1.Ap
 	return del, update
 }
 
-func (e *Engine) applyApps(ns string, infos map[string]specv1.AppInfo, stats map[string]specv1.AppStats) {
+func (e *engineImpl) applyApps(ns string, infos map[string]specv1.AppInfo, stats map[string]specv1.AppStats) {
 	var wg gosync.WaitGroup
 	for _, info := range infos {
 		wg.Add(1)
@@ -295,7 +313,7 @@ func (e *Engine) applyApps(ns string, infos map[string]specv1.AppInfo, stats map
 	wg.Wait()
 }
 
-func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
+func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 	if err := e.syn.SyncResource(info); err != nil {
 		e.log.Error("failed to sync resource", log.Any("info", info), log.Error(err))
 		return errors.Trace(err)
@@ -345,7 +363,7 @@ func (e *Engine) applyApp(ns string, info specv1.AppInfo) error {
 	return errors.Trace(e.ami.ApplyApp(ns, *app, cfgs, secs))
 }
 
-func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secret) error {
+func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.Secret) error {
 	ca, err := e.sec.GetCA()
 	if err != nil {
 		return errors.Trace(err)
@@ -422,7 +440,7 @@ func (e *Engine) injectCert(app *specv1.Application, secs map[string]specv1.Secr
 	return nil
 }
 
-func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceSeconds int64, err error) {
+func (e *engineImpl) validParam(tailLines, sinceSeconds string) (itailLines, isinceSeconds int64, err error) {
 	if tailLines != "" {
 		if itailLines, err = strconv.ParseInt(tailLines, 10, 64); err != nil {
 			return
@@ -444,7 +462,10 @@ func (e *Engine) validParam(tailLines, sinceSeconds string) (itailLines, isinceS
 	return
 }
 
-func (e *Engine) Close() {
+func (e *engineImpl) Close() {
 	e.tomb.Kill(nil)
 	e.tomb.Wait()
+	if e.hp != nil {
+		e.hp.Unsubscribe(helper.TopicDownside)
+	}
 }

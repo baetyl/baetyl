@@ -13,6 +13,7 @@ import (
 
 	"github.com/baetyl/baetyl/config"
 	"github.com/baetyl/baetyl/engine"
+	"github.com/baetyl/baetyl/helper"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
 	"github.com/baetyl/baetyl/sync"
@@ -31,7 +32,8 @@ type Initialize struct {
 	cfg  config.Config
 	sto  *bh.Store
 	sha  *node.Node
-	eng  *engine.Engine
+	hp   helper.Helper
+	eng  engine.Engine
 	syn  sync.Sync
 	log  *log.Logger
 	tomb utils.Tomb
@@ -66,13 +68,17 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.syn, err = sync.NewSync(cfg, init.sto, init.sha)
+	init.hp, err = helper.NewHelper(cfg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	init.syn, err = sync.NewSync(cfg, init.sto, init.sha, init.hp)
 	if err != nil {
 		init.Close()
 		return nil, errors.Trace(err)
 	}
 
-	init.eng, err = engine.NewEngine(cfg, init.sto, init.sha, init.syn)
+	init.eng, err = engine.NewEngine(cfg, init.sto, init.sha, init.syn, init.hp)
 	if err != nil {
 		init.Close()
 		return nil, errors.Trace(err)

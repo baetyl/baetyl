@@ -9,7 +9,7 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 )
 
-func (e *Engine) recycle() error {
+func (e *engineImpl) recycle() error {
 	e.log.Info("start recycling useless object storage space")
 	nod, err := e.nod.Get()
 	if err != nil {

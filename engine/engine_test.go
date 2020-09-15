@@ -98,7 +98,7 @@ func TestCollect(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
-	e := Engine{
+	e := engineImpl{
 		ami: mockAmi,
 		cfg: config.Config{},
 		nod: nod,
@@ -152,7 +152,7 @@ func TestCollect(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	eng, err := NewEngine(config.Config{}, nil, nil, nil)
+	eng, err := NewEngine(config.Config{}, nil, nil, nil, nil)
 	assert.Error(t, err, os.ErrInvalid.Error())
 	assert.Nil(t, eng)
 }
@@ -164,7 +164,7 @@ func TestApplyApp(t *testing.T) {
 	mockAmi := mock.NewMockAMI(mockCtl)
 	mockSync := mock.NewMockSync(mockCtl)
 	ns := "baetyl-edge"
-	eng := Engine{
+	eng := engineImpl{
 		ami: mockAmi,
 		cfg: config.Config{},
 		sto: sto,
@@ -243,7 +243,7 @@ func TestReportAndApply(t *testing.T) {
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
 	mockSync := mock.NewMockSync(mockCtl)
-	eng := Engine{
+	eng := engineImpl{
 		ami: mockAmi,
 		cfg: config.Config{},
 		sto: sto,
@@ -352,7 +352,7 @@ func TestGetServiceLog(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockAmi := mock.NewMockAMI(mockCtl)
-	e := Engine{
+	e := engineImpl{
 		ami: mockAmi,
 		sto: nil,
 		nod: nil,
@@ -413,7 +413,7 @@ func TestInjectCert(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockSecurity := mock.NewMockSecurity(mockCtl)
-	eng := Engine{
+	eng := engineImpl{
 		cfg: config.Config{},
 		sto: sto,
 		nod: nod,

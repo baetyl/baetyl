@@ -220,18 +220,35 @@ func TestSyncResources(t *testing.T) {
 			Value: appCrd,
 		},
 	}
+	dt, err := json.Marshal(msg1)
+	assert.NoError(t, err)
+	m1 := &specv1.Message{}
+	err = json.Unmarshal(dt, m1)
+	assert.NoError(t, err)
+
 	msg2 := &specv1.Message{
 		Kind: specv1.MessageDesire,
 		Content: specv1.VariableValue{
 			Value: cfgCrd,
 		},
 	}
+	dt, err = json.Marshal(msg2)
+	assert.NoError(t, err)
+	m2 := &specv1.Message{}
+	err = json.Unmarshal(dt, m2)
+	assert.NoError(t, err)
+
 	msg3 := &specv1.Message{
 		Kind: specv1.MessageDesire,
 		Content: specv1.VariableValue{
 			Value: secCrd,
 		},
 	}
+	dt, err = json.Marshal(msg3)
+	assert.NoError(t, err)
+	m3 := &specv1.Message{}
+	err = json.Unmarshal(dt, m3)
+	assert.NoError(t, err)
 
 	sc := config.SyncConfig{}
 	err = utils.UnmarshalYAML(nil, &sc)
@@ -239,9 +256,9 @@ func TestSyncResources(t *testing.T) {
 	assert.NoError(t, err)
 	mockCtl := gomock.NewController(t)
 	link := plugin.NewMockLink(mockCtl)
-	link.EXPECT().Request(gomock.Any()).Return(msg1, nil)
-	link.EXPECT().Request(gomock.Any()).Return(msg2, nil)
-	link.EXPECT().Request(gomock.Any()).Return(msg3, nil)
+	link.EXPECT().Request(gomock.Any()).Return(m1, nil)
+	link.EXPECT().Request(gomock.Any()).Return(m2, nil)
+	link.EXPECT().Request(gomock.Any()).Return(m3, nil)
 	syn := &sync{
 		link:  link,
 		cfg:   sc,

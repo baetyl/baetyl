@@ -73,7 +73,7 @@ func TestRecycle(t *testing.T) {
 
 	var cfg config.Config
 	cfg.Sync.Download.Path = dir
-	e := Engine{sto: sto, nod: nod, cfg: cfg, log: log.With()}
+	e := engineImpl{sto: sto, nod: nod, cfg: cfg, log: log.With()}
 	err = e.recycle()
 	assert.NoError(t, err)
 
