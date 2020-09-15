@@ -94,10 +94,8 @@ func (c *chainImpl) connecting() error {
 	opt := ami.DebugOptions{
 		Namespace: c.data["namespace"],
 		Name:      c.data["name"],
+		Container: c.data["container"],
 		Command:   cmd,
-	}
-	if c.data["container"] != "" {
-		opt.Container = c.data["container"]
 	}
 
 	defer func() {
