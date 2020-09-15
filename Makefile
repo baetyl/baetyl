@@ -23,6 +23,7 @@ else ifeq ($(PLATFORMS),all)
 	override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
+
 GO       := go
 GO_MOD   := $(GO) mod
 GO_ENV   := env GO111MODULE=on GOPROXY=https://goproxy.baidu.com CGO_ENABLED=0
@@ -73,4 +74,10 @@ clean:
 
 .PHONY: package
 package: build
-	zip $(MODULE)_$(GO_OS)-$(GO_ARCH)_$(VERSION).zip program.yml $(MODULE)
+	@if [ $(GO_ARM) = "" ]; \
+	then \
+		zip $(MODULE)_$(GO_OS)-$(GO_ARCH)_$(VERSION).zip program.yml $(MODULE); \
+	else \
+		zip $(MODULE)_$(GO_OS)-$(GO_ARCH)-v$(GO_ARM)_$(VERSION).zip program.yml $(MODULE); \
+	fi
+
