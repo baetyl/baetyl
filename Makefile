@@ -11,10 +11,12 @@ ifeq ($(findstring race,$(BUILD_ARGS)),race)
 VERSION:=$(VERSION)-race
 endif
 
+GO_OS:=$(shell go env GOOS)
+GO_ARCH:=$(shell go env GOARCH)
+GO_ARM:=$(shell go env GOARM)
+PROGRAM:=$(if $(GO_ARM),$(MODULE)_$(GO_OS)-$(GO_ARCH)-v$(GO_ARM)_$(VERSION),$(MODULE)_$(GO_OS)-$(GO_ARCH)_$(VERSION))
+
 ifndef PLATFORMS
-	GO_OS:=$(shell go env GOOS)
-	GO_ARCH:=$(shell go env GOARCH)
-	GO_ARM:=$(shell go env GOARM)
 	PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
 	ifeq ($(GO_OS),darwin)
 		PLATFORMS+=linux/amd64
@@ -74,10 +76,4 @@ clean:
 
 .PHONY: package
 package: build
-	@if [ $(GO_ARM) = "" ]; \
-	then \
-		zip $(MODULE)_$(GO_OS)-$(GO_ARCH)_$(VERSION).zip program.yml $(MODULE); \
-	else \
-		zip $(MODULE)_$(GO_OS)-$(GO_ARCH)-v$(GO_ARM)_$(VERSION).zip program.yml $(MODULE); \
-	fi
-
+	zip $(PROGRAM).zip program.yml $(MODULE)
