@@ -33,6 +33,15 @@ type AMI interface {
 
 	// TODO: update
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
+
+	RemoteCommand(option DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error
+}
+
+type DebugOptions struct {
+	Namespace string
+	Name      string
+	Container string
+	Command   []string
 }
 
 func NewAMI(mode string, cfg config.AmiConfig) (AMI, error) {

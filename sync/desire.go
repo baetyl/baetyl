@@ -114,13 +114,9 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 		return nil, errors.Trace(err)
 	}
 	desire := specv1.DesireResponse{}
-	if res.Content.Value != nil {
-		desire = res.Content.Value.(specv1.DesireResponse)
-	} else {
-		err = res.Content.Unmarshal(&desire)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
+	err = res.Content.Unmarshal(&desire)
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 
 	return desire.Values, nil

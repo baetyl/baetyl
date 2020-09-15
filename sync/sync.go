@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -14,13 +13,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/helper"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/plugin"
-)
-
-var (
-	// ErrSyncTLSConfigMissing certificate bidirectional authentication is required for connection with cloud
-	ErrSyncTLSConfigMissing = fmt.Errorf("certificate bidirectional authentication is required for connection with cloud")
 )
 
 const (
@@ -47,10 +42,11 @@ type sync struct {
 	log   *log.Logger
 	// for downloading objects
 	download *http.Client
+	hp       helper.Helper
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
+func NewSync(cfg config.Config, store *bh.Store, nod *node.Node, helper helper.Helper) (Sync, error) {
 	link, err := v2plugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -65,6 +61,7 @@ func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
 		store:    store,
 		nod:      nod,
 		link:     link.(plugin.Link),
+		hp:       helper,
 		log:      log.With(log.Any("core", "sync")),
 	}
 	return s, nil
@@ -78,26 +75,20 @@ func (s *sync) Start() {
 }
 
 func (s *sync) receiving() error {
+	s.hp.Subscribe(helper.TopicUpside, &handler{link: s.link})
+	defer s.hp.Unsubscribe(helper.TopicUpside)
+
 	msgCh, errCh := s.link.Receive()
 	for {
 		select {
 		case <-s.tomb.Dying():
 			return nil
 		case msg := <-msgCh:
-			desire := v1.Desire{}
-			err := msg.Content.Unmarshal(&desire)
+			err := s.dispatch(msg)
 			if err != nil {
-				s.log.Error("receive unrecognized desire data", log.Error(err))
-				continue
+				s.log.Error("failed to dispatch message", log.Error(err))
 			}
-			if len(desire) == 0 {
-				return nil
-			}
-			_, err = s.nod.Desire(desire)
-			if err != nil {
-				s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
-				continue
-			}
+			continue
 		case err := <-errCh:
 			if err != nil {
 				s.log.Error("failed to receive msg", log.Error(err))
@@ -105,6 +96,48 @@ func (s *sync) receiving() error {
 			}
 		}
 	}
+}
+
+func (s *sync) dispatch(msg *v1.Message) error {
+	switch msg.Kind {
+	case v1.MessageReport:
+		desire := v1.Desire{}
+		err := msg.Content.Unmarshal(&desire)
+		if err != nil {
+			s.log.Error("receive unrecognized desire data", log.Error(err))
+			return errors.Trace(err)
+		}
+		if len(desire) == 0 {
+			return nil
+		}
+		_, err = s.nod.Desire(desire)
+		if err != nil {
+			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
+			return errors.Trace(err)
+		}
+	case v1.MessageCMD:
+		msg.Content.Value = map[string]string{}
+		return s.publish(msg)
+	case v1.MessageData:
+		msg.Content.Value = []byte{}
+		return s.publish(msg)
+	default:
+	}
+	return nil
+}
+
+func (s *sync) publish(msg *v1.Message) error {
+	err := msg.Content.Unmarshal(&msg.Content.Value)
+	if err != nil {
+		s.log.Error("failed to unmarshal message", log.Error(err))
+		return errors.Trace(err)
+	}
+	err = s.hp.Publish(helper.TopicDownside, msg)
+	if err != nil {
+		s.log.Error("failed to publish message", log.Error(err))
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func (s *sync) Close() {
@@ -136,13 +169,9 @@ func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	}
 	s.log.Debug("sync reports cloud shadow", log.Any("report", msg))
 	desire := v1.Desire{}
-	if res.Content.Value != nil {
-		desire = res.Content.Value.(v1.Desire)
-	} else {
-		err = res.Content.Unmarshal(&desire)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
+	err = res.Content.Unmarshal(&desire)
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 	return desire, nil
 }

@@ -14,9 +14,10 @@ import (
 )
 
 type client struct {
-	core    corev1.CoreV1Interface
-	app     appv1.AppsV1Interface
-	metrics metricsv1beta1.MetricsV1beta1Interface
+	kubeConfig *rest.Config
+	core       corev1.CoreV1Interface
+	app        appv1.AppsV1Interface
+	metrics    metricsv1beta1.MetricsV1beta1Interface
 }
 
 func newClient(cfg config.KubeConfig) (*client, error) {
@@ -39,8 +40,9 @@ func newClient(cfg config.KubeConfig) (*client, error) {
 		return nil, errors.Trace(err)
 	}
 	return &client{
-		core:    kubeClient.CoreV1(),
-		app:     kubeClient.AppsV1(),
-		metrics: metricsCli.MetricsV1beta1(),
+		kubeConfig: kubeConfig,
+		core:       kubeClient.CoreV1(),
+		app:        kubeClient.AppsV1(),
+		metrics:    metricsCli.MetricsV1beta1(),
 	}, nil
 }

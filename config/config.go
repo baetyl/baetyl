@@ -21,6 +21,7 @@ type Config struct {
 	Logger   log.Config        `yaml:"logger" json:"logger"`
 	Plugin   struct {
 		Link string `yaml:"link" json:"link" default:"httplink"`
+		MQ   string `yaml:"mq" json:"mq" default:"defaultmq"`
 	} `yaml:"plugin" json:"plugin"`
 }
 

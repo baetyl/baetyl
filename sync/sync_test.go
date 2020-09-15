@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/mock/helper"
 	"github.com/baetyl/baetyl/mock/plugin"
 	"github.com/baetyl/baetyl/node"
 	"github.com/baetyl/baetyl/store"
@@ -50,8 +51,15 @@ func TestReportSync(t *testing.T) {
 	}
 	link.EXPECT().IsAsyncSupported().Return(false)
 	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
+
 	msg := &specv1.Message{Content: specv1.VariableValue{Value: desire}, Kind: specv1.MessageReport}
-	link.EXPECT().Request(gomock.Any()).Return(msg, nil)
+	dt, err := json.Marshal(msg)
+	assert.NoError(t, err)
+	m := &specv1.Message{}
+	err = json.Unmarshal(dt, m)
+	assert.NoError(t, err)
+
+	link.EXPECT().Request(gomock.Any()).Return(m, nil)
 	err = syn.reportAndDesire()
 	assert.NoError(t, err)
 	no, _ := syn.nod.Get()
@@ -92,19 +100,30 @@ func TestReportAsync(t *testing.T) {
 
 	mockCtl := gomock.NewController(t)
 	link := plugin.NewMockLink(mockCtl)
-	assert.NoError(t, err)
+
+	hp := helper.NewMockHelper(mockCtl)
+	hp.EXPECT().Subscribe("upside", gomock.Any()).Times(1)
+	hp.EXPECT().Unsubscribe("upside").Times(1)
+
 	syn := &sync{
 		link:  link,
 		cfg:   sc,
 		store: sto,
 		nod:   nod,
+		hp:    hp,
 		log:   log.With(log.Any("test", "sync")),
 	}
 	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
 	bt, err := json.Marshal(desire)
 	assert.NoError(t, err)
 
-	msg := &specv1.Message{Content: specv1.VariableValue{}, Kind: specv1.MessageReport}
+	m := &specv1.Message{Content: specv1.VariableValue{}, Kind: specv1.MessageReport}
+	dt, err := json.Marshal(m)
+	assert.NoError(t, err)
+	msg := &specv1.Message{}
+	err = json.Unmarshal(dt, msg)
+	assert.NoError(t, err)
+
 	err = msg.Content.UnmarshalJSON(bt)
 	assert.NoError(t, err)
 

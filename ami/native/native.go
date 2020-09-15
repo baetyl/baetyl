@@ -40,6 +40,11 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 	}, nil
 }
 
+// TODO: impl native RemoteCommand
+func (impl *nativeImpl) RemoteCommand(option ami.DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error {
+	panic("impl me")
+}
+
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
 	err := impl.DeleteApp(ns, app.Name)
 	if err != nil {
