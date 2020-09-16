@@ -21,10 +21,6 @@ import (
 	"github.com/baetyl/baetyl/sync"
 )
 
-const (
-	keyBaetylHostPathLib = "BAETYL_HOST_PATH_LIB"
-)
-
 var (
 	file       string
 	mode       string
@@ -75,8 +71,8 @@ func apply() {
 	if err != nil {
 		return
 	}
-	if os.Getenv(keyBaetylHostPathLib) == "" {
-		err := os.Setenv(keyBaetylHostPathLib, "/var/lib/baetyl")
+	if os.Getenv(context.KeyBaetylHostPathLib) == "" {
+		err := os.Setenv(context.KeyBaetylHostPathLib, "/var/lib/baetyl")
 		if err != nil {
 			return
 		}
