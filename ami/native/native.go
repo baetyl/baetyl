@@ -364,11 +364,17 @@ func getServiceInsStats(svc service.Service) (map[string]string, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	mem, err := proc.MemoryInfo()
+	memInfo, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	usage["memory"] = strconv.FormatUint(mem.VMS, 10)
+	mPercent, err := proc.MemoryPercent()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	usedMem := uint64(float32(memInfo.Total) * mPercent / 100)
+	usage["memory"] = strconv.FormatUint(usedMem, 10)
+
 	cpuinfos, err := cpu.Info()
 	if len(cpuinfos) < 1 {
 		return nil, errors.Errorf("failed to get cpu info")
@@ -377,7 +383,7 @@ func getServiceInsStats(svc service.Service) (map[string]string, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	core := float64(cpuinfos[0].Cores) * cPercent
+	core := float64(cpuinfos[0].Cores) * cPercent / 100
 	usage["cpu"] = strconv.FormatFloat(core, 'f', 3, 64)
 	return usage, nil
 }
@@ -423,7 +429,7 @@ func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
 		cores := int(cpuinfos[0].Cores)
 		stats.Capacity["cpu"] = strconv.Itoa(cores)
 		if len(cPercent) >= 1 {
-			usage := float64(cores) * cPercent[0]
+			usage := float64(cores) * cPercent[0] / 100
 			stats.Usage["cpu"] = strconv.FormatFloat(usage, 'f', 3, 64)
 		}
 	}
