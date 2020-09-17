@@ -43,14 +43,27 @@ REGISTRY:=
 XFLAGS:=--load
 XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g')
 
+OUTPUT:=output
+OUTPUT_DIRS:=$(PLATFORMS:%=$(OUTPUT)/%/baetyl)
+OUTPUT_BINS:=$(OUTPUT_DIRS:%=%/bin/baetyl)
+OUTPUT_PKGS:=$(OUTPUT_DIRS:%=%/baetyl-$(VERSION).zip)
+
 .PHONY: all
 all: build
 
 .PHONY: build
-build: $(SRC_FILES)
-	@echo "BUILD $(MODULE)"
-	$(GO_BUILD) -o $(MODULE) .
-	@chmod +x $(MODULE)
+build: $(OUTPUT_BINS) $(OUTPUT_PKGS)
+
+$(OUTPUT_BINS): $(SRC_FILES)
+	@echo "BUILD $@"
+	@mkdir -p $(dir $@)
+	@$(shell echo $(@:$(OUTPUT)/%/baetyl/bin/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
+
+pkg: $(OUTPUT_PKGS)
+
+$(OUTPUT_PKGS):
+	@echo "PACKAGE $@"
+	@cd $(dir $@) && zip -q -r $(notdir $@) bin
 
 .PHONY: image
 image:
@@ -72,7 +85,7 @@ fmt:
 
 .PHONY: clean
 clean:
-	@rm -f $(MODULE)*
+	@rm -f $(OUTPUT)
 
 .PHONY: package
 package: build
