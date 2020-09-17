@@ -46,7 +46,7 @@ XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g'
 OUTPUT:=output
 OUTPUT_DIRS:=$(PLATFORMS:%=$(OUTPUT)/%/baetyl)
 OUTPUT_BINS:=$(OUTPUT_DIRS:%=%/baetyl)
-OUTPUT_PKGS:=$(OUTPUT_DIRS:%=%/baetyl-$(VERSION).tgz)
+OUTPUT_PKGS:=$(OUTPUT_DIRS:%=%/baetyl-$(VERSION).zip)
 
 .PHONY: all
 all: build
@@ -83,7 +83,7 @@ clean:
 
 $(OUTPUT_PKGS):
 	@echo "PACKAGE $@"
-	@cp program.yml $(dir $@) && cd $(dir $@) && tar -czf $(notdir $@) baetyl program.yml
+	@cp program.yml $(dir $@) && cd $(dir $@) && zip -q -r $(notdir $@) baetyl program.yml
 
 .PHONY: package
 package: $(OUTPUT_BINS) $(OUTPUT_PKGS)
