@@ -45,25 +45,19 @@ XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g'
 
 OUTPUT:=output
 OUTPUT_DIRS:=$(PLATFORMS:%=$(OUTPUT)/%/baetyl)
-OUTPUT_BINS:=$(OUTPUT_DIRS:%=%/bin/baetyl)
+OUTPUT_BINS:=$(OUTPUT_DIRS:%=%/baetyl)
 OUTPUT_PKGS:=$(OUTPUT_DIRS:%=%/baetyl-$(VERSION).zip)
 
 .PHONY: all
 all: build
 
 .PHONY: build
-build: $(OUTPUT_BINS) $(OUTPUT_PKGS)
+build: $(OUTPUT_BINS)
 
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@mkdir -p $(dir $@)
-	@$(shell echo $(@:$(OUTPUT)/%/baetyl/bin/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
-
-pkg: $(OUTPUT_PKGS)
-
-$(OUTPUT_PKGS):
-	@echo "PACKAGE $@"
-	@cd $(dir $@) && zip -q -r $(notdir $@) bin
+	@$(shell echo $(@:$(OUTPUT)/%/baetyl/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
 
 .PHONY: image
 image:
@@ -85,8 +79,11 @@ fmt:
 
 .PHONY: clean
 clean:
-	@rm -f $(OUTPUT)
+	@rm -rf $(OUTPUT)
+
+$(OUTPUT_PKGS):
+	@echo "PACKAGE $@"
+	@cp program.yml $(dir $@) && cd $(dir $@) && zip -q -r $(notdir $@) baetyl program.yml
 
 .PHONY: package
-package: build
-	zip $(PROGRAM).zip program.yml $(MODULE)
+package: $(OUTPUT_BINS) $(OUTPUT_PKGS)
