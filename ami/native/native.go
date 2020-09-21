@@ -94,7 +94,11 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 						if err != nil {
 							return errors.Trace(err)
 						}
-						prgExec = filepath.Join(mp, filepath.Join("/", entry.Entry))
+						if filepath.IsAbs(entry.Entry) {
+							prgExec = filepath.Clean(entry.Entry)
+						} else {
+							prgExec = filepath.Join(mp, filepath.Join("/", entry.Entry))
+						}
 					}
 					continue
 				}
