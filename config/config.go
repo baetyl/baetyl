@@ -43,6 +43,12 @@ type KubeConfig struct {
 }
 
 type NativeConfig struct {
+	PortsRange PortsRange `yaml:"portsRange" json:"portsRange"`
+}
+
+type PortsRange struct {
+	Start int `yaml:"start" json:"start" default:"50200"`
+	End   int `yaml:"end" json:"end" default:"51000"`
 }
 
 // TODO: remove

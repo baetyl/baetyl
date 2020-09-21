@@ -124,14 +124,17 @@ func apply() {
 		}
 	}
 
-	var am ami.AMI
-	am, err = ami.NewAMI(mode, config.AmiConfig{
-		Kube: config.KubeConfig{
-			OutCluster: true,
-			// TODO: create client like kubectl without confpath
-			ConfPath: ".kube/config",
-		},
-	})
+	amiConfig := config.AmiConfig{}
+	err = utils.SetDefaults(&amiConfig)
+	if err != nil {
+		return
+	}
+
+	// TODO: create client like kubectl without confpath
+	amiConfig.Kube.OutCluster = true
+	amiConfig.Kube.ConfPath = ".kube/config"
+
+	am, err := ami.NewAMI(mode, amiConfig)
 	if err != nil {
 		return
 	}
