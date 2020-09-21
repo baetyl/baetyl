@@ -12,6 +12,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/native"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
@@ -31,12 +32,24 @@ func init() {
 }
 
 type nativeImpl struct {
-	log *log.Logger
+	mapping       *native.ServiceMapping
+	portAllocator *native.PortAllocator
+	log           *log.Logger
 }
 
 func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
+	portAllocator, err := native.NewPortAllocator(cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	mapping, err := native.NewServiceMapping()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 	return &nativeImpl{
-		log: log.With(log.Any("ami", "native")),
+		mapping:       mapping,
+		portAllocator: portAllocator,
+		log:           log.With(log.Any("ami", "native")),
 	}, nil
 }
 
@@ -62,6 +75,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 	}
 
 	for _, s := range app.Services {
+		var ports []int
 		for i := 1; i <= s.Replica; i++ {
 			var prgExec string
 
@@ -136,6 +150,28 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				return errors.Errorf("no program executable, the program config may not be mounted")
 			}
 
+			port, err := impl.portAllocator.Allocate()
+			if err != nil {
+				return errors.Trace(err)
+			}
+
+			var exist bool
+			for index := range s.Env {
+				if s.Env[index].Name == context.KeyServiceDynamicPort {
+					exist = true
+					s.Env[index].Name = strconv.Itoa(port)
+				}
+			}
+
+			if !exist {
+				s.Env = append(s.Env, v1.Environment{
+					Name:  context.KeyServiceDynamicPort,
+					Value: strconv.Itoa(port),
+				})
+			}
+
+			ports = append(ports, port)
+
 			// apply service
 			var env []string
 			for _, item := range s.Env {
@@ -183,6 +219,13 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				if err != nil {
 					return errors.Trace(err)
 				}
+			}
+		}
+
+		if len(ports) > 0 {
+			err := impl.mapping.SetServicePorts(s.Name, ports)
+			if err != nil {
+				return errors.Trace(err)
 			}
 		}
 	}
@@ -241,6 +284,11 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 				}
 			}
 			err = os.RemoveAll(curSvcDir)
+			if err != nil {
+				return errors.Trace(err)
+			}
+
+			err = impl.mapping.DeleteServicePorts(curSvcName)
 			if err != nil {
 				return errors.Trace(err)
 			}

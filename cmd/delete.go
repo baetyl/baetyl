@@ -7,6 +7,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/spf13/cobra"
 
 	"github.com/baetyl/baetyl/ami"
@@ -57,12 +58,20 @@ func delete() {
 	}
 
 	// stats app, then delete them
-	am, err := ami.NewAMI(mode, config.AmiConfig{
-		Kube: config.KubeConfig{
-			OutCluster: true,
-			ConfPath:   ".kube/config",
-		},
-	})
+	amiConfig := config.AmiConfig{}
+	err = utils.SetDefaults(&amiConfig)
+	if err != nil {
+		return
+	}
+
+	// TODO: create client like kubectl without confpath
+	amiConfig.Kube.OutCluster = true
+	amiConfig.Kube.ConfPath = ".kube/config"
+
+	am, err := ami.NewAMI(mode, amiConfig)
+	if err != nil {
+		return
+	}
 
 	var allstats []specv1.AppStats
 	allstats, err = am.StatsApps(ns)
