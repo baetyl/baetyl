@@ -83,8 +83,8 @@ func TestUpdateEnv(t *testing.T) {
 			Value: "vb",
 		},
 	}
-	setEnv(&envs, "a", "vaa")
-	setEnv(&envs, "c", "vc")
+	envs = setEnv(envs, "a", "vaa")
+	envs = setEnv(envs, "c", "vc")
 
 	var f, ff int
 	for _, v := range envs {

@@ -155,7 +155,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				return errors.Trace(err)
 			}
 
-			setEnv(&s.Env, context.KeyServiceDynamicPort, strconv.Itoa(port))
+			s.Env = setEnv(s.Env, context.KeyServiceDynamicPort, strconv.Itoa(port))
 
 			ports = append(ports, port)
 
@@ -493,19 +493,17 @@ func genServiceInstanceName(ns, appName, appVersion, svcName, instanceID string)
 	return fmt.Sprintf("%s.%s.%s.%s.%s", ns, appName, appVersion, svcName, instanceID)
 }
 
-func setEnv(env *[]v1.Environment, key, value string) {
-	var exist bool
-	for index, v := range *env {
-		if v.Name == key {
-			exist = true
-			(*env)[index].Value = value
+func setEnv(env []v1.Environment, key, value string) []v1.Environment {
+	for i := 0; i < len(env); i++ {
+		if env[i].Name == key {
+			env[i].Value = value
+			return env
 		}
 	}
 
-	if !exist {
-		*env = append(*env, v1.Environment{
-			Name:  key,
-			Value: value,
-		})
-	}
+	env = append(env, v1.Environment{
+		Name:  key,
+		Value: value,
+	})
+	return env
 }
