@@ -11,10 +11,9 @@ ifeq ($(findstring race,$(BUILD_ARGS)),race)
 VERSION:=$(VERSION)-race
 endif
 
-GO_OS:=$(shell go env GOOS)
+GO_OS  :=$(shell go env GOOS)
 GO_ARCH:=$(shell go env GOARCH)
-GO_ARM:=$(shell go env GOARM)
-PROGRAM:=$(if $(GO_ARM),$(MODULE)_$(GO_OS)-$(GO_ARCH)-v$(GO_ARM)_$(VERSION),$(MODULE)_$(GO_OS)-$(GO_ARCH)_$(VERSION))
+GO_ARM :=$(shell go env GOARM)
 
 ifndef PLATFORMS
 	PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
@@ -39,17 +38,19 @@ GO_BUILD := $(GO_ENV) $(GO) build $(GO_FLAGS)
 GOTEST   := $(GO) test
 GOPKGS   := $$($(GO) list ./... | grep -vE "vendor")
 
-REGISTRY:=
-XFLAGS:=--load
-XPLATFORMS:=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g')
+REGISTRY   :=
+XFLAGS     :=--load
+XPLATFORMS :=$(shell echo $(filter-out darwin/amd64,$(PLATFORMS)) | sed 's: :,:g')
 
-OUTPUT:=output
-OUTPUT_DIRS:=$(PLATFORMS:%=$(OUTPUT)/%/baetyl)
-OUTPUT_BINS:=$(OUTPUT_DIRS:%=%/baetyl)
-OUTPUT_PKGS:=$(OUTPUT_DIRS:%=%/baetyl-$(VERSION).zip)
+
+OUTPUT     :=output
+OUTPUT_DIRS:=$(PLATFORMS:%=$(OUTPUT)/%/$(MODULE))
+OUTPUT_BINS:=$(OUTPUT_DIRS:%=%/$(MODULE))
+PKG_PLATFORMS := $(shell echo $(PLATFORMS) | sed 's:/:-:g')
+OUTPUT_PKGS:=$(PKG_PLATFORMS:%=$(OUTPUT)/$(MODULE)_%_$(VERSION).zip)
 
 .PHONY: all
-all: build
+all: build test
 
 .PHONY: build
 build: $(OUTPUT_BINS)
@@ -57,6 +58,7 @@ build: $(OUTPUT_BINS)
 $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@mkdir -p $(dir $@)
+	@cp program.yml $(dir $@)
 	@$(shell echo $(@:$(OUTPUT)/%/baetyl/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
 
 .PHONY: image
@@ -81,9 +83,9 @@ fmt:
 clean:
 	@rm -rf $(OUTPUT)
 
+.PHONY: package
+package: build $(OUTPUT_PKGS)
+
 $(OUTPUT_PKGS):
 	@echo "PACKAGE $@"
-	@cp program.yml $(dir $@) && cd $(dir $@) && zip -q -r $(notdir $@) baetyl program.yml
-
-.PHONY: package
-package: $(OUTPUT_BINS) $(OUTPUT_PKGS)
+	@cd $(OUTPUT)/$(shell echo $(@:$(OUTPUT)/$(MODULE)_%_$(VERSION).zip=%) | sed 's:-:/:g')/$(MODULE) && zip -q -r $(notdir $@) baetyl program.yml
