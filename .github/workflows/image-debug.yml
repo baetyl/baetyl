@@ -28,4 +28,43 @@ jobs:
       - name: build and publish baetyl image
         run: |
           make image PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/baetyl' REGISTRY=baetyltechtest/ BUILD_ARGS=-race
-          
+
+  package-linux-debug:
+    name: packages of linux/amd64 for native mode
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::git-$(git rev-parse --short HEAD)-race
+      - name: build
+        run: make build BUILD_ARGS=-race
+      - uses: actions/upload-artifact@v2
+        with:
+          name: baetyl_linux-amd64_${{ steps.version.outputs.version }}
+          path: output/linux/amd64/baetyl/*
+
+  package-darwin-debug:
+    name: packages of darwin/amd64 for native mode
+    runs-on: macos-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - id: version
+        run: |
+          echo ::set-output name=version::git-$(git rev-parse --short HEAD)-race
+      - name: build
+        run: make build BUILD_ARGS=-race
+      - uses: actions/upload-artifact@v2
+        with:
+          name: baetyl_darwin-amd64_${{ steps.version.outputs.version }}
+          path: output/darwin/amd64/baetyl/*
