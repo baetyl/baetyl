@@ -59,7 +59,7 @@ $(OUTPUT_BINS): $(SRC_FILES)
 	@echo "BUILD $@"
 	@mkdir -p $(dir $@)
 	@cp program.yml $(dir $@)
-	@$(shell echo $(@:$(OUTPUT)/%/baetyl/baetyl=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
+	@$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/$(MODULE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
 
 .PHONY: image
 image:
@@ -88,4 +88,4 @@ package: build $(OUTPUT_PKGS)
 
 $(OUTPUT_PKGS):
 	@echo "PACKAGE $@"
-	@cd $(OUTPUT)/$(shell echo $(@:$(OUTPUT)/$(MODULE)_%_$(VERSION).zip=%) | sed 's:-:/:g')/$(MODULE) && zip -q -r $(notdir $@) baetyl program.yml
+	@cd $(OUTPUT)/$(shell echo $(@:$(OUTPUT)/$(MODULE)_%_$(VERSION).zip=%) | sed 's:-:/:g')/$(MODULE) && zip -q -r $(notdir $@) $(MODULE) program.yml
