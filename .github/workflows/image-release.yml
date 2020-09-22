@@ -28,3 +28,54 @@ jobs:
       - name: build and publish baetyl image
         run: |
           make image PLATFORMS=all XFLAGS='--push --cache-to=type=local,dest=/tmp/baetyl' REGISTRY=baetyltech/
+
+  package:
+    name: packages for native mode
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: package
+        run: make package PLATFORMS=all
+      - id: version
+        run: |
+          echo ::set-output name=darwin-amd64::$(ls output/darwin/amd64/baetyl | grep zip)
+          echo ::set-output name=linux-amd64::$(ls output/linux/amd64/baetyl | grep zip)
+          echo ::set-output name=linux-armv7::$(ls output/linux/arm/v7/baetyl | grep zip)
+          echo ::set-output name=linux-arm64::$(ls output/linux/arm64/baetyl | grep zip)
+      - name: Upload darwin-amd64 assets
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: output/darwin/amd64/baetyl/${{ steps.version.outputs.darwin-amd64 }}
+          asset_name: ${{ steps.version.outputs.darwin-amd64 }}
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload linux-amd64 assets
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: output/linux/amd64/baetyl/${{ steps.version.outputs.linux-amd64 }}
+          asset_name: ${{ steps.version.outputs.linux-amd64 }}
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload linux-armv7 assets
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: output/linux/arm/v7/baetyl/${{ steps.version.outputs.linux-armv7 }}
+          asset_name: ${{ steps.version.outputs.linux-armv7 }}
+          tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload linux-arm64 assets
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.RELEASE_TOKEN }}
+          file: output/linux/arm64/baetyl/${{ steps.version.outputs.linux-arm64 }}
+          asset_name: ${{ steps.version.outputs.linux-arm64 }}
+          tag: ${{ github.ref }}
+          overwrite: true
