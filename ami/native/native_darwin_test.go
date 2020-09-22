@@ -71,3 +71,32 @@ func TestAmiNativeImpl(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateEnv(t *testing.T) {
+	envs := []v1.Environment{
+		{
+			Name:  "a",
+			Value: "va",
+		},
+		{
+			Name:  "b",
+			Value: "vb",
+		},
+	}
+	setEnv(&envs, "a", "vaa")
+	setEnv(&envs, "c", "vc")
+
+	var f, ff int
+	for _, v := range envs {
+		if v.Name == "c" {
+			f++
+			assert.Equal(t, v.Value, "vc")
+		}
+		if v.Name == "a" {
+			ff++
+			assert.Equal(t, v.Value, "vaa")
+		}
+	}
+	assert.Equal(t, f, 1)
+	assert.Equal(t, ff, 1)
+}
