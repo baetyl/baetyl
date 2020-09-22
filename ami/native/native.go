@@ -155,20 +155,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				return errors.Trace(err)
 			}
 
-			var exist bool
-			for index := range s.Env {
-				if s.Env[index].Name == context.KeyServiceDynamicPort {
-					exist = true
-					s.Env[index].Name = strconv.Itoa(port)
-				}
-			}
-
-			if !exist {
-				s.Env = append(s.Env, v1.Environment{
-					Name:  context.KeyServiceDynamicPort,
-					Value: strconv.Itoa(port),
-				})
-			}
+			setEnv(&s.Env, context.KeyServiceDynamicPort, strconv.Itoa(port))
 
 			ports = append(ports, port)
 
@@ -504,4 +491,21 @@ func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeco
 
 func genServiceInstanceName(ns, appName, appVersion, svcName, instanceID string) string {
 	return fmt.Sprintf("%s.%s.%s.%s.%s", ns, appName, appVersion, svcName, instanceID)
+}
+
+func setEnv(env *[]v1.Environment, key, value string) {
+	var exist bool
+	for index, v := range *env {
+		if v.Name == key {
+			exist = true
+			(*env)[index].Value = value
+		}
+	}
+
+	if !exist {
+		*env = append(*env, v1.Environment{
+			Name:  key,
+			Value: value,
+		})
+	}
 }
