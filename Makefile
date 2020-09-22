@@ -17,9 +17,6 @@ GO_ARM :=$(shell go env GOARM)
 
 ifndef PLATFORMS
 	PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
-	ifeq ($(GO_OS),darwin)
-		PLATFORMS+=linux/amd64
-	endif
 else ifeq ($(PLATFORMS),all)
 	override PLATFORMS:=$(PLATFORM_ALL)
 endif
