@@ -25,7 +25,7 @@ func (h *handlerUpside) OnTimeout() error {
 			"success": "false",
 			"msg":     "failed to find connect chain",
 		},
-		Content: v1.VariableValue{},
+		Content: v1.LazyValue{},
 	})
 }
 
@@ -47,7 +47,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 						"success": "false",
 						"msg":     "failed to connect",
 					},
-					Content: v1.VariableValue{},
+					Content: v1.LazyValue{},
 				})
 			}
 			c.Subscribe(&handlerUpside{engineImpl: h.engineImpl})

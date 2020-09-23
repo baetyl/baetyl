@@ -199,24 +199,24 @@ func TestSyncResources(t *testing.T) {
 	appCrd := specv1.DesireResponse{
 		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindApplication, Name: appName, Version: appVer},
-			Value:        specv1.VariableValue{Value: &app},
+			Value:        specv1.LazyValue{Value: &app},
 		}},
 	}
 	cfgCrd := specv1.DesireResponse{
 		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindConfiguration, Name: cfgName, Version: cfgVer},
-			Value:        specv1.VariableValue{Value: &cfg},
+			Value:        specv1.LazyValue{Value: &cfg},
 		}},
 	}
 	secCrd := specv1.DesireResponse{
 		Values: []specv1.ResourceValue{{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindSecret, Name: secName, Version: secVer},
-			Value:        specv1.VariableValue{Value: &sec},
+			Value:        specv1.LazyValue{Value: &sec},
 		}},
 	}
 	msg1 := &specv1.Message{
 		Kind: specv1.MessageDesire,
-		Content: specv1.VariableValue{
+		Content: specv1.LazyValue{
 			Value: appCrd,
 		},
 	}
@@ -228,7 +228,7 @@ func TestSyncResources(t *testing.T) {
 
 	msg2 := &specv1.Message{
 		Kind: specv1.MessageDesire,
-		Content: specv1.VariableValue{
+		Content: specv1.LazyValue{
 			Value: cfgCrd,
 		},
 	}
@@ -240,7 +240,7 @@ func TestSyncResources(t *testing.T) {
 
 	msg3 := &specv1.Message{
 		Kind: specv1.MessageDesire,
-		Content: specv1.VariableValue{
+		Content: specv1.LazyValue{
 			Value: secCrd,
 		},
 	}

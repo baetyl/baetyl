@@ -21,7 +21,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 					"success": "true",
 					"msg":     "connect success",
 				},
-				Content: v1.VariableValue{},
+				Content: v1.LazyValue{},
 			})
 		}
 	case v1.MessageData:
@@ -35,7 +35,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 					"success": "false",
 					"msg":     "failed to unmarshal data message",
 				},
-				Content: v1.VariableValue{},
+				Content: v1.LazyValue{},
 			})
 		}
 
@@ -48,7 +48,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 					"success": "false",
 					"msg":     "failed to write debug command",
 				},
-				Content: v1.VariableValue{},
+				Content: v1.LazyValue{},
 			})
 		}
 	default:
@@ -64,7 +64,7 @@ func (h *handlerDownside) OnTimeout() error {
 			"success": "false",
 			"msg":     "timeout",
 		},
-		Content: v1.VariableValue{
+		Content: v1.LazyValue{
 			Value: []byte("timeout"),
 		},
 	})
