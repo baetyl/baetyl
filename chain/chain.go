@@ -122,6 +122,7 @@ func (c *chainImpl) connecting() error {
 func (c *chainImpl) debugReading() error {
 	for {
 		dt := make([]byte, 10240)
+		// TODO add length and send it
 		_, err := c.pipe.outReader.Read(dt)
 		if err != nil && err != io.EOF {
 			c.log.Error("failed to read debug message")

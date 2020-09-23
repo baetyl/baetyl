@@ -115,11 +115,7 @@ func (s *sync) dispatch(msg *v1.Message) error {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
-	case v1.MessageCMD:
-		msg.Content.Value = map[string]string{}
-		return s.publish(msg)
-	case v1.MessageData:
-		msg.Content.Value = []byte{}
+	case v1.MessageCMD, v1.MessageData:
 		return s.publish(msg)
 	default:
 	}
@@ -127,12 +123,7 @@ func (s *sync) dispatch(msg *v1.Message) error {
 }
 
 func (s *sync) publish(msg *v1.Message) error {
-	err := msg.Content.Unmarshal(&msg.Content.Value)
-	if err != nil {
-		s.log.Error("failed to unmarshal message", log.Error(err))
-		return errors.Trace(err)
-	}
-	err = s.hp.Publish(helper.TopicDownside, msg)
+	err := s.hp.Publish(helper.TopicDownside, msg)
 	if err != nil {
 		s.log.Error("failed to publish message", log.Error(err))
 		return errors.Trace(err)
