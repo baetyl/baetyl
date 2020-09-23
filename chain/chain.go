@@ -122,8 +122,7 @@ func (c *chainImpl) connecting() error {
 func (c *chainImpl) debugReading() error {
 	for {
 		dt := make([]byte, 10240)
-		// TODO add length and send it
-		_, err := c.pipe.outReader.Read(dt)
+		n, err := c.pipe.outReader.Read(dt)
 		if err != nil && err != io.EOF {
 			c.log.Error("failed to read debug message")
 		}
@@ -137,7 +136,7 @@ func (c *chainImpl) debugReading() error {
 				"success": "true",
 				"msg":     "ok",
 			},
-			Content: v1.LazyValue{Value: dt},
+			Content: v1.LazyValue{Value: dt[0:n]},
 		}
 		err = c.mq.Publish(c.upside, msg)
 		if err != nil {

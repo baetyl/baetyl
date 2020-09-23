@@ -123,6 +123,7 @@ func (s *sync) dispatch(msg *v1.Message) error {
 }
 
 func (s *sync) publish(msg *v1.Message) error {
+	s.log.Debug("sync downside msg", log.Any("msg", msg))
 	err := s.hp.Publish(helper.TopicDownside, msg)
 	if err != nil {
 		s.log.Error("failed to publish message", log.Error(err))
