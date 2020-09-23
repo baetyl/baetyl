@@ -66,8 +66,9 @@ func TestRequest(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotNil(t, res.Content.Value)
-	desire, ok := res.Content.Value.(specv1.Desire)
-	assert.True(t, ok)
+	var desire specv1.Desire
+	err = res.Content.Unmarshal(&desire)
+	assert.NoError(t, err)
 	assert.Equal(t, desire["apps"], apps)
 	assert.Equal(t, res.Kind, specv1.MessageReport)
 
@@ -79,8 +80,9 @@ func TestRequest(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.NotNil(t, res.Content.Value)
-	desireRes, ok := res.Content.Value.(specv1.DesireResponse)
-	assert.True(t, ok)
+	var desireRes specv1.DesireResponse
+	err = res.Content.Unmarshal(&desireRes)
+	assert.NoError(t, err)
 	aRes := desireRes.Values[0].App()
 	assert.Equal(t, aRes.Name, "app1")
 	assert.Equal(t, aRes.Version, "123")
