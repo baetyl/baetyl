@@ -16,9 +16,12 @@ GO_ARCH:=$(shell go env GOARCH)
 GO_ARM :=$(shell go env GOARM)
 
 ifndef PLATFORMS
-	PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
+    PLATFORMS:=$(if $(GO_ARM),$(GO_OS)/$(GO_ARCH)/$(GO_ARM),$(GO_OS)/$(GO_ARCH))
+    ifeq ($(GO_OS),darwin)
+        PLATFORMS+=linux/amd64
+    endif
 else ifeq ($(PLATFORMS),all)
-	override PLATFORMS:=$(PLATFORM_ALL)
+    override PLATFORMS:=$(PLATFORM_ALL)
 endif
 
 
@@ -57,6 +60,12 @@ $(OUTPUT_BINS): $(SRC_FILES)
 	@mkdir -p $(dir $@)
 	@cp program.yml $(dir $@)
 	@$(shell echo $(@:$(OUTPUT)/%/$(MODULE)/$(MODULE)=%)  | sed 's:/v:/:g' | awk -F '/' '{print "GOOS="$$1" GOARCH="$$2" GOARM="$$3""}') $(GO_BUILD) -o $@ .
+
+.PHONY: build-local
+build-local: $(SRC_FILES)
+	@echo "BUILD $(MODULE)"
+	$(GO_BUILD) -o $(MODULE) .
+	@chmod +x $(MODULE)
 
 .PHONY: image
 image:
