@@ -103,7 +103,7 @@ func (s *sync) syncResourceValues(crds []specv1.ResourceInfo) ([]specv1.Resource
 	msg := &specv1.Message{
 		Kind:     specv1.MessageDesire,
 		Metadata: map[string]string{},
-		Content:  specv1.VariableValue{Value: specv1.DesireRequest{Infos: crds}},
+		Content:  specv1.LazyValue{Value: specv1.DesireRequest{Infos: crds}},
 	}
 	// only for native mode
 	if context.RunMode() == context.RunModeNative {

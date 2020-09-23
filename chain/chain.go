@@ -136,7 +136,7 @@ func (c *chainImpl) debugReading() error {
 				"success": "true",
 				"msg":     "ok",
 			},
-			Content: v1.VariableValue{Value: dt},
+			Content: v1.LazyValue{Value: dt},
 		}
 		err = c.mq.Publish(c.upside, msg)
 		if err != nil {

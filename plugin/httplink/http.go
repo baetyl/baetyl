@@ -69,24 +69,15 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		var desire specv1.Desire
-		if err = json.Unmarshal(data, &desire); err != nil {
-			return nil, errors.Trace(err)
-		}
-		res.Content = specv1.VariableValue{Value: desire}
 	case specv1.MessageDesire:
 		data, err = l.http.PostJSON(l.cfg.HTTPLink.DesireURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		var desireRes specv1.DesireResponse
-		if err = json.Unmarshal(data, &desireRes); err != nil {
-			return nil, errors.Trace(err)
-		}
-		res.Content = specv1.VariableValue{Value: desireRes}
 	default:
 		return nil, errors.Errorf("unsupported message kind")
 	}
+	res.Content = specv1.LazyValue{Value: data}
 	l.log.Debug("http link receive response", log.Any("message", res))
 	return res, nil
 }

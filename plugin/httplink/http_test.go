@@ -21,7 +21,7 @@ func TestRequest(t *testing.T) {
 	appRes := specv1.DesireResponse{Values: []specv1.ResourceValue{
 		{
 			ResourceInfo: specv1.ResourceInfo{Kind: specv1.KindApplication},
-			Value:        specv1.VariableValue{Value: &specv1.Application{Name: "app1", Version: "123"}}},
+			Value:        specv1.LazyValue{Value: &specv1.Application{Name: "app1", Version: "123"}}},
 	},
 	}
 	data2, err := json.Marshal(appRes)

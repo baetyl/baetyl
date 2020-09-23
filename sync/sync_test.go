@@ -52,7 +52,7 @@ func TestReportSync(t *testing.T) {
 	link.EXPECT().IsAsyncSupported().Return(false)
 	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
 
-	msg := &specv1.Message{Content: specv1.VariableValue{Value: desire}, Kind: specv1.MessageReport}
+	msg := &specv1.Message{Content: specv1.LazyValue{Value: desire}, Kind: specv1.MessageReport}
 	dt, err := json.Marshal(msg)
 	assert.NoError(t, err)
 	m := &specv1.Message{}
@@ -117,7 +117,7 @@ func TestReportAsync(t *testing.T) {
 	bt, err := json.Marshal(desire)
 	assert.NoError(t, err)
 
-	m := &specv1.Message{Content: specv1.VariableValue{}, Kind: specv1.MessageReport}
+	m := &specv1.Message{Content: specv1.LazyValue{}, Kind: specv1.MessageReport}
 	dt, err := json.Marshal(m)
 	assert.NoError(t, err)
 	msg := &specv1.Message{}

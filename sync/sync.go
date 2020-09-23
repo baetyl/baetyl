@@ -148,7 +148,7 @@ func (s *sync) Close() {
 func (s *sync) reportAsync(r v1.Report) error {
 	msg := &v1.Message{
 		Kind:    v1.MessageReport,
-		Content: v1.VariableValue{Value: r},
+		Content: v1.LazyValue{Value: r},
 	}
 	err := s.link.Send(msg)
 	if err != nil {
@@ -161,7 +161,7 @@ func (s *sync) reportAsync(r v1.Report) error {
 func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	msg := &v1.Message{
 		Kind:    v1.MessageReport,
-		Content: v1.VariableValue{Value: r},
+		Content: v1.LazyValue{Value: r},
 	}
 	res, err := s.link.Request(msg)
 	if err != nil {
