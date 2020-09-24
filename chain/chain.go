@@ -79,9 +79,8 @@ func (c *chainImpl) Unsubscribe() {
 }
 
 func (c *chainImpl) Close() error {
-	c.tomb.Kill(nil)
-	c.tomb.Wait()
 	c.mq.Unsubscribe(c.downside)
+	c.log.Debug("close", log.Any("unsub topic", c.downside))
 	return nil
 }
 
