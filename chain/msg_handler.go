@@ -1,8 +1,6 @@
 package chain
 
 import (
-	"encoding/json"
-
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 )
@@ -28,9 +26,8 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			})
 		}
 	case v1.MessageData:
-		var dt, cmd []byte
-		m.Content.Unmarshal(&dt)
-		err := json.Unmarshal(dt, &cmd)
+		var cmd []byte
+		err := m.Content.Unmarshal(&cmd)
 		if err != nil {
 			h.log.Error("failed to unmarshal data message", log.Error(err))
 			return h.mq.Publish(h.upside, &v1.Message{

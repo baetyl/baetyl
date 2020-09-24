@@ -65,7 +65,6 @@ func TestRequest(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.NoError(t, err)
 
-	assert.NotNil(t, res.Content.Value)
 	var desire specv1.Desire
 	err = res.Content.Unmarshal(&desire)
 	assert.NoError(t, err)
@@ -79,7 +78,6 @@ func TestRequest(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.NoError(t, err)
 
-	assert.NotNil(t, res.Content.Value)
 	var desireRes specv1.DesireResponse
 	err = res.Content.Unmarshal(&desireRes)
 	assert.NoError(t, err)
