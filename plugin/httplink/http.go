@@ -77,7 +77,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	default:
 		return nil, errors.Errorf("unsupported message kind")
 	}
-	res.Content = specv1.LazyValue{Value: data}
+	res.Content.SetJSON(data)
 	l.log.Debug("http link receive response", log.Any("message", res))
 	return res, nil
 }
