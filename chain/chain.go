@@ -35,10 +35,10 @@ type chainImpl struct {
 }
 
 type pipe struct {
-	inReader  io.Reader
-	inWriter  io.Writer
-	outReader io.Reader
-	outWriter io.Writer
+	inReader  *io.PipeReader
+	inWriter  *io.PipeWriter
+	outReader *io.PipeReader
+	outWriter *io.PipeWriter
 }
 
 func NewChain(cfg config.Config, ami ami.AMI, data map[string]string) (Chain, error) {
@@ -79,6 +79,12 @@ func (c *chainImpl) Unsubscribe() {
 }
 
 func (c *chainImpl) Close() error {
+	// close pipe
+	c.pipe.inReader.Close()
+	c.pipe.outWriter.Close()
+
+	c.tomb.Kill(nil)
+	c.tomb.Wait()
 	c.mq.Unsubscribe(c.downside)
 	c.log.Debug("close", log.Any("unsub topic", c.downside))
 	return nil
@@ -123,7 +129,7 @@ func (c *chainImpl) debugReading() error {
 		dt := make([]byte, 10240)
 		n, err := c.pipe.outReader.Read(dt)
 		if err != nil && err != io.EOF {
-			c.log.Error("failed to read debug message")
+			c.log.Error("failed to read debug message", log.Error(err))
 		}
 		if err == io.EOF {
 			c.log.Info("read debug message EOF")
