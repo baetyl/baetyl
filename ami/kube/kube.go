@@ -8,8 +8,8 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	bh "github.com/timshannon/bolthold"
 
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 type kubeImpl struct {

@@ -3,7 +3,7 @@ package sync
 import (
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
-	"github.com/baetyl/baetyl/plugin"
+	"github.com/baetyl/baetyl/v2/plugin"
 )
 
 type handler struct {

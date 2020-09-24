@@ -6,16 +6,16 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
-	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	goplugin "github.com/baetyl/baetyl-go/v2/plugin"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/helper"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/plugin"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/helper"
+	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/plugin"
 )
 
 const (
@@ -23,7 +23,7 @@ const (
 	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
 )
 
-//go:generate mockgen -destination=../mock/sync.go -package=mock github.com/baetyl/baetyl/sync Sync
+//go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
 type Sync interface {
 	Start()
 	Close()
@@ -47,7 +47,7 @@ type sync struct {
 
 // NewSync create a new sync
 func NewSync(cfg config.Config, store *bh.Store, nod *node.Node, helper helper.Helper) (Sync, error) {
-	link, err := v2plugin.GetPlugin(cfg.Plugin.Link)
+	link, err := goplugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

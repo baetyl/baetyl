@@ -18,10 +18,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
-	mc "github.com/baetyl/baetyl/mock"
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
+	mc "github.com/baetyl/baetyl/v2/mock"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 var (

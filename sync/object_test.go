@@ -17,8 +17,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestObject_FilteringConfig(t *testing.T) {

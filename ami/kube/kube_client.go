@@ -10,7 +10,7 @@ import (
 	clientset "k8s.io/metrics/pkg/client/clientset/versioned"
 	metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 type client struct {

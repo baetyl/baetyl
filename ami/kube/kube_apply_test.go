@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestApplyApplication(t *testing.T) {

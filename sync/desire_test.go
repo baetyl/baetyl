@@ -13,15 +13,15 @@ import (
 	"github.com/baetyl/baetyl-go/v2/mock"
 	"github.com/golang/mock/gomock"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/mock/plugin"
-	"github.com/baetyl/baetyl/node"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/mock/plugin"
+	"github.com/baetyl/baetyl/v2/node"
 
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestSyncMakeKey(t *testing.T) {

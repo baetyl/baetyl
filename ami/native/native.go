@@ -22,9 +22,9 @@ import (
 	"github.com/shirou/gopsutil/process"
 	"gopkg.in/yaml.v2"
 
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/program"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/program"
 )
 
 func init() {

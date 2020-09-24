@@ -8,7 +8,7 @@ import (
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 // TODO: can be configured by cloud

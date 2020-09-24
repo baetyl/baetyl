@@ -9,10 +9,10 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
-//go:generate mockgen -destination=../mock/ami.go -package=mock github.com/baetyl/baetyl/ami AMI
+//go:generate mockgen -destination=../mock/ami.go -package=mock -source=ami.go AMI
 
 var mu sync.Mutex
 var amiNews = map[string]New{}

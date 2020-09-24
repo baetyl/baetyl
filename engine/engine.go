@@ -18,12 +18,12 @@ import (
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/helper"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/security"
-	"github.com/baetyl/baetyl/sync"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/helper"
+	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/security"
+	"github.com/baetyl/baetyl/v2/sync"
 )
 
 const (
@@ -32,7 +32,7 @@ const (
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
-//go:generate mockgen -destination=../mock/engine.go -package=mock github.com/baetyl/baetyl/engine Engine
+//go:generate mockgen -destination=../mock/engine.go -package=mock -source=engine.go Engine
 
 type Engine interface {
 	Start()

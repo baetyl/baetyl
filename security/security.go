@@ -7,7 +7,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/pki"
 )
 
-//go:generate mockgen -destination=../mock/security.go -package=mock github.com/baetyl/baetyl/security Security
+//go:generate mockgen -destination=../mock/security.go -package=mock -source=security.go Security
 
 // AltNames contains the domain names and IP addresses that will be added
 // to the API Server's x509 certificate SubAltNames field. The values will

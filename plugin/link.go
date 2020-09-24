@@ -12,7 +12,8 @@ var (
 	ConfFile                string
 )
 
-//go:generate mockgen -destination=../mock/plugin/link.go -package=plugin -source=link.go
+//go:generate mockgen -destination=../mock/plugin/link.go -package=plugin -source=link.go Link
+
 type Link interface {
 	Receive() (<-chan *v1.Message, <-chan error)
 	Request(msg *v1.Message) (*v1.Message, error)

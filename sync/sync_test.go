@@ -14,11 +14,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/mock/helper"
-	"github.com/baetyl/baetyl/mock/plugin"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/mock/helper"
+	"github.com/baetyl/baetyl/v2/mock/plugin"
+	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestReportSync(t *testing.T) {

@@ -6,15 +6,15 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
-	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	goplugin "github.com/baetyl/baetyl-go/v2/plugin"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 
-	"github.com/baetyl/baetyl/plugin"
+	"github.com/baetyl/baetyl/v2/plugin"
 )
 
 func init() {
-	v2plugin.RegisterFactory("httplink", New)
+	goplugin.RegisterFactory("httplink", New)
 }
 
 type httpLink struct {
@@ -27,7 +27,7 @@ func (l *httpLink) Close() error {
 	return nil
 }
 
-func New() (v2plugin.Plugin, error) {
+func New() (goplugin.Plugin, error) {
 	var cfg Config
 	if err := utils.LoadYAML(plugin.ConfFile, &cfg); err != nil {
 		return nil, errors.Trace(err)

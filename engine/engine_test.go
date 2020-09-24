@@ -20,10 +20,10 @@ import (
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/mock"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/mock"
+	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 const (

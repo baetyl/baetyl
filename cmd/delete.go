@@ -10,8 +10,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/spf13/cobra"
 
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/scheme"
 
-	"github.com/baetyl/baetyl/ami"
+	"github.com/baetyl/baetyl/v2/ami"
 )
 
 func (k *kubeImpl) RemoteCommand(option ami.DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error {

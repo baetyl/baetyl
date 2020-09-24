@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/baetyl/baetyl/program"
+	"github.com/baetyl/baetyl/v2/program"
 )
 
 func init() {

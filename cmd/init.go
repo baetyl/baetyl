@@ -5,10 +5,10 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/spf13/cobra"
 
-	_ "github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/initz"
-	"github.com/baetyl/baetyl/plugin"
+	_ "github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/initz"
+	"github.com/baetyl/baetyl/v2/plugin"
 )
 
 func init() {
