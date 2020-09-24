@@ -39,6 +39,13 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 	switch m.Kind {
 	case v1.MessageCMD:
 		if m.Metadata["cmd"] == "connect" {
+			old, ok := h.chains.Load(key)
+			if ok {
+				old.(chain.Chain).Close()
+				h.chains.Delete(key)
+				h.log.Debug("close chain", log.Any("chain name", key))
+			}
+			h.log.Debug("new chain", log.Any("chain name", key))
 			c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
 			if err != nil {
 				return h.hp.Publish(helper.TopicUpside, &v1.Message{
