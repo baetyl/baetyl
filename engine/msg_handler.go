@@ -6,8 +6,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
-	"github.com/baetyl/baetyl/chain"
-	"github.com/baetyl/baetyl/helper"
+	"github.com/baetyl/baetyl/v2/chain"
+	"github.com/baetyl/baetyl/v2/helper"
 )
 
 type handlerUpside struct {

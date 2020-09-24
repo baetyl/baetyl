@@ -14,12 +14,12 @@ import (
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/engine"
-	"github.com/baetyl/baetyl/helper"
-	"github.com/baetyl/baetyl/node"
-	"github.com/baetyl/baetyl/store"
-	"github.com/baetyl/baetyl/sync"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/engine"
+	"github.com/baetyl/baetyl/v2/helper"
+	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/store"
+	"github.com/baetyl/baetyl/v2/sync"
 )
 
 type Core struct {

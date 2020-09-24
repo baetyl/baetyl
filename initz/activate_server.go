@@ -9,7 +9,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/utils"
 
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 func (active *Activate) startServer() error {

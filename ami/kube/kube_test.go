@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/baetyl/baetyl/config"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 func Test_newKubeImpl(t *testing.T) {

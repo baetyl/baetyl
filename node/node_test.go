@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/valyala/fasthttp"
 
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestNodeShadow(t *testing.T) {

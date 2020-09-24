@@ -7,13 +7,13 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mq"
-	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	goplugin "github.com/baetyl/baetyl-go/v2/plugin"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 
-	"github.com/baetyl/baetyl/ami"
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/plugin"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/plugin"
 )
 
 type Chain interface {
@@ -42,7 +42,7 @@ type pipe struct {
 }
 
 func NewChain(cfg config.Config, ami ami.AMI, data map[string]string) (Chain, error) {
-	mq, err := v2plugin.GetPlugin(cfg.Plugin.MQ)
+	mq, err := goplugin.GetPlugin(cfg.Plugin.MQ)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

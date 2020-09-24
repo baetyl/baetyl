@@ -13,8 +13,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/pki"
 	bh "github.com/timshannon/bolthold"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/sync"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/sync"
 )
 
 type pkiClient struct {

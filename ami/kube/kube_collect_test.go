@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestCollectNodeInfo(t *testing.T) {

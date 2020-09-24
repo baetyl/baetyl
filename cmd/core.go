@@ -5,9 +5,9 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/core"
-	"github.com/baetyl/baetyl/plugin"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/core"
+	"github.com/baetyl/baetyl/v2/plugin"
 )
 
 func init() {

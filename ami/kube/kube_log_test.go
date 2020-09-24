@@ -8,8 +8,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/store"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestToLogOptions(t *testing.T) {

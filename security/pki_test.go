@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	bh "github.com/timshannon/bolthold"
 
-	"github.com/baetyl/baetyl/config"
-	"github.com/baetyl/baetyl/store"
-	"github.com/baetyl/baetyl/sync"
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/store"
+	"github.com/baetyl/baetyl/v2/sync"
 )
 
 const (
