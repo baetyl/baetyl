@@ -344,7 +344,7 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 			}
 			var secret specv1.Secret
 			if err := e.sto.Get(key, &secret); err != nil {
-				return errors.Trace(err)
+				return errors.Errorf("failed to get secret name: (%s) version: (%s) with error: %s", sec.Name, sec.Version, err.Error())
 			}
 			secs[secret.Name] = secret
 		}
