@@ -80,8 +80,10 @@ func (c *chainImpl) Unsubscribe() {
 
 func (c *chainImpl) Close() error {
 	// close pipe
-	c.pipe.inReader.Close()
-	c.pipe.outWriter.Close()
+	err := c.pipe.inWriter.Close()
+	c.log.Warn("failed to close chain in writer", log.Error(err))
+	err = c.pipe.outWriter.Close()
+	c.log.Warn("failed to close chain out writer", log.Error(err))
 
 	c.tomb.Kill(nil)
 	c.tomb.Wait()
@@ -104,6 +106,7 @@ func (c *chainImpl) connecting() error {
 	}
 
 	defer func() {
+		c.log.Debug("connecting close")
 		msg := &v1.Message{
 			Kind: v1.MessageCMD,
 			Metadata: map[string]string{
