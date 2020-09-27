@@ -70,14 +70,18 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 }
 
 func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name, unpack string) error {
-	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0755)
+	lockfile, err := os.OpenFile(name + ".baetyl-lock", os.O_CREATE|os.O_RDWR, 0755)
 	if err != nil {
 		return err
 	}
-	if err = flock(file, 0); err != nil {
+	if err = flock(lockfile, 0); err != nil {
 		return err
 	}
-	defer funlock(file)
+	clean := func() {
+		defer funlock(lockfile)
+		os.Remove(lockfile.Name())
+	}
+	defer clean()
 	if obj.MD5 != "" {
 		md5, err := utils.CalculateFileMD5(name)
 		if err == nil && md5 == obj.MD5 {
@@ -103,6 +107,11 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		return errors.Errorf("failed to download config object (%s): [%d] %s", name, resp.StatusCode, resp.Status)
 	}
 	defer resp.Body.Close()
+	if utils.FileExists(name) {
+		log.L().Debug("config object file exists", log.Any("name", name))
+		return nil
+	}
+	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0755)
 	if err := file.Truncate(0); err != nil {
 		return errors.Trace(err)
 	}
