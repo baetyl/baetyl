@@ -78,7 +78,7 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		return err
 	}
 	clean := func() {
-		defer funlock(lockfile)
+		funlock(lockfile)
 		os.Remove(lockfile.Name())
 	}
 	defer clean()
