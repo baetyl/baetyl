@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	gosync "sync"
 	"time"
@@ -69,7 +70,12 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-
+	if os.Getenv(context.KeyBaetylHostPathLib) == "" {
+		err := os.Setenv(context.KeyBaetylHostPathLib, "/var/lib/baetyl")
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
 	eng := &engineImpl{
 		mode:   mode,
 		ami:    am,

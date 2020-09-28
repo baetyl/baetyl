@@ -77,6 +77,10 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	default:
 		return nil, errors.Errorf("unsupported message kind")
 	}
+	data, err = utils.ParseEnv(data)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 	res.Content.SetJSON(data)
 	l.log.Debug("http link receive response", log.Any("message", res))
 	return res, nil
