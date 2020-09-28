@@ -24,6 +24,7 @@ import (
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/program"
 )
 
@@ -32,12 +33,25 @@ func init() {
 }
 
 type nativeImpl struct {
-	mapping       *native.ServiceMapping
-	portAllocator *native.PortAllocator
-	log           *log.Logger
+	logHostPath    string
+	runHostPath    string
+	mapping        *native.ServiceMapping
+	portAllocator  *native.PortAllocator
+	hostPathLibRun string
+	log            *log.Logger
 }
 
 func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
+	var hostPathLib string
+	if val := os.Getenv(context.KeyBaetylHostPathLib); val == "" {
+		err := os.Setenv(context.KeyBaetylHostPathLib, engine.DefaultHostPathLib)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		hostPathLib = engine.DefaultHostPathLib
+	} else {
+		hostPathLib = val
+	}
 	portAllocator, err := native.NewPortAllocator(cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -47,6 +61,8 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 		return nil, errors.Trace(err)
 	}
 	return &nativeImpl{
+		logHostPath:   filepath.Join(hostPathLib, "log"),
+		runHostPath:   filepath.Join(hostPathLib, "run"),
 		mapping:       mapping,
 		portAllocator: portAllocator,
 		log:           log.With(log.Any("ami", "native")),
@@ -64,7 +80,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 		impl.log.Warn("failed to delete old app", log.Error(err))
 	}
 
-	appDir := filepath.Join(ami.RunHostPath, ns, app.Name, app.Version)
+	appDir := filepath.Join(impl.runHostPath, ns, app.Name, app.Version)
 	err = os.MkdirAll(appDir, 0755)
 	if err != nil {
 		return errors.Trace(err)
@@ -174,7 +190,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Env:         env,
 				Logger: log.Config{
 					Level:    "debug",
-					Filename: filepath.Join(ami.LogHostPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
+					Filename: filepath.Join(impl.logHostPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
 				},
 			}
 			prgYml, err := yaml.Marshal(prgCfg)
@@ -222,7 +238,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 
 func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 	// scan app version
-	curAppDir := filepath.Join(ami.RunHostPath, ns, appName)
+	curAppDir := filepath.Join(impl.runHostPath, ns, appName)
 	appVerFiles, err := ioutil.ReadDir(curAppDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -290,11 +306,11 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 
 func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	var stats []v1.AppStats
-	if !utils.DirExists(ami.RunHostPath) {
+	if !utils.DirExists(impl.runHostPath) {
 		return stats, nil
 	}
 
-	curNsPath := filepath.Join(ami.RunHostPath, ns)
+	curNsPath := filepath.Join(impl.runHostPath, ns)
 	if !utils.DirExists(curNsPath) {
 		return stats, nil
 	}
