@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	gosync "sync"
 	"time"
@@ -31,6 +32,7 @@ const (
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
+	DefaultHostPathLib     = "/var/lib/baetyl"
 )
 
 //go:generate mockgen -destination=../mock/engine.go -package=mock -source=engine.go Engine
@@ -45,23 +47,35 @@ type Engine interface {
 
 // pipes: remote debugging of the routing table between the router and the channel. key={ns}_{name}_{container}
 type engineImpl struct {
-	mode   string
-	cfg    config.Config
-	syn    sync.Sync
-	ami    ami.AMI
-	nod    *node.Node
-	sto    *bh.Store
-	log    *log.Logger
-	sec    security.Security
-	hp     helper.Helper
-	chains gosync.Map
-	tomb   utils.Tomb
+	mode           string
+	hostHostPath   string
+	objectHostPath string
+	cfg            config.Config
+	syn            sync.Sync
+	ami            ami.AMI
+	nod            *node.Node
+	sto            *bh.Store
+	log            *log.Logger
+	sec            security.Security
+	hp             helper.Helper
+	chains         gosync.Map
+	tomb           utils.Tomb
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, helper helper.Helper) (Engine, error) {
 	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 
+	var hostPathLib string
+	if val := os.Getenv(context.KeyBaetylHostPathLib); val == "" {
+		err := os.Setenv(context.KeyBaetylHostPathLib, DefaultHostPathLib)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		hostPathLib = DefaultHostPathLib
+	} else {
+		hostPathLib = val
+	}
 	am, err := ami.NewAMI(mode, cfg.AMI)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -70,23 +84,19 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if os.Getenv(context.KeyBaetylHostPathLib) == "" {
-		err := os.Setenv(context.KeyBaetylHostPathLib, "/var/lib/baetyl")
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-	}
 	eng := &engineImpl{
-		mode:   mode,
-		ami:    am,
-		sto:    sto,
-		syn:    syn,
-		nod:    nod,
-		cfg:    cfg,
-		sec:    sec,
-		hp:     helper,
-		chains: gosync.Map{},
-		log:    log.With(),
+		mode:           mode,
+		hostHostPath:   filepath.Join(hostPathLib, "host"),
+		objectHostPath: filepath.Join(hostPathLib, "object"),
+		ami:            am,
+		sto:            sto,
+		syn:            syn,
+		nod:            nod,
+		cfg:            cfg,
+		sec:            sec,
+		hp:             helper,
+		chains:         gosync.Map{},
+		log:            log.With(),
 	}
 	return eng, nil
 }
@@ -355,7 +365,7 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 			secs[secret.Name] = secret
 		}
 	}
-	if err := sync.PrepareApp(ami.HostHostPath, ami.ObjectHostPath, app, cfgs); err != nil {
+	if err := sync.PrepareApp(e.hostHostPath, e.objectHostPath, app, cfgs); err != nil {
 		e.log.Error("failed to revise applications", log.Any("app", app), log.Error(err))
 		return errors.Trace(err)
 	}

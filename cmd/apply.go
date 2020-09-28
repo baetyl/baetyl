@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -71,11 +72,15 @@ func apply() {
 	if err != nil {
 		return
 	}
-	if os.Getenv(context.KeyBaetylHostPathLib) == "" {
+	var hostPathLib string
+	if val := os.Getenv(context.KeyBaetylHostPathLib); val == "" {
 		err := os.Setenv(context.KeyBaetylHostPathLib, "/var/lib/baetyl")
 		if err != nil {
 			return
 		}
+		hostPathLib = "/var/lib/baetyl"
+	} else {
+		hostPathLib = val
 	}
 
 	// download data
@@ -116,9 +121,10 @@ func apply() {
 	}
 
 	// download config objects if exist
+	objectHostPath := filepath.Join(hostPathLib, "object")
 	for _, cfg := range configs {
 		sync.FilterConfig(&cfg)
-		err = sync.DownloadConfig(cli, ami.ObjectHostPath, &cfg)
+		err = sync.DownloadConfig(cli, objectHostPath, &cfg)
 		if err != nil {
 			return
 		}
@@ -150,7 +156,8 @@ func apply() {
 		}
 
 		// prepare app
-		err = sync.PrepareApp(ami.HostHostPath, ami.ObjectHostPath, &app, configs)
+		hostHostPath := filepath.Join(hostPathLib, "host")
+		err = sync.PrepareApp(hostHostPath, objectHostPath, &app, configs)
 		if err != nil {
 			return
 		}
