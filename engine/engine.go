@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"strconv"
 	gosync "sync"
@@ -32,7 +31,6 @@ const (
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
 	SystemCertPath         = "/var/lib/baetyl/system/certs"
-	DefaultHostPathLib     = "/var/lib/baetyl"
 )
 
 //go:generate mockgen -destination=../mock/engine.go -package=mock -source=engine.go Engine
@@ -66,15 +64,9 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, 
 	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 
-	var hostPathLib string
-	if val := os.Getenv(context.KeyBaetylHostPathLib); val == "" {
-		err := os.Setenv(context.KeyBaetylHostPathLib, DefaultHostPathLib)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		hostPathLib = DefaultHostPathLib
-	} else {
-		hostPathLib = val
+	hostPathLib, err := context.HostPathLib()
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 	am, err := ami.NewAMI(mode, cfg.AMI)
 	if err != nil {

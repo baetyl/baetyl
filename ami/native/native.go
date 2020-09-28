@@ -24,7 +24,6 @@ import (
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/program"
 )
 
@@ -33,24 +32,17 @@ func init() {
 }
 
 type nativeImpl struct {
-	logHostPath    string
-	runHostPath    string
-	mapping        *native.ServiceMapping
-	portAllocator  *native.PortAllocator
-	hostPathLibRun string
-	log            *log.Logger
+	logHostPath   string
+	runHostPath   string
+	mapping       *native.ServiceMapping
+	portAllocator *native.PortAllocator
+	log           *log.Logger
 }
 
 func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
-	var hostPathLib string
-	if val := os.Getenv(context.KeyBaetylHostPathLib); val == "" {
-		err := os.Setenv(context.KeyBaetylHostPathLib, engine.DefaultHostPathLib)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		hostPathLib = engine.DefaultHostPathLib
-	} else {
-		hostPathLib = val
+	hostPathLib, err := context.HostPathLib()
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 	portAllocator, err := native.NewPortAllocator(cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End)
 	if err != nil {
