@@ -72,15 +72,9 @@ func apply() {
 	if err != nil {
 		return
 	}
-	var hostPathLib string
-	if val := os.Getenv(context.KeyBaetylHostPathLib); val == "" {
-		err := os.Setenv(context.KeyBaetylHostPathLib, "/var/lib/baetyl")
-		if err != nil {
-			return
-		}
-		hostPathLib = "/var/lib/baetyl"
-	} else {
-		hostPathLib = val
+	hostPathLib, err := context.HostPathLib()
+	if err != nil {
+		return
 	}
 
 	// download data
