@@ -5,52 +5,42 @@ import (
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 )
 
-type handlerDownside struct {
-	*chainImpl
+type chainHandler struct {
+	*chain
 }
 
-func (h *handlerDownside) OnMessage(msg interface{}) error {
+func (h *chainHandler) OnMessage(msg interface{}) error {
 	h.log.Debug("chain downside msg", log.Any("msg", msg))
 	m := msg.(*v1.Message)
 	switch m.Kind {
-	case v1.MessageCMD:
-		if m.Metadata["cmd"] == "connect" {
-			h.tomb.Go(h.connecting)
-			return h.mq.Publish(h.upside, &v1.Message{
-				Kind: v1.MessageCMD,
-				Metadata: map[string]string{
-					"success": "true",
-					"msg":     "connect success",
-				},
-				Content: v1.LazyValue{},
-			})
-		}
 	case v1.MessageData:
 		var cmd []byte
 		err := m.Content.Unmarshal(&cmd)
 		if err != nil {
 			h.log.Error("failed to unmarshal data message", log.Error(err))
-			return h.mq.Publish(h.upside, &v1.Message{
+			h.pb.Publish(h.upside, &v1.Message{
 				Kind: v1.MessageData,
 				Metadata: map[string]string{
 					"success": "false",
 					"msg":     "failed to unmarshal data message",
+					"token":   h.data["token"],
 				},
-				Content: v1.LazyValue{},
 			})
+			return err
 		}
 
-		_, err = h.pipe.inWriter.Write(cmd)
+		_, err = h.pipe.InWriter.Write(cmd)
 		if err != nil {
 			h.log.Error("failed to write debug command", log.Error(err))
-			return h.mq.Publish(h.upside, &v1.Message{
+			h.pb.Publish(h.upside, &v1.Message{
 				Kind: v1.MessageData,
 				Metadata: map[string]string{
 					"success": "false",
 					"msg":     "failed to write debug command",
+					"token":   h.data["token"],
 				},
-				Content: v1.LazyValue{},
 			})
+			return err
 		}
 	default:
 		h.log.Warn("remote debug message kind not support", log.Any("msg", m))
@@ -58,15 +48,14 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 	return nil
 }
 
-func (h *handlerDownside) OnTimeout() error {
-	return h.mq.Publish(h.upside, &v1.Message{
+func (h *chainHandler) OnTimeout() error {
+	h.pb.Publish(h.upside, &v1.Message{
 		Kind: v1.MessageData,
 		Metadata: map[string]string{
 			"success": "false",
-			"msg":     "timeout",
-		},
-		Content: v1.LazyValue{
-			Value: []byte("timeout"),
+			"msg":     "chain timeout",
+			"token":   h.data["token"],
 		},
 	})
+	return nil
 }

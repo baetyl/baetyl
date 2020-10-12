@@ -62,7 +62,7 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 }
 
 // TODO: impl native RemoteCommand
-func (impl *nativeImpl) RemoteCommand(option ami.DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error {
+func (impl *nativeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
 	panic("impl me")
 }
 

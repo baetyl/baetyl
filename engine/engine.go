@@ -13,6 +13,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl-go/v2/pubsub"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/mitchellh/mapstructure"
@@ -21,8 +23,8 @@ import (
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/helper"
 	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/security"
 	"github.com/baetyl/baetyl/v2/sync"
 )
@@ -45,22 +47,24 @@ type Engine interface {
 
 // pipes: remote debugging of the routing table between the router and the channel. key={ns}_{name}_{container}
 type engineImpl struct {
-	mode           string
-	hostHostPath   string
-	objectHostPath string
-	cfg            config.Config
-	syn            sync.Sync
-	ami            ami.AMI
-	nod            *node.Node
-	sto            *bh.Store
-	log            *log.Logger
-	sec            security.Security
-	hp             helper.Helper
-	chains         gosync.Map
-	tomb           utils.Tomb
+	mode            string
+	hostHostPath    string
+	objectHostPath  string
+	cfg             config.Config
+	syn             sync.Sync
+	ami             ami.AMI
+	nod             *node.Node
+	sto             *bh.Store
+	log             *log.Logger
+	sec             security.Security
+	pb              plugin.Pubsub
+	downsideChan    chan interface{}
+	downsideHandler pubsub.PubsubHelper
+	chains          gosync.Map
+	tomb            utils.Tomb
 }
 
-func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, helper helper.Helper) (Engine, error) {
+func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (Engine, error) {
 	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 
@@ -76,6 +80,10 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, 
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	pl, err := v2plugin.GetPlugin(cfg.Plugin.Pubsub)
+	if err != nil {
+		return nil, err
+	}
 	eng := &engineImpl{
 		mode:           mode,
 		hostHostPath:   filepath.Join(hostPathLib, "host"),
@@ -86,7 +94,7 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, 
 		nod:            nod,
 		cfg:            cfg,
 		sec:            sec,
-		hp:             helper,
+		pb:             pl.(plugin.Pubsub),
 		chains:         gosync.Map{},
 		log:            log.With(),
 	}
@@ -95,7 +103,9 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync, 
 
 func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
-	e.hp.Subscribe(helper.TopicDownside, &handlerDownside{engineImpl: e})
+	e.downsideChan = e.pb.Subscribe(sync.TopicDownside)
+	e.downsideHandler = pubsub.NewPubsubHelper(e.downsideChan, time.Hour*24*3650, &handlerDownside{e})
+	e.downsideHandler.Start()
 }
 
 func (e *engineImpl) ReportAndDesire() error {
@@ -113,9 +123,9 @@ func (e *engineImpl) GetServiceLog(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 400, "RequestParamInvalid", err.Error())
 		return nil
 	}
-	ns := context.BaetylEdgeNamespace
+	ns := context.EdgeNamespace()
 	if isSys == "true" {
-		ns = context.BaetylEdgeSystemNamespace
+		ns = context.EdgeSystemNamespace()
 	}
 	reader, err := e.ami.FetchLog(ns, service, tail, since)
 	if err != nil {
@@ -217,9 +227,9 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) error {
 	var ns string
 	if isSys {
-		ns = context.BaetylEdgeSystemNamespace
+		ns = context.EdgeSystemNamespace()
 	} else {
-		ns = context.BaetylEdgeNamespace
+		ns = context.EdgeNamespace()
 	}
 	r := e.Collect(ns, isSys, desire)
 	e.log.Debug("collect stats of node and apps", log.Any("report", r))
@@ -379,9 +389,9 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 
 	var services []specv1.Service
 	for _, svc := range app.Services {
-		ns := context.BaetylEdgeNamespace
+		ns := context.EdgeNamespace()
 		if app.System {
-			ns = context.BaetylEdgeSystemNamespace
+			ns = context.EdgeSystemNamespace()
 		}
 		// generate cert
 		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
@@ -422,7 +432,7 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 				"key.pem": cert.Key,
 				"ca.pem":  ca,
 			},
-			System: app.Namespace == context.BaetylEdgeSystemNamespace,
+			System: app.Namespace == context.EdgeSystemNamespace(),
 		}
 		secs[secretName] = secret
 
@@ -473,7 +483,10 @@ func (e *engineImpl) validParam(tailLines, sinceSeconds string) (itailLines, isi
 func (e *engineImpl) Close() {
 	e.tomb.Kill(nil)
 	e.tomb.Wait()
-	if e.hp != nil {
-		e.hp.Unsubscribe(helper.TopicDownside)
+	if e.pb != nil {
+		e.pb.Unsubscribe(sync.TopicDownside, e.downsideChan)
+	}
+	if e.downsideHandler != nil {
+		e.downsideHandler.Close()
 	}
 }

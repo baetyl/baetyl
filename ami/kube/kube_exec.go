@@ -1,7 +1,6 @@
 package kube
 
 import (
-	"io"
 	"net/http"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -12,15 +11,15 @@ import (
 	"github.com/baetyl/baetyl/v2/ami"
 )
 
-func (k *kubeImpl) RemoteCommand(option ami.DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error {
+func (k *kubeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
 	req := k.cli.core.RESTClient().Post().Resource("pods").
 		Name(option.Name).Namespace(option.Namespace).SubResource("exec")
 
 	opt := &coreV1.PodExecOptions{
 		Command: option.Command,
-		Stdin:   stdin != nil,
-		Stdout:  stdout != nil,
-		Stderr:  stderr != nil,
+		Stdin:   pipe.InReader != nil,
+		Stdout:  pipe.OutWriter != nil,
+		Stderr:  pipe.OutWriter != nil,
 		TTY:     true,
 	}
 	if option.Container != "" {
@@ -38,9 +37,9 @@ func (k *kubeImpl) RemoteCommand(option ami.DebugOptions, stdin io.Reader, stdou
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  stdin,
-		Stdout: stdout,
-		Stderr: stderr,
+		Stdin:  pipe.InReader,
+		Stdout: pipe.OutWriter,
+		Stderr: pipe.OutWriter,
 		Tty:    true,
 	})
 	if err != nil {

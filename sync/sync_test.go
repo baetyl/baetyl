@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/mock/helper"
 	"github.com/baetyl/baetyl/v2/mock/plugin"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/store"
@@ -100,17 +99,18 @@ func TestReportAsync(t *testing.T) {
 
 	mockCtl := gomock.NewController(t)
 	link := plugin.NewMockLink(mockCtl)
+	pb := plugin.NewMockPubsub(mockCtl)
 
-	hp := helper.NewMockHelper(mockCtl)
-	hp.EXPECT().Subscribe("upside", gomock.Any()).Times(1)
-	hp.EXPECT().Unsubscribe("upside").Times(1)
+	ch := make(chan interface{})
+	pb.EXPECT().Subscribe("upside").Return(ch).Times(1)
+	pb.EXPECT().Unsubscribe("upside", ch).Times(1)
 
 	syn := &sync{
 		link:  link,
 		cfg:   sc,
 		store: sto,
 		nod:   nod,
-		hp:    hp,
+		pb:    pb,
 		log:   log.With(log.Any("test", "sync")),
 	}
 	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}

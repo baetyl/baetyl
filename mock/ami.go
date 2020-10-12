@@ -124,15 +124,15 @@ func (mr *MockAMIMockRecorder) FetchLog(namespace, service, tailLines, sinceSeco
 }
 
 // RemoteCommand mocks base method
-func (m *MockAMI) RemoteCommand(option ami.DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error {
+func (m *MockAMI) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoteCommand", option, stdin, stdout, stderr)
+	ret := m.ctrl.Call(m, "RemoteCommand", option, pipe)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoteCommand indicates an expected call of RemoteCommand
-func (mr *MockAMIMockRecorder) RemoteCommand(option, stdin, stdout, stderr interface{}) *gomock.Call {
+func (mr *MockAMIMockRecorder) RemoteCommand(option, pipe interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteCommand", reflect.TypeOf((*MockAMI)(nil).RemoteCommand), option, stdin, stdout, stderr)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteCommand", reflect.TypeOf((*MockAMI)(nil).RemoteCommand), option, pipe)
 }

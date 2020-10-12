@@ -111,7 +111,7 @@ func TestCollect(t *testing.T) {
 		Name:    "app1",
 		Version: "v1",
 	}
-	ns := context.BaetylEdgeNamespace
+	ns := context.EdgeNamespace()
 	apps := []specv1.AppInfo{info}
 	appStats := []specv1.AppStats{{AppInfo: info}}
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
@@ -152,7 +152,7 @@ func TestCollect(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	eng, err := NewEngine(config.Config{}, nil, nil, nil, nil)
+	eng, err := NewEngine(config.Config{}, nil, nil, nil)
 	assert.Error(t, err, os.ErrInvalid.Error())
 	assert.Nil(t, eng)
 }
@@ -466,7 +466,7 @@ func TestInjectCert(t *testing.T) {
 				"key.pem": []byte(key),
 				"ca.pem":  []byte(caCrt),
 			},
-			System: app.Namespace == context.BaetylEdgeSystemNamespace,
+			System: app.Namespace == context.EdgeSystemNamespace(),
 		},
 		SystemCertSecretPrefix + suffix1: {
 			Name:      SystemCertSecretPrefix + suffix1,
@@ -480,7 +480,7 @@ func TestInjectCert(t *testing.T) {
 				"key.pem": []byte(key),
 				"ca.pem":  []byte(caCrt),
 			},
-			System: app.Namespace == context.BaetylEdgeSystemNamespace,
+			System: app.Namespace == context.EdgeSystemNamespace(),
 		},
 	}
 

@@ -20,6 +20,13 @@ var amiImpls = map[string]AMI{}
 
 type New func(cfg config.AmiConfig) (AMI, error)
 
+type Pipe struct {
+	InReader  *io.PipeReader
+	InWriter  *io.PipeWriter
+	OutReader *io.PipeReader
+	OutWriter *io.PipeWriter
+}
+
 // AMI app model interfaces
 type AMI interface {
 	// node
@@ -34,7 +41,7 @@ type AMI interface {
 	// TODO: update
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 
-	RemoteCommand(option DebugOptions, stdin io.Reader, stdout, stderr io.Writer) error
+	RemoteCommand(option DebugOptions, pipe Pipe) error
 }
 
 type DebugOptions struct {
