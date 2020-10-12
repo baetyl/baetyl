@@ -3,96 +3,88 @@ package chain
 import (
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
-	"github.com/baetyl/baetyl-go/v2/mq"
-	goplugin "github.com/baetyl/baetyl-go/v2/plugin"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl-go/v2/pubsub"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/plugin"
+	"github.com/baetyl/baetyl/v2/sync"
+)
+
+const (
+	MsgTimeout = time.Minute * 10
 )
 
 type Chain interface {
-	Publish(interface{}) error
-	Subscribe(mq.MQHandler)
-	Unsubscribe()
+	Start() error
 	io.Closer
 }
 
-type chainImpl struct {
+type chain struct {
+	ami      ami.AMI
 	data     map[string]string
 	upside   string
 	downside string
-	pipe     *pipe
-	ami      ami.AMI
-	mq       plugin.MessageQueue
+	pb       plugin.Pubsub
+	subChan  chan interface{}
+	handler  pubsub.PubsubHelper
+	pipe     ami.Pipe
 	tomb     utils.Tomb
 	log      *log.Logger
 }
 
-type pipe struct {
-	inReader  *io.PipeReader
-	inWriter  *io.PipeWriter
-	outReader *io.PipeReader
-	outWriter *io.PipeWriter
-}
-
-func NewChain(cfg config.Config, ami ami.AMI, data map[string]string) (Chain, error) {
-	mq, err := goplugin.GetPlugin(cfg.Plugin.MQ)
+func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, error) {
+	pl, err := v2plugin.GetPlugin(cfg.Plugin.Pubsub)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return nil, err
 	}
 
-	pipe := &pipe{}
-	pipe.inReader, pipe.inWriter = io.Pipe()
-	pipe.outReader, pipe.outWriter = io.Pipe()
+	pipe := ami.Pipe{}
+	pipe.InReader, pipe.InWriter = io.Pipe()
+	pipe.OutReader, pipe.OutWriter = io.Pipe()
 
-	topic := fmt.Sprintf("%s_%s_%s", data["namespace"], data["name"], data["container"])
-
-	c := &chainImpl{
+	c := &chain{
+		ami:      a,
 		data:     data,
-		upside:   fmt.Sprintf("%s_%s", topic, "up"),
-		downside: fmt.Sprintf("%s_%s", topic, "down"),
+		upside:   sync.TopicUpside,
+		downside: fmt.Sprintf("%s_%s_%s_%s_%s", data["namespace"], data["name"], data["container"], data["token"], "down"),
+		pb:       pl.(plugin.Pubsub),
 		pipe:     pipe,
-		ami:      ami,
-		mq:       mq.(plugin.MessageQueue),
-		log:      log.With(log.Any("chain", topic)),
+		log:      log.L().With(log.Any("chain", data["token"][:10])),
 	}
-	c.mq.Subscribe(c.downside, &handlerDownside{chainImpl: c})
+	c.log.Debug("chain sub downside topic", log.Any("topic", c.downside))
+	c.subChan = c.pb.Subscribe(c.downside)
 	return c, nil
 }
 
-func (c *chainImpl) Publish(msg interface{}) error {
-	return c.mq.Publish(c.downside, msg)
+func (c *chain) Start() error {
+	c.handler = pubsub.NewPubsubHelper(c.subChan, MsgTimeout, &chainHandler{chain: c})
+	c.handler.Start()
+
+	return c.tomb.Go(c.debugReading, c.connecting)
 }
 
-func (c *chainImpl) Subscribe(handler mq.MQHandler) {
-	c.mq.Subscribe(c.upside, handler)
-}
+func (c *chain) Close() error {
+	c.handler.Close()
 
-func (c *chainImpl) Unsubscribe() {
-	c.mq.Unsubscribe(c.upside)
-}
-
-func (c *chainImpl) Close() error {
-	// close pipe
-	err := c.pipe.inWriter.Close()
+	err := c.pipe.InWriter.Close()
 	c.log.Warn("failed to close chain in writer", log.Error(err))
-	err = c.pipe.outWriter.Close()
+	err = c.pipe.OutWriter.Close()
 	c.log.Warn("failed to close chain out writer", log.Error(err))
 
-	c.tomb.Kill(nil)
-	c.tomb.Wait()
-	c.mq.Unsubscribe(c.downside)
+	c.pb.Unsubscribe(c.downside, c.subChan)
 	c.log.Debug("close", log.Any("unsub topic", c.downside))
 	return nil
 }
 
-func (c *chainImpl) connecting() error {
+func (c *chain) connecting() error {
 	cmd := []string{
 		"sh",
 		"-c",
@@ -112,14 +104,13 @@ func (c *chainImpl) connecting() error {
 			Metadata: map[string]string{
 				"success": "false",
 				"msg":     "disconnect",
+				"token":   c.data["token"],
 			},
 		}
-		c.mq.Publish(c.upside, msg)
+		c.pb.Publish(c.upside, msg)
 	}()
 
-	c.tomb.Go(c.debugReading)
-
-	err := c.ami.RemoteCommand(opt, c.pipe.inReader, c.pipe.outWriter, c.pipe.outWriter)
+	err := c.ami.RemoteCommand(opt, c.pipe)
 	if err != nil {
 		c.log.Error("failed to start remote debug", log.Error(err))
 		return errors.Trace(err)
@@ -127,10 +118,10 @@ func (c *chainImpl) connecting() error {
 	return nil
 }
 
-func (c *chainImpl) debugReading() error {
+func (c *chain) debugReading() error {
 	for {
 		dt := make([]byte, 10240)
-		n, err := c.pipe.outReader.Read(dt)
+		n, err := c.pipe.OutReader.Read(dt)
 		if err != nil && err != io.EOF {
 			c.log.Error("failed to read debug message", log.Error(err))
 		}
@@ -143,12 +134,10 @@ func (c *chainImpl) debugReading() error {
 			Metadata: map[string]string{
 				"success": "true",
 				"msg":     "ok",
+				"token":   c.data["token"],
 			},
 			Content: v1.LazyValue{Value: dt[0:n]},
 		}
-		err = c.mq.Publish(c.upside, msg)
-		if err != nil {
-			c.log.Error("failed to publish message")
-		}
+		c.pb.Publish(c.upside, msg)
 	}
 }

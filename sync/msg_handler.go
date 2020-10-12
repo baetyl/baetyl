@@ -19,7 +19,7 @@ func (h *handler) OnTimeout() error {
 		Kind: v1.MessageData,
 		Metadata: map[string]string{
 			"success": "false",
-			"msg":     "timeout",
+			"msg":     "sync timeout",
 		},
 	}
 	return h.link.Send(msg)

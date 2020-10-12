@@ -171,7 +171,7 @@ func apply() {
 	for {
 		select {
 		case <-t.C:
-			allstats, err := am.StatsApps(context.BaetylEdgeSystemNamespace)
+			allstats, err := am.StatsApps(context.EdgeSystemNamespace())
 			log.L().Info("stats system apps", log.Any("all", allstats), log.Error(err))
 			if allstats == nil {
 				continue

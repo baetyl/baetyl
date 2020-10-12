@@ -7,13 +7,13 @@ import (
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	goplugin "github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl-go/v2/pubsub"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/helper"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/plugin"
 )
@@ -21,6 +21,9 @@ import (
 const (
 	EnvKeyNodeName      = "BAETYL_NODE_NAME"
 	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
+
+	TopicUpside   = "upside"
+	TopicDownside = "downside"
 )
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
@@ -42,12 +45,16 @@ type sync struct {
 	log   *log.Logger
 	// for downloading objects
 	download *http.Client
-	hp       helper.Helper
+	pb       plugin.Pubsub
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.Config, store *bh.Store, nod *node.Node, helper helper.Helper) (Sync, error) {
+func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
 	link, err := goplugin.GetPlugin(cfg.Plugin.Link)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	pb, err := goplugin.GetPlugin(cfg.Plugin.Pubsub)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -61,7 +68,7 @@ func NewSync(cfg config.Config, store *bh.Store, nod *node.Node, helper helper.H
 		store:    store,
 		nod:      nod,
 		link:     link.(plugin.Link),
-		hp:       helper,
+		pb:       pb.(plugin.Pubsub),
 		log:      log.With(log.Any("core", "sync")),
 	}
 	return s, nil
@@ -75,8 +82,13 @@ func (s *sync) Start() {
 }
 
 func (s *sync) receiving() error {
-	s.hp.Subscribe(helper.TopicUpside, &handler{link: s.link})
-	defer s.hp.Unsubscribe(helper.TopicUpside)
+	upsideChan := s.pb.Subscribe(TopicUpside)
+	helper := pubsub.NewPubsubHelper(upsideChan, time.Hour*24*3650, &handler{link: s.link})
+	helper.Start()
+	defer func() {
+		s.pb.Unsubscribe(TopicUpside, upsideChan)
+		helper.Close()
+	}()
 
 	msgCh, errCh := s.link.Receive()
 	for {
@@ -116,18 +128,10 @@ func (s *sync) dispatch(msg *v1.Message) error {
 			return errors.Trace(err)
 		}
 	case v1.MessageCMD, v1.MessageData:
-		return s.publish(msg)
+		s.log.Debug("sync downside msg", log.Any("msg", msg))
+		s.pb.Publish(TopicDownside, msg)
+		return nil
 	default:
-	}
-	return nil
-}
-
-func (s *sync) publish(msg *v1.Message) error {
-	s.log.Debug("sync downside msg", log.Any("msg", msg))
-	err := s.hp.Publish(helper.TopicDownside, msg)
-	if err != nil {
-		s.log.Error("failed to publish message", log.Error(err))
-		return errors.Trace(err)
 	}
 	return nil
 }
