@@ -59,7 +59,7 @@ type engineImpl struct {
 	sec             security.Security
 	pb              plugin.Pubsub
 	downsideChan    chan interface{}
-	downsideHandler pubsub.PubsubHelper
+	downsideProcess pubsub.Processor
 	chains          gosync.Map
 	tomb            utils.Tomb
 }
@@ -103,9 +103,13 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 
 func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
-	e.downsideChan = e.pb.Subscribe(sync.TopicDownside)
-	e.downsideHandler = pubsub.NewPubsubHelper(e.downsideChan, time.Hour*24*3650, &handlerDownside{e})
-	e.downsideHandler.Start()
+	ch, err := e.pb.Subscribe(sync.TopicDownside)
+	if err != nil {
+		e.log.Error("failed to subscribe downside topic", log.Any("topic", sync.TopicDownside), log.Error(err))
+	}
+	e.downsideChan = ch
+	e.downsideProcess = pubsub.NewProcessor(e.downsideChan, 0, &handlerDownside{e})
+	e.downsideProcess.Start()
 }
 
 func (e *engineImpl) ReportAndDesire() error {
@@ -486,7 +490,7 @@ func (e *engineImpl) Close() {
 	if e.pb != nil {
 		e.pb.Unsubscribe(sync.TopicDownside, e.downsideChan)
 	}
-	if e.downsideHandler != nil {
-		e.downsideHandler.Close()
+	if e.downsideProcess != nil {
+		e.downsideProcess.Close()
 	}
 }

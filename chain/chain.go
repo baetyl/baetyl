@@ -28,16 +28,16 @@ type Chain interface {
 }
 
 type chain struct {
-	ami      ami.AMI
-	data     map[string]string
-	upside   string
-	downside string
-	pb       plugin.Pubsub
-	subChan  chan interface{}
-	handler  pubsub.PubsubHelper
-	pipe     ami.Pipe
-	tomb     utils.Tomb
-	log      *log.Logger
+	ami       ami.AMI
+	data      map[string]string
+	upside    string
+	downside  string
+	pb        plugin.Pubsub
+	subChan   chan interface{}
+	processor pubsub.Processor
+	pipe      ami.Pipe
+	tomb      utils.Tomb
+	log       *log.Logger
 }
 
 func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, error) {
@@ -60,27 +60,37 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 		log:      log.L().With(log.Any("chain", data["token"][:10])),
 	}
 	c.log.Debug("chain sub downside topic", log.Any("topic", c.downside))
-	c.subChan = c.pb.Subscribe(c.downside)
+	c.subChan, err = c.pb.Subscribe(c.downside)
+	if err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 
 func (c *chain) Start() error {
-	c.handler = pubsub.NewPubsubHelper(c.subChan, MsgTimeout, &chainHandler{chain: c})
-	c.handler.Start()
+	c.processor = pubsub.NewProcessor(c.subChan, MsgTimeout, &chainHandler{chain: c})
+	c.processor.Start()
 
 	return c.tomb.Go(c.debugReading, c.connecting)
 }
 
 func (c *chain) Close() error {
-	c.handler.Close()
+	c.processor.Close()
 
 	err := c.pipe.InWriter.Close()
-	c.log.Warn("failed to close chain in writer", log.Error(err))
+	if err != nil {
+		c.log.Warn("failed to close chain in writer", log.Error(err))
+	}
 	err = c.pipe.OutWriter.Close()
-	c.log.Warn("failed to close chain out writer", log.Error(err))
+	if err != nil {
+		c.log.Warn("failed to close chain out writer", log.Error(err))
+	}
 
-	c.pb.Unsubscribe(c.downside, c.subChan)
-	c.log.Debug("close", log.Any("unsub topic", c.downside))
+	err = c.pb.Unsubscribe(c.downside, c.subChan)
+	if err != nil {
+		c.log.Warn("failed to unsubscribe chain downside topic", log.Any("topic", c.downside), log.Error(err))
+	}
+	c.log.Debug("close", log.Any("unsubscribe topic", c.downside))
 	return nil
 }
 
@@ -138,6 +148,9 @@ func (c *chain) debugReading() error {
 			},
 			Content: v1.LazyValue{Value: dt[0:n]},
 		}
-		c.pb.Publish(c.upside, msg)
+		err = c.pb.Publish(c.upside, msg)
+		if err != nil {
+			c.log.Error("failed to publish message", log.Any("topic", c.upside), log.Error(err))
+		}
 	}
 }

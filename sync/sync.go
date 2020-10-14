@@ -82,12 +82,18 @@ func (s *sync) Start() {
 }
 
 func (s *sync) receiving() error {
-	upsideChan := s.pb.Subscribe(TopicUpside)
-	helper := pubsub.NewPubsubHelper(upsideChan, time.Hour*24*3650, &handler{link: s.link})
-	helper.Start()
+	upsideChan, err := s.pb.Subscribe(TopicUpside)
+	if err != nil {
+		s.log.Error("failed to subscribe upside topic", log.Any("topic", TopicUpside), log.Error(err))
+	}
+	processor := pubsub.NewProcessor(upsideChan, 0, &handler{link: s.link})
+	processor.Start()
 	defer func() {
-		s.pb.Unsubscribe(TopicUpside, upsideChan)
-		helper.Close()
+		err = s.pb.Unsubscribe(TopicUpside, upsideChan)
+		if err != nil {
+			s.log.Error("failed to unsubscribe upside topic", log.Any("topic", TopicUpside), log.Error(err))
+		}
+		processor.Close()
 	}()
 
 	msgCh, errCh := s.link.Receive()

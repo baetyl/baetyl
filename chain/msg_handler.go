@@ -49,7 +49,7 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 }
 
 func (h *chainHandler) OnTimeout() error {
-	h.pb.Publish(h.upside, &v1.Message{
+	return h.pb.Publish(h.upside, &v1.Message{
 		Kind: v1.MessageData,
 		Metadata: map[string]string{
 			"success": "false",
@@ -57,5 +57,4 @@ func (h *chainHandler) OnTimeout() error {
 			"token":   h.data["token"],
 		},
 	})
-	return nil
 }
