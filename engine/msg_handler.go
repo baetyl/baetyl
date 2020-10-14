@@ -60,7 +60,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 		}
 	case v1.MessageData:
 		if _, ok := h.chains.Load(key); !ok {
-			h.pb.Publish(sync.TopicUpside, &v1.Message{
+			return h.pb.Publish(sync.TopicUpside, &v1.Message{
 				Kind: v1.MessageData,
 				Metadata: map[string]string{
 					"success": "false",
@@ -68,9 +68,18 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 					"token":   m.Metadata["token"],
 				},
 			})
-			return nil
 		}
-		h.pb.Publish(downside, m)
+		err := h.pb.Publish(downside, m)
+		if err != nil {
+			h.pb.Publish(sync.TopicUpside, &v1.Message{
+				Kind: v1.MessageData,
+				Metadata: map[string]string{
+					"success": "false",
+					"msg":     "failed to publish downside chain",
+					"token":   m.Metadata["token"],
+				},
+			})
+		}
 	default:
 		h.log.Warn("remote debug message kind not support", log.Any("msg", m))
 	}
@@ -78,12 +87,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 }
 
 func (h *handlerDownside) OnTimeout() error {
-	h.pb.Publish(sync.TopicUpside, &v1.Message{
+	return h.pb.Publish(sync.TopicUpside, &v1.Message{
 		Kind: v1.MessageCMD,
 		Metadata: map[string]string{
 			"success": "false",
 			"msg":     "engine timeout",
 		},
 	})
-	return nil
 }
