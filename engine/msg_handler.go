@@ -34,7 +34,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			h.log.Debug("new chain", log.Any("chain name", key))
 			c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
 			if err != nil {
-				h.pb.Publish(sync.TopicUpside, &v1.Message{
+				errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
 					Kind: v1.MessageCMD,
 					Metadata: map[string]string{
 						"success": "false",
@@ -42,11 +42,14 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 						"token":   m.Metadata["token"],
 					},
 				})
+				if errPublish != nil {
+					h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
+				}
 				return err
 			}
 			err = c.Start()
 			if err != nil {
-				h.pb.Publish(sync.TopicUpside, &v1.Message{
+				errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
 					Kind: v1.MessageCMD,
 					Metadata: map[string]string{
 						"success": "false",
@@ -54,6 +57,9 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 						"token":   m.Metadata["token"],
 					},
 				})
+				if errPublish != nil {
+					h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
+				}
 				return err
 			}
 			h.chains.Store(key, c)
@@ -71,7 +77,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 		}
 		err := h.pb.Publish(downside, m)
 		if err != nil {
-			h.pb.Publish(sync.TopicUpside, &v1.Message{
+			errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
 				Kind: v1.MessageData,
 				Metadata: map[string]string{
 					"success": "false",
@@ -79,6 +85,9 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 					"token":   m.Metadata["token"],
 				},
 			})
+			if errPublish != nil {
+				h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
+			}
 		}
 	default:
 		h.log.Warn("remote debug message kind not support", log.Any("msg", m))

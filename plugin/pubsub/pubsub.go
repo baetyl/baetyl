@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	goplugin.RegisterFactory("defaultpb", NewPubsub)
+	goplugin.RegisterFactory("defaultpubsub", NewPubsub)
 }
 
 type defaultpb struct {
