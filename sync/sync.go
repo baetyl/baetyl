@@ -135,8 +135,7 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		}
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
-		s.pb.Publish(TopicDownside, msg)
-		return nil
+		return s.pb.Publish(TopicDownside, msg)
 	default:
 	}
 	return nil
