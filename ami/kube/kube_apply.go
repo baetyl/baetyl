@@ -27,6 +27,7 @@ const (
 
 	ServiceAccountName = "baetyl-edge-system-service-account"
 	BaetylCore         = "baetyl-core"
+	MasterRole         = "node-role.kubernetes.io/master"
 )
 
 func (k *kubeImpl) applyConfigurations(ns string, cfgs map[string]specv1.Configuration) error {
@@ -266,7 +267,18 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 					Containers:       containers,
 					ImagePullSecrets: imagePullSecrets,
 					HostNetwork:      service.HostNetwork,
-					NodeName:         k.knn,
+					Affinity: &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchExpressions: []corev1.NodeSelectorRequirement{
+									{
+										Key:      MasterRole,
+										Operator: corev1.NodeSelectorOpExists,
+									},
+								}}},
+							},
+						},
+					},
 				},
 			},
 		},

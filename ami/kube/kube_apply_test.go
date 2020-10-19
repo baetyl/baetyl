@@ -160,7 +160,18 @@ func TestPrepareDeploy(t *testing.T) {
 					},
 				},
 				Spec: v1.PodSpec{
-					NodeName: "node1",
+					Affinity: &v1.Affinity{
+						NodeAffinity: &v1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+								NodeSelectorTerms: []v1.NodeSelectorTerm{{MatchExpressions: []v1.NodeSelectorRequirement{
+									{
+										Key:      MasterRole,
+										Operator: v1.NodeSelectorOpExists,
+									},
+								}}},
+							},
+						},
+					},
 					Volumes: []v1.Volume{
 						{
 							Name: "cfg",
