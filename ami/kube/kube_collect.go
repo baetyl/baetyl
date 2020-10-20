@@ -28,9 +28,7 @@ func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
 		SystemUUID:       ni.SystemUUID,
 	}
 	for _, addr := range node.Status.Addresses {
-		if addr.Type == corev1.NodeInternalIP {
-			nodeInfo.Address = addr.Address
-		} else if addr.Type == corev1.NodeHostName {
+		if addr.Type == corev1.NodeHostName {
 			nodeInfo.Hostname = addr.Address
 		}
 	}
