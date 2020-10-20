@@ -23,7 +23,6 @@ func TestCollectNodeInfo(t *testing.T) {
 	assert.NoError(t, err)
 	expected := &specv1.NodeInfo{
 		Hostname:         "hostname",
-		Address:          "nodeip",
 		Arch:             "arch",
 		KernelVersion:    "kernel",
 		OS:               "os",
@@ -77,7 +76,6 @@ func genCollectRuntime() []runtime.Object {
 					SystemUUID:              "system",
 				},
 				Addresses: []v1.NodeAddress{
-					{Type: v1.NodeInternalIP, Address: "nodeip"},
 					{Type: v1.NodeHostName, Address: "hostname"},
 				},
 				Capacity: v1.ResourceList{
