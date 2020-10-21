@@ -18,7 +18,7 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 		err := m.Content.Unmarshal(&cmd)
 		if err != nil {
 			h.log.Error("failed to unmarshal data message", log.Error(err))
-			h.pb.Publish(h.upside, &v1.Message{
+			errPub := h.pb.Publish(h.upside, &v1.Message{
 				Kind: v1.MessageData,
 				Metadata: map[string]string{
 					"success": "false",
@@ -26,13 +26,16 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 					"token":   h.data["token"],
 				},
 			})
+			if errPub != nil {
+				h.log.Error("failed to publish unmarshal message", log.Error(err))
+			}
 			return err
 		}
 
 		_, err = h.pipe.InWriter.Write(cmd)
 		if err != nil {
 			h.log.Error("failed to write debug command", log.Error(err))
-			h.pb.Publish(h.upside, &v1.Message{
+			errPub := h.pb.Publish(h.upside, &v1.Message{
 				Kind: v1.MessageData,
 				Metadata: map[string]string{
 					"success": "false",
@@ -40,6 +43,9 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 					"token":   h.data["token"],
 				},
 			})
+			if errPub != nil {
+				h.log.Error("failed to publish debug message", log.Error(err))
+			}
 			return err
 		}
 	default:
