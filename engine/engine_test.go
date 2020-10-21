@@ -526,3 +526,59 @@ func TestInjectCert(t *testing.T) {
 	assert.EqualValues(t, expSec, secs)
 	eng.Close()
 }
+
+func TestEngineImpl_recycleIfNeed(t *testing.T) {
+	// good case
+	e := &engineImpl{}
+	n := &specv1.Node{}
+	n.Report = map[string]interface{}{
+		"nodestats": map[string]interface{}{
+			"diskPressure": false,
+		},
+	}
+	err := e.recycleIfNeed(n)
+	assert.NoError(t, err)
+
+	// bad case 0
+	e = &engineImpl{}
+	n = &specv1.Node{}
+	err = e.recycleIfNeed(n)
+	assert.Error(t, err, "node stats not exist in report data")
+
+	// bad case 1
+	e = &engineImpl{}
+	n = &specv1.Node{}
+	n.Report = map[string]interface{}{
+		"nodestats": "error",
+	}
+	err = e.recycleIfNeed(n)
+	assert.Error(t, err)
+}
+
+func TestEngineImpl_applyApps(t *testing.T) {
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockSync := mock.NewMockSync(mockCtl)
+	eng := engineImpl{
+		cfg: config.Config{},
+		syn: mockSync,
+		log: log.With(log.Any("engine", "test")),
+	}
+
+	ns := "default"
+	infos := map[string]specv1.AppInfo{
+		"test": {
+			Name:    "core",
+			Version: "1",
+		},
+	}
+	stats := map[string]specv1.AppStats{
+		"core": {},
+	}
+
+	mockSync.EXPECT().SyncResource(gomock.Any()).Return(os.ErrInvalid).Times(1)
+
+	eng.applyApps(ns, infos, stats)
+
+	assert.Equal(t, stats["core"].Cause, os.ErrInvalid.Error())
+}

@@ -22,6 +22,8 @@ const (
 	MsgTimeout = time.Minute * 10
 )
 
+//go:generate mockgen -destination=../mock/chain.go -package=mock -source=chain.go Chain
+
 type Chain interface {
 	Start() error
 	io.Closer

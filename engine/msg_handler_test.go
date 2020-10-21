@@ -1,0 +1,155 @@
+package engine
+
+import (
+	"fmt"
+	gosync "sync"
+	"testing"
+
+	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl-go/v2/pubsub"
+	specV1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/mock"
+	"github.com/baetyl/baetyl/v2/sync"
+)
+
+const (
+	errMsgConnect      = "failed to connect"
+	errMsgExec         = "failed to exec"
+	errMsgConnectChain = "failed to find connect chain"
+	errMsgPublishChain = "failed to publish downside chain"
+	errMsgTimeout      = "engine timeout"
+	errDisconnect      = "disconnect"
+)
+
+var (
+	engMsgWG = gosync.WaitGroup{}
+)
+
+func TestHandlerDownside(t *testing.T) {
+	// prepare struct
+	cfg := config.Config{}
+
+	pb, err := pubsub.NewPubsub(1)
+	assert.NoError(t, err)
+
+	plugin.RegisterFactory("defaultpubsub", func() (plugin.Plugin, error) {
+		return pb, nil
+	})
+
+	ctl := gomock.NewController(t)
+	ami := mock.NewMockAMI(ctl)
+
+	e := &engineImpl{
+		cfg:    cfg,
+		pb:     pb,
+		ami:    ami,
+		chains: gosync.Map{},
+		log:    log.With(),
+	}
+
+	meta := map[string]string{
+		"namespace": "default",
+		"name":      "core",
+		"container": "xxx",
+		"token":     "0123456789",
+		"cmd":       "connect",
+	}
+
+	h := &handlerDownside{engineImpl: e}
+
+	// test
+	ch, err := e.pb.Subscribe(sync.TopicUpside)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	pro := pubsub.NewProcessor(ch, 0, &msgUpside{t: t, pb: e.pb})
+	pro.Start()
+
+	// msg 0
+	msg0 := &specV1.Message{
+		Kind:     specV1.MessageCMD,
+		Metadata: meta,
+	}
+	engMsgWG.Add(1)
+	err = h.OnMessage(msg0)
+	assert.Error(t, err)
+
+	// msg 1
+	msg1 := &specV1.Message{
+		Kind:     specV1.MessageData,
+		Metadata: meta,
+	}
+	engMsgWG.Add(1)
+	err = h.OnMessage(msg1)
+	assert.NoError(t, err)
+
+	// cmd store msg 2
+	key := fmt.Sprintf("%s_%s_%s_%s", meta["namespace"], meta["name"], meta["container"], meta["token"])
+	mockChain := mock.NewMockChain(ctl)
+	h.chains.Store(key, mockChain)
+	mockChain.EXPECT().Close().Return(nil).Times(1)
+
+	h.cfg.Plugin.Pubsub = "defaultpubsub"
+	msg2 := &specV1.Message{
+		Kind:     specV1.MessageCMD,
+		Metadata: meta,
+	}
+
+	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	engMsgWG.Add(1)
+	err = h.OnMessage(msg2)
+	assert.NoError(t, err)
+
+	// msg 3
+	msg3 := &specV1.Message{
+		Kind:     specV1.MessageData,
+		Metadata: meta,
+	}
+	err = h.OnMessage(msg3)
+	assert.NoError(t, err)
+
+	// msg 4
+	msg4 := &specV1.Message{
+		Kind:     specV1.MessageKeep,
+		Metadata: meta,
+	}
+	err = h.OnMessage(msg4)
+	assert.NoError(t, err)
+
+	// msg 5
+	engMsgWG.Add(1)
+	err = h.OnTimeout()
+	assert.NoError(t, err)
+
+	engMsgWG.Wait()
+}
+
+type msgUpside struct {
+	t  *testing.T
+	pb pubsub.Pubsub
+}
+
+func (h *msgUpside) OnMessage(msg interface{}) error {
+	m, ok := msg.(*specV1.Message)
+	assert.True(h.t, ok)
+	assert.Equal(h.t, "false", m.Metadata["success"])
+
+	fmt.Println(m.Metadata["msg"])
+	switch m.Metadata["msg"] {
+	case errMsgConnect, errMsgConnectChain, errMsgTimeout, errDisconnect:
+		engMsgWG.Done()
+	default:
+		assert.Fail(h.t, "unexpected message")
+	}
+	return nil
+}
+
+func (h *msgUpside) OnTimeout() error {
+	return nil
+}
