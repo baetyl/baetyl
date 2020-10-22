@@ -179,6 +179,7 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 		osvc, err := svcInterface.Get(svc.Name, metav1.GetOptions{})
 		if osvc != nil && err == nil {
 			svc.ResourceVersion = osvc.ResourceVersion
+			svc.Spec.ClusterIP = osvc.Spec.ClusterIP
 			if _, err := svcInterface.Update(svc); err != nil {
 				return errors.Trace(err)
 			}
