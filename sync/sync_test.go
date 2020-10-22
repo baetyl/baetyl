@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/log"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
+	"github.com/baetyl/baetyl-go/v2/pubsub"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/golang/mock/gomock"
@@ -139,4 +141,78 @@ func TestReportAsync(t *testing.T) {
 	no, _ := syn.nod.Get()
 	assert.Equal(t, desire, no.Desire)
 	syn.Close()
+}
+
+func TestSync_dispatch(t *testing.T) {
+	pb, err := pubsub.NewPubsub(1)
+	assert.NoError(t, err)
+
+	s := &sync{
+		log: log.L().With(),
+		pb:  pb,
+	}
+
+	msg := &specv1.Message{
+		Kind: specv1.MessageCMD,
+	}
+
+	err = s.dispatch(msg)
+	assert.NoError(t, err)
+}
+
+func TestNewSync(t *testing.T) {
+	cfg := config.Config{}
+
+	// bad case 0
+	_, err := NewSync(cfg, nil, nil)
+	assert.Error(t, err)
+
+	// bad case 1
+	cfg.Plugin.Link = "link"
+	v2plugin.RegisterFactory("link", func() (v2plugin.Plugin, error) {
+		return &mockLink{}, nil
+	})
+	_, err = NewSync(cfg, nil, nil)
+	assert.Error(t, err)
+
+	// good case
+	cfg.Plugin.Pubsub = "pubsub"
+	v2plugin.RegisterFactory("pubsub", func() (v2plugin.Plugin, error) {
+		res, err := pubsub.NewPubsub(1)
+		assert.NoError(t, err)
+		return res, nil
+	})
+
+	_, err = NewSync(cfg, nil, nil)
+	assert.NoError(t, err)
+
+	// bad case 2
+	cfg.Sync.Download.Cert = "NotExist"
+	cfg.Sync.Download.CA = "NotExist"
+	cfg.Sync.Download.Key = "NotExist"
+
+	_, err = NewSync(cfg, nil, nil)
+	assert.Error(t, err)
+}
+
+type mockLink struct{}
+
+func (lk *mockLink) Close() error {
+	return nil
+}
+
+func (lk *mockLink) Receive() (<-chan *specv1.Message, <-chan error) {
+	return nil, nil
+}
+
+func (lk *mockLink) Request(msg *specv1.Message) (*specv1.Message, error) {
+	return nil, nil
+}
+
+func (lk *mockLink) Send(msg *specv1.Message) error {
+	return nil
+}
+
+func (lk *mockLink) IsAsyncSupported() bool {
+	return false
 }
