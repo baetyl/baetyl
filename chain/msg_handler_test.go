@@ -38,7 +38,7 @@ func TestHandler(t *testing.T) {
 			"container": "function",
 			"token":     token,
 		},
-		upside: "upside",
+		upside: "up",
 		pb:     pb,
 		pipe:   pipe,
 		log:    log.L().With(log.Any("chain", "test")),

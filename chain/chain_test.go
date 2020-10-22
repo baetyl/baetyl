@@ -77,6 +77,7 @@ func TestChainMsg(t *testing.T) {
 
 	cha, ok := c.(*chain)
 	assert.True(t, ok)
+	cha.upside = "chainUP"
 
 	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(os.ErrInvalid).Times(1)
 	go func() {
