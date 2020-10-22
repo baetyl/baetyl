@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/golangplus/testing/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMsgHandler(t *testing.T) {
