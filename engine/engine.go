@@ -58,7 +58,7 @@ type engineImpl struct {
 	log             *log.Logger
 	sec             security.Security
 	pb              plugin.Pubsub
-	downsideChan    chan interface{}
+	downsideChan    <-chan interface{}
 	downsideProcess pubsub.Processor
 	chains          gosync.Map
 	tomb            utils.Tomb

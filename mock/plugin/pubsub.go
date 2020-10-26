@@ -47,10 +47,10 @@ func (mr *MockPubsubMockRecorder) Publish(topic, msg interface{}) *gomock.Call {
 }
 
 // Subscribe mocks base method
-func (m *MockPubsub) Subscribe(topic string) (chan interface{}, error) {
+func (m *MockPubsub) Subscribe(topic string) (<-chan interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Subscribe", topic)
-	ret0, _ := ret[0].(chan interface{})
+	ret0, _ := ret[0].(<-chan interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -62,7 +62,7 @@ func (mr *MockPubsubMockRecorder) Subscribe(topic interface{}) *gomock.Call {
 }
 
 // Unsubscribe mocks base method
-func (m *MockPubsub) Unsubscribe(topic string, ch chan interface{}) error {
+func (m *MockPubsub) Unsubscribe(topic string, ch <-chan interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Unsubscribe", topic, ch)
 	ret0, _ := ret[0].(error)
