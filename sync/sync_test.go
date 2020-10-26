@@ -103,7 +103,7 @@ func TestReportAsync(t *testing.T) {
 	link := plugin.NewMockLink(mockCtl)
 	pb := plugin.NewMockPubsub(mockCtl)
 
-	ch := make(chan interface{})
+	ch := make(<-chan interface{})
 	pb.EXPECT().Subscribe("upside").Return(ch, nil).Times(1)
 	pb.EXPECT().Unsubscribe("upside", ch).Return(nil).Times(1)
 

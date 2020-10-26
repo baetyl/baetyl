@@ -35,7 +35,7 @@ type chain struct {
 	upside    string
 	downside  string
 	pb        plugin.Pubsub
-	subChan   chan interface{}
+	subChan   <-chan interface{}
 	processor pubsub.Processor
 	pipe      ami.Pipe
 	tomb      utils.Tomb
