@@ -125,20 +125,30 @@ func TestHandlerDownside(t *testing.T) {
 
 	// msg 6 disconnect not exist
 	msg6 := &specV1.Message{
-		Kind:     specV1.MessageCMD,
-		Metadata: meta,
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"namespace": "default",
+			"name":      "core",
+			"container": "xxx",
+			"token":     "0123456789",
+			"cmd":       "disconnect",
+		},
 	}
-	msg6.Metadata["cmd"] = "disconnect"
 	h.chains.Delete(key)
 	err = h.OnMessage(msg6)
 	assert.NoError(t, err)
 
 	// msg 7 disconnect close error
 	msg7 := &specV1.Message{
-		Kind:     specV1.MessageCMD,
-		Metadata: meta,
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"namespace": "default",
+			"name":      "core",
+			"container": "xxx",
+			"token":     "0123456789",
+			"cmd":       "disconnect",
+		},
 	}
-	msg7.Metadata["cmd"] = "disconnect"
 	h.chains.Store(key, mockChain)
 	mockChain.EXPECT().Close().Return(os.ErrInvalid).Times(1)
 	engMsgWG.Add(1)
