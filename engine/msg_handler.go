@@ -3,11 +3,21 @@ package engine
 import (
 	"fmt"
 
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
 	"github.com/baetyl/baetyl/v2/chain"
 	"github.com/baetyl/baetyl/v2/sync"
+)
+
+const (
+	ErrCreateChain          = "failed to create new chain"
+	ErrCloseChain           = "failed to close connected chain"
+	ErrGetChain             = "failed to get connected chain"
+	ErrPublishDownsideChain = "failed to publish downside chain"
+	ErrExecData             = "failed to exec"
+	ErrTimeout              = "engine timeout"
 )
 
 type handlerDownside struct {
@@ -24,70 +34,30 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 
 	switch m.Kind {
 	case v1.MessageCMD:
-		if m.Metadata["cmd"] == "connect" {
-			old, ok := h.chains.Load(key)
-			if ok {
-				old.(chain.Chain).Close()
-				h.chains.Delete(key)
-				h.log.Debug("close chain", log.Any("chain name", key))
-			}
-			h.log.Debug("new chain", log.Any("chain name", key))
-			c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
+		switch m.Metadata["cmd"] {
+		case "connect":
+			err := h.connect(key, m)
 			if err != nil {
-				errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
-					Kind: v1.MessageCMD,
-					Metadata: map[string]string{
-						"success": "false",
-						"msg":     "failed to connect",
-						"token":   m.Metadata["token"],
-					},
-				})
-				if errPublish != nil {
-					h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
-				}
 				return err
 			}
-			err = c.Start()
+		case "disconnect":
+			err := h.disconnect(key, m)
 			if err != nil {
-				errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
-					Kind: v1.MessageCMD,
-					Metadata: map[string]string{
-						"success": "false",
-						"msg":     "failed to exec",
-						"token":   m.Metadata["token"],
-					},
-				})
-				if errPublish != nil {
-					h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
-				}
 				return err
 			}
-			h.chains.Store(key, c)
+		default:
+			h.log.Debug("unknown command", log.Any("cmd", m.Metadata["cmd"]))
 		}
 	case v1.MessageData:
 		if _, ok := h.chains.Load(key); !ok {
-			return h.pb.Publish(sync.TopicUpside, &v1.Message{
-				Kind: v1.MessageData,
-				Metadata: map[string]string{
-					"success": "false",
-					"msg":     "failed to find connect chain",
-					"token":   m.Metadata["token"],
-				},
-			})
+			h.publishFailedMsg(key, ErrGetChain, m)
+			return errors.New(ErrGetChain + key)
 		}
 		err := h.pb.Publish(downside, m)
 		if err != nil {
-			errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
-				Kind: v1.MessageData,
-				Metadata: map[string]string{
-					"success": "false",
-					"msg":     "failed to publish downside chain",
-					"token":   m.Metadata["token"],
-				},
-			})
-			if errPublish != nil {
-				h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
-			}
+			h.log.Error(ErrPublishDownsideChain, log.Error(errors.Trace(err)))
+			h.publishFailedMsg(key, ErrPublishDownsideChain, m)
+			return err
 		}
 	default:
 		h.log.Warn("remote debug message kind not support", log.Any("msg", m))
@@ -100,7 +70,63 @@ func (h *handlerDownside) OnTimeout() error {
 		Kind: v1.MessageCMD,
 		Metadata: map[string]string{
 			"success": "false",
-			"msg":     "engine timeout",
+			"msg":     ErrTimeout,
 		},
 	})
+}
+
+func (h *handlerDownside) connect(key string, m *v1.Message) error {
+	// close old chain if exist
+	old, ok := h.chains.Load(key)
+	if ok {
+		err := old.(chain.Chain).Close()
+		if err != nil {
+			h.log.Warn("failed to close old chain", log.Any("chain", key))
+		}
+		h.chains.Delete(key)
+		h.log.Debug("close chain", log.Any("chain name", key))
+	}
+	h.log.Debug("new chain", log.Any("chain name", key))
+
+	// create new chain
+	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
+	if err != nil {
+		h.publishFailedMsg(key, ErrCreateChain, m)
+		return err
+	}
+	err = c.Start()
+	if err != nil {
+		h.publishFailedMsg(key, ErrExecData, m)
+		return err
+	}
+	h.chains.Store(key, c)
+	return nil
+}
+
+func (h *handlerDownside) disconnect(key string, m *v1.Message) error {
+	c, ok := h.chains.Load(key)
+	if !ok {
+		return nil
+	}
+	err := c.(chain.Chain).Close()
+	if err != nil {
+		h.publishFailedMsg(key, ErrCloseChain, m)
+		return err
+	}
+	h.chains.Delete(key)
+	return nil
+}
+
+func (h *handlerDownside) publishFailedMsg(key, reason string, m *v1.Message) {
+	errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
+		Kind: v1.MessageCMD,
+		Metadata: map[string]string{
+			"success": "false",
+			"msg":     reason,
+			"token":   m.Metadata["token"],
+		},
+	})
+	if errPublish != nil {
+		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
+	}
 }

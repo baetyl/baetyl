@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"os"
 	gosync "sync"
 	"testing"
 
@@ -18,12 +19,7 @@ import (
 )
 
 const (
-	errMsgConnect      = "failed to connect"
-	errMsgExec         = "failed to exec"
-	errMsgConnectChain = "failed to find connect chain"
-	errMsgPublishChain = "failed to publish downside chain"
-	errMsgTimeout      = "engine timeout"
-	errDisconnect      = "disconnect"
+	errDisconnect = "disconnect"
 )
 
 var (
@@ -86,7 +82,7 @@ func TestHandlerDownside(t *testing.T) {
 	}
 	engMsgWG.Add(1)
 	err = h.OnMessage(msg1)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 
 	// cmd store msg 2
 	key := fmt.Sprintf("%s_%s_%s_%s", meta["namespace"], meta["name"], meta["container"], meta["token"])
@@ -127,6 +123,28 @@ func TestHandlerDownside(t *testing.T) {
 	err = h.OnTimeout()
 	assert.NoError(t, err)
 
+	// msg 6 disconnect not exist
+	msg6 := &specV1.Message{
+		Kind:     specV1.MessageCMD,
+		Metadata: meta,
+	}
+	msg6.Metadata["cmd"] = "disconnect"
+	h.chains.Delete(key)
+	err = h.OnMessage(msg6)
+	assert.NoError(t, err)
+
+	// msg 7 disconnect close error
+	msg7 := &specV1.Message{
+		Kind:     specV1.MessageCMD,
+		Metadata: meta,
+	}
+	msg7.Metadata["cmd"] = "disconnect"
+	h.chains.Store(key, mockChain)
+	mockChain.EXPECT().Close().Return(os.ErrInvalid).Times(1)
+	engMsgWG.Add(1)
+	err = h.OnMessage(msg7)
+	assert.Error(t, err, os.ErrInvalid)
+
 	engMsgWG.Wait()
 }
 
@@ -142,7 +160,7 @@ func (h *msgUpside) OnMessage(msg interface{}) error {
 
 	fmt.Println(m.Metadata["msg"])
 	switch m.Metadata["msg"] {
-	case errMsgConnect, errMsgConnectChain, errMsgTimeout, errDisconnect:
+	case ErrCreateChain, ErrGetChain, ErrTimeout, errDisconnect, ErrCloseChain:
 		engMsgWG.Done()
 	default:
 		assert.Fail(h.t, "unexpected message")
