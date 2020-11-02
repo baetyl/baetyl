@@ -82,6 +82,7 @@ func (s *sync) Start() {
 }
 
 func (s *sync) receiving() error {
+	s.log.Debug("subscribe upside")
 	upsideChan, err := s.pb.Subscribe(TopicUpside)
 	if err != nil {
 		s.log.Error("failed to subscribe upside topic", log.Any("topic", TopicUpside), log.Error(err))
@@ -89,6 +90,7 @@ func (s *sync) receiving() error {
 	processor := pubsub.NewProcessor(upsideChan, 0, &handler{link: s.link})
 	processor.Start()
 	defer func() {
+		s.log.Debug("unsubscribe upside")
 		err = s.pb.Unsubscribe(TopicUpside, upsideChan)
 		if err != nil {
 			s.log.Error("failed to unsubscribe upside topic", log.Any("topic", TopicUpside), log.Error(err))
