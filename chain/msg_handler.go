@@ -3,6 +3,8 @@ package chain
 import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+
+	"github.com/baetyl/baetyl/v2/sync"
 )
 
 type chainHandler struct {
@@ -55,12 +57,25 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 }
 
 func (h *chainHandler) OnTimeout() error {
-	return h.pb.Publish(h.upside, &v1.Message{
+	err := h.pb.Publish(h.upside, &v1.Message{
 		Kind: v1.MessageData,
 		Metadata: map[string]string{
 			"success": "false",
 			"msg":     "chain timeout",
 			"token":   h.data["token"],
+		},
+	})
+	if err != nil {
+		h.log.Error("failed to publish timeout message", log.Error(err))
+	}
+	return h.pb.Publish(sync.TopicDownside, &v1.Message{
+		Kind: v1.MessageCMD,
+		Metadata: map[string]string{
+			"namespace": h.data["namespace"],
+			"name":      h.data["name"],
+			"container": h.data["container"],
+			"token":     h.data["token"],
+			"cmd":       "disconnect",
 		},
 	})
 }
