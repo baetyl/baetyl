@@ -199,6 +199,9 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				WorkingDirectory: insDir,
 				Arguments:        []string{"program"},
 			})
+			if err != nil {
+				return errors.Trace(err)
+			}
 			err = svc.Install()
 			if err != nil {
 				svc.Uninstall()
@@ -270,6 +273,12 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 					Name:             genServiceInstanceName(ns, appName, curAppVer, curSvcName, curSvcIns),
 					WorkingDirectory: svcInsFile.Name(),
 				})
+				if err != nil {
+					return errors.Trace(err)
+				}
+				if err = svc.Stop(); err != nil {
+					impl.log.Warn("failed to stop old app", log.Error(err))
+				}
 				if err = svc.Uninstall(); err != nil {
 					impl.log.Warn("failed to uninstall old app", log.Error(err))
 				}
