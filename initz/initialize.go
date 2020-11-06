@@ -60,7 +60,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.sha, err = node.NewNode(init.sto)
+	init.sha, err = node.NewNode(init.sto, nil)
 	if err != nil {
 		init.Close()
 		return nil, errors.Trace(err)
@@ -155,7 +155,7 @@ func (init *Initialize) reportAndDesireCloud() error {
 		return errors.Trace(ErrSysAppCoreMissing)
 	}
 
-	for _, app := range ds.AppInfos(true) {
+	for _, app := range specv1.Desire(ds).AppInfos(true) {
 		if strings.Contains(app.Name, BaetylCore) {
 			n := specv1.Desire{}
 			n.SetAppInfos(true, []specv1.AppInfo{app})

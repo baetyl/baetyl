@@ -10,69 +10,69 @@ import (
 	reflect "reflect"
 )
 
-// MockSync is a mock of Sync interface
+// MockSync is a mock of Sync interface.
 type MockSync struct {
 	ctrl     *gomock.Controller
 	recorder *MockSyncMockRecorder
 }
 
-// MockSyncMockRecorder is the mock recorder for MockSync
+// MockSyncMockRecorder is the mock recorder for MockSync.
 type MockSyncMockRecorder struct {
 	mock *MockSync
 }
 
-// NewMockSync creates a new mock instance
+// NewMockSync creates a new mock instance.
 func NewMockSync(ctrl *gomock.Controller) *MockSync {
 	mock := &MockSync{ctrl: ctrl}
 	mock.recorder = &MockSyncMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSync) EXPECT() *MockSyncMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
+// Start mocks base method.
 func (m *MockSync) Start() {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Start")
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockSyncMockRecorder) Start() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSync)(nil).Start))
 }
 
-// Close mocks base method
+// Close mocks base method.
 func (m *MockSync) Close() {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Close")
 }
 
-// Close indicates an expected call of Close
+// Close indicates an expected call of Close.
 func (mr *MockSyncMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockSync)(nil).Close))
 }
 
-// Report mocks base method
-func (m *MockSync) Report(r v1.Report) (v1.Desire, error) {
+// Report mocks base method.
+func (m *MockSync) Report(r v1.Report) (v1.Delta, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Report", r)
-	ret0, _ := ret[0].(v1.Desire)
+	ret0, _ := ret[0].(v1.Delta)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Report indicates an expected call of Report
+// Report indicates an expected call of Report.
 func (mr *MockSyncMockRecorder) Report(r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Report", reflect.TypeOf((*MockSync)(nil).Report), r)
 }
 
-// SyncResource mocks base method
+// SyncResource mocks base method.
 func (m *MockSync) SyncResource(arg0 v1.AppInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SyncResource", arg0)
@@ -80,13 +80,13 @@ func (m *MockSync) SyncResource(arg0 v1.AppInfo) error {
 	return ret0
 }
 
-// SyncResource indicates an expected call of SyncResource
+// SyncResource indicates an expected call of SyncResource.
 func (mr *MockSyncMockRecorder) SyncResource(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncResource", reflect.TypeOf((*MockSync)(nil).SyncResource), arg0)
 }
 
-// SyncApps mocks base method
+// SyncApps mocks base method.
 func (m *MockSync) SyncApps(infos []v1.AppInfo) (map[string]v1.Application, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SyncApps", infos)
@@ -95,7 +95,7 @@ func (m *MockSync) SyncApps(infos []v1.AppInfo) (map[string]v1.Application, erro
 	return ret0, ret1
 }
 
-// SyncApps indicates an expected call of SyncApps
+// SyncApps indicates an expected call of SyncApps.
 func (mr *MockSyncMockRecorder) SyncApps(infos interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncApps", reflect.TypeOf((*MockSync)(nil).SyncApps), infos)

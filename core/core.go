@@ -24,7 +24,7 @@ import (
 type Core struct {
 	cfg config.Config
 	sto *bh.Store
-	sha *node.Node
+	nod *node.Node
 	eng engine.Engine
 	syn sync.Sync
 	svr *http.Server
@@ -35,7 +35,7 @@ const (
 )
 
 // NewCore creates a new core
-func NewCore(cfg config.Config) (*Core, error) {
+func NewCore(cfg config.Config, ctx context.Context) (*Core, error) {
 	err := extractNodeInfo(cfg)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -45,20 +45,21 @@ func NewCore(cfg config.Config) (*Core, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c.sha, err = node.NewNode(c.sto)
+	c.nod, err = node.NewNode(c.sto, ctx)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c.syn, err = sync.NewSync(cfg, c.sto, c.sha)
+	c.syn, err = sync.NewSync(cfg, c.sto, c.nod)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c.eng, err = engine.NewEngine(cfg, c.sto, c.sha, c.syn)
+	c.eng, err = engine.NewEngine(cfg, c.sto, c.nod, c.syn)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
 
+	c.nod.Start()
 	c.eng.Start()
 	c.syn.Start()
 	c.svr.Start()
@@ -66,6 +67,9 @@ func NewCore(cfg config.Config) (*Core, error) {
 }
 
 func (c *Core) Close() {
+	if c.nod != nil {
+		c.nod.Close()
+	}
 	if c.svr != nil {
 		c.svr.Close()
 	}
@@ -82,8 +86,10 @@ func (c *Core) Close() {
 
 func (c *Core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
-	router.Get("/node/stats", c.sha.GetStats)
+	router.Get("/node/stats", c.nod.GetStats)
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
+	router.Get("/nodetwin", c.nod.GetNodeTwin)
+	router.Put("/nodetwin", c.nod.UpdateNodeTwin)
 	return router.HandleRequest
 }
 

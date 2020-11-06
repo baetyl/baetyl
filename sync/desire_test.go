@@ -150,7 +150,7 @@ func TestSyncResources(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	nod, err := node.NewNode(sto)
+	nod, err := node.NewNode(sto, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
