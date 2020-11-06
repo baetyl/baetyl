@@ -32,7 +32,7 @@ func startCoreService() {
 		}
 		plugin.ConfFile = ctx.ConfFile()
 
-		c, err := core.NewCore(cfg)
+		c, err := core.NewCore(cfg, ctx)
 		if err != nil {
 			return errors.Trace(err)
 		}

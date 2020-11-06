@@ -80,7 +80,7 @@ func TestInitialize_start(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(sto)
+	sha, err := node.NewNode(sto, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 
@@ -103,7 +103,7 @@ func TestInitialize_start(t *testing.T) {
 		Version: "123",
 	}})
 	r := specv1.Report{}
-	syn.EXPECT().Report(r).Return(ds, nil).Times(1)
+	syn.EXPECT().Report(r).Return(specv1.Delta(ds), nil).Times(1)
 	syn.EXPECT().Report(r).Return(nil, os.ErrInvalid).Times(1)
 	eng.EXPECT().ReportAndDesire().Return(nil).Times(1)
 	eng.EXPECT().Collect("baetyl-edge-system", true, nil).Return(specv1.Report{}).Times(2)

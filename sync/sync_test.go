@@ -32,7 +32,7 @@ func TestReportSync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	nod, err := node.NewNode(sto)
+	nod, err := node.NewNode(sto, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
@@ -51,9 +51,9 @@ func TestReportSync(t *testing.T) {
 		log:   log.With(log.Any("test", "sync")),
 	}
 	link.EXPECT().IsAsyncSupported().Return(false)
-	desire := specv1.Desire{"apps": map[string]interface{}{"app1": "123"}}
+	delta := specv1.Delta{"apps": map[string]interface{}{"app1": "123"}}
 
-	msg := &specv1.Message{Content: specv1.LazyValue{Value: desire}, Kind: specv1.MessageReport}
+	msg := &specv1.Message{Content: specv1.LazyValue{Value: delta}, Kind: specv1.MessageReport}
 	dt, err := json.Marshal(msg)
 	assert.NoError(t, err)
 	m := &specv1.Message{}
@@ -64,6 +64,9 @@ func TestReportSync(t *testing.T) {
 	err = syn.reportAndDesire()
 	assert.NoError(t, err)
 	no, _ := syn.nod.Get()
+	var desire specv1.Desire = map[string]interface{}{}
+	desire, err = desire.Patch(delta)
+	assert.NoError(t, err)
 	assert.Equal(t, desire, no.Desire)
 
 	link.EXPECT().IsAsyncSupported().Return(true)
@@ -91,7 +94,7 @@ func TestReportAsync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	nod, err := node.NewNode(sto)
+	nod, err := node.NewNode(sto, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 

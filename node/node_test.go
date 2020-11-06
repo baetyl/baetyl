@@ -29,7 +29,7 @@ func TestNodeShadow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewNode(s)
+	ss, err := NewNode(s, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -137,7 +137,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewNode(s)
+	ss, err := NewNode(s, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -162,7 +162,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
 
-	ss, err = NewNode(s)
+	ss, err = NewNode(s, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
@@ -187,7 +187,7 @@ func TestGetStats(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, s)
 
-	ss, err := NewNode(s)
+	ss, err := NewNode(s, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 

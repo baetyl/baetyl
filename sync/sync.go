@@ -30,7 +30,7 @@ const (
 type Sync interface {
 	Start()
 	Close()
-	Report(r v1.Report) (v1.Desire, error)
+	Report(r v1.Report) (v1.Delta, error)
 	SyncResource(v1.AppInfo) error
 	SyncApps(infos []v1.AppInfo) (map[string]v1.Application, error)
 }
@@ -121,14 +121,25 @@ func (s *sync) receiving() error {
 func (s *sync) dispatch(msg *v1.Message) error {
 	switch msg.Kind {
 	case v1.MessageReport:
-		desire := v1.Desire{}
-		err := msg.Content.Unmarshal(&desire)
+		sd, err := s.nod.Get()
+		if err != nil {
+			return errors.Trace(err)
+		}
+		delta := v1.Delta{}
+		err = msg.Content.Unmarshal(&delta)
 		if err != nil {
 			s.log.Error("receive unrecognized desire data", log.Error(err))
 			return errors.Trace(err)
 		}
-		if len(desire) == 0 {
+		if len(delta) == 0 {
 			return nil
+		}
+		if sd.Desire == nil {
+			sd.Desire = map[string]interface{}{}
+		}
+		desire, err := sd.Desire.Patch(delta)
+		if err != nil {
+			return errors.Trace(err)
 		}
 		_, err = s.nod.Desire(desire)
 		if err != nil {
@@ -161,7 +172,7 @@ func (s *sync) reportAsync(r v1.Report) error {
 	return nil
 }
 
-func (s *sync) Report(r v1.Report) (v1.Desire, error) {
+func (s *sync) Report(r v1.Report) (v1.Delta, error) {
 	msg := &v1.Message{
 		Kind:    v1.MessageReport,
 		Content: v1.LazyValue{Value: r},
@@ -171,12 +182,12 @@ func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 		return nil, errors.Trace(err)
 	}
 	s.log.Debug("sync reports cloud shadow", log.Any("report", msg))
-	desire := v1.Desire{}
-	err = res.Content.Unmarshal(&desire)
+	var delta v1.Delta
+	err = res.Content.Unmarshal(&delta)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return desire, nil
+	return delta, nil
 }
 
 func (s *sync) reporting() error {
@@ -215,12 +226,19 @@ func (s *sync) reportAndDesire() error {
 			return errors.Trace(err)
 		}
 	} else {
-		desire, err := s.Report(sd.Report)
+		delta, err := s.Report(sd.Report)
 		if err != nil {
 			return errors.Trace(err)
 		}
-		if len(desire) == 0 {
+		if len(delta) == 0 {
 			return nil
+		}
+		if sd.Desire == nil {
+			sd.Desire = map[string]interface{}{}
+		}
+		desire, err := sd.Desire.Patch(delta)
+		if err != nil {
+			return errors.Trace(err)
 		}
 		_, err = s.nod.Desire(desire)
 		if err != nil {
