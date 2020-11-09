@@ -21,9 +21,8 @@ import (
 )
 
 const OfflineDuration = 40 * time.Second
-const CheckNodeTwinInterval = 40 * time.Second
-const NodeTwinNotifyTopic = "$baetyl/nodetwin"
-const KeyNodeTwin = "nodeTwin"
+const NodePropsNotifyTopic = "$baetyl/node/props"
+const KeyNodeProps = "nodeProps"
 
 // Node node
 type Node struct {
@@ -35,7 +34,7 @@ type Node struct {
 }
 
 // NewNode create a node with shadow
-func NewNode(store *bh.Store, ctx context.Context) (*Node, error) {
+func NewNode(store *bh.Store) (*Node, error) {
 	m := &v1.Node{
 		CreationTimestamp: time.Now(),
 		Desire:            v1.Desire{},
@@ -65,13 +64,6 @@ func NewNode(store *bh.Store, ctx context.Context) (*Node, error) {
 	_, err = nod.Report(m.Report)
 	if err != nil {
 		return nil, errors.Trace(err)
-	}
-	if ctx != nil {
-		// TODO support qos equal 1
-		nod.mqtt, err = ctx.NewSystemBrokerClient(nil)
-		if err != nil {
-			return nil, err
-		}
 	}
 	return nod, nil
 }
@@ -183,13 +175,13 @@ func (nod *Node) GetStats(ctx *routing.Context) error {
 	return nil
 }
 
-func (nod *Node) GetNodeTwin(ctx *routing.Context) error {
+func (nod *Node) GetNodeProperties(ctx *routing.Context) error {
 	node, err := nod.Get()
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-	desire, ok := node.Desire[KeyNodeTwin]
+	desire, ok := node.Desire[KeyNodeProps]
 	if !ok {
 		http.RespondMsg(ctx, 500, "UnknownError", "node twin not exist")
 		return nil
@@ -203,7 +195,7 @@ func (nod *Node) GetNodeTwin(ctx *routing.Context) error {
 	return nil
 }
 
-func (nod *Node) UpdateNodeTwin(ctx *routing.Context) error {
+func (nod *Node) UpdateNodeProperties(ctx *routing.Context) error {
 	node, err := nod.Get()
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
@@ -216,7 +208,7 @@ func (nod *Node) UpdateNodeTwin(ctx *routing.Context) error {
 		return nil
 	}
 	var oldReport v1.Report
-	val := node.Report[KeyNodeTwin]
+	val := node.Report[KeyNodeProps]
 	if val == nil {
 		val = map[string]interface{}{}
 	}
@@ -230,53 +222,10 @@ func (nod *Node) UpdateNodeTwin(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-	node.Report[KeyNodeTwin] = map[string]interface{}(newReport)
+	node.Report[KeyNodeProps] = map[string]interface{}(newReport)
 	if _, err = nod.Report(node.Report); err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
-	}
-	return nil
-}
-
-func (nod *Node) start() error {
-	if nod.mqtt == nil {
-		nod.log.Info("mqtt client is nil and won't check node twin")
-		return nil
-	}
-	nod.log.Info("node starts to check node twin")
-	defer nod.log.Info("node stop check node twin")
-
-	t := time.NewTicker(CheckNodeTwinInterval)
-	defer t.Stop()
-	for {
-		select {
-		case <-t.C:
-			err := nod.checkNodeTwin()
-			if err != nil {
-				nod.log.Error("failed to check node twin", log.Error(err))
-			} else {
-				nod.log.Debug("check node twin")
-			}
-		case <-nod.tomb.Dying():
-			return nil
-		}
-	}
-}
-
-func (nod *Node) Start() {
-	if nod.mqtt != nil {
-		nod.mqtt.Start(nil)
-	}
-	nod.tomb.Go(nod.start)
-}
-
-func (nod *Node) Close() error {
-	nod.tomb.Kill(nil)
-	if err := nod.tomb.Wait(); err != nil {
-		return err
-	}
-	if nod.mqtt != nil {
-		return nod.mqtt.Close()
 	}
 	return nil
 }
@@ -288,7 +237,7 @@ func (nod *Node) checkNodeTwin() error {
 	}
 	var report v1.Report
 	var desire v1.Desire
-	val, ok := node.Report[KeyNodeTwin]
+	val, ok := node.Report[KeyNodeProps]
 	if ok {
 		report, ok = val.(map[string]interface{})
 		if !ok {
@@ -297,7 +246,7 @@ func (nod *Node) checkNodeTwin() error {
 	} else {
 		report = map[string]interface{}{}
 	}
-	val, ok = node.Desire[KeyNodeTwin]
+	val, ok = node.Desire[KeyNodeProps]
 	if ok {
 		desire, ok = val.(map[string]interface{})
 		if !ok {
@@ -319,7 +268,7 @@ func (nod *Node) checkNodeTwin() error {
 		return err
 	}
 	pkt := packet.NewPublish()
-	pkt.Message.Topic = NodeTwinNotifyTopic
+	pkt.Message.Topic = NodePropsNotifyTopic
 	pkt.Message.Payload = pld
 	err = nod.mqtt.Send(pkt)
 	if err != nil {
