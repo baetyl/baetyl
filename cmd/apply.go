@@ -79,7 +79,7 @@ func apply() {
 
 	// download data
 	ops := http.NewClientOptions()
-	ops.Timeout = 10 * time.Minute
+	ops.Timeout = 30 * time.Minute
 	if skipVerify {
 		ops.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
