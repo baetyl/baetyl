@@ -32,7 +32,7 @@ func TestReportSync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	nod, err := node.NewNode(sto, nil)
+	nod, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
@@ -43,11 +43,14 @@ func TestReportSync(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	link := plugin.NewMockLink(mockCtl)
 	assert.NoError(t, err)
+	pb := plugin.NewMockPubsub(mockCtl)
+	pb.EXPECT().Publish(gomock.Any(), gomock.Any()).Return(nil)
 	syn := &sync{
 		link:  link,
 		cfg:   sc,
 		store: sto,
 		nod:   nod,
+		pb:    pb,
 		log:   log.With(log.Any("test", "sync")),
 	}
 	link.EXPECT().IsAsyncSupported().Return(false)
@@ -94,7 +97,7 @@ func TestReportAsync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	nod, err := node.NewNode(sto, nil)
+	nod, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
@@ -109,6 +112,7 @@ func TestReportAsync(t *testing.T) {
 	ch := make(<-chan interface{})
 	pb.EXPECT().Subscribe("upside").Return(ch, nil).Times(1)
 	pb.EXPECT().Unsubscribe("upside", ch).Return(nil).Times(1)
+	pb.EXPECT().Publish(gomock.Any(), gomock.Any()).Return(nil)
 
 	syn := &sync{
 		link:  link,

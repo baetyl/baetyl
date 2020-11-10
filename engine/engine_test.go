@@ -84,7 +84,7 @@ func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	no, err := node.NewNode(sto, nil)
+	no, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, no)
 

@@ -8,7 +8,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl-go/v2/utils"
+	v2utils "github.com/baetyl/baetyl-go/v2/utils"
 	bh "github.com/timshannon/bolthold"
 
 	"github.com/baetyl/baetyl/v2/config"
@@ -16,6 +16,7 @@ import (
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/store"
 	"github.com/baetyl/baetyl/v2/sync"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 var (
@@ -34,13 +35,13 @@ type Initialize struct {
 	eng  engine.Engine
 	syn  sync.Sync
 	log  *log.Logger
-	tomb utils.Tomb
+	tomb v2utils.Tomb
 }
 
 // NewInitialize creates a new core
 func NewInitialize(cfg config.Config) (*Initialize, error) {
 	// to activate if no node cert
-	if !utils.FileExists(cfg.Node.Cert) {
+	if !v2utils.FileExists(cfg.Node.Cert) {
 		active, err := NewActivate(&cfg)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -50,7 +51,11 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		log.L().Info("init activates node success")
 	}
 
-	var err error
+	err := utils.ExtractNodeInfo(cfg.Node)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
 	init := &Initialize{
 		cfg: cfg,
 		log: log.With(log.Any("init", "sync")),
@@ -60,7 +65,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.sha, err = node.NewNode(init.sto, nil)
+	init.sha, err = node.NewNode(init.sto)
 	if err != nil {
 		init.Close()
 		return nil, errors.Trace(err)

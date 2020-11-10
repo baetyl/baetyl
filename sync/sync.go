@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/plugin"
 )
@@ -121,7 +122,7 @@ func (s *sync) receiving() error {
 func (s *sync) dispatch(msg *v1.Message) error {
 	switch msg.Kind {
 	case v1.MessageReport:
-		sd, err := s.nod.Get()
+		shadow, err := s.nod.Get()
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -134,10 +135,10 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if len(delta) == 0 {
 			return nil
 		}
-		if sd.Desire == nil {
-			sd.Desire = map[string]interface{}{}
+		if shadow.Desire == nil {
+			shadow.Desire = map[string]interface{}{}
 		}
-		desire, err := sd.Desire.Patch(delta)
+		desire, err := shadow.Desire.Patch(delta)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -145,6 +146,10 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
+		}
+		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
+		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
+			s.log.Error("failed to publish event", log.Any("delta", delta), log.Error(err))
 		}
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
@@ -216,27 +221,27 @@ func (s *sync) reporting() error {
 }
 
 func (s *sync) reportAndDesire() error {
-	sd, err := s.nod.Get()
+	shadow, err := s.nod.Get()
 	if err != nil {
 		return errors.Trace(err)
 	}
 	if s.link.IsAsyncSupported() {
-		err := s.reportAsync(sd.Report)
+		err := s.reportAsync(shadow.Report)
 		if err != nil {
 			return errors.Trace(err)
 		}
 	} else {
-		delta, err := s.Report(sd.Report)
+		delta, err := s.Report(shadow.Report)
 		if err != nil {
 			return errors.Trace(err)
 		}
 		if len(delta) == 0 {
 			return nil
 		}
-		if sd.Desire == nil {
-			sd.Desire = map[string]interface{}{}
+		if shadow.Desire == nil {
+			shadow.Desire = map[string]interface{}{}
 		}
-		desire, err := sd.Desire.Patch(delta)
+		desire, err := shadow.Desire.Patch(delta)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -244,6 +249,10 @@ func (s *sync) reportAndDesire() error {
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
+		}
+		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
+		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
+			s.log.Error("failed to publish event", log.Any("delta", delta), log.Error(err))
 		}
 	}
 	return nil
