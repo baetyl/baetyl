@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -295,8 +296,9 @@ func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) *core
 		return nil
 	}
 	var ports []corev1.ServicePort
-	for _, p := range svc.Ports {
+	for i, p := range svc.Ports {
 		port := corev1.ServicePort{
+			Name:       fmt.Sprintf("%s-%d", svc.Name, i),
 			Port:       p.ContainerPort,
 			TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 		}

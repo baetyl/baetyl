@@ -51,28 +51,28 @@ func NewNode(store *bh.Store) (*Node, error) {
 			"appstats":  nil,
 		},
 	}
-	nod := &Node{
+	n := &Node{
 		id:    []byte("baetyl-edge-node"),
 		store: store,
 		log:   log.With(log.Any("core", "node")),
 	}
-	err := nod.insert(m)
+	err := n.insert(m)
 	if err != nil && errors.Cause(err) != bh.ErrKeyExists {
 		return nil, errors.Trace(err)
 	}
 	// report some core info
-	_, err = nod.Report(m.Report)
+	_, err = n.Report(m.Report)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return nod, nil
+	return n, nil
 }
 
 // Get returns node model
-func (nod *Node) Get() (m *v1.Node, err error) {
-	err = nod.store.Bolt().View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(nod.id)
-		prev := b.Get(nod.id)
+func (n *Node) Get() (m *v1.Node, err error) {
+	err = n.store.Bolt().View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(n.id)
+		prev := b.Get(n.id)
 		if len(prev) == 0 {
 			return errors.Trace(bh.ErrNotFound)
 		}
@@ -83,10 +83,10 @@ func (nod *Node) Get() (m *v1.Node, err error) {
 }
 
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (nod *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
-	err = nod.store.Bolt().Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(nod.id)
-		prev := b.Get(nod.id)
+func (n *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
+	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(n.id)
+		prev := bucket.Get(n.id)
 		if len(prev) == 0 {
 			return errors.Trace(bh.ErrNotFound)
 		}
@@ -107,7 +107,7 @@ func (nod *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		err = b.Put(nod.id, curr)
+		err = bucket.Put(n.id, curr)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -118,10 +118,10 @@ func (nod *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 }
 
 // Report update shadow reported data, then return the delta of desired and reported data
-func (nod *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
-	err = nod.store.Bolt().Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(nod.id)
-		prev := b.Get(nod.id)
+func (n *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
+	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(n.id)
+		prev := bucket.Get(n.id)
 		if len(prev) == 0 {
 			return errors.Trace(bh.ErrNotFound)
 		}
@@ -142,7 +142,7 @@ func (nod *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		err = b.Put(nod.id, curr)
+		err = bucket.Put(n.id, curr)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -154,8 +154,8 @@ func (nod *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 
 // GetStatus get status
 // TODO: add an error handling middleware like baetyl-cloud @chensheng
-func (nod *Node) GetStats(ctx *routing.Context) error {
-	node, err := nod.Get()
+func (n *Node) GetStats(ctx *routing.Context) error {
+	node, err := n.Get()
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
@@ -175,8 +175,8 @@ func (nod *Node) GetStats(ctx *routing.Context) error {
 	return nil
 }
 
-func (nod *Node) GetNodeProperties(ctx *routing.Context) error {
-	node, err := nod.Get()
+func (n *Node) GetNodeProperties(ctx *routing.Context) error {
+	node, err := n.Get()
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
@@ -195,8 +195,8 @@ func (nod *Node) GetNodeProperties(ctx *routing.Context) error {
 	return nil
 }
 
-func (nod *Node) UpdateNodeProperties(ctx *routing.Context) error {
-	node, err := nod.Get()
+func (n *Node) UpdateNodeProperties(ctx *routing.Context) error {
+	node, err := n.Get()
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
@@ -207,12 +207,18 @@ func (nod *Node) UpdateNodeProperties(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-	var oldReport v1.Report
-	val := node.Report[KeyNodeProps]
-	if val == nil {
-		val = map[string]interface{}{}
+	for _, v := range delta {
+		if _, ok := v.(string); !ok {
+			http.RespondMsg(ctx, 500, "UnknownError", "value is not string")
+			return nil
+		}
 	}
-	oldReport, ok := val.(map[string]interface{})
+	var oldReport v1.Report
+	reportVal := node.Report[KeyNodeProps]
+	if reportVal == nil {
+		reportVal = map[string]interface{}{}
+	}
+	oldReport, ok := reportVal.(map[string]interface{})
 	if !ok {
 		http.RespondMsg(ctx, 500, "UnknownError", "old node twin is invalid")
 		return nil
@@ -223,15 +229,15 @@ func (nod *Node) UpdateNodeProperties(ctx *routing.Context) error {
 		return nil
 	}
 	node.Report[KeyNodeProps] = map[string]interface{}(newReport)
-	if _, err = nod.Report(node.Report); err != nil {
+	if _, err = n.Report(node.Report); err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
 	return nil
 }
 
-func (nod *Node) checkNodeTwin() error {
-	node, err := nod.Get()
+func (n *Node) checkNodeTwin() error {
+	node, err := n.Get()
 	if err != nil {
 		return err
 	}
@@ -270,7 +276,7 @@ func (nod *Node) checkNodeTwin() error {
 	pkt := packet.NewPublish()
 	pkt.Message.Topic = NodePropsNotifyTopic
 	pkt.Message.Payload = pld
-	err = nod.mqtt.Send(pkt)
+	err = n.mqtt.Send(pkt)
 	if err != nil {
 		return err
 	}
@@ -278,13 +284,13 @@ func (nod *Node) checkNodeTwin() error {
 }
 
 // Get insert the whole shadow data
-func (nod *Node) insert(m *v1.Node) error {
-	return nod.store.Bolt().Update(func(tx *bolt.Tx) error {
-		b, err := tx.CreateBucketIfNotExists(nod.id)
+func (n *Node) insert(m *v1.Node) error {
+	return n.store.Bolt().Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists(n.id)
 		if err != nil {
 			return errors.Trace(err)
 		}
-		data := b.Get(nod.id)
+		data := b.Get(n.id)
 		if len(data) != 0 {
 			return errors.Trace(bh.ErrKeyExists)
 		}
@@ -292,6 +298,6 @@ func (nod *Node) insert(m *v1.Node) error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		return errors.Trace(b.Put(nod.id, data))
+		return errors.Trace(b.Put(n.id, data))
 	})
 }

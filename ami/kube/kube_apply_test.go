@@ -65,9 +65,11 @@ func TestPrepareService(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: svcName, Namespace: ns, Labels: map[string]string{AppName: ""}},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{{
+				Name:       "svc-0",
 				Port:       80,
 				TargetPort: intstr.IntOrString{IntVal: 80},
 			}, {
+				Name:       "svc-1",
 				Port:       8080,
 				TargetPort: intstr.IntOrString{IntVal: 8080},
 			}},

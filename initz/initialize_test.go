@@ -80,7 +80,7 @@ func TestInitialize_start(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
 
-	sha, err := node.NewNode(sto, nil)
+	sha, err := node.NewNode(sto)
 	assert.NoError(t, err)
 	assert.NotNil(t, sha)
 

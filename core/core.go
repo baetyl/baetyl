@@ -1,24 +1,20 @@
 package core
 
 import (
-	"crypto/x509"
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
-	"github.com/baetyl/baetyl-go/v2/utils"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
 
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/engine"
+	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/store"
 	"github.com/baetyl/baetyl/v2/sync"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 type Core struct {
@@ -28,15 +24,12 @@ type Core struct {
 	eng engine.Engine
 	syn sync.Sync
 	svr *http.Server
+	evt eventx.EventX
 }
-
-const (
-	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
-)
 
 // NewCore creates a new core
 func NewCore(cfg config.Config, ctx context.Context) (*Core, error) {
-	err := extractNodeInfo(cfg)
+	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -58,10 +51,15 @@ func NewCore(cfg config.Config, ctx context.Context) (*Core, error) {
 		return nil, errors.Trace(err)
 	}
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
+	c.evt, err = eventx.NewEventX(cfg, ctx)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 
 	c.eng.Start()
 	c.syn.Start()
 	c.svr.Start()
+	c.evt.Start()
 	return c, nil
 }
 
@@ -78,6 +76,9 @@ func (c *Core) Close() {
 	if c.syn != nil {
 		c.syn.Close()
 	}
+	if c.evt != nil {
+		c.evt.Close()
+	}
 }
 
 func (c *Core) initRouter() fasthttp.RequestHandler {
@@ -87,26 +88,4 @@ func (c *Core) initRouter() fasthttp.RequestHandler {
 	router.Get("/node/properties", c.nod.GetNodeProperties)
 	router.Put("/node/properties", c.nod.UpdateNodeProperties)
 	return router.HandleRequest
-}
-
-func extractNodeInfo(cfg config.Config) error {
-	tlsConfig, err := utils.NewTLSConfigClient(cfg.Node)
-	if err != nil {
-		return err
-	}
-	if len(tlsConfig.Certificates) == 1 && len(tlsConfig.Certificates[0].Certificate) == 1 {
-		cert, err := x509.ParseCertificate(tlsConfig.Certificates[0].Certificate[0])
-		if err == nil {
-			res := strings.SplitN(cert.Subject.CommonName, ".", 2)
-			if len(res) != 2 || res[0] == "" || res[1] == "" {
-				return fmt.Errorf("failed to parse node name from cert")
-			} else {
-				os.Setenv(context.KeyNodeName, res[1])
-				os.Setenv(EnvKeyNodeNamespace, res[0])
-			}
-		} else {
-			return fmt.Errorf("certificate format error")
-		}
-	}
-	return nil
 }
