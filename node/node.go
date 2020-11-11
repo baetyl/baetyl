@@ -169,15 +169,10 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	desire, ok := node.Desire[KeyNodeProps]
-	if !ok {
-		return nil, errors.Trace(errors.New("node props not exist"))
+	if node.Desire == nil {
+		return nil, nil
 	}
-	res, err := json.Marshal(desire)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	return res, nil
+	return node.Desire[KeyNodeProps], nil
 }
 
 func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
@@ -197,6 +192,9 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 		}
 	}
 	var oldReport v1.Report
+	if node.Report == nil {
+		node.Report = map[string]interface{}{}
+	}
 	reportVal := node.Report[KeyNodeProps]
 	if reportVal == nil {
 		reportVal = map[string]interface{}{}
@@ -213,7 +211,7 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 	if _, err = n.Report(node.Report); err != nil {
 		return nil, errors.Trace(err)
 	}
-	return delta, nil
+	return newReport, nil
 }
 
 // Get insert the whole shadow data

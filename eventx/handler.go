@@ -6,6 +6,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mqtt"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+
+	"github.com/baetyl/baetyl/v2/node"
 )
 
 type handler struct {
@@ -29,7 +31,7 @@ func (h *handler) OnMessage(msg interface{}) error {
 		if len(delta) == 0 {
 			return nil
 		}
-		if props, ok := delta["nodeProps"]; ok && props != nil {
+		if props, ok := delta[node.KeyNodeProps]; ok && props != nil {
 			pld, err := json.Marshal(props)
 			if err != nil {
 				return err
