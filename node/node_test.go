@@ -282,6 +282,129 @@ func TestGetStats(t *testing.T) {
 	assertEqualNodeView(t, nodeView.Report, respNodeView.Report)
 }
 
+func TestGetNodeProperties(t *testing.T) {
+	f, err := ioutil.TempFile("", t.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	fmt.Println("-->tempfile", f.Name())
+	defer os.RemoveAll(f.Name())
+
+	s, err := store.NewBoltHold(f.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, s)
+
+	ss, err := NewNode(s)
+	assert.NoError(t, err)
+	assert.NotNil(t, ss)
+
+	router := routing.New()
+	router.Get("/node/properties", utils.Wrapper(ss.GetNodeProperties))
+	go fasthttp.ListenAndServe(":50021", router.HandleRequest)
+	time.Sleep(100 * time.Millisecond)
+
+	client := &fasthttp.Client{}
+	req := fasthttp.AcquireRequest()
+	resp := fasthttp.AcquireResponse()
+	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50021", "/node/properties")
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+	err = client.Do(req, resp)
+	assert.NoError(t, err)
+	assert.Equal(t, resp.StatusCode(), 200)
+
+	desire := v1.Desire{
+		"nodeProps": map[string]interface{}{
+			"a": "1",
+			"b": "2",
+		},
+	}
+	_, err = ss.Desire(desire)
+	assert.NoError(t, err)
+
+	req2 := fasthttp.AcquireRequest()
+	resp2 := fasthttp.AcquireResponse()
+	req2.SetRequestURI(url)
+	req2.Header.SetMethod("GET")
+	err = client.Do(req2, resp2)
+	assert.NoError(t, err)
+	assert.Equal(t, resp2.StatusCode(), 200)
+	// time unequal
+	var respNodeProps map[string]interface{}
+	json.Unmarshal(resp2.Body(), &respNodeProps)
+
+	assert.Equal(t, http.StatusOK, resp2.StatusCode())
+	assert.Equal(t, desire[KeyNodeProps], respNodeProps)
+}
+
+func TestUpdateNodeProperties(t *testing.T) {
+	f, err := ioutil.TempFile("", t.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, f)
+	fmt.Println("-->tempfile", f.Name())
+	defer os.RemoveAll(f.Name())
+
+	s, err := store.NewBoltHold(f.Name())
+	assert.NoError(t, err)
+	assert.NotNil(t, s)
+
+	ss, err := NewNode(s)
+	assert.NoError(t, err)
+	assert.NotNil(t, ss)
+
+	router := routing.New()
+	router.Put("/node/properties", utils.Wrapper(ss.UpdateNodeProperties))
+	go fasthttp.ListenAndServe(":50022", router.HandleRequest)
+	time.Sleep(100 * time.Millisecond)
+
+	delta := map[string]interface{}{}
+	data, _ := json.Marshal(delta)
+	client := &fasthttp.Client{}
+	req := fasthttp.AcquireRequest()
+	req.SetBody(data)
+	resp := fasthttp.AcquireResponse()
+	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50022", "/node/properties")
+	req.SetRequestURI(url)
+	req.Header.SetMethod("PUT")
+	err = client.Do(req, resp)
+	assert.NoError(t, err)
+	assert.Equal(t, resp.StatusCode(), 200)
+
+	report := v1.Report{
+		KeyNodeProps: map[string]interface{}{
+			"a": "1",
+		},
+	}
+	delta = map[string]interface{}{
+		"a": "2",
+		"b": "3",
+	}
+	expect := map[string]interface{}{
+		"a": "2",
+		"b": "3",
+	}
+	_, err = ss.Report(report)
+	assert.NoError(t, err)
+
+	data, _ = json.Marshal(delta)
+	req2 := fasthttp.AcquireRequest()
+	resp2 := fasthttp.AcquireResponse()
+	req2.SetRequestURI(url)
+	req2.SetBody(data)
+	req2.Header.SetMethod("PUT")
+	err = client.Do(req2, resp2)
+	assert.NoError(t, err)
+	assert.Equal(t, resp2.StatusCode(), 200)
+	// time unequal
+	var respReport map[string]interface{}
+	json.Unmarshal(resp2.Body(), &respReport)
+
+	assert.Equal(t, http.StatusOK, resp2.StatusCode())
+	assert.Equal(t, respReport, expect)
+	shadow, err := ss.Get()
+	assert.NoError(t, err)
+	assert.Equal(t, shadow.Report[KeyNodeProps], expect)
+}
+
 func assertEqualNodeView(t *testing.T, view1 *v1.ReportView, view2 *v1.ReportView) {
 	assert.Equal(t, view1.AppStats, view2.AppStats)
 	assert.Equal(t, view1.Apps, view2.Apps)
