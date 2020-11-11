@@ -7,46 +7,46 @@ package mock
 import (
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	gomock "github.com/golang/mock/gomock"
-	fasthttp_routing "github.com/qiangxue/fasthttp-routing"
+	routing "github.com/qiangxue/fasthttp-routing"
 	reflect "reflect"
 )
 
-// MockEngine is a mock of Engine interface
+// MockEngine is a mock of Engine interface.
 type MockEngine struct {
 	ctrl     *gomock.Controller
 	recorder *MockEngineMockRecorder
 }
 
-// MockEngineMockRecorder is the mock recorder for MockEngine
+// MockEngineMockRecorder is the mock recorder for MockEngine.
 type MockEngineMockRecorder struct {
 	mock *MockEngine
 }
 
-// NewMockEngine creates a new mock instance
+// NewMockEngine creates a new mock instance.
 func NewMockEngine(ctrl *gomock.Controller) *MockEngine {
 	mock := &MockEngine{ctrl: ctrl}
 	mock.recorder = &MockEngineMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockEngine) EXPECT() *MockEngineMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
+// Start mocks base method.
 func (m *MockEngine) Start() {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Start")
 }
 
-// Start indicates an expected call of Start
+// Start indicates an expected call of Start.
 func (mr *MockEngineMockRecorder) Start() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockEngine)(nil).Start))
 }
 
-// ReportAndDesire mocks base method
+// ReportAndDesire mocks base method.
 func (m *MockEngine) ReportAndDesire() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReportAndDesire")
@@ -54,27 +54,27 @@ func (m *MockEngine) ReportAndDesire() error {
 	return ret0
 }
 
-// ReportAndDesire indicates an expected call of ReportAndDesire
+// ReportAndDesire indicates an expected call of ReportAndDesire.
 func (mr *MockEngineMockRecorder) ReportAndDesire() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReportAndDesire", reflect.TypeOf((*MockEngine)(nil).ReportAndDesire))
 }
 
-// GetServiceLog mocks base method
-func (m *MockEngine) GetServiceLog(ctx *fasthttp_routing.Context) error {
+// GetServiceLog mocks base method.
+func (m *MockEngine) GetServiceLog(ctx *routing.Context) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetServiceLog", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// GetServiceLog indicates an expected call of GetServiceLog
+// GetServiceLog indicates an expected call of GetServiceLog.
 func (mr *MockEngineMockRecorder) GetServiceLog(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetServiceLog", reflect.TypeOf((*MockEngine)(nil).GetServiceLog), ctx)
 }
 
-// Collect mocks base method
+// Collect mocks base method.
 func (m *MockEngine) Collect(ns string, isSys bool, desire v1.Desire) v1.Report {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Collect", ns, isSys, desire)
@@ -82,19 +82,19 @@ func (m *MockEngine) Collect(ns string, isSys bool, desire v1.Desire) v1.Report 
 	return ret0
 }
 
-// Collect indicates an expected call of Collect
+// Collect indicates an expected call of Collect.
 func (mr *MockEngineMockRecorder) Collect(ns, isSys, desire interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Collect", reflect.TypeOf((*MockEngine)(nil).Collect), ns, isSys, desire)
 }
 
-// Close mocks base method
+// Close mocks base method.
 func (m *MockEngine) Close() {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "Close")
 }
 
-// Close indicates an expected call of Close
+// Close indicates an expected call of Close.
 func (mr *MockEngineMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockEngine)(nil).Close))

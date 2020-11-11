@@ -5,7 +5,6 @@ go 1.13
 replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-20200910124134-20fdd363fbd5
 
 require (
-	github.com/256dpi/gomqtt v0.14.2
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/baetyl/baetyl-go/v2 v2.0.65
 	github.com/go-ole/go-ole v1.2.4 // indirect

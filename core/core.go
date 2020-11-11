@@ -51,7 +51,7 @@ func NewCore(cfg config.Config, ctx context.Context) (*Core, error) {
 		return nil, errors.Trace(err)
 	}
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
-	c.evt, err = eventx.NewEventX(cfg, ctx)
+	c.evt, err = eventx.NewEventX(ctx, cfg)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -83,9 +83,9 @@ func (c *Core) Close() {
 
 func (c *Core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
-	router.Get("/node/stats", c.nod.GetStats)
+	router.Get("/node/stats", utils.Wrapper(c.nod.GetStats))
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
-	router.Get("/node/properties", c.nod.GetNodeProperties)
-	router.Put("/node/properties", c.nod.UpdateNodeProperties)
+	router.Get("/node/properties", utils.Wrapper(c.nod.GetNodeProperties))
+	router.Put("/node/properties", utils.Wrapper(c.nod.UpdateNodeProperties))
 	return router.HandleRequest
 }
