@@ -2,12 +2,10 @@ package node
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"runtime"
 	"time"
 
-	"github.com/256dpi/gomqtt/packet"
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -21,7 +19,6 @@ import (
 )
 
 const OfflineDuration = 40 * time.Second
-const NodePropsNotifyTopic = "$baetyl/node/props"
 const KeyNodeProps = "nodeProps"
 
 // Node node
@@ -154,63 +151,49 @@ func (n *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 
 // GetStatus get status
 // TODO: add an error handling middleware like baetyl-cloud @chensheng
-func (n *Node) GetStats(ctx *routing.Context) error {
+func (n *Node) GetStats(ctx *routing.Context) (interface{}, error) {
 	node, err := n.Get()
 	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
 	node.Name = os.Getenv(context.KeyNodeName)
 	view, err := node.View(OfflineDuration)
 	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
-	res, err := json.Marshal(view)
-	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
-	}
-	http.Respond(ctx, 200, res)
-	return nil
+	return view, nil
 }
 
-func (n *Node) GetNodeProperties(ctx *routing.Context) error {
+func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	node, err := n.Get()
 	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
 	desire, ok := node.Desire[KeyNodeProps]
 	if !ok {
-		http.RespondMsg(ctx, 500, "UnknownError", "node twin not exist")
-		return nil
+		return nil, errors.Trace(errors.New("node props not exist"))
 	}
 	res, err := json.Marshal(desire)
 	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
-	http.Respond(ctx, 200, res)
-	return nil
+	return res, nil
 }
 
-func (n *Node) UpdateNodeProperties(ctx *routing.Context) error {
+func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 	node, err := n.Get()
 	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
 	var delta v1.Delta
 	err = json.Unmarshal(ctx.Request.Body(), &delta)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
 	for _, v := range delta {
 		if _, ok := v.(string); !ok {
-			http.RespondMsg(ctx, 500, "UnknownError", "value is not string")
-			return nil
+			return nil, errors.Trace(errors.New("value is not string"))
 		}
 	}
 	var oldReport v1.Report
@@ -220,67 +203,17 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) error {
 	}
 	oldReport, ok := reportVal.(map[string]interface{})
 	if !ok {
-		http.RespondMsg(ctx, 500, "UnknownError", "old node twin is invalid")
-		return nil
+		return nil, errors.Trace(errors.New("old node props is invalid"))
 	}
 	newReport, err := oldReport.Patch(delta)
 	if err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
 	node.Report[KeyNodeProps] = map[string]interface{}(newReport)
 	if _, err = n.Report(node.Report); err != nil {
-		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
-		return nil
+		return nil, errors.Trace(err)
 	}
-	return nil
-}
-
-func (n *Node) checkNodeTwin() error {
-	node, err := n.Get()
-	if err != nil {
-		return err
-	}
-	var report v1.Report
-	var desire v1.Desire
-	val, ok := node.Report[KeyNodeProps]
-	if ok {
-		report, ok = val.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid node twin of report")
-		}
-	} else {
-		report = map[string]interface{}{}
-	}
-	val, ok = node.Desire[KeyNodeProps]
-	if ok {
-		desire, ok = val.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("invalid node twin of desire")
-		}
-	} else {
-		desire = map[string]interface{}{}
-	}
-
-	diff, err := desire.DiffWithNil(report)
-	if err != nil {
-		return err
-	}
-	if len(diff) == 0 {
-		return nil
-	}
-	pld, err := json.Marshal(diff)
-	if err != nil {
-		return err
-	}
-	pkt := packet.NewPublish()
-	pkt.Message.Topic = NodePropsNotifyTopic
-	pkt.Message.Payload = pld
-	err = n.mqtt.Send(pkt)
-	if err != nil {
-		return err
-	}
-	return nil
+	return delta, nil
 }
 
 // Get insert the whole shadow data

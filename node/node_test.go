@@ -17,6 +17,7 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/baetyl/baetyl/v2/store"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 func TestNodeShadow(t *testing.T) {
@@ -192,7 +193,7 @@ func TestGetStats(t *testing.T) {
 	assert.NotNil(t, ss)
 
 	router := routing.New()
-	router.Get("/node/stats", ss.GetStats)
+	router.Get("/node/stats", utils.Wrapper(ss.GetStats))
 	go fasthttp.ListenAndServe(":50020", router.HandleRequest)
 	time.Sleep(100 * time.Millisecond)
 
