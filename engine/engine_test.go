@@ -263,9 +263,9 @@ func TestReportAndApply(t *testing.T) {
 	deApp := specv1.Desire{
 		"apps": []specv1.AppInfo{{Name: "app2", Version: "v2"}, {Name: "app3", Version: "v3"}},
 	}
-	_, err := nod.Report(reApp)
+	_, err := nod.Report(reApp, false)
 	assert.NoError(t, err)
-	_, err = nod.Desire(deApp)
+	_, err = nod.Desire(deApp, false)
 	assert.NoError(t, err)
 
 	app1 := specv1.Application{Name: "app1", Version: "v1"}
@@ -289,9 +289,9 @@ func TestReportAndApply(t *testing.T) {
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}},
 	}
 	deApp = specv1.Desire{"apps": nil}
-	_, err = nod.Report(reApp)
+	_, err = nod.Report(reApp, false)
 	assert.NoError(t, err)
-	_, err = nod.Desire(deApp)
+	_, err = nod.Desire(deApp, false)
 	assert.NoError(t, err)
 	err = eng.reportAndApply(false, true, nil)
 	assert.NoError(t, err)

@@ -164,7 +164,7 @@ func (init *Initialize) reportAndDesireCloud() error {
 		if strings.Contains(app.Name, BaetylCore) {
 			n := specv1.Desire{}
 			n.SetAppInfos(true, []specv1.AppInfo{app})
-			_, err = init.sha.Desire(n)
+			_, err = init.sha.Desire(n, false)
 			return errors.Trace(err)
 		}
 	}

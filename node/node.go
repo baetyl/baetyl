@@ -19,8 +19,9 @@ import (
 )
 
 const OfflineDuration = 40 * time.Second
-const KeyNodeProps = "nodeProps"
+const KeyNodeProps = "nodeprops"
 
+// TODO define interface and implement
 // Node node
 type Node struct {
 	tomb  utils.Tomb
@@ -46,6 +47,7 @@ func NewNode(store *bh.Store) (*Node, error) {
 			"apps":      nil,
 			"sysapps":   nil,
 			"appstats":  nil,
+			"nodeprops": nil,
 		},
 	}
 	n := &Node{
@@ -58,7 +60,7 @@ func NewNode(store *bh.Store) (*Node, error) {
 		return nil, errors.Trace(err)
 	}
 	// report some core info
-	_, err = n.Report(m.Report)
+	_, err = n.Report(m.Report, true)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -79,8 +81,9 @@ func (n *Node) Get() (m *v1.Node, err error) {
 	return
 }
 
+// TODO remove override option
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (n *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
+func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Desire, err error) {
 	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(n.id)
 		prev := bucket.Get(n.id)
@@ -92,7 +95,7 @@ func (n *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		if m.Desire == nil {
+		if m.Desire == nil || override {
 			m.Desire = desired
 		} else {
 			err = m.Desire.Merge(desired)
@@ -114,8 +117,9 @@ func (n *Node) Desire(desired v1.Desire) (delta v1.Desire, err error) {
 	return
 }
 
+// TODO remove override option
 // Report update shadow reported data, then return the delta of desired and reported data
-func (n *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
+func (n *Node) Report(reported v1.Report, override bool) (delta v1.Desire, err error) {
 	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(n.id)
 		prev := bucket.Get(n.id)
@@ -127,7 +131,7 @@ func (n *Node) Report(reported v1.Report) (delta v1.Desire, err error) {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		if m.Report == nil {
+		if m.Report == nil || override {
 			m.Report = reported
 		} else {
 			err = m.Report.Merge(reported)
@@ -187,7 +191,7 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 		return nil, errors.Trace(err)
 	}
 	for _, v := range delta {
-		if _, ok := v.(string); !ok {
+		if _, ok := v.(string); v != nil && !ok {
 			return nil, errors.Trace(errors.New("value is not string"))
 		}
 	}
@@ -208,7 +212,7 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 		return nil, errors.Trace(err)
 	}
 	node.Report[KeyNodeProps] = map[string]interface{}(newReport)
-	if _, err = n.Report(node.Report); err != nil {
+	if _, err = n.Report(node.Report, true); err != nil {
 		return nil, errors.Trace(err)
 	}
 	return newReport, nil

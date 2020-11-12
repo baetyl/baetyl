@@ -142,7 +142,7 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		_, err = s.nod.Desire(desire)
+		_, err = s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
@@ -245,7 +245,7 @@ func (s *sync) reportAndDesire() error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		_, err = s.nod.Desire(desire)
+		_, err = s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)

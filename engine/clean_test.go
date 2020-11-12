@@ -68,7 +68,7 @@ func TestRecycle(t *testing.T) {
 	r := specv1.Report{}
 	info := specv1.AppInfo{Name: app.Name, Version: app.Version}
 	r.SetAppInfos(false, []specv1.AppInfo{info})
-	_, err = nod.Report(r)
+	_, err = nod.Report(r, false)
 	assert.NoError(t, err)
 
 	var cfg config.Config
