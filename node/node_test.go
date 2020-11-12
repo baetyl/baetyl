@@ -53,7 +53,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  "{}",
 			reportDelta:  "{}",
 			desireStored: "{}",
-			reportStored: `{"apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null}`,
+			reportStored: `{"apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
 		},
 		{
 			name:         "2",
@@ -62,7 +62,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  `{"name": "module", "version": "45"}`,
 			reportDelta:  `{"version": "45"}`,
 			desireStored: `{"name": "module", "version": "45"}`,
-			reportStored: `{"name": "module", "version": "43", "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null}`,
+			reportStored: `{"name": "module", "version": "43", "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
 		},
 		{
 			name:         "3",
@@ -71,7 +71,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  `{"version": "45", "module": {"image": "test:v2"}}`,
 			reportDelta:  `{"version": "45", "module": {"image": "test:v2"}}`,
 			desireStored: `{"name": "module", "version": "45", "module": {"image": "test:v2"}}`,
-			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1"}, "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null}`,
+			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1"}, "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
 		},
 		{
 			name:         "4",
@@ -80,7 +80,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}}`,
 			reportDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}}`,
 			desireStored: `{"name": "module", "version": "45", "module": {"image": "test:v2", "array": []}}`,
-			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1", "object": {"attr": "value"}}, "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null}`,
+			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1", "object": {"attr": "value"}}, "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
 		},
 	}
 	for _, tt := range tests {
@@ -95,12 +95,12 @@ func TestNodeShadow(t *testing.T) {
 			assert.NoError(t, json.Unmarshal([]byte(tt.desireStored), &desireStored))
 			assert.NoError(t, json.Unmarshal([]byte(tt.reportStored), &reportStored))
 
-			gotDelta, err := ss.Desire(desired)
+			gotDelta, err := ss.Desire(desired, false)
 			assert.Equal(t, tt.desireErr, err)
 			if !reflect.DeepEqual(gotDelta, desireDelta) {
 				t.Errorf("Node.Desire() = %v, want %v", gotDelta, desireDelta)
 			}
-			gotDelta, err = ss.Report(reported)
+			gotDelta, err = ss.Report(reported, false)
 			assert.Equal(t, tt.reportErr, err)
 			if !reflect.DeepEqual(gotDelta, reportDelta) {
 				t.Errorf("Node.Report() = %v, want %v", gotDelta, reportDelta)
@@ -143,7 +143,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NotNil(t, ss)
 
 	desire := v1.Desire{"apps": map[string]interface{}{"app1": "123", "app2": "234", "app3": "345", "app4": "456", "app5": ""}}
-	delta, err := ss.Desire(desire)
+	delta, err := ss.Desire(desire, false)
 	assert.NoError(t, err)
 	apps := delta["apps"].(map[string]interface{})
 	assert.Len(t, apps, 5)
@@ -154,7 +154,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.Equal(t, "", apps["app5"])
 
 	report := v1.Report{"apps": map[string]interface{}{"app1": "123", "app2": "235", "app3": "", "app5": "567", "app6": "678"}}
-	delta, err = ss.Report(report)
+	delta, err = ss.Report(report, false)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
 	assert.Len(t, apps, 4)
@@ -167,7 +167,7 @@ func TestShadowRenew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
-	delta, err = ss.Report(report)
+	delta, err = ss.Report(report, false)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
 	assert.Len(t, apps, 4)
@@ -262,7 +262,7 @@ func TestGetStats(t *testing.T) {
 	report.SetAppInfos(true, sysappInfo)
 	report.SetAppStats(false, appStats)
 	report.SetAppStats(true, sysappStats)
-	_, err = ss.Report(report)
+	_, err = ss.Report(report, false)
 	assert.NoError(t, err)
 
 	req2 := fasthttp.AcquireRequest()
@@ -313,12 +313,12 @@ func TestGetNodeProperties(t *testing.T) {
 	assert.Equal(t, resp.StatusCode(), 200)
 
 	desire := v1.Desire{
-		"nodeProps": map[string]interface{}{
+		"nodeprops": map[string]interface{}{
 			"a": "1",
 			"b": "2",
 		},
 	}
-	_, err = ss.Desire(desire)
+	_, err = ss.Desire(desire, false)
 	assert.NoError(t, err)
 
 	req2 := fasthttp.AcquireRequest()
@@ -382,7 +382,7 @@ func TestUpdateNodeProperties(t *testing.T) {
 		"a": "2",
 		"b": "3",
 	}
-	_, err = ss.Report(report)
+	_, err = ss.Report(report, true)
 	assert.NoError(t, err)
 
 	data, _ = json.Marshal(delta)

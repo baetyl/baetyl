@@ -28,7 +28,7 @@ type Core struct {
 }
 
 // NewCore creates a new core
-func NewCore(cfg config.Config, ctx context.Context) (*Core, error) {
+func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)

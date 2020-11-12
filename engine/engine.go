@@ -239,7 +239,7 @@ func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) er
 	e.log.Debug("collect stats of node and apps", log.Any("report", r))
 
 	rapps := r.AppInfos(isSys)
-	delta, err := e.nod.Report(r)
+	delta, err := e.nod.Report(r, false)
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -291,7 +291,7 @@ func (e *engineImpl) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map
 		appStats = append(appStats, s)
 	}
 	r.SetAppStats(isSys, appStats)
-	_, err := e.nod.Report(r)
+	_, err := e.nod.Report(r, false)
 	if err != nil {
 		return err
 	}
