@@ -476,20 +476,20 @@ func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
 	}
-	cpuinfos, err := cpu.Info()
+	infos, err := cpu.Info()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	cPercent, err := cpu.Percent(0, false)
-	if len(cpuinfos) >= 1 {
-		cores := int(cpuinfos[0].Cores)
-		stats.Capacity["cpu"] = strconv.Itoa(cores)
-		if len(cPercent) >= 1 {
-			usage := float64(cores) * cPercent[0] / 100
-			stats.Usage["cpu"] = strconv.FormatFloat(usage, 'f', 3, 64)
-		}
+	var cores int32
+	for _, info := range infos {
+		cores += info.Cores
 	}
-
+	percent, err := cpu.Percent(0, false)
+	stats.Capacity["cpu"] = strconv.FormatInt(int64(cores), 10)
+	if len(percent) >= 1 {
+		usage := float64(cores) * percent[0] / 100
+		stats.Usage["cpu"] = strconv.FormatFloat(usage, 'f', 3, 64)
+	}
 	// TODO replace with more appropriate stats
 	me, err := mem.VirtualMemory()
 	if err != nil {
