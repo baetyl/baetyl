@@ -107,7 +107,7 @@ func (k *kubeImpl) collectAppStats(ns string) ([]specv1.AppStats, error) {
 		if pods == nil || len(pods.Items) == 0 {
 			continue
 		}
-		stats.Status = getDeployStatus(stats.InstanceStats)
+		stats.Status = getAppStatus(stats.InstanceStats)
 		appStats[appName] = stats
 	}
 	var res []specv1.AppStats
@@ -117,7 +117,7 @@ func (k *kubeImpl) collectAppStats(ns string) ([]specv1.AppStats, error) {
 	return res, nil
 }
 
-func getDeployStatus(infos map[string]specv1.InstanceStats) specv1.Status {
+func getAppStatus(infos map[string]specv1.InstanceStats) specv1.Status {
 	var pending = false
 	for _, info := range infos {
 		if info.Status == specv1.Pending {
