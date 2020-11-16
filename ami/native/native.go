@@ -401,6 +401,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					curAppStats.InstanceStats[curPrgName] = curInsStats
 				}
 			}
+			curAppStats.Status = getAppStatus(curAppStats.InstanceStats)
 
 			if len(curAppStats.InstanceStats) > 0 {
 				stats = append(stats, curAppStats)
@@ -453,6 +454,21 @@ func prgStatusToSpecStatus(status service.Status) v1.Status {
 	default:
 		return v1.Unknown
 	}
+}
+
+func getAppStatus(infos map[string]v1.InstanceStats) v1.Status {
+	var pending = false
+	for _, info := range infos {
+		if info.Status == v1.Pending {
+			pending = true
+		} else if info.Status == v1.Unknown {
+			return info.Status
+		}
+	}
+	if pending {
+		return v1.Pending
+	}
+	return v1.Running
 }
 
 func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
