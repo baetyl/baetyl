@@ -134,19 +134,22 @@ func getAppStatus(infos map[string]specv1.InstanceStats) specv1.Status {
 
 func (k *kubeImpl) collectInstanceStats(ns, serviceName string, pod *corev1.Pod) specv1.InstanceStats {
 	stats := specv1.InstanceStats{Name: pod.Name, ServiceName: serviceName, Usage: map[string]string{}}
-	ref, err := reference.GetReference(scheme.Scheme, pod)
-	if err != nil {
-		k.log.Warn("failed to get service reference", log.Error(err))
-		return stats
-	}
-	events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
-	if l := len(events.Items); l > 0 {
-		if e := events.Items[l-1]; e.Type == "Warning" {
-			stats.Cause += e.Message
-		}
-	}
 	stats.CreateTime = pod.CreationTimestamp.Local()
 	stats.Status = specv1.Status(pod.Status.Phase)
+	if stats.Status != specv1.Running {
+		ref, err := reference.GetReference(scheme.Scheme, pod)
+		if err != nil {
+			k.log.Warn("failed to get service reference", log.Error(err))
+			return stats
+		}
+		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
+		if l := len(events.Items); l > 0 {
+			if e := events.Items[l-1]; e.Type == "Warning" {
+				stats.Cause += e.Message
+			}
+		}
+	}
+
 	for _, st := range pod.Status.ContainerStatuses {
 		if st.State.Waiting != nil {
 			stats.Status = specv1.Status(corev1.PodPending)
