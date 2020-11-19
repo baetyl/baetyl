@@ -318,7 +318,15 @@ func TestGetNodeProperties(t *testing.T) {
 			"b": "2",
 		},
 	}
-	_, err = ss.Desire(desire, false)
+	_, err = ss.Desire(desire, true)
+	assert.NoError(t, err)
+	report := v1.Report{
+		"nodeprops": map[string]interface{}{
+			"a": "1",
+			"b": "3",
+		},
+	}
+	_, err = ss.Report(report, true)
 	assert.NoError(t, err)
 
 	req2 := fasthttp.AcquireRequest()
@@ -332,8 +340,12 @@ func TestGetNodeProperties(t *testing.T) {
 	var respNodeProps map[string]interface{}
 	json.Unmarshal(resp2.Body(), &respNodeProps)
 
+	expect := map[string]interface{}{
+		"report": report[KeyNodeProps],
+		"desire": desire[KeyNodeProps],
+	}
 	assert.Equal(t, http.StatusOK, resp2.StatusCode())
-	assert.Equal(t, desire[KeyNodeProps], respNodeProps)
+	assert.Equal(t, expect, respNodeProps)
 }
 
 func TestUpdateNodeProperties(t *testing.T) {
