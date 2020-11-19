@@ -168,10 +168,14 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			ports = append(ports, port)
 
 			// apply service
-			var env []string
+			env := []string {
+				// MacOS won't set PATH, but function runtimes need it
+				fmt.Sprintf("%s=%s", "PATH", os.Getenv("PATH")),
+			}
 			for _, item := range s.Env {
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
 			}
+
 			prgCfg := program.Config{
 				Name:        genServiceInstanceName(ns, app.Name, app.Version, s.Name, strconv.Itoa(i)),
 				DisplayName: fmt.Sprintf("%s %s", app.Name, s.Name),
@@ -225,6 +229,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			if err != nil {
 				return errors.Trace(err)
 			}
+			impl.log.Debug("set applied service ports in mapping files", log.Any("applied service", s.Name), log.Any("ports", ports))
 		}
 	}
 	impl.log.Info("apply an app", log.Any("app", app))
@@ -296,6 +301,7 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 			if err != nil {
 				return errors.Trace(err)
 			}
+			impl.log.Debug("delete applied service ports in mapping files", log.Any("applied service", curSvcName))
 		}
 		err = os.RemoveAll(curAppVerDir)
 		if err != nil {
