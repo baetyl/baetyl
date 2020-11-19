@@ -173,10 +173,26 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if node.Desire == nil {
-		return nil, nil
+	desireProps := map[string]interface{}{}
+	reportProps := map[string]interface{}{}
+	if node.Desire != nil {
+		if props, ok := node.Desire[KeyNodeProps]; ok && props != nil {
+			if desireProps, ok = props.(map[string]interface{}); !ok {
+				return nil, errors.Trace(errors.New("invalid node props of desire"))
+			}
+		}
 	}
-	return node.Desire[KeyNodeProps], nil
+	if node.Report != nil {
+		if props, ok := node.Report[KeyNodeProps]; ok && props != nil {
+			if reportProps, ok = props.(map[string]interface{}); !ok {
+				return nil, errors.Trace(errors.New("invalid node props of report"))
+			}
+		}
+	}
+	return map[string]interface{}{
+		"report": reportProps,
+		"desire": desireProps,
+	}, nil
 }
 
 func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
@@ -195,27 +211,28 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 			return nil, errors.Trace(errors.New("value is not string"))
 		}
 	}
-	var oldReport v1.Report
 	if node.Report == nil {
 		node.Report = map[string]interface{}{}
 	}
-	reportVal := node.Report[KeyNodeProps]
-	if reportVal == nil {
-		reportVal = map[string]interface{}{}
+	propsVal := node.Report[KeyNodeProps]
+	if propsVal == nil {
+		propsVal = map[string]interface{}{}
 	}
-	oldReport, ok := reportVal.(map[string]interface{})
+	var oldReportProps v1.Report
+	oldReportProps, ok := propsVal.(map[string]interface{})
 	if !ok {
 		return nil, errors.Trace(errors.New("old node props is invalid"))
 	}
-	newReport, err := oldReport.Patch(delta)
+	newReportProps, err := oldReportProps.Patch(delta)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	node.Report[KeyNodeProps] = map[string]interface{}(newReport)
+	// cast is necessary
+	node.Report[KeyNodeProps] = map[string]interface{}(newReportProps)
 	if _, err = n.Report(node.Report, true); err != nil {
 		return nil, errors.Trace(err)
 	}
-	return newReport, nil
+	return newReportProps, nil
 }
 
 // Get insert the whole shadow data
