@@ -174,7 +174,6 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 		return nil, errors.Trace(err)
 	}
 	desireProps := map[string]interface{}{}
-	reportProps := map[string]interface{}{}
 	if node.Desire != nil {
 		if props, ok := node.Desire[KeyNodeProps]; ok && props != nil {
 			if desireProps, ok = props.(map[string]interface{}); !ok {
@@ -182,6 +181,7 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 			}
 		}
 	}
+	reportProps := map[string]interface{}{}
 	if node.Report != nil {
 		if props, ok := node.Report[KeyNodeProps]; ok && props != nil {
 			if reportProps, ok = props.(map[string]interface{}); !ok {
