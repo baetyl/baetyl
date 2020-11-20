@@ -7,12 +7,14 @@ import (
 	"github.com/baetyl/baetyl-go/v2/mqtt"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
+	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/node"
 )
 
 type handler struct {
 	mqtt *mqtt.Client
 	log  *log.Logger
+	cfg  config.EventConfig
 }
 
 func (h *handler) OnMessage(msg interface{}) error {
@@ -36,7 +38,7 @@ func (h *handler) OnMessage(msg interface{}) error {
 			if err != nil {
 				return err
 			}
-			err = h.mqtt.Publish(DefaultMQTTQOS, NodePropsTopic, pld, 0, false, false)
+			err = h.mqtt.Publish(mqtt.QOS(h.cfg.Publish.QOS), h.cfg.Publish.Topic, pld, 0, false, false)
 			if err != nil {
 				return err
 			}

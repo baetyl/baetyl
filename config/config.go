@@ -15,6 +15,7 @@ type Config struct {
 	AMI      AmiConfig         `yaml:",inline" json:",inline"`
 	Sync     SyncConfig        `yaml:"sync" json:"sync"`
 	Store    StoreConfig       `yaml:"store" json:"store"`
+	Event    EventConfig       `yaml:"event" json:"event"`
 	Init     InitConfig        `yaml:"init" json:"init"`
 	Security SecurityConfig    `yaml:"security" json:"security"`
 	Server   http.ServerConfig `yaml:"server" json:"server"`
@@ -29,6 +30,15 @@ type EngineConfig struct {
 	Report struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
+}
+
+type EventConfig struct {
+	Publish Publish `yaml:"publish" json:"publish"`
+}
+
+type Publish struct {
+	QOS   byte   `yaml:"qos" json:"qos" validate:"min=0, max=1"`
+	Topic string `yaml:"topic" json:"topic" default:"$baetyl/node/props" validate:"nonzero"`
 }
 
 type AmiConfig struct {
