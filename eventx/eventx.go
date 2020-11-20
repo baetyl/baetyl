@@ -16,8 +16,6 @@ import (
 
 const (
 	TopicEvent     = "event"
-	DefaultMQTTQOS = 1
-	NodePropsTopic = "baetyl/node/props"
 	TypeDelta      = "delta"
 )
 
@@ -53,7 +51,7 @@ func NewEventX(ctx context.Context, cfg config.Config) (EventX, error) {
 		return nil, err
 	}
 	log := log.With(log.Any("core", "sync"))
-	processor := pubsub.NewProcessor(ch, 0, &handler{mqtt: mqtt, log: log})
+	processor := pubsub.NewProcessor(ch, 0, &handler{mqtt: mqtt, log: log, cfg: cfg.Event})
 	evt := &eventX{
 		pb:        pb,
 		mqtt:      mqtt,

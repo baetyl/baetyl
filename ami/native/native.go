@@ -168,7 +168,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			ports = append(ports, port)
 
 			// apply service
-			env := []string {
+			env := []string{
 				// MacOS won't set PATH, but function runtimes need it
 				fmt.Sprintf("%s=%s", "PATH", os.Getenv("PATH")),
 			}
