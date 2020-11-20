@@ -16,8 +16,6 @@ import (
 
 const (
 	TopicEvent     = "event"
-	DefaultMQTTQOS = 1
-	NodePropsTopic = "baetyl/node/props"
 	TypeDelta      = "delta"
 )
 
