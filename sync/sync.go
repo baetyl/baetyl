@@ -31,14 +31,14 @@ const (
 type Sync interface {
 	Start()
 	Close()
-	Report(r v1.Report) (v1.Delta, error)
+	Report(r v1.Report) (v1.Desire, error)
 	SyncResource(v1.AppInfo) error
 	SyncApps(infos []v1.AppInfo) (map[string]v1.Application, error)
 }
 
 // Sync sync shadow and resources with cloud
 type sync struct {
-	cfg   config.SyncConfig
+	cfg   config.Config
 	link  plugin.Link
 	store *bh.Store
 	nod   *node.Node
@@ -64,7 +64,7 @@ func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
 		return nil, errors.Trace(err)
 	}
 	s := &sync{
-		cfg:      cfg.Sync,
+		cfg:      cfg,
 		download: http.NewClient(ops),
 		store:    store,
 		nod:      nod,
@@ -126,31 +126,34 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-		delta := v1.Delta{}
-		err = msg.Content.Unmarshal(&delta)
+		desire := v1.Desire{}
+		err = msg.Content.Unmarshal(&desire)
 		if err != nil {
 			s.log.Error("receive unrecognized desire data", log.Error(err))
 			return errors.Trace(err)
 		}
-		if len(delta) == 0 {
+		if len(desire) == 0 {
 			return nil
-		}
-		if shadow.Desire == nil {
-			shadow.Desire = map[string]interface{}{}
-		}
-		desire, err := shadow.Desire.Patch(delta)
-		if err != nil {
-			return errors.Trace(err)
 		}
 		_, err = s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
+		if !s.cfg.Event.Notify {
+			return nil
+		}
+		//TODO move to node.Desire
+		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
+		if err != nil {
+			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
+			return errors.Trace(err)
+		}
 		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
 		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
-			s.log.Error("failed to publish event", log.Any("delta", delta), log.Error(err))
+			s.log.Error("failed to publish event", log.Any("event", evt), log.Error(err))
 		}
+		s.log.Debug("success to publish event", log.Any("event", evt))
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDownside, msg)
@@ -177,7 +180,7 @@ func (s *sync) reportAsync(r v1.Report) error {
 	return nil
 }
 
-func (s *sync) Report(r v1.Report) (v1.Delta, error) {
+func (s *sync) Report(r v1.Report) (v1.Desire, error) {
 	msg := &v1.Message{
 		Kind:    v1.MessageReport,
 		Content: v1.LazyValue{Value: r},
@@ -187,12 +190,12 @@ func (s *sync) Report(r v1.Report) (v1.Delta, error) {
 		return nil, errors.Trace(err)
 	}
 	s.log.Debug("sync reports cloud shadow", log.Any("report", msg))
-	var delta v1.Delta
-	err = res.Content.Unmarshal(&delta)
+	var desire v1.Desire
+	err = res.Content.Unmarshal(&desire)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	return delta, nil
+	return desire, nil
 }
 
 func (s *sync) reporting() error {
@@ -204,7 +207,7 @@ func (s *sync) reporting() error {
 		s.log.Error("failed to report cloud shadow", log.Error(err))
 	}
 
-	t := time.NewTicker(s.cfg.Report.Interval)
+	t := time.NewTicker(s.cfg.Sync.Report.Interval)
 	defer t.Stop()
 	for {
 		select {
@@ -231,29 +234,32 @@ func (s *sync) reportAndDesire() error {
 			return errors.Trace(err)
 		}
 	} else {
-		delta, err := s.Report(shadow.Report)
+		desire, err := s.Report(shadow.Report)
 		if err != nil {
 			return errors.Trace(err)
 		}
-		if len(delta) == 0 {
+		if len(desire) == 0 {
 			return nil
-		}
-		if shadow.Desire == nil {
-			shadow.Desire = map[string]interface{}{}
-		}
-		desire, err := shadow.Desire.Patch(delta)
-		if err != nil {
-			return errors.Trace(err)
 		}
 		_, err = s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
+		if !s.cfg.Event.Notify {
+			return nil
+		}
+		// TODO remove
+		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
+		if err != nil {
+			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
+			return errors.Trace(err)
+		}
 		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
 		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
-			s.log.Error("failed to publish event", log.Any("delta", delta), log.Error(err))
+			s.log.Error("failed to publish event", log.Any("event", evt), log.Error(err))
 		}
+		s.log.Debug("success to publish event", log.Any("event", evt))
 	}
 	return nil
 }
