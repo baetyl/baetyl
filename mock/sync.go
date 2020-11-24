@@ -58,10 +58,10 @@ func (mr *MockSyncMockRecorder) Close() *gomock.Call {
 }
 
 // Report mocks base method.
-func (m *MockSync) Report(r v1.Report) (v1.Delta, error) {
+func (m *MockSync) Report(r v1.Report) (v1.Desire, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Report", r)
-	ret0, _ := ret[0].(v1.Delta)
+	ret0, _ := ret[0].(v1.Desire)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

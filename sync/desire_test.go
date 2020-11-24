@@ -83,15 +83,15 @@ func TestSyncProcessConfiguration(t *testing.T) {
 
 	objMs := mock.NewServer(nil, mock.NewResponse(200, content))
 	assert.NotNil(t, objMs)
-	sc := config.SyncConfig{}
+	sc := config.Config{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
-	sc.Download.Address = objMs.URL
-	sc.Download.CA = "./testcert/ca.pem"
-	sc.Download.Key = "./testcert/client.key"
-	sc.Download.Cert = "./testcert/client.pem"
-	sc.Download.InsecureSkipVerify = true
-	ops, err := sc.Download.ToClientOptions()
+	sc.Sync.Download.Address = objMs.URL
+	sc.Sync.Download.CA = "./testcert/ca.pem"
+	sc.Sync.Download.Key = "./testcert/client.key"
+	sc.Sync.Download.Cert = "./testcert/client.pem"
+	sc.Sync.Download.InsecureSkipVerify = true
+	ops, err := sc.Sync.Download.ToClientOptions()
 	assert.NoError(t, err)
 	syn := &sync{
 		cfg:      sc,
@@ -114,7 +114,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	dir, err := ioutil.TempDir("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, dir)
-	syn.cfg.Download.Path = dir
+	syn.cfg.Sync.Download.Path = dir
 	file1 := filepath.Join(dir, "file1")
 	ioutil.WriteFile(file1, content, 0644)
 	md5, err := utils.CalculateFileMD5(file1)
@@ -250,7 +250,7 @@ func TestSyncResources(t *testing.T) {
 	err = json.Unmarshal(dt, m3)
 	assert.NoError(t, err)
 
-	sc := config.SyncConfig{}
+	sc := config.Config{}
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
 	assert.NoError(t, err)

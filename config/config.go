@@ -33,6 +33,7 @@ type EngineConfig struct {
 }
 
 type EventConfig struct {
+	Notify  bool    `yaml:"notify" json:"notify"`
 	Publish Publish `yaml:"publish" json:"publish"`
 }
 

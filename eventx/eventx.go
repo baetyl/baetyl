@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	TopicEvent     = "event"
-	TypeDelta      = "delta"
+	TopicEvent = "event"
+	TypeDelta  = "delta"
 )
 
 type Event struct {
@@ -63,7 +63,7 @@ func NewEventX(ctx context.Context, cfg config.Config) (EventX, error) {
 
 func (e *eventX) Start() {
 	if err := e.mqtt.Start(nil); err != nil {
-		e.log.Error("failed to start mqtt client", log.Error(err))
+		e.log.Warn("failed to start mqtt client", log.Error(err))
 	}
 	e.processor.Start()
 }

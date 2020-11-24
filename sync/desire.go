@@ -140,7 +140,7 @@ func (s *sync) processVolumes(volumes []specv1.Volume, configs map[string]*specv
 }
 
 func (s *sync) processConfiguration(cfg *specv1.Configuration) error {
-	err := DownloadConfig(s.download, s.cfg.Download.Path, cfg)
+	err := DownloadConfig(s.download, s.cfg.Sync.Download.Path, cfg)
 	if err != nil {
 		return errors.Trace(err)
 	}

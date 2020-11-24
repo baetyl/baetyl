@@ -36,7 +36,7 @@ func TestReportSync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
-	var sc config.SyncConfig
+	var sc config.Config
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
 
@@ -101,7 +101,7 @@ func TestReportAsync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nod)
 
-	var sc config.SyncConfig
+	var sc config.Config
 	err = utils.UnmarshalYAML(nil, &sc)
 	assert.NoError(t, err)
 

@@ -51,15 +51,18 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 		return nil, errors.Trace(err)
 	}
 	c.svr = http.NewServer(cfg.Server, c.initRouter())
-	c.evt, err = eventx.NewEventX(ctx, cfg)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
 
 	c.eng.Start()
 	c.syn.Start()
 	c.svr.Start()
-	c.evt.Start()
+
+	if cfg.Event.Notify {
+		c.evt, err = eventx.NewEventX(ctx, cfg)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		c.evt.Start()
+	}
 	return c, nil
 }
 
