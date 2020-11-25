@@ -1,13 +1,8 @@
 package initz
 
 import (
-	"fmt"
-	"strings"
-	"time"
-
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
-	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	v2utils "github.com/baetyl/baetyl-go/v2/utils"
 	bh "github.com/timshannon/bolthold"
 
@@ -19,19 +14,10 @@ import (
 	"github.com/baetyl/baetyl/v2/utils"
 )
 
-var (
-	// ErrSysAppCoreMissing system application baetyl-core is required for connection with cloud
-	ErrSysAppCoreMissing = fmt.Errorf("system application baetyl-core is required for connection with cloud")
-)
-
-const (
-	BaetylCore = "baetyl-core"
-)
-
 type Initialize struct {
 	cfg  config.Config
 	sto  *bh.Store
-	sha  *node.Node
+	nod  *node.Node
 	eng  engine.Engine
 	syn  sync.Sync
 	log  *log.Logger
@@ -65,78 +51,27 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.sha, err = node.NewNode(init.sto)
+	init.nod, err = node.NewNode(init.sto)
 	if err != nil {
-		init.Close()
 		return nil, errors.Trace(err)
 	}
 
-	init.syn, err = sync.NewSync(cfg, init.sto, init.sha)
+	init.syn, err = sync.NewSync(cfg, init.sto, init.nod)
 	if err != nil {
-		init.Close()
 		return nil, errors.Trace(err)
 	}
 
-	init.eng, err = engine.NewEngine(cfg, init.sto, init.sha, init.syn)
+	init.eng, err = engine.NewEngine(cfg, init.sto, init.nod, init.syn)
 	if err != nil {
-		init.Close()
 		return nil, errors.Trace(err)
 	}
-	init.tomb.Go(init.start)
+
+	init.eng.Start()
+	init.syn.Start()
 	return init, nil
 }
 
-func (init *Initialize) start() error {
-	defer init.closeStore()
-	init.log.Info("collect and report stats to cloud")
-	err := init.reportAndDesireCloud()
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	init.log.Info("collect and report stats, then apply applications at edge")
-	err = init.eng.ReportAndDesire()
-	if err != nil {
-		return errors.Trace(err)
-	}
-
-	// close store which shared with baetyl-core
-	init.closeStore()
-
-	t := time.NewTicker(init.cfg.Sync.Report.Interval)
-	defer t.Stop()
-	for {
-		select {
-		case <-t.C:
-			init.log.Info("collect stats from edge", log.Error(err))
-			r := init.eng.Collect("baetyl-edge-system", true, nil)
-			init.log.Info("report stats to cloud", log.Error(err))
-			_, err = init.syn.Report(r)
-			if err != nil {
-				return errors.Trace(err)
-			}
-		case <-init.tomb.Dying():
-			return nil
-		}
-	}
-}
-
-func (init *Initialize) closeStore() {
-	if init.sto != nil {
-		err := init.sto.Close()
-		if err != nil {
-			init.log.Warn("failed to close store", log.Error(err))
-		} else {
-			init.log.Info("close store")
-		}
-		init.sto = nil
-	}
-}
-
 func (init *Initialize) Close() {
-	init.tomb.Kill(nil)
-	init.tomb.Wait()
-
 	if init.eng != nil {
 		init.eng.Close()
 	}
@@ -146,27 +81,4 @@ func (init *Initialize) Close() {
 	if init.syn != nil {
 		init.syn.Close()
 	}
-}
-
-func (init *Initialize) reportAndDesireCloud() error {
-	r := init.eng.Collect("baetyl-edge-system", true, nil)
-	ds, err := init.syn.Report(r)
-	if err != nil {
-		init.log.Error("failed to report app info", log.Error(err))
-		return errors.Trace(ErrSysAppCoreMissing)
-	}
-	init.log.Debug("cloud response shadow desire", log.Any("desire", ds))
-	if len(ds) == 0 {
-		return errors.Trace(ErrSysAppCoreMissing)
-	}
-
-	for _, app := range ds.AppInfos(true) {
-		if strings.Contains(app.Name, BaetylCore) {
-			n := specv1.Desire{}
-			n.SetAppInfos(true, []specv1.AppInfo{app})
-			_, err = init.sha.Desire(n, false)
-			return errors.Trace(err)
-		}
-	}
-	return errors.Trace(ErrSysAppCoreMissing)
 }

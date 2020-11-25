@@ -4,8 +4,11 @@ import (
 	"crypto/md5"
 	"fmt"
 	"net"
+	"os"
+	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 	gosync "sync"
 	"time"
 
@@ -16,7 +19,7 @@ import (
 	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl-go/v2/utils"
+	v2utils "github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/mitchellh/mapstructure"
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
@@ -27,12 +30,12 @@ import (
 	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/security"
 	"github.com/baetyl/baetyl/v2/sync"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 const (
 	SystemCertVolumePrefix = "baetyl-cert-volume-"
 	SystemCertSecretPrefix = "baetyl-cert-secret-"
-	SystemCertPath         = "/var/lib/baetyl/system/certs"
 )
 
 //go:generate mockgen -destination=../mock/engine.go -package=mock -source=engine.go Engine
@@ -61,7 +64,7 @@ type engineImpl struct {
 	downsideChan    <-chan interface{}
 	downsideProcess pubsub.Processor
 	chains          gosync.Map
-	tomb            utils.Tomb
+	tomb            v2utils.Tomb
 }
 
 func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (Engine, error) {
@@ -77,6 +80,10 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 		return nil, errors.Trace(err)
 	}
 	sec, err := security.NewPKI(cfg.Security, sto)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	err = genSystemCert(sec)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -103,6 +110,10 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 
 func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
+	// only the core module supports remote debugging
+	if os.Getenv(context.KeyRunMode) != "kube" || os.Getenv(context.KeySvcName) != specv1.BaetylCore {
+		return
+	}
 	ch, err := e.pb.Subscribe(sync.TopicDownside)
 	if err != nil {
 		e.log.Error("failed to subscribe downside topic", log.Any("topic", sync.TopicDownside), log.Error(err))
@@ -247,11 +258,26 @@ func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) er
 	if delta == nil {
 		return nil
 	}
+	// in the case of cloud data synchronization, return from here
 	dapps := delta.AppInfos(isSys)
 	if dapps == nil {
 		return nil
 	}
+
+	e.log.Debug("before filter", log.Any("dapps", dapps), log.Any("rapps", rapps))
+	switch os.Getenv(context.KeySvcName) {
+	case specv1.BaetylCore:
+		dapps = filterAppNotLike(dapps, []string{specv1.BaetylCore})
+		rapps = filterAppNotLike(rapps, []string{specv1.BaetylCore})
+	case specv1.BaetylInit:
+		dapps = filterAppLike(dapps, []string{specv1.BaetylCore})
+		rapps = filterAppLike(rapps, []string{specv1.BaetylCore})
+	}
+	e.log.Debug("after filter", log.Any("dapps", dapps), log.Any("rapps", rapps))
+
 	del, update := getDeleteAndUpdate(dapps, rapps)
+	e.log.Debug("delete and update list", log.Any("delete", del), log.Any("update", update))
+
 	stats := map[string]specv1.AppStats{}
 	for _, s := range r.AppStats(isSys) {
 		stats[s.Name] = s
@@ -376,7 +402,7 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 		return errors.Trace(err)
 	}
 	// inject system cert
-	if e.sec != nil {
+	if e.sec != nil && !strings.Contains(app.Name, specv1.BaetylCore) && !strings.Contains(app.Name, specv1.BaetylInit) {
 		if err := e.injectCert(app, secs); err != nil {
 			return errors.Trace(err)
 		}
@@ -432,9 +458,9 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 				"security-type":   "certificate",
 			},
 			Data: map[string][]byte{
-				"crt.pem": cert.Crt,
-				"key.pem": cert.Key,
-				"ca.pem":  ca,
+				context.SystemCertCrt: cert.Crt,
+				context.SystemCertKey: cert.Key,
+				context.SystemCertCA:  ca,
 			},
 			System: app.Namespace == context.EdgeSystemNamespace(),
 		}
@@ -444,7 +470,7 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 		volName := SystemCertVolumePrefix + suffix
 		volMount := specv1.VolumeMount{
 			Name:      volName,
-			MountPath: SystemCertPath,
+			MountPath: context.SystemCertPath,
 			ReadOnly:  true,
 		}
 		svc.VolumeMounts = append(svc.VolumeMounts, volMount)
@@ -493,4 +519,95 @@ func (e *engineImpl) Close() {
 	if e.downsideProcess != nil {
 		e.downsideProcess.Close()
 	}
+}
+
+func genSystemCert(sec security.Security) error {
+	appName := os.Getenv(context.KeyAppName)
+	svcName := os.Getenv(context.KeySvcName)
+
+	ca, err := sec.GetCA()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	ns := context.EdgeSystemNamespace()
+	commonName := fmt.Sprintf("%s.%s", appName, svcName)
+
+	cert, err := sec.IssueCertificate(commonName, security.AltNames{
+		IPs: []net.IP{
+			net.IPv4(0, 0, 0, 0),
+			net.IPv4(127, 0, 0, 1),
+		},
+		DNSNames: []string{
+			fmt.Sprintf("%s.%s", svcName, ns),
+			fmt.Sprintf("%s", svcName),
+			"localhost",
+		},
+	})
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	err = utils.CreateWriteFile(path.Join(context.SystemCertPath, context.SystemCertCA), ca)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	err = utils.CreateWriteFile(path.Join(context.SystemCertPath, context.SystemCertCrt), cert.Crt)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	err = utils.CreateWriteFile(path.Join(context.SystemCertPath, context.SystemCertKey), cert.Key)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
+}
+
+func filterDesire(desire specv1.Desire, like, notLike []string) specv1.Desire {
+	ds := specv1.Desire{}
+
+	sysapps := filterAppLike(desire.AppInfos(true), like)
+	sysapps = filterAppNotLike(sysapps, notLike)
+	ds.SetAppInfos(true, sysapps)
+
+	apps := filterAppLike(desire.AppInfos(false), like)
+	apps = filterAppNotLike(apps, notLike)
+	ds.SetAppInfos(false, apps)
+
+	return ds
+}
+
+func filterAppLike(apps []specv1.AppInfo, like []string) []specv1.AppInfo {
+	if like == nil {
+		return apps
+	}
+	res := []specv1.AppInfo{}
+	for _, module := range like {
+		for _, app := range apps {
+			if strings.Contains(app.Name, module) {
+				res = append(res, app)
+				break
+			}
+		}
+	}
+	return res
+}
+
+func filterAppNotLike(apps []specv1.AppInfo, notLike []string) []specv1.AppInfo {
+	if notLike == nil {
+		return apps
+	}
+	res := []specv1.AppInfo{}
+	for _, app := range apps {
+		flag := true
+		for _, module := range notLike {
+			if strings.Contains(app.Name, module) {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			res = append(res, app)
+		}
+	}
+	return res
 }

@@ -494,7 +494,7 @@ func TestInjectCert(t *testing.T) {
 				VolumeMounts: []specv1.VolumeMount{
 					{
 						Name:      SystemCertVolumePrefix + suffix0,
-						MountPath: SystemCertPath,
+						MountPath: context.SystemCertPath,
 						ReadOnly:  true,
 					},
 				},
@@ -504,7 +504,7 @@ func TestInjectCert(t *testing.T) {
 				VolumeMounts: []specv1.VolumeMount{
 					{
 						Name:      SystemCertVolumePrefix + suffix1,
-						MountPath: SystemCertPath,
+						MountPath: context.SystemCertPath,
 						ReadOnly:  true,
 					},
 				},
@@ -581,4 +581,66 @@ func TestEngineImpl_applyApps(t *testing.T) {
 	eng.applyApps(ns, infos, stats)
 
 	assert.Equal(t, stats["core"].Cause, os.ErrInvalid.Error())
+}
+
+func Test_FilterDesire(t *testing.T) {
+	// case 0
+	like := []string{"core", "broker", "rule"}
+	notLike := []string{"broker"}
+
+	desire := specv1.Desire{}
+	sysapps := []specv1.AppInfo{
+		{Name: "core", Version: "1"},
+		{Name: "broker", Version: "2"},
+		{Name: "function", Version: "3"},
+	}
+	apps := []specv1.AppInfo{
+		{Name: "rule", Version: "4"},
+		{Name: "state", Version: "5"},
+	}
+	desire.SetAppInfos(true, sysapps)
+	desire.SetAppInfos(false, apps)
+	res := filterDesire(desire, like, notLike)
+
+	exp := specv1.Desire{}
+	expSysapps := []specv1.AppInfo{
+		{Name: "core", Version: "1"},
+	}
+	expApps := []specv1.AppInfo{
+		{Name: "rule", Version: "4"},
+	}
+	exp.SetAppInfos(true, expSysapps)
+	exp.SetAppInfos(false, expApps)
+
+	assert.EqualValues(t, exp, res)
+
+	// case 1
+	desire = specv1.Desire{}
+	sysapps = []specv1.AppInfo{
+		{Name: "core", Version: "1"},
+		{Name: "broker", Version: "2"},
+		{Name: "function", Version: "3"},
+	}
+	apps = []specv1.AppInfo{
+		{Name: "rule", Version: "4"},
+		{Name: "state", Version: "5"},
+	}
+	desire.SetAppInfos(true, sysapps)
+	desire.SetAppInfos(false, apps)
+
+	res = filterDesire(desire, nil, nil)
+
+	assert.EqualValues(t, desire, res)
+}
+
+func TestGenSystemCert(t *testing.T) {
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockSec := mock.NewMockSecurity(mockCtl)
+
+	mockSec.EXPECT().GetCA().Return([]byte("ca"), nil).Times(1)
+	mockSec.EXPECT().IssueCertificate(gomock.Any(), gomock.Any()).Return(nil, os.ErrExist).Times(1)
+
+	err := genSystemCert(mockSec)
+	assert.Error(t, err, os.ErrExist)
 }
