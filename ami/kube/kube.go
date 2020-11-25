@@ -41,6 +41,10 @@ func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 }
 
 func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]specv1.Configuration, secs map[string]specv1.Secret) error {
+	err := k.checkAndCreateNamespace(ns)
+	if err != nil {
+		return errors.Trace(err)
+	}
 	if err := k.applyConfigurations(ns, cfgs); err != nil {
 		return errors.Trace(err)
 	}
