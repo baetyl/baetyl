@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"math/rand"
 	gohttp "net/http"
-	"os"
-	"path"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
@@ -18,10 +16,11 @@ import (
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl-go/v2/utils"
+	v2utils "github.com/baetyl/baetyl-go/v2/utils"
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 type batch struct {
@@ -34,7 +33,7 @@ type batch struct {
 type Activate struct {
 	log   *log.Logger
 	cfg   *config.Config
-	tomb  utils.Tomb
+	tomb  v2utils.Tomb
 	http  *http.Client
 	srv   *gohttp.Server
 	ami   ami.AMI
@@ -184,28 +183,15 @@ func (active *Activate) activate() {
 	active.sig <- true
 }
 
-func (active *Activate) genCert(c utils.Certificate) error {
-	if err := active.createFile(active.cfg.Node.CA, []byte(c.CA)); err != nil {
+func (active *Activate) genCert(c v2utils.Certificate) error {
+	if err := utils.CreateWriteFile(active.cfg.Node.CA, []byte(c.CA)); err != nil {
 		return err
 	}
-	if err := active.createFile(active.cfg.Node.Cert, []byte(c.Cert)); err != nil {
+	if err := utils.CreateWriteFile(active.cfg.Node.Cert, []byte(c.Cert)); err != nil {
 		return err
 	}
-	if err := active.createFile(active.cfg.Node.Key, []byte(c.Key)); err != nil {
+	if err := utils.CreateWriteFile(active.cfg.Node.Key, []byte(c.Key)); err != nil {
 		return err
-	}
-	return nil
-}
-
-func (active *Activate) createFile(filePath string, data []byte) error {
-	dir := path.Dir(filePath)
-	if !utils.DirExists(dir) {
-		if err := os.Mkdir(dir, 0755); err != nil {
-			return errors.Trace(err)
-		}
-	}
-	if err := ioutil.WriteFile(filePath, data, 0755); err != nil {
-		return errors.Trace(err)
 	}
 	return nil
 }

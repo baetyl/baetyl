@@ -6,20 +6,59 @@ import (
 	"os"
 	"path"
 	"testing"
-	"time"
 
-	"github.com/baetyl/baetyl-go/v2/log"
 	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/mock"
-	"github.com/baetyl/baetyl/v2/node"
-	"github.com/baetyl/baetyl/v2/store"
+)
+
+const (
+	certCa = `
+-----BEGIN CERTIFICATE-----
+MIICfjCCAiSgAwIBAgIIFja5hmwJjwAwCgYIKoZIzj0EAwIwgaUxCzAJBgNVBAYT
+AkNOMRAwDgYDVQQIEwdCZWlqaW5nMRkwFwYDVQQHExBIYWlkaWFuIERpc3RyaWN0
+MRUwEwYDVQQJEwxCYWlkdSBDYW1wdXMxDzANBgNVBBETBjEwMDA5MzEeMBwGA1UE
+ChMVTGludXggRm91bmRhdGlvbiBFZGdlMQ8wDQYDVQQLEwZCQUVUWUwxEDAOBgNV
+BAMTB3Jvb3QuY2EwIBcNMjAwOTIxMDY0NTA0WhgPMjA3MDA5MDkwNjQ1MDRaMIGl
+MQswCQYDVQQGEwJDTjEQMA4GA1UECBMHQmVpamluZzEZMBcGA1UEBxMQSGFpZGlh
+biBEaXN0cmljdDEVMBMGA1UECRMMQmFpZHUgQ2FtcHVzMQ8wDQYDVQQREwYxMDAw
+OTMxHjAcBgNVBAoTFUxpbnV4IEZvdW5kYXRpb24gRWRnZTEPMA0GA1UECxMGQkFF
+VFlMMRAwDgYDVQQDEwdyb290LmNhMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE
+A3LIE7hL2K6c6HBOyXKySr756dDg65XswkX9rgexVgGr2JoOM2GEHTFix363Xgo9
+GJNAUWh245RVtrnK8tcG+aM6MDgwDgYDVR0PAQH/BAQDAgGGMA8GA1UdEwEB/wQF
+MAMBAf8wFQYDVR0RBA4wDIcEAAAAAIcEfwAAATAKBggqhkjOPQQDAgNIADBFAiAs
+4bwazl2Ienqgf9J+QCRCJWX6huKx+Au+w/mvTOy+cwIhALgnhoBGS4PBd/xBEiOb
+NxcsZX/LfkVYKvbwPbVBJjci
+-----END CERTIFICATE-----
+`
+	certCrt = `
+-----BEGIN CERTIFICATE-----
+MIIChzCCAi6gAwIBAgIIFkHUUPfd0ggwCgYIKoZIzj0EAwIwgaUxCzAJBgNVBAYT
+AkNOMRAwDgYDVQQIEwdCZWlqaW5nMRkwFwYDVQQHExBIYWlkaWFuIERpc3RyaWN0
+MRUwEwYDVQQJEwxCYWlkdSBDYW1wdXMxDzANBgNVBBETBjEwMDA5MzEeMBwGA1UE
+ChMVTGludXggRm91bmRhdGlvbiBFZGdlMQ8wDQYDVQQLEwZCQUVUWUwxEDAOBgNV
+BAMTB3Jvb3QuY2EwHhcNMjAxMDI3MTA1OTQ2WhcNNDAxMDIyMTA1OTQ2WjCBrDEL
+MAkGA1UEBhMCQ04xEDAOBgNVBAgTB0JlaWppbmcxGTAXBgNVBAcTEEhhaWRpYW4g
+RGlzdHJpY3QxFTATBgNVBAkTDEJhaWR1IENhbXB1czEPMA0GA1UEERMGMTAwMDkz
+MR4wHAYDVQQKExVMaW51eCBGb3VuZGF0aW9uIEVkZ2UxDzANBgNVBAsTBkJBRVRZ
+TDEXMBUGA1UEAxMOZGVmYXVsdC4xMDI3MDEwWTATBgcqhkjOPQIBBggqhkjOPQMB
+BwNCAATl+OSkL+Dptbt80PWuSiPMzUnkm5Si3xTFpNyG7nR6n7eaMJBnP0Jq4TNt
+MyXdB8IJ6ohyWgaCrvZggN501zUxoz8wPTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0l
+BBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwCgYIKoZIzj0E
+AwIDRwAwRAIgF/7p7pT8HK1eKgGVUWCYezXEMAwIelwTcP7ottak2V8CIACMw6IO
+GHGbGskkWEbfay6qymbOKQ3gCYB3L++rICS0
+-----END CERTIFICATE-----
+`
+	certKey = `
+-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIKisyEJsO4SFqqfb9EjeaXPlj1BArNmwmZ/htCw/EcyPoAoGCCqGSM49
+AwEHoUQDQgAE5fjkpC/g6bW7fND1rkojzM1J5JuUot8UxaTchu50ep+3mjCQZz9C
+auEzbTMl3QfCCeqIcloGgq72YIDedNc1MQ==
+-----END EC PRIVATE KEY-----
+`
 )
 
 func TestNewInitialize(t *testing.T) {
@@ -59,57 +98,30 @@ func TestNewInitialize(t *testing.T) {
 	_, err = NewInitialize(cfg)
 	assert.Error(t, err)
 
-	// bad case no cert
-	cfg.Node.Cert = ""
+	// bad case err engine
+	crt := path.Join(tmpDir, "crt.pem")
+	err = ioutil.WriteFile(crt, []byte(certCrt), 0755)
+	assert.Nil(t, err)
+	cfg.Node.Cert = crt
+	ca := path.Join(tmpDir, "ca.pem")
+	err = ioutil.WriteFile(ca, []byte(certCa), 0755)
+	assert.Nil(t, err)
+	cfg.Node.CA = ca
+	key := path.Join(tmpDir, "key.pem")
+	err = ioutil.WriteFile(key, []byte(certKey), 0755)
+	assert.Nil(t, err)
+	cfg.Node.Key = key
 
 	_, err = NewInitialize(cfg)
 	assert.Error(t, err)
-}
 
-func TestInitialize_start(t *testing.T) {
-	ctl := gomock.NewController(t)
-	eng := mock.NewMockEngine(ctl)
-	syn := mock.NewMockSync(ctl)
+	// bad case no cert
+	cfg.Node.CA = ""
+	cfg.Node.Cert = ""
+	cfg.Node.Key = ""
 
-	f, err := ioutil.TempFile("", t.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, f)
-	fmt.Println("-->tempfile", f.Name())
-
-	sto, err := store.NewBoltHold(f.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, sto)
-
-	sha, err := node.NewNode(sto)
-	assert.NoError(t, err)
-	assert.NotNil(t, sha)
-
-	cfg := config.Config{}
-	cfg.Sync.Report.Interval = time.Nanosecond
-
-	init := &Initialize{
-		cfg:  cfg,
-		sto:  sto,
-		sha:  sha,
-		eng:  eng,
-		syn:  syn,
-		log:  log.L().With(),
-		tomb: utils.Tomb{},
-	}
-
-	ds := specv1.Desire{}
-	ds.SetAppInfos(true, []specv1.AppInfo{{
-		Name:    "baetyl-core",
-		Version: "123",
-	}})
-	r := specv1.Report{}
-	syn.EXPECT().Report(r).Return(ds, nil).Times(1)
-	syn.EXPECT().Report(r).Return(nil, os.ErrInvalid).Times(1)
-	eng.EXPECT().ReportAndDesire().Return(nil).Times(1)
-	eng.EXPECT().Collect("baetyl-edge-system", true, nil).Return(specv1.Report{}).Times(2)
-
-	err = init.start()
-	assert.Error(t, err, os.ErrInvalid)
+	_, err = NewInitialize(cfg)
+	assert.Error(t, err)
 }
 
 type mockLink struct{}
