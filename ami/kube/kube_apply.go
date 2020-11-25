@@ -7,6 +7,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -30,6 +31,29 @@ const (
 	BaetylCore         = "baetyl-core"
 	MasterRole         = "node-role.kubernetes.io/master"
 )
+
+func (k *kubeImpl) createNamespace(ns string) (*corev1.Namespace, error) {
+	defer utils.Trace(k.log.Debug, "applyNamespace")()
+	return k.cli.core.Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: ns},
+	})
+}
+
+func (k *kubeImpl) getNamespace(ns string) (*corev1.Namespace, error) {
+	defer utils.Trace(k.log.Debug, "getNamespace")()
+	return k.cli.core.Namespaces().Get(ns, metav1.GetOptions{})
+}
+
+func (k *kubeImpl) checkAndCreateNamespace(ns string) error {
+	defer utils.Trace(k.log.Debug, "checkAndCreateNamespace")()
+	_, err := k.getNamespace(ns)
+	if err != nil && strings.Contains(err.Error(), "not found") {
+		k.log.Debug("namespace not found, will be created", log.Any("ns", ns))
+		_, err = k.createNamespace(ns)
+		return errors.Trace(err)
+	}
+	return errors.Trace(err)
+}
 
 func (k *kubeImpl) applyConfigurations(ns string, cfgs map[string]specv1.Configuration) error {
 	for _, cfg := range cfgs {

@@ -404,6 +404,9 @@ func TestApplyService(t *testing.T) {
 func genApplyRuntime() []runtime.Object {
 	ns := "baetyl-edge"
 	rs := []runtime.Object{
+		&v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{Name: ns},
+		},
 		&v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{Name: "sec1", Namespace: ns},
 		},
