@@ -52,7 +52,10 @@ func (k *kubeImpl) checkAndCreateNamespace(ns string) error {
 		_, err = k.createNamespace(ns)
 		return errors.Trace(err)
 	}
-	return errors.Trace(err)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func (k *kubeImpl) applyConfigurations(ns string, cfgs map[string]specv1.Configuration) error {
