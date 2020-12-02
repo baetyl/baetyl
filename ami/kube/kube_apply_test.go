@@ -209,6 +209,7 @@ func TestPrepareDeploy(t *testing.T) {
 								"cpu":    cpuQuan,
 								"memory": memoryQuan,
 							},
+							Requests: v1.ResourceList{},
 						},
 						VolumeMounts: []v1.VolumeMount{{
 							Name: "cfg",
@@ -225,7 +226,7 @@ func TestPrepareDeploy(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, deploy, expected)
+	assert.Equal(t, expected, deploy)
 }
 
 func TestApplyDeploys(t *testing.T) {
