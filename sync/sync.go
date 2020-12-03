@@ -254,6 +254,10 @@ func (s *sync) reportAndDesire() error {
 			return nil
 		}
 		// TODO remove
+		shadow, err = s.nod.Get()
+		if err != nil {
+			return errors.Trace(err)
+		}
 		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
 		if err != nil {
 			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
