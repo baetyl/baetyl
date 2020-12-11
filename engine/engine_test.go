@@ -105,8 +105,8 @@ func TestCollect(t *testing.T) {
 		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, e)
-	nodeInfo := &specv1.NodeInfo{}
-	nodeStats := &specv1.NodeStats{}
+	nodeInfo := map[string]*specv1.NodeInfo{"knn": {}}
+	nodeStats := map[string]*specv1.NodeStats{"knn": {}}
 	info := specv1.AppInfo{
 		Name:    "app1",
 		Version: "v1",
@@ -114,6 +114,7 @@ func TestCollect(t *testing.T) {
 	ns := context.EdgeNamespace()
 	apps := []specv1.AppInfo{info}
 	appStats := []specv1.AppStats{{AppInfo: info}}
+	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
@@ -252,8 +253,12 @@ func TestReportAndApply(t *testing.T) {
 		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, eng)
-	mockAmi.EXPECT().CollectNodeInfo().Return(nil, nil)
-	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
+	infos := map[string]*specv1.NodeInfo{}
+	stats := map[string]*specv1.NodeStats{}
+
+	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	mockAmi.EXPECT().CollectNodeInfo().Return(infos, nil)
+	mockAmi.EXPECT().CollectNodeStats().Return(stats, nil)
 	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
 

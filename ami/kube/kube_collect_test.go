@@ -21,18 +21,20 @@ func TestCollectNodeInfo(t *testing.T) {
 	ami := initCollectKubeAMI(t)
 	res, err := ami.CollectNodeInfo()
 	assert.NoError(t, err)
-	expected := &specv1.NodeInfo{
-		Hostname:         "hostname",
-		Arch:             "arch",
-		KernelVersion:    "kernel",
-		OS:               "os",
-		ContainerRuntime: "runtime",
-		MachineID:        "machine",
-		BootID:           "boot",
-		SystemUUID:       "system",
-		OSImage:          "image",
+	expected := map[string]interface{}{
+		"node1": &specv1.NodeInfo{
+			Hostname:         "hostname",
+			Arch:             "arch",
+			KernelVersion:    "kernel",
+			OS:               "os",
+			ContainerRuntime: "runtime",
+			MachineID:        "machine",
+			BootID:           "boot",
+			SystemUUID:       "system",
+			OSImage:          "image",
+		},
 	}
-	assert.Equal(t, expected, res)
+	assert.EqualValues(t, expected["node1"], res["node1"])
 }
 
 func initCollectKubeAMI(t *testing.T) *kubeImpl {

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -87,7 +88,8 @@ func TestActivate_Err_Collector(t *testing.T) {
 	assert.Error(t, err)
 
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().CollectNodeInfo().Return(nil, nil).AnyTimes()
+	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	ami.EXPECT().CollectNodeInfo().Return(map[string]*v1.NodeInfo{"knn": nil}, nil).AnyTimes()
 	active = genActivate(t, c, ami)
 
 	active.Start()

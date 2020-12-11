@@ -193,7 +193,8 @@ func TestActivate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().CollectNodeInfo().Return(nodeInfo, nil).Times(len(goodCases))
+	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	ami.EXPECT().CollectNodeInfo().Return(map[string]*v1.NodeInfo{"knn": nodeInfo}, nil).Times(len(goodCases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
@@ -255,7 +256,8 @@ func TestActivate_Err_Response(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().CollectNodeInfo().Return(nodeInfo, nil).AnyTimes()
+	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	ami.EXPECT().CollectNodeInfo().Return(map[string]*v1.NodeInfo{"knn": nodeInfo}, nil).AnyTimes()
 
 	active := genActivate(t, c, ami)
 	active.Start()

@@ -21,6 +21,8 @@ var (
 	ErrProofTypeNotSupported = fmt.Errorf("the proof type is not supported")
 	// ErrProofValueNotFound the proof value is not found
 	ErrProofValueNotFound = fmt.Errorf("the proof value is not found")
+	// ErrProofValueNotFound the proof value is not found
+	ErrGetMasterNodeInfo = fmt.Errorf("failed to get master node info")
 )
 
 func (active *Activate) collect() (string, error) {
@@ -28,9 +30,13 @@ func (active *Activate) collect() (string, error) {
 	if len(fs) == 0 {
 		return "", nil
 	}
-	nodeInfo, err := active.ami.CollectNodeInfo()
+	infos, err := active.ami.CollectNodeInfo()
 	if err != nil {
 		return "", errors.Trace(err)
+	}
+	nodeInfo, ok := infos[active.ami.GetMasterNodeName()]
+	if !ok {
+		return "", ErrGetMasterNodeInfo
 	}
 	for _, f := range fs {
 		switch f.Proof {
