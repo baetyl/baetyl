@@ -11,69 +11,81 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-func (k *kubeImpl) CollectNodeInfo() (*specv1.NodeInfo, error) {
-	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	ni := node.Status.NodeInfo
-	nodeInfo := &specv1.NodeInfo{
-		Arch:             ni.Architecture,
-		KernelVersion:    ni.KernelVersion,
-		OS:               ni.OperatingSystem,
-		ContainerRuntime: ni.ContainerRuntimeVersion,
-		MachineID:        ni.MachineID,
-		OSImage:          ni.OSImage,
-		BootID:           ni.BootID,
-		SystemUUID:       ni.SystemUUID,
-	}
-	for _, addr := range node.Status.Addresses {
-		if addr.Type == corev1.NodeHostName {
-			nodeInfo.Hostname = addr.Address
-		}
-	}
-	return nodeInfo, nil
+func (k *kubeImpl) GetMasterNodeName() string {
+	return k.knn
 }
 
-func (k *kubeImpl) CollectNodeStats() (*specv1.NodeStats, error) {
-	node, err := k.cli.core.Nodes().Get(k.knn, metav1.GetOptions{})
+func (k *kubeImpl) CollectNodeInfo() (map[string]*specv1.NodeInfo, error) {
+	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	nodeStats := &specv1.NodeStats{
-		Usage:    map[string]string{},
-		Capacity: map[string]string{},
-	}
-	nodeMetric, err := k.cli.metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	for res, quan := range nodeMetric.Usage {
-		nodeStats.Usage[string(res)] = quan.String()
-	}
-	for res, quan := range node.Status.Capacity {
-		if _, ok := nodeStats.Usage[string(res)]; ok {
-			nodeStats.Capacity[string(res)] = quan.String()
+	infos := map[string]*specv1.NodeInfo{}
+	for _, node := range nodes.Items {
+		ni := node.Status.NodeInfo
+		nodeInfo := &specv1.NodeInfo{
+			Arch:             ni.Architecture,
+			KernelVersion:    ni.KernelVersion,
+			OS:               ni.OperatingSystem,
+			ContainerRuntime: ni.ContainerRuntimeVersion,
+			MachineID:        ni.MachineID,
+			OSImage:          ni.OSImage,
+			BootID:           ni.BootID,
+			SystemUUID:       ni.SystemUUID,
 		}
-	}
-	for _, cond := range node.Status.Conditions {
-		if cond.Status == corev1.ConditionTrue {
-			switch cond.Type {
-			case corev1.NodeDiskPressure:
-				nodeStats.DiskPressure = true
-			case corev1.NodeMemoryPressure:
-				nodeStats.MemoryPressure = true
-			case corev1.NodeReady:
-				nodeStats.Ready = true
-			case corev1.NodePIDPressure:
-				nodeStats.PIDPressure = true
-			case corev1.NodeNetworkUnavailable:
-				nodeStats.NetworkUnavailable = true
-			default:
+		for _, addr := range node.Status.Addresses {
+			if addr.Type == corev1.NodeHostName {
+				nodeInfo.Hostname = addr.Address
 			}
 		}
+		infos[node.Name] = nodeInfo
 	}
-	return nodeStats, nil
+	return infos, nil
+}
+
+func (k *kubeImpl) CollectNodeStats() (map[string]*specv1.NodeStats, error) {
+	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	infos := map[string]*specv1.NodeStats{}
+	for _, node := range nodes.Items {
+		nodeStats := &specv1.NodeStats{
+			Usage:    map[string]string{},
+			Capacity: map[string]string{},
+		}
+		nodeMetric, err := k.cli.metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		for res, quan := range nodeMetric.Usage {
+			nodeStats.Usage[string(res)] = quan.String()
+		}
+		for res, quan := range node.Status.Capacity {
+			if _, ok := nodeStats.Usage[string(res)]; ok {
+				nodeStats.Capacity[string(res)] = quan.String()
+			}
+		}
+		for _, cond := range node.Status.Conditions {
+			if cond.Status == corev1.ConditionTrue {
+				switch cond.Type {
+				case corev1.NodeDiskPressure:
+					nodeStats.DiskPressure = true
+				case corev1.NodeMemoryPressure:
+					nodeStats.MemoryPressure = true
+				case corev1.NodeReady:
+					nodeStats.Ready = true
+				case corev1.NodePIDPressure:
+					nodeStats.PIDPressure = true
+				case corev1.NodeNetworkUnavailable:
+					nodeStats.NetworkUnavailable = true
+				default:
+				}
+			}
+		}
+		infos[node.Name] = nodeStats
+	}
+	return infos, nil
 }
 
 func (k *kubeImpl) collectAppStats(ns string) ([]specv1.AppStats, error) {

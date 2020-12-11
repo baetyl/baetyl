@@ -30,8 +30,9 @@ type Pipe struct {
 // AMI app model interfaces
 type AMI interface {
 	// node
-	CollectNodeInfo() (*specv1.NodeInfo, error)
-	CollectNodeStats() (*specv1.NodeStats, error)
+	GetMasterNodeName() string
+	CollectNodeInfo() (map[string]*specv1.NodeInfo, error)
+	CollectNodeStats() (map[string]*specv1.NodeStats, error)
 
 	// app
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error

@@ -31,6 +31,10 @@ func init() {
 	ami.Register("native", newNativeImpl)
 }
 
+const (
+	KeyModeNative = "native"
+)
+
 type nativeImpl struct {
 	logHostPath   string
 	runHostPath   string
@@ -63,7 +67,11 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 
 // TODO: impl native RemoteCommand
 func (impl *nativeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
-	panic("impl me")
+	return errors.New("failed to Start remote debugging, function has not been implemented")
+}
+
+func (impl *nativeImpl) GetMasterNodeName() string {
+	return KeyModeNative
 }
 
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
@@ -477,23 +485,25 @@ func getAppStatus(infos map[string]v1.InstanceStats) v1.Status {
 	return v1.Running
 }
 
-func (impl *nativeImpl) CollectNodeInfo() (*v1.NodeInfo, error) {
+func (impl *nativeImpl) CollectNodeInfo() (map[string]*v1.NodeInfo, error) {
 	ho, err := host.Info()
 	if err != nil {
 		return nil, err
 	}
 	plat := context.Platform()
 	// TODO add address
-	return &v1.NodeInfo{
-		Arch:     runtime.GOARCH,
-		OS:       runtime.GOOS,
-		Variant:  plat.Variant,
-		HostID:   ho.HostID,
-		Hostname: ho.Hostname,
+	return map[string]*v1.NodeInfo{
+		KeyModeNative: {
+			Arch:     runtime.GOARCH,
+			OS:       runtime.GOOS,
+			Variant:  plat.Variant,
+			HostID:   ho.HostID,
+			Hostname: ho.Hostname,
+		},
 	}, nil
 }
 
-func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
+func (impl *nativeImpl) CollectNodeStats() (map[string]*v1.NodeStats, error) {
 	stats := &v1.NodeStats{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
@@ -521,7 +531,7 @@ func (impl *nativeImpl) CollectNodeStats() (*v1.NodeStats, error) {
 	stats.Usage["memory"] = strconv.FormatUint(me.Used, 10)
 
 	// TODO add pressure flags
-	return stats, nil
+	return map[string]*v1.NodeStats{KeyModeNative: stats}, nil
 }
 
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {

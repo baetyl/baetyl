@@ -35,11 +35,25 @@ func (m *MockAMI) EXPECT() *MockAMIMockRecorder {
 	return m.recorder
 }
 
+// GetMasterNodeName mocks base method
+func (m *MockAMI) GetMasterNodeName() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMasterNodeName")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetMasterNodeName indicates an expected call of GetMasterNodeName
+func (mr *MockAMIMockRecorder) GetMasterNodeName() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMasterNodeName", reflect.TypeOf((*MockAMI)(nil).GetMasterNodeName))
+}
+
 // CollectNodeInfo mocks base method
-func (m *MockAMI) CollectNodeInfo() (*v1.NodeInfo, error) {
+func (m *MockAMI) CollectNodeInfo() (map[string]*v1.NodeInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectNodeInfo")
-	ret0, _ := ret[0].(*v1.NodeInfo)
+	ret0, _ := ret[0].(map[string]*v1.NodeInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -51,10 +65,10 @@ func (mr *MockAMIMockRecorder) CollectNodeInfo() *gomock.Call {
 }
 
 // CollectNodeStats mocks base method
-func (m *MockAMI) CollectNodeStats() (*v1.NodeStats, error) {
+func (m *MockAMI) CollectNodeStats() (map[string]*v1.NodeStats, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectNodeStats")
-	ret0, _ := ret[0].(*v1.NodeStats)
+	ret0, _ := ret[0].(map[string]*v1.NodeStats)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
