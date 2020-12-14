@@ -31,10 +31,6 @@ func init() {
 	ami.Register("native", newNativeImpl)
 }
 
-const (
-	KeyModeNative = "native"
-)
-
 type nativeImpl struct {
 	logHostPath   string
 	runHostPath   string
@@ -71,7 +67,11 @@ func (impl *nativeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) er
 }
 
 func (impl *nativeImpl) GetMasterNodeName() string {
-	return KeyModeNative
+	ho, err := host.Info()
+	if err != nil {
+		return ""
+	}
+	return ho.Hostname
 }
 
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
@@ -488,17 +488,18 @@ func getAppStatus(infos map[string]v1.InstanceStats) v1.Status {
 func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	ho, err := host.Info()
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	plat := context.Platform()
 	// TODO add address
 	return map[string]interface{}{
-		KeyModeNative: &v1.NodeInfo{
+		ho.Hostname: &v1.NodeInfo{
 			Arch:     runtime.GOARCH,
 			OS:       runtime.GOOS,
 			Variant:  plat.Variant,
 			HostID:   ho.HostID,
 			Hostname: ho.Hostname,
+			Role:     "master",
 		},
 	}, nil
 }
@@ -507,6 +508,10 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats := &v1.NodeStats{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
+	}
+	ho, err := host.Info()
+	if err != nil {
+		return nil, errors.Trace(err)
 	}
 	infos, err := cpu.Info()
 	if err != nil {
@@ -531,7 +536,7 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats.Usage["memory"] = strconv.FormatUint(me.Used, 10)
 
 	// TODO add pressure flags
-	return map[string]interface{}{KeyModeNative: stats}, nil
+	return map[string]interface{}{ho.Hostname: stats}, nil
 }
 
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {

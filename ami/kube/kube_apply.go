@@ -30,7 +30,6 @@ const (
 	ServiceAccountName = "baetyl-edge-system-service-account"
 	BaetylCore         = "baetyl-core"
 	MasterRole         = "node-role.kubernetes.io/master"
-	ComputeRole        = "node-role.kubernetes.io/compute"
 )
 
 func (k *kubeImpl) createNamespace(ns string) (*corev1.Namespace, error) {
