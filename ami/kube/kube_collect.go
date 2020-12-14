@@ -32,6 +32,7 @@ func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 			OSImage:          ni.OSImage,
 			BootID:           ni.BootID,
 			SystemUUID:       ni.SystemUUID,
+			Role:             "worker",
 		}
 		for _, addr := range node.Status.Addresses {
 			if addr.Type == corev1.NodeHostName {
@@ -39,16 +40,11 @@ func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 			}
 		}
 		for k, _ := range node.GetLabels() {
-			if k == ComputeRole {
-				nodeInfo.Role = "compute"
-				break
-			}
 			if k == MasterRole {
 				nodeInfo.Role = "master"
 				break
 			}
 		}
-		k.log.Debug("node labels", log.Any("labels", node.GetLabels()))
 		infos[node.Name] = nodeInfo
 	}
 	return infos, nil

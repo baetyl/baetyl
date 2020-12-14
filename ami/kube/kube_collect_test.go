@@ -32,6 +32,7 @@ func TestCollectNodeInfo(t *testing.T) {
 			BootID:           "boot",
 			SystemUUID:       "system",
 			OSImage:          "image",
+			Role:             "worker",
 		},
 	}
 	assert.EqualValues(t, expected["node1"], res["node1"])
