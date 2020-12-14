@@ -50,10 +50,10 @@ func (mr *MockAMIMockRecorder) GetMasterNodeName() *gomock.Call {
 }
 
 // CollectNodeInfo mocks base method
-func (m *MockAMI) CollectNodeInfo() (map[string]*v1.NodeInfo, error) {
+func (m *MockAMI) CollectNodeInfo() (map[string]interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectNodeInfo")
-	ret0, _ := ret[0].(map[string]*v1.NodeInfo)
+	ret0, _ := ret[0].(map[string]interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockAMIMockRecorder) CollectNodeInfo() *gomock.Call {
 }
 
 // CollectNodeStats mocks base method
-func (m *MockAMI) CollectNodeStats() (map[string]*v1.NodeStats, error) {
+func (m *MockAMI) CollectNodeStats() (map[string]interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectNodeStats")
-	ret0, _ := ret[0].(map[string]*v1.NodeStats)
+	ret0, _ := ret[0].(map[string]interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

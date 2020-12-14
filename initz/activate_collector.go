@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
+	specV1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
 	"github.com/baetyl/baetyl/v2/config"
 )
@@ -34,9 +35,13 @@ func (active *Activate) collect() (string, error) {
 	if err != nil {
 		return "", errors.Trace(err)
 	}
-	nodeInfo, ok := infos[active.ami.GetMasterNodeName()]
+	info, ok := infos[active.ami.GetMasterNodeName()]
 	if !ok {
-		return "", ErrGetMasterNodeInfo
+		return "", errors.Trace(ErrGetMasterNodeInfo)
+	}
+	nodeInfo, ok := info.(*specV1.NodeInfo)
+	if !ok {
+		return "", errors.Trace(ErrGetMasterNodeInfo)
 	}
 	for _, f := range fs {
 		switch f.Proof {
@@ -51,24 +56,12 @@ func (active *Activate) collect() (string, error) {
 			}
 			return strings.TrimSpace(string(snByte)), nil
 		case config.ProofHostName:
-			if nodeInfo == nil {
-				return "", errors.Trace(ErrProofValueNotFound)
-			}
 			return nodeInfo.Hostname, nil
 		case config.ProofMachineID:
-			if nodeInfo == nil {
-				return "", errors.Trace(ErrProofValueNotFound)
-			}
 			return nodeInfo.MachineID, nil
 		case config.ProofSystemUUID:
-			if nodeInfo == nil {
-				return "", errors.Trace(ErrProofValueNotFound)
-			}
 			return nodeInfo.SystemUUID, nil
 		case config.ProofBootID:
-			if nodeInfo == nil {
-				return "", errors.Trace(ErrProofValueNotFound)
-			}
 			return nodeInfo.BootID, nil
 		default:
 			return "", errors.Trace(ErrProofTypeNotSupported)

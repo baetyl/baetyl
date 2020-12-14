@@ -238,24 +238,20 @@ func TestGetStats(t *testing.T) {
 		Core:        core,
 		AppStats:    appStats,
 		SysAppStats: sysappStats,
-		Node: map[string]*v1.NodeInfo{
-			"knn": {
-				Hostname:         "hostname",
-				Address:          "nodeip",
-				Arch:             "arch",
-				KernelVersion:    "kernel",
-				OS:               "os",
-				ContainerRuntime: "runtime",
-				MachineID:        "machine",
-				BootID:           "boot",
-				SystemUUID:       "system",
-				OSImage:          "image",
-			},
+		Node: &v1.NodeInfo{
+			Hostname:         "hostname",
+			Address:          "nodeip",
+			Arch:             "arch",
+			KernelVersion:    "kernel",
+			OS:               "os",
+			ContainerRuntime: "runtime",
+			MachineID:        "machine",
+			BootID:           "boot",
+			SystemUUID:       "system",
+			OSImage:          "image",
+			Role:             "master",
 		},
-		Master: "knn",
-		NodeStats: map[string]*v1.NodeStats{
-			"knn": {},
-		},
+		NodeStats: &v1.NodeStats{},
 	}
 	nodeView := v1.NodeView{
 		Report: &reportView,

@@ -105,8 +105,8 @@ func TestCollect(t *testing.T) {
 		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, e)
-	nodeInfo := map[string]*specv1.NodeInfo{"knn": {}}
-	nodeStats := map[string]*specv1.NodeStats{"knn": {}}
+	nodeInfo := map[string]interface{}{"knn": &specv1.NodeInfo{}}
+	nodeStats := map[string]interface{}{"knn": &specv1.NodeStats{}}
 	info := specv1.AppInfo{
 		Name:    "app1",
 		Version: "v1",
@@ -253,8 +253,8 @@ func TestReportAndApply(t *testing.T) {
 		log: log.With(log.Any("engine", "test")),
 	}
 	assert.NotNil(t, eng)
-	infos := map[string]*specv1.NodeInfo{}
-	stats := map[string]*specv1.NodeStats{}
+	infos := map[string]interface{}{}
+	stats := map[string]interface{}{}
 
 	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
 	mockAmi.EXPECT().CollectNodeInfo().Return(infos, nil)

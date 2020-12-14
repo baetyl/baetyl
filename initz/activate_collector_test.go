@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ var (
 					Proof: config.ProofBootID,
 				},
 			},
-			err: ErrProofValueNotFound,
+			err: ErrGetMasterNodeInfo,
 		},
 		{
 			name: "1: SystemUUID Node Error",
@@ -36,7 +35,7 @@ var (
 					Proof: config.ProofSystemUUID,
 				},
 			},
-			err: ErrProofValueNotFound,
+			err: ErrGetMasterNodeInfo,
 		},
 		{
 			name: "2: MachineID Node Error",
@@ -45,7 +44,7 @@ var (
 					Proof: config.ProofMachineID,
 				},
 			},
-			err: ErrProofValueNotFound,
+			err: ErrGetMasterNodeInfo,
 		},
 		{
 			name: "3: SN File Error",
@@ -63,7 +62,7 @@ var (
 					Proof: config.Proof("Error"),
 				},
 			},
-			err: ErrProofTypeNotSupported,
+			err: ErrGetMasterNodeInfo,
 		},
 		{
 			name: "5: HostName Node Error",
@@ -72,7 +71,7 @@ var (
 					Proof: config.ProofHostName,
 				},
 			},
-			err: ErrProofValueNotFound,
+			err: ErrGetMasterNodeInfo,
 		},
 	}
 )
@@ -89,7 +88,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 
 	ami := mc.NewMockAMI(mockCtl)
 	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
-	ami.EXPECT().CollectNodeInfo().Return(map[string]*v1.NodeInfo{"knn": nil}, nil).AnyTimes()
+	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nil}, nil).AnyTimes()
 	active = genActivate(t, c, ami)
 
 	active.Start()

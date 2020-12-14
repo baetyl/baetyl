@@ -233,7 +233,6 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 		"time":      time.Now(),
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
-		"master":    e.ami.GetMasterNodeName(),
 	}
 	r.SetAppInfos(isSys, apps)
 	r.SetAppStats(isSys, appStats)
