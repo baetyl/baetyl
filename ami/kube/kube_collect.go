@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
+	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
 func (k *kubeImpl) GetMasterNodeName() string {
@@ -55,18 +56,29 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	nodeMetrics, err := k.cli.metrics.NodeMetricses().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	metrics := map[string]v1beta1.NodeMetrics{}
+	for _, metric := range nodeMetrics.Items {
+		metrics[metric.Name] = metric
+	}
+
 	infos := map[string]interface{}{}
 	for _, node := range nodes.Items {
 		nodeStats := &specv1.NodeStats{
 			Usage:    map[string]string{},
 			Capacity: map[string]string{},
 		}
-		nodeMetric, err := k.cli.metrics.NodeMetricses().Get(k.knn, metav1.GetOptions{})
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-		for res, quan := range nodeMetric.Usage {
-			nodeStats.Usage[string(res)] = quan.String()
+		nodeMetric, ok := metrics[node.Name]
+		if !ok {
+			k.log.Warn("failed to collect node metric")
+		} else {
+			for res, quan := range nodeMetric.Usage {
+				nodeStats.Usage[string(res)] = quan.String()
+			}
 		}
 		for res, quan := range node.Status.Capacity {
 			if _, ok := nodeStats.Usage[string(res)]; ok {
