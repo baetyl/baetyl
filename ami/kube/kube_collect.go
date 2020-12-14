@@ -15,12 +15,12 @@ func (k *kubeImpl) GetMasterNodeName() string {
 	return k.knn
 }
 
-func (k *kubeImpl) CollectNodeInfo() (map[string]*specv1.NodeInfo, error) {
+func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	infos := map[string]*specv1.NodeInfo{}
+	infos := map[string]interface{}{}
 	for _, node := range nodes.Items {
 		ni := node.Status.NodeInfo
 		nodeInfo := &specv1.NodeInfo{
@@ -38,17 +38,28 @@ func (k *kubeImpl) CollectNodeInfo() (map[string]*specv1.NodeInfo, error) {
 				nodeInfo.Hostname = addr.Address
 			}
 		}
+		for k, _ := range node.GetLabels() {
+			if k == ComputeRole {
+				nodeInfo.Role = "compute"
+				break
+			}
+			if k == MasterRole {
+				nodeInfo.Role = "master"
+				break
+			}
+		}
+		k.log.Debug("node labels", log.Any("labels", node.GetLabels()))
 		infos[node.Name] = nodeInfo
 	}
 	return infos, nil
 }
 
-func (k *kubeImpl) CollectNodeStats() (map[string]*specv1.NodeStats, error) {
+func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	infos := map[string]*specv1.NodeStats{}
+	infos := map[string]interface{}{}
 	for _, node := range nodes.Items {
 		nodeStats := &specv1.NodeStats{
 			Usage:    map[string]string{},

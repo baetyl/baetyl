@@ -31,6 +31,8 @@ github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db/go.mod h1:rB3B4r
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf/go.mod h1:ybxpYRFXyAe+OPACYpWeL0wqObRcbAqCMya13uyzqw0=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
+github.com/baetyl/baetyl-go/v2 v2.1.6 h1:OGB48XKdjEubEa97TbZICKQf38S/bkL3ERLGkoYu8Ek=
+github.com/baetyl/baetyl-go/v2 v2.1.6/go.mod h1:n6jClckOKHICRSFiUbVn5VUwEH6OaiSyQS3z+sW2+UA=
 github.com/baetyl/service v0.0.0-20200910124134-20fdd363fbd5 h1:xuq1KQEwE5xP3gWTvo2gYJKuu7uM2OtRAZmnG3LqtHI=
 github.com/baetyl/service v0.0.0-20200910124134-20fdd363fbd5/go.mod h1:RrJI2xn5vve/r32U5suTbeaSGoMU6GbNPoj36CVYcHc=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=

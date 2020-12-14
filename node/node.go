@@ -18,8 +18,15 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
-const OfflineDuration = 40 * time.Second
-const KeyNodeProps = "nodeprops"
+const (
+	OfflineDuration = 40 * time.Second
+	KeyNodeProps    = "nodeprops"
+	KubeNodeName    = "KUBE_NODE_NAME"
+)
+
+var (
+	ErrParseReport = errors.New("failed to parse report struct")
+)
 
 // TODO define interface and implement
 // Node node
@@ -161,6 +168,24 @@ func (n *Node) GetStats(ctx *routing.Context) (interface{}, error) {
 		return nil, errors.Trace(err)
 	}
 	node.Name = os.Getenv(context.KeyNodeName)
+
+	// TODO remove: compatibility code, compatible with information collection under the cluster
+	knn := os.Getenv(KubeNodeName)
+	if node.Report["node"] != nil {
+		infos, ok := node.Report["node"].(map[string]interface{})
+		if !ok {
+			return nil, errors.Trace(ErrParseReport)
+		}
+		node.Report["node"] = infos[knn]
+	}
+	if node.Report["nodestats"] != nil {
+		stats, ok := node.Report["nodestats"].(map[string]interface{})
+		if !ok {
+			return nil, errors.Trace(ErrParseReport)
+		}
+		node.Report["nodestats"] = stats[knn]
+	}
+
 	view, err := node.View(OfflineDuration)
 	if err != nil {
 		return nil, errors.Trace(err)

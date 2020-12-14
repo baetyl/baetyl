@@ -485,15 +485,15 @@ func getAppStatus(infos map[string]v1.InstanceStats) v1.Status {
 	return v1.Running
 }
 
-func (impl *nativeImpl) CollectNodeInfo() (map[string]*v1.NodeInfo, error) {
+func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	ho, err := host.Info()
 	if err != nil {
 		return nil, err
 	}
 	plat := context.Platform()
 	// TODO add address
-	return map[string]*v1.NodeInfo{
-		KeyModeNative: {
+	return map[string]interface{}{
+		KeyModeNative: &v1.NodeInfo{
 			Arch:     runtime.GOARCH,
 			OS:       runtime.GOOS,
 			Variant:  plat.Variant,
@@ -503,7 +503,7 @@ func (impl *nativeImpl) CollectNodeInfo() (map[string]*v1.NodeInfo, error) {
 	}, nil
 }
 
-func (impl *nativeImpl) CollectNodeStats() (map[string]*v1.NodeStats, error) {
+func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats := &v1.NodeStats{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
@@ -531,7 +531,7 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]*v1.NodeStats, error) {
 	stats.Usage["memory"] = strconv.FormatUint(me.Used, 10)
 
 	// TODO add pressure flags
-	return map[string]*v1.NodeStats{KeyModeNative: stats}, nil
+	return map[string]interface{}{KeyModeNative: stats}, nil
 }
 
 func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {

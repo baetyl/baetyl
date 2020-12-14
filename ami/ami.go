@@ -31,8 +31,8 @@ type Pipe struct {
 type AMI interface {
 	// node
 	GetMasterNodeName() string
-	CollectNodeInfo() (map[string]*specv1.NodeInfo, error)
-	CollectNodeStats() (map[string]*specv1.NodeStats, error)
+	CollectNodeInfo() (map[string]interface{}, error)
+	CollectNodeStats() (map[string]interface{}, error)
 
 	// app
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error
