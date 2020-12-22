@@ -49,12 +49,6 @@ func NewNode(store *bh.Store) (*Node, error) {
 				BinVersion:  utils.VERSION,
 				GitRevision: utils.REVISION,
 			},
-			"node":      nil,
-			"nodestats": nil,
-			"apps":      nil,
-			"sysapps":   nil,
-			"appstats":  nil,
-			"nodeprops": nil,
 		},
 	}
 	n := &Node{
@@ -67,7 +61,7 @@ func NewNode(store *bh.Store) (*Node, error) {
 		return nil, errors.Trace(err)
 	}
 	// report some core info
-	_, err = n.Report(m.Report, true)
+	_, err = n.Report(m.Report, false)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
