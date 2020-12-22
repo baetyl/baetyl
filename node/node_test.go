@@ -53,7 +53,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  "{}",
 			reportDelta:  "{}",
 			desireStored: "{}",
-			reportStored: `{"apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
+			reportStored: `{}`,
 		},
 		{
 			name:         "2",
@@ -62,7 +62,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  `{"name": "module", "version": "45"}`,
 			reportDelta:  `{"version": "45"}`,
 			desireStored: `{"name": "module", "version": "45"}`,
-			reportStored: `{"name": "module", "version": "43", "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
+			reportStored: `{"name": "module", "version": "43"}`,
 		},
 		{
 			name:         "3",
@@ -71,7 +71,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  `{"version": "45", "module": {"image": "test:v2"}}`,
 			reportDelta:  `{"version": "45", "module": {"image": "test:v2"}}`,
 			desireStored: `{"name": "module", "version": "45", "module": {"image": "test:v2"}}`,
-			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1"}, "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
+			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1"}}`,
 		},
 		{
 			name:         "4",
@@ -80,7 +80,7 @@ func TestNodeShadow(t *testing.T) {
 			desireDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}}`,
 			reportDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}}`,
 			desireStored: `{"name": "module", "version": "45", "module": {"image": "test:v2", "array": []}}`,
-			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1", "object": {"attr": "value"}}, "apps": null, "appstats": null, "node": null, "nodestats": null, "sysapps": null, "nodeprops": null}`,
+			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1", "object": {"attr": "value"}}}`,
 		},
 	}
 	for _, tt := range tests {
