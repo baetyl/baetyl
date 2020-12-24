@@ -90,7 +90,7 @@ func (n *Node) Get() (m *v1.Node, err error) {
 
 // TODO remove override option
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Desire, err error) {
+func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Delta, err error) {
 	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(n.id)
 		prev := bucket.Get(n.id)
@@ -118,7 +118,7 @@ func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Desire, err er
 		if err != nil {
 			return errors.Trace(err)
 		}
-		delta, err = m.Desire.Diff(m.Report)
+		delta, err = m.Desire.DiffWithNil(m.Report)
 		return errors.Trace(err)
 	})
 	return
@@ -126,7 +126,7 @@ func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Desire, err er
 
 // TODO remove override option
 // Report update shadow reported data, then return the delta of desired and reported data
-func (n *Node) Report(reported v1.Report, override bool) (delta v1.Desire, err error) {
+func (n *Node) Report(reported v1.Report, override bool) (delta v1.Delta, err error) {
 	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(n.id)
 		prev := bucket.Get(n.id)
@@ -154,7 +154,7 @@ func (n *Node) Report(reported v1.Report, override bool) (delta v1.Desire, err e
 		if err != nil {
 			return errors.Trace(err)
 		}
-		delta, err = m.Desire.Diff(m.Report)
+		delta, err = m.Desire.DiffWithNil(m.Report)
 		return errors.Trace(err)
 	})
 	return
@@ -200,7 +200,7 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	}
 	desireProps := map[string]interface{}{}
 	if node.Desire != nil {
-		if props, ok := node.Desire[KeyNodeProps]; ok && props != nil {
+		if props, ok := node.Desire[v1.KeyNodeProps]; ok && props != nil {
 			if desireProps, ok = props.(map[string]interface{}); !ok {
 				return nil, errors.Trace(errors.New("invalid node props of desire"))
 			}
@@ -208,7 +208,7 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	}
 	reportProps := map[string]interface{}{}
 	if node.Report != nil {
-		if props, ok := node.Report[KeyNodeProps]; ok && props != nil {
+		if props, ok := node.Report[v1.KeyNodeProps]; ok && props != nil {
 			if reportProps, ok = props.(map[string]interface{}); !ok {
 				return nil, errors.Trace(errors.New("invalid node props of report"))
 			}
@@ -239,7 +239,7 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 	if node.Report == nil {
 		node.Report = map[string]interface{}{}
 	}
-	propsVal := node.Report[KeyNodeProps]
+	propsVal := node.Report[v1.KeyNodeProps]
 	if propsVal == nil {
 		propsVal = map[string]interface{}{}
 	}
@@ -253,7 +253,7 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 		return nil, errors.Trace(err)
 	}
 	// cast is necessary
-	node.Report[KeyNodeProps] = map[string]interface{}(newReportProps)
+	node.Report[v1.KeyNodeProps] = map[string]interface{}(newReportProps)
 	if _, err = n.Report(node.Report, true); err != nil {
 		return nil, errors.Trace(err)
 	}

@@ -12,17 +12,8 @@ import (
 
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/plugin"
+	"github.com/baetyl/baetyl/v2/sync"
 )
-
-const (
-	TopicEvent = "event"
-	TypeDelta  = "delta"
-)
-
-type Event struct {
-	Type    string
-	Payload interface{}
-}
 
 type EventX interface {
 	Start()
@@ -46,7 +37,7 @@ func NewEventX(ctx context.Context, cfg config.Config) (EventX, error) {
 		return nil, err
 	}
 	pb := pl.(plugin.Pubsub)
-	ch, err := pb.Subscribe(TopicEvent)
+	ch, err := pb.Subscribe(sync.TopicNodeProps)
 	if err != nil {
 		return nil, err
 	}

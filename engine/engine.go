@@ -259,7 +259,7 @@ func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) er
 		return nil
 	}
 	// in the case of cloud data synchronization, return from here
-	dapps := delta.AppInfos(isSys)
+	dapps := specv1.Desire(delta).AppInfos(isSys)
 	if dapps == nil {
 		return nil
 	}

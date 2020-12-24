@@ -3,12 +3,12 @@ package eventx
 import (
 	"encoding/json"
 
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mqtt"
-	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl-go/v2/spec/v1"
 
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/node"
 )
 
 type handler struct {
@@ -18,34 +18,27 @@ type handler struct {
 }
 
 func (h *handler) OnMessage(msg interface{}) error {
-	event, ok := msg.(Event)
-	if !ok {
-		h.log.Error("received invalid message")
-		return nil
-	}
-	switch event.Type {
-	case TypeDelta:
-		delta, ok := event.Payload.(specv1.Delta)
-		if !ok {
-			h.log.Error("message contains invalid delta")
+	message, _ := msg.(*v1.Message)
+	switch message.Kind {
+	case v1.MessageDelta:
+		var propsDelta v1.Delta
+		if err := message.Content.Unmarshal(&propsDelta); err != nil {
+			return errors.Trace(err)
+		}
+		if len(propsDelta) == 0 {
 			return nil
 		}
-		if len(delta) == 0 {
-			return nil
+		pld, err := json.Marshal(propsDelta)
+		if err != nil {
+			return errors.Trace(err)
 		}
-		if props, ok := delta[node.KeyNodeProps]; ok && props != nil {
-			pld, err := json.Marshal(props)
-			if err != nil {
-				return err
-			}
-			err = h.mqtt.Publish(mqtt.QOS(h.cfg.Publish.QOS), h.cfg.Publish.Topic, pld, 0, false, false)
-			if err != nil {
-				return err
-			}
-			h.log.Debug("send props to mqtt broker successfully", log.Any("props", props))
+		if err = h.mqtt.Publish(mqtt.QOS(h.cfg.Publish.QOS),
+			h.cfg.Publish.Topic, pld, 0, false, false); err != nil {
+			return errors.Trace(err)
 		}
+		h.log.Debug("send node props to mqtt broker successfully", log.Any("props", propsDelta))
 	default:
-		h.log.Debug("event type not support yet", log.Any("type", event.Type))
+		h.log.Debug("message kind not support yet", log.Any("type", message.Kind))
 	}
 	return nil
 }

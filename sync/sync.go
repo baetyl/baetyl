@@ -16,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/baetyl/baetyl/v2/config"
-	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/plugin"
 )
@@ -27,6 +26,9 @@ const (
 
 	TopicUpside   = "upside"
 	TopicDownside = "downside"
+
+	TopicNodeProps = "nodeProps"
+	TopicDevices   = "devices"
 )
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
@@ -124,7 +126,7 @@ func (s *sync) receiving() error {
 func (s *sync) dispatch(msg *v1.Message) error {
 	switch msg.Kind {
 	case v1.MessageReport:
-		shadow, err := s.nod.Get()
+		_, err := s.nod.Get()
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -137,25 +139,29 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if len(desire) == 0 {
 			return nil
 		}
-		_, err = s.nod.Desire(desire, true)
+		delta, err := s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
-		if !s.cfg.Event.Notify {
-			return nil
+		if s.cfg.Event.Notify {
+			if val, ok := delta[v1.KeyNodeProps]; ok {
+				props, _ := val.(map[string]interface{})
+				if len(props) > 0 {
+					msg := &v1.Message{Kind: v1.MessageDelta, Content: v1.LazyValue{Value: props}}
+					s.log.Debug("sync node props", log.Any("node props msg", msg))
+					return s.pb.Publish(TopicNodeProps, msg)
+				}
+			}
 		}
-		//TODO move to node.Desire
-		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
-		if err != nil {
-			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
-			return errors.Trace(err)
+		if val, ok := delta[v1.KeyDevices]; ok {
+			devices, _ := val.(map[string]interface{})
+			if len(devices) > 0 {
+				msg := &v1.Message{Kind: v1.MessageDelta, Content: v1.LazyValue{Value: devices}}
+				s.log.Debug("sync devices msg", log.Any("devices msg", msg))
+				return s.pb.Publish(TopicDevices, msg)
+			}
 		}
-		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
-		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
-			s.log.Error("failed to publish event", log.Any("event", evt), log.Error(err))
-		}
-		s.log.Debug("success to publish event", log.Any("event", evt))
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDownside, msg)
@@ -245,29 +251,27 @@ func (s *sync) reportAndDesire() error {
 		if len(desire) == 0 {
 			return nil
 		}
-		_, err = s.nod.Desire(desire, true)
+		delta, err := s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
-		if !s.cfg.Event.Notify {
-			return nil
+		if s.cfg.Event.Notify {
+			if val, ok := delta[v1.KeyNodeProps]; ok {
+				props, _ := val.(map[string]interface{})
+				if len(props) > 0 {
+					s.log.Debug("sync node props", log.Any("node props", props))
+					return s.pb.Publish(TopicNodeProps, props)
+				}
+			}
 		}
-		// TODO remove
-		shadow, err = s.nod.Get()
-		if err != nil {
-			return errors.Trace(err)
+		if val, ok := delta[v1.KeyDevices]; ok {
+			devices, _ := val.(map[string]interface{})
+			if len(devices) > 0 {
+				s.log.Debug("sync devices msg", log.Any("devices", devices))
+				return s.pb.Publish(TopicDevices, devices)
+			}
 		}
-		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
-		if err != nil {
-			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
-			return errors.Trace(err)
-		}
-		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
-		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
-			s.log.Error("failed to publish event", log.Any("event", evt), log.Error(err))
-		}
-		s.log.Debug("success to publish event", log.Any("event", evt))
 	}
 	return nil
 }
