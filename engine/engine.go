@@ -56,7 +56,7 @@ type engineImpl struct {
 	cfg             config.Config
 	syn             sync.Sync
 	ami             ami.AMI
-	nod             *node.Node
+	nod             node.Node
 	sto             *bh.Store
 	log             *log.Logger
 	sec             security.Security
@@ -67,7 +67,7 @@ type engineImpl struct {
 	tomb            v2utils.Tomb
 }
 
-func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) (Engine, error) {
+func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync) (Engine, error) {
 	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 

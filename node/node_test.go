@@ -157,11 +157,12 @@ func TestShadowRenew(t *testing.T) {
 	delta, err = ss.Report(report, false)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
-	assert.Len(t, apps, 4)
+	assert.Len(t, apps, 5)
 	assert.Equal(t, "234", apps["app2"])
 	assert.Equal(t, "345", apps["app3"])
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
+	assert.Equal(t, nil, apps["app6"])
 
 	ss, err = NewNode(s)
 	assert.NoError(t, err)
@@ -170,11 +171,12 @@ func TestShadowRenew(t *testing.T) {
 	delta, err = ss.Report(report, false)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
-	assert.Len(t, apps, 4)
+	assert.Len(t, apps, 5)
 	assert.Equal(t, "234", apps["app2"])
 	assert.Equal(t, "345", apps["app3"])
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
+	assert.Equal(t, nil, apps["app6"])
 }
 
 func TestGetStats(t *testing.T) {

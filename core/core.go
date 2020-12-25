@@ -20,7 +20,7 @@ import (
 type Core struct {
 	cfg config.Config
 	sto *bh.Store
-	nod *node.Node
+	nod node.Node
 	eng engine.Engine
 	syn sync.Sync
 	svr *http.Server

@@ -28,9 +28,18 @@ var (
 	ErrParseReport = errors.New("failed to parse report struct")
 )
 
+type Node interface {
+	Get() (m *v1.Node, err error)
+	Desire(desired v1.Desire, override bool) (delta v1.Delta, err error)
+	Report(reported v1.Report, override bool) (delta v1.Delta, err error)
+	GetStats(ctx *routing.Context) (interface{}, error)
+	GetNodeProperties(ctx *routing.Context) (interface{}, error)
+	UpdateNodeProperties(ctx *routing.Context) (interface{}, error)
+}
+
 // TODO define interface and implement
 // Node node
-type Node struct {
+type node struct {
 	tomb  utils.Tomb
 	log   *log.Logger
 	id    []byte
@@ -39,7 +48,7 @@ type Node struct {
 }
 
 // NewNode create a node with shadow
-func NewNode(store *bh.Store) (*Node, error) {
+func NewNode(store *bh.Store) (Node, error) {
 	m := &v1.Node{
 		CreationTimestamp: time.Now(),
 		Desire:            v1.Desire{},
@@ -57,7 +66,7 @@ func NewNode(store *bh.Store) (*Node, error) {
 			"nodeprops": nil,
 		},
 	}
-	n := &Node{
+	n := &node{
 		id:    []byte("baetyl-edge-node"),
 		store: store,
 		log:   log.With(log.Any("core", "node")),
@@ -75,7 +84,7 @@ func NewNode(store *bh.Store) (*Node, error) {
 }
 
 // Get returns node model
-func (n *Node) Get() (m *v1.Node, err error) {
+func (n *node) Get() (m *v1.Node, err error) {
 	err = n.store.Bolt().View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(n.id)
 		prev := b.Get(n.id)
@@ -90,7 +99,7 @@ func (n *Node) Get() (m *v1.Node, err error) {
 
 // TODO remove override option
 // Desire update shadow desired data, then return the delta of desired and reported data
-func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Delta, err error) {
+func (n *node) Desire(desired v1.Desire, override bool) (delta v1.Delta, err error) {
 	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(n.id)
 		prev := bucket.Get(n.id)
@@ -126,7 +135,7 @@ func (n *Node) Desire(desired v1.Desire, override bool) (delta v1.Delta, err err
 
 // TODO remove override option
 // Report update shadow reported data, then return the delta of desired and reported data
-func (n *Node) Report(reported v1.Report, override bool) (delta v1.Delta, err error) {
+func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err error) {
 	err = n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(n.id)
 		prev := bucket.Get(n.id)
@@ -162,7 +171,7 @@ func (n *Node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 
 // GetStatus get status
 // TODO: add an error handling middleware like baetyl-cloud @chensheng
-func (n *Node) GetStats(ctx *routing.Context) (interface{}, error) {
+func (n *node) GetStats(ctx *routing.Context) (interface{}, error) {
 	node, err := n.Get()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -193,7 +202,7 @@ func (n *Node) GetStats(ctx *routing.Context) (interface{}, error) {
 	return view, nil
 }
 
-func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
+func (n *node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	node, err := n.Get()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -220,7 +229,7 @@ func (n *Node) GetNodeProperties(ctx *routing.Context) (interface{}, error) {
 	}, nil
 }
 
-func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
+func (n *node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 	node, err := n.Get()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -261,7 +270,7 @@ func (n *Node) UpdateNodeProperties(ctx *routing.Context) (interface{}, error) {
 }
 
 // Get insert the whole shadow data
-func (n *Node) insert(m *v1.Node) error {
+func (n *node) insert(m *v1.Node) error {
 	return n.store.Bolt().Update(func(tx *bolt.Tx) error {
 		b, err := tx.CreateBucketIfNotExists(n.id)
 		if err != nil {

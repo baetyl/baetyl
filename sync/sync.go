@@ -16,6 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 
 	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/plugin"
 )
@@ -27,8 +28,7 @@ const (
 	TopicUpside   = "upside"
 	TopicDownside = "downside"
 
-	TopicNodeProps = "nodeProps"
-	TopicDevices   = "devices"
+	TopicDM = "dm"
 )
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
@@ -45,7 +45,7 @@ type sync struct {
 	cfg   config.Config
 	link  plugin.Link
 	store *bh.Store
-	nod   *node.Node
+	nod   node.Node
 	tomb  utils.Tomb
 	log   *log.Logger
 	// for downloading objects
@@ -54,7 +54,7 @@ type sync struct {
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
+func NewSync(cfg config.Config, store *bh.Store, nod node.Node) (Sync, error) {
 	link, err := goplugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -148,23 +148,26 @@ func (s *sync) dispatch(msg *v1.Message) error {
 			if val, ok := delta[v1.KeyNodeProps]; ok {
 				props, _ := val.(map[string]interface{})
 				if len(props) > 0 {
-					msg := &v1.Message{Kind: v1.MessageDelta, Content: v1.LazyValue{Value: props}}
+					msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
 					s.log.Debug("sync node props", log.Any("node props msg", msg))
-					return s.pb.Publish(TopicNodeProps, msg)
+					return s.pb.Publish(eventx.TopicEvent, msg)
 				}
 			}
 		}
 		if val, ok := delta[v1.KeyDevices]; ok {
 			devices, _ := val.(map[string]interface{})
 			if len(devices) > 0 {
-				msg := &v1.Message{Kind: v1.MessageDelta, Content: v1.LazyValue{Value: devices}}
+				msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
 				s.log.Debug("sync devices msg", log.Any("devices msg", msg))
-				return s.pb.Publish(TopicDevices, msg)
+				return s.pb.Publish(TopicDM, msg)
 			}
 		}
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDownside, msg)
+	case v1.MessageDeviceProps:
+		s.log.Debug("sync dm msg", log.Any("msg", msg))
+		return s.pb.Publish(TopicDM, msg)
 	default:
 	}
 	return nil
@@ -261,7 +264,7 @@ func (s *sync) reportAndDesire() error {
 				props, _ := val.(map[string]interface{})
 				if len(props) > 0 {
 					s.log.Debug("sync node props", log.Any("node props", props))
-					return s.pb.Publish(TopicNodeProps, props)
+					return s.pb.Publish(eventx.TopicEvent, props)
 				}
 			}
 		}
@@ -269,7 +272,7 @@ func (s *sync) reportAndDesire() error {
 			devices, _ := val.(map[string]interface{})
 			if len(devices) > 0 {
 				s.log.Debug("sync devices msg", log.Any("devices", devices))
-				return s.pb.Publish(TopicDevices, devices)
+				return s.pb.Publish(TopicDM, devices)
 			}
 		}
 	}

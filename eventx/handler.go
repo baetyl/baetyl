@@ -20,7 +20,7 @@ type handler struct {
 func (h *handler) OnMessage(msg interface{}) error {
 	message, _ := msg.(*v1.Message)
 	switch message.Kind {
-	case v1.MessageDelta:
+	case v1.MessageNodeProps:
 		var propsDelta v1.Delta
 		if err := message.Content.Unmarshal(&propsDelta); err != nil {
 			return errors.Trace(err)

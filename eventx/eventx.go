@@ -12,7 +12,10 @@ import (
 
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/plugin"
-	"github.com/baetyl/baetyl/v2/sync"
+)
+
+const (
+	TopicEvent = "event"
 )
 
 type EventX interface {
@@ -37,7 +40,7 @@ func NewEventX(ctx context.Context, cfg config.Config) (EventX, error) {
 		return nil, err
 	}
 	pb := pl.(plugin.Pubsub)
-	ch, err := pb.Subscribe(sync.TopicNodeProps)
+	ch, err := pb.Subscribe(TopicEvent)
 	if err != nil {
 		return nil, err
 	}
