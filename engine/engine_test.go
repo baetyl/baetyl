@@ -72,7 +72,7 @@ uTyXHsnBXFPPo6m/tcqHvIOSek9JIurtAg==
 `
 )
 
-func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
+func prepare(t *testing.T) (node.Node, config.EngineConfig, *bh.Store) {
 	log.Init(log.Config{Level: "debug"})
 
 	f, err := ioutil.TempFile("", t.Name())

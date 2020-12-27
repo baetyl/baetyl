@@ -17,7 +17,7 @@ import (
 type Initialize struct {
 	cfg  config.Config
 	sto  *bh.Store
-	nod  *node.Node
+	nod  node.Node
 	eng  engine.Engine
 	syn  sync.Sync
 	log  *log.Logger

@@ -27,6 +27,8 @@ const (
 
 	TopicUpside   = "upside"
 	TopicDownside = "downside"
+
+	TopicDM = "dm"
 )
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
@@ -43,7 +45,7 @@ type sync struct {
 	cfg   config.Config
 	link  plugin.Link
 	store *bh.Store
-	nod   *node.Node
+	nod   node.Node
 	tomb  utils.Tomb
 	log   *log.Logger
 	// for downloading objects
@@ -52,7 +54,7 @@ type sync struct {
 }
 
 // NewSync create a new sync
-func NewSync(cfg config.Config, store *bh.Store, nod *node.Node) (Sync, error) {
+func NewSync(cfg config.Config, store *bh.Store, nod node.Node) (Sync, error) {
 	link, err := goplugin.GetPlugin(cfg.Plugin.Link)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -124,7 +126,7 @@ func (s *sync) receiving() error {
 func (s *sync) dispatch(msg *v1.Message) error {
 	switch msg.Kind {
 	case v1.MessageReport:
-		shadow, err := s.nod.Get()
+		_, err := s.nod.Get()
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -137,28 +139,35 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if len(desire) == 0 {
 			return nil
 		}
-		_, err = s.nod.Desire(desire, true)
+		delta, err := s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
-		if !s.cfg.Event.Notify {
-			return nil
+		if s.cfg.Event.Notify {
+			if val, ok := delta[v1.KeyNodeProps]; ok {
+				props, _ := val.(map[string]interface{})
+				if len(props) > 0 {
+					msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
+					s.log.Debug("sync node props", log.Any("node props msg", msg))
+					return s.pb.Publish(eventx.TopicEvent, msg)
+				}
+			}
 		}
-		//TODO move to node.Desire
-		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
-		if err != nil {
-			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
-			return errors.Trace(err)
+		if val, ok := delta[v1.KeyDevices]; ok {
+			devices, _ := val.(map[string]interface{})
+			if len(devices) > 0 {
+				msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
+				s.log.Debug("sync devices msg", log.Any("devices msg", msg))
+				return s.pb.Publish(TopicDM, msg)
+			}
 		}
-		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
-		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
-			s.log.Error("failed to publish event", log.Any("event", evt), log.Error(err))
-		}
-		s.log.Debug("success to publish event", log.Any("event", evt))
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDownside, msg)
+	case v1.MessageDeviceProps:
+		s.log.Debug("sync dm msg", log.Any("msg", msg))
+		return s.pb.Publish(TopicDM, msg)
 	default:
 	}
 	return nil
@@ -245,29 +254,27 @@ func (s *sync) reportAndDesire() error {
 		if len(desire) == 0 {
 			return nil
 		}
-		_, err = s.nod.Desire(desire, true)
+		delta, err := s.nod.Desire(desire, true)
 		if err != nil {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
-		if !s.cfg.Event.Notify {
-			return nil
+		if s.cfg.Event.Notify {
+			if val, ok := delta[v1.KeyNodeProps]; ok {
+				props, _ := val.(map[string]interface{})
+				if len(props) > 0 {
+					s.log.Debug("sync node props", log.Any("node props", props))
+					return s.pb.Publish(eventx.TopicEvent, props)
+				}
+			}
 		}
-		// TODO remove
-		shadow, err = s.nod.Get()
-		if err != nil {
-			return errors.Trace(err)
+		if val, ok := delta[v1.KeyDevices]; ok {
+			devices, _ := val.(map[string]interface{})
+			if len(devices) > 0 {
+				s.log.Debug("sync devices msg", log.Any("devices", devices))
+				return s.pb.Publish(TopicDM, devices)
+			}
 		}
-		delta, err := shadow.Desire.DiffWithNil(shadow.Report)
-		if err != nil {
-			s.log.Error("failed to get delta", log.Any("delta", delta), log.Error(err))
-			return errors.Trace(err)
-		}
-		evt := eventx.Event{Type: eventx.TypeDelta, Payload: delta}
-		if err := s.pb.Publish(eventx.TopicEvent, evt); err != nil {
-			s.log.Error("failed to publish event", log.Any("event", evt), log.Error(err))
-		}
-		s.log.Debug("success to publish event", log.Any("event", evt))
 	}
 	return nil
 }

@@ -17,10 +17,16 @@ import (
 	"github.com/baetyl/baetyl/v2/utils"
 )
 
-type Core struct {
+type NewCoreFunc func(ctx context.Context, cfg config.Config) (Core, error)
+
+type Core interface {
+	Close()
+}
+
+type core struct {
 	cfg config.Config
 	sto *bh.Store
-	nod *node.Node
+	nod node.Node
 	eng engine.Engine
 	syn sync.Sync
 	svr *http.Server
@@ -28,12 +34,12 @@ type Core struct {
 }
 
 // NewCore creates a new core
-func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
+func NewCore(ctx context.Context, cfg config.Config) (Core, error) {
 	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c := &Core{}
+	c := &core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -66,7 +72,7 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 	return c, nil
 }
 
-func (c *Core) Close() {
+func (c *core) Close() {
 	if c.svr != nil {
 		c.svr.Close()
 	}
@@ -84,7 +90,7 @@ func (c *Core) Close() {
 	}
 }
 
-func (c *Core) initRouter() fasthttp.RequestHandler {
+func (c *core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
 	router.Get("/node/stats", utils.Wrapper(c.nod.GetStats))
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)

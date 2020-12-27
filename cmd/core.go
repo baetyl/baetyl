@@ -10,6 +10,14 @@ import (
 	"github.com/baetyl/baetyl/v2/plugin"
 )
 
+const (
+	HookNameNewCore = "newCore"
+)
+
+var (
+	Hooks = map[string]interface{}{}
+)
+
 func init() {
 	rootCmd.AddCommand(coreCmd)
 }
@@ -32,7 +40,7 @@ func startCoreService() {
 		}
 		plugin.ConfFile = ctx.ConfFile()
 
-		c, err := core.NewCore(ctx, cfg)
+		c, err := Hooks[HookNameNewCore].(core.NewCoreFunc)(ctx, cfg)
 		if err != nil {
 			return errors.Trace(err)
 		}
