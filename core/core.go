@@ -12,10 +12,13 @@ import (
 	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/store"
 	"github.com/baetyl/baetyl/v2/sync"
 	"github.com/baetyl/baetyl/v2/utils"
 )
+
+type StartCoreServiceFunc func()
 
 type Core struct {
 	cfg config.Config
@@ -91,4 +94,24 @@ func (c *Core) initRouter() fasthttp.RequestHandler {
 	router.Get("/node/properties", utils.Wrapper(c.nod.GetNodeProperties))
 	router.Put("/node/properties", utils.Wrapper(c.nod.UpdateNodeProperties))
 	return router.HandleRequest
+}
+
+func StartCoreService() {
+	context.Run(func(ctx context.Context) error {
+		var cfg config.Config
+		err := ctx.LoadCustomConfig(&cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		plugin.ConfFile = ctx.ConfFile()
+
+		c, err := NewCore(ctx, cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		defer c.Close()
+
+		ctx.Wait()
+		return nil
+	})
 }
