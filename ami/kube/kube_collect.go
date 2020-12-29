@@ -10,6 +10,8 @@ import (
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
+
+	"github.com/baetyl/baetyl/v2/ami"
 )
 
 func (k *kubeImpl) GetMasterNodeName() string {
@@ -65,7 +67,15 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	for _, metric := range nodeMetrics.Items {
 		metrics[metric.Name] = metric
 	}
-
+	var exts map[string]interface{}
+	if extension, ok := ami.Hooks[ami.BaetylStatsExtension]; ok {
+		collectStatsExt, _ := extension.(ami.CollectStatsExt)
+		exts, err = collectStatsExt()
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		k.log.Info("collect extended stats", log.Any("stats", collectStatsExt))
+	}
 	infos := map[string]interface{}{}
 	for _, node := range nodes.Items {
 		nodeStats := &specv1.NodeStats{
@@ -100,6 +110,11 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 					nodeStats.NetworkUnavailable = true
 				default:
 				}
+			}
+		}
+		if len(exts) > 0 {
+			if ext, ok := exts[node.Name]; ok {
+				nodeStats.Extension = ext
 			}
 		}
 		infos[node.Name] = nodeStats

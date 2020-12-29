@@ -21,8 +21,8 @@ type Config struct {
 	Server   http.ServerConfig `yaml:"server" json:"server"`
 	Logger   log.Config        `yaml:"logger" json:"logger"`
 	Plugin   struct {
-		Link   string `yaml:"link" json:"link" default:"httplink"`
-		Pubsub string `yaml:"pubsub" json:"pubsub" default:"defaultpubsub"`
+		Link     string `yaml:"link" json:"link" default:"httplink"`
+		Pubsub   string `yaml:"pubsub" json:"pubsub" default:"defaultpubsub"`
 	} `yaml:"plugin" json:"plugin"`
 }
 

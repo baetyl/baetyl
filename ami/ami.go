@@ -14,9 +14,16 @@ import (
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock -source=ami.go AMI
 
+const (
+	BaetylStatsExtension = "baetyl_stats_extension"
+)
+
 var mu sync.Mutex
 var amiNews = map[string]New{}
 var amiImpls = map[string]AMI{}
+var Hooks = map[string]interface{}{}
+
+type CollectStatsExt func() (map[string]interface{}, error)
 
 type New func(cfg config.AmiConfig) (AMI, error)
 

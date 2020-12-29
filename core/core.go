@@ -12,12 +12,19 @@ import (
 	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/store"
 	"github.com/baetyl/baetyl/v2/sync"
 	"github.com/baetyl/baetyl/v2/utils"
 )
 
-type Core struct {
+type StartCoreServiceFunc func()
+
+type Core interface {
+	Close()
+}
+
+type core struct {
 	cfg config.Config
 	sto *bh.Store
 	nod *node.Node
@@ -28,12 +35,12 @@ type Core struct {
 }
 
 // NewCore creates a new core
-func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
+func NewCore(ctx context.Context, cfg config.Config) (Core, error) {
 	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c := &Core{}
+	c := &core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -66,7 +73,7 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 	return c, nil
 }
 
-func (c *Core) Close() {
+func (c *core) Close() {
 	if c.svr != nil {
 		c.svr.Close()
 	}
@@ -84,11 +91,31 @@ func (c *Core) Close() {
 	}
 }
 
-func (c *Core) initRouter() fasthttp.RequestHandler {
+func (c *core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
 	router.Get("/node/stats", utils.Wrapper(c.nod.GetStats))
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
 	router.Get("/node/properties", utils.Wrapper(c.nod.GetNodeProperties))
 	router.Put("/node/properties", utils.Wrapper(c.nod.UpdateNodeProperties))
 	return router.HandleRequest
+}
+
+func StartCoreService() {
+	context.Run(func(ctx context.Context) error {
+		var cfg config.Config
+		err := ctx.LoadCustomConfig(&cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		plugin.ConfFile = ctx.ConfFile()
+
+		c, err := NewCore(ctx, cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		defer c.Close()
+
+		ctx.Wait()
+		return nil
+	})
 }

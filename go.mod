@@ -6,7 +6,7 @@ replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-2020091
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/baetyl/baetyl-go/v2 v2.1.6
+	github.com/baetyl/baetyl-go/v2 v2.1.9
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/mock v1.3.1
 	github.com/jinzhu/copier v0.1.0
