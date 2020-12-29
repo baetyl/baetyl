@@ -23,7 +23,7 @@ var amiNews = map[string]New{}
 var amiImpls = map[string]AMI{}
 var Hooks = map[string]interface{}{}
 
-type CollectStatsExt func() (map[string]interface{}, error)
+type CollectStatsExtFunc func() (map[string]interface{}, error)
 
 type New func(cfg config.AmiConfig) (AMI, error)
 

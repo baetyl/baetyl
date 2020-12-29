@@ -69,12 +69,16 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	}
 	var exts map[string]interface{}
 	if extension, ok := ami.Hooks[ami.BaetylStatsExtension]; ok {
-		collectStatsExt, _ := extension.(ami.CollectStatsExt)
-		exts, err = collectStatsExt()
-		if err != nil {
-			return nil, errors.Trace(err)
+		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
+		if ok {
+			exts, err = collectStatsExt()
+			if err != nil {
+				k.log.Warn("failed to collect extended stats", log.Error(errors.Trace(err)))
+			}
+			k.log.Debug("collect extended stats successfully", log.Any("stats", exts))
+		} else {
+			k.log.Warn("invalid collecting stats function")
 		}
-		k.log.Info("collect extended stats", log.Any("stats", collectStatsExt))
 	}
 	infos := map[string]interface{}{}
 	for _, node := range nodes.Items {

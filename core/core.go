@@ -20,11 +20,7 @@ import (
 
 type StartCoreServiceFunc func()
 
-type Core interface {
-	Close()
-}
-
-type core struct {
+type Core struct {
 	cfg config.Config
 	sto *bh.Store
 	nod *node.Node
@@ -35,12 +31,12 @@ type core struct {
 }
 
 // NewCore creates a new core
-func NewCore(ctx context.Context, cfg config.Config) (Core, error) {
+func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c := &core{}
+	c := &Core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -73,7 +69,7 @@ func NewCore(ctx context.Context, cfg config.Config) (Core, error) {
 	return c, nil
 }
 
-func (c *core) Close() {
+func (c *Core) Close() {
 	if c.svr != nil {
 		c.svr.Close()
 	}
@@ -91,7 +87,7 @@ func (c *core) Close() {
 	}
 }
 
-func (c *core) initRouter() fasthttp.RequestHandler {
+func (c *Core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
 	router.Get("/node/stats", utils.Wrapper(c.nod.GetStats))
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
