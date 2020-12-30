@@ -538,7 +538,14 @@ func TestEngineImpl_recycleIfNeed(t *testing.T) {
 	n := &specv1.Node{}
 	n.Report = map[string]interface{}{
 		"nodestats": map[string]interface{}{
-			"diskPressure": false,
+			"node-1": map[string]interface{} {
+				"diskPressure": false,
+			},
+		},
+		"node": map[string]interface{}{
+			"node-1": map[string]interface{} {
+				"role": "master",
+			},
 		},
 	}
 	err := e.recycleIfNeed(n)
