@@ -193,13 +193,28 @@ func (e *engineImpl) recycleIfNeed(node *specv1.Node) error {
 	report := node.Report
 	val, ok := report["nodestats"]
 	if !ok {
-		return errors.Errorf("node stats not exist in report data")
+		return errors.New("node stats not exist in report data")
 	}
-	var nodeStats specv1.NodeStats
+	var nodeStats map[string]specv1.NodeStats
 	if err := mapstructure.Decode(val, &nodeStats); err != nil {
 		return errors.Trace(err)
 	}
-	if nodeStats.DiskPressure {
+	val, ok = report["node"]
+	if !ok {
+		return errors.New("node info not exist in report data")
+	}
+	var nodeInfo map[string]specv1.NodeInfo
+	if err := mapstructure.Decode(val, &nodeInfo); err != nil {
+		return errors.Trace(err)
+	}
+	var masterName string
+	for name, info := range nodeInfo {
+		if info.Role == "master" {
+			masterName = name
+			break
+		}
+	}
+	if stats, ok := nodeStats[masterName]; ok && stats.DiskPressure {
 		return e.recycle()
 	}
 	return nil
