@@ -312,7 +312,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 			},
 		},
 	}
-	if strings.Contains(app.Name, BaetylCore) {
+	if strings.Contains(app.Name, specv1.BaetylCore) || strings.Contains(app.Name, specv1.BaetylInit) {
 		deploy.Spec.Template.Spec.ServiceAccountName = ServiceAccountName
 	}
 	return deploy, nil
