@@ -442,6 +442,6 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
-	ami.Hooks[ami.BaetylPrepareDeployExtension] = ami.PrepareDeployExtFunc(PrepareDeploy)
+	ami.Hooks[ami.BaetylPrepareDeploy] = ami.PrepareDeployFunc(PrepareDeploy)
 	return &kubeImpl{cli: &cli, store: sto, knn: "node1", log: log.With()}
 }

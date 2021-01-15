@@ -175,8 +175,8 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 			Value: k.knn,
 		})
 
-		if extension, ok := ami.Hooks[ami.BaetylPrepareDeployExtension]; ok {
-			prepareDeployExt, ok := extension.(ami.PrepareDeployExtFunc)
+		if extension, ok := ami.Hooks[ami.BaetylPrepareDeploy]; ok {
+			prepareDeployExt, ok := extension.(ami.PrepareDeployFunc)
 			if ok {
 				if deploy, err := prepareDeployExt(ns, app, svc, imagePullSecrets); err == nil {
 					deploys[deploy.Name] = deploy
