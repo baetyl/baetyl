@@ -8,6 +8,8 @@ import (
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
 
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/eventx"
@@ -32,6 +34,7 @@ type Core struct {
 
 // NewCore creates a new core
 func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
+	initHooks()
 	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -67,6 +70,10 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 		c.evt.Start()
 	}
 	return c, nil
+}
+
+func initHooks() {
+	ami.Hooks[ami.BaetylPrepareDeployExtension] = ami.PrepareDeployExtFunc(kube.PrepareDeploy)
 }
 
 func (c *Core) Close() {

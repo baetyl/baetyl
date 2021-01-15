@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
 
+	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/store"
 )
 
@@ -111,6 +112,10 @@ func TestPrepareDeploy(t *testing.T) {
 				"memory": "456456",
 			},
 		},
+		Env: []specv1.Environment{{
+			Name:  KubeNodeName,
+			Value: ami.knn,
+		}},
 	}
 	cpuQuan, _ := resource.ParseQuantity("1")
 	memoryQuan, _ := resource.ParseQuantity("456456")
@@ -134,7 +139,7 @@ func TestPrepareDeploy(t *testing.T) {
 			HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := ami.prepareDeploy(ns, app, svc, nil)
+	deploy, err := PrepareDeploy(ns, app, svc, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1
@@ -437,5 +442,6 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
+	ami.Hooks[ami.BaetylPrepareDeployExtension] = ami.PrepareDeployExtFunc(PrepareDeploy)
 	return &kubeImpl{cli: &cli, store: sto, knn: "node1", log: log.With()}
 }
