@@ -75,7 +75,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 }
 
 func initHooks() {
-	ami.Hooks[ami.BaetylPrepareDeployExtension] = ami.PrepareDeployExtFunc(kube.PrepareDeploy)
+	ami.Hooks[ami.BaetylPrepareDeploy] = ami.PrepareDeployFunc(kube.PrepareDeploy)
 }
 
 func (init *Initialize) Close() {
