@@ -8,6 +8,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/baetyl/baetyl/v2/config"
 )
@@ -15,7 +17,8 @@ import (
 //go:generate mockgen -destination=../mock/ami.go -package=mock -source=ami.go AMI
 
 const (
-	BaetylStatsExtension = "baetyl_stats_extension"
+	BaetylStatsExtension         = "baetyl_stats_extension"
+	BaetylPrepareDeployExtension = "baetyl_prepare_deploy_extension"
 )
 
 var mu sync.Mutex
@@ -24,6 +27,7 @@ var amiImpls = map[string]AMI{}
 var Hooks = map[string]interface{}{}
 
 type CollectStatsExtFunc func() (map[string]interface{}, error)
+type PrepareDeployExtFunc func(string, specv1.Application, specv1.Service, []corev1.LocalObjectReference) (*appv1.Deployment, error)
 
 type New func(cfg config.AmiConfig) (AMI, error)
 

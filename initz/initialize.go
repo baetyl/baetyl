@@ -6,6 +6,8 @@ import (
 	v2utils "github.com/baetyl/baetyl-go/v2/utils"
 	bh "github.com/timshannon/bolthold"
 
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/node"
@@ -26,6 +28,7 @@ type Initialize struct {
 
 // NewInitialize creates a new core
 func NewInitialize(cfg config.Config) (*Initialize, error) {
+	initHooks()
 	// to activate if no node cert
 	if !v2utils.FileExists(cfg.Node.Cert) {
 		active, err := NewActivate(&cfg)
@@ -69,6 +72,10 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 	init.eng.Start()
 	init.syn.Start()
 	return init, nil
+}
+
+func initHooks() {
+	ami.Hooks[ami.BaetylPrepareDeployExtension] = ami.PrepareDeployExtFunc(kube.PrepareDeploy)
 }
 
 func (init *Initialize) Close() {
