@@ -217,5 +217,7 @@ func (k *kubeImpl) collectInstanceStats(ns, serviceName string, pod *corev1.Pod)
 			}
 		}
 	}
+	stats.IP = pod.Status.PodIP
+	stats.NodeName = pod.Spec.NodeName
 	return stats
 }

@@ -27,7 +27,13 @@ const (
 
 	TopicUpside   = "upside"
 	TopicDownside = "downside"
+
+	BaetylHookUploadObject = "baetyl_upload_object"
 )
+
+var Hooks = map[string]interface{}{}
+
+type UploadObjectFunc func(dir, file, md5, unpack string) error
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
 type Sync interface {
