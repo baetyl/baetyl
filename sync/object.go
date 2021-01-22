@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
@@ -16,10 +15,6 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
-)
-
-const (
-	flockRetryTimeout = time.Microsecond * 100
 )
 
 func FilterConfig(cfg *specv1.Configuration) {
@@ -65,6 +60,16 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 			os.RemoveAll(dir)
 			return errors.Trace(err)
 		}
+		if hook, ok := Hooks[BaetylHookUploadObject]; ok {
+			if roam, ok := hook.(UploadObjectFunc); ok {
+				log.L().Info("upload file to worker node", log.Any("file", filename))
+				err := roam(dir, filename, obj.MD5, obj.Unpack)
+				if err != nil {
+					log.L().Warn("failed to upload file to node", log.Any("file", filename))
+					return errors.Trace(err)
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -74,11 +79,11 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	if err != nil {
 		return err
 	}
-	if err = flock(lockfile, 0); err != nil {
+	if err = utils.Flock(lockfile, 0); err != nil {
 		return err
 	}
 	clean := func() {
-		funlock(lockfile)
+		utils.Funlock(lockfile)
 		os.Remove(lockfile.Name())
 	}
 	defer clean()
@@ -142,30 +147,4 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		return errors.Errorf("failed to unpack file (%s): '%s' not supported", name, unpack)
 	}
 	return nil
-}
-
-// only works on unix
-func flock(file *os.File, timeout time.Duration) error {
-	var t time.Time
-	if timeout != 0 {
-		t = time.Now()
-	}
-	fd := file.Fd()
-	flag := syscall.LOCK_NB | syscall.LOCK_EX
-	for {
-		err := syscall.Flock(int(fd), flag)
-		if err == nil {
-			return nil
-		} else if err != syscall.EWOULDBLOCK {
-			return err
-		}
-		if timeout != 0 && time.Since(t) > timeout-flockRetryTimeout {
-			return errors.Errorf("time out")
-		}
-		time.Sleep(flockRetryTimeout)
-	}
-}
-
-func funlock(file *os.File) error {
-	return syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
 }
