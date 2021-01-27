@@ -115,9 +115,9 @@ type Record struct {
 }
 
 type ApplicationResource struct {
-	Type    string       `yaml:"type" json:"type"`
-	Name    string       `yaml:"name" json:"name"`
-	Version string       `yaml:"version" json:"version"`
+	Type    string      `yaml:"type" json:"type"`
+	Name    string      `yaml:"name" json:"name"`
+	Version string      `yaml:"version" json:"version"`
 	Value   Application `yaml:"value" json:"value"`
 }
 

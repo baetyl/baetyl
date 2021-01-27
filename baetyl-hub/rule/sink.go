@@ -111,6 +111,7 @@ func (s *sink) goRoutingQ1() error {
 		length int
 	)
 	ticker := time.NewTicker(time.Millisecond * 10)
+	defer ticker.Stop()
 	maxBatchSize := s.broker.Config().Message.Egress.Qos1.Batch.Max
 	for {
 		if !s.tomb.Alive() {
