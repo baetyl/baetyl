@@ -91,7 +91,7 @@ func TestLoadComposeAppConfigCompatible(t *testing.T) {
 				Command: Command{
 					Cmd: []string{"/bin/sh"},
 				},
-				Entrypoint:Entrypoint{
+				Entrypoint: Entrypoint{
 					Entry: []string{"test"},
 				},
 			},

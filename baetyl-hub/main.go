@@ -1,6 +1,9 @@
 package main
 
 import (
+	"net/http"
+	_ "net/http/pprof"
+
 	"github.com/baetyl/baetyl/baetyl-hub/broker"
 	"github.com/baetyl/baetyl/baetyl-hub/config"
 	"github.com/baetyl/baetyl/baetyl-hub/persist"
@@ -28,6 +31,11 @@ func (m *mo) start() error {
 		m.log.Errorln("failed to load config:", err.Error())
 		return err
 	}
+
+	go func() {
+		panic(http.ListenAndServe(":"+m.cfg.Pprof, nil))
+	}()
+
 	m.factory, err = persist.NewFactory(m.cfg.Storage.Dir)
 	if err != nil {
 		m.log.Errorln("failed to new factory:", err.Error())
@@ -77,7 +85,10 @@ func (m *mo) close() {
 }
 
 func main() {
-
+	// go tool pprof http://localhost:6060/debug/pprof/profile
+	go func() {
+		panic(http.ListenAndServe(":8005", nil))
+	}()
 	// // go tool pprof http://localhost:6060/debug/pprof/profile
 	// go func() {
 	// 	err := http.ListenAndServe("localhost:6060", nil)
