@@ -8,6 +8,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/baetyl/baetyl/v2/config"
 )
@@ -16,6 +18,7 @@ import (
 
 const (
 	BaetylStatsExtension = "baetyl_stats_extension"
+	BaetylPrepareDeploy  = "baetyl_prepare_deploy"
 )
 
 var mu sync.Mutex
@@ -24,6 +27,7 @@ var amiImpls = map[string]AMI{}
 var Hooks = map[string]interface{}{}
 
 type CollectStatsExtFunc func() (map[string]interface{}, error)
+type PrepareDeployFunc func(string, specv1.Application, specv1.Service, []corev1.LocalObjectReference) (*appv1.Deployment, error)
 
 type New func(cfg config.AmiConfig) (AMI, error)
 

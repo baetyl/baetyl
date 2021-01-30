@@ -72,7 +72,7 @@ uTyXHsnBXFPPo6m/tcqHvIOSek9JIurtAg==
 `
 )
 
-func prepare(t *testing.T) (node.Node, config.EngineConfig, *bh.Store) {
+func prepare(t *testing.T) (*node.Node, config.EngineConfig, *bh.Store) {
 	log.Init(log.Config{Level: "debug"})
 
 	f, err := ioutil.TempFile("", t.Name())
@@ -538,12 +538,12 @@ func TestEngineImpl_recycleIfNeed(t *testing.T) {
 	n := &specv1.Node{}
 	n.Report = map[string]interface{}{
 		"nodestats": map[string]interface{}{
-			"node-1": map[string]interface{} {
+			"node-1": map[string]interface{}{
 				"diskPressure": false,
 			},
 		},
 		"node": map[string]interface{}{
-			"node-1": map[string]interface{} {
+			"node-1": map[string]interface{}{
 				"role": "master",
 			},
 		},

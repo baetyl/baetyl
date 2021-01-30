@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	cmd.Hooks[cmd.HookNameNewCore] = core.NewCoreFunc(core.NewCore)
+	cmd.Hooks[cmd.HookNameStartCoreService] = core.StartCoreServiceFunc(core.StartCoreService)
 }
 
 func main() {

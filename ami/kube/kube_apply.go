@@ -15,6 +15,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/baetyl/baetyl/v2/ami"
 )
 
 const (
@@ -30,6 +32,10 @@ const (
 	ServiceAccountName = "baetyl-edge-system-service-account"
 	BaetylCore         = "baetyl-core"
 	MasterRole         = "node-role.kubernetes.io/master"
+)
+
+var (
+	ErrPrepareDeploy = errors.New("failed to convert prepareDeploy function")
 )
 
 func (k *kubeImpl) createNamespace(ns string) (*corev1.Namespace, error) {
@@ -164,13 +170,28 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	services := make(map[string]*corev1.Service)
 	deploys := make(map[string]*appv1.Deployment)
 	for _, svc := range app.Services {
-		if deploy, err := k.prepareDeploy(ns, app, svc, imagePullSecrets); err == nil {
-			deploys[deploy.Name] = deploy
+		svc.Env = append(svc.Env, specv1.Environment{
+			Name:  KubeNodeName,
+			Value: k.knn,
+		})
+
+		if extension, ok := ami.Hooks[ami.BaetylPrepareDeploy]; ok {
+			prepareDeployExt, ok := extension.(ami.PrepareDeployFunc)
+			if ok {
+				if deploy, err := prepareDeployExt(ns, app, svc, imagePullSecrets); err == nil {
+					deploys[deploy.Name] = deploy
+				} else {
+					return errors.Trace(err)
+				}
+				if service := k.prepareService(ns, app.Name, &svc); service != nil {
+					services[service.Name] = service
+				}
+				k.log.Debug("prepare deploy successfully", log.Any("func", prepareDeployExt))
+			} else {
+				return errors.Trace(ErrPrepareDeploy)
+			}
 		} else {
-			return errors.Trace(err)
-		}
-		if service := k.prepareService(ns, app.Name, &svc); service != nil {
-			services[service.Name] = service
+			return errors.Trace(ErrPrepareDeploy)
 		}
 	}
 	if err := k.applyDeploys(ns, deploys); err != nil {
@@ -220,7 +241,7 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 	return nil
 }
 
-func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service specv1.Service,
+func PrepareDeploy(ns string, app specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
 	var c corev1.Container
 	var volumes []corev1.Volume
@@ -237,11 +258,6 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 			c.Resources.Limits[corev1.ResourceName(n)] = quantity
 		}
 	}
-	env := corev1.EnvVar{
-		Name:  KubeNodeName,
-		Value: k.knn,
-	}
-	c.Env = append(c.Env, env)
 	if sc := service.SecurityContext; sc != nil {
 		c.SecurityContext = &corev1.SecurityContext{
 			Privileged: &sc.Privileged,
@@ -312,7 +328,7 @@ func (k *kubeImpl) prepareDeploy(ns string, app specv1.Application, service spec
 			},
 		},
 	}
-	if strings.Contains(app.Name, BaetylCore) {
+	if strings.Contains(app.Name, specv1.BaetylCore) || strings.Contains(app.Name, specv1.BaetylInit) {
 		deploy.Spec.Template.Spec.ServiceAccountName = ServiceAccountName
 	}
 	return deploy, nil

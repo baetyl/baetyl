@@ -29,7 +29,13 @@ const (
 	TopicDownside = "downside"
 
 	TopicDM = "dm"
+
+	BaetylHookUploadObject = "baetyl_upload_object"
 )
+
+var Hooks = map[string]interface{}{}
+
+type UploadObjectFunc func(dir, file, md5, unpack string) error
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
 type Sync interface {
@@ -275,6 +281,7 @@ func (s *sync) reportAndDesire() error {
 				return s.pb.Publish(TopicDM, devices)
 			}
 		}
+		s.log.Debug("success to publish event", log.Any("event", evt))
 	}
 	return nil
 }
