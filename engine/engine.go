@@ -234,12 +234,18 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
 	apps := make([]specv1.AppInfo, 0)
+	filterStats := make([]specv1.AppStats, 0)
 	for _, info := range appStats {
+		// Todo remove after baetyl supports DaemonSet
+		if strings.Contains(info.Name, specv1.BaetylAgent) {
+			continue
+		}
 		app := specv1.AppInfo{
 			Name:    info.Name,
 			Version: info.Version,
 		}
 		apps = append(apps, app)
+		filterStats = append(filterStats, info)
 	}
 	if desire != nil {
 		apps = alignApps(apps, desire.AppInfos(isSys))
@@ -250,7 +256,7 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 		"nodestats": nodeStats,
 	}
 	r.SetAppInfos(isSys, apps)
-	r.SetAppStats(isSys, appStats)
+	r.SetAppStats(isSys, filterStats)
 	return r
 }
 
