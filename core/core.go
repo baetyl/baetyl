@@ -8,22 +8,21 @@ import (
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
 
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/store"
 	"github.com/baetyl/baetyl/v2/sync"
 	"github.com/baetyl/baetyl/v2/utils"
 )
 
-type NewCoreFunc func(ctx context.Context, cfg config.Config) (Core, error)
+type StartCoreServiceFunc func()
 
-type Core interface {
-	Close()
-}
-
-type core struct {
+type Core struct {
 	cfg config.Config
 	sto *bh.Store
 	nod node.Node
@@ -34,12 +33,13 @@ type core struct {
 }
 
 // NewCore creates a new core
-func NewCore(ctx context.Context, cfg config.Config) (Core, error) {
+func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
+	initHooks()
 	err := utils.ExtractNodeInfo(cfg.Node)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c := &core{}
+	c := &Core{}
 	c.sto, err = store.NewBoltHold(cfg.Store.Path)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -72,7 +72,11 @@ func NewCore(ctx context.Context, cfg config.Config) (Core, error) {
 	return c, nil
 }
 
-func (c *core) Close() {
+func initHooks() {
+	ami.Hooks[ami.BaetylPrepareDeploy] = ami.PrepareDeployFunc(kube.PrepareDeploy)
+}
+
+func (c *Core) Close() {
 	if c.svr != nil {
 		c.svr.Close()
 	}
@@ -90,11 +94,31 @@ func (c *core) Close() {
 	}
 }
 
-func (c *core) initRouter() fasthttp.RequestHandler {
+func (c *Core) initRouter() fasthttp.RequestHandler {
 	router := routing.New()
 	router.Get("/node/stats", utils.Wrapper(c.nod.GetStats))
 	router.Get("/services/<service>/log", c.eng.GetServiceLog)
 	router.Get("/node/properties", utils.Wrapper(c.nod.GetNodeProperties))
 	router.Put("/node/properties", utils.Wrapper(c.nod.UpdateNodeProperties))
 	return router.HandleRequest
+}
+
+func StartCoreService() {
+	context.Run(func(ctx context.Context) error {
+		var cfg config.Config
+		err := ctx.LoadCustomConfig(&cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		plugin.ConfFile = ctx.ConfFile()
+
+		c, err := NewCore(ctx, cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		defer c.Close()
+
+		ctx.Wait()
+		return nil
+	})
 }

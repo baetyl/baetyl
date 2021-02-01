@@ -29,7 +29,13 @@ const (
 	TopicDownside = "downside"
 
 	TopicDM = "dm"
+
+	BaetylHookUploadObject = "baetyl_upload_object"
 )
+
+var Hooks = map[string]interface{}{}
+
+type UploadObjectFunc func(dir, file, md5, unpack string) error
 
 //go:generate mockgen -destination=../mock/sync.go -package=mock -source=sync.go Sync
 type Sync interface {
@@ -155,8 +161,8 @@ func (s *sync) dispatch(msg *v1.Message) error {
 			}
 		}
 		if val, ok := delta[v1.KeyDevices]; ok {
-			devices, _ := val.(map[string]interface{})
-			if len(devices) > 0 {
+			devices, _ := val.([]interface{})
+			if len(devices) > 0 && v1.BaetylCore == os.Getenv(context.KeySvcName) {
 				msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
 				s.log.Debug("sync devices msg", log.Any("devices msg", msg))
 				return s.pb.Publish(TopicDM, msg)
@@ -165,9 +171,11 @@ func (s *sync) dispatch(msg *v1.Message) error {
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDownside, msg)
-	case v1.MessageDeviceProps:
-		s.log.Debug("sync dm msg", log.Any("msg", msg))
-		return s.pb.Publish(TopicDM, msg)
+	case v1.MessageDeviceDelta, v1.MessageDeviceEvent:
+		if v1.BaetylCore == os.Getenv(context.KeySvcName) {
+			s.log.Debug("sync dm msg", log.Any("msg", msg))
+			return s.pb.Publish(TopicDM, msg)
+		}
 	default:
 	}
 	return nil
@@ -269,7 +277,7 @@ func (s *sync) reportAndDesire() error {
 			}
 		}
 		if val, ok := delta[v1.KeyDevices]; ok {
-			devices, _ := val.(map[string]interface{})
+			devices, _ := val.([]interface{})
 			if len(devices) > 0 {
 				s.log.Debug("sync devices msg", log.Any("devices", devices))
 				return s.pb.Publish(TopicDM, devices)

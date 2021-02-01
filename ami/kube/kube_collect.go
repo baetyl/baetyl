@@ -10,6 +10,8 @@ import (
 	"k8s.io/client-go/tools/reference"
 	"k8s.io/kubectl/pkg/scheme"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
+
+	"github.com/baetyl/baetyl/v2/ami"
 )
 
 func (k *kubeImpl) GetMasterNodeName() string {
@@ -65,7 +67,19 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	for _, metric := range nodeMetrics.Items {
 		metrics[metric.Name] = metric
 	}
-
+	var exts map[string]interface{}
+	if extension, ok := ami.Hooks[ami.BaetylStatsExtension]; ok {
+		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
+		if ok {
+			exts, err = collectStatsExt()
+			if err != nil {
+				k.log.Warn("failed to collect extended stats", log.Error(errors.Trace(err)))
+			}
+			k.log.Debug("collect extended stats successfully", log.Any("stats", exts))
+		} else {
+			k.log.Warn("invalid collecting stats function")
+		}
+	}
 	infos := map[string]interface{}{}
 	for _, node := range nodes.Items {
 		nodeStats := &specv1.NodeStats{
@@ -100,6 +114,11 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 					nodeStats.NetworkUnavailable = true
 				default:
 				}
+			}
+		}
+		if len(exts) > 0 {
+			if ext, ok := exts[node.Name]; ok {
+				nodeStats.Extension = ext
 			}
 		}
 		infos[node.Name] = nodeStats
@@ -198,5 +217,7 @@ func (k *kubeImpl) collectInstanceStats(ns, serviceName string, pod *corev1.Pod)
 			}
 		}
 	}
+	stats.IP = pod.Status.PodIP
+	stats.NodeName = pod.Spec.NodeName
 	return stats
 }
