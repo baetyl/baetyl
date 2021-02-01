@@ -111,9 +111,13 @@ func TestCollect(t *testing.T) {
 		Name:    "app1",
 		Version: "v1",
 	}
+	infoAgent := specv1.AppInfo{
+		Name:    "baetyl-agent-xx",
+		Version: "v1",
+	}
 	ns := context.EdgeNamespace()
 	apps := []specv1.AppInfo{info}
-	appStats := []specv1.AppStats{{AppInfo: info}}
+	appStats := []specv1.AppStats{{AppInfo: info}, {AppInfo: infoAgent}}
 	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
