@@ -130,7 +130,7 @@ func TestCollect(t *testing.T) {
 	assert.Equal(t, resNode, nodeInfo)
 	assert.Equal(t, resNodeStats, nodeStats)
 	assert.Equal(t, resApps, apps)
-	assert.Equal(t, resAppStats, appStats)
+	assert.EqualValues(t, resAppStats, []specv1.AppStats{{AppInfo: info}})
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
@@ -153,7 +153,9 @@ func TestCollect(t *testing.T) {
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
 	assert.Equal(t, resApps, []specv1.AppInfo{})
-	assert.Nil(t, resAppStats)
+	resStats, ok := resAppStats.([]specv1.AppStats)
+	assert.True(t, ok)
+	assert.Equal(t, 0, len(resStats))
 }
 
 func TestEngine(t *testing.T) {
