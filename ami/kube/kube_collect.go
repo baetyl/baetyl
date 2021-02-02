@@ -189,14 +189,14 @@ func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats,
 	if err != nil {
 		return errors.Trace(err)
 	}
+	if pods == nil || len(pods.Items) == 0 {
+		return nil
+	}
 	for _, pod := range pods.Items {
 		if stats.InstanceStats == nil {
 			stats.InstanceStats = map[string]specv1.InstanceStats{}
 		}
 		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, &pod)
-	}
-	if pods == nil || len(pods.Items) == 0 {
-		return nil
 	}
 	stats.Status = getAppStatus(stats.InstanceStats)
 	appStats[appName] = stats
