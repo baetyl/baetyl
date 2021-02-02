@@ -83,10 +83,5 @@ func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 		return nil, errors.Trace(err)
 	}
 	res = append(res, dss...)
-	sss, err := k.collectStatefulSetStats(ns)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	res = append(res, sss...)
 	return res, nil
 }

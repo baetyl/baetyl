@@ -172,29 +172,6 @@ func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
 	return res, nil
 }
 
-func (k *kubeImpl) collectStatefulSetStats(ns string) ([]specv1.AppStats, error) {
-	deploys, err := k.cli.app.StatefulSets(ns).List(metav1.ListOptions{})
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
-	appStats := map[string]specv1.AppStats{}
-	for _, deploy := range deploys.Items {
-		appName := deploy.Labels[AppName]
-		appVersion := deploy.Labels[AppVersion]
-		serviceName := deploy.Labels[ServiceName]
-		err = k.collectAppStats(appStats, ns, appName, specv1.AppDeployTypeStatefulSet,
-			appVersion, serviceName, deploy.Spec.Selector.MatchLabels)
-		if err != nil {
-			return nil, errors.Trace(err)
-		}
-	}
-	var res []specv1.AppStats
-	for _, stats := range appStats {
-		res = append(res, stats)
-	}
-	return res, nil
-}
-
 func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats,
 	ns, tp, appName, appVersion, serviceName string, set labels.Set) error {
 	if appName == "" || serviceName == "" {
