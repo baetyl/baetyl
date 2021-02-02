@@ -150,12 +150,12 @@ func (k *kubeImpl) collectDeploymentStats(ns string) ([]specv1.AppStats, error) 
 }
 
 func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
-	deploys, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{})
+	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
-	for _, deploy := range deploys.Items {
+	for _, deploy := range daemons.Items {
 		appName := deploy.Labels[AppName]
 		appVersion := deploy.Labels[AppVersion]
 		serviceName := deploy.Labels[ServiceName]
