@@ -446,11 +446,7 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 		}
 		// generate cert
 		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
-		max := len(svc.Name)
-		if max > 10 {
-			max = 10
-		}
-		suffix := fmt.Sprintf("%x-%s", md5.Sum([]byte(commonName)), svc.Name[0:max])
+		suffix := fmt.Sprintf("%x", md5.Sum([]byte(commonName)))
 		cert, err := e.sec.IssueCertificate(commonName, security.AltNames{
 			IPs: []net.IP{
 				net.IPv4(0, 0, 0, 0),
