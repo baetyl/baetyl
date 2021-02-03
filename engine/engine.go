@@ -110,8 +110,8 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 
 func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
-	// only the core module supports remote debugging
-	if os.Getenv(context.KeyRunMode) != "kube" || os.Getenv(context.KeySvcName) != specv1.BaetylCore {
+	// Todo : improve, only the core module supports remote debugging
+	if os.Getenv(context.KeySvcName) != specv1.BaetylCore {
 		return
 	}
 	ch, err := e.pb.Subscribe(sync.TopicDownside)
