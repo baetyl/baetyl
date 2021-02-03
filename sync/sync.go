@@ -123,6 +123,8 @@ func (s *sync) receiving() error {
 				s.log.Error("failed to receive msg", log.Error(err))
 				continue
 			}
+		default:
+			s.log.Warn("failed to dispatch, message will be discarded")
 		}
 	}
 }

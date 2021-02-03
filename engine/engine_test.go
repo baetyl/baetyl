@@ -451,8 +451,8 @@ func TestInjectCert(t *testing.T) {
 
 	cn0 := app.Name + ".s0"
 	cn1 := app.Name + ".s1234567890"
-	suffix0 := fmt.Sprintf("%x", md5.Sum([]byte(cn0))) + "-s0"
-	suffix1 := fmt.Sprintf("%x", md5.Sum([]byte(cn1))) + "-s123456789"
+	suffix0 := fmt.Sprintf("%x", md5.Sum([]byte(cn0)))
+	suffix1 := fmt.Sprintf("%x", md5.Sum([]byte(cn1)))
 
 	mockSecurity.EXPECT().GetCA().Return([]byte(caCrt), nil).Times(1)
 	mockSecurity.EXPECT().IssueCertificate(gomock.Any(), gomock.Any()).Return(&pki.CertPem{
