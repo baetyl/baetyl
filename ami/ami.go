@@ -41,7 +41,7 @@ type Pipe struct {
 // AMI app model interfaces
 type AMI interface {
 	// node
-	// TODO remove GetMasterNodeNamegit
+	// TODO remove GetMasterNodeName
 	GetMasterNodeName() string
 	CollectNodeInfo() (map[string]interface{}, error)
 	CollectNodeStats() (map[string]interface{}, error)
@@ -54,7 +54,10 @@ type AMI interface {
 	// TODO: update
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 
+	// RemoteCommand remote debug
 	RemoteCommand(option DebugOptions, pipe Pipe) error
+
+	UpdateNodeLabels(string, map[string]string) error
 }
 
 type DebugOptions struct {

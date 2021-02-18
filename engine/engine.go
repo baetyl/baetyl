@@ -110,10 +110,6 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod *node.Node, syn sync.Sync) 
 
 func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
-	// Todo : improve, only the core module supports remote debugging
-	if os.Getenv(context.KeySvcName) != specv1.BaetylCore {
-		return
-	}
 	ch, err := e.pb.Subscribe(sync.TopicDownside)
 	if err != nil {
 		e.log.Error("failed to subscribe downside topic", log.Any("topic", sync.TopicDownside), log.Error(err))

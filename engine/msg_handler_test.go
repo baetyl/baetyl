@@ -6,6 +6,7 @@ import (
 	gosync "sync"
 	"testing"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/plugin"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
@@ -27,6 +28,8 @@ var (
 )
 
 func TestHandlerDownside(t *testing.T) {
+	err := os.Setenv(context.KeySvcName, specV1.BaetylCore)
+	assert.NoError(t, err)
 	// prepare struct
 	cfg := config.Config{}
 
@@ -154,6 +157,39 @@ func TestHandlerDownside(t *testing.T) {
 	engMsgWG.Add(1)
 	err = h.OnMessage(msg7)
 	assert.Error(t, err, os.ErrInvalid)
+
+	// msg 8 update node label success
+	msg8 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd":     specV1.MessageCommandNodeLabel,
+			"subName": "node01",
+		},
+		Content: specV1.LazyValue{
+			Value: map[string]string{
+				"beta.kubernetes.io/arch":        "amd64",
+				"beta.kubernetes.io/os":          "linux",
+				"kubernetes.io/arch":             "amd64",
+				"kubernetes.io/hostname":         "docker-desktop",
+				"kubernetes.io/os":               "linux",
+				"node-role.kubernetes.io/master": "",
+				"a":                              "b",
+			},
+		},
+	}
+	ami.EXPECT().UpdateNodeLabels("node01", gomock.Any()).Return(nil).Times(1)
+	err = h.OnMessage(msg8)
+	assert.NoError(t, err)
+
+	// msg 9 update node label err sub name
+	msg9 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageCommandNodeLabel,
+		},
+	}
+	err = h.OnMessage(msg9)
+	assert.Error(t, err, ErrSubNodeName)
 
 	engMsgWG.Wait()
 }
