@@ -2,7 +2,9 @@ package engine
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -17,6 +19,7 @@ const (
 	ErrGetChain             = "failed to get connected chain"
 	ErrPublishDownsideChain = "failed to publish downside chain"
 	ErrExecData             = "failed to exec"
+	ErrSubNodeName          = "failed to get sub node name"
 	ErrTimeout              = "engine timeout"
 )
 
@@ -28,6 +31,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 	m := msg.(*v1.Message)
 	h.log.Debug("engine downside msg", log.Any("msg", m))
 
+	// Todo : improve, only the core module supports remote debugging
+	if os.Getenv(context.KeySvcName) != v1.BaetylCore {
+		return nil
+	}
+
 	key := fmt.Sprintf("%s_%s_%s_%s", m.Metadata["namespace"], m.Metadata["name"], m.Metadata["container"], m.Metadata["token"])
 	downside := fmt.Sprintf("%s_%s", key, "down")
 	h.log.Debug("engine pub downside topic", log.Any("topic", downside))
@@ -35,13 +43,18 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 	switch m.Kind {
 	case v1.MessageCMD:
 		switch m.Metadata["cmd"] {
-		case "connect":
+		case v1.MessageCommandConnect:
 			err := h.connect(key, m)
 			if err != nil {
 				return err
 			}
-		case "disconnect":
+		case v1.MessageCommandDisconnect:
 			err := h.disconnect(key, m)
+			if err != nil {
+				return err
+			}
+		case v1.MessageCommandNodeLabel:
+			err := h.nodeLabel(m)
 			if err != nil {
 				return err
 			}
@@ -114,6 +127,23 @@ func (h *handlerDownside) disconnect(key string, m *v1.Message) error {
 		return err
 	}
 	h.chains.Delete(key)
+	return nil
+}
+
+func (h *handlerDownside) nodeLabel(m *v1.Message) error {
+	nodeName, ok := m.Metadata["subName"]
+	if !ok {
+		return errors.New(ErrSubNodeName)
+	}
+	labels := new(map[string]string)
+	err := m.Content.Unmarshal(labels)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	err = h.ami.UpdateNodeLabels(nodeName, *labels)
+	if err != nil {
+		return errors.Trace(err)
+	}
 	return nil
 }
 

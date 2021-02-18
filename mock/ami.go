@@ -150,3 +150,17 @@ func (mr *MockAMIMockRecorder) RemoteCommand(option, pipe interface{}) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteCommand", reflect.TypeOf((*MockAMI)(nil).RemoteCommand), option, pipe)
 }
+
+// UpdateNodeLabels mocks base method
+func (m *MockAMI) UpdateNodeLabels(arg0 string, arg1 map[string]string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateNodeLabels", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateNodeLabels indicates an expected call of UpdateNodeLabels
+func (mr *MockAMIMockRecorder) UpdateNodeLabels(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNodeLabels", reflect.TypeOf((*MockAMI)(nil).UpdateNodeLabels), arg0, arg1)
+}

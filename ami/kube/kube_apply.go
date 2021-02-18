@@ -186,7 +186,7 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 				if service := k.prepareService(ns, app.Name, &svc); service != nil {
 					services[service.Name] = service
 				}
-				k.log.Debug("prepare deploy successfully", log.Any("func", prepareDeployExt))
+				k.log.Debug("prepare deploy successfully")
 			} else {
 				return errors.Trace(ErrPrepareDeploy)
 			}

@@ -61,9 +61,14 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 	}, nil
 }
 
+// TODO: impl native UpdateNodeLabels
+func (impl *nativeImpl) UpdateNodeLabels(string, map[string]string) error {
+	return errors.New("failed to update node label, function has not been implemented")
+}
+
 // TODO: impl native RemoteCommand
-func (impl *nativeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
-	return errors.New("failed to Start remote debugging, function has not been implemented")
+func (impl *nativeImpl) RemoteCommand(ami.DebugOptions, ami.Pipe) error {
+	return errors.New("failed to start remote debugging, function has not been implemented")
 }
 
 func (impl *nativeImpl) GetMasterNodeName() string {
