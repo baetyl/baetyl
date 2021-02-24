@@ -32,7 +32,7 @@ type Config struct {
 			Interval time.Duration `yaml:"interval" json:"interval" default:"1m"`
 		} `yaml:"report" json:"report"`
 	} `yaml:"metrics" json:"metrics"`
-	Pprof string `yaml:"pprof" json:"pprof" default:"1m"`
+	Pprof string `yaml:"pprof" json:"pprof" default:"8005"`
 }
 
 // New config

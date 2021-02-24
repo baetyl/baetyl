@@ -85,10 +85,6 @@ func (m *mo) close() {
 }
 
 func main() {
-	// go tool pprof http://localhost:6060/debug/pprof/profile
-	go func() {
-		panic(http.ListenAndServe(":8005", nil))
-	}()
 	// // go tool pprof http://localhost:6060/debug/pprof/profile
 	// go func() {
 	// 	err := http.ListenAndServe("localhost:6060", nil)
