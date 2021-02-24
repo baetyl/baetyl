@@ -22,6 +22,31 @@ import (
 	"github.com/baetyl/baetyl/v2/store"
 )
 
+func TestCreateNamespace(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "ns"
+	res, err := am.createNamespace(ns)
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, ns, res.Name)
+}
+
+func TestGetNamespace(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	res, err := am.getNamespace(ns)
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	assert.Equal(t, ns, res.Name)
+}
+
+func TestCheckAndCreateNamespace(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "ns"
+	err := am.checkAndCreateNamespace(ns)
+	assert.NoError(t, err)
+}
+
 func TestApplyApplication(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
@@ -139,7 +164,7 @@ func TestPrepareDeploy(t *testing.T) {
 			HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := PrepareDeploy(ns, app, svc, nil)
+	deploy, err := prepareDeploy(ns, &app, svc, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1
@@ -260,6 +285,35 @@ func TestApplyDeploys(t *testing.T) {
 		},
 	}
 	err = ami.applyDeploys(ns, wrongDs)
+	assert.Error(t, err)
+}
+
+func TestApplyDaemons(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	lables := map[string]string{
+		"baetyl": "baetyl",
+	}
+	ds := map[string]*appv1.DaemonSet{
+		"d1": {
+			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: ns, Labels: lables},
+		},
+		"d2": {
+			ObjectMeta: metav1.ObjectMeta{Name: "d2", Namespace: ns, Labels: lables},
+		},
+	}
+	err := am.applyDaemons(ns, ds)
+	assert.NoError(t, err)
+
+	wrongDs := map[string]*appv1.DaemonSet{
+		"d1": {
+			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: "default", Labels: lables},
+		},
+		"d3": {
+			ObjectMeta: metav1.ObjectMeta{Name: "d3", Namespace: "default", Labels: lables},
+		},
+	}
+	err = am.applyDaemons(ns, wrongDs)
 	assert.Error(t, err)
 }
 
@@ -425,6 +479,9 @@ func genApplyRuntime() []runtime.Object {
 		&appv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: ns},
 		},
+		&appv1.DaemonSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: ns},
+		},
 	}
 	return rs
 }
@@ -442,6 +499,6 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
-	ami.Hooks[ami.BaetylPrepareDeploy] = ami.PrepareDeployFunc(PrepareDeploy)
+	ami.Hooks[ami.BaetylSetAffinity] = ami.SetAffinityFunc(SetAffinity)
 	return &kubeImpl{cli: &cli, store: sto, knn: "node1", log: log.With()}
 }

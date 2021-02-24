@@ -4,7 +4,9 @@ import (
 	"net/http"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/utils"
 	coreV1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/scheme"
 
@@ -42,6 +44,20 @@ func (k *kubeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
 		Stderr: pipe.OutWriter,
 		Tty:    true,
 	})
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
+}
+
+func (k *kubeImpl) UpdateNodeLabels(name string, labels map[string]string) error {
+	defer utils.Trace(k.log.Debug, "UpdateNodeLabels")()
+	n, err := k.cli.core.Nodes().Get(name, metav1.GetOptions{})
+	if err != nil {
+		return errors.Trace(err)
+	}
+	n.Labels = labels
+	n, err = k.cli.core.Nodes().Update(n)
 	if err != nil {
 		return errors.Trace(err)
 	}
