@@ -72,5 +72,16 @@ func (k *kubeImpl) DeleteApp(ns string, app string) error {
 }
 
 func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
-	return k.collectAppStats(ns)
+	var res []specv1.AppStats
+	dps, err := k.collectDeploymentStats(ns)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	res = append(res, dps...)
+	dss, err := k.collectDaemonSetStats(ns)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	res = append(res, dss...)
+	return res, nil
 }

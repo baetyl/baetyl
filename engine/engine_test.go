@@ -111,9 +111,13 @@ func TestCollect(t *testing.T) {
 		Name:    "app1",
 		Version: "v1",
 	}
+	infoAgent := specv1.AppInfo{
+		Name:    "baetyl-agent-xx",
+		Version: "v1",
+	}
 	ns := context.EdgeNamespace()
 	apps := []specv1.AppInfo{info}
-	appStats := []specv1.AppStats{{AppInfo: info}}
+	appStats := []specv1.AppStats{{AppInfo: info}, {AppInfo: infoAgent}}
 	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
@@ -126,7 +130,7 @@ func TestCollect(t *testing.T) {
 	assert.Equal(t, resNode, nodeInfo)
 	assert.Equal(t, resNodeStats, nodeStats)
 	assert.Equal(t, resApps, apps)
-	assert.Equal(t, resAppStats, appStats)
+	assert.EqualValues(t, resAppStats, []specv1.AppStats{{AppInfo: info}})
 
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
@@ -149,7 +153,9 @@ func TestCollect(t *testing.T) {
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
 	assert.Equal(t, resApps, []specv1.AppInfo{})
-	assert.Nil(t, resAppStats)
+	resStats, ok := resAppStats.([]specv1.AppStats)
+	assert.True(t, ok)
+	assert.Equal(t, 0, len(resStats))
 }
 
 func TestEngine(t *testing.T) {
@@ -445,8 +451,8 @@ func TestInjectCert(t *testing.T) {
 
 	cn0 := app.Name + ".s0"
 	cn1 := app.Name + ".s1234567890"
-	suffix0 := fmt.Sprintf("%x", md5.Sum([]byte(cn0))) + "-s0"
-	suffix1 := fmt.Sprintf("%x", md5.Sum([]byte(cn1))) + "-s123456789"
+	suffix0 := fmt.Sprintf("%x", md5.Sum([]byte(cn0)))
+	suffix1 := fmt.Sprintf("%x", md5.Sum([]byte(cn1)))
 
 	mockSecurity.EXPECT().GetCA().Return([]byte(caCrt), nil).Times(1)
 	mockSecurity.EXPECT().IssueCertificate(gomock.Any(), gomock.Any()).Return(&pki.CertPem{

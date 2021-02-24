@@ -36,13 +36,14 @@ func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 			BootID:           ni.BootID,
 			SystemUUID:       ni.SystemUUID,
 			Role:             "worker",
+			Labels:           node.GetLabels(),
 		}
 		for _, addr := range node.Status.Addresses {
 			if addr.Type == corev1.NodeHostName {
 				nodeInfo.Hostname = addr.Address
 			}
 		}
-		for k, _ := range node.GetLabels() {
+		for k := range node.GetLabels() {
 			if k == MasterRole {
 				nodeInfo.Role = "master"
 				break
@@ -126,7 +127,7 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	return infos, nil
 }
 
-func (k *kubeImpl) collectAppStats(ns string) ([]specv1.AppStats, error) {
+func (k *kubeImpl) collectDeploymentStats(ns string) ([]specv1.AppStats, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -136,35 +137,71 @@ func (k *kubeImpl) collectAppStats(ns string) ([]specv1.AppStats, error) {
 		appName := deploy.Labels[AppName]
 		appVersion := deploy.Labels[AppVersion]
 		serviceName := deploy.Labels[ServiceName]
-		if appName == "" || serviceName == "" {
-			continue
-		}
-		stats, ok := appStats[appName]
-		if !ok {
-			stats = specv1.AppStats{AppInfo: specv1.AppInfo{Name: appName, Version: appVersion}}
-		}
-		selector := labels.SelectorFromSet(deploy.Spec.Selector.MatchLabels)
-		pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+		err = k.collectAppStats(appStats, ns, specv1.ServiceTypeDeployment,
+			appName, appVersion, serviceName, deploy.Spec.Selector.MatchLabels)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		for _, pod := range pods.Items {
-			if stats.InstanceStats == nil {
-				stats.InstanceStats = map[string]specv1.InstanceStats{}
-			}
-			stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, &pod)
-		}
-		if pods == nil || len(pods.Items) == 0 {
-			continue
-		}
-		stats.Status = getAppStatus(stats.InstanceStats)
-		appStats[appName] = stats
 	}
 	var res []specv1.AppStats
 	for _, stats := range appStats {
 		res = append(res, stats)
 	}
 	return res, nil
+}
+
+func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
+	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	appStats := map[string]specv1.AppStats{}
+	for _, daemon := range daemons.Items {
+		appName := daemon.Labels[AppName]
+		appVersion := daemon.Labels[AppVersion]
+		serviceName := daemon.Labels[ServiceName]
+		err = k.collectAppStats(appStats, ns, specv1.ServiceTypeDaemonSet,
+			appName, appVersion, serviceName, daemon.Spec.Selector.MatchLabels)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+	var res []specv1.AppStats
+	for _, stats := range appStats {
+		res = append(res, stats)
+	}
+	return res, nil
+}
+
+func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats,
+	ns, tp, appName, appVersion, serviceName string, set labels.Set) error {
+	if appName == "" || serviceName == "" {
+		return nil
+	}
+	stats, ok := appStats[appName]
+	if !ok {
+		stats = specv1.AppStats{
+			AppInfo:    specv1.AppInfo{Name: appName, Version: appVersion},
+			DeployType: tp,
+		}
+	}
+	selector := labels.SelectorFromSet(set)
+	pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return errors.Trace(err)
+	}
+	if pods == nil || len(pods.Items) == 0 {
+		return nil
+	}
+	for _, pod := range pods.Items {
+		if stats.InstanceStats == nil {
+			stats.InstanceStats = map[string]specv1.InstanceStats{}
+		}
+		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, &pod)
+	}
+	stats.Status = getAppStatus(stats.InstanceStats)
+	appStats[appName] = stats
+	return nil
 }
 
 func getAppStatus(infos map[string]specv1.InstanceStats) specv1.Status {

@@ -110,10 +110,6 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync) (
 
 func (e *engineImpl) Start() {
 	e.tomb.Go(e.reporting)
-	// only the core module supports remote debugging
-	if os.Getenv(context.KeyRunMode) != "kube" || os.Getenv(context.KeySvcName) != specv1.BaetylCore {
-		return
-	}
 	ch, err := e.pb.Subscribe(sync.TopicDownside)
 	if err != nil {
 		e.log.Error("failed to subscribe downside topic", log.Any("topic", sync.TopicDownside), log.Error(err))
@@ -234,12 +230,18 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
 	apps := make([]specv1.AppInfo, 0)
+	filterStats := make([]specv1.AppStats, 0)
 	for _, info := range appStats {
+		// Todo remove after baetyl supports DaemonSet
+		if strings.Contains(info.Name, specv1.BaetylAgent) {
+			continue
+		}
 		app := specv1.AppInfo{
 			Name:    info.Name,
 			Version: info.Version,
 		}
 		apps = append(apps, app)
+		filterStats = append(filterStats, info)
 	}
 	if desire != nil {
 		apps = alignApps(apps, desire.AppInfos(isSys))
@@ -250,7 +252,7 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 		"nodestats": nodeStats,
 	}
 	r.SetAppInfos(isSys, apps)
-	r.SetAppStats(isSys, appStats)
+	r.SetAppStats(isSys, filterStats)
 	return r
 }
 
@@ -440,11 +442,7 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 		}
 		// generate cert
 		commonName := fmt.Sprintf("%s.%s", app.Name, svc.Name)
-		max := len(svc.Name)
-		if max > 10 {
-			max = 10
-		}
-		suffix := fmt.Sprintf("%x-%s", md5.Sum([]byte(commonName)), svc.Name[0:max])
+		suffix := fmt.Sprintf("%x", md5.Sum([]byte(commonName)))
 		cert, err := e.sec.IssueCertificate(commonName, security.AltNames{
 			IPs: []net.IP{
 				net.IPv4(0, 0, 0, 0),
