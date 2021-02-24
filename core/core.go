@@ -73,7 +73,7 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 }
 
 func initHooks() {
-	ami.Hooks[ami.BaetylPrepareDeploy] = ami.PrepareDeployFunc(kube.PrepareDeploy)
+	ami.Hooks[ami.BaetylSetAffinity] = ami.SetAffinityFunc(kube.SetAffinity)
 }
 
 func (c *Core) Close() {
