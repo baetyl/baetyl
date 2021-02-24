@@ -137,7 +137,7 @@ func (k *kubeImpl) collectDeploymentStats(ns string) ([]specv1.AppStats, error) 
 		appName := deploy.Labels[AppName]
 		appVersion := deploy.Labels[AppVersion]
 		serviceName := deploy.Labels[ServiceName]
-		err = k.collectAppStats(appStats, ns, specv1.AppDeployTypeDeployment,
+		err = k.collectAppStats(appStats, ns, specv1.ServiceTypeDeployment,
 			appName, appVersion, serviceName, deploy.Spec.Selector.MatchLabels)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -160,7 +160,7 @@ func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
 		appName := daemon.Labels[AppName]
 		appVersion := daemon.Labels[AppVersion]
 		serviceName := daemon.Labels[ServiceName]
-		err = k.collectAppStats(appStats, ns, specv1.AppDeployTypeDaemonSet,
+		err = k.collectAppStats(appStats, ns, specv1.ServiceTypeDaemonSet,
 			appName, appVersion, serviceName, daemon.Spec.Selector.MatchLabels)
 		if err != nil {
 			return nil, errors.Trace(err)
