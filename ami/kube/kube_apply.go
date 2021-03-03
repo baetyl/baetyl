@@ -128,6 +128,10 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
+	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return errors.Trace(err)
+	}
 	services, err := k.cli.core.Services(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return errors.Trace(err)
@@ -135,6 +139,12 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
 		if err := deployInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
+			return errors.Trace(err)
+		}
+	}
+	daemonInterface := k.cli.app.DaemonSets(ns)
+	for _, d := range daemons.Items {
+		if err := daemonInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
