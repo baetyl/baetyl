@@ -232,10 +232,6 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 	apps := make([]specv1.AppInfo, 0)
 	filterStats := make([]specv1.AppStats, 0)
 	for _, info := range appStats {
-		// Todo remove after baetyl supports DaemonSet
-		if strings.Contains(info.Name, specv1.BaetylAgent) {
-			continue
-		}
 		app := specv1.AppInfo{
 			Name:    info.Name,
 			Version: info.Version,
