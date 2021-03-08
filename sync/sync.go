@@ -150,23 +150,20 @@ func (s *sync) dispatch(msg *v1.Message) error {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
+		if v1.BaetylCore != os.Getenv(context.KeySvcName) {
+			return nil
+		}
 		if s.cfg.Event.Notify {
-			if val, ok := delta[v1.KeyNodeProps]; ok {
-				props, _ := val.(map[string]interface{})
-				if len(props) > 0 {
-					msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
-					s.log.Debug("sync node props", log.Any("node props msg", msg))
-					return s.pb.Publish(eventx.TopicEvent, msg)
-				}
+			if props, ok := delta[v1.KeyNodeProps].(map[string]interface{}); ok && len(props) > 0 {
+				msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
+				s.log.Debug("sync node props", log.Any("node props msg", msg))
+				return s.pb.Publish(eventx.TopicEvent, msg)
 			}
 		}
-		if val, ok := delta[v1.KeyDevices]; ok {
-			devices, _ := val.([]interface{})
-			if len(devices) > 0 && v1.BaetylCore == os.Getenv(context.KeySvcName) {
-				msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
-				s.log.Debug("sync devices msg", log.Any("devices msg", msg))
-				return s.pb.Publish(TopicDM, msg)
-			}
+		if devices, ok := delta[v1.KeyDevices].([]interface{}); ok && len(devices) > 0 {
+			msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
+			s.log.Debug("sync devices msg", log.Any("devices msg", msg))
+			return s.pb.Publish(TopicDM, msg)
 		}
 	case v1.MessageCMD, v1.MessageData:
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
@@ -267,21 +264,20 @@ func (s *sync) reportAndDesire() error {
 			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
 			return errors.Trace(err)
 		}
+		if v1.BaetylCore != os.Getenv(context.KeySvcName) {
+			return nil
+		}
 		if s.cfg.Event.Notify {
-			if val, ok := delta[v1.KeyNodeProps]; ok {
-				props, _ := val.(map[string]interface{})
-				if len(props) > 0 {
-					s.log.Debug("sync node props", log.Any("node props", props))
-					return s.pb.Publish(eventx.TopicEvent, props)
-				}
+			if props, ok := delta[v1.KeyNodeProps].(map[string]interface{}); ok && len(props) > 0 {
+				msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
+				s.log.Debug("sync node props", log.Any("node props msg", msg))
+				return s.pb.Publish(eventx.TopicEvent, msg)
 			}
 		}
-		if val, ok := delta[v1.KeyDevices]; ok {
-			devices, _ := val.([]interface{})
-			if len(devices) > 0 {
-				s.log.Debug("sync devices msg", log.Any("devices", devices))
-				return s.pb.Publish(TopicDM, devices)
-			}
+		if devices, ok := delta[v1.KeyDevices].([]interface{}); ok && len(devices) > 0 {
+			msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
+			s.log.Debug("sync devices msg", log.Any("devices msg", msg))
+			return s.pb.Publish(TopicDM, msg)
 		}
 	}
 	return nil
