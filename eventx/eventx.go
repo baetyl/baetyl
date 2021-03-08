@@ -16,13 +16,7 @@ import (
 
 const (
 	TopicEvent = "event"
-	TypeDelta  = "delta"
 )
-
-type Event struct {
-	Type    string
-	Payload interface{}
-}
 
 type EventX interface {
 	Start()

@@ -50,8 +50,8 @@ func TestNodeShadow(t *testing.T) {
 			name:         "1",
 			desired:      "{}",
 			reported:     "{}",
-			desireDelta:  "{}",
-			reportDelta:  "{}",
+			desireDelta:  `{"core": null}`,
+			reportDelta:  `{"core": null}`,
 			desireStored: "{}",
 			reportStored: `{}`,
 		},
@@ -59,8 +59,8 @@ func TestNodeShadow(t *testing.T) {
 			name:         "2",
 			desired:      `{"name": "module", "version": "45"}`,
 			reported:     `{"name": "module", "version": "43"}`,
-			desireDelta:  `{"name": "module", "version": "45"}`,
-			reportDelta:  `{"version": "45"}`,
+			desireDelta:  `{"name": "module", "version": "45", "core": null}`,
+			reportDelta:  `{"version": "45", "core": null}`,
 			desireStored: `{"name": "module", "version": "45"}`,
 			reportStored: `{"name": "module", "version": "43"}`,
 		},
@@ -68,8 +68,8 @@ func TestNodeShadow(t *testing.T) {
 			name:         "3",
 			desired:      `{"name": "module", "module": {"image": "test:v2"}}`,
 			reported:     `{"name": "module", "module": {"image": "test:v1"}}`,
-			desireDelta:  `{"version": "45", "module": {"image": "test:v2"}}`,
-			reportDelta:  `{"version": "45", "module": {"image": "test:v2"}}`,
+			desireDelta:  `{"version": "45", "module": {"image": "test:v2"}, "core": null}`,
+			reportDelta:  `{"version": "45", "module": {"image": "test:v2"}, "core": null}`,
 			desireStored: `{"name": "module", "version": "45", "module": {"image": "test:v2"}}`,
 			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1"}}`,
 		},
@@ -77,8 +77,8 @@ func TestNodeShadow(t *testing.T) {
 			name:         "4",
 			desired:      `{"module": {"image": "test:v2", "array": []}}`,
 			reported:     `{"module": {"image": "test:v1", "object": {"attr": "value"}}}`,
-			desireDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}}`,
-			reportDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}}`,
+			desireDelta:  `{"version": "45", "module": {"image": "test:v2", "array": []}, "core": null}`,
+			reportDelta:  `{"version": "45", "module": {"image": "test:v2", "array": [], "object": null}, "core": null}`,
 			desireStored: `{"name": "module", "version": "45", "module": {"image": "test:v2", "array": []}}`,
 			reportStored: `{"name": "module", "version": "43", "module": {"image": "test:v1", "object": {"attr": "value"}}}`,
 		},
@@ -87,7 +87,7 @@ func TestNodeShadow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var desired, desireStored v1.Desire
 			var reported, reportStored v1.Report
-			var desireDelta, reportDelta v1.Desire
+			var desireDelta, reportDelta v1.Delta
 			assert.NoError(t, json.Unmarshal([]byte(tt.desired), &desired))
 			assert.NoError(t, json.Unmarshal([]byte(tt.reported), &reported))
 			assert.NoError(t, json.Unmarshal([]byte(tt.desireDelta), &desireDelta))
@@ -157,11 +157,12 @@ func TestShadowRenew(t *testing.T) {
 	delta, err = ss.Report(report, false)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
-	assert.Len(t, apps, 4)
+	assert.Len(t, apps, 5)
 	assert.Equal(t, "234", apps["app2"])
 	assert.Equal(t, "345", apps["app3"])
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
+	assert.Equal(t, nil, apps["app6"])
 
 	ss, err = NewNode(s)
 	assert.NoError(t, err)
@@ -170,11 +171,12 @@ func TestShadowRenew(t *testing.T) {
 	delta, err = ss.Report(report, false)
 	assert.NoError(t, err)
 	apps = delta["apps"].(map[string]interface{})
-	assert.Len(t, apps, 4)
+	assert.Len(t, apps, 5)
 	assert.Equal(t, "234", apps["app2"])
 	assert.Equal(t, "345", apps["app3"])
 	assert.Equal(t, "456", apps["app4"])
 	assert.Equal(t, "", apps["app5"])
+	assert.Equal(t, nil, apps["app6"])
 }
 
 func TestGetStats(t *testing.T) {
