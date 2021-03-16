@@ -328,6 +328,18 @@ func prepareDaemon(ns string, app *specv1.Application, service specv1.Service,
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	if extension, ok := ami.Hooks[ami.BaetylSetAffinity]; ok {
+		setAffinityExt, ok := extension.(ami.SetAffinityFunc)
+		if ok {
+			if podSpec.Affinity, err = setAffinityExt(app.NodeSelector); err != nil {
+				return nil, errors.Trace(err)
+			}
+		} else {
+			return nil, errors.Trace(ErrSetAffinity)
+		}
+	} else {
+		return nil, errors.Trace(ErrSetAffinity)
+	}
 	return &appv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      service.Name,
