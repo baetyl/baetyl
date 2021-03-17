@@ -168,6 +168,7 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		s.log.Debug("sync dm msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDM, msg)
 	case v1.MessageNodeProps:
+		// TODO only update node props
 		desire := v1.Desire{}
 		err := msg.Content.Unmarshal(&desire)
 		if err != nil {
