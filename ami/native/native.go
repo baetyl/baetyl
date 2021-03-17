@@ -27,6 +27,10 @@ import (
 	"github.com/baetyl/baetyl/v2/program"
 )
 
+var (
+	ErrCreateService = errors.New("failed to create service")
+)
+
 func init() {
 	ami.Register("native", newNativeImpl)
 }
@@ -396,26 +400,36 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 
 					curSvcIns := svcInsFile.Name()
 					curPrgName := genServiceInstanceName(ns, curAppName, curAppVer, curSvcName, curSvcIns)
-					svc, err := service.New(nil, &service.Config{
-						Name:             curPrgName,
-						WorkingDirectory: svcInsFile.Name(),
-					})
 					curInsStats := v1.InstanceStats{
 						ServiceName: curSvcName,
 						Name:        curPrgName,
 					}
-					status, err := svc.Status()
+					svc, err := service.New(nil, &service.Config{
+						Name:             curPrgName,
+						WorkingDirectory: svcInsFile.Name(),
+					})
 					if err != nil {
 						curInsStats.Status = v1.Unknown
 						curInsStats.Cause = err.Error()
-					} else {
-						curInsStats.Status = prgStatusToSpecStatus(status)
 					}
-					usage, err := getServiceInsStats(svc)
-					if err != nil {
-						curInsStats.Cause += err.Error()
+					if svc != nil {
+						status, err := svc.Status()
+						if err != nil {
+							curInsStats.Status = v1.Unknown
+							curInsStats.Cause += err.Error()
+						} else {
+							curInsStats.Status = prgStatusToSpecStatus(status)
+						}
+						usage, err := getServiceInsStats(svc)
+						if err != nil {
+							curInsStats.Status = v1.Unknown
+							curInsStats.Cause += err.Error()
+						} else {
+							curInsStats.Usage = usage
+						}
 					} else {
-						curInsStats.Usage = usage
+						curInsStats.Status = v1.Unknown
+						curInsStats.Cause += ErrCreateService.Error()
 					}
 					curAppStats.InstanceStats[curPrgName] = curInsStats
 				}
