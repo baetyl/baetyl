@@ -153,12 +153,8 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if v1.BaetylCore != os.Getenv(context.KeySvcName) {
 			return nil
 		}
-		if s.cfg.Event.Notify {
-			if props, ok := delta[v1.KeyNodeProps].(map[string]interface{}); ok && len(props) > 0 {
-				msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
-				s.log.Debug("sync node props", log.Any("node props msg", msg))
-				return s.pb.Publish(eventx.TopicEvent, msg)
-			}
+		if err := s.sendEvent(delta); err != nil {
+			return errors.Trace(err)
 		}
 		if devices, ok := delta[v1.KeyDevices].([]interface{}); ok && len(devices) > 0 {
 			msg := &v1.Message{Kind: v1.MessageDevices, Content: v1.LazyValue{Value: devices}}
@@ -169,11 +165,42 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		s.log.Debug("sync downside msg", log.Any("msg", msg))
 		return s.pb.Publish(TopicDownside, msg)
 	case v1.MessageDeviceDelta, v1.MessageDeviceEvent:
-		if v1.BaetylCore == os.Getenv(context.KeySvcName) {
-			s.log.Debug("sync dm msg", log.Any("msg", msg))
-			return s.pb.Publish(TopicDM, msg)
+		s.log.Debug("sync dm msg", log.Any("msg", msg))
+		return s.pb.Publish(TopicDM, msg)
+	case v1.MessageNodeProps:
+		// TODO only update node props
+		desire := v1.Desire{}
+		err := msg.Content.Unmarshal(&desire)
+		if err != nil {
+			return errors.Trace(err)
 		}
+		if len(desire) == 0 {
+			return nil
+		}
+		delta, err := s.nod.Desire(desire, true)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		if v1.BaetylCore != os.Getenv(context.KeySvcName) {
+			return nil
+		}
+		if err := s.sendEvent(delta); err != nil {
+			return errors.Trace(err)
+		}
+		s.log.Debug("sync node props", log.Any("msg", msg))
+		return s.pb.Publish(eventx.TopicEvent, msg)
 	default:
+	}
+	return nil
+}
+
+func (s *sync) sendEvent(delta v1.Delta) error {
+	if s.cfg.Event.Notify {
+		if props, ok := delta[v1.KeyNodeProps].(map[string]interface{}); ok && len(props) > 0 {
+			msg := &v1.Message{Kind: v1.MessageNodeProps, Content: v1.LazyValue{Value: props}}
+			s.log.Debug("sync node props", log.Any("node props msg", msg))
+			return s.pb.Publish(eventx.TopicEvent, msg)
+		}
 	}
 	return nil
 }
