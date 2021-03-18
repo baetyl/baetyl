@@ -190,13 +190,13 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 		}
 		switch svc.Type {
 		case specv1.ServiceTypeDaemonSet:
-			if daemon, err := prepareDaemon(ns, app, svc, imagePullSecrets); err != nil {
+			if daemon, err := prepareDaemon(ns, &app, svc, imagePullSecrets); err != nil {
 				return errors.Trace(err)
 			} else {
 				daemons[daemon.Name] = daemon
 			}
 		case specv1.ServiceTypeDeployment:
-			if deploy, err := prepareDeploy(ns, app, svc, imagePullSecrets); err != nil {
+			if deploy, err := prepareDeploy(ns, &app, svc, imagePullSecrets); err != nil {
 				return errors.Trace(err)
 			} else {
 				deploys[deploy.Name] = deploy
@@ -277,9 +277,9 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 	return nil
 }
 
-func prepareDeploy(ns string, app specv1.Application, service specv1.Service,
+func prepareDeploy(ns string, app *specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
-	podSpec, err := prepareInfo(&app, service, imagePullSecrets)
+	podSpec, err := prepareInfo(app, service, imagePullSecrets)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -326,9 +326,9 @@ func prepareDeploy(ns string, app specv1.Application, service specv1.Service,
 	return deploy, nil
 }
 
-func prepareDaemon(ns string, app specv1.Application, service specv1.Service,
+func prepareDaemon(ns string, app *specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.DaemonSet, error) {
-	podSpec, err := prepareInfo(&app, service, imagePullSecrets)
+	podSpec, err := prepareInfo(app, service, imagePullSecrets)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

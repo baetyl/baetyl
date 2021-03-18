@@ -164,7 +164,7 @@ func TestPrepareDeploy(t *testing.T) {
 			HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
 		},
 	}}
-	deploy, err := prepareDeploy(ns, app, svc, nil)
+	deploy, err := prepareDeploy(ns, &app, svc, nil)
 	assert.NoError(t, err)
 	replica := new(int32)
 	*replica = 1
