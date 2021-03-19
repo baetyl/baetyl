@@ -187,8 +187,6 @@ func (s *sync) dispatch(msg *v1.Message) error {
 		if err := s.sendEvent(delta); err != nil {
 			return errors.Trace(err)
 		}
-		s.log.Debug("sync node props", log.Any("msg", msg))
-		return s.pb.Publish(eventx.TopicEvent, msg)
 	default:
 	}
 	return nil
