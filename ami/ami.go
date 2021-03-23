@@ -16,7 +16,7 @@ import (
 //go:generate mockgen -destination=../mock/ami.go -package=mock -source=ami.go AMI
 
 const (
-	BaetylGpuStatsExtension  = "baetyl_gpu_stats_extension"
+	BaetylGPUStatsExtension  = "baetyl_gpu_stats_extension"
 	BaetylNodeStatsExtension = "baetyl_node_stats_extension"
 	BaetylSetAffinity        = "baetyl_set_affinity"
 )

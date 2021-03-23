@@ -70,7 +70,7 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 		metrics[metric.Name] = metric
 	}
 	var gpuExts map[string]interface{}
-	if extension, ok := ami.Hooks[ami.BaetylGpuStatsExtension]; ok {
+	if extension, ok := ami.Hooks[ami.BaetylGPUStatsExtension]; ok {
 		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
 		if ok {
 			gpuExts, err = collectStatsExt()
