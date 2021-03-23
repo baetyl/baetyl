@@ -4,6 +4,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -68,17 +69,30 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	for _, metric := range nodeMetrics.Items {
 		metrics[metric.Name] = metric
 	}
-	var exts map[string]interface{}
-	if extension, ok := ami.Hooks[ami.BaetylStatsExtension]; ok {
+	var gpuExts map[string]interface{}
+	if extension, ok := ami.Hooks[ami.BaetylGPUStatsExtension]; ok {
 		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
 		if ok {
-			exts, err = collectStatsExt()
+			gpuExts, err = collectStatsExt()
 			if err != nil {
-				k.log.Warn("failed to collect extended stats", log.Error(errors.Trace(err)))
+				k.log.Warn("failed to collect gpu stats", log.Error(errors.Trace(err)))
 			}
-			k.log.Debug("collect extended stats successfully", log.Any("stats", exts))
+			k.log.Debug("collect gpu stats successfully", log.Any("gpuStats", gpuExts))
 		} else {
-			k.log.Warn("invalid collecting stats function")
+			k.log.Warn("invalid collecting gpu stats function")
+		}
+	}
+	var nodeExts map[string]interface{}
+	if nodeExtHook, ok := ami.Hooks[ami.BaetylNodeStatsExtension]; ok {
+		nodeStatsExt, ok := nodeExtHook.(ami.CollectStatsExtFunc)
+		if ok {
+			nodeExts, err = nodeStatsExt()
+			if err != nil {
+				k.log.Warn("failed to collect node stats", log.Error(errors.Trace(err)))
+			}
+			k.log.Debug("collect node stats successfully", log.Any("nodeStats", nodeExts))
+		} else {
+			k.log.Warn("invalid collecting node stats function")
 		}
 	}
 	infos := map[string]interface{}{}
@@ -117,11 +131,20 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 				}
 			}
 		}
-		if len(exts) > 0 {
-			if ext, ok := exts[node.Name]; ok {
-				nodeStats.Extension = ext
+		var nodeStatsMerge interface{}
+		if len(gpuExts) > 0 {
+			if ext, ok := gpuExts[node.Name]; ok {
+				nodeStatsMerge = ext
 			}
 		}
+		if len(nodeExts) > 0 {
+			if ext, ok := nodeExts[node.Name]; ok {
+				if err := mergo.Merge(nodeStatsMerge, ext); err != nil {
+					k.log.Warn("fail to merge node stats and node gpu stats")
+				}
+			}
+		}
+		nodeStats.Extension = nodeStatsMerge
 		infos[node.Name] = nodeStats
 	}
 	return infos, nil
