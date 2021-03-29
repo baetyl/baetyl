@@ -131,19 +131,24 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 				}
 			}
 		}
-		var nodeStatsMerge interface{}
+
+		var nodeStatsMerge map[string]interface{}
 		if len(gpuExts) > 0 {
 			if ext, ok := gpuExts[node.Name]; ok {
-				nodeStatsMerge = ext
+				nodeStatsMerge = ext.(map[string]interface{})
 			}
 		}
 		if len(nodeExts) > 0 {
 			if ext, ok := nodeExts[node.Name]; ok {
-				if err := mergo.Merge(nodeStatsMerge, ext); err != nil {
-					k.log.Warn("fail to merge node stats and node gpu stats")
+				if nodeStatsMerge == nil {
+					nodeStatsMerge = make(map[string]interface{}, 0)
+				}
+				if err := mergo.Merge(&nodeStatsMerge, ext.(map[string]interface{})); err != nil {
+					k.log.Warn("fail to merge node stats and node gpu stats", log.Error(err))
 				}
 			}
 		}
+
 		nodeStats.Extension = nodeStatsMerge
 		infos[node.Name] = nodeStats
 	}
