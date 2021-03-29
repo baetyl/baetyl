@@ -9,6 +9,7 @@ require (
 	github.com/baetyl/baetyl-go/v2 v2.1.31
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/mock v1.3.1
+	github.com/imdario/mergo v0.3.5
 	github.com/jinzhu/copier v0.1.0
 	github.com/kardianos/service v1.1.0
 	github.com/mitchellh/mapstructure v1.1.2

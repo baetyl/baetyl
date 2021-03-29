@@ -1,6 +1,7 @@
 package initz
 
 import (
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v2utils "github.com/baetyl/baetyl-go/v2/utils"
@@ -11,10 +12,13 @@ import (
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/engine"
 	"github.com/baetyl/baetyl/v2/node"
+	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/store"
 	"github.com/baetyl/baetyl/v2/sync"
 	"github.com/baetyl/baetyl/v2/utils"
 )
+
+type StartInitServiceFunc func()
 
 type Initialize struct {
 	cfg  config.Config
@@ -88,4 +92,24 @@ func (init *Initialize) Close() {
 	if init.syn != nil {
 		init.syn.Close()
 	}
+}
+
+func StartInitService() {
+	context.Run(func(ctx context.Context) error {
+		var cfg config.Config
+		err := ctx.LoadCustomConfig(&cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		plugin.ConfFile = ctx.ConfFile()
+
+		init, err := NewInitialize(cfg)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		defer init.Close()
+
+		ctx.Wait()
+		return nil
+	})
 }
