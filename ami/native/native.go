@@ -75,6 +75,11 @@ func (impl *nativeImpl) RemoteCommand(ami.DebugOptions, ami.Pipe) error {
 	return errors.New("failed to start remote debugging, function has not been implemented")
 }
 
+// TODO: impl native RemoteLogs
+func (impl *nativeImpl) RemoteLogs(ami.LogsOptions, ami.Pipe) error {
+	return errors.New("failed to start remote debugging, function has not been implemented")
+}
+
 func (impl *nativeImpl) GetMasterNodeName() string {
 	ho, err := host.Info()
 	if err != nil {

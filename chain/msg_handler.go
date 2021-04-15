@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
@@ -25,13 +26,13 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 				Metadata: map[string]string{
 					"success": "false",
 					"msg":     "failed to unmarshal data message",
-					"token":   h.data["token"],
+					"token":   h.token,
 				},
 			})
 			if errPub != nil {
 				h.log.Error("failed to publish unmarshal message", log.Error(err))
 			}
-			return err
+			return errors.Trace(err)
 		}
 
 		_, err = h.pipe.InWriter.Write(cmd)
@@ -42,13 +43,13 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 				Metadata: map[string]string{
 					"success": "false",
 					"msg":     "failed to write debug command",
-					"token":   h.data["token"],
+					"token":   h.token,
 				},
 			})
 			if errPub != nil {
 				h.log.Error("failed to publish debug message", log.Error(err))
 			}
-			return err
+			return errors.Trace(err)
 		}
 	default:
 		h.log.Warn("remote debug message kind not support", log.Any("msg", m))
@@ -62,7 +63,7 @@ func (h *chainHandler) OnTimeout() error {
 		Metadata: map[string]string{
 			"success": "false",
 			"msg":     "chain timeout",
-			"token":   h.data["token"],
+			"token":   h.token,
 		},
 	})
 	if err != nil {
@@ -71,10 +72,10 @@ func (h *chainHandler) OnTimeout() error {
 	return h.pb.Publish(sync.TopicDownside, &v1.Message{
 		Kind: v1.MessageCMD,
 		Metadata: map[string]string{
-			"namespace": h.data["namespace"],
-			"name":      h.data["name"],
-			"container": h.data["container"],
-			"token":     h.data["token"],
+			"namespace": h.namespace,
+			"name":      h.name,
+			"container": h.container,
+			"token":     h.token,
 			"cmd":       "disconnect",
 		},
 	})
