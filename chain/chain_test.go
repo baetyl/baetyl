@@ -24,7 +24,7 @@ var (
 	chainWG = sync.WaitGroup{}
 )
 
-func initChainEnv(t *testing.T) (config.Config, *gomock.Controller, map[string]string) {
+func initChainEnv(t *testing.T) (config.Config, *gomock.Controller, map[string]interface{}) {
 	cfg := config.Config{}
 	cfg.Plugin.Pubsub = "defaultpubsub"
 
@@ -36,7 +36,7 @@ func initChainEnv(t *testing.T) (config.Config, *gomock.Controller, map[string]s
 
 	ctl := gomock.NewController(t)
 
-	data := map[string]string{
+	data := map[string]interface{}{
 		"namespace": "default",
 		"name":      "baetyl-function-0",
 		"container": "function",
@@ -56,7 +56,7 @@ func TestNewChain(t *testing.T) {
 	assert.NotNil(t, c)
 
 	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(os.ErrInvalid).Times(1)
-	err = c.Start()
+	err = c.Debug()
 	assert.NoError(t, err)
 	err = c.Close()
 	assert.NoError(t, err)
@@ -98,7 +98,7 @@ func TestChainMsg(t *testing.T) {
 	pro.Start()
 
 	chainWG.Add(1)
-	err = c.Start()
+	err = c.Debug()
 	assert.NoError(t, err)
 
 	sendMsg := &specv1.Message{

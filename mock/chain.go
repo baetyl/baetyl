@@ -32,18 +32,32 @@ func (m *MockChain) EXPECT() *MockChainMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method
-func (m *MockChain) Start() error {
+// Debug mocks base method
+func (m *MockChain) Debug() error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start")
+	ret := m.ctrl.Call(m, "Debug")
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Start indicates an expected call of Start
-func (mr *MockChainMockRecorder) Start() *gomock.Call {
+// Debug indicates an expected call of Debug
+func (mr *MockChainMockRecorder) Debug() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockChain)(nil).Start))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debug", reflect.TypeOf((*MockChain)(nil).Debug))
+}
+
+// ViewLogs mocks base method
+func (m *MockChain) ViewLogs() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ViewLogs")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ViewLogs indicates an expected call of ViewLogs
+func (mr *MockChainMockRecorder) ViewLogs() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewLogs", reflect.TypeOf((*MockChain)(nil).ViewLogs))
 }
 
 // Close mocks base method

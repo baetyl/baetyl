@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -73,17 +74,12 @@ func (k *kubeImpl) RemoteLogs(option ami.LogsOptions, pipe ami.Pipe) error {
 		scheme.ParameterCodec,
 	)
 
-	exec, err := remotecommand.NewSPDYExecutor(k.cli.kubeConfig, http.MethodGet, req.URL())
+	reader, err := req.Stream()
 	if err != nil {
 		return errors.Trace(err)
 	}
-
-	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  pipe.InReader,
-		Stdout: pipe.OutWriter,
-		Stderr: pipe.OutWriter,
-		Tty:    true,
-	})
+	defer reader.Close()
+	_, err = io.Copy(pipe.OutWriter, reader)
 	if err != nil {
 		return errors.Trace(err)
 	}
