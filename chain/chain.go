@@ -25,13 +25,22 @@ const (
 //go:generate mockgen -destination=../mock/chain.go -package=mock -source=chain.go Chain
 
 type Chain interface {
-	Start() error
+	Debug() error
+	ViewLogs() error
 	io.Closer
 }
 
+var (
+	ErrParseData = errors.New("failed to parse data")
+)
+
 type chain struct {
 	ami       ami.AMI
-	data      map[string]string
+	data      map[string]interface{}
+	token     string
+	name      string
+	namespace string
+	container string
 	upside    string
 	downside  string
 	pb        plugin.Pubsub
@@ -42,10 +51,10 @@ type chain struct {
 	log       *log.Logger
 }
 
-func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, error) {
+func NewChain(cfg config.Config, a ami.AMI, data map[string]interface{}) (Chain, error) {
 	pl, err := v2plugin.GetPlugin(cfg.Plugin.Pubsub)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	pipe := ami.Pipe{}
@@ -53,27 +62,44 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 	pipe.OutReader, pipe.OutWriter = io.Pipe()
 
 	c := &chain{
-		ami:      a,
-		data:     data,
-		upside:   sync.TopicUpside,
-		downside: fmt.Sprintf("%s_%s_%s_%s_%s", data["namespace"], data["name"], data["container"], data["token"], "down"),
-		pb:       pl.(plugin.Pubsub),
-		pipe:     pipe,
-		log:      log.L().With(log.Any("chain", data["token"][:10])),
+		ami:    a,
+		data:   data,
+		upside: sync.TopicUpside,
+		pb:     pl.(plugin.Pubsub),
+		pipe:   pipe,
 	}
+
+	token, ok := data["token"].(string)
+	if !ok {
+		return nil, ErrParseData
+	}
+	c.token = token
+	c.log = log.L().With(log.Any("chain", token))
+
+	name, ok := data["name"].(string)
+	if !ok {
+		return nil, ErrParseData
+	}
+	namespace, ok := data["namespace"].(string)
+	if !ok {
+		return nil, ErrParseData
+	}
+	container, ok := data["container"].(string)
+	if !ok {
+		c.log.Debug("no container specified")
+	}
+
+	c.name = name
+	c.namespace = namespace
+	c.container = container
+	c.downside = fmt.Sprintf("%s_%s_%s_%s_%s", namespace, name, container, token, "down")
+
 	c.log.Debug("chain sub downside topic", log.Any("topic", c.downside))
 	c.subChan, err = c.pb.Subscribe(c.downside)
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	return c, nil
-}
-
-func (c *chain) Start() error {
-	c.processor = pubsub.NewProcessor(c.subChan, MsgTimeout, &chainHandler{chain: c})
-	c.processor.Start()
-
-	return c.tomb.Go(c.debugReading, c.connecting)
 }
 
 func (c *chain) Close() error {
@@ -96,57 +122,23 @@ func (c *chain) Close() error {
 	return nil
 }
 
-func (c *chain) connecting() error {
-	cmd := []string{
-		"sh",
-		"-c",
-		"/bin/sh",
-	}
-	opt := ami.DebugOptions{
-		Namespace: c.data["namespace"],
-		Name:      c.data["name"],
-		Container: c.data["container"],
-		Command:   cmd,
-	}
-
-	defer func() {
-		c.log.Debug("connecting close")
-		msg := &v1.Message{
-			Kind: v1.MessageCMD,
-			Metadata: map[string]string{
-				"success": "false",
-				"msg":     "disconnect",
-				"token":   c.data["token"],
-			},
-		}
-		c.pb.Publish(c.upside, msg)
-	}()
-
-	err := c.ami.RemoteCommand(opt, c.pipe)
-	if err != nil {
-		c.log.Error("failed to start remote debug", log.Error(err))
-		return errors.Trace(err)
-	}
-	return nil
-}
-
-func (c *chain) debugReading() error {
+func (c *chain) chainReading() error {
 	for {
 		dt := make([]byte, 10240)
 		n, err := c.pipe.OutReader.Read(dt)
 		if err != nil && err != io.EOF {
-			c.log.Error("failed to read debug message", log.Error(err))
+			c.log.Error("failed to read remote message", log.Error(err))
 		}
 		if err == io.EOF {
-			c.log.Info("read debug message EOF")
-			return err
+			c.log.Info("read remote message EOF")
+			return errors.Trace(err)
 		}
 		msg := &v1.Message{
 			Kind: v1.MessageData,
 			Metadata: map[string]string{
 				"success": "true",
 				"msg":     "ok",
-				"token":   c.data["token"],
+				"token":   c.token,
 			},
 			Content: v1.LazyValue{Value: dt[0:n]},
 		}

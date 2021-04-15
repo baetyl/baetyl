@@ -57,6 +57,9 @@ type AMI interface {
 	// RemoteCommand remote debug
 	RemoteCommand(option DebugOptions, pipe Pipe) error
 
+	// RemoteLogs remote logs
+	RemoteLogs(option LogsOptions, pipe Pipe) error
+
 	UpdateNodeLabels(string, map[string]string) error
 }
 
@@ -65,6 +68,18 @@ type DebugOptions struct {
 	Name      string
 	Container string
 	Command   []string
+}
+
+type LogsOptions struct {
+	Namespace    string
+	Name         string
+	Container    string
+	SinceSeconds *int64
+	TailLines    *int64
+	LimitBytes   *int64
+	Follow       bool
+	Previous     bool
+	Timestamps   bool
 }
 
 func NewAMI(mode string, cfg config.AmiConfig) (AMI, error) {

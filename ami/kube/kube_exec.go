@@ -50,6 +50,46 @@ func (k *kubeImpl) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
 	return nil
 }
 
+func (k *kubeImpl) RemoteLogs(option ami.LogsOptions, pipe ami.Pipe) error {
+	req := k.cli.core.RESTClient().Get().Resource("pods").
+		Name(option.Name).Namespace(option.Namespace).SubResource("log")
+
+	opt := &coreV1.PodLogOptions{
+		Follow:       option.Follow,
+		Previous:     option.Previous,
+		SinceSeconds: option.SinceSeconds,
+		Timestamps:   option.Timestamps,
+		TailLines:    option.TailLines,
+	}
+	if option.Container != "" {
+		opt.Container = option.Container
+	}
+	if *option.LimitBytes > int64(0) {
+		opt.LimitBytes = option.LimitBytes
+	}
+
+	req.VersionedParams(
+		opt,
+		scheme.ParameterCodec,
+	)
+
+	exec, err := remotecommand.NewSPDYExecutor(k.cli.kubeConfig, http.MethodGet, req.URL())
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:  pipe.InReader,
+		Stdout: pipe.OutWriter,
+		Stderr: pipe.OutWriter,
+		Tty:    true,
+	})
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
+}
+
 func (k *kubeImpl) UpdateNodeLabels(name string, labels map[string]string) error {
 	defer utils.Trace(k.log.Debug, "UpdateNodeLabels")()
 	n, err := k.cli.core.Nodes().Get(name, metav1.GetOptions{})
