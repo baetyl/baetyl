@@ -2,7 +2,9 @@ package engine
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -30,9 +32,9 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 	h.log.Debug("engine downside msg", log.Any("msg", m))
 
 	// Todo : improve, only the core module supports remote debugging
-	//if os.Getenv(context.KeySvcName) != v1.BaetylCore {
-	//	return nil
-	//}
+	if os.Getenv(context.KeySvcName) != v1.BaetylCore {
+		return nil
+	}
 
 	key := fmt.Sprintf("%s_%s_%s_%s", m.Metadata["namespace"], m.Metadata["name"], m.Metadata["container"], m.Metadata["token"])
 	downside := fmt.Sprintf("%s_%s", key, "down")

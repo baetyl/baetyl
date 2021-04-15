@@ -29,5 +29,3 @@ require (
 	k8s.io/kubectl v0.17.8
 	k8s.io/metrics v0.17.8
 )
-
-replace github.com/baetyl/baetyl-go/v2 => /Users/zhaoxin26/go/src/github.com/baetyl/baetyl-go
