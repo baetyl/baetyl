@@ -65,7 +65,7 @@ func (k *kubeImpl) RemoteLogs(option ami.LogsOptions, pipe ami.Pipe) error {
 	if option.Container != "" {
 		opt.Container = option.Container
 	}
-	if *option.LimitBytes > int64(0) {
+	if option.LimitBytes != nil && *option.LimitBytes > int64(0) {
 		opt.LimitBytes = option.LimitBytes
 	}
 
