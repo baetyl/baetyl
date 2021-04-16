@@ -26,7 +26,7 @@ const (
 
 type Chain interface {
 	Debug() error
-	ViewLogs() error
+	ViewLogs(*ami.LogsOptions) error
 	io.Closer
 }
 
@@ -36,13 +36,14 @@ var (
 
 type chain struct {
 	ami       ami.AMI
-	data      map[string]interface{}
+	data      map[string]string
 	token     string
 	name      string
 	namespace string
 	container string
 	upside    string
 	downside  string
+	logOpt    *ami.LogsOptions
 	pb        plugin.Pubsub
 	subChan   <-chan interface{}
 	processor pubsub.Processor
@@ -51,7 +52,7 @@ type chain struct {
 	log       *log.Logger
 }
 
-func NewChain(cfg config.Config, a ami.AMI, data map[string]interface{}) (Chain, error) {
+func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, error) {
 	pl, err := v2plugin.GetPlugin(cfg.Plugin.Pubsub)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -69,22 +70,22 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]interface{}) (Chain,
 		pipe:   pipe,
 	}
 
-	token, ok := data["token"].(string)
+	token, ok := data["token"]
 	if !ok {
 		return nil, ErrParseData
 	}
 	c.token = token
 	c.log = log.L().With(log.Any("chain", token))
 
-	name, ok := data["name"].(string)
+	name, ok := data["name"]
 	if !ok {
 		return nil, ErrParseData
 	}
-	namespace, ok := data["namespace"].(string)
+	namespace, ok := data["namespace"]
 	if !ok {
 		return nil, ErrParseData
 	}
-	container, ok := data["container"].(string)
+	container, ok := data["container"]
 	if !ok {
 		c.log.Debug("no container specified")
 	}

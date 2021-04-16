@@ -24,7 +24,7 @@ var (
 	chainWG = sync.WaitGroup{}
 )
 
-func initChainEnv(t *testing.T) (config.Config, *gomock.Controller, map[string]interface{}) {
+func initChainEnv(t *testing.T) (config.Config, *gomock.Controller, map[string]string) {
 	cfg := config.Config{}
 	cfg.Plugin.Pubsub = "defaultpubsub"
 
@@ -36,7 +36,7 @@ func initChainEnv(t *testing.T) (config.Config, *gomock.Controller, map[string]i
 
 	ctl := gomock.NewController(t)
 
-	data := map[string]interface{}{
+	data := map[string]string{
 		"namespace": "default",
 		"name":      "baetyl-function-0",
 		"container": "function",

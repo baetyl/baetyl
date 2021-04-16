@@ -55,10 +55,10 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 
 	// RemoteCommand remote debug
-	RemoteCommand(option DebugOptions, pipe Pipe) error
+	RemoteCommand(option *DebugOptions, pipe Pipe) error
 
 	// RemoteLogs remote logs
-	RemoteLogs(option LogsOptions, pipe Pipe) error
+	RemoteLogs(option *LogsOptions, pipe Pipe) error
 
 	UpdateNodeLabels(string, map[string]string) error
 }

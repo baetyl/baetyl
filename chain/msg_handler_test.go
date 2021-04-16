@@ -32,7 +32,7 @@ func TestHandler(t *testing.T) {
 	pipe.OutReader, pipe.OutWriter = io.Pipe()
 
 	cha := &chain{
-		data: map[string]interface{}{
+		data: map[string]string{
 			"namespace": "default",
 			"name":      "baetyl-function-0",
 			"container": "function",

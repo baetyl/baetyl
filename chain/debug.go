@@ -22,7 +22,7 @@ func (c *chain) connecting() error {
 		"-c",
 		"/bin/sh",
 	}
-	opt := ami.DebugOptions{
+	opt := &ami.DebugOptions{
 		Namespace: c.namespace,
 		Name:      c.name,
 		Container: c.container,

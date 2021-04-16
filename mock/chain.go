@@ -5,6 +5,7 @@
 package mock
 
 import (
+	ami "github.com/baetyl/baetyl/v2/ami"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -47,17 +48,17 @@ func (mr *MockChainMockRecorder) Debug() *gomock.Call {
 }
 
 // ViewLogs mocks base method
-func (m *MockChain) ViewLogs() error {
+func (m *MockChain) ViewLogs(arg0 *ami.LogsOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ViewLogs")
+	ret := m.ctrl.Call(m, "ViewLogs", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ViewLogs indicates an expected call of ViewLogs
-func (mr *MockChainMockRecorder) ViewLogs() *gomock.Call {
+func (mr *MockChainMockRecorder) ViewLogs(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewLogs", reflect.TypeOf((*MockChain)(nil).ViewLogs))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ViewLogs", reflect.TypeOf((*MockChain)(nil).ViewLogs), arg0)
 }
 
 // Close mocks base method

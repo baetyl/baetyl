@@ -71,12 +71,12 @@ func (impl *nativeImpl) UpdateNodeLabels(string, map[string]string) error {
 }
 
 // TODO: impl native RemoteCommand
-func (impl *nativeImpl) RemoteCommand(ami.DebugOptions, ami.Pipe) error {
+func (impl *nativeImpl) RemoteCommand(*ami.DebugOptions, ami.Pipe) error {
 	return errors.New("failed to start remote debugging, function has not been implemented")
 }
 
 // TODO: impl native RemoteLogs
-func (impl *nativeImpl) RemoteLogs(ami.LogsOptions, ami.Pipe) error {
+func (impl *nativeImpl) RemoteLogs(*ami.LogsOptions, ami.Pipe) error {
 	return errors.New("failed to start remote debugging, function has not been implemented")
 }
 
