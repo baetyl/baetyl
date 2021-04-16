@@ -63,6 +63,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			if err != nil {
 				return errors.Trace(err)
 			}
+		case v1.MessageCommandMultiNodeLabels:
+			err := h.labelMultiNodes(m)
+			if err != nil {
+				return err
+			}
 		default:
 			h.log.Debug("unknown command", log.Any("cmd", m.Metadata["cmd"]))
 		}
@@ -191,6 +196,21 @@ func (h *handlerDownside) nodeLabel(m *v1.Message) error {
 	err = h.ami.UpdateNodeLabels(nodeName, *labels)
 	if err != nil {
 		return errors.Trace(err)
+	}
+	return nil
+}
+
+func (h *handlerDownside) labelMultiNodes(m *v1.Message) error {
+	var nodesLabels map[string]map[string]string
+	err := m.Content.Unmarshal(&nodesLabels)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	for name, labels := range nodesLabels {
+		err = h.ami.UpdateNodeLabels(name, labels)
+		if err != nil {
+			return errors.Trace(err)
+		}
 	}
 	return nil
 }
