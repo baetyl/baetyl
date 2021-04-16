@@ -520,10 +520,14 @@ func (e *engineImpl) validParam(tailLines, sinceSeconds string) (itailLines, isi
 }
 
 func (e *engineImpl) Close() {
+	e.log.Debug("engine close")
 	e.tomb.Kill(nil)
 	e.tomb.Wait()
 	if e.pb != nil {
-		e.pb.Unsubscribe(sync.TopicDownside, e.downsideChan)
+		err := e.pb.Unsubscribe(sync.TopicDownside, e.downsideChan)
+		if err != nil {
+			e.log.Warn("failed to unsubscribe topic downside")
+		}
 	}
 	if e.downsideProcess != nil {
 		e.downsideProcess.Close()
