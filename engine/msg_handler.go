@@ -59,7 +59,7 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 				return err
 			}
 		case v1.MessageCommandMultiNodeLabels:
-			err := h.multiNodeLabel(m)
+			err := h.labelMultiNodes(m)
 			if err != nil {
 				return err
 			}
@@ -152,7 +152,7 @@ func (h *handlerDownside) nodeLabel(m *v1.Message) error {
 	return nil
 }
 
-func (h *handlerDownside) multiNodeLabel(m *v1.Message) error {
+func (h *handlerDownside) labelMultiNodes(m *v1.Message) error {
 	var nodesLabels map[string]map[string]string
 	err := m.Content.Unmarshal(&nodesLabels)
 	if err != nil {
