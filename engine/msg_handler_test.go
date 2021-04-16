@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/baetyl/baetyl-go/v2/context"
+	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/plugin"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
@@ -190,6 +191,49 @@ func TestHandlerDownside(t *testing.T) {
 	}
 	err = h.OnMessage(msg9)
 	assert.Error(t, err, ErrSubNodeName)
+
+	// msg11 update multiple node label
+	labels := map[string]string{
+		"beta.kubernetes.io/arch":        "amd64",
+		"beta.kubernetes.io/os":          "linux",
+		"kubernetes.io/arch":             "amd64",
+		"kubernetes.io/hostname":         "docker-desktop",
+		"kubernetes.io/os":               "linux",
+		"node-role.kubernetes.io/master": "",
+		"a":                              "b",
+	}
+	msg10 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageCommandMultiNodeLabels,
+		},
+		Content: specV1.LazyValue{
+			Value: map[string]map[string]string{
+				"node-1": labels,
+				"node-2": labels,
+			},
+		},
+	}
+	ami.EXPECT().UpdateNodeLabels("node-1", labels).Return(nil)
+	ami.EXPECT().UpdateNodeLabels("node-2", labels).Return(nil)
+	err = h.OnMessage(msg10)
+	assert.NoError(t, err)
+
+	// msg11 update multiple node label failed
+	msg11 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageCommandMultiNodeLabels,
+		},
+		Content: specV1.LazyValue{
+			Value: map[string]map[string]string{
+				"node-1": labels,
+			},
+		},
+	}
+	ami.EXPECT().UpdateNodeLabels("node-1", labels).Return(errors.New("err"))
+	err = h.OnMessage(msg11)
+	assert.Error(t, err)
 
 	engMsgWG.Wait()
 }
