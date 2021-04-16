@@ -9,6 +9,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
+	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/chain"
 	"github.com/baetyl/baetyl/v2/sync"
 )
@@ -111,23 +112,20 @@ func (h *handlerDownside) viewLogs(key string, m *v1.Message) error {
 	}
 	h.log.Debug("new chain", log.Any("chain name", key))
 
-	opt := map[string]interface{}{}
+	opt := &ami.LogsOptions{}
 	err := m.Content.Unmarshal(&opt)
 	if err != nil {
 		h.publishFailedMsg(key, err.Error(), m)
 		return errors.Trace(err)
 	}
-	for k, v := range m.Metadata {
-		opt[k] = v
-	}
 
 	// create new chain
-	c, err := chain.NewChain(h.cfg, h.ami, opt)
+	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
 	if err != nil {
 		h.publishFailedMsg(key, ErrCreateChain, m)
 		return errors.Trace(err)
 	}
-	err = c.ViewLogs()
+	err = c.ViewLogs(opt)
 	if err != nil {
 		h.publishFailedMsg(key, ErrExecData, m)
 		return errors.Trace(err)
@@ -149,13 +147,8 @@ func (h *handlerDownside) connect(key string, m *v1.Message) error {
 	}
 	h.log.Debug("new chain", log.Any("chain name", key))
 
-	data := map[string]interface{}{}
-	for k, v := range m.Metadata {
-		data[k] = v
-	}
-
 	// create new chain
-	c, err := chain.NewChain(h.cfg, h.ami, data)
+	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
 	if err != nil {
 		h.publishFailedMsg(key, ErrCreateChain, m)
 		return errors.Trace(err)

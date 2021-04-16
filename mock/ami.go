@@ -138,7 +138,7 @@ func (mr *MockAMIMockRecorder) FetchLog(namespace, service, tailLines, sinceSeco
 }
 
 // RemoteCommand mocks base method
-func (m *MockAMI) RemoteCommand(option ami.DebugOptions, pipe ami.Pipe) error {
+func (m *MockAMI) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoteCommand", option, pipe)
 	ret0, _ := ret[0].(error)
@@ -152,7 +152,7 @@ func (mr *MockAMIMockRecorder) RemoteCommand(option, pipe interface{}) *gomock.C
 }
 
 // RemoteLogs mocks base method
-func (m *MockAMI) RemoteLogs(option ami.LogsOptions, pipe ami.Pipe) error {
+func (m *MockAMI) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoteLogs", option, pipe)
 	ret0, _ := ret[0].(error)
