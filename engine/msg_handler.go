@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -60,12 +61,12 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 				return errors.Trace(err)
 			}
 		case v1.MessageCommandNodeLabel:
-			err := h.nodeLabel(m)
+			err := h.nodeLabel(key, m)
 			if err != nil {
 				return errors.Trace(err)
 			}
 		case v1.MessageCommandMultiNodeLabels:
-			err := h.labelMultiNodes(m)
+			err := h.labelMultiNodes(key, m)
 			if err != nil {
 				return err
 			}
@@ -176,35 +177,49 @@ func (h *handlerDownside) disconnect(key string, m *v1.Message) error {
 	return nil
 }
 
-func (h *handlerDownside) nodeLabel(m *v1.Message) error {
+func (h *handlerDownside) nodeLabel(key string, m *v1.Message) error {
 	nodeName, ok := m.Metadata["subName"]
 	if !ok {
+		h.publishFailedMsg(key, ErrSubNodeName, m)
 		return errors.New(ErrSubNodeName)
 	}
 	labels := new(map[string]string)
 	err := m.Content.Unmarshal(labels)
 	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
 		return errors.Trace(err)
 	}
 	err = h.ami.UpdateNodeLabels(nodeName, *labels)
 	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
 		return errors.Trace(err)
 	}
+	h.publishSuccessMsg(key, m)
 	return nil
 }
 
-func (h *handlerDownside) labelMultiNodes(m *v1.Message) error {
+func (h *handlerDownside) labelMultiNodes(key string, m *v1.Message) error {
 	var nodesLabels map[string]map[string]string
 	err := m.Content.Unmarshal(&nodesLabels)
 	if err != nil {
 		return errors.Trace(err)
 	}
+
+	var errs []string
 	for name, labels := range nodesLabels {
 		err = h.ami.UpdateNodeLabels(name, labels)
 		if err != nil {
-			return errors.Trace(err)
+			h.log.Warn(err.Error())
+			errs = append(errs, err.Error())
 		}
 	}
+	if len(errs) > 0 {
+		es := strings.Join(errs, "\n")
+		h.log.Warn(es)
+		h.publishFailedMsg(key, es, m)
+		return errors.Trace(errors.New(es))
+	}
+	h.publishSuccessMsg(key, m)
 	return nil
 }
 
@@ -214,6 +229,19 @@ func (h *handlerDownside) publishFailedMsg(key, reason string, m *v1.Message) {
 		Metadata: map[string]string{
 			"success": "false",
 			"msg":     reason,
+			"token":   m.Metadata["token"],
+		},
+	})
+	if errPublish != nil {
+		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
+	}
+}
+
+func (h *handlerDownside) publishSuccessMsg(key string, m *v1.Message) {
+	errPublish := h.pb.Publish(sync.TopicUpside, &v1.Message{
+		Kind: v1.MessageCMD,
+		Metadata: map[string]string{
+			"success": "true",
 			"token":   m.Metadata["token"],
 		},
 	})

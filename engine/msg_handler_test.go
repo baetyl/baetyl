@@ -1,13 +1,13 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	gosync "sync"
 	"testing"
 
 	"github.com/baetyl/baetyl-go/v2/context"
-	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/plugin"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
@@ -28,13 +28,13 @@ var (
 	engMsgWG = gosync.WaitGroup{}
 )
 
-func TestHandlerDownside(t *testing.T) {
+func genHandlerDownsideEngine(t *testing.T) (*engineImpl, *mock.MockAMI, *gomock.Controller) {
 	err := os.Setenv(context.KeySvcName, specV1.BaetylCore)
 	assert.NoError(t, err)
 	// prepare struct
 	cfg := config.Config{}
 
-	pb, err := pubsub.NewPubsub(1)
+	pb, err := pubsub.NewPubsub(0)
 	assert.NoError(t, err)
 
 	plugin.RegisterFactory("defaultpubsub", func() (plugin.Plugin, error) {
@@ -51,6 +51,12 @@ func TestHandlerDownside(t *testing.T) {
 		chains: gosync.Map{},
 		log:    log.With(),
 	}
+
+	return e, ami, ctl
+}
+
+func TestHandlerDownside(t *testing.T) {
+	e, ami, ctl := genHandlerDownsideEngine(t)
 
 	meta := map[string]string{
 		"namespace": "default",
@@ -159,82 +165,6 @@ func TestHandlerDownside(t *testing.T) {
 	err = h.OnMessage(msg7)
 	assert.Error(t, err, os.ErrInvalid)
 
-	// msg 8 update node label success
-	msg8 := &specV1.Message{
-		Kind: specV1.MessageCMD,
-		Metadata: map[string]string{
-			"cmd":     specV1.MessageCommandNodeLabel,
-			"subName": "node01",
-		},
-		Content: specV1.LazyValue{
-			Value: map[string]string{
-				"beta.kubernetes.io/arch":        "amd64",
-				"beta.kubernetes.io/os":          "linux",
-				"kubernetes.io/arch":             "amd64",
-				"kubernetes.io/hostname":         "docker-desktop",
-				"kubernetes.io/os":               "linux",
-				"node-role.kubernetes.io/master": "",
-				"a":                              "b",
-			},
-		},
-	}
-	ami.EXPECT().UpdateNodeLabels("node01", gomock.Any()).Return(nil).Times(1)
-	err = h.OnMessage(msg8)
-	assert.NoError(t, err)
-
-	// msg 9 update node label err sub name
-	msg9 := &specV1.Message{
-		Kind: specV1.MessageCMD,
-		Metadata: map[string]string{
-			"cmd": specV1.MessageCommandNodeLabel,
-		},
-	}
-	err = h.OnMessage(msg9)
-	assert.Error(t, err, ErrSubNodeName)
-
-	// msg11 update multiple node label
-	labels := map[string]string{
-		"beta.kubernetes.io/arch":        "amd64",
-		"beta.kubernetes.io/os":          "linux",
-		"kubernetes.io/arch":             "amd64",
-		"kubernetes.io/hostname":         "docker-desktop",
-		"kubernetes.io/os":               "linux",
-		"node-role.kubernetes.io/master": "",
-		"a":                              "b",
-	}
-	msg10 := &specV1.Message{
-		Kind: specV1.MessageCMD,
-		Metadata: map[string]string{
-			"cmd": specV1.MessageCommandMultiNodeLabels,
-		},
-		Content: specV1.LazyValue{
-			Value: map[string]map[string]string{
-				"node-1": labels,
-				"node-2": labels,
-			},
-		},
-	}
-	ami.EXPECT().UpdateNodeLabels("node-1", labels).Return(nil)
-	ami.EXPECT().UpdateNodeLabels("node-2", labels).Return(nil)
-	err = h.OnMessage(msg10)
-	assert.NoError(t, err)
-
-	// msg11 update multiple node label failed
-	msg11 := &specV1.Message{
-		Kind: specV1.MessageCMD,
-		Metadata: map[string]string{
-			"cmd": specV1.MessageCommandMultiNodeLabels,
-		},
-		Content: specV1.LazyValue{
-			Value: map[string]map[string]string{
-				"node-1": labels,
-			},
-		},
-	}
-	ami.EXPECT().UpdateNodeLabels("node-1", labels).Return(errors.New("err"))
-	err = h.OnMessage(msg11)
-	assert.Error(t, err)
-
 	engMsgWG.Wait()
 }
 
@@ -259,5 +189,143 @@ func (h *msgUpside) OnMessage(msg interface{}) error {
 }
 
 func (h *msgUpside) OnTimeout() error {
+	return nil
+}
+
+func TestHandlerDownsideLabels(t *testing.T) {
+	e, ami, _ := genHandlerDownsideEngine(t)
+	h := &handlerDownside{engineImpl: e}
+
+	// test
+	ch, err := e.pb.Subscribe(sync.TopicUpside)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	handler := &msgLabelUpside{t: t}
+	pro := pubsub.NewProcessor(ch, 0, handler)
+	pro.Start()
+
+	// msg 8 update node label success
+	engMsgWG.Add(1)
+	msg8 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd":     specV1.MessageCommandNodeLabel,
+			"subName": "node01",
+		},
+		Content: specV1.LazyValue{
+			Value: map[string]string{
+				"beta.kubernetes.io/arch":        "amd64",
+				"beta.kubernetes.io/os":          "linux",
+				"kubernetes.io/arch":             "amd64",
+				"kubernetes.io/hostname":         "docker-desktop",
+				"kubernetes.io/os":               "linux",
+				"node-role.kubernetes.io/master": "",
+				"a":                              "b",
+			},
+		},
+	}
+	ami.EXPECT().UpdateNodeLabels("node01", gomock.Any()).Return(nil).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(msg8)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
+
+	// msg 9 update node label err sub name
+	engMsgWG.Add(1)
+	msg9 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageCommandNodeLabel,
+		},
+	}
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "false", m.Metadata["success"])
+		assert.Equal(t, ErrSubNodeName, m.Metadata["msg"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(msg9)
+	assert.Error(t, err, ErrSubNodeName)
+	engMsgWG.Wait()
+
+	// msg10 update multiple node label
+	engMsgWG.Add(1)
+	labels := map[string]string{
+		"beta.kubernetes.io/arch":        "amd64",
+		"beta.kubernetes.io/os":          "linux",
+		"kubernetes.io/arch":             "amd64",
+		"kubernetes.io/hostname":         "docker-desktop",
+		"kubernetes.io/os":               "linux",
+		"node-role.kubernetes.io/master": "",
+		"a":                              "b",
+	}
+	msg10 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageCommandMultiNodeLabels,
+		},
+		Content: specV1.LazyValue{
+			Value: map[string]map[string]string{
+				"node-1": labels,
+				"node-2": labels,
+			},
+		},
+	}
+	ami.EXPECT().UpdateNodeLabels("node-1", labels).Return(nil).Times(1)
+	ami.EXPECT().UpdateNodeLabels("node-2", labels).Return(nil).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(msg10)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
+
+	// msg11 update multiple node label failed
+	engMsgWG.Add(1)
+	msg11 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageCommandMultiNodeLabels,
+		},
+		Content: specV1.LazyValue{
+			Value: map[string]map[string]string{
+				"node-1": labels,
+			},
+		},
+	}
+	ami.EXPECT().UpdateNodeLabels("node-1", labels).Return(errors.New("err")).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "false", m.Metadata["success"])
+		assert.Equal(t, "err", m.Metadata["msg"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(msg11)
+	assert.Error(t, err)
+	engMsgWG.Wait()
+}
+
+type msgLabelUpside struct {
+	t     *testing.T
+	check func(msg interface{})
+}
+
+func (h *msgLabelUpside) OnMessage(msg interface{}) error {
+	h.check(msg)
+	return nil
+}
+
+func (h *msgLabelUpside) OnTimeout() error {
 	return nil
 }
