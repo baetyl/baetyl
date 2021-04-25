@@ -12,7 +12,7 @@ import (
 func (c *chain) ViewLogs(opt *ami.LogsOptions) error {
 	c.logOpt = opt
 
-	c.processor = pubsub.NewProcessor(c.subChan, MsgTimeout, &chainHandler{chain: c})
+	c.processor = pubsub.NewProcessor(c.subChan, 0, &chainHandler{chain: c})
 	c.processor.Start()
 
 	return c.tomb.Go(c.chainReading, c.logging)
