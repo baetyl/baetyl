@@ -180,11 +180,6 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	deploys := make(map[string]*appv1.Deployment)
 	daemons := make(map[string]*appv1.DaemonSet)
 	for _, svc := range app.Services {
-		svc.Env = append(svc.Env, specv1.Environment{
-			Name:  KubeNodeName,
-			Value: k.knn,
-		})
-
 		if svc.Type == "" {
 			svc.Type = specv1.ServiceTypeDeployment
 		}
@@ -387,6 +382,10 @@ func prepareInfo(app *specv1.Application, service specv1.Service,
 			Privileged: &sc.Privileged,
 		}
 	}
+	c.Env = append(c.Env, corev1.EnvVar{
+		Name:      KubeNodeName,
+		ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "spec.nodeName"}},
+	})
 	var containers []corev1.Container
 	containers = append(containers, c)
 
