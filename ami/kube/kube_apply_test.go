@@ -113,7 +113,7 @@ func TestPrepareService(t *testing.T) {
 }
 
 func TestPrepareDeploy(t *testing.T) {
-	ami := initApplyKubeAMI(t)
+	_ = initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	svcName := "svc"
 	app := specv1.Application{
@@ -137,10 +137,6 @@ func TestPrepareDeploy(t *testing.T) {
 				"memory": "456456",
 			},
 		},
-		Env: []specv1.Environment{{
-			Name:  KubeNodeName,
-			Value: ami.knn,
-		}},
 	}
 	cpuQuan, _ := resource.ParseQuantity("1")
 	memoryQuan, _ := resource.ParseQuantity("456456")
@@ -232,7 +228,11 @@ func TestPrepareDeploy(t *testing.T) {
 					},
 					Containers: []v1.Container{{
 						Env: []v1.EnvVar{
-							{Name: KubeNodeName, Value: "node1"}},
+							{
+								Name:      KubeNodeName,
+								ValueFrom: &v1.EnvVarSource{FieldRef: &v1.ObjectFieldSelector{FieldPath: "spec.nodeName"}},
+							},
+						},
 						Name: "svc",
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
