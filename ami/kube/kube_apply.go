@@ -13,7 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	lb "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/baetyl/baetyl/v2/ami"
@@ -31,10 +31,13 @@ const (
 
 	ServiceAccountName = "baetyl-edge-system-service-account"
 	MasterRole         = "node-role.kubernetes.io/master"
+	BaetylSetPodSpec  = "baetyl_set_pod_spec"
 )
 
+type SetPodSpecFunc func(*corev1.PodSpec, *specv1.Application) (*corev1.PodSpec, error)
+
 var (
-	ErrSetAffinity = errors.New("failed to convert SetAffinity function")
+	ErrSetPodSpec = errors.New("failed to convert SetPodSpec function")
 )
 
 func (k *kubeImpl) createNamespace(ns string) (*corev1.Namespace, error) {
@@ -122,8 +125,8 @@ func (k *kubeImpl) applySecrets(ns string, secs map[string]specv1.Secret) error 
 }
 
 func (k *kubeImpl) deleteApplication(ns, name string) error {
-	set := labels.Set{AppName: name}
-	selector := labels.SelectorFromSet(set)
+	set := lb.Set{AppName: name}
+	selector := lb.SelectorFromSet(set)
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return errors.Trace(err)
@@ -278,17 +281,17 @@ func prepareDeploy(ns string, app *specv1.Application, service specv1.Service,
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if extension, ok := ami.Hooks[ami.BaetylSetAffinity]; ok {
-		setAffinityExt, ok := extension.(ami.SetAffinityFunc)
+	if extension, ok := ami.Hooks[BaetylSetPodSpec]; ok {
+		setPodSpecExt, ok := extension.(SetPodSpecFunc)
 		if ok {
-			if podSpec.Affinity, err = setAffinityExt(app.NodeSelector); err != nil {
+			if podSpec, err = setPodSpecExt(podSpec, app); err != nil {
 				return nil, errors.Trace(err)
 			}
 		} else {
-			return nil, errors.Trace(ErrSetAffinity)
+			return nil, errors.Trace(ErrSetPodSpec)
 		}
 	} else {
-		return nil, errors.Trace(ErrSetAffinity)
+		return nil, errors.Trace(ErrSetPodSpec)
 	}
 	replica := new(int32)
 	*replica = int32(service.Replica)
@@ -327,17 +330,17 @@ func prepareDaemon(ns string, app *specv1.Application, service specv1.Service,
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	if extension, ok := ami.Hooks[ami.BaetylSetAffinity]; ok {
-		setAffinityExt, ok := extension.(ami.SetAffinityFunc)
+	if extension, ok := ami.Hooks[BaetylSetPodSpec]; ok {
+		setPodSpecExt, ok := extension.(SetPodSpecFunc)
 		if ok {
-			if podSpec.Affinity, err = setAffinityExt(app.NodeSelector); err != nil {
+			if podSpec, err = setPodSpecExt(podSpec, app); err != nil {
 				return nil, errors.Trace(err)
 			}
 		} else {
-			return nil, errors.Trace(ErrSetAffinity)
+			return nil, errors.Trace(ErrSetPodSpec)
 		}
 	} else {
-		return nil, errors.Trace(ErrSetAffinity)
+		return nil, errors.Trace(ErrSetPodSpec)
 	}
 
 	labels := map[string]string{}
@@ -423,8 +426,8 @@ func prepareInfo(app *specv1.Application, service specv1.Service,
 	}, nil
 }
 
-func SetAffinity(_ string) (*corev1.Affinity, error) {
-	return &corev1.Affinity{
+func SetPodSpec(spec *corev1.PodSpec, _ *specv1.Application) (*corev1.PodSpec, error) {
+	spec.Affinity = &corev1.Affinity{
 		NodeAffinity: &corev1.NodeAffinity{
 			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
 				NodeSelectorTerms: []corev1.NodeSelectorTerm{{MatchExpressions: []corev1.NodeSelectorRequirement{
@@ -435,7 +438,8 @@ func SetAffinity(_ string) (*corev1.Affinity, error) {
 				}}},
 			},
 		},
-	}, nil
+	}
+	return spec, nil
 }
 
 func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) *corev1.Service {
