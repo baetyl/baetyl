@@ -73,7 +73,7 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 }
 
 func initHooks() {
-	ami.Hooks[ami.BaetylSetAffinity] = ami.SetAffinityFunc(kube.SetAffinity)
+	ami.Hooks[kube.BaetylSetPodSpec] = kube.SetPodSpecFunc(kube.SetPodSpec)
 }
 
 func (c *Core) Close() {

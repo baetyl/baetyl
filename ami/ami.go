@@ -8,8 +8,6 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	corev1 "k8s.io/api/core/v1"
-
 	"github.com/baetyl/baetyl/v2/config"
 )
 
@@ -18,7 +16,6 @@ import (
 const (
 	BaetylGPUStatsExtension  = "baetyl_gpu_stats_extension"
 	BaetylNodeStatsExtension = "baetyl_node_stats_extension"
-	BaetylSetAffinity        = "baetyl_set_affinity"
 )
 
 var mu sync.Mutex
@@ -27,7 +24,6 @@ var amiImpls = map[string]AMI{}
 var Hooks = map[string]interface{}{}
 
 type CollectStatsExtFunc func() (map[string]interface{}, error)
-type SetAffinityFunc func(string) (*corev1.Affinity, error)
 
 type New func(cfg config.AmiConfig) (AMI, error)
 

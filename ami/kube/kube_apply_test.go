@@ -499,6 +499,6 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	sto, err := store.NewBoltHold(f.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, sto)
-	ami.Hooks[ami.BaetylSetAffinity] = ami.SetAffinityFunc(SetAffinity)
+	ami.Hooks[BaetylSetPodSpec] = SetPodSpecFunc(SetPodSpec)
 	return &kubeImpl{cli: &cli, store: sto, knn: "node1", log: log.With()}
 }
