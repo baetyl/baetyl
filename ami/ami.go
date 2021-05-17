@@ -51,7 +51,7 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 
 	// RemoteCommand remote debug
-	RemoteCommand(option *DebugOptions, pipe Pipe) error
+	RemoteCommand(option *DebugOptions, pipe Pipe) (io.Closer, error)
 
 	// RemoteLogs remote logs
 	RemoteLogs(option *LogsOptions, pipe Pipe) error
@@ -60,10 +60,20 @@ type AMI interface {
 }
 
 type DebugOptions struct {
+	KubeDebugOptions
+	NativeDebugOptions
+}
+
+type KubeDebugOptions struct {
 	Namespace string
 	Name      string
 	Container string
-	Command   []string
+}
+
+type NativeDebugOptions struct {
+	Port     string
+	UserName string
+	Password string
 }
 
 type LogsOptions struct {

@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
@@ -35,21 +36,21 @@ var (
 )
 
 type chain struct {
-	ami       ami.AMI
-	data      map[string]string
-	token     string
-	name      string
-	namespace string
-	container string
-	upside    string
-	downside  string
-	logOpt    *ami.LogsOptions
-	pb        plugin.Pubsub
-	subChan   <-chan interface{}
-	processor pubsub.Processor
-	pipe      ami.Pipe
-	tomb      utils.Tomb
-	log       *log.Logger
+	mode         string
+	ami          ami.AMI
+	data         map[string]string
+	token        string
+	debugOption  ami.DebugOptions
+	upside       string
+	downside     string
+	logOpt       *ami.LogsOptions
+	pb           plugin.Pubsub
+	subChan      <-chan interface{}
+	processor    pubsub.Processor
+	debugSession io.Closer
+	pipe         ami.Pipe
+	tomb         utils.Tomb
+	log          *log.Logger
 }
 
 func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, error) {
@@ -63,6 +64,7 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 	pipe.OutReader, pipe.OutWriter = io.Pipe()
 
 	c := &chain{
+		mode:   context.RunMode(),
 		ami:    a,
 		data:   data,
 		upside: sync.TopicUpside,
@@ -70,29 +72,61 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 		pipe:   pipe,
 	}
 
-	token, ok := data["token"]
-	if !ok {
-		return nil, ErrParseData
-	}
-	c.token = token
-	c.log = log.L().With(log.Any("chain", token))
-
-	name, ok := data["name"]
-	if !ok {
-		return nil, ErrParseData
-	}
-	namespace, ok := data["namespace"]
-	if !ok {
-		return nil, ErrParseData
-	}
-	container, ok := data["container"]
-	if !ok {
-		c.log.Debug("no container specified")
+	mode := context.RunMode()
+	platform := context.PlatformString()
+	for k, _ := range cfg.Data {
+		if !specv1.IsConfigObject(k) {
+			continue
+		}
+		if mode == context.RunModeNative && strings.Contains(k, platform) {
+			continue
+		}
+		delete(cfg.Data, k)
 	}
 
-	c.name = name
-	c.namespace = namespace
-	c.container = container
+	if mode == context.RunModeNative {
+		port, ok := data["port"]
+		if !ok {
+			c.log.Debug("no port specified")
+		}
+		username, ok := data["username"]
+		if !ok {
+			c.log.Debug("no username specified")
+		}
+		password, ok := data["password"]
+		if !ok {
+			c.log.Debug("no password specified")
+		}
+
+		c.debugOption.UserName = username
+		c.debugOption.Password = password
+		c.debugOption.Port = port
+	} else {
+		token, ok := data["token"]
+		if !ok {
+			return nil, ErrParseData
+		}
+		c.token = token
+		c.log = log.L().With(log.Any("chain", token))
+
+		name, ok := data["name"]
+		if !ok {
+			return nil, ErrParseData
+		}
+		namespace, ok := data["namespace"]
+		if !ok {
+			return nil, ErrParseData
+		}
+		container, ok := data["container"]
+		if !ok {
+			c.log.Debug("no container specified")
+		}
+		c.debugOption.Name = name
+		c.debugOption.Namespace = namespace
+		c.debugOption.Container = container
+	}
+
+	// TODO: can't user container here
 	c.downside = fmt.Sprintf("%s_%s_%s_%s_%s", namespace, name, container, token, "down")
 
 	c.log.Debug("chain sub downside topic", log.Any("topic", c.downside))
@@ -113,6 +147,10 @@ func (c *chain) Close() error {
 	err = c.pipe.OutWriter.Close()
 	if err != nil {
 		c.log.Warn("failed to close chain out writer", log.Error(err))
+	}
+	err = c.debugSession.Close()
+	if err != nil {
+		c.log.Warn("failed to close debug session of chain", log.Error(err))
 	}
 
 	err = c.pb.Unsubscribe(c.downside, c.subChan)

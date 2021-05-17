@@ -14,12 +14,23 @@ import (
 	"github.com/baetyl/baetyl/v2/ami"
 )
 
-func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error {
+type DebugSession struct{}
+
+func (DebugSession) Close() error {
+	return nil
+}
+
+func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (io.Closer, error) {
 	req := k.cli.core.RESTClient().Post().Resource("pods").
 		Name(option.Name).Namespace(option.Namespace).SubResource("exec")
 
+	cmd := []string{
+		"sh",
+		"-c",
+		"/bin/sh",
+	}
 	opt := &coreV1.PodExecOptions{
-		Command: option.Command,
+		Command: cmd,
 		Stdin:   pipe.InReader != nil,
 		Stdout:  pipe.OutWriter != nil,
 		Stderr:  pipe.OutWriter != nil,
@@ -36,7 +47,7 @@ func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error 
 
 	exec, err := remotecommand.NewSPDYExecutor(k.cli.kubeConfig, http.MethodPost, req.URL())
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
@@ -46,9 +57,9 @@ func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error 
 		Tty:    true,
 	})
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
-	return nil
+	return DebugSession{}, nil
 }
 
 func (k *kubeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {

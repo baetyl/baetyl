@@ -20,6 +20,7 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/process"
+	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
 	"github.com/baetyl/baetyl/v2/ami"
@@ -29,6 +30,8 @@ import (
 
 var (
 	ErrCreateService = errors.New("failed to create service")
+	Rows             = 80
+	Cols             = 40
 )
 
 func init() {
@@ -70,9 +73,46 @@ func (impl *nativeImpl) UpdateNodeLabels(string, map[string]string) error {
 	return errors.New("failed to update node label, function has not been implemented")
 }
 
-// TODO: impl native RemoteCommand
-func (impl *nativeImpl) RemoteCommand(*ami.DebugOptions, ami.Pipe) error {
-	return errors.New("failed to start remote debugging, function has not been implemented")
+func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (io.Closer, error) {
+	cfg := &ssh.ClientConfig{
+		User: option.UserName,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(option.Password),
+		},
+	}
+
+	server := "" + option.Port
+	conn, err := ssh.Dial("tcp", server, cfg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	defer conn.Close()
+
+	session, err := conn.NewSession()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	defer session.Close()
+
+	session.Stdout = pipe.OutWriter
+	session.Stderr = pipe.OutWriter
+	session.Stdin = pipe.InReader
+
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          1,     // disable echo
+		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+	}
+
+	// TODO: support window resize
+	if err := session.RequestPty("xterm", Rows, Cols, modes); err != nil {
+		return nil, errors.Trace(err)
+	}
+	// Start remote shell
+	if err := session.Shell(); err != nil {
+		return nil, errors.Trace(err)
+	}
+	return session, nil
 }
 
 // TODO: impl native RemoteLogs
