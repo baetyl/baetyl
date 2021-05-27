@@ -2,9 +2,11 @@ package initz
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -87,7 +89,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 	assert.Error(t, err)
 
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	os.Setenv(kube.KubeNodeName, "knn")
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nil}, nil).AnyTimes()
 	active = genActivate(t, c, ami)
 

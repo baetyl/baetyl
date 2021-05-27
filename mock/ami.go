@@ -35,20 +35,6 @@ func (m *MockAMI) EXPECT() *MockAMIMockRecorder {
 	return m.recorder
 }
 
-// GetMasterNodeName mocks base method.
-func (m *MockAMI) GetMasterNodeName() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMasterNodeName")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// GetMasterNodeName indicates an expected call of GetMasterNodeName.
-func (mr *MockAMIMockRecorder) GetMasterNodeName() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMasterNodeName", reflect.TypeOf((*MockAMI)(nil).GetMasterNodeName))
-}
-
 // CollectNodeInfo mocks base method.
 func (m *MockAMI) CollectNodeInfo() (map[string]interface{}, error) {
 	m.ctrl.T.Helper()
