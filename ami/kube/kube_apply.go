@@ -31,7 +31,7 @@ const (
 
 	ServiceAccountName = "baetyl-edge-system-service-account"
 	MasterRole         = "node-role.kubernetes.io/master"
-	BaetylSetPodSpec  = "baetyl_set_pod_spec"
+	BaetylSetPodSpec   = "baetyl_set_pod_spec"
 )
 
 type SetPodSpecFunc func(*corev1.PodSpec, *specv1.Application) (*corev1.PodSpec, error)

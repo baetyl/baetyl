@@ -105,6 +105,15 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync) (
 		chains:         gosync.Map{},
 		log:            log.With(),
 	}
+	modeInfo, err := eng.ami.GetModeInfo()
+	if err != nil {
+		return nil, err
+	}
+	r := specv1.Report{"modeinfo": modeInfo}
+	_, err = eng.nod.Report(r, false)
+	if err != nil {
+		return nil, err
+	}
 	return eng, nil
 }
 

@@ -19,6 +19,14 @@ func (k *kubeImpl) GetMasterNodeName() string {
 	return k.knn
 }
 
+func (k *kubeImpl) GetModeInfo() (interface{}, error) {
+	info, err := k.cli.discovery.ServerVersion()
+	if err != nil {
+		return nil, err
+	}
+	return info.String(), nil
+}
+
 func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
 	if err != nil {
