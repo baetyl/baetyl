@@ -14,6 +14,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/golang/mock/gomock"
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/stretchr/testify/assert"
@@ -114,7 +115,7 @@ func TestCollect(t *testing.T) {
 	ns := context.EdgeNamespace()
 	apps := []specv1.AppInfo{info}
 	appStats := []specv1.AppStats{{AppInfo: info}}
-	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	os.Setenv(kube.KubeNodeName, "knn")
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
@@ -258,7 +259,7 @@ func TestReportAndApply(t *testing.T) {
 	infos := map[string]interface{}{}
 	stats := map[string]interface{}{}
 
-	mockAmi.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	os.Setenv(kube.KubeNodeName, "knn")
 	mockAmi.EXPECT().CollectNodeInfo().Return(infos, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(stats, nil)
 	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}

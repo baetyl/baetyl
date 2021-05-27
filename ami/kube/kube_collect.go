@@ -3,6 +3,7 @@ package kube
 import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
+
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
@@ -15,8 +16,12 @@ import (
 	"github.com/baetyl/baetyl/v2/ami"
 )
 
-func (k *kubeImpl) GetMasterNodeName() string {
-	return k.knn
+func (k *kubeImpl) GetModeInfo() (interface{}, error) {
+	info, err := k.cli.discovery.ServerVersion()
+	if err != nil {
+		return nil, err
+	}
+	return info.String(), nil
 }
 
 func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
