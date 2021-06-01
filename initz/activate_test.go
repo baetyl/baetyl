@@ -15,6 +15,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/mock"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -193,7 +194,7 @@ func TestActivate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	os.Setenv(kube.KubeNodeName, "knn")
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).Times(len(goodCases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
@@ -256,7 +257,7 @@ func TestActivate_Err_Response(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	ami.EXPECT().GetMasterNodeName().Return("knn").AnyTimes()
+	os.Setenv(kube.KubeNodeName, "knn")
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).AnyTimes()
 
 	active := genActivate(t, c, ami)

@@ -37,10 +37,9 @@ type Pipe struct {
 // AMI app model interfaces
 type AMI interface {
 	// node
-	// TODO remove GetMasterNodeName
-	GetMasterNodeName() string
 	CollectNodeInfo() (map[string]interface{}, error)
 	CollectNodeStats() (map[string]interface{}, error)
+	GetModeInfo() (interface{}, error)
 
 	// app
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error

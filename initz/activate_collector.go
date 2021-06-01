@@ -3,11 +3,13 @@ package initz
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	specV1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 
 	"github.com/baetyl/baetyl/v2/config"
 )
@@ -35,7 +37,7 @@ func (active *Activate) collect() (string, error) {
 	if err != nil {
 		return "", errors.Trace(err)
 	}
-	info, ok := infos[active.ami.GetMasterNodeName()]
+	info, ok := infos[os.Getenv(kube.KubeNodeName)]
 	if !ok {
 		return "", errors.Trace(ErrGetMasterNodeInfo)
 	}
