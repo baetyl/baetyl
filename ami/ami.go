@@ -8,6 +8,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+
 	"github.com/baetyl/baetyl/v2/config"
 )
 
@@ -50,7 +51,7 @@ type AMI interface {
 	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
 
 	// RemoteCommand remote debug
-	RemoteCommand(option *DebugOptions, pipe Pipe) error
+	RemoteCommand(option *DebugOptions, pipe Pipe) (io.Closer, error)
 
 	// RemoteLogs remote logs
 	RemoteLogs(option *LogsOptions, pipe Pipe) error
@@ -59,10 +60,22 @@ type AMI interface {
 }
 
 type DebugOptions struct {
+	KubeDebugOptions
+	NativeDebugOptions
+}
+
+type KubeDebugOptions struct {
 	Namespace string
 	Name      string
 	Container string
 	Command   []string
+}
+
+type NativeDebugOptions struct {
+	IP       string
+	Port     string
+	Username string
+	Password string
 }
 
 type LogsOptions struct {

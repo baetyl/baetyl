@@ -20,6 +20,7 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/process"
+	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
 	"github.com/baetyl/baetyl/v2/ami"
@@ -29,6 +30,14 @@ import (
 
 var (
 	ErrCreateService = errors.New("failed to create service")
+)
+
+const (
+	Rows     = 80
+	Cols     = 160
+	TtySpeed = 14400
+	Term     = "linux"
+	Network  = "tcp"
 )
 
 func init() {
@@ -70,9 +79,63 @@ func (impl *nativeImpl) UpdateNodeLabels(string, map[string]string) error {
 	return errors.New("failed to update node label, function has not been implemented")
 }
 
-// TODO: impl native RemoteCommand
-func (impl *nativeImpl) RemoteCommand(*ami.DebugOptions, ami.Pipe) error {
-	return errors.New("failed to start remote debugging, function has not been implemented")
+type SSHConnect struct {
+	conn    *ssh.Client
+	session *ssh.Session
+}
+
+func (s *SSHConnect) Close() error {
+	s.session.Close()
+	s.conn.Close()
+	return nil
+}
+
+// RemoteCommand Implement of native
+func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (io.Closer, error) {
+	cfg := &ssh.ClientConfig{
+		User: option.Username,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(option.Password),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+	server := fmt.Sprintf("%s:%s", option.IP, option.Port)
+	conn, err := ssh.Dial(Network, server, cfg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	session, err := conn.NewSession()
+	if err != nil {
+		conn.Close()
+		return nil, errors.Trace(err)
+	}
+	var sshConnect = &SSHConnect{
+		conn:    conn,
+		session: session,
+	}
+
+	session.Stdout = pipe.OutWriter
+	session.Stderr = pipe.OutWriter
+	session.Stdin = pipe.InReader
+
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          0,        // disable echo
+		ssh.TTY_OP_ISPEED: TtySpeed, // input speed = 14.4kbaud
+		ssh.TTY_OP_OSPEED: TtySpeed, // output speed = 14.4kbaud
+	}
+
+	// TODO: support window resize
+	if err = session.RequestPty(Term, Rows, Cols, modes); err != nil {
+		sshConnect.Close()
+		return nil, errors.Trace(err)
+	}
+	// Start remote shell
+	if err = session.Shell(); err != nil {
+		sshConnect.Close()
+		return nil, errors.Trace(err)
+	}
+	return sshConnect, nil
 }
 
 // TODO: impl native RemoteLogs
