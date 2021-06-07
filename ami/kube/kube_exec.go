@@ -14,7 +14,7 @@ import (
 	"github.com/baetyl/baetyl/v2/ami"
 )
 
-func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error {
+func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (io.Closer, error) {
 	req := k.cli.core.RESTClient().Post().Resource("pods").
 		Name(option.Name).Namespace(option.Namespace).SubResource("exec")
 
@@ -36,7 +36,7 @@ func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error 
 
 	exec, err := remotecommand.NewSPDYExecutor(k.cli.kubeConfig, http.MethodPost, req.URL())
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
 
 	err = exec.Stream(remotecommand.StreamOptions{
@@ -46,9 +46,9 @@ func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error 
 		Tty:    true,
 	})
 	if err != nil {
-		return errors.Trace(err)
+		return nil, errors.Trace(err)
 	}
-	return nil
+	return nil, nil
 }
 
 func (k *kubeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {

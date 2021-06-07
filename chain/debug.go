@@ -5,8 +5,6 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-
-	"github.com/baetyl/baetyl/v2/ami"
 )
 
 func (c *chain) Debug() error {
@@ -17,18 +15,6 @@ func (c *chain) Debug() error {
 }
 
 func (c *chain) connecting() error {
-	cmd := []string{
-		"sh",
-		"-c",
-		"/bin/sh",
-	}
-	opt := &ami.DebugOptions{
-		Namespace: c.namespace,
-		Name:      c.name,
-		Container: c.container,
-		Command:   cmd,
-	}
-
 	defer func() {
 		c.log.Debug("connecting close")
 		msg := &v1.Message{
@@ -42,10 +28,11 @@ func (c *chain) connecting() error {
 		c.pb.Publish(c.upside, msg)
 	}()
 
-	err := c.ami.RemoteCommand(opt, c.pipe)
+	session, err := c.ami.RemoteCommand(c.debugOptions, c.pipe)
 	if err != nil {
 		c.log.Error("failed to start remote debug", log.Error(err))
 		return errors.Trace(err)
 	}
+	c.session = session
 	return nil
 }

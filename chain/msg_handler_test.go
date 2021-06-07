@@ -31,17 +31,20 @@ func TestHandler(t *testing.T) {
 	pipe.InReader, pipe.InWriter = io.Pipe()
 	pipe.OutReader, pipe.OutWriter = io.Pipe()
 
+	var opt ami.DebugOptions
+	opt.KubeDebugOptions = ami.KubeDebugOptions{
+		Namespace: "default",
+		Name:      "baetyl-function-0",
+		Container: "function",
+		Command:   []string{},
+	}
 	cha := &chain{
-		data: map[string]string{
-			"namespace": "default",
-			"name":      "baetyl-function-0",
-			"container": "function",
-			"token":     token,
-		},
-		upside: "up",
-		pb:     pb,
-		pipe:   pipe,
-		log:    log.L().With(log.Any("chain", "test")),
+		debugOptions: &opt,
+		token:        token,
+		upside:       "up",
+		pb:           pb,
+		pipe:         pipe,
+		log:          log.L().With(log.Any("chain", "test")),
 	}
 
 	cHandler := &chainHandler{chain: cha}

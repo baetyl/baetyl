@@ -19,9 +19,9 @@ func (c *chain) ViewLogs(opt *ami.LogsOptions) error {
 }
 
 func (c *chain) logging() error {
-	c.logOpt.Name = c.name
-	c.logOpt.Namespace = c.namespace
-	c.logOpt.Container = c.container
+	c.logOpt.Name = c.debugOptions.Name
+	c.logOpt.Namespace = c.debugOptions.Namespace
+	c.logOpt.Container = c.debugOptions.Container
 
 	defer func() {
 		c.log.Debug("connecting close")

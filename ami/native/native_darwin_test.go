@@ -6,6 +6,7 @@ import (
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
 )
 
@@ -99,4 +100,19 @@ func TestUpdateEnv(t *testing.T) {
 	}
 	assert.Equal(t, f, 1)
 	assert.Equal(t, ff, 1)
+}
+
+func TestNativeRemoteCommand(t *testing.T) {
+	cfg := config.AmiConfig{}
+	cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End = 8000, 9000
+	impl, err := newNativeImpl(cfg)
+	assert.NoError(t, err)
+
+	option := &ami.DebugOptions{}
+	option.NativeDebugOptions.IP = "localhost"
+	option.NativeDebugOptions.Port = "0"
+	option.NativeDebugOptions.Username = "root"
+	option.NativeDebugOptions.Password = "root"
+	_, err = impl.RemoteCommand(option, ami.Pipe{})
+	assert.NotEqual(t, err, nil)
 }

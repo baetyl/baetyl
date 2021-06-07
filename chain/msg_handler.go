@@ -72,9 +72,9 @@ func (h *chainHandler) OnTimeout() error {
 	return h.pb.Publish(sync.TopicDownside, &v1.Message{
 		Kind: v1.MessageCMD,
 		Metadata: map[string]string{
-			"namespace": h.namespace,
-			"name":      h.name,
-			"container": h.container,
+			"namespace": h.debugOptions.Namespace,
+			"name":      h.debugOptions.Name,
+			"container": h.debugOptions.Container,
 			"token":     h.token,
 			"cmd":       "disconnect",
 		},

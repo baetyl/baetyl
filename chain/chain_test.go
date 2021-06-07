@@ -5,6 +5,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/plugin"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -50,12 +51,22 @@ func TestNewChain(t *testing.T) {
 	cfg, ctl, data := initChainEnv(t)
 	ami := mock.NewMockAMI(ctl)
 
-	// good case
+	err := os.Setenv(context.KeyRunMode, context.RunModeNative)
+	assert.NoError(t, err)
 	c, err := NewChain(cfg, ami, data)
+	assert.Error(t, err, ErrParseData)
+	data["port"] = "22"
+	c, err = NewChain(cfg, ami, data)
+	assert.Error(t, err, ErrParseData)
+	data["userName"] = "root"
+	c, err = NewChain(cfg, ami, data)
+	assert.Error(t, err, ErrParseData)
+	data["password"] = "1234"
+	c, err = NewChain(cfg, ami, data)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
-	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(os.ErrInvalid).Times(1)
+	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(nil, os.ErrInvalid).Times(1)
 	err = c.Debug()
 	assert.NoError(t, err)
 	err = c.Close()
@@ -65,6 +76,8 @@ func TestNewChain(t *testing.T) {
 	cfg.Plugin.Pubsub = "not exist"
 	_, err = NewChain(cfg, ami, data)
 	assert.Error(t, err)
+	err = os.Unsetenv(context.KeyRunMode)
+	assert.NoError(t, err)
 }
 
 func TestChainMsg(t *testing.T) {
@@ -79,7 +92,7 @@ func TestChainMsg(t *testing.T) {
 	assert.True(t, ok)
 	cha.upside = "chainUP"
 
-	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(os.ErrInvalid).Times(1)
+	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(nil, os.ErrInvalid).Times(1)
 	go func() {
 		dt := make([]byte, 1024)
 		n, err := cha.pipe.InReader.Read(dt)
