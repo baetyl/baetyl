@@ -66,7 +66,7 @@ func TestNewChain(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
-	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(nil, os.ErrInvalid).Times(1)
+	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(os.ErrInvalid).Times(1)
 	err = c.Debug()
 	assert.NoError(t, err)
 	err = c.Close()
@@ -92,7 +92,7 @@ func TestChainMsg(t *testing.T) {
 	assert.True(t, ok)
 	cha.upside = "chainUP"
 
-	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(nil, os.ErrInvalid).Times(1)
+	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(os.ErrInvalid).Times(1)
 	go func() {
 		dt := make([]byte, 1024)
 		n, err := cha.pipe.InReader.Read(dt)

@@ -113,6 +113,6 @@ func TestNativeRemoteCommand(t *testing.T) {
 	option.NativeDebugOptions.Port = "0"
 	option.NativeDebugOptions.Username = "root"
 	option.NativeDebugOptions.Password = "root"
-	_, err = impl.RemoteCommand(option, ami.Pipe{})
+	err = impl.RemoteCommand(option, ami.Pipe{})
 	assert.NotEqual(t, err, nil)
 }

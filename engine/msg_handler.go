@@ -23,6 +23,8 @@ const (
 	ErrExecData             = "failed to exec"
 	ErrSubNodeName          = "failed to get sub node name"
 	ErrTimeout              = "engine timeout"
+
+	ExitCmd = "exit\n"
 )
 
 type handlerDownside struct {
@@ -163,11 +165,24 @@ func (h *handlerDownside) connect(key string, m *v1.Message) error {
 	return nil
 }
 
+func (h *handlerDownside) sendExit(key string) {
+	m := &v1.Message{
+		Kind:    v1.MessageData,
+		Content: v1.LazyValue{Value: []byte(ExitCmd)},
+	}
+	downside := fmt.Sprintf("%s_%s", key, "down")
+	err := h.pb.Publish(downside, m)
+	if err != nil {
+		h.log.Error(ErrPublishDownsideChain, log.Error(errors.Trace(err)))
+	}
+}
+
 func (h *handlerDownside) disconnect(key string, m *v1.Message) error {
 	c, ok := h.chains.Load(key)
 	if !ok {
 		return nil
 	}
+	h.sendExit(key)
 	err := c.(chain.Chain).Close()
 	if err != nil {
 		h.publishFailedMsg(key, ErrCloseChain, m)

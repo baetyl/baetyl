@@ -79,19 +79,8 @@ func (impl *nativeImpl) UpdateNodeLabels(string, map[string]string) error {
 	return errors.New("failed to update node label, function has not been implemented")
 }
 
-type SSHConnect struct {
-	conn    *ssh.Client
-	session *ssh.Session
-}
-
-func (s *SSHConnect) Close() error {
-	s.session.Close()
-	s.conn.Close()
-	return nil
-}
-
 // RemoteCommand Implement of native
-func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (io.Closer, error) {
+func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error {
 	cfg := &ssh.ClientConfig{
 		User: option.Username,
 		Auth: []ssh.AuthMethod{
@@ -102,18 +91,15 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (
 	server := fmt.Sprintf("%s:%s", option.IP, option.Port)
 	conn, err := ssh.Dial(Network, server, cfg)
 	if err != nil {
-		return nil, errors.Trace(err)
+		return errors.Trace(err)
 	}
+	defer conn.Close()
 
 	session, err := conn.NewSession()
 	if err != nil {
-		conn.Close()
-		return nil, errors.Trace(err)
+		return errors.Trace(err)
 	}
-	var sshConnect = &SSHConnect{
-		conn:    conn,
-		session: session,
-	}
+	defer session.Close()
 
 	session.Stdout = pipe.OutWriter
 	session.Stderr = pipe.OutWriter
@@ -127,15 +113,17 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (
 
 	// TODO: support window resize
 	if err = session.RequestPty(Term, Rows, Cols, modes); err != nil {
-		sshConnect.Close()
-		return nil, errors.Trace(err)
+		return errors.Trace(err)
 	}
 	// Start remote shell
 	if err = session.Shell(); err != nil {
-		sshConnect.Close()
-		return nil, errors.Trace(err)
+		return errors.Trace(err)
 	}
-	return sshConnect, nil
+	err = session.Wait()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 // TODO: impl native RemoteLogs
