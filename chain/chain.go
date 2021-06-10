@@ -43,7 +43,6 @@ type chain struct {
 	upside       string
 	downside     string
 	mode         string
-	session      io.Closer
 	debugOptions *ami.DebugOptions
 	logOpt       *ami.LogsOptions
 	pb           plugin.Pubsub
@@ -138,9 +137,6 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 
 func (c *chain) Close() error {
 	c.processor.Close()
-	if c.session != nil {
-		c.session.Close()
-	}
 
 	err := c.pipe.InWriter.Close()
 	if err != nil {

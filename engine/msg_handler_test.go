@@ -106,7 +106,7 @@ func TestHandlerDownside(t *testing.T) {
 		Metadata: meta,
 	}
 
-	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 
 	engMsgWG.Add(1)
 	err = h.OnMessage(msg2)

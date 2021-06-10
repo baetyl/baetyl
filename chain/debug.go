@@ -28,11 +28,10 @@ func (c *chain) connecting() error {
 		c.pb.Publish(c.upside, msg)
 	}()
 
-	session, err := c.ami.RemoteCommand(c.debugOptions, c.pipe)
+	err := c.ami.RemoteCommand(c.debugOptions, c.pipe)
 	if err != nil {
 		c.log.Error("failed to start remote debug", log.Error(err))
 		return errors.Trace(err)
 	}
-	c.session = session
 	return nil
 }

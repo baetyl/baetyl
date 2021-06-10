@@ -139,12 +139,11 @@ func (mr *MockAMIMockRecorder) FetchLog(namespace, service, tailLines, sinceSeco
 }
 
 // RemoteCommand mocks base method
-func (m *MockAMI) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) (io.Closer, error) {
+func (m *MockAMI) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoteCommand", option, pipe)
-	ret0, _ := ret[0].(io.Closer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // RemoteCommand indicates an expected call of RemoteCommand
