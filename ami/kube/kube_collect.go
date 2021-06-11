@@ -160,7 +160,7 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	return infos, nil
 }
 
-func (k *kubeImpl) collectDeploymentStats(ns string) ([]specv1.AppStats, error) {
+func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -170,7 +170,7 @@ func (k *kubeImpl) collectDeploymentStats(ns string) ([]specv1.AppStats, error) 
 		appName := deploy.Labels[AppName]
 		appVersion := deploy.Labels[AppVersion]
 		serviceName := deploy.Labels[ServiceName]
-		err = k.collectAppStats(appStats, ns, specv1.ServiceTypeDeployment,
+		err = k.collectAppStats(appStats, qps, ns, specv1.ServiceTypeDeployment,
 			appName, appVersion, serviceName, deploy.Spec.Selector.MatchLabels)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -183,7 +183,7 @@ func (k *kubeImpl) collectDeploymentStats(ns string) ([]specv1.AppStats, error) 
 	return res, nil
 }
 
-func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
+func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
 	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -193,7 +193,7 @@ func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
 		appName := daemon.Labels[AppName]
 		appVersion := daemon.Labels[AppVersion]
 		serviceName := daemon.Labels[ServiceName]
-		err = k.collectAppStats(appStats, ns, specv1.ServiceTypeDaemonSet,
+		err = k.collectAppStats(appStats, qps, ns, specv1.ServiceTypeDaemonSet,
 			appName, appVersion, serviceName, daemon.Spec.Selector.MatchLabels)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -206,7 +206,7 @@ func (k *kubeImpl) collectDaemonSetStats(ns string) ([]specv1.AppStats, error) {
 	return res, nil
 }
 
-func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats,
+func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[string]interface{},
 	ns, tp, appName, appVersion, serviceName string, set labels.Set) error {
 	if appName == "" || serviceName == "" {
 		return nil
@@ -230,7 +230,7 @@ func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats,
 		if stats.InstanceStats == nil {
 			stats.InstanceStats = map[string]specv1.InstanceStats{}
 		}
-		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, &pod)
+		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, qps, &pod)
 	}
 	stats.Status = getAppStatus(stats.InstanceStats)
 	appStats[appName] = stats
@@ -252,7 +252,7 @@ func getAppStatus(infos map[string]specv1.InstanceStats) specv1.Status {
 	return specv1.Running
 }
 
-func (k *kubeImpl) collectInstanceStats(ns, serviceName string, pod *corev1.Pod) specv1.InstanceStats {
+func (k *kubeImpl) collectInstanceStats(ns, serviceName string, qps map[string]interface{}, pod *corev1.Pod) specv1.InstanceStats {
 	stats := specv1.InstanceStats{Name: pod.Name, ServiceName: serviceName, Usage: map[string]string{}}
 	stats.CreateTime = pod.CreationTimestamp.Local()
 	stats.Status = specv1.Status(pod.Status.Phase)
@@ -287,6 +287,10 @@ func (k *kubeImpl) collectInstanceStats(ns, serviceName string, pod *corev1.Pod)
 			}
 		}
 	}
+	if qpsStats, ok := qps[pod.Name]; ok {
+		stats.Extension = qpsStats
+	}
+
 	stats.IP = pod.Status.PodIP
 	stats.NodeName = pod.Spec.NodeName
 	return stats

@@ -17,6 +17,7 @@ import (
 const (
 	BaetylGPUStatsExtension  = "baetyl_gpu_stats_extension"
 	BaetylNodeStatsExtension = "baetyl_node_stats_extension"
+	BaetylQPSStatsExtension  = "baetyl_qps_stats_extension"
 )
 
 var mu sync.Mutex
