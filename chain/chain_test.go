@@ -92,7 +92,7 @@ func TestChainMsg(t *testing.T) {
 	assert.True(t, ok)
 	cha.upside = "chainUP"
 
-	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(os.ErrInvalid).Times(1)
+	a.EXPECT().RemoteCommand(gomock.Any(), cha.pipe).Return(nil).Times(1)
 	go func() {
 		dt := make([]byte, 1024)
 		n, err := cha.pipe.InReader.Read(dt)
