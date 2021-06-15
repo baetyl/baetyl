@@ -73,12 +73,26 @@ func (k *kubeImpl) DeleteApp(ns string, app string) error {
 
 func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 	var res []specv1.AppStats
-	dps, err := k.collectDeploymentStats(ns)
+	var qpsExts map[string]interface{}
+	var err error
+	if extension, ok := ami.Hooks[ami.BaetylQPSStatsExtension]; ok {
+		qpsStatsExt, ok := extension.(ami.CollectStatsExtFunc)
+		if ok {
+			qpsExts, err = qpsStatsExt()
+			if err != nil {
+				k.log.Warn("failed to collect qps stats", log.Error(errors.Trace(err)))
+			}
+			k.log.Debug("collect qps stats successfully", log.Any("qpsStats", qpsExts))
+		} else {
+			k.log.Warn("invalid collecting qps stats function")
+		}
+	}
+	dps, err := k.collectDeploymentStats(ns, qpsExts)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	res = append(res, dps...)
-	dss, err := k.collectDaemonSetStats(ns)
+	dss, err := k.collectDaemonSetStats(ns, qpsExts)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
