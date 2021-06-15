@@ -121,7 +121,7 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) e
 	}
 	err = session.Wait()
 	if err != nil {
-		return errors.Trace(err)
+		impl.log.Warn("ssh session log out with exception")
 	}
 	return nil
 }

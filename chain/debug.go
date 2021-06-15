@@ -31,6 +31,7 @@ func (c *chain) connecting() error {
 	err := c.ami.RemoteCommand(c.debugOptions, c.pipe)
 	if err != nil {
 		c.log.Error("failed to start remote debug", log.Error(err))
+		c.Close()
 		return errors.Trace(err)
 	}
 	return nil
