@@ -36,7 +36,7 @@ const (
 	Rows     = 80
 	Cols     = 160
 	TtySpeed = 14400
-	Term     = "linux"
+	Term     = "xterm"
 	Network  = "tcp"
 )
 
@@ -106,7 +106,7 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) e
 	session.Stdin = pipe.InReader
 
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          0,        // disable echo
+		ssh.ECHO:          1,        // enable echo
 		ssh.TTY_OP_ISPEED: TtySpeed, // input speed = 14.4kbaud
 		ssh.TTY_OP_OSPEED: TtySpeed, // output speed = 14.4kbaud
 	}
