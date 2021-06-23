@@ -3,10 +3,11 @@ package broker
 import (
 	"time"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/baetyl/baetyl/baetyl-hub/common"
 	"github.com/baetyl/baetyl/baetyl-hub/persist"
 	"github.com/baetyl/baetyl/baetyl-hub/utils"
-	"github.com/golang/protobuf/proto"
 )
 
 func (b *Broker) reporting() error {
@@ -62,7 +63,8 @@ func (b *Broker) persistingMsgQos1() error {
 	defer b.log.Debugf("persisting message (qos=1) task stopped")
 	msgs := make([]*common.Message, 0)
 	batchSize := b.config.Message.Ingress.Qos1.Buffer.Size
-	ticker := time.NewTicker(time.Millisecond * 10)
+	ticker := time.NewTicker(time.Millisecond * 100)
+	defer ticker.Stop()
 loop:
 	for {
 		select {
@@ -102,6 +104,7 @@ func (b *Broker) persistingOffset() error {
 	offsets := make(map[string]uint64)
 	batchSize := b.config.Message.Offset.Batch.Max
 	ticker := time.NewTicker(time.Millisecond * 100)
+	defer ticker.Stop()
 loop:
 	for {
 		select {

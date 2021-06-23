@@ -87,7 +87,7 @@ func (m *mo) close() {
 func main() {
 	// // go tool pprof http://localhost:6060/debug/pprof/profile
 	// go func() {
-	// 	err := http.ListenAndServe("localhost:6060", nil)
+	// 	err := http.ListenAndServe(":6060", nil)
 	// 	if err != nil {
 	// 		fmt.Fprintln(os.Stderr, "Start profile failed: ", err.Error())
 	// 		return
