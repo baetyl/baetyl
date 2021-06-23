@@ -110,7 +110,7 @@ func (s *sink) goRoutingQ1() error {
 		msgs   []*common.Message
 		length int
 	)
-	ticker := time.NewTicker(time.Millisecond * 10)
+	ticker := time.NewTicker(time.Millisecond * 100)
 	defer ticker.Stop()
 	maxBatchSize := s.broker.Config().Message.Egress.Qos1.Batch.Max
 	for {
