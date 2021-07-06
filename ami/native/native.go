@@ -132,7 +132,7 @@ func (impl *nativeImpl) RemoteLogs(*ami.LogsOptions, ami.Pipe) error {
 }
 
 func (impl *nativeImpl) GetModeInfo() (interface{}, error) {
-	return "native", nil
+	return "", nil
 }
 
 func (impl *nativeImpl) GetMasterNodeName() string {

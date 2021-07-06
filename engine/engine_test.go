@@ -119,6 +119,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().GetModeInfo().Return("modeinfo", nil)
 	res := e.Collect(ns, false, nil)
 	resNode := res["node"]
 	resNodeStats := res["nodestats"]
@@ -132,6 +133,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nil, errors.New("failed to get node info"))
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().GetModeInfo().Return("modeinfo", nil)
 	res = e.Collect(ns, false, nil)
 	resNode = res["node"]
 	assert.Nil(t, resNode)
@@ -139,6 +141,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, errors.New("failed to get node stats"))
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().GetModeInfo().Return("modeinfo", nil)
 	res = e.Collect(ns, false, nil)
 	resNodeStats = res["nodestats"]
 	assert.Nil(t, resNodeStats)
@@ -146,6 +149,7 @@ func TestCollect(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(nil, errors.New("failed to get app stats"))
+	mockAmi.EXPECT().GetModeInfo().Return("modeinfo", nil)
 	res = e.Collect(ns, false, nil)
 	resApps = res["apps"]
 	resAppStats = res["appstats"]
@@ -264,6 +268,7 @@ func TestReportAndApply(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeStats().Return(stats, nil)
 	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().GetModeInfo().Return("modeinfo", nil)
 
 	reApp := specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}, {Name: "app2", Version: "v2"}},
@@ -293,6 +298,7 @@ func TestReportAndApply(t *testing.T) {
 	mockAmi.EXPECT().CollectNodeStats().Return(nil, nil)
 	appStats = []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}}
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
+	mockAmi.EXPECT().GetModeInfo().Return("modeinfo", nil)
 	reApp = specv1.Report{
 		"apps": []specv1.AppInfo{{Name: "app1", Version: "v1"}},
 	}
