@@ -105,16 +105,6 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync) (
 		chains:         gosync.Map{},
 		log:            log.With(),
 	}
-	modeInfo, err := eng.ami.GetModeInfo()
-	if err != nil {
-		eng.log.Warn("failed to get mode info", log.Error(err))
-	} else {
-		r := specv1.Report{"modeinfo": modeInfo}
-		_, err = eng.nod.Report(r, false)
-		if err != nil {
-			return nil, err
-		}
-	}
 	return eng, nil
 }
 
@@ -239,6 +229,10 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 	if err != nil {
 		e.log.Warn("failed to collect app stats", log.Error(err))
 	}
+	modeInfo, err := e.ami.GetModeInfo()
+	if err != nil {
+		e.log.Warn("failed to get mode info", log.Error(err))
+	}
 	apps := make([]specv1.AppInfo, 0)
 	filterStats := make([]specv1.AppStats, 0)
 	for _, info := range appStats {
@@ -254,6 +248,7 @@ func (e *engineImpl) Collect(ns string, isSys bool, desire specv1.Desire) specv1
 	}
 	r := specv1.Report{
 		"time":      time.Now(),
+		"modeinfo":  modeInfo,
 		"node":      nodeInfo,
 		"nodestats": nodeStats,
 	}
