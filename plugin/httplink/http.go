@@ -2,6 +2,7 @@ package httplink
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -18,9 +19,11 @@ func init() {
 }
 
 type httpLink struct {
-	cfg  Config
-	http *http.Client
-	log  *log.Logger
+	cfg   Config
+	addrs []string
+	ops   *http.ClientOptions
+	http  *http.Client
+	log   *log.Logger
 }
 
 func (l *httpLink) Close() error {
@@ -44,9 +47,11 @@ func New() (goplugin.Plugin, error) {
 		return nil, errors.Trace(plugin.ErrLinkTLSConfigMissing)
 	}
 	link := &httpLink{
-		cfg:  cfg,
-		http: http.NewClient(ops),
-		log:  log.With(log.Any("plugin", "httplink")),
+		cfg:   cfg,
+		ops:   ops,
+		addrs: strings.Split(cfg.HTTPLink.HTTP.Address, ","),
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("plugin", "httplink")),
 	}
 	return link, nil
 }
@@ -65,12 +70,12 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	res := &specv1.Message{Kind: msg.Kind}
 	switch msg.Kind {
 	case specv1.MessageReport:
-		data, err = l.http.PostJSON(l.cfg.HTTPLink.ReportURL, pld, msg.Metadata)
+		data, err = l.post(l.cfg.HTTPLink.ReportURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
 	case specv1.MessageDesire:
-		data, err = l.http.PostJSON(l.cfg.HTTPLink.DesireURL, pld, msg.Metadata)
+		data, err = l.post(l.cfg.HTTPLink.DesireURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -92,4 +97,19 @@ func (l *httpLink) Send(msg *specv1.Message) error {
 
 func (l *httpLink) IsAsyncSupported() bool {
 	return false
+}
+
+func (l *httpLink) post(url string, pld []byte, headers map[string]string) ([]byte, error) {
+	errs := []string{}
+	for _, addr := range l.addrs {
+		l.ops.Address = addr
+		data, err := l.http.PostJSON(url, pld, headers)
+		if err != nil {
+			l.log.Warn("post error", log.Any("addr", addr), log.Error(err))
+			errs = append(errs, err.Error())
+		} else {
+			return data, nil
+		}
+	}
+	return nil, errors.Trace(errors.New(strings.Join(errs, ";")))
 }

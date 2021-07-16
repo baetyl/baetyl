@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	gohttp "net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -54,9 +55,11 @@ func TestRequest(t *testing.T) {
 	ops, err := cfg.HTTPLink.HTTP.ToClientOptions()
 	assert.NoError(t, err)
 	link := &httpLink{
-		cfg:  cfg,
-		http: http.NewClient(ops),
-		log:  log.With(log.Any("plugin", "httplink")),
+		cfg:   cfg,
+		ops:   ops,
+		addrs: strings.Split(cfg.HTTPLink.HTTP.Address, ","),
+		http:  http.NewClient(ops),
+		log:   log.With(log.Any("plugin", "httplink")),
 	}
 	msg := &specv1.Message{
 		Kind: specv1.MessageReport,
