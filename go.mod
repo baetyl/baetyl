@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
 	github.com/valyala/fasthttp v1.9.0
-	go.etcd.io/bbolt v1.3.3
+	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.2.8
