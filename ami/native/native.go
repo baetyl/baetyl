@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -570,7 +572,18 @@ func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 		return nil, errors.Trace(err)
 	}
 	plat := context.Platform()
-	// TODO add address
+	ias, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	var addrs []string
+	for _, ia := range ias {
+		if ipnet, ok := ia.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				addrs = append(addrs, ipnet.IP.String())
+			}
+		}
+	}
 	return map[string]interface{}{
 		ho.Hostname: &v1.NodeInfo{
 			Arch:     runtime.GOARCH,
@@ -579,6 +592,7 @@ func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 			HostID:   ho.HostID,
 			Hostname: ho.Hostname,
 			Role:     "master",
+			Address:  strings.Join(addrs, ","),
 		},
 	}, nil
 }

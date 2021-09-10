@@ -48,6 +48,9 @@ func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 			if addr.Type == corev1.NodeHostName {
 				nodeInfo.Hostname = addr.Address
 			}
+			if addr.Type == corev1.NodeInternalIP {
+				nodeInfo.Address = addr.Address
+			}
 		}
 		for k := range node.GetLabels() {
 			if k == MasterRole {
