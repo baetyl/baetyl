@@ -11,6 +11,7 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -461,6 +462,35 @@ func TestApplyService(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestApplyJobs(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	lables := map[string]string{
+		"baetyl": "baetyl",
+	}
+	js := map[string]*batchv1.Job{
+		"d1": {
+			ObjectMeta: metav1.ObjectMeta{Name: "j1", Namespace: ns, Labels: lables},
+		},
+		"d2": {
+			ObjectMeta: metav1.ObjectMeta{Name: "j2", Namespace: ns, Labels: lables},
+		},
+	}
+	err := am.applyJobs(ns, js)
+	assert.NoError(t, err)
+
+	wrongJs := map[string]*batchv1.Job{
+		"d1": {
+			ObjectMeta: metav1.ObjectMeta{Name: "j1", Namespace: "default", Labels: lables},
+		},
+		"d3": {
+			ObjectMeta: metav1.ObjectMeta{Name: "j3", Namespace: "default", Labels: lables},
+		},
+	}
+	err = am.applyJobs(ns, wrongJs)
+	assert.Error(t, err)
+}
+
 func genApplyRuntime() []runtime.Object {
 	ns := "baetyl-edge"
 	rs := []runtime.Object{
@@ -482,6 +512,9 @@ func genApplyRuntime() []runtime.Object {
 		&appv1.DaemonSet{
 			ObjectMeta: metav1.ObjectMeta{Name: "d1", Namespace: ns},
 		},
+		&batchv1.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: "j1", Namespace: ns},
+		},
 	}
 	return rs
 }
@@ -489,8 +522,9 @@ func genApplyRuntime() []runtime.Object {
 func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genApplyRuntime()...)
 	cli := client{
-		core: fc.CoreV1(),
-		app:  fc.AppsV1(),
+		core:  fc.CoreV1(),
+		app:   fc.AppsV1(),
+		batch: fc.BatchV1(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
