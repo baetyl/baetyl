@@ -10,6 +10,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -139,6 +140,10 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
+	jobs, err := k.cli.batch.Jobs(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return errors.Trace(err)
+	}
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
 		if err := deployInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
@@ -154,6 +159,13 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	svcInterface := k.cli.core.Services(ns)
 	for _, s := range services.Items {
 		if err := svcInterface.Delete(s.Name, &metav1.DeleteOptions{}); err != nil {
+			return errors.Trace(err)
+		}
+	}
+	jobInterface := k.cli.batch.Jobs(ns)
+	policy := metav1.DeletePropagationBackground
+	for _, j := range jobs.Items {
+		if err = jobInterface.Delete(j.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
 			return errors.Trace(err)
 		}
 	}
@@ -182,6 +194,7 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	services := make(map[string]*corev1.Service)
 	deploys := make(map[string]*appv1.Deployment)
 	daemons := make(map[string]*appv1.DaemonSet)
+	jobs := make(map[string]*batchv1.Job)
 	for _, svc := range app.Services {
 		if svc.Type == "" {
 			svc.Type = specv1.ServiceTypeDeployment
@@ -199,6 +212,12 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 			} else {
 				deploys[deploy.Name] = deploy
 			}
+		case specv1.ServiceTypeJob:
+			if job, err := prepareJob(ns, &app, svc, imagePullSecrets); err != nil {
+				return errors.Trace(err)
+			} else {
+				jobs[job.Name] = job
+			}
 		default:
 			k.log.Warn("service type not support", log.Any("type", svc.Type), log.Any("name", svc.Name))
 		}
@@ -214,6 +233,9 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 		return errors.Trace(err)
 	}
 	if err := k.applyServices(ns, services); err != nil {
+		return errors.Trace(err)
+	}
+	if err := k.applyJobs(ns, jobs); err != nil {
 		return errors.Trace(err)
 	}
 	k.log.Info("ami apply apps", log.Any("apps", app))
@@ -251,6 +273,24 @@ func (k *kubeImpl) applyDaemons(ns string, daemons map[string]*appv1.DaemonSet) 
 			if _, err = daemonInterface.Create(d); err != nil {
 				return errors.Trace(err)
 			}
+		}
+	}
+	return nil
+}
+
+func (k *kubeImpl) applyJobs(ns string, jobs map[string]*batchv1.Job) error {
+	jobInterface := k.cli.batch.Jobs(ns)
+	for _, j := range jobs {
+		job, err := jobInterface.Get(j.Name, metav1.GetOptions{})
+		if job != nil && err == nil {
+			policy := metav1.DeletePropagationBackground
+			err = jobInterface.Delete(job.Name, &metav1.DeleteOptions{PropagationPolicy: &policy})
+			if err != nil {
+				return errors.Trace(err)
+			}
+		}
+		if _, err = jobInterface.Create(j); err != nil {
+			return errors.Trace(err)
 		}
 	}
 	return nil
@@ -363,6 +403,51 @@ func prepareDaemon(ns string, app *specv1.Application, service specv1.Service,
 				Spec:       *podSpec,
 			},
 		},
+	}, nil
+}
+
+func prepareJob(ns string, app *specv1.Application, service specv1.Service,
+	imagePullSecrets []corev1.LocalObjectReference) (*batchv1.Job, error) {
+	podSpec, err := prepareInfo(app, service, imagePullSecrets)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	if extension, ok := ami.Hooks[BaetylSetPodSpec]; ok {
+		setPodSpecExt, ok := extension.(SetPodSpecFunc)
+		if ok {
+			if podSpec, err = setPodSpecExt(podSpec, app); err != nil {
+				return nil, errors.Trace(err)
+			}
+		} else {
+			return nil, errors.Trace(ErrSetPodSpec)
+		}
+	} else {
+		return nil, errors.Trace(ErrSetPodSpec)
+	}
+
+	jobSpec := batchv1.JobSpec{}
+	podSpec.RestartPolicy = corev1.RestartPolicyNever
+	if service.JobConfig != nil {
+		parallelism := int32(service.JobConfig.Parallelism)
+		completions := int32(service.JobConfig.Completions)
+		backoffLimit := int32(service.JobConfig.BackoffLimit)
+		podSpec.RestartPolicy = corev1.RestartPolicy(service.JobConfig.RestartPolicy)
+		jobSpec.Parallelism = &parallelism
+		jobSpec.Completions = &completions
+		jobSpec.BackoffLimit = &backoffLimit
+	}
+	jobSpec.Template.Spec = *podSpec
+	labels := map[string]string{}
+	for k, v := range app.Labels {
+		labels[k] = v
+	}
+	return &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      service.Name,
+			Namespace: ns,
+			Labels:    labels,
+		},
+		Spec: jobSpec,
 	}, nil
 }
 

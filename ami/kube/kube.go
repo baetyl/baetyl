@@ -97,5 +97,10 @@ func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 		return nil, errors.Trace(err)
 	}
 	res = append(res, dss...)
+	js, err := k.collectJobStats(ns, qpsExts)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	res = append(res, js...)
 	return res, nil
 }

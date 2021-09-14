@@ -209,6 +209,29 @@ func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) 
 	return res, nil
 }
 
+func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
+	jobs, err := k.cli.batch.Jobs(ns).List(metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	appStats := map[string]specv1.AppStats{}
+	for _, job := range jobs.Items {
+		appName := job.Labels[AppName]
+		appVersion := job.Labels[AppVersion]
+		serviceName := job.Labels[ServiceName]
+		err = k.collectAppStats(appStats, qps, ns, specv1.ServiceTypeJob,
+			appName, appVersion, serviceName, job.Spec.Selector.MatchLabels)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+	var res []specv1.AppStats
+	for _, stats := range appStats {
+		res = append(res, stats)
+	}
+	return res, nil
+}
+
 func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[string]interface{},
 	ns, tp, appName, appVersion, serviceName string, set labels.Set) error {
 	if appName == "" || serviceName == "" {
