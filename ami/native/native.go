@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -19,9 +20,11 @@ import (
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
 	"github.com/shirou/gopsutil/cpu"
+	gdisk "github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/process"
+	gnet "github.com/shirou/gopsutil/v3/net"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
@@ -601,6 +604,8 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats := &v1.NodeStats{
 		Usage:    map[string]string{},
 		Capacity: map[string]string{},
+		Percent:  map[string]string{},
+		NetIO:    map[string]string{},
 	}
 	ho, err := host.Info()
 	if err != nil {
@@ -627,6 +632,35 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	}
 	stats.Capacity["memory"] = strconv.FormatUint(me.Total, 10)
 	stats.Usage["memory"] = strconv.FormatUint(me.Used, 10)
+
+	disk, err := gdisk.Usage("/")
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	stats.Capacity["disk"] = strconv.FormatUint(disk.Total, 10)
+	stats.Usage["disk"] = strconv.FormatUint(disk.Used, 10)
+	diskPercent := float64(disk.Used) / float64(disk.Total)
+	stats.Percent["disk"] = strconv.FormatFloat(diskPercent, 'f', -1, 64)
+
+	netIO, err := gnet.IOCounters(false)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	// sleep 1s to get net speed
+	time.Sleep(1000 * time.Millisecond)
+	netIOSecond, err := gnet.IOCounters(false)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	InBytes := netIOSecond[0].BytesRecv - netIO[0].BytesRecv
+	OutBytes := netIOSecond[0].BytesSent - netIO[0].BytesSent
+	InPackets := netIOSecond[0].PacketsRecv - netIO[0].PacketsRecv
+	OutPackets := netIOSecond[0].PacketsSent - netIO[0].PacketsSent
+
+	stats.NetIO["netBytesSent"] = strconv.FormatUint(OutBytes, 10)
+	stats.NetIO["netBytesRecv"] = strconv.FormatUint(InBytes, 10)
+	stats.NetIO["netPacketsSent"] = strconv.FormatUint(OutPackets, 10)
+	stats.NetIO["netPacketsRecv"] = strconv.FormatUint(InPackets, 10)
 
 	// TODO add pressure flags
 	return map[string]interface{}{ho.Hostname: stats}, nil
