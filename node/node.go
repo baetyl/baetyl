@@ -28,6 +28,8 @@ var (
 	ErrParseReport = errors.New("failed to parse report struct")
 )
 
+//go:generate mockgen -destination=../mock/node.go -package=mock -source=node.go Node
+
 type Node interface {
 	Get() (m *v1.Node, err error)
 	Desire(desired v1.Desire, override bool) (delta v1.Delta, err error)

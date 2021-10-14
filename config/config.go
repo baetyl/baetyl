@@ -30,6 +30,9 @@ type EngineConfig struct {
 	Report struct {
 		Interval time.Duration `yaml:"interval" json:"interval" default:"10s"`
 	} `yaml:"report" json:"report"`
+	Clean struct {
+		Interval time.Duration `yaml:"interval" json:"interval" default:"10m"`
+	} `yaml:"clean" json:"clean"`
 }
 
 type EventConfig struct {
