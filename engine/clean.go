@@ -84,6 +84,8 @@ func (e *engineImpl) cleanObjectStorage() (int, error) {
 	var infos []specv1.AppInfo
 	infos = append(infos, node.Report.AppInfos(false)...)
 	infos = append(infos, node.Desire.AppInfos(false)...)
+	infos = append(infos, node.Report.AppInfos(true)...)
+	infos = append(infos, node.Desire.AppInfos(true)...)
 	occupied := map[string]string{}
 	for _, info := range infos {
 		occupied[info.Name] = info.Version
