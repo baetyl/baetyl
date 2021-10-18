@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
@@ -91,4 +92,398 @@ func TestRecycle(t *testing.T) {
 	var res3 specv1.Configuration
 	sto.Get(key3, &res3)
 	assert.NotNil(t, res3)
+}
+
+func TestGetFinishedJobs(t *testing.T) {
+	app := specv1.Application{
+		Name:    "app1",
+		Version: "v1",
+		Services: []specv1.Service{{
+			Name: "svc1",
+			Type: specv1.ServiceTypeJob,
+		}, {
+			Name: "svc2",
+			Type: specv1.ServiceTypeJob,
+		},
+			{
+				Name: "svc3",
+				Type: specv1.ServiceTypeDeployment,
+			},
+			{
+				Name: "svc4",
+				Type: specv1.ServiceTypeJob,
+			}},
+	}
+	apps := map[string]*specv1.Application{
+		"app1": &app,
+	}
+	nod := &specv1.Node{
+		Name:    "node1",
+		Version: "v1",
+		Report:  map[string]interface{}{},
+	}
+	appstats := []specv1.AppStats{{
+		InstanceStats: map[string]specv1.InstanceStats{
+			"job1": {
+				ServiceName: "svc1",
+				Status:      specv1.Succeeded,
+			},
+			"job2": {
+				ServiceName: "svc1",
+				Status:      specv1.Failed,
+			},
+			"job3": {
+				ServiceName: "svc2",
+				Status:      specv1.Succeeded,
+			},
+			"job4": {
+				ServiceName: "svc2",
+				Status:      specv1.Succeeded,
+			},
+			"job5": {
+				ServiceName: "svc4",
+				Status:      specv1.Failed,
+			},
+			"job6": {
+				ServiceName: "svc4",
+				Status:      specv1.Succeeded,
+			},
+			"deploy": {
+				ServiceName: "svc3",
+				Status:      specv1.Running,
+			},
+		},
+	}}
+	nod.Report.SetAppStats(false, appstats)
+	res := getFinishedJobs(apps, nod)
+	expected := map[string]struct{}{
+		"svc2": {},
+	}
+	assert.Equal(t, expected, res)
+}
+
+func TestGetUsedObjectCfgs(t *testing.T) {
+	finishedJobs := map[string]struct{}{
+		"svc2": {},
+	}
+	app := specv1.Application{
+		Name:    "app1",
+		Version: "v1",
+		Volumes: []specv1.Volume{{
+			Name: "vm1",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg1",
+					Version: "v1",
+				},
+			},
+		}, {
+			Name: "vm2",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg2",
+					Version: "v2",
+				},
+			},
+		}, {
+			Name: "vm3",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg3",
+					Version: "v3",
+				},
+			},
+		}},
+		Services: []specv1.Service{{
+			Name: "svc1",
+			Type: specv1.ServiceTypeJob,
+			VolumeMounts: []specv1.VolumeMount{{
+				Name: "vm1",
+			}},
+		}, {
+			Name: "svc2",
+			Type: specv1.ServiceTypeJob,
+			VolumeMounts: []specv1.VolumeMount{{
+				Name: "vm2",
+			}},
+		}, {
+			Name: "svc3",
+			Type: specv1.ServiceTypeDeployment,
+			VolumeMounts: []specv1.VolumeMount{{
+				Name: "vm3",
+			}},
+		}},
+	}
+	apps := map[string]*specv1.Application{
+		"app1": &app,
+	}
+	res := getUsedObjectCfgs(apps, finishedJobs)
+	expected := map[string]string{
+		"cfg1": "v1",
+		"cfg3": "v3",
+	}
+	assert.Equal(t, expected, res)
+}
+
+func TestGetDelObjectCfgs(t *testing.T) {
+	finishedJobs := map[string]struct{}{
+		"svc2": {},
+	}
+	cfg1 := specv1.Configuration{Name: "cfg1", Version: "v1"}
+	cfg2 := specv1.Configuration{Name: "cfg2", Version: "v2"}
+	cfg3 := specv1.Configuration{Name: "cfg3", Version: "v3"}
+	objectCfgs := map[string]*specv1.Configuration{
+		makeKey(specv1.KindConfiguration, "cfg1", "v1"): &cfg1,
+		makeKey(specv1.KindConfiguration, "cfg2", "v2"): &cfg2,
+		makeKey(specv1.KindConfiguration, "cfg3", "v3"): &cfg3,
+	}
+	obsolete := specv1.Application{
+		Name:    "app1",
+		Version: "v1",
+		Volumes: []specv1.Volume{{
+			Name: "vm1",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg1",
+					Version: "v1",
+				},
+			},
+		}, {
+			Name: "vm2",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg2",
+					Version: "v2",
+				},
+			},
+		}},
+		Services: []specv1.Service{{
+			Name: "svc1",
+			VolumeMounts: []specv1.VolumeMount{{
+				Name:      "vm1",
+				AutoClean: false,
+			}, {
+				Name:      "vm2",
+				AutoClean: true,
+			}},
+		}},
+	}
+	occupied := specv1.Application{
+		Name:    "app2",
+		Version: "v2",
+		Volumes: []specv1.Volume{{
+			Name: "vm1",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg3",
+					Version: "v3",
+				},
+			},
+		}, {
+			Name: "vm2",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg4",
+					Version: "v4",
+				},
+			},
+		}, {
+			Name: "vm3",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    "cfg5",
+					Version: "v5",
+				},
+			},
+		}},
+		Services: []specv1.Service{{
+			Name: "svc2",
+			Type: specv1.ServiceTypeJob,
+			VolumeMounts: []specv1.VolumeMount{{
+				Name:      "vm1",
+				AutoClean: true,
+			}, {
+				Name:      "vm2",
+				AutoClean: false,
+			}, {
+				Name:      "vm3",
+				AutoClean: true,
+			}},
+		}, {
+			Name: "svc3",
+			VolumeMounts: []specv1.VolumeMount{{
+				Name:      "vm1",
+				AutoClean: false,
+			}, {
+				Name:      "vm2",
+				AutoClean: true,
+			}},
+		}},
+	}
+	occupiedApps := map[string]*specv1.Application{
+		"app1": &occupied,
+	}
+	obsoleteApps := map[string]*specv1.Application{
+		"app2": &obsolete,
+	}
+	del := getDelObjectCfgs(occupiedApps, obsoleteApps, objectCfgs, finishedJobs)
+	expected := map[string]*specv1.Configuration{
+		makeKey(specv1.KindConfiguration, cfg2.Name, cfg2.Version): &cfg2,
+		makeKey(specv1.KindConfiguration, cfg3.Name, cfg3.Version): &cfg3,
+	}
+	assert.Equal(t, expected, del)
+}
+
+func TestCleanObjectStorage(t *testing.T) {
+	objDir, err := ioutil.TempDir("", t.Name())
+	assert.NoError(t, err)
+	nod, engCfg, sto := prepare(t)
+	node1 := &specv1.Node{
+		Name:    "node1",
+		Version: "v1",
+		Report:  map[string]interface{}{},
+		Desire:  map[string]interface{}{},
+	}
+	appstats := []specv1.AppStats{{
+		InstanceStats: map[string]specv1.InstanceStats{
+			"job1": {
+				ServiceName: "svc1",
+				Status:      specv1.Succeeded,
+			},
+			"job2": {
+				ServiceName: "svc1",
+				Status:      specv1.Failed,
+			},
+			"deploy": {
+				ServiceName: "svc3",
+				Status:      specv1.Running,
+			},
+		},
+	}}
+	node1.Report.SetAppStats(false, appstats)
+	appinfo := []specv1.AppInfo{{
+		Name:    "app2",
+		Version: "v2",
+	}}
+	node1.Report.SetAppInfos(false, appinfo)
+	_, err = nod.Report(node1.Report, false)
+	assert.NoError(t, err)
+	objCfg1 := specv1.Configuration{
+		Name:    "cfg1",
+		Version: "v1",
+		Data: map[string]string{
+			specv1.PrefixConfigObject: "a.zip",
+		},
+	}
+	objCfg2 := specv1.Configuration{
+		Name:    "cfg2",
+		Version: "v2",
+		Data: map[string]string{
+			specv1.PrefixConfigObject: "b.zip",
+		},
+	}
+	objCfg3 := specv1.Configuration{
+		Name:    "cfg3",
+		Version: "v3",
+		Data: map[string]string{
+			specv1.PrefixConfigObject: "c.zip",
+		},
+	}
+	err = sto.Upsert(makeKey(specv1.KindConfiguration, objCfg1.Name, objCfg1.Version), objCfg1)
+	assert.NoError(t, err)
+	err = sto.Upsert(makeKey(specv1.KindConfiguration, objCfg2.Name, objCfg2.Version), objCfg2)
+	assert.NoError(t, err)
+	err = sto.Upsert(makeKey(specv1.KindConfiguration, objCfg3.Name, objCfg3.Version), objCfg3)
+	assert.NoError(t, err)
+	app1 := specv1.Application{
+		Name:    "app1",
+		Version: "v1",
+		Volumes: []specv1.Volume{{
+			Name: "vm1",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    objCfg1.Name,
+					Version: objCfg1.Version,
+				},
+			},
+		}, {
+			Name: "vm2",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    objCfg2.Name,
+					Version: objCfg2.Version,
+				},
+			},
+		}, {
+			Name: "vm3",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    objCfg3.Name,
+					Version: objCfg3.Version,
+				},
+			},
+		}},
+		Services: []specv1.Service{{
+			Name: "svc1",
+			VolumeMounts: []specv1.VolumeMount{{
+				Name:      "vm1",
+				AutoClean: true,
+			}, {
+				Name:      "vm2",
+				AutoClean: false,
+			}, {
+				Name:      "vm3",
+				AutoClean: true,
+			}},
+		}},
+	}
+	app2 := specv1.Application{
+		Name:    "app2",
+		Version: "v2",
+		Volumes: []specv1.Volume{{
+			Name: "vm1",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name:    objCfg3.Name,
+					Version: objCfg3.Version,
+				},
+			},
+		}},
+		Services: []specv1.Service{{
+			Name: "svc2",
+			VolumeMounts: []specv1.VolumeMount{{
+				Name: "vm1",
+			}},
+		}},
+	}
+	err = sto.Upsert(makeKey(specv1.KindApplication, app1.Name, app1.Version), app1)
+	assert.NoError(t, err)
+	err = sto.Upsert(makeKey(specv1.KindApplication, app2.Name, app2.Version), app2)
+	assert.NoError(t, err)
+
+	cfgDir1 := path.Join(objDir, objCfg1.Name, objCfg1.Version)
+	cfgDir2 := path.Join(objDir, objCfg2.Name, objCfg2.Version)
+	cfgDir3 := path.Join(objDir, objCfg3.Name, objCfg3.Version)
+	err = os.MkdirAll(cfgDir1, 0755)
+	assert.NoError(t, err)
+	assert.True(t, utils.DirExists(cfgDir1))
+	err = os.MkdirAll(cfgDir2, 0755)
+	assert.NoError(t, err)
+	assert.True(t, utils.DirExists(cfgDir2))
+	err = os.MkdirAll(cfgDir3, 0755)
+	assert.NoError(t, err)
+	assert.True(t, utils.DirExists(cfgDir3))
+	eng := &engineImpl{
+		nod: nod,
+		sto: sto,
+		cfg: config.Config{Engine: engCfg},
+		log: log.With(log.Any("engine", "clean")),
+	}
+	eng.cfg.Sync.Download.Path = objDir
+	res, err := eng.cleanObjectStorage()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, res)
+	assert.False(t, utils.DirExists(cfgDir1))
+	assert.True(t, utils.DirExists(cfgDir2))
+	assert.True(t, utils.DirExists(cfgDir3))
 }
