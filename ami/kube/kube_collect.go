@@ -16,6 +16,15 @@ import (
 	"github.com/baetyl/baetyl/v2/ami"
 )
 
+type appInfo struct {
+	name     string
+	version  string
+	svcName  string
+	typ      string
+	replicas int32
+	set      labels.Set
+}
+
 func (k *kubeImpl) GetModeInfo() (interface{}, error) {
 	info, err := k.cli.discovery.ServerVersion()
 	if err != nil {
@@ -169,12 +178,14 @@ func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{})
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
+	info := appInfo{typ: specv1.ServiceTypeDeployment}
 	for _, deploy := range deploys.Items {
-		appName := deploy.Labels[AppName]
-		appVersion := deploy.Labels[AppVersion]
-		serviceName := deploy.Labels[ServiceName]
-		err = k.collectAppStats(appStats, qps, ns, specv1.ServiceTypeDeployment,
-			appName, appVersion, serviceName, deploy.Spec.Selector.MatchLabels)
+		info.name = deploy.Labels[AppName]
+		info.version = deploy.Labels[AppVersion]
+		info.svcName = deploy.Labels[ServiceName]
+		info.replicas = *deploy.Spec.Replicas
+		info.set = deploy.Spec.Selector.MatchLabels
+		err = k.collectAppStats(appStats, qps, ns, info)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -192,12 +203,13 @@ func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) 
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
+	info := appInfo{typ: specv1.ServiceTypeDaemonSet, replicas: 1}
 	for _, daemon := range daemons.Items {
-		appName := daemon.Labels[AppName]
-		appVersion := daemon.Labels[AppVersion]
-		serviceName := daemon.Labels[ServiceName]
-		err = k.collectAppStats(appStats, qps, ns, specv1.ServiceTypeDaemonSet,
-			appName, appVersion, serviceName, daemon.Spec.Selector.MatchLabels)
+		info.name = daemon.Labels[AppName]
+		info.version = daemon.Labels[AppVersion]
+		info.svcName = daemon.Labels[ServiceName]
+		info.set = daemon.Spec.Selector.MatchLabels
+		err = k.collectAppStats(appStats, qps, ns, info)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -215,12 +227,14 @@ func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]spe
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
+	info := appInfo{typ: specv1.ServiceTypeJob}
 	for _, job := range jobs.Items {
-		appName := job.Labels[AppName]
-		appVersion := job.Labels[AppVersion]
-		serviceName := job.Labels[ServiceName]
-		err = k.collectAppStats(appStats, qps, ns, specv1.ServiceTypeJob,
-			appName, appVersion, serviceName, job.Spec.Selector.MatchLabels)
+		info.name = job.Labels[AppName]
+		info.version = job.Labels[AppVersion]
+		info.svcName = job.Labels[ServiceName]
+		info.replicas = *job.Spec.Completions
+		info.set = job.Spec.Selector.MatchLabels
+		err = k.collectAppStats(appStats, qps, ns, info)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -232,20 +246,18 @@ func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]spe
 	return res, nil
 }
 
-func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[string]interface{},
-	ns, tp, appName, appVersion, serviceName string, set labels.Set) error {
-	if appName == "" || serviceName == "" {
+func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[string]interface{}, ns string, info appInfo) error {
+	if info.name == "" || info.svcName == "" {
 		return nil
 	}
-	stats, ok := appStats[appName]
+	stats, ok := appStats[info.name]
 	if !ok {
 		stats = specv1.AppStats{
-			AppInfo:    specv1.AppInfo{Name: appName, Version: appVersion},
-			DeployType: tp,
+			AppInfo:    specv1.AppInfo{Name: info.name, Version: info.version},
+			DeployType: info.typ,
 		}
 	}
-	selector := labels.SelectorFromSet(set)
-	pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: labels.SelectorFromSet(info.set).String()})
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -256,26 +268,43 @@ func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[
 		if stats.InstanceStats == nil {
 			stats.InstanceStats = map[string]specv1.InstanceStats{}
 		}
-		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, serviceName, qps, &pod)
+		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, info.svcName, qps, &pod)
 	}
-	stats.Status = getAppStatus(stats.InstanceStats)
-	appStats[appName] = stats
+	stats.Status = getAppStatus(stats.Status, info.replicas, stats.InstanceStats)
+	appStats[info.name] = stats
 	return nil
 }
 
-func getAppStatus(infos map[string]specv1.InstanceStats) specv1.Status {
-	var pending = false
+func getAppStatus(status specv1.Status, replicas int32, infos map[string]specv1.InstanceStats) specv1.Status {
+	var cnt int32
+	pending, unknown := false, false
 	for _, info := range infos {
-		if info.Status == specv1.Pending {
+		switch info.Status {
+		case specv1.Pending, specv1.Failed:
 			pending = true
-		} else if info.Status == specv1.Failed {
-			return info.Status
+		case specv1.Unknown:
+			unknown = true
+		case specv1.Running, specv1.Succeeded:
+			cnt++
+		default:
 		}
 	}
-	if pending {
-		return specv1.Pending
+	var res = specv1.Pending
+	if cnt == replicas {
+		res = specv1.Running
+	} else {
+		if pending {
+			res = specv1.Pending
+		}
+		if unknown {
+			res = specv1.Unknown
+		}
 	}
-	return specv1.Running
+	if status == "" || status == specv1.Running {
+		return res
+	} else {
+		return status
+	}
 }
 
 func (k *kubeImpl) collectInstanceStats(ns, serviceName string, qps map[string]interface{}, pod *corev1.Pod) specv1.InstanceStats {

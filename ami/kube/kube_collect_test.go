@@ -17,6 +17,60 @@ import (
 	"github.com/baetyl/baetyl/v2/store"
 )
 
+func TestGetAppStatus(t *testing.T) {
+	var status specv1.Status = ""
+	var replicas int32 = 2
+	infos := map[string]specv1.InstanceStats{
+		"ins-1": {
+			Status: specv1.Running,
+		},
+		"ins-2": {
+			Status: specv1.Running,
+		},
+	}
+	res := getAppStatus(status, replicas, infos)
+	expected := specv1.Running
+	assert.Equal(t, expected, res)
+
+	infos["ins-2"] = specv1.InstanceStats{Status: specv1.Pending}
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Pending
+	assert.Equal(t, expected, res)
+
+	infos["ins-2"] = specv1.InstanceStats{Status: specv1.Failed}
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Pending
+	assert.Equal(t, expected, res)
+
+	infos["ins-1"] = specv1.InstanceStats{Status: specv1.Succeeded}
+	infos["ins-2"] = specv1.InstanceStats{Status: specv1.Succeeded}
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Running
+	assert.Equal(t, expected, res)
+
+	infos["ins-2"] = specv1.InstanceStats{Status: specv1.Failed}
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Pending
+	assert.Equal(t, expected, res)
+
+	infos["ins-2"] = specv1.InstanceStats{Status: specv1.Unknown}
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Unknown
+	assert.Equal(t, expected, res)
+
+	infos["ins-1"] = specv1.InstanceStats{Status: specv1.Succeeded}
+	infos["ins-2"] = specv1.InstanceStats{Status: specv1.Succeeded}
+	infos["ins-3"] = specv1.InstanceStats{Status: specv1.Pending}
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Running
+	assert.Equal(t, expected, res)
+
+	status = specv1.Pending
+	res = getAppStatus(status, replicas, infos)
+	expected = specv1.Pending
+	assert.Equal(t, expected, res)
+}
+
 func TestCollectNodeInfo(t *testing.T) {
 	ami := initCollectKubeAMI(t)
 	res, err := ami.CollectNodeInfo()
