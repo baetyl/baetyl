@@ -265,22 +265,24 @@ func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[
 	if pods == nil || len(pods.Items) == 0 {
 		return nil
 	}
-	for _, pod := range pods.Items {
-		if stats.InstanceStats == nil {
-			stats.InstanceStats = map[string]specv1.InstanceStats{}
-		}
-		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, info.svcName, qps, &pod)
+	if stats.InstanceStats == nil {
+		stats.InstanceStats = map[string]specv1.InstanceStats{}
 	}
-	stats.Status = getAppStatus(stats.Status, info.replicas, stats.InstanceStats)
+	insStats := map[string]specv1.InstanceStats{}
+	for _, pod := range pods.Items {
+		stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, info.svcName, qps, &pod)
+		insStats[pod.Name] = stats.InstanceStats[pod.Name]
+	}
+	stats.Status = getAppStatus(stats.Status, info.replicas, insStats)
 	appStats[info.name] = stats
 	return nil
 }
 
-func getAppStatus(status specv1.Status, replicas int32, infos map[string]specv1.InstanceStats) specv1.Status {
+func getAppStatus(status specv1.Status, replicas int32, insStats map[string]specv1.InstanceStats) specv1.Status {
 	var cnt int32
 	pending, unknown := false, false
-	for _, info := range infos {
-		switch info.Status {
+	for _, ins := range insStats {
+		switch ins.Status {
 		case specv1.Pending, specv1.Failed:
 			pending = true
 		case specv1.Unknown:
