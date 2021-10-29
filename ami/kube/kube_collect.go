@@ -203,12 +203,13 @@ func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) 
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
-	info := appInfo{typ: specv1.ServiceTypeDaemonSet, replicas: 1}
+	info := appInfo{typ: specv1.ServiceTypeDaemonSet}
 	for _, daemon := range daemons.Items {
 		info.name = daemon.Labels[AppName]
 		info.version = daemon.Labels[AppVersion]
 		info.svcName = daemon.Labels[ServiceName]
 		info.set = daemon.Spec.Selector.MatchLabels
+		info.replicas = daemon.Status.DesiredNumberScheduled
 		err = k.collectAppStats(appStats, qps, ns, info)
 		if err != nil {
 			return nil, errors.Trace(err)
