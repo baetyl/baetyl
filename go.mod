@@ -6,7 +6,7 @@ replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-2020091
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/baetyl/baetyl-go/v2 v2.1.51-0.20210706024151-bf23d38969dd
+	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20210914065449-39018c5ee1bf
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/mock v1.3.1
 	github.com/imdario/mergo v0.3.5
@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
 	github.com/valyala/fasthttp v1.9.0
-	go.etcd.io/bbolt v1.3.3
+	go.etcd.io/bbolt v1.3.6
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.2.8
