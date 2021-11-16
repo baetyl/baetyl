@@ -95,27 +95,31 @@ func TestRecycle(t *testing.T) {
 }
 
 func TestGetFinishedJobs(t *testing.T) {
-	app := specv1.Application{
-		Name:    "app1",
-		Version: "v1",
-		Services: []specv1.Service{{
-			Name: "svc1",
-			Type: specv1.WorkloadJob,
-		}, {
-			Name: "svc2",
-			Type: specv1.WorkloadJob,
-		},
-			{
-				Name: "svc3",
-				Type: specv1.WorkloadDeployment,
-			},
-			{
-				Name: "svc4",
-				Type: specv1.WorkloadJob,
-			}},
-	}
 	apps := map[string]*specv1.Application{
-		"app1": &app,
+		"app1": {
+			Name:     "app1",
+			Version:  "v1",
+			Workload: specv1.WorkloadJob,
+			Services: []specv1.Service{{Name: "svc1"}},
+		},
+		"app2": {
+			Name:     "app2",
+			Version:  "v1",
+			Workload: specv1.WorkloadJob,
+			Services: []specv1.Service{{Name: "svc2"}},
+		},
+		"app3": {
+			Name:     "app3",
+			Version:  "v1",
+			Workload: specv1.WorkloadDeployment,
+			Services: []specv1.Service{{Name: "svc3"}},
+		},
+		"app4": {
+			Name:     "app4",
+			Version:  "v1",
+			Workload: specv1.WorkloadJob,
+			Services: []specv1.Service{{Name: "svc4"}},
+		},
 	}
 	nod := &specv1.Node{
 		Name:    "node1",
@@ -125,97 +129,108 @@ func TestGetFinishedJobs(t *testing.T) {
 	appstats := []specv1.AppStats{{
 		InstanceStats: map[string]specv1.InstanceStats{
 			"job1": {
-				ServiceName: "svc1",
-				Status:      specv1.Succeeded,
+				AppName: "app1",
+				Status:  specv1.Succeeded,
 			},
 			"job2": {
-				ServiceName: "svc1",
-				Status:      specv1.Failed,
+				AppName: "app1",
+				Status:  specv1.Failed,
 			},
 			"job3": {
-				ServiceName: "svc2",
-				Status:      specv1.Succeeded,
+				AppName: "app2",
+				Status:  specv1.Succeeded,
 			},
 			"job4": {
-				ServiceName: "svc2",
-				Status:      specv1.Succeeded,
+				AppName: "app2",
+				Status:  specv1.Succeeded,
 			},
 			"job5": {
-				ServiceName: "svc4",
-				Status:      specv1.Failed,
+				AppName: "app4",
+				Status:  specv1.Failed,
 			},
 			"job6": {
-				ServiceName: "svc4",
-				Status:      specv1.Succeeded,
+				AppName: "app4",
+				Status:  specv1.Succeeded,
 			},
 			"deploy": {
-				ServiceName: "svc3",
-				Status:      specv1.Running,
+				AppName: "app3",
+				Status:  specv1.Running,
 			},
 		},
 	}}
 	nod.Report.SetAppStats(false, appstats)
 	res := getFinishedJobs(apps, nod)
 	expected := map[string]struct{}{
-		"svc2": {},
+		"app2": {},
 	}
 	assert.Equal(t, expected, res)
 }
 
 func TestGetUsedObjectCfgs(t *testing.T) {
 	finishedJobs := map[string]struct{}{
-		"svc2": {},
-	}
-	app := specv1.Application{
-		Name:    "app1",
-		Version: "v1",
-		Volumes: []specv1.Volume{{
-			Name: "vm1",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg1",
-					Version: "v1",
-				},
-			},
-		}, {
-			Name: "vm2",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg2",
-					Version: "v2",
-				},
-			},
-		}, {
-			Name: "vm3",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg3",
-					Version: "v3",
-				},
-			},
-		}},
-		Services: []specv1.Service{{
-			Name: "svc1",
-			Type: specv1.WorkloadJob,
-			VolumeMounts: []specv1.VolumeMount{{
-				Name: "vm1",
-			}},
-		}, {
-			Name: "svc2",
-			Type: specv1.WorkloadJob,
-			VolumeMounts: []specv1.VolumeMount{{
-				Name: "vm2",
-			}},
-		}, {
-			Name: "svc3",
-			Type: specv1.WorkloadDeployment,
-			VolumeMounts: []specv1.VolumeMount{{
-				Name: "vm3",
-			}},
-		}},
+		"app2": {},
 	}
 	apps := map[string]*specv1.Application{
-		"app1": &app,
+		"app1": {
+			Name:    "app1",
+			Version: "v1",
+			Workload: specv1.WorkloadJob,
+			Volumes: []specv1.Volume{{
+				Name: "vm1",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg1",
+						Version: "v1",
+					},
+				},
+			}},
+			Services: []specv1.Service{{
+				Name: "svc1",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name: "vm1",
+				}},
+			}},
+		},
+		"app2": {
+			Name:    "app2",
+			Version: "v2",
+			Workload: specv1.WorkloadJob,
+			Volumes: []specv1.Volume{{
+				Name: "vm2",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg2",
+						Version: "v2",
+					},
+				},
+			}},
+			Services: []specv1.Service{{
+				Name: "svc2",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name: "vm2",
+				}},
+			}},
+		},
+		"app3": {
+			Name:    "app3",
+			Version: "v3",
+			Workload: specv1.WorkloadJob,
+			Volumes: []specv1.Volume{{
+				Name: "vm3",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg3",
+						Version: "v3",
+					},
+				},
+			}},
+			Services: []specv1.Service{{
+				Name: "svc3",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name: "vm3",
+				}},
+			}},
+		},
 	}
 	res := getUsedObjectCfgs(apps, finishedJobs)
 	expected := map[string]string{
@@ -227,7 +242,7 @@ func TestGetUsedObjectCfgs(t *testing.T) {
 
 func TestGetDelObjectCfgs(t *testing.T) {
 	finishedJobs := map[string]struct{}{
-		"svc2": {},
+		"app2": {},
 	}
 	cfg1 := specv1.Configuration{Name: "cfg1", Version: "v1"}
 	cfg2 := specv1.Configuration{Name: "cfg2", Version: "v2"}
@@ -237,94 +252,123 @@ func TestGetDelObjectCfgs(t *testing.T) {
 		makeKey(specv1.KindConfiguration, "cfg2", "v2"): &cfg2,
 		makeKey(specv1.KindConfiguration, "cfg3", "v3"): &cfg3,
 	}
-	obsolete := specv1.Application{
-		Name:    "app1",
-		Version: "v1",
-		Volumes: []specv1.Volume{{
-			Name: "vm1",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg1",
-					Version: "v1",
-				},
-			},
-		}, {
-			Name: "vm2",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg2",
-					Version: "v2",
-				},
-			},
-		}},
-		Services: []specv1.Service{{
-			Name: "svc1",
-			VolumeMounts: []specv1.VolumeMount{{
-				Name:      "vm1",
-				AutoClean: false,
-			}, {
-				Name:      "vm2",
-				AutoClean: true,
-			}},
-		}},
-	}
-	occupied := specv1.Application{
-		Name:    "app2",
-		Version: "v2",
-		Volumes: []specv1.Volume{{
-			Name: "vm1",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg3",
-					Version: "v3",
-				},
-			},
-		}, {
-			Name: "vm2",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg4",
-					Version: "v4",
-				},
-			},
-		}, {
-			Name: "vm3",
-			VolumeSource: specv1.VolumeSource{
-				Config: &specv1.ObjectReference{
-					Name:    "cfg5",
-					Version: "v5",
-				},
-			},
-		}},
-		Services: []specv1.Service{{
-			Name: "svc2",
-			Type: specv1.WorkloadJob,
-			VolumeMounts: []specv1.VolumeMount{{
-				Name:      "vm1",
-				AutoClean: true,
-			}, {
-				Name:      "vm2",
-				AutoClean: false,
-			}, {
-				Name:      "vm3",
-				AutoClean: true,
-			}},
-		}, {
-			Name: "svc3",
-			VolumeMounts: []specv1.VolumeMount{{
-				Name:      "vm1",
-				AutoClean: false,
-			}, {
-				Name:      "vm2",
-				AutoClean: true,
-			}},
-		}},
-	}
 	occupiedApps := map[string]*specv1.Application{
-		"app1": &occupied,
+		"app1": {
+			Name:    "app1",
+			Version: "v1",
+			Volumes: []specv1.Volume{{
+				Name: "vm1",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg1",
+						Version: "v1",
+					},
+				},
+			}},
+			Services: []specv1.Service{{
+				Name: "svc1",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name:      "vm1",
+					AutoClean: false,
+				}},
+			}},
+		},
+		"app2": {
+			Name:    "app2",
+			Version: "v1",
+			Volumes: []specv1.Volume{{
+				Name: "vm2",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg2",
+						Version: "v2",
+					},
+				},
+			}},
+			Services: []specv1.Service{{
+				Name: "svc2",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name:      "vm2",
+					AutoClean: true,
+				}},
+			}},
+		},
 	}
 	obsoleteApps := map[string]*specv1.Application{
-		"app2": &obsolete,
+		"app3": {
+			Name:     "app3",
+			Version:  "v2",
+			Workload: specv1.WorkloadJob,
+			Volumes: []specv1.Volume{{
+				Name: "vm1",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg3",
+						Version: "v3",
+					},
+				},
+			}, {
+				Name: "vm2",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg4",
+						Version: "v4",
+					},
+				},
+			}, {
+				Name: "vm3",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg5",
+						Version: "v5",
+					},
+				},
+			}},
+			Services: []specv1.Service{{
+				Name: "svc2",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name:      "vm1",
+					AutoClean: true,
+				}, {
+					Name:      "vm2",
+					AutoClean: false,
+				}, {
+					Name:      "vm3",
+					AutoClean: true,
+				}},
+			}},
+		},
+		"app4": {
+			Name:     "app4",
+			Version:  "v2",
+			Volumes: []specv1.Volume{{
+				Name: "vm1",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg3",
+						Version: "v3",
+					},
+				},
+			}, {
+				Name: "vm2",
+				VolumeSource: specv1.VolumeSource{
+					Config: &specv1.ObjectReference{
+						Name:    "cfg4",
+						Version: "v4",
+					},
+				},
+			}},
+			Services: []specv1.Service{ {
+				Name: "svc3",
+				VolumeMounts: []specv1.VolumeMount{{
+					Name:      "vm1",
+					AutoClean: false,
+				}, {
+					Name:      "vm2",
+					AutoClean: true,
+				}},
+			}},
+		},
 	}
 	del := getDelObjectCfgs(occupiedApps, obsoleteApps, objectCfgs, finishedJobs)
 	expected := map[string]*specv1.Configuration{
@@ -347,16 +391,16 @@ func TestCleanObjectStorage(t *testing.T) {
 	appstats := []specv1.AppStats{{
 		InstanceStats: map[string]specv1.InstanceStats{
 			"job1": {
-				ServiceName: "svc1",
-				Status:      specv1.Succeeded,
+				AppName: "svc1",
+				Status:  specv1.Succeeded,
 			},
 			"job2": {
-				ServiceName: "svc1",
-				Status:      specv1.Failed,
+				AppName: "svc1",
+				Status:  specv1.Failed,
 			},
 			"deploy": {
-				ServiceName: "svc3",
-				Status:      specv1.Running,
+				AppName: "svc1",
+				Status:  specv1.Running,
 			},
 		},
 	}}

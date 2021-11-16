@@ -157,10 +157,10 @@ func getDelObjectCfgs(occupied, obsolete map[string]*specv1.Application, objectC
 				refers[v.Name] = v.Config
 			}
 		}
+		if _, ok := finishedJobs[app.Name]; !ok {
+			continue
+		}
 		for _, svc := range app.Services {
-			if _, ok := finishedJobs[svc.Name]; !ok {
-				continue
-			}
 			for _, vm := range svc.VolumeMounts {
 				refer, ok := refers[vm.Name]
 				if !ok || !vm.AutoClean {
@@ -186,12 +186,12 @@ func getUsedObjectCfgs(apps map[string]*specv1.Application, finishedJobs map[str
 				refers[v.Name] = v.Config
 			}
 		}
-		for _, svc := range app.Services {
-			if svc.Type == specv1.WorkloadJob {
-				if _, ok := finishedJobs[svc.Name]; ok {
-					continue
-				}
+		if app.Workload == specv1.WorkloadJob {
+			if _, ok := finishedJobs[app.Name]; ok {
+				continue
 			}
+		}
+		for _, svc := range app.Services {
 			for _, vm := range svc.VolumeMounts {
 				cfg, ok := refers[vm.Name]
 				if !ok {
@@ -207,23 +207,21 @@ func getUsedObjectCfgs(apps map[string]*specv1.Application, finishedJobs map[str
 func getFinishedJobs(apps map[string]*specv1.Application, node *specv1.Node) map[string]struct{} {
 	jobSvcs := map[string]struct{}{}
 	for _, app := range apps {
-		for _, svc := range app.Services {
-			if svc.Type == specv1.WorkloadJob {
-				// jobs with same service name are not allowed on edge node,
-				// thus it's reasonable to use service name as key
-				jobSvcs[svc.Name] = struct{}{}
-			}
+		if app.Workload == specv1.WorkloadJob {
+			// jobs with same service name are not allowed on edge node,
+			// thus it's reasonable to use service name as key
+			jobSvcs[app.Name] = struct{}{}
 		}
 	}
 	jobStatus := map[string]specv1.Status{}
 	for _, stat := range node.Report.AppStats(false) {
 		for _, ins := range stat.InstanceStats {
-			_, ok := jobSvcs[ins.ServiceName]
+			_, ok := jobSvcs[ins.AppName]
 			if !ok {
 				continue
 			}
-			if status, ok := jobStatus[ins.ServiceName]; !ok || status == specv1.Succeeded {
-				jobStatus[ins.ServiceName] = ins.Status
+			if status, ok := jobStatus[ins.AppName]; !ok || status == specv1.Succeeded {
+				jobStatus[ins.AppName] = ins.Status
 			}
 		}
 	}

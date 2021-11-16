@@ -107,7 +107,7 @@ func (k *kubeImpl) collectAppStatsV2(appStats map[string]specv1.AppStats, qps ma
 	}
 	insStats := map[string]specv1.InstanceStats{}
 	for _, pod := range pods.Items {
-		stats.InstanceStats[pod.Name] = k.collectInstanceStatsV2(ns, qps, &pod)
+		stats.InstanceStats[pod.Name] = k.collectInstanceStatsV2(ns, info.name, qps, &pod)
 		insStats[pod.Name] = stats.InstanceStats[pod.Name]
 
 	}
@@ -116,8 +116,8 @@ func (k *kubeImpl) collectAppStatsV2(appStats map[string]specv1.AppStats, qps ma
 	return nil
 }
 
-func (k *kubeImpl) collectInstanceStatsV2(ns string, qps map[string]interface{}, pod *corev1.Pod) specv1.InstanceStats {
-	stats := specv1.InstanceStats{Name: pod.Name, Usage: map[string]string{}}
+func (k *kubeImpl) collectInstanceStatsV2(ns, appName string, qps map[string]interface{}, pod *corev1.Pod) specv1.InstanceStats {
+	stats := specv1.InstanceStats{Name: pod.Name, AppName: appName, Usage: map[string]string{}}
 	stats.CreateTime = pod.CreationTimestamp.Local()
 	stats.Status = specv1.Status(pod.Status.Phase)
 	if stats.Status != specv1.Running {
