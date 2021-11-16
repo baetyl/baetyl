@@ -187,7 +187,7 @@ func getUsedObjectCfgs(apps map[string]*specv1.Application, finishedJobs map[str
 			}
 		}
 		for _, svc := range app.Services {
-			if svc.Type == specv1.ServiceTypeJob {
+			if svc.Type == specv1.WorkloadJob {
 				if _, ok := finishedJobs[svc.Name]; ok {
 					continue
 				}
@@ -208,7 +208,7 @@ func getFinishedJobs(apps map[string]*specv1.Application, node *specv1.Node) map
 	jobSvcs := map[string]struct{}{}
 	for _, app := range apps {
 		for _, svc := range app.Services {
-			if svc.Type == specv1.ServiceTypeJob {
+			if svc.Type == specv1.WorkloadJob {
 				// jobs with same service name are not allowed on edge node,
 				// thus it's reasonable to use service name as key
 				jobSvcs[svc.Name] = struct{}{}

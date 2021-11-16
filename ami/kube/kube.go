@@ -61,7 +61,8 @@ func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]s
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if err := k.applyApplication(ns, app, imagePullSecs); err != nil {
+	//if err := k.applyApplication(ns, app, imagePullSecs); err != nil {
+	if err := k.applyApplicationV2(ns, app, imagePullSecs); err != nil {
 		return errors.Trace(err)
 	}
 	return nil
@@ -87,17 +88,20 @@ func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 			k.log.Warn("invalid collecting qps stats function")
 		}
 	}
-	dps, err := k.collectDeploymentStats(ns, qpsExts)
+	//dps, err := k.collectDeploymentStats(ns, qpsExts)
+	dps, err := k.collectDeploymentStatsV2(ns, qpsExts)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	res = append(res, dps...)
-	dss, err := k.collectDaemonSetStats(ns, qpsExts)
+	//dss, err := k.collectDaemonSetStats(ns, qpsExts)
+	dss, err := k.collectDaemonSetStatsV2(ns, qpsExts)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 	res = append(res, dss...)
-	js, err := k.collectJobStats(ns, qpsExts)
+	//js, err := k.collectJobStats(ns, qpsExts)
+	js, err := k.collectJobStatsV2(ns, qpsExts)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

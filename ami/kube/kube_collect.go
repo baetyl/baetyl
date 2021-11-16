@@ -3,7 +3,6 @@ package kube
 import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
-
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
@@ -17,8 +16,9 @@ import (
 )
 
 type appInfo struct {
-	name     string
-	version  string
+	name    string
+	version string
+	// Deprecated: Field svcName is no longer used.
 	svcName  string
 	typ      string
 	replicas int32
@@ -178,7 +178,7 @@ func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{})
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
-	info := appInfo{typ: specv1.ServiceTypeDeployment}
+	info := appInfo{typ: specv1.WorkloadDeployment}
 	for _, deploy := range deploys.Items {
 		info.name = deploy.Labels[AppName]
 		info.version = deploy.Labels[AppVersion]
@@ -203,7 +203,7 @@ func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) 
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
-	info := appInfo{typ: specv1.ServiceTypeDaemonSet}
+	info := appInfo{typ: specv1.WorkloadDaemonSet}
 	for _, daemon := range daemons.Items {
 		info.name = daemon.Labels[AppName]
 		info.version = daemon.Labels[AppVersion]
@@ -228,7 +228,7 @@ func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]spe
 		return nil, errors.Trace(err)
 	}
 	appStats := map[string]specv1.AppStats{}
-	info := appInfo{typ: specv1.ServiceTypeJob}
+	info := appInfo{typ: specv1.WorkloadJob}
 	for _, job := range jobs.Items {
 		info.name = job.Labels[AppName]
 		info.version = job.Labels[AppVersion]

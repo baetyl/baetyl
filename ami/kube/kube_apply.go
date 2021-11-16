@@ -173,6 +173,8 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	return nil
 }
 
+// applyApplication Compatible with the previous logic, the service in each app is used as a separate deployment
+// Deprecated: Use applyApplicationV2 instead
 func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePullSecs []string) error {
 	var imagePullSecrets []corev1.LocalObjectReference
 	secs := make(map[string]struct{})
@@ -191,28 +193,29 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 			}
 		}
 	}
+
 	services := make(map[string]*corev1.Service)
 	deploys := make(map[string]*appv1.Deployment)
 	daemons := make(map[string]*appv1.DaemonSet)
 	jobs := make(map[string]*batchv1.Job)
 	for _, svc := range app.Services {
 		if svc.Type == "" {
-			svc.Type = specv1.ServiceTypeDeployment
+			svc.Type = specv1.WorkloadDeployment
 		}
 		switch svc.Type {
-		case specv1.ServiceTypeDaemonSet:
+		case specv1.WorkloadDaemonSet:
 			if daemon, err := prepareDaemon(ns, &app, svc, imagePullSecrets); err != nil {
 				return errors.Trace(err)
 			} else {
 				daemons[daemon.Name] = daemon
 			}
-		case specv1.ServiceTypeDeployment:
+		case specv1.WorkloadDeployment:
 			if deploy, err := prepareDeploy(ns, &app, svc, imagePullSecrets); err != nil {
 				return errors.Trace(err)
 			} else {
 				deploys[deploy.Name] = deploy
 			}
-		case specv1.ServiceTypeJob:
+		case specv1.WorkloadJob:
 			if job, err := prepareJob(ns, &app, svc, imagePullSecrets); err != nil {
 				return errors.Trace(err)
 			} else {
@@ -238,7 +241,7 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	if err := k.applyJobs(ns, jobs); err != nil {
 		return errors.Trace(err)
 	}
-	k.log.Info("ami apply apps", log.Any("apps", app))
+	k.log.Info("ami apply apps by service", log.Any("apps", app))
 	return nil
 }
 
@@ -315,6 +318,8 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 	return nil
 }
 
+// Deprecated: Use prepareDeployV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func prepareDeploy(ns string, app *specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
 	podSpec, err := prepareInfo(app, service, imagePullSecrets)
@@ -367,6 +372,8 @@ func prepareDeploy(ns string, app *specv1.Application, service specv1.Service,
 	return deploy, nil
 }
 
+// Deprecated: Use prepareDaemonV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func prepareDaemon(ns string, app *specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*appv1.DaemonSet, error) {
 	podSpec, err := prepareInfo(app, service, imagePullSecrets)
@@ -406,6 +413,8 @@ func prepareDaemon(ns string, app *specv1.Application, service specv1.Service,
 	}, nil
 }
 
+// Deprecated: Use prepareJobV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func prepareJob(ns string, app *specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*batchv1.Job, error) {
 	podSpec, err := prepareInfo(app, service, imagePullSecrets)
@@ -451,6 +460,8 @@ func prepareJob(ns string, app *specv1.Application, service specv1.Service,
 	}, nil
 }
 
+// Deprecated: Use prepareInfoV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func prepareInfo(app *specv1.Application, service specv1.Service,
 	imagePullSecrets []corev1.LocalObjectReference) (*corev1.PodSpec, error) {
 	var c corev1.Container
@@ -530,6 +541,8 @@ func SetPodSpec(spec *corev1.PodSpec, _ *specv1.Application) (*corev1.PodSpec, e
 	return spec, nil
 }
 
+// Deprecated: Use prepareServiceV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func (k *kubeImpl) prepareService(ns, appName string, svc *specv1.Service) *corev1.Service {
 	if len(svc.Ports) == 0 {
 		return nil

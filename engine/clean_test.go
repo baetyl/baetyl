@@ -100,18 +100,18 @@ func TestGetFinishedJobs(t *testing.T) {
 		Version: "v1",
 		Services: []specv1.Service{{
 			Name: "svc1",
-			Type: specv1.ServiceTypeJob,
+			Type: specv1.WorkloadJob,
 		}, {
 			Name: "svc2",
-			Type: specv1.ServiceTypeJob,
+			Type: specv1.WorkloadJob,
 		},
 			{
 				Name: "svc3",
-				Type: specv1.ServiceTypeDeployment,
+				Type: specv1.WorkloadDeployment,
 			},
 			{
 				Name: "svc4",
-				Type: specv1.ServiceTypeJob,
+				Type: specv1.WorkloadJob,
 			}},
 	}
 	apps := map[string]*specv1.Application{
@@ -196,19 +196,19 @@ func TestGetUsedObjectCfgs(t *testing.T) {
 		}},
 		Services: []specv1.Service{{
 			Name: "svc1",
-			Type: specv1.ServiceTypeJob,
+			Type: specv1.WorkloadJob,
 			VolumeMounts: []specv1.VolumeMount{{
 				Name: "vm1",
 			}},
 		}, {
 			Name: "svc2",
-			Type: specv1.ServiceTypeJob,
+			Type: specv1.WorkloadJob,
 			VolumeMounts: []specv1.VolumeMount{{
 				Name: "vm2",
 			}},
 		}, {
 			Name: "svc3",
-			Type: specv1.ServiceTypeDeployment,
+			Type: specv1.WorkloadDeployment,
 			VolumeMounts: []specv1.VolumeMount{{
 				Name: "vm3",
 			}},
@@ -298,7 +298,7 @@ func TestGetDelObjectCfgs(t *testing.T) {
 		}},
 		Services: []specv1.Service{{
 			Name: "svc2",
-			Type: specv1.ServiceTypeJob,
+			Type: specv1.WorkloadJob,
 			VolumeMounts: []specv1.VolumeMount{{
 				Name:      "vm1",
 				AutoClean: true,
