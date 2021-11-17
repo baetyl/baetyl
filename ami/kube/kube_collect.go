@@ -172,6 +172,8 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	return infos, nil
 }
 
+// Deprecated: Use collectDeploymentStatsV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
 	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
 	if err != nil {
@@ -197,6 +199,8 @@ func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{})
 	return res, nil
 }
 
+// Deprecated: Use collectDaemonSetStatsV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
 	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{})
 	if err != nil {
@@ -222,6 +226,8 @@ func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) 
 	return res, nil
 }
 
+// Deprecated: Use collectJobStatsV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
 	jobs, err := k.cli.batch.Jobs(ns).List(metav1.ListOptions{})
 	if err != nil {
@@ -247,6 +253,8 @@ func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]spe
 	return res, nil
 }
 
+// Deprecated: Use collectAppStatsV2 instead.
+// Change from one workload for each service to one workload for one app, and each service as a container
 func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[string]interface{}, ns string, info appInfo) error {
 	if info.name == "" || info.svcName == "" {
 		return nil

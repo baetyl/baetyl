@@ -34,6 +34,8 @@ github.com/baetyl/baetyl-go/v2 v2.2.4-0.20211116032216-34dcaf9ad0e6 h1:peH90ND0B
 github.com/baetyl/baetyl-go/v2 v2.2.4-0.20211116032216-34dcaf9ad0e6/go.mod h1:+icoVFrmQKD1z2k6nU4UEodP1XMM/hXZAa+JrVRlh44=
 github.com/baetyl/baetyl-go/v2 v2.2.4-0.20211116064237-62d836dbcfad h1:zEt/JFT13l2PZNvmIuOwTxpeqmfXEluRcszMGwl6Gn8=
 github.com/baetyl/baetyl-go/v2 v2.2.4-0.20211116064237-62d836dbcfad/go.mod h1:+icoVFrmQKD1z2k6nU4UEodP1XMM/hXZAa+JrVRlh44=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20211117065501-e3f899f5b29f h1:vEfIwdzefqEBej3MYjNZsXXbLGsoVCIS5r+XpMpkI8g=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20211117065501-e3f899f5b29f/go.mod h1:+icoVFrmQKD1z2k6nU4UEodP1XMM/hXZAa+JrVRlh44=
 github.com/baetyl/service v0.0.0-20200910124134-20fdd363fbd5 h1:xuq1KQEwE5xP3gWTvo2gYJKuu7uM2OtRAZmnG3LqtHI=
 github.com/baetyl/service v0.0.0-20200910124134-20fdd363fbd5/go.mod h1:RrJI2xn5vve/r32U5suTbeaSGoMU6GbNPoj36CVYcHc=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
