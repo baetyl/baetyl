@@ -709,3 +709,19 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 	k.compatibleDeprecatedFiled(app1)
 	assert.EqualValues(t, expectApp1, app1)
 }
+
+func Test_cutSysServiceRandSuffix(t *testing.T){
+	assert.Equal(t, "baetyl-",cutSysServiceRandSuffix("baetyl-"))
+	assert.Equal(t, "baetyl-broker",cutSysServiceRandSuffix("baetyl-broker"))
+	assert.Equal(t, "baetyl-broker",cutSysServiceRandSuffix("baetyl-broker-"))
+	assert.Equal(t, "baetyl-rule",cutSysServiceRandSuffix("baetyl-rule"))
+	assert.Equal(t, "baetyl-broker",cutSysServiceRandSuffix("baetyl-broker-123"))
+	assert.Equal(t, "baetyl-init-baetyl",cutSysServiceRandSuffix("baetyl-init-baetyl-broker"))
+	assert.Equal(t, "baetyl-device-ops",cutSysServiceRandSuffix("baetyl-device-ops-123"))
+	assert.Equal(t, "baetyl-device-ops-123-456",cutSysServiceRandSuffix("baetyl-device-ops-123-456-789"))
+	assert.Equal(t, "app",cutSysServiceRandSuffix("app"))
+	assert.Equal(t, "app-123",cutSysServiceRandSuffix("app-123"))
+	assert.Equal(t, "",cutSysServiceRandSuffix(""))
+	assert.Equal(t, "baetyl-init_123_21312-32323-baetyl",cutSysServiceRandSuffix("baetyl-init_123_21312-32323-baetyl-21312"))
+	assert.Equal(t, "rule-baetyl",cutSysServiceRandSuffix("rule-baetyl"))
+}
