@@ -25,6 +25,7 @@ const (
 	AppName      = "baetyl-app-name"
 	AppVersion   = "baetyl-app-version"
 	ServiceName  = "baetyl-service-name"
+	PrefixBaetyl = "baetyl-"
 
 	RegistryAddress  = "address"
 	RegistryUsername = "username"
@@ -221,7 +222,7 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      app.Name,
+			Name:      cutSysServiceRandSuffix(app.Name),
 			Namespace: ns,
 			Labels:    map[string]string{AppName: app.Name},
 		},
@@ -575,6 +576,16 @@ func SetPodSpec(spec *corev1.PodSpec, _ *specv1.Application) (*corev1.PodSpec, e
 func isRegistrySecret(secret specv1.Secret) bool {
 	registry, ok := secret.Labels[specv1.SecretLabel]
 	return ok && registry == specv1.SecretRegistry
+}
+
+func cutSysServiceRandSuffix(s string) string {
+	if strings.HasPrefix(s, PrefixBaetyl) {
+		sub := s[len(PrefixBaetyl):]
+		if idx := strings.LastIndex(sub, "-"); idx != -1 {
+			return PrefixBaetyl + sub[:idx]
+		}
+	}
+	return s
 }
 
 func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
