@@ -325,7 +325,7 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	return &kubeImpl{cli: &cli, store: sto, knn: "node1", log: log.With()}
 }
 
-func TestApplyApplicationV2(t *testing.T) {
+func TestApplyApplication(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	app1 := specv1.Application{
@@ -408,7 +408,7 @@ func TestApplyApplicationV2(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestPrepareServiceV2(t *testing.T) {
+func TestPrepareService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	app := specv1.Application{
@@ -467,7 +467,7 @@ func TestPrepareServiceV2(t *testing.T) {
 	assert.Nil(t, service)
 }
 
-func TestPrepareDeployV2(t *testing.T) {
+func TestPrepareDeploy(t *testing.T) {
 	_ = initApplyKubeAMI(t)
 	ns := "baetyl-edge"
 	app := specv1.Application{
@@ -496,26 +496,40 @@ func TestPrepareDeployV2(t *testing.T) {
 	}
 	cpuQuan, _ := resource.ParseQuantity("1")
 	memoryQuan, _ := resource.ParseQuantity("456456")
-	app.Volumes = []specv1.Volume{{
-		Name: "cfg",
-		VolumeSource: specv1.VolumeSource{
-			Config: &specv1.ObjectReference{
-				Name: "cfg",
+	emptyDirQuan, _ := resource.ParseQuantity("29218")
+	app.Volumes = []specv1.Volume{
+		{
+			Name: "cfg",
+			VolumeSource: specv1.VolumeSource{
+				Config: &specv1.ObjectReference{
+					Name: "cfg",
+				},
 			},
 		},
-	}, {
-		Name: "sec",
-		VolumeSource: specv1.VolumeSource{
-			Secret: &specv1.ObjectReference{
-				Name: "sec",
+		{
+			Name: "sec",
+			VolumeSource: specv1.VolumeSource{
+				Secret: &specv1.ObjectReference{
+					Name: "sec",
+				},
 			},
 		},
-	}, {
-		Name: "hostPath",
-		VolumeSource: specv1.VolumeSource{
-			HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
+		{
+			Name: "hostPath",
+			VolumeSource: specv1.VolumeSource{
+				HostPath: &specv1.HostPathVolumeSource{Path: "/var/lib/baetyl"},
+			},
 		},
-	}}
+		{
+			Name: "emptydir",
+			VolumeSource: specv1.VolumeSource{
+				EmptyDir: &specv1.EmptyDirVolumeSource{
+					Medium:    "Memory",
+					SizeLimit: "29218",
+				},
+			},
+		},
+	}
 	deploy, err := prepareDeploy(ns, &app, nil)
 	assert.NoError(t, err)
 
@@ -575,6 +589,15 @@ func TestPrepareDeployV2(t *testing.T) {
 							VolumeSource: v1.VolumeSource{
 								HostPath: &v1.HostPathVolumeSource{
 									Path: "/var/lib/baetyl",
+								},
+							},
+						},
+						{
+							Name: "emptydir",
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									Medium:    "Memory",
+									SizeLimit: &emptyDirQuan,
 								},
 							},
 						},

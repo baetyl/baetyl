@@ -412,6 +412,17 @@ func prepareInfo(app *specv1.Application, imagePullSecrets []corev1.LocalObjectR
 			volume.VolumeSource.HostPath = &corev1.HostPathVolumeSource{
 				Path: v.VolumeSource.HostPath.Path,
 			}
+		} else if v.VolumeSource.EmptyDir != nil {
+			volume.VolumeSource.EmptyDir = &corev1.EmptyDirVolumeSource{
+				Medium: corev1.StorageMedium(v.VolumeSource.EmptyDir.Medium),
+			}
+			if len(v.VolumeSource.EmptyDir.SizeLimit) > 0 {
+				quantity, err := resource.ParseQuantity(v.VolumeSource.EmptyDir.SizeLimit)
+				if err != nil {
+					return nil, errors.Trace(err)
+				}
+				volume.VolumeSource.EmptyDir.SizeLimit = &quantity
+			}
 		}
 		volumes = append(volumes, volume)
 	}
