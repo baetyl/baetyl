@@ -268,14 +268,16 @@ func prepareJob(ns string, app *specv1.Application, imagePullSecrets []corev1.Lo
 	for k, v := range app.Labels {
 		labels[k] = v
 	}
-	return &batchv1.Job{
+	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
 			Namespace: ns,
 			Labels:    labels,
 		},
 		Spec: jobSpec,
-	}, nil
+	}
+	job.Spec.Template.Labels = labels
+	return job, nil
 }
 
 func prepareDaemon(ns string, app *specv1.Application, imagePullSecrets []corev1.LocalObjectReference) (*appv1.DaemonSet, error) {
@@ -300,7 +302,7 @@ func prepareDaemon(ns string, app *specv1.Application, imagePullSecrets []corev1
 	for k, v := range app.Labels {
 		labels[k] = v
 	}
-	return &appv1.DaemonSet{
+	ds := &appv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
 			Namespace: ns,
@@ -313,7 +315,13 @@ func prepareDaemon(ns string, app *specv1.Application, imagePullSecrets []corev1
 				Spec:       *podSpec,
 			},
 		},
-	}, nil
+	}
+	if app.Labels != nil {
+		for k, v := range app.Labels {
+			ds.Spec.Template.Labels[k] = v
+		}
+	}
+	return ds, nil
 }
 
 func prepareDeploy(ns string, app *specv1.Application, imagePullSecrets []corev1.LocalObjectReference) (*appv1.Deployment, error) {
@@ -358,8 +366,10 @@ func prepareDeploy(ns string, app *specv1.Application, imagePullSecrets []corev1
 			},
 		},
 	}
-	for k, v := range app.Labels {
-		deploy.Spec.Template.Labels[k] = v
+	if app.Labels != nil {
+		for k, v := range app.Labels {
+			deploy.Spec.Template.Labels[k] = v
+		}
 	}
 	if strings.Contains(app.Name, specv1.BaetylCore) || strings.Contains(app.Name, specv1.BaetylInit) {
 		deploy.Spec.Template.Spec.ServiceAccountName = ServiceAccountName
