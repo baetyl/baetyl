@@ -379,32 +379,24 @@ func prepareDeploy(ns string, app *specv1.Application, imagePullSecrets []corev1
 
 func prepareInfo(app *specv1.Application, imagePullSecrets []corev1.LocalObjectReference) (*corev1.PodSpec, error) {
 	var containers []corev1.Container
+	var initContainers []corev1.Container
 	var volumes []corev1.Volume
+
+	for _, initSvc := range app.InitServices {
+		var c corev1.Container
+		_, err := TransSvcToContainer(&initSvc, &c)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		initContainers = append(initContainers, c)
+	}
 
 	for _, svc := range app.Services {
 		var c corev1.Container
-		if err := copier.Copy(&c, &svc); err != nil {
+		_, err := TransSvcToContainer(&svc, &c)
+		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		if svc.Resources != nil {
-			c.Resources.Limits = corev1.ResourceList{}
-			for n, value := range svc.Resources.Limits {
-				quantity, err := resource.ParseQuantity(value)
-				if err != nil {
-					return nil, errors.Trace(err)
-				}
-				c.Resources.Limits[corev1.ResourceName(n)] = quantity
-			}
-		}
-		if sc := svc.SecurityContext; sc != nil {
-			c.SecurityContext = &corev1.SecurityContext{
-				Privileged: &sc.Privileged,
-			}
-		}
-		c.Env = append(c.Env, corev1.EnvVar{
-			Name:      KubeNodeName,
-			ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "spec.nodeName"}},
-		})
 		containers = append(containers, c)
 	}
 	for _, v := range app.Volumes {
@@ -440,10 +432,37 @@ func prepareInfo(app *specv1.Application, imagePullSecrets []corev1.LocalObjectR
 
 	return &corev1.PodSpec{
 		Volumes:          volumes,
+		InitContainers:   initContainers,
 		Containers:       containers,
 		ImagePullSecrets: imagePullSecrets,
 		HostNetwork:      app.HostNetwork,
 	}, nil
+}
+
+func TransSvcToContainer(svc *specv1.Service, c *corev1.Container) (*corev1.Container, error) {
+	if err := copier.Copy(&c, &svc); err != nil {
+		return nil, errors.Trace(err)
+	}
+	if svc.Resources != nil {
+		c.Resources.Limits = corev1.ResourceList{}
+		for n, value := range svc.Resources.Limits {
+			quantity, err := resource.ParseQuantity(value)
+			if err != nil {
+				return nil, errors.Trace(err)
+			}
+			c.Resources.Limits[corev1.ResourceName(n)] = quantity
+		}
+	}
+	if sc := svc.SecurityContext; sc != nil {
+		c.SecurityContext = &corev1.SecurityContext{
+			Privileged: &sc.Privileged,
+		}
+	}
+	c.Env = append(c.Env, corev1.EnvVar{
+		Name:      KubeNodeName,
+		ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "spec.nodeName"}},
+	})
+	return c, nil
 }
 
 func (k *kubeImpl) deleteApplication(ns, name string) error {
