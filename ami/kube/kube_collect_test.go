@@ -92,6 +92,28 @@ func TestCollectNodeInfo(t *testing.T) {
 	assert.EqualValues(t, expected["node1"], res["node1"])
 }
 
+func TestGetContainerStatus(t *testing.T) {
+	info := &v1.ContainerStatus{}
+
+	info.State.Waiting = &v1.ContainerStateWaiting{Reason: "ImagePullErr"}
+	state, _ := getContainerStatus(info)
+	assert.Equal(t, state, specv1.ContainerWaiting)
+	info.State.Waiting = nil
+
+	info.State.Running = &v1.ContainerStateRunning{}
+	state, _ = getContainerStatus(info)
+	assert.Equal(t, state, specv1.ContainerRunning)
+	info.State.Running = nil
+
+	info.State.Terminated = &v1.ContainerStateTerminated{Reason: "Completed"}
+	state, _ = getContainerStatus(info)
+	assert.Equal(t, state, specv1.ContainerTerminated)
+	info.State.Terminated = nil
+
+	_, reason := getContainerStatus(info)
+	assert.Equal(t, reason, "status unknown")
+}
+
 func initCollectKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genCollectRuntime()...)
 	cli := client{
