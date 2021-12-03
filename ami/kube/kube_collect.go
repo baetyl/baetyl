@@ -9,8 +9,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/tools/reference"
-	"k8s.io/kubectl/pkg/scheme"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 
 	"github.com/baetyl/baetyl/v2/ami"
@@ -281,25 +279,21 @@ func (k *kubeImpl) collectInstanceStats(ns, appName string, qps map[string]inter
 	stats := specv1.InstanceStats{Name: pod.Name, AppName: appName, Usage: map[string]string{}}
 	stats.CreateTime = pod.CreationTimestamp.Local()
 	stats.Status = specv1.Status(pod.Status.Phase)
-	if stats.Status != specv1.Running {
-		ref, err := reference.GetReference(scheme.Scheme, pod)
-		if err != nil {
-			k.log.Warn("failed to get service reference", log.Error(err))
-			return stats
-		}
-		events, _ := k.cli.core.Events(ns).Search(scheme.Scheme, ref)
-		if l := len(events.Items); l > 0 {
-			if e := events.Items[l-1]; e.Type == "Warning" {
-				stats.Cause += e.Message
-			}
-		}
+	stats.Cause = pod.Status.Reason
+
+	for _, initStatus := range pod.Status.InitContainerStatuses {
+		containerInfo := specv1.ContainerInfo{Name: initStatus.Name}
+		containerInfo.State, containerInfo.Reason = getContainerStatus(&initStatus)
+		stats.InitContainers = append(stats.InitContainers, containerInfo)
 	}
 
-	for _, st := range pod.Status.ContainerStatuses {
-		if st.State.Waiting != nil {
-			stats.Status = specv1.Status(corev1.PodPending)
-		}
+	tempStatus := make(map[string]specv1.ContainerInfo)
+	for _, containerStatus := range pod.Status.ContainerStatuses {
+		containerInfo := specv1.ContainerInfo{Name: containerStatus.Name}
+		containerInfo.State, containerInfo.Reason = getContainerStatus(&containerStatus)
+		tempStatus[containerStatus.Name] = containerInfo
 	}
+
 	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
@@ -322,6 +316,8 @@ func (k *kubeImpl) collectInstanceStats(ns, appName string, qps map[string]inter
 				usageTotal[string(res)] = &v
 			}
 		}
+		containerInfo.State = tempStatus[containerInfo.Name].State
+		containerInfo.Reason = tempStatus[containerInfo.Name].Reason
 		stats.Containers = append(stats.Containers, containerInfo)
 	}
 
@@ -336,6 +332,19 @@ func (k *kubeImpl) collectInstanceStats(ns, appName string, qps map[string]inter
 	stats.IP = pod.Status.PodIP
 	stats.NodeName = pod.Spec.NodeName
 	return stats
+}
+
+func getContainerStatus(info *corev1.ContainerStatus) (specv1.ContainerState, string) {
+	if info.State.Waiting != nil {
+		return specv1.ContainerWaiting, info.State.Waiting.Reason
+	}
+	if info.State.Running != nil {
+		return specv1.ContainerRunning, ""
+	}
+	if info.State.Terminated != nil {
+		return specv1.ContainerTerminated, info.State.Terminated.Reason
+	}
+	return specv1.ContainerWaiting, "status unknown"
 }
 
 func getAppStatus(status specv1.Status, replicas int32, insStats map[string]specv1.InstanceStats) specv1.Status {
