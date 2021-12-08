@@ -438,21 +438,33 @@ func TestPrepareService(t *testing.T) {
 					ContainerPort: 8080,
 				}},
 			},
+			{
+				Name:  "s3",
+				Image: "image1",
+				Ports: []specv1.ContainerPort{{
+					NodePort:      31080,
+					ContainerPort: 8088,
+					ServiceType:   string(v1.ServiceTypeNodePort),
+				}},
+			},
 		},
 	}
 	service := ami.prepareService(ns, app)
 	expected := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: app.Name, Namespace: ns, Labels: map[string]string{AppName: app.Name}},
 		Spec: v1.ServiceSpec{
-			Ports: []v1.ServicePort{{
-				Name:       "s1-0",
-				Port:       80,
-				TargetPort: intstr.IntOrString{IntVal: 80},
-			}, {
-				Name:       "s2-0",
-				Port:       8080,
-				TargetPort: intstr.IntOrString{IntVal: 8080},
-			}},
+			Ports: []v1.ServicePort{
+				{
+					Name:       "s1-80",
+					Port:       80,
+					TargetPort: intstr.IntOrString{IntVal: 80},
+				},
+				{
+					Name:       "s2-8080",
+					Port:       8080,
+					TargetPort: intstr.IntOrString{IntVal: 8080},
+				},
+			},
 			Selector: map[string]string{
 				AppName: app.Name,
 			},
@@ -471,6 +483,54 @@ func TestPrepareService(t *testing.T) {
 	}
 	service = ami.prepareService(ns, app2)
 	assert.Nil(t, service)
+}
+
+func TestPrepareNodePortService(t *testing.T) {
+	ami := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	app := specv1.Application{
+		Name:      "svc",
+		Namespace: ns,
+		Version:   "a1",
+		Services: []specv1.Service{
+			{
+				Name:  "s1",
+				Image: "image1",
+				Ports: []specv1.ContainerPort{{
+					HostPort:      80,
+					ContainerPort: 80,
+				}},
+			},
+			{
+				Name:  "s3",
+				Image: "image1",
+				Ports: []specv1.ContainerPort{{
+					NodePort:      31080,
+					ContainerPort: 8088,
+					ServiceType:   string(v1.ServiceTypeNodePort),
+				}},
+			},
+		},
+	}
+	service := ami.prepareNodePortService(ns, app)
+	expected := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "svc-nodeport", Namespace: ns, Labels: map[string]string{AppName: app.Name}},
+		Spec: v1.ServiceSpec{
+			Ports: []v1.ServicePort{
+				{
+					Name:       "s3-8088",
+					Port:       8088,
+					TargetPort: intstr.IntOrString{IntVal: 8088},
+					NodePort:   31080,
+				},
+			},
+			Selector: map[string]string{
+				AppName: app.Name,
+			},
+			Type: v1.ServiceTypeNodePort,
+		},
+	}
+	assert.Equal(t, service, expected)
 }
 
 func TestPrepareDeploy(t *testing.T) {

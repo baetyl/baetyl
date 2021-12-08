@@ -184,6 +184,9 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	if service := k.prepareService(ns, app); service != nil {
 		services[service.Name] = service
 	}
+	if nodePortSvc := k.prepareNodePortService(ns, app); nodePortSvc != nil {
+		services[nodePortSvc.Name] = nodePortSvc
+	}
 
 	if err := k.applyDeploys(ns, deploys); err != nil {
 		return errors.Trace(err)
@@ -207,9 +210,12 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 		if len(svc.Ports) == 0 {
 			continue
 		}
-		for i, p := range svc.Ports {
+		for _, p := range svc.Ports {
+			if p.ServiceType == string(corev1.ServiceTypeNodePort) {
+				continue
+			}
 			port := corev1.ServicePort{
-				Name:       fmt.Sprintf("%s-%d", svc.Name, i),
+				Name:       fmt.Sprintf("%s-%d", svc.Name, p.ContainerPort),
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 			}
@@ -229,6 +235,44 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{AppName: app.Name},
 			Ports:    ports,
+		},
+	}
+	return service
+}
+
+func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *corev1.Service {
+	var ports []corev1.ServicePort
+	for _, svc := range app.Services {
+		if len(svc.Ports) == 0 {
+			continue
+		}
+		for _, p := range svc.Ports {
+			if p.ServiceType != string(corev1.ServiceTypeNodePort) {
+				continue
+			}
+			port := corev1.ServicePort{
+				Name:       fmt.Sprintf("%s-%d", svc.Name, p.ContainerPort),
+				Port:       p.ContainerPort,
+				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
+				NodePort:   p.NodePort,
+			}
+			ports = append(ports, port)
+		}
+	}
+	if len(ports) == 0 {
+		return nil
+	}
+
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cutSysServiceRandSuffix(fmt.Sprintf("%s-%s", app.Name, "nodeport")),
+			Namespace: ns,
+			Labels:    map[string]string{AppName: app.Name},
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{AppName: app.Name},
+			Ports:    ports,
+			Type:     corev1.ServiceTypeNodePort,
 		},
 	}
 	return service
