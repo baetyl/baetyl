@@ -453,8 +453,14 @@ func (e *engineImpl) injectCert(app *specv1.Application, secs map[string]specv1.
 				net.IPv4(127, 0, 0, 1),
 			},
 			DNSNames: []string{
+				fmt.Sprintf("%s.%s", app.Name, ns),
+				fmt.Sprintf("%s", app.Name),
 				fmt.Sprintf("%s.%s", svc.Name, ns),
 				fmt.Sprintf("%s", svc.Name),
+				fmt.Sprintf("%s-nodeport.%s", app.Name, ns),
+				fmt.Sprintf("%s-nodeport", app.Name),
+				fmt.Sprintf("%s-nodeport.%s", svc.Name, ns),
+				fmt.Sprintf("%s-nodeport", svc.Name),
 				"localhost",
 			},
 		})
