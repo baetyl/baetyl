@@ -172,8 +172,8 @@ func TestGetUsedObjectCfgs(t *testing.T) {
 	}
 	apps := map[string]*specv1.Application{
 		"app1": {
-			Name:    "app1",
-			Version: "v1",
+			Name:     "app1",
+			Version:  "v1",
 			Workload: specv1.WorkloadJob,
 			Volumes: []specv1.Volume{{
 				Name: "vm1",
@@ -192,8 +192,8 @@ func TestGetUsedObjectCfgs(t *testing.T) {
 			}},
 		},
 		"app2": {
-			Name:    "app2",
-			Version: "v2",
+			Name:     "app2",
+			Version:  "v2",
 			Workload: specv1.WorkloadJob,
 			Volumes: []specv1.Volume{{
 				Name: "vm2",
@@ -212,8 +212,8 @@ func TestGetUsedObjectCfgs(t *testing.T) {
 			}},
 		},
 		"app3": {
-			Name:    "app3",
-			Version: "v3",
+			Name:     "app3",
+			Version:  "v3",
 			Workload: specv1.WorkloadJob,
 			Volumes: []specv1.Volume{{
 				Name: "vm3",
@@ -339,8 +339,8 @@ func TestGetDelObjectCfgs(t *testing.T) {
 			}},
 		},
 		"app4": {
-			Name:     "app4",
-			Version:  "v2",
+			Name:    "app4",
+			Version: "v2",
 			Volumes: []specv1.Volume{{
 				Name: "vm1",
 				VolumeSource: specv1.VolumeSource{
@@ -358,7 +358,7 @@ func TestGetDelObjectCfgs(t *testing.T) {
 					},
 				},
 			}},
-			Services: []specv1.Service{ {
+			Services: []specv1.Service{{
 				Name: "svc3",
 				VolumeMounts: []specv1.VolumeMount{{
 					Name:      "vm1",

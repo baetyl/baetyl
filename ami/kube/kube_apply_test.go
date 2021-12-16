@@ -763,7 +763,7 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 		HostNetwork: false,
 		Replica:     1,
 		JobConfig: &specv1.AppJobConfig{
-			Completions:   0,
+			Completions:   1,
 			Parallelism:   0,
 			BackoffLimit:  0,
 			RestartPolicy: "Never",
