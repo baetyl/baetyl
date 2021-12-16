@@ -683,7 +683,7 @@ func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
 	if app.Replica == 0 {
 		// compatible with the original one service corresponding to one workload
 		if len(app.Services) > 0 && app.Services[0].Replica != 0 {
-			k.log.Debug("app.Replica is 0, use the services[0].Replica ")
+			k.log.Debug("app.Replica is 0, use the services[0].Replica", log.Any("replica", app.Services[0].Replica))
 			app.Replica = app.Services[0].Replica
 		} else {
 			app.Replica = 1
@@ -702,8 +702,11 @@ func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
 				RestartPolicy: app.Services[0].JobConfig.RestartPolicy,
 			}
 		} else {
-			app.JobConfig = &specv1.AppJobConfig{RestartPolicy: "Never"}
+			app.JobConfig = &specv1.AppJobConfig{RestartPolicy: "Never", Completions: 1}
 		}
+	}
+	if app.JobConfig.Completions == 0 {
+		app.JobConfig.Completions = 1
 	}
 
 	// Label
