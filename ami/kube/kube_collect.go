@@ -287,42 +287,41 @@ func (k *kubeImpl) collectInstanceStats(ns, appName string, qps map[string]inter
 		stats.InitContainers = append(stats.InitContainers, containerInfo)
 	}
 
-	tempStatus := make(map[string]specv1.ContainerInfo)
-	for _, containerStatus := range pod.Status.ContainerStatuses {
-		containerInfo := specv1.ContainerInfo{Name: containerStatus.Name}
-		containerInfo.State, containerInfo.Reason = getContainerStatus(&containerStatus)
-		tempStatus[containerStatus.Name] = containerInfo
-	}
-
+	metricsStatus := make(map[string]specv1.ContainerInfo)
 	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
-		return stats
-	}
-
-	usageTotal := map[string]*resource.Quantity{}
-	for _, cont := range podMetric.Containers {
-		containerInfo := specv1.ContainerInfo{
-			Name:  cont.Name,
-			Usage: map[string]string{},
-		}
-		for res, quan := range cont.Usage {
-			containerInfo.Usage[string(res)] = quan.String()
-			if _, ok := usageTotal[string(res)]; ok {
-				usageTotal[string(res)].Add(quan)
-			} else {
-				var v resource.Quantity
-				quan.DeepCopyInto(&v)
-				usageTotal[string(res)] = &v
+	} else {
+		usageTotal := map[string]*resource.Quantity{}
+		for _, cont := range podMetric.Containers {
+			containerInfo := specv1.ContainerInfo{
+				Name:  cont.Name,
+				Usage: map[string]string{},
 			}
+			for res, quan := range cont.Usage {
+				containerInfo.Usage[string(res)] = quan.String()
+				if _, ok := usageTotal[string(res)]; ok {
+					usageTotal[string(res)].Add(quan)
+				} else {
+					var v resource.Quantity
+					quan.DeepCopyInto(&v)
+					usageTotal[string(res)] = &v
+				}
+			}
+			metricsStatus[cont.Name] = containerInfo
 		}
-		containerInfo.State = tempStatus[containerInfo.Name].State
-		containerInfo.Reason = tempStatus[containerInfo.Name].Reason
-		stats.Containers = append(stats.Containers, containerInfo)
+		for key, val := range usageTotal {
+			stats.Usage[key] = val.String()
+		}
 	}
 
-	for key, val := range usageTotal {
-		stats.Usage[key] = val.String()
+	for _, containerStatus := range pod.Status.ContainerStatuses {
+		containerInfo := specv1.ContainerInfo{Name: containerStatus.Name}
+		containerInfo.State, containerInfo.Reason = getContainerStatus(&containerStatus)
+		if metrics, ok := metricsStatus[containerStatus.Name]; ok {
+			containerInfo.Usage = metrics.Usage
+		}
+		stats.Containers = append(stats.Containers, containerInfo)
 	}
 
 	if qpsStats, ok := qps[pod.Name]; ok {
