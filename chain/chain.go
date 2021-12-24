@@ -22,6 +22,8 @@ import (
 const (
 	MsgTimeout = time.Minute * 10
 	Localhost  = "127.0.0.1"
+
+	ExitCmd = "exit\n"
 )
 
 //go:generate mockgen -destination=../mock/chain.go -package=mock -source=chain.go Chain
