@@ -81,6 +81,14 @@ func TestHandler(t *testing.T) {
 	assert.Error(t, err)
 
 	handlerWG.Add(1)
+
+	msg3 := &specV1.Message{
+		Kind:    specV1.MessageData,
+		Content: specV1.LazyValue{Value: []byte(ExitCmd)},
+	}
+	err = cHandler.OnMessage(msg3)
+	assert.NoError(t, err)
+
 	err = cHandler.OnTimeout()
 	assert.NoError(t, err)
 
