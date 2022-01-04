@@ -601,6 +601,7 @@ func TestPrepareDeploy(t *testing.T) {
 
 	replica := new(int32)
 	*replica = 1
+	tp := v1.HostPathUnset
 	expected := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      app.Name,
@@ -655,6 +656,7 @@ func TestPrepareDeploy(t *testing.T) {
 							VolumeSource: v1.VolumeSource{
 								HostPath: &v1.HostPathVolumeSource{
 									Path: "/var/lib/baetyl",
+									Type: &tp,
 								},
 							},
 						},
