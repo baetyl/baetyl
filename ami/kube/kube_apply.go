@@ -456,8 +456,10 @@ func prepareInfo(app *specv1.Application, imagePullSecrets []corev1.LocalObjectR
 				SecretName: v.VolumeSource.Secret.Name,
 			}
 		} else if v.HostPath != nil {
+			tp := corev1.HostPathType(v.VolumeSource.HostPath.Type)
 			volume.VolumeSource.HostPath = &corev1.HostPathVolumeSource{
 				Path: v.VolumeSource.HostPath.Path,
+				Type: &tp,
 			}
 		} else if v.VolumeSource.EmptyDir != nil {
 			volume.VolumeSource.EmptyDir = &corev1.EmptyDirVolumeSource{
