@@ -307,11 +307,20 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 		}
 
 		if len(ports) > 0 {
-			err := impl.mapping.SetServicePorts(s.Name, ports)
-			if err != nil {
-				return errors.Trace(err)
+			if app.Type == v1.AppTypeContainer {
+				err := impl.mapping.SetServicePorts(s.Name, ports)
+				if err != nil {
+					return errors.Trace(err)
+				}
+				impl.log.Debug("set applied service ports in mapping files", log.Any("applied service", s.Name), log.Any("ports", ports))
+			} else {
+				// native function use app name
+				err := impl.mapping.SetServicePorts(app.Name, ports)
+				if err != nil {
+					return errors.Trace(err)
+				}
+				impl.log.Debug("set applied service ports in mapping files", log.Any("applied service", app.Name), log.Any("ports", ports))
 			}
-			impl.log.Debug("set applied service ports in mapping files", log.Any("applied service", s.Name), log.Any("ports", ports))
 		}
 	}
 	impl.log.Info("apply an app", log.Any("app", app))
