@@ -58,6 +58,9 @@ type AMI interface {
 	RemoteLogs(option *LogsOptions, pipe Pipe) error
 
 	UpdateNodeLabels(string, map[string]string) error
+
+	// RPCApp call baetyl app from baetyl-core
+	RPCApp(url string, req *specv1.RPCRequest) (*specv1.RPCResponse, error)
 }
 
 type DebugOptions struct {

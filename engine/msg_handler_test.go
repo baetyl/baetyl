@@ -329,3 +329,94 @@ func (h *msgLabelUpside) OnMessage(msg interface{}) error {
 func (h *msgLabelUpside) OnTimeout() error {
 	return nil
 }
+
+func TestHandlerDownsideRPC(t *testing.T) {
+	e, ami, _ := genHandlerDownsideEngine(t)
+	h := &handlerDownside{engineImpl: e}
+
+	// test
+	ch, err := e.pb.Subscribe(sync.TopicUpside)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	handler := &msgRPCUpside{t: t}
+	pro := pubsub.NewProcessor(ch, 0, handler)
+	pro.Start()
+
+	// req0 rpc success
+	engMsgWG.Add(1)
+	req0 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageRPC,
+		},
+		Content: specV1.LazyValue{
+			Value: &specV1.RPCRequest{
+				App:    "app",
+				Method: "get",
+				System: true,
+				Params: "",
+				Header: map[string]string{},
+				Body:   "",
+			},
+		},
+	}
+	res0 := &specV1.RPCResponse{
+		StatusCode: 200,
+		Header:     map[string][]string{},
+		Body:       []byte{},
+	}
+	ami.EXPECT().RPCApp("https://app.baetyl-edge-system", gomock.Any()).Return(res0, nil).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req0)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
+
+	// req1 rpc fail
+	engMsgWG.Add(1)
+	req1 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageRPC,
+		},
+		Content: specV1.LazyValue{
+			Value: &specV1.RPCRequest{
+				App:    "app",
+				Method: "get",
+				System: false,
+				Params: "",
+				Header: map[string]string{},
+				Body:   "",
+			},
+		},
+	}
+	ami.EXPECT().RPCApp("http://app.baetyl-edge", gomock.Any()).Return(nil, errors.New("timeout")).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "false", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req1)
+	assert.NotNil(t, err)
+	engMsgWG.Wait()
+}
+
+type msgRPCUpside struct {
+	t     *testing.T
+	check func(msg interface{})
+}
+
+func (h *msgRPCUpside) OnMessage(msg interface{}) error {
+	h.check(msg)
+	return nil
+}
+
+func (h *msgRPCUpside) OnTimeout() error {
+	return nil
+}
