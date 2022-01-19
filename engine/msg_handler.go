@@ -70,6 +70,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			if err != nil {
 				return err
 			}
+		case v1.MessageRPC:
+			err := h.rpc(key, m)
+			if err != nil {
+				return errors.Trace(err)
+			}
 		default:
 			h.log.Debug("unknown command", log.Any("cmd", m.Metadata["cmd"]))
 		}
@@ -261,4 +266,45 @@ func (h *handlerDownside) publishSuccessMsg(key string, m *v1.Message) {
 	if errPublish != nil {
 		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(errPublish))
 	}
+}
+
+func (h *handlerDownside) rpc(key string, m *v1.Message) error {
+	request := &v1.RPCRequest{}
+	err := m.Content.Unmarshal(request)
+	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
+		return errors.Trace(err)
+	}
+	res, err := h.ami.RPCApp(assembleUrl(request), request)
+	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
+		return errors.Trace(err)
+	}
+	h.log.Debug("rpc success", log.Any("status", res.StatusCode))
+	response := &v1.Message{
+		Kind: v1.MessageCMD,
+		Metadata: map[string]string{
+			"success": "true",
+			"token":   m.Metadata["token"],
+		},
+		Content: v1.LazyValue{
+			Value: res,
+		},
+	}
+	err = h.pb.Publish(sync.TopicUpside, response)
+	if err != nil {
+		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(err))
+	}
+	return nil
+}
+
+func assembleUrl(req *v1.RPCRequest) string {
+	url := req.App
+	if req.System {
+		url = "https://" + url + ".baetyl-edge-system"
+	} else {
+		url = "http://" + url + ".baetyl-edge"
+	}
+	url += req.Params
+	return url
 }

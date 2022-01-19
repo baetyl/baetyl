@@ -179,3 +179,18 @@ func (mr *MockAMIMockRecorder) UpdateNodeLabels(arg0, arg1 interface{}) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateNodeLabels", reflect.TypeOf((*MockAMI)(nil).UpdateNodeLabels), arg0, arg1)
 }
+
+// RPCApp mocks base method
+func (m *MockAMI) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RPCApp", url, req)
+	ret0, _ := ret[0].(*v1.RPCResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RPCApp indicates an expected call of RPCApp
+func (mr *MockAMIMockRecorder) RPCApp(url, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RPCApp", reflect.TypeOf((*MockAMI)(nil).RPCApp), url, req)
+}

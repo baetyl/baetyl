@@ -679,6 +679,10 @@ func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeco
 	panic("implement me")
 }
 
+func (impl *nativeImpl) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse, error) {
+	panic("implement me")
+}
+
 func genServiceInstanceName(ns, appName, appVersion, svcName, instanceID string) string {
 	return fmt.Sprintf("%s.%s.%s.%s.%s", ns, appName, appVersion, svcName, instanceID)
 }
