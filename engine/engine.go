@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -574,15 +573,15 @@ func genSystemCert(sec security.Security) error {
 		return errors.Trace(err)
 	}
 
-	err = utils.CreateWriteFile(path.Join(context.SystemCertPath, context.SystemCertCA), ca)
+	err = utils.CreateWriteFile(filepath.Join(context.SystemCertPath, context.SystemCertCA), ca)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	err = utils.CreateWriteFile(path.Join(context.SystemCertPath, context.SystemCertCrt), cert.Crt)
+	err = utils.CreateWriteFile(filepath.Join(context.SystemCertPath, context.SystemCertCrt), cert.Crt)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	err = utils.CreateWriteFile(path.Join(context.SystemCertPath, context.SystemCertKey), cert.Key)
+	err = utils.CreateWriteFile(filepath.Join(context.SystemCertPath, context.SystemCertKey), cert.Key)
 	if err != nil {
 		return errors.Trace(err)
 	}

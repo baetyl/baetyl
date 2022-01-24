@@ -2,14 +2,14 @@ module github.com/baetyl/baetyl/v2
 
 go 1.13
 
-replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-20200910124134-20fdd363fbd5
+replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-20220117104401-bb77c273f469
 
 require (
 	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220119073603-0a07c96c6587
 	github.com/golang/mock v1.3.1
 	github.com/imdario/mergo v0.3.5
 	github.com/jinzhu/copier v0.1.0
-	github.com/kardianos/service v1.1.0
+	github.com/kardianos/service v1.2.1
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87

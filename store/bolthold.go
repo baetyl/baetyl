@@ -3,7 +3,7 @@ package store
 import (
 	"encoding/json"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -14,7 +14,7 @@ import (
 
 // NewBoltHold creates a new bolt hold
 func NewBoltHold(filename string) (*bh.Store, error) {
-	err := os.MkdirAll(path.Dir(filename), 0755)
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
