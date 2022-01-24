@@ -283,7 +283,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Name:             prgCfg.Name,
 				Description:      prgCfg.Description,
 				WorkingDirectory: insDir,
-				Arguments:        []string{"program"},
+				Arguments:        []string{"program", insDir},
 			})
 			if err != nil {
 				return errors.Trace(err)
@@ -524,7 +524,7 @@ func getServiceInsStats(svc service.Service) (map[string]string, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	proc, err := process.NewProcess(pid)
+	proc, err := process.NewProcess(int32(pid))
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

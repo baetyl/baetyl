@@ -2,6 +2,7 @@ package program
 
 import (
 	"os"
+	"runtime"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/utils"
@@ -15,7 +16,14 @@ const (
 	ProgramServiceYaml = "service.yml"
 )
 
-func Run() error {
+func Run(wd string) error {
+	if runtime.GOOS == "windows" {
+		err := os.Chdir(wd)
+		if err != nil {
+			return errors.Trace(err)
+		}
+	}
+
 	prg := &Program{
 		exit: make(chan struct{}),
 		log:  os.Stdout,
