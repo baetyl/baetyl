@@ -265,7 +265,7 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cutSysServiceRandSuffix(fmt.Sprintf("%s-%s", app.Name, "nodeport")),
+			Name:      fmt.Sprintf("%s-%s", cutSysServiceRandSuffix(app.Name), "nodeport"),
 			Namespace: ns,
 			Labels:    map[string]string{AppName: app.Name},
 		},
