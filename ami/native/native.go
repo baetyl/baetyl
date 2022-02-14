@@ -281,6 +281,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			}
 			svc, err := service.New(nil, &service.Config{
 				Name:             prgCfg.Name,
+				DisplayName:      prgCfg.Name,
 				Description:      prgCfg.Description,
 				WorkingDirectory: insDir,
 				Arguments:        []string{"program", insDir},
