@@ -710,15 +710,4 @@ func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
 	if app.JobConfig.Completions == 0 {
 		app.JobConfig.Completions = 1
 	}
-
-	// Label
-	if app.Labels == nil {
-		app.Labels = map[string]string{}
-	}
-	if len(app.Services) > 0 && app.Services[0].Labels != nil {
-		k.log.Debug("app.Label add services[0].Label ")
-		for key, val := range app.Services[0].Labels {
-			app.Labels[key] = val
-		}
-	}
 }
