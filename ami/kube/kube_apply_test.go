@@ -725,7 +725,6 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 
 	expectApp0 := &specv1.Application{
 		Name:        "a0",
-		Labels:      map[string]string{"a": "b"},
 		HostNetwork: true,
 		Replica:     3,
 		JobConfig: &specv1.AppJobConfig{
@@ -761,7 +760,6 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 
 	expectApp1 := &specv1.Application{
 		Name:        "a1",
-		Labels:      map[string]string{},
 		HostNetwork: false,
 		Replica:     1,
 		JobConfig: &specv1.AppJobConfig{
