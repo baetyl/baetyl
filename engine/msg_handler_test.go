@@ -407,6 +407,86 @@ func TestHandlerDownsideRPC(t *testing.T) {
 	engMsgWG.Wait()
 }
 
+func TestHandlerDownsideAgent(t *testing.T) {
+	e, _, ctl := genHandlerDownsideEngine(t)
+	h := &handlerDownside{engineImpl: e}
+
+	agentClient := mock.NewMockAgentClient(ctl)
+	h.agentClient = agentClient
+
+	// test
+	ch, err := e.pb.Subscribe(sync.TopicUpside)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	handler := &msgRPCUpside{t: t}
+	pro := pubsub.NewProcessor(ch, 0, handler)
+	pro.Start()
+
+	// req0 set success
+	engMsgWG.Add(1)
+	req0 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd":    specV1.MessageAgent,
+			"action": "open",
+		},
+		Content: specV1.LazyValue{},
+	}
+	agentClient.EXPECT().GetOrSetAgentFlag("open").Return(true, nil)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req0)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
+
+	// req1 set fail
+	engMsgWG.Add(1)
+	req1 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd":    specV1.MessageAgent,
+			"action": "close",
+		},
+		Content: specV1.LazyValue{},
+	}
+	agentClient.EXPECT().GetOrSetAgentFlag("close").Return(false, errors.New("timeout"))
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "false", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req1)
+	assert.NotNil(t, err)
+	engMsgWG.Wait()
+
+	// req2 set fail
+	engMsgWG.Add(1)
+	req2 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd":    specV1.MessageAgent,
+			"action": "close",
+		},
+		Content: specV1.LazyValue{},
+	}
+	h.agentClient = nil
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "false", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req2)
+	assert.NotNil(t, err)
+	engMsgWG.Wait()
+}
+
 type msgRPCUpside struct {
 	t     *testing.T
 	check func(msg interface{})

@@ -14,12 +14,13 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pki"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/golang/mock/gomock"
 	routing "github.com/qiangxue/fasthttp-routing"
 	"github.com/stretchr/testify/assert"
 	bh "github.com/timshannon/bolthold"
 	"github.com/valyala/fasthttp"
+
+	"github.com/baetyl/baetyl/v2/ami/kube"
 
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/mock"
@@ -160,7 +161,7 @@ func TestCollect(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	eng, err := NewEngine(config.Config{}, nil, nil, nil)
+	eng, err := NewEngine(config.Config{}, nil, nil, nil, nil)
 	assert.Error(t, err, os.ErrInvalid.Error())
 	assert.Nil(t, eng)
 }

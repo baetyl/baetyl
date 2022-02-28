@@ -52,7 +52,7 @@ func NewCore(ctx context.Context, cfg config.Config) (*Core, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	c.eng, err = engine.NewEngine(cfg, c.sto, c.nod, c.syn)
+	c.eng, err = engine.NewEngine(cfg, c.sto, c.nod, c.syn, nil)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

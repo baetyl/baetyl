@@ -3,6 +3,7 @@ package engine
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/context"
@@ -22,6 +23,7 @@ const (
 	ErrPublishDownsideChain = "failed to publish downside chain"
 	ErrExecData             = "failed to exec"
 	ErrSubNodeName          = "failed to get sub node name"
+	ErrAgentNotSet          = "failed to request for the not set agent"
 	ErrTimeout              = "engine timeout"
 )
 
@@ -72,6 +74,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			}
 		case v1.MessageRPC:
 			err := h.rpc(key, m)
+			if err != nil {
+				return errors.Trace(err)
+			}
+		case v1.MessageAgent:
+			err := h.agentControl(key, m)
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -290,6 +297,33 @@ func (h *handlerDownside) rpc(key string, m *v1.Message) error {
 		Content: v1.LazyValue{
 			Value: res,
 		},
+	}
+	err = h.pb.Publish(sync.TopicUpside, response)
+	if err != nil {
+		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(err))
+	}
+	return nil
+}
+
+func (h *handlerDownside) agentControl(key string, m *v1.Message) error {
+	if h.agentClient == nil {
+		h.publishFailedMsg(key, ErrAgentNotSet, m)
+		return errors.Trace(errors.New(ErrAgentNotSet))
+	}
+	res, err := h.agentClient.GetOrSetAgentFlag(m.Metadata["action"])
+	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
+		return errors.Trace(err)
+	}
+	h.log.Debug("agent info", log.Any("status", res))
+	response := &v1.Message{
+		Kind: v1.MessageCMD,
+		Metadata: map[string]string{
+			"success": "true",
+			"token":   m.Metadata["token"],
+			"stat":    strconv.FormatBool(res),
+		},
+		Content: v1.LazyValue{},
 	}
 	err = h.pb.Publish(sync.TopicUpside, response)
 	if err != nil {
