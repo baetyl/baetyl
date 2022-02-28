@@ -23,6 +23,7 @@ import (
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 
+	"github.com/baetyl/baetyl/v2/agent"
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/node"
@@ -60,13 +61,14 @@ type engineImpl struct {
 	log             *log.Logger
 	sec             security.Security
 	pb              plugin.Pubsub
+	agentClient     agent.AgentClient
 	downsideChan    <-chan interface{}
 	downsideProcess pubsub.Processor
 	chains          gosync.Map
 	tomb            v2utils.Tomb
 }
 
-func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync) (Engine, error) {
+func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync, agentClient agent.AgentClient) (Engine, error) {
 	mode := context.RunMode()
 	log.L().Info("app running mode", log.Any("mode", mode))
 
@@ -100,6 +102,7 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync) (
 		nod:            nod,
 		cfg:            cfg,
 		sec:            sec,
+		agentClient:    agentClient,
 		pb:             pl.(plugin.Pubsub),
 		chains:         gosync.Map{},
 		log:            log.With(),

@@ -68,7 +68,7 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 		return nil, errors.Trace(err)
 	}
 
-	init.eng, err = engine.NewEngine(cfg, init.sto, init.nod, init.syn)
+	init.eng, err = engine.NewEngine(cfg, init.sto, init.nod, init.syn, nil)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
