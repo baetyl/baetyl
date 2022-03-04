@@ -52,6 +52,7 @@ func init() {
 type nativeImpl struct {
 	logHostPath   string
 	runHostPath   string
+	hostPathLib   string
 	mapping       *native.ServiceMapping
 	portAllocator *native.PortAllocator
 	log           *log.Logger
@@ -73,6 +74,7 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 	return &nativeImpl{
 		logHostPath:   filepath.Join(hostPathLib, "log"),
 		runHostPath:   filepath.Join(hostPathLib, "run"),
+		hostPathLib:   hostPathLib,
 		mapping:       mapping,
 		portAllocator: portAllocator,
 		log:           log.With(log.Any("ami", "native")),
@@ -253,6 +255,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			env := []string{
 				// MacOS won't set PATH, but function runtimes need it
 				fmt.Sprintf("%s=%s", "PATH", os.Getenv("PATH")),
+				fmt.Sprintf("%s=%s", context.KeyBaetylHostPathLib, impl.hostPathLib),
 			}
 			for _, item := range s.Env {
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
