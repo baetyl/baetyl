@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/spf13/cobra"
 
@@ -18,7 +19,11 @@ var programCmd = &cobra.Command{
 	Short: "Run a program of Baetyl",
 	Long:  `Baetyl loads program's configuration from program_service.yml, then runs and waits the program to stop.`,
 	Run: func(_ *cobra.Command, args []string) {
-		if err := program.Run(args[0]); err != nil {
+		var wd string
+		if runtime.GOOS == "windows" {
+			wd = args[0]
+		}
+		if err := program.Run(wd); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}

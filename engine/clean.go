@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -112,13 +114,25 @@ func (e *engineImpl) cleanObjectStorage() (int, error) {
 	}
 
 	dels := getDelObjectCfgs(occupiedApps, obsoleteApps, objectCfgs, finishedJobs)
+	var subs []fs.FileInfo
 	for k, v := range dels {
 		if err = e.sto.Delete(k, specv1.Configuration{}); err != nil {
 			e.log.Error("failed to delete configuration", log.Error(err))
 		}
-		dir := filepath.Join(e.cfg.Sync.Download.Path, v.Name, v.Version)
-		if err = os.RemoveAll(dir); err != nil {
-			e.log.Error("failed to clean dir", log.Any("dir", dir))
+		verDir := filepath.Join(e.cfg.Sync.Download.Path, v.Name, v.Version)
+		if err = os.RemoveAll(verDir); err != nil {
+			e.log.Error("failed to clean dir", log.Any("dir", verDir))
+		}
+		dir := filepath.Join(e.cfg.Sync.Download.Path, v.Name)
+		subs, err = ioutil.ReadDir(dir)
+		if err != nil {
+			e.log.Error("failed to read sub dirs", log.Error(err))
+			continue
+		}
+		if len(subs) == 1 && subs[0].Name() == v.Version {
+			if err = os.RemoveAll(dir); err != nil {
+				e.log.Error("failed to clean dir", log.Any("dir", dir))
+			}
 		}
 	}
 	e.log.Info("complete cleaning useless object storage space")
