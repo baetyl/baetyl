@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -114,7 +113,7 @@ func (e *engineImpl) cleanObjectStorage() (int, error) {
 	}
 
 	dels := getDelObjectCfgs(occupiedApps, obsoleteApps, objectCfgs, finishedJobs)
-	var subs []fs.FileInfo
+	var subs []os.FileInfo
 	for k, v := range dels {
 		if err = e.sto.Delete(k, specv1.Configuration{}); err != nil {
 			e.log.Error("failed to delete configuration", log.Error(err))
