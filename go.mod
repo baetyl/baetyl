@@ -2,7 +2,7 @@ module github.com/baetyl/baetyl/v2
 
 go 1.13
 
-replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-20220214084200-533e95169992
+replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-20220411105103-343ef78b41d9
 
 require (
 	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220304073742-d9da2c0f6dab
