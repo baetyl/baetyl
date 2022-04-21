@@ -118,15 +118,15 @@ func (e *engineImpl) cleanObjectStorage() (int, error) {
 		if err = e.sto.Delete(k, specv1.Configuration{}); err != nil {
 			e.log.Error("failed to delete configuration", log.Error(err))
 		}
-		verDir := filepath.Join(e.cfg.Sync.Download.Path, v.Name, v.Version)
-		if err = os.RemoveAll(verDir); err != nil {
-			e.log.Error("failed to clean dir", log.Any("dir", verDir))
-		}
 		dir := filepath.Join(e.cfg.Sync.Download.Path, v.Name)
 		subs, err = ioutil.ReadDir(dir)
 		if err != nil {
 			e.log.Error("failed to read sub dirs", log.Error(err))
 			continue
+		}
+		verDir := filepath.Join(dir, v.Version)
+		if err = os.RemoveAll(verDir); err != nil {
+			e.log.Error("failed to clean dir", log.Any("dir", verDir))
 		}
 		if len(subs) == 1 && subs[0].Name() == v.Version {
 			if err = os.RemoveAll(dir); err != nil {
