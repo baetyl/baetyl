@@ -310,8 +310,9 @@ func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) er
 		return errors.Trace(err)
 	}
 	// will remove invalid app info in update
-	checkService(dapps, appData, stats, update)
-	checkPort(dapps, appData, stats, update)
+	// multiple apps change to multiple containers , remove checkService
+	// checkService(dapps, appData, stats, update)
+	checkMultiAppPort(dapps, appData, stats, update)
 	if err = e.reportAppStatsIfNeed(isSys, r, stats); err != nil {
 		return errors.Trace(err)
 	}
