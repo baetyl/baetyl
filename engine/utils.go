@@ -50,7 +50,7 @@ func checkService(infos []specv1.AppInfo, apps map[string]specv1.Application, st
 			}
 			iStat, ok := stat.InstanceStats[sName]
 			if !ok {
-				iStat = specv1.InstanceStats{ServiceName: sName, Status: specv1.Unknown}
+				iStat = specv1.InstanceStats{ServiceName: sName, AppName: aName, Status: specv1.Unknown}
 			}
 			iStat.Cause += fmt.Sprintf("service [%s] in application [%s] collide with application [%s]", sName, aName, first)
 			stat.InstanceStats[sName] = iStat
@@ -143,6 +143,107 @@ func checkPort(infos []specv1.AppInfo, apps map[string]specv1.Application, stats
 			}
 			iStat.Cause += fmt.Sprintf("port [%d] in service [%s] collide with service [%s]", p, sName, first)
 			stat.InstanceStats[sName] = iStat
+			stats[aName] = stat
+			del[aName] = struct{}{}
+		}
+	}
+	for n := range del {
+		delete(update, n)
+		delete(apps, n)
+	}
+}
+
+func checkMultiAppPort(infos []specv1.AppInfo, apps map[string]specv1.Application, stats map[string]specv1.AppStats, update map[string]specv1.AppInfo) {
+	ports := make(map[int32][]string)
+	del := make(map[string]struct{})
+	for _, info := range infos {
+		app, ok := apps[info.Name]
+		if !ok {
+			continue
+		}
+		flag := true
+		for _, svc := range app.Services {
+			for _, p := range svc.Ports {
+				if p.HostPort != 0 {
+					flag = false
+					break
+				}
+			}
+			if !flag {
+				break
+			}
+		}
+		if flag {
+			continue
+		}
+		// app with replica greater than 1 can not configure host port
+		if app.Replica > 1 {
+			stat, ok := stats[app.Name]
+			if !ok {
+				stat = specv1.AppStats{
+					AppInfo:       specv1.AppInfo{Name: app.Name, Version: app.Version},
+					Status:        specv1.Unknown,
+					InstanceStats: map[string]specv1.InstanceStats{},
+				}
+			}
+			iStat, ok := stat.InstanceStats[app.Name]
+			if !ok {
+				iStat = specv1.InstanceStats{AppName: app.Name, Status: specv1.Unknown}
+			}
+			iStat.Cause += fmt.Sprintf("application [%s] with relica > 1 can not configure host port", app.Name)
+			stat.InstanceStats[app.Name] = iStat
+			stats[app.Name] = stat
+			del[app.Name] = struct{}{}
+			continue
+		}
+
+		for _, svc := range app.Services {
+			for _, p := range svc.Ports {
+				if p.HostPort == 0 {
+					continue
+				}
+				ports[p.HostPort] = append(ports[p.HostPort], app.Name)
+			}
+		}
+	}
+	var first string
+	for p, aNames := range ports {
+		if len(aNames) <= 1 {
+			continue
+		}
+		// when multiple apps have same host port,
+		// it will only launch the first app or not launch any app by deleting update map
+		// if there was one app existed which is in stats
+		first = ""
+		for _, aName := range aNames {
+			if first == "" {
+				first = aName
+			}
+			if stat, ok := stats[aName]; ok {
+				if _, ok := stat.InstanceStats[aName]; ok {
+					first = aName
+					break
+				}
+			}
+		}
+		for _, aName := range aNames {
+			if aName == first {
+				continue
+			}
+			stat, ok := stats[aName]
+			if !ok {
+				stat = specv1.AppStats{
+					AppInfo:       specv1.AppInfo{Name: aName, Version: apps[aName].Version},
+					Status:        specv1.Unknown,
+					InstanceStats: map[string]specv1.InstanceStats{},
+				}
+			}
+			iStat, ok := stat.InstanceStats[aName]
+			if !ok {
+				iStat = specv1.InstanceStats{AppName: aName, Status: specv1.Unknown}
+			}
+			iStat.Cause += fmt.Sprintf("port [%d] in application [%s] collide with service [%s]", p, aName, first)
+			stat.InstanceStats[aName] = iStat
 			stats[aName] = stat
 			del[aName] = struct{}{}
 		}
