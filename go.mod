@@ -18,9 +18,9 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
-	github.com/valyala/fasthttp v1.9.0
+	github.com/valyala/fasthttp v1.34.0
 	go.etcd.io/bbolt v1.3.6
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.8
