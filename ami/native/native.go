@@ -700,8 +700,6 @@ func genWinExec(prgExec string) string {
 		prgExec = "python " + prgExec
 	} else if strings.Contains(prgExec, ".js") {
 		prgExec = "node " + prgExec
-	} else {
-		return prgExec
 	}
 	return prgExec
 }
