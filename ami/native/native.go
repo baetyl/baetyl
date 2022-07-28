@@ -261,6 +261,10 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
 			}
 
+			if runtime.GOOS == "windows" {
+				prgExec = genWinExec(prgExec)
+			}
+
 			prgCfg := program.Config{
 				Name:        genServiceInstanceName(ns, app.Name, app.Version, s.Name, strconv.Itoa(i)),
 				DisplayName: fmt.Sprintf("%s %s", app.Name, s.Name),
@@ -689,6 +693,17 @@ func (impl *nativeImpl) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse,
 
 func genServiceInstanceName(ns, appName, appVersion, svcName, instanceID string) string {
 	return fmt.Sprintf("%s.%s.%s.%s.%s", ns, appName, appVersion, svcName, instanceID)
+}
+
+func genWinExec(prgExec string) string {
+	if strings.Contains(prgExec, ".py") {
+		prgExec = "python " + prgExec
+	} else if strings.Contains(prgExec, ".js") {
+		prgExec = "node " + prgExec
+	} else {
+		return prgExec
+	}
+	return prgExec
 }
 
 func setEnv(env []v1.Environment, key, value string) []v1.Environment {
