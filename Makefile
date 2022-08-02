@@ -27,10 +27,10 @@ endif
 
 GO       := go
 GO_MOD   := $(GO) mod
-GO_ENV   := env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=0
+GO_ENV   := env GO111MODULE=on CGO_ENABLED=0
 GO_FLAGS := $(BUILD_ARGS) -ldflags '-X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"'
 ifeq ($(findstring race,$(BUILD_ARGS)),race)
-GO_ENV   := env GO111MODULE=on GOPROXY=https://goproxy.cn CGO_ENABLED=1
+GO_ENV   := env GO111MODULE=on CGO_ENABLED=1
 GO_FLAGS := $(BUILD_ARGS) -ldflags '-s -w -X "github.com/baetyl/baetyl-go/v2/utils.REVISION=$(GIT_REV)" -X "github.com/baetyl/baetyl-go/v2/utils.VERSION=$(VERSION)"  -linkmode external -w -extldflags "-static"'
 override PLATFORMS:= $(filter-out linux/arm/v7,$(PLATFORMS))
 endif

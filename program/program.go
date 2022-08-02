@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
+	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/kardianos/service"
@@ -26,8 +28,14 @@ func (p *Program) Start(s service.Service) error {
 		return errors.Trace(err)
 	}
 
-	p.cmd = exec.Command(fullExec, p.cfg.Args...)
-	p.cmd.Dir = p.cfg.Dir
+	if runtime.GOOS == "windows" && strings.Contains(fullExec, ".py") {
+		p.cmd = exec.Command("python", fullExec)
+	} else if runtime.GOOS == "windows" && strings.Contains(fullExec, ".js") {
+		p.cmd = exec.Command("node", fullExec)
+	} else {
+		p.cmd = exec.Command(fullExec, p.cfg.Args...)
+		p.cmd.Dir = p.cfg.Dir
+	}
 	p.cmd.Env = append(os.Environ(), p.cfg.Env...)
 	p.cmd.Stderr = p.log
 	p.cmd.Stdout = p.log
