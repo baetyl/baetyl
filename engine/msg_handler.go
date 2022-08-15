@@ -25,6 +25,9 @@ const (
 	ErrSubNodeName          = "failed to get sub node name"
 	ErrAgentNotSet          = "failed to request for the not set agent"
 	ErrTimeout              = "engine timeout"
+
+	PrefixHTTP  = "http://"
+	PrefixHTTPS = "https://"
 )
 
 type handlerDownside struct {
@@ -334,10 +337,12 @@ func (h *handlerDownside) agentControl(key string, m *v1.Message) error {
 
 func assembleUrl(req *v1.RPCRequest) string {
 	url := req.App
-	if req.System {
-		url = "https://" + url + ".baetyl-edge-system"
-	} else {
-		url = "http://" + url + ".baetyl-edge"
+	if !strings.Contains(url, PrefixHTTP) && !strings.Contains(url, PrefixHTTPS) {
+		if req.System {
+			url = PrefixHTTPS + url + ".baetyl-edge-system"
+		} else {
+			url = PrefixHTTP + url + ".baetyl-edge"
+		}
 	}
 	url += req.Params
 	return url
