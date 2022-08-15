@@ -377,9 +377,43 @@ func TestHandlerDownsideRPC(t *testing.T) {
 	assert.NoError(t, err)
 	engMsgWG.Wait()
 
-	// req1 rpc fail
+	// req1 rpc success
 	engMsgWG.Add(1)
 	req1 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageRPC,
+		},
+		Content: specV1.LazyValue{
+			Value: &specV1.RPCRequest{
+				App:    "http://127.0.0.1",
+				Method: "get",
+				System: true,
+				Params: "",
+				Header: map[string]string{},
+				Body:   "",
+			},
+		},
+	}
+	res1 := &specV1.RPCResponse{
+		StatusCode: 200,
+		Header:     map[string][]string{},
+		Body:       []byte{},
+	}
+	ami.EXPECT().RPCApp("http://127.0.0.1", gomock.Any()).Return(res1, nil).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req1)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
+
+	// req2 rpc fail
+	engMsgWG.Add(1)
+	req2 := &specV1.Message{
 		Kind: specV1.MessageCMD,
 		Metadata: map[string]string{
 			"cmd": specV1.MessageRPC,
@@ -402,7 +436,7 @@ func TestHandlerDownsideRPC(t *testing.T) {
 		assert.Equal(t, "false", m.Metadata["success"])
 		engMsgWG.Done()
 	}
-	err = h.OnMessage(req1)
+	err = h.OnMessage(req2)
 	assert.NotNil(t, err)
 	engMsgWG.Wait()
 }
