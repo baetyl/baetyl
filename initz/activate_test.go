@@ -194,7 +194,7 @@ func TestActivate(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	os.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(kube.KubeNodeName, "knn")
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).Times(len(goodCases))
 
 	err = os.MkdirAll(defaultSNPath, 0755)
@@ -257,7 +257,7 @@ func TestActivate_Err_Response(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
-	os.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(kube.KubeNodeName, "knn")
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).AnyTimes()
 
 	active := genActivate(t, c, ami)

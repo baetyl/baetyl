@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"os"
 	"testing"
 
 	"github.com/baetyl/baetyl-go/v2/context"
@@ -10,8 +9,7 @@ import (
 )
 
 func TestSync_PrepareApp(t *testing.T) {
-	err := os.Setenv(context.KeyNodeName, "node01")
-	assert.NoError(t, err)
+	t.Setenv(context.KeyNodeName, "node01")
 
 	app := specv1.Application{
 		Name:    "app1",
@@ -142,7 +140,7 @@ func TestSync_PrepareApp(t *testing.T) {
 		},
 	}
 
-	err = PrepareApp("var/lib/baetyl/host", "var/lib/baetyl/object", &app, configs)
+	err := PrepareApp("var/lib/baetyl/host", "var/lib/baetyl/object", &app, configs)
 	assert.NoError(t, err)
 	assert.EqualValues(t, expApp, app)
 }

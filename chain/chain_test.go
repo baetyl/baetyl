@@ -51,8 +51,7 @@ func TestNewChain(t *testing.T) {
 	cfg, ctl, data := initChainEnv(t)
 	ami := mock.NewMockAMI(ctl)
 
-	err := os.Setenv(context.KeyRunMode, context.RunModeNative)
-	assert.NoError(t, err)
+	t.Setenv(context.KeyRunMode, context.RunModeNative)
 	c, err := NewChain(cfg, ami, data)
 	assert.Error(t, err, ErrParseData)
 	data["port"] = "22"
@@ -76,8 +75,6 @@ func TestNewChain(t *testing.T) {
 	cfg.Plugin.Pubsub = "not exist"
 	_, err = NewChain(cfg, ami, data)
 	assert.Error(t, err)
-	err = os.Unsetenv(context.KeyRunMode)
-	assert.NoError(t, err)
 }
 
 func TestChainMsg(t *testing.T) {
