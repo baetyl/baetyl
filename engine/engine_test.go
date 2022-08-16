@@ -116,7 +116,7 @@ func TestCollect(t *testing.T) {
 	ns := context.EdgeNamespace()
 	apps := []specv1.AppInfo{info}
 	appStats := []specv1.AppStats{{AppInfo: info}}
-	os.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(kube.KubeNodeName, "knn")
 	mockAmi.EXPECT().CollectNodeInfo().Return(nodeInfo, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(nodeStats, nil)
 	mockAmi.EXPECT().StatsApps(gomock.Any()).Return(appStats, nil)
@@ -264,7 +264,7 @@ func TestReportAndApply(t *testing.T) {
 	infos := map[string]interface{}{}
 	stats := map[string]interface{}{}
 
-	os.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(kube.KubeNodeName, "knn")
 	mockAmi.EXPECT().CollectNodeInfo().Return(infos, nil)
 	mockAmi.EXPECT().CollectNodeStats().Return(stats, nil)
 	appStats := []specv1.AppStats{{AppInfo: specv1.AppInfo{Name: "app1", Version: "v1"}}, {AppInfo: specv1.AppInfo{Name: "app2", Version: "v2"}}}

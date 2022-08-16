@@ -29,8 +29,7 @@ var (
 )
 
 func genHandlerDownsideEngine(t *testing.T) (*engineImpl, *mock.MockAMI, *gomock.Controller) {
-	err := os.Setenv(context.KeySvcName, specV1.BaetylCore)
-	assert.NoError(t, err)
+	t.Setenv(context.KeySvcName, specV1.BaetylCore)
 	// prepare struct
 	cfg := config.Config{}
 

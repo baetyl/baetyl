@@ -2,7 +2,6 @@ package initz
 
 import (
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -89,7 +88,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 	assert.Error(t, err)
 
 	ami := mc.NewMockAMI(mockCtl)
-	os.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(kube.KubeNodeName, "knn")
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nil}, nil).AnyTimes()
 	active = genActivate(t, c, ami)
 
