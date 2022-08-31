@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -120,11 +121,11 @@ func initCollectKubeAMI(t *testing.T) *kubeImpl {
 		core: fc.CoreV1(),
 		app:  fc.AppsV1(),
 	}
-	node, err := fc.CoreV1().Nodes().Get("node1", metav1.GetOptions{})
+	node, err := fc.CoreV1().Nodes().Get(context.TODO(), "node1", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.NotNil(t, node)
 
-	se, err := fc.CoreV1().Secrets("baetyl-edge").Get("sec1", metav1.GetOptions{})
+	se, err := fc.CoreV1().Secrets("baetyl-edge").Get(context.TODO(), "sec1", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.NotNil(t, se)
 

@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"io"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -11,7 +12,7 @@ import (
 )
 
 func (k *kubeImpl) FetchLog(ns, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
-	deploy, err := k.cli.app.Deployments(ns).Get(service, metav1.GetOptions{})
+	deploy, err := k.cli.app.Deployments(ns).Get(context.TODO(), service, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -24,7 +25,7 @@ func (k *kubeImpl) FetchLog(ns, service string, tailLines, sinceSeconds int64) (
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{
+	pods, err := k.cli.core.Pods(ns).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: ls.String(),
 	})
 	if err != nil {
@@ -33,7 +34,7 @@ func (k *kubeImpl) FetchLog(ns, service string, tailLines, sinceSeconds int64) (
 	if pods == nil || len(pods.Items) == 0 {
 		return nil, errors.New("no pod or more than one pod exists")
 	}
-	s, err := k.cli.core.Pods(ns).GetLogs(pods.Items[0].Name, k.toLogOptions(tailLines, sinceSeconds)).Stream()
+	s, err := k.cli.core.Pods(ns).GetLogs(pods.Items[0].Name, k.toLogOptions(tailLines, sinceSeconds)).Stream(context.TODO())
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

@@ -1,6 +1,8 @@
 package kube
 
 import (
+	"context"
+
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -33,7 +35,7 @@ func (k *kubeImpl) GetModeInfo() (interface{}, error) {
 }
 
 func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
-	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
+	nodes, err := k.cli.core.Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -72,11 +74,11 @@ func (k *kubeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 }
 
 func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
-	nodes, err := k.cli.core.Nodes().List(metav1.ListOptions{})
+	nodes, err := k.cli.core.Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	nodeMetrics, err := k.cli.metrics.NodeMetricses().List(metav1.ListOptions{})
+	nodeMetrics, err := k.cli.metrics.NodeMetricses().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -182,7 +184,7 @@ func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[
 			DeployType: info.typ,
 		}
 	}
-	pods, err := k.cli.core.Pods(ns).List(metav1.ListOptions{LabelSelector: labels.SelectorFromSet(info.set).String()})
+	pods, err := k.cli.core.Pods(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(info.set).String()})
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -204,7 +206,7 @@ func (k *kubeImpl) collectAppStats(appStats map[string]specv1.AppStats, qps map[
 }
 
 func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
-	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{})
+	deploys, err := k.cli.app.Deployments(ns).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -228,7 +230,7 @@ func (k *kubeImpl) collectDeploymentStats(ns string, qps map[string]interface{})
 }
 
 func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
-	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{})
+	daemons, err := k.cli.app.DaemonSets(ns).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -252,7 +254,7 @@ func (k *kubeImpl) collectDaemonSetStats(ns string, qps map[string]interface{}) 
 }
 
 func (k *kubeImpl) collectJobStats(ns string, qps map[string]interface{}) ([]specv1.AppStats, error) {
-	jobs, err := k.cli.batch.Jobs(ns).List(metav1.ListOptions{})
+	jobs, err := k.cli.batch.Jobs(ns).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -288,7 +290,7 @@ func (k *kubeImpl) collectInstanceStats(ns, appName string, qps map[string]inter
 	}
 
 	metricsStatus := make(map[string]specv1.ContainerInfo)
-	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(pod.Name, metav1.GetOptions{})
+	podMetric, err := k.cli.metrics.PodMetricses(ns).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 	if err != nil {
 		k.log.Warn("failed to collect pod metrics", log.Error(err))
 	} else {

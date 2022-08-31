@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"io"
 	"net/http"
 
@@ -74,7 +75,7 @@ func (k *kubeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
 		scheme.ParameterCodec,
 	)
 
-	reader, err := req.Stream()
+	reader, err := req.Stream(context.TODO())
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -88,12 +89,12 @@ func (k *kubeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
 
 func (k *kubeImpl) UpdateNodeLabels(name string, labels map[string]string) error {
 	defer utils.Trace(k.log.Debug, "UpdateNodeLabels")()
-	n, err := k.cli.core.Nodes().Get(name, metav1.GetOptions{})
+	n, err := k.cli.core.Nodes().Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Trace(err)
 	}
 	n.Labels = labels
-	n, err = k.cli.core.Nodes().Update(n)
+	n, err = k.cli.core.Nodes().Update(context.TODO(), n, metav1.UpdateOptions{})
 	if err != nil {
 		return errors.Trace(err)
 	}
