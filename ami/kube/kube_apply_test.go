@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -125,18 +126,18 @@ func TestDeleteApplication(t *testing.T) {
 	}
 	err := ami.applyApplication(ns, app, nil)
 	assert.NoError(t, err)
-	d, err := ami.cli.app.Deployments(ns).Get(name, metav1.GetOptions{})
+	d, err := ami.cli.app.Deployments(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.NotNil(t, d)
 	assert.NoError(t, err)
-	s, err := ami.cli.core.Services(ns).Get(name, metav1.GetOptions{})
+	s, err := ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.NotNil(t, s)
 	assert.NoError(t, err)
 
 	err = ami.deleteApplication(ns, app.Name)
 	assert.NoError(t, err)
-	d, _ = ami.cli.app.Deployments(ns).Get(name, metav1.GetOptions{})
+	d, _ = ami.cli.app.Deployments(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.Nil(t, d)
-	s, _ = ami.cli.core.Services(ns).Get(name, metav1.GetOptions{})
+	s, _ = ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.Nil(t, s)
 }
 
@@ -172,7 +173,7 @@ func TestApplySecret(t *testing.T) {
 	expected.Data = map[string][]byte{
 		secKey: []byte(secVal),
 	}
-	res, err := ami.cli.core.Secrets(ns).Get("sec", metav1.GetOptions{})
+	res, err := ami.cli.core.Secrets(ns).Get(context.TODO(), "sec", metav1.GetOptions{})
 	assert.Equal(t, res, expected)
 
 	// registry
@@ -205,7 +206,7 @@ func TestApplySecret(t *testing.T) {
 	expected.Data = map[string][]byte{
 		v1.DockerConfigJsonKey: data,
 	}
-	res, err = ami.cli.core.Secrets(ns).Get("registry", metav1.GetOptions{})
+	res, err = ami.cli.core.Secrets(ns).Get(context.TODO(), "registry", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, res, expected)
 }

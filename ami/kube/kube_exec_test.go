@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -89,14 +90,14 @@ func TestUpdateNodeLabels(t *testing.T) {
 	newLabels := map[string]string{
 		"a": "b",
 	}
-	no, err := am.cli.core.Nodes().Get("node1", metav1.GetOptions{})
+	no, err := am.cli.core.Nodes().Get(context.TODO(), "node1", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.EqualValues(t, oldLabels, no.Labels)
 
 	err = am.UpdateNodeLabels("node1", newLabels)
 	assert.NoError(t, err)
 
-	no, err = am.cli.core.Nodes().Get("node1", metav1.GetOptions{})
+	no, err = am.cli.core.Nodes().Get(context.TODO(), "node1", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.EqualValues(t, newLabels, no.Labels)
 }

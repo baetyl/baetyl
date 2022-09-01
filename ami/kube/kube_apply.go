@@ -1,6 +1,7 @@
 package kube
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -44,14 +45,14 @@ var (
 
 func (k *kubeImpl) createNamespace(ns string) (*corev1.Namespace, error) {
 	defer utils.Trace(k.log.Debug, "applyNamespace")()
-	return k.cli.core.Namespaces().Create(&corev1.Namespace{
+	return k.cli.core.Namespaces().Create(context.TODO(), &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: ns},
-	})
+	}, metav1.CreateOptions{})
 }
 
 func (k *kubeImpl) getNamespace(ns string) (*corev1.Namespace, error) {
 	defer utils.Trace(k.log.Debug, "getNamespace")()
-	return k.cli.core.Namespaces().Get(ns, metav1.GetOptions{})
+	return k.cli.core.Namespaces().Get(context.TODO(), ns, metav1.GetOptions{})
 }
 
 func (k *kubeImpl) checkAndCreateNamespace(ns string) error {
@@ -76,14 +77,14 @@ func (k *kubeImpl) applyConfigurations(ns string, cfgs map[string]specv1.Configu
 		}
 		cm.Namespace = ns
 		cmInterface := k.cli.core.ConfigMaps(ns)
-		ocm, err := cmInterface.Get(cfg.Name, metav1.GetOptions{})
+		ocm, err := cmInterface.Get(context.TODO(), cfg.Name, metav1.GetOptions{})
 		if ocm != nil && err == nil {
 			cm.ResourceVersion = ocm.ResourceVersion
-			if _, err := cmInterface.Update(cm); err != nil {
+			if _, err := cmInterface.Update(context.TODO(), cm, metav1.UpdateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			if _, err := cmInterface.Create(cm); err != nil {
+			if _, err := cmInterface.Create(context.TODO(), cm, metav1.CreateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
@@ -109,15 +110,15 @@ func (k *kubeImpl) applySecrets(ns string, secs map[string]specv1.Secret) error 
 		}
 		secret.Namespace = ns
 		secretInterface := k.cli.core.Secrets(ns)
-		osec, err := secretInterface.Get(sec.Name, metav1.GetOptions{})
+		osec, err := secretInterface.Get(context.TODO(), sec.Name, metav1.GetOptions{})
 		if osec != nil && err == nil {
 			secret.ResourceVersion = osec.ResourceVersion
-			_, err := secretInterface.Update(secret)
+			_, err := secretInterface.Update(context.TODO(), secret, metav1.UpdateOptions{})
 			if err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			_, err := secretInterface.Create(secret)
+			_, err := secretInterface.Create(context.TODO(), secret, metav1.CreateOptions{})
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -514,44 +515,44 @@ func TransSvcToContainer(svc *specv1.Service, c *corev1.Container) (*corev1.Cont
 func (k *kubeImpl) deleteApplication(ns, name string) error {
 	set := lb.Set{AppName: name}
 	selector := lb.SelectorFromSet(set)
-	deploys, err := k.cli.app.Deployments(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	deploys, err := k.cli.app.Deployments(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return errors.Trace(err)
 	}
-	daemons, err := k.cli.app.DaemonSets(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	daemons, err := k.cli.app.DaemonSets(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return errors.Trace(err)
 	}
-	services, err := k.cli.core.Services(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	services, err := k.cli.core.Services(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return errors.Trace(err)
 	}
-	jobs, err := k.cli.batch.Jobs(ns).List(metav1.ListOptions{LabelSelector: selector.String()})
+	jobs, err := k.cli.batch.Jobs(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return errors.Trace(err)
 	}
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
-		if err := deployInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
+		if err := deployInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
 	daemonInterface := k.cli.app.DaemonSets(ns)
 	for _, d := range daemons.Items {
-		if err := daemonInterface.Delete(d.Name, &metav1.DeleteOptions{}); err != nil {
+		if err := daemonInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
 	svcInterface := k.cli.core.Services(ns)
 	for _, s := range services.Items {
-		if err := svcInterface.Delete(s.Name, &metav1.DeleteOptions{}); err != nil {
+		if err := svcInterface.Delete(context.TODO(), s.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
 	jobInterface := k.cli.batch.Jobs(ns)
 	policy := metav1.DeletePropagationBackground
 	for _, j := range jobs.Items {
-		if err = jobInterface.Delete(j.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
+		if err = jobInterface.Delete(context.TODO(), j.Name, metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
 			return errors.Trace(err)
 		}
 	}
@@ -562,14 +563,14 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment) error {
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys {
-		deploy, err := deployInterface.Get(d.Name, metav1.GetOptions{})
+		deploy, err := deployInterface.Get(context.TODO(), d.Name, metav1.GetOptions{})
 		if deploy != nil && err == nil {
 			d.ResourceVersion = deploy.ResourceVersion
-			if _, err = deployInterface.Update(d); err != nil {
+			if _, err = deployInterface.Update(context.TODO(), d, metav1.UpdateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			if _, err = deployInterface.Create(d); err != nil {
+			if _, err = deployInterface.Create(context.TODO(), d, metav1.CreateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
@@ -580,14 +581,14 @@ func (k *kubeImpl) applyDeploys(ns string, deploys map[string]*appv1.Deployment)
 func (k *kubeImpl) applyDaemons(ns string, daemons map[string]*appv1.DaemonSet) error {
 	daemonInterface := k.cli.app.DaemonSets(ns)
 	for _, d := range daemons {
-		daemon, err := daemonInterface.Get(d.Name, metav1.GetOptions{})
+		daemon, err := daemonInterface.Get(context.TODO(), d.Name, metav1.GetOptions{})
 		if daemon != nil && err == nil {
 			d.ResourceVersion = daemon.ResourceVersion
-			if _, err = daemonInterface.Update(d); err != nil {
+			if _, err = daemonInterface.Update(context.TODO(), d, metav1.UpdateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			if _, err = daemonInterface.Create(d); err != nil {
+			if _, err = daemonInterface.Create(context.TODO(), d, metav1.CreateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
@@ -598,15 +599,15 @@ func (k *kubeImpl) applyDaemons(ns string, daemons map[string]*appv1.DaemonSet) 
 func (k *kubeImpl) applyJobs(ns string, jobs map[string]*batchv1.Job) error {
 	jobInterface := k.cli.batch.Jobs(ns)
 	for _, j := range jobs {
-		job, err := jobInterface.Get(j.Name, metav1.GetOptions{})
+		job, err := jobInterface.Get(context.TODO(), j.Name, metav1.GetOptions{})
 		if job != nil && err == nil {
 			policy := metav1.DeletePropagationBackground
-			err = jobInterface.Delete(job.Name, &metav1.DeleteOptions{PropagationPolicy: &policy})
+			err = jobInterface.Delete(context.TODO(), job.Name, metav1.DeleteOptions{PropagationPolicy: &policy})
 			if err != nil {
 				return errors.Trace(err)
 			}
 		}
-		if _, err = jobInterface.Create(j); err != nil {
+		if _, err = jobInterface.Create(context.TODO(), j, metav1.CreateOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
@@ -616,15 +617,15 @@ func (k *kubeImpl) applyJobs(ns string, jobs map[string]*batchv1.Job) error {
 func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) error {
 	svcInterface := k.cli.core.Services(ns)
 	for _, svc := range svcs {
-		osvc, err := svcInterface.Get(svc.Name, metav1.GetOptions{})
+		osvc, err := svcInterface.Get(context.TODO(), svc.Name, metav1.GetOptions{})
 		if osvc != nil && err == nil {
 			svc.ResourceVersion = osvc.ResourceVersion
 			svc.Spec.ClusterIP = osvc.Spec.ClusterIP
-			if _, err := svcInterface.Update(svc); err != nil {
+			if _, err := svcInterface.Update(context.TODO(), svc, metav1.UpdateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			if _, err := svcInterface.Create(svc); err != nil {
+			if _, err := svcInterface.Create(context.TODO(), svc, metav1.CreateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
