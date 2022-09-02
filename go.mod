@@ -5,7 +5,7 @@ go 1.18
 replace github.com/kardianos/service => github.com/baetyl/service v0.0.0-20220411105103-343ef78b41d9
 
 require (
-	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220509102705-c0991f248481
+	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220901085423-ec40fdb575fc
 	github.com/golang/mock v1.4.4
 	github.com/imdario/mergo v0.3.6
 	github.com/jinzhu/copier v0.1.0
@@ -55,7 +55,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

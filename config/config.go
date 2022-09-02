@@ -24,6 +24,9 @@ type Config struct {
 		Link   string `yaml:"link" json:"link" default:"httplink"`
 		Pubsub string `yaml:"pubsub" json:"pubsub" default:"defaultpubsub"`
 	} `yaml:"plugin" json:"plugin"`
+	MqttLink struct {
+		Cert utils.Certificate `yaml:",inline" json:",inline"`
+	} `yaml:"mqttlink,omitempty" json:"mqttlink,omitempty"`
 }
 
 type EngineConfig struct {

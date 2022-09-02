@@ -23,6 +23,10 @@ import (
 	"github.com/baetyl/baetyl/v2/utils"
 )
 
+const (
+	LinkMqtt = "mqttlink"
+)
+
 type batch struct {
 	name         string
 	namespace    string
@@ -175,22 +179,29 @@ func (active *Activate) activate() {
 		return
 	}
 
-	if err := active.genCert(res.Certificate); err != nil {
+	if err = genCert(&active.cfg.Node, res.Certificate); err != nil {
 		active.log.Error("failed to create cert file", log.Error(err))
 		return
+	}
+
+	if active.cfg.Plugin.Link == LinkMqtt {
+		if err = genCert(&active.cfg.MqttLink.Cert, res.MqttCert); err != nil {
+			active.log.Error("failed to create mqtt cert file", log.Error(err))
+			return
+		}
 	}
 
 	active.sig <- true
 }
 
-func (active *Activate) genCert(c v2utils.Certificate) error {
-	if err := utils.CreateWriteFile(active.cfg.Node.CA, []byte(c.CA)); err != nil {
+func genCert(path *v2utils.Certificate, c v2utils.Certificate) error {
+	if err := utils.CreateWriteFile(path.CA, []byte(c.CA)); err != nil {
 		return err
 	}
-	if err := utils.CreateWriteFile(active.cfg.Node.Cert, []byte(c.Cert)); err != nil {
+	if err := utils.CreateWriteFile(path.Cert, []byte(c.Cert)); err != nil {
 		return err
 	}
-	if err := utils.CreateWriteFile(active.cfg.Node.Key, []byte(c.Key)); err != nil {
+	if err := utils.CreateWriteFile(path.Key, []byte(c.Key)); err != nil {
 		return err
 	}
 	return nil
