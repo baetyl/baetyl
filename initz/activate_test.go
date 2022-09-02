@@ -15,9 +15,10 @@ import (
 	"github.com/baetyl/baetyl-go/v2/mock"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
-	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/baetyl/baetyl/v2/ami/kube"
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
@@ -35,6 +36,13 @@ var (
 			Cert:               "cert info",
 			Name:               "name info",
 			InsecureSkipVerify: false,
+		},
+		MqttCert: utils.Certificate{
+			CA:                 "ca info",
+			Key:                "key info",
+			Cert:               "cert info",
+			Name:               "name info",
+			InsecureSkipVerify: true,
 		},
 	}
 
@@ -130,7 +138,7 @@ func TestActivate(t *testing.T) {
 	assert.NoError(t, err)
 
 	r := []*mock.Response{}
-	for i := 0; i < len(goodCases); i++ {
+	for i := 0; i < len(goodCases)+1; i++ {
 		r = append(r, mock.NewResponse(200, data))
 	}
 
@@ -154,7 +162,7 @@ func TestActivate(t *testing.T) {
 		},
 	}
 
-	certPath := "var/lib/baetyl/node/certs"
+	certPath := t.TempDir()
 	var cert utils.Certificate
 	err = utils.UnmarshalYAML(nil, &cert)
 	assert.NoError(t, err)
@@ -163,7 +171,6 @@ func TestActivate(t *testing.T) {
 	cert.CA = path.Join(certPath, "ca.pem")
 	err = os.MkdirAll(certPath, 0755)
 	assert.Nil(t, err)
-	defer os.RemoveAll(path.Dir(certPath))
 
 	c := &config.Config{}
 	c.Init = *ic
@@ -182,7 +189,7 @@ func TestActivate(t *testing.T) {
 		OSImage:          "Docker Desktop",
 	}
 
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := ioutil.TempFile(t.TempDir(), t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -195,7 +202,7 @@ func TestActivate(t *testing.T) {
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
 	t.Setenv(kube.KubeNodeName, "knn")
-	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).Times(len(goodCases))
+	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).Times(len(goodCases) + 1)
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
@@ -212,6 +219,40 @@ func TestActivate(t *testing.T) {
 			responseEqual(t, *tt.want, c.Node)
 		})
 	}
+
+	// mqtt link
+	tt := struct {
+		name         string
+		fingerprints []config.Fingerprint
+		want         *v1.ActiveResponse
+	}{
+		name: "6: Pass HostName with mqtt link",
+		fingerprints: []config.Fingerprint{
+			{
+				Proof: config.ProofHostName,
+			},
+		},
+		want: resp,
+	}
+	t.Run(tt.name, func(t *testing.T) {
+		mqttCertPath := t.TempDir()
+		var mqttCert utils.Certificate
+		err = utils.UnmarshalYAML(nil, &mqttCert)
+		assert.NoError(t, err)
+		mqttCert.Key = path.Join(mqttCertPath, "client.key")
+		mqttCert.Cert = path.Join(mqttCertPath, "client.pem")
+		mqttCert.CA = path.Join(mqttCertPath, "ca.pem")
+		err = os.MkdirAll(mqttCertPath, 0755)
+		assert.Nil(t, err)
+
+		c.Init.Active.Collector.Fingerprints = tt.fingerprints
+		active := genActivate(t, c, ami)
+		active.cfg.Plugin.Link = LinkMqtt
+		active.cfg.MqttLink.Cert = mqttCert
+		active.Start()
+		active.WaitAndClose()
+		responseEqual(t, *tt.want, c.Node)
+	})
 }
 
 func TestActivate_Err_Response(t *testing.T) {
