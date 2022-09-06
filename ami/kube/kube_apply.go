@@ -11,6 +11,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/jinzhu/copier"
 	appv1 "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -201,6 +202,13 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	if err := k.applyJobs(ns, jobs); err != nil {
 		return errors.Trace(err)
 	}
+	if hpa := k.prepareHPA(ns, app); hpa != nil {
+		err := k.applyHPA(ns, hpa)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		k.log.Info("ami apply hpa", log.Any("hpa", hpa))
+	}
 	k.log.Info("ami apply apps", log.Any("apps", app))
 	return nil
 }
@@ -277,6 +285,67 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 		},
 	}
 	return service
+}
+
+func (k *kubeImpl) prepareHPA(ns string, app specv1.Application) *v2.HorizontalPodAutoscaler {
+	if app.AutoScaleCfg == nil || len(app.AutoScaleCfg.Metrics) == 0 {
+		return nil
+	}
+
+	var metrics []v2.MetricSpec
+	for _, m := range app.AutoScaleCfg.Metrics {
+		metric := v2.MetricSpec{
+			Type: v2.MetricSourceType(m.Type),
+			Resource: &v2.ResourceMetricSource{
+				Name: corev1.ResourceName(m.Resource.Name),
+				Target: v2.MetricTarget{
+					Type: v2.MetricTargetType(m.Resource.TargetType),
+				},
+			},
+		}
+		if m.Resource.AverageUtilization != 0 {
+			averageUtilization := int32(m.Resource.AverageUtilization)
+			metric.Resource.Target.AverageUtilization = &averageUtilization
+		}
+		if m.Resource.AverageValue != "" {
+			averageValue, err := resource.ParseQuantity(m.Resource.AverageValue)
+			if err != nil {
+				k.log.Error("failed to parse quantity", log.Error(err))
+				return nil
+			}
+			metric.Resource.Target.AverageValue = &averageValue
+		}
+		if m.Resource.Value != "" {
+			value, err := resource.ParseQuantity(m.Resource.Value)
+			if err != nil {
+				k.log.Error("failed to parse quantity", log.Error(err))
+				return nil
+			}
+			metric.Resource.Target.Value = &value
+		}
+
+		metrics = append(metrics, metric)
+	}
+
+	minReplica := int32(app.AutoScaleCfg.MinReplicas)
+	hpa := &v2.HorizontalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      app.Name,
+			Namespace: ns,
+			Labels:    map[string]string{AppName: app.Name},
+		},
+		Spec: v2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: v2.CrossVersionObjectReference{
+				Kind:       "Deployment",
+				Name:       app.Name,
+				APIVersion: "apps/v1",
+			},
+			MinReplicas: &minReplica,
+			MaxReplicas: int32(app.AutoScaleCfg.MaxReplicas),
+			Metrics:     metrics,
+		},
+	}
+	return hpa
 }
 
 func prepareJob(ns string, app *specv1.Application, imagePullSecrets []corev1.LocalObjectReference) (*batchv1.Job, error) {
@@ -630,6 +699,23 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 			}
 		}
 	}
+	return nil
+}
+
+func (k *kubeImpl) applyHPA(ns string, hpa *v2.HorizontalPodAutoscaler) error {
+	as := k.cli.autoscale.HorizontalPodAutoscalers(ns)
+
+	h, err := as.Get(context.TODO(), hpa.Name, metav1.GetOptions{})
+	if h != nil && err == nil {
+		if _, err := as.Update(context.TODO(), hpa, metav1.UpdateOptions{}); err != nil {
+			return errors.Trace(err)
+		}
+	} else {
+		if _, err := as.Create(context.TODO(), hpa, metav1.CreateOptions{}); err != nil {
+			return errors.Trace(err)
+		}
+	}
+
 	return nil
 }
 
