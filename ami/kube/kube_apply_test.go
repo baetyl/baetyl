@@ -12,6 +12,7 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
+	v2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -280,6 +281,46 @@ func TestApplyJobs(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestApplyHPA(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	minReplicas := int32(1)
+	utilization := int32(50)
+	hpa := &v2.HorizontalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "HorizontalPodAutoscaler",
+			APIVersion: "autoscaling/v2",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "hpa-test",
+			Namespace: ns,
+		},
+		Spec: v2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: v2.CrossVersionObjectReference{
+				APIVersion: "apps/v1",
+				Kind:       "Deployment",
+				Name:       "deploy-test",
+			},
+			MinReplicas: &minReplicas,
+			MaxReplicas: 10,
+			Metrics: []v2.MetricSpec{
+				{
+					Type: "Resource",
+					Resource: &v2.ResourceMetricSource{
+						Name: "cpu",
+						Target: v2.MetricTarget{
+							Type:               "Utilization",
+							AverageUtilization: &utilization,
+						},
+					},
+				},
+			},
+		},
+	}
+	err := am.applyHPA(ns, hpa)
+	assert.NoError(t, err)
+}
+
 func genApplyRuntime() []runtime.Object {
 	ns := "baetyl-edge"
 	rs := []runtime.Object{
@@ -311,9 +352,10 @@ func genApplyRuntime() []runtime.Object {
 func initApplyKubeAMI(t *testing.T) *kubeImpl {
 	fc := fake.NewSimpleClientset(genApplyRuntime()...)
 	cli := client{
-		core:  fc.CoreV1(),
-		app:   fc.AppsV1(),
-		batch: fc.BatchV1(),
+		core:      fc.CoreV1(),
+		app:       fc.AppsV1(),
+		batch:     fc.BatchV1(),
+		autoscale: fc.AutoscalingV2(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
@@ -702,6 +744,33 @@ func TestPrepareDeploy(t *testing.T) {
 		},
 	}
 	assert.Equal(t, expected, deploy)
+}
+
+func TestPrepareHPA(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	ns := "baetyl-edge"
+	app := specv1.Application{
+		Name:      "svc",
+		Namespace: ns,
+		Version:   "a1",
+		Replica:   1,
+	}
+	app.AutoScaleCfg = &specv1.AutoScaleCfg{
+		MinReplicas: 1,
+		MaxReplicas: 10,
+		Metrics: []specv1.MetricSpec{
+			{
+				Type: "Resource",
+				Resource: &specv1.ResourceMetric{
+					Name:               "cpu",
+					TargetType:         "Utilization",
+					AverageUtilization: 50,
+				},
+			},
+		},
+	}
+	hpa := am.prepareHPA(ns, app)
+	assert.Equal(t, hpa.Name, "svc")
 }
 
 func Test_compatibleDeprecatedFiled(t *testing.T) {
