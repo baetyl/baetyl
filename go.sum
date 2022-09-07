@@ -49,8 +49,8 @@ github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db/go.mod h1:rB3B4r
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220906023407-4c0b24e76440 h1:6Hnfn1/e97sCqUXFdAamORuJFf6wzexnIv6zAZOlXwQ=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220906023407-4c0b24e76440/go.mod h1:2n+RGOomFOD0G+ZDhXqknyptAv2FhZAI5IzkGHswoKI=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220907055059-d863a77f1a49 h1:7GHTEl1MKjnWDljp/fxvUHS2H8lib5/C7nv0T0DOfDM=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20220907055059-d863a77f1a49/go.mod h1:2n+RGOomFOD0G+ZDhXqknyptAv2FhZAI5IzkGHswoKI=
 github.com/baetyl/service v0.0.0-20220411105103-343ef78b41d9 h1:HcpEYVm8EwZk2tJKheMIaIzX/8o1XIWiEdYNjMSSbK8=
 github.com/baetyl/service v0.0.0-20220411105103-343ef78b41d9/go.mod h1:CIMRFEJVL+0DS1a3Nx06NaMn4Dz63Ng6O7dl0qH0zVM=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
