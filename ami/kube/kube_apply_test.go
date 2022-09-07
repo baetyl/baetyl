@@ -124,6 +124,20 @@ func TestDeleteApplication(t *testing.T) {
 				ContainerPort: 80,
 			}},
 		}},
+		AutoScaleCfg: &specv1.AutoScaleCfg{
+			MinReplicas: 1,
+			MaxReplicas: 10,
+			Metrics: []specv1.MetricSpec{
+				{
+					Type: "Resource",
+					Resource: &specv1.ResourceMetric{
+						Name:               "cpu",
+						TargetType:         "Utilization",
+						AverageUtilization: 50,
+					},
+				},
+			},
+		},
 	}
 	err := ami.applyApplication(ns, app, nil)
 	assert.NoError(t, err)
@@ -133,6 +147,9 @@ func TestDeleteApplication(t *testing.T) {
 	s, err := ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.NotNil(t, s)
 	assert.NoError(t, err)
+	h, err := ami.cli.autoscale.HorizontalPodAutoscalers(ns).Get(context.TODO(), name, metav1.GetOptions{})
+	assert.NotNil(t, h)
+	assert.NoError(t, err)
 
 	err = ami.deleteApplication(ns, app.Name)
 	assert.NoError(t, err)
@@ -140,6 +157,8 @@ func TestDeleteApplication(t *testing.T) {
 	assert.Nil(t, d)
 	s, _ = ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.Nil(t, s)
+	h, _ = ami.cli.autoscale.HorizontalPodAutoscalers(ns).Get(context.TODO(), name, metav1.GetOptions{})
+	assert.Nil(t, h)
 }
 
 func TestApplySecret(t *testing.T) {
