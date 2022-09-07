@@ -600,6 +600,10 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
+	hpas, err := k.cli.autoscale.HorizontalPodAutoscalers(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return errors.Trace(err)
+	}
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
 		if err := deployInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
@@ -622,6 +626,12 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	policy := metav1.DeletePropagationBackground
 	for _, j := range jobs.Items {
 		if err = jobInterface.Delete(context.TODO(), j.Name, metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
+			return errors.Trace(err)
+		}
+	}
+	as := k.cli.autoscale.HorizontalPodAutoscalers(ns)
+	for _, hpa := range hpas.Items {
+		if err := as.Delete(context.TODO(), hpa.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
