@@ -10,6 +10,8 @@ import (
 
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/store"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
 	v2 "k8s.io/api/autoscaling/v2"
@@ -20,9 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
-
-	"github.com/baetyl/baetyl/v2/ami"
-	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestCreateNamespace(t *testing.T) {
@@ -147,9 +146,6 @@ func TestDeleteApplication(t *testing.T) {
 	s, err := ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.NotNil(t, s)
 	assert.NoError(t, err)
-	h, err := ami.cli.autoscale.HorizontalPodAutoscalers(ns).Get(context.TODO(), name, metav1.GetOptions{})
-	assert.NotNil(t, h)
-	assert.NoError(t, err)
 
 	err = ami.deleteApplication(ns, app.Name)
 	assert.NoError(t, err)
@@ -157,8 +153,6 @@ func TestDeleteApplication(t *testing.T) {
 	assert.Nil(t, d)
 	s, _ = ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.Nil(t, s)
-	h, _ = ami.cli.autoscale.HorizontalPodAutoscalers(ns).Get(context.TODO(), name, metav1.GetOptions{})
-	assert.Nil(t, h)
 }
 
 func TestApplySecret(t *testing.T) {
@@ -375,6 +369,7 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 		app:       fc.AppsV1(),
 		batch:     fc.BatchV1(),
 		autoscale: fc.AutoscalingV2(),
+		discovery: fc.Discovery(),
 	}
 	f, err := ioutil.TempFile("", t.Name())
 	assert.NoError(t, err)
@@ -789,7 +784,7 @@ func TestPrepareHPA(t *testing.T) {
 		},
 	}
 	hpa := am.prepareHPA(ns, app)
-	assert.Equal(t, hpa.Name, "svc")
+	assert.Nil(t, hpa)
 }
 
 func Test_compatibleDeprecatedFiled(t *testing.T) {
@@ -879,4 +874,9 @@ func Test_cutSysServiceRandSuffix(t *testing.T) {
 	assert.Equal(t, "", cutSysServiceRandSuffix(""))
 	assert.Equal(t, "baetyl-init_123_21312-32323-baetyl", cutSysServiceRandSuffix("baetyl-init_123_21312-32323-baetyl-21312"))
 	assert.Equal(t, "rule-baetyl", cutSysServiceRandSuffix("rule-baetyl"))
+}
+
+func TestHpaAvailable(t *testing.T) {
+	am := initApplyKubeAMI(t)
+	assert.Equal(t, am.hpaAvailable(), false)
 }

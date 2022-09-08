@@ -22,7 +22,7 @@ type client struct {
 	app        appv1.AppsV1Interface
 	batch      batchv1.BatchV1Interface
 	metrics    metricsv1beta1.MetricsV1beta1Interface
-	discovery  *discovery.DiscoveryClient
+	discovery  discovery.DiscoveryInterface
 	autoscale  v2.AutoscalingV2Interface
 }
 
@@ -51,7 +51,7 @@ func newClient(cfg config.KubeConfig) (*client, error) {
 		app:        kubeClient.AppsV1(),
 		batch:      kubeClient.BatchV1(),
 		metrics:    metricsCli.MetricsV1beta1(),
-		discovery:  kubeClient.DiscoveryClient,
+		discovery:  kubeClient.Discovery(),
 		autoscale:  kubeClient.AutoscalingV2(),
 	}, nil
 }
