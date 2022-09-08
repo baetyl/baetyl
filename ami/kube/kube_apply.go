@@ -288,7 +288,7 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 }
 
 func (k *kubeImpl) prepareHPA(ns string, app specv1.Application) *v2.HorizontalPodAutoscaler {
-	if app.AutoScaleCfg == nil || len(app.AutoScaleCfg.Metrics) == 0 {
+	if !k.hpaAvailable() || app.AutoScaleCfg == nil || len(app.AutoScaleCfg.Metrics) == 0 {
 		return nil
 	}
 
@@ -734,9 +734,6 @@ func (k *kubeImpl) applyHPA(ns string, hpa *v2.HorizontalPodAutoscaler) error {
 }
 
 func (k *kubeImpl) hpaAvailable() bool {
-	if k.cli.discovery == nil {
-		return false
-	}
 	info, err := k.cli.discovery.ServerVersion()
 	if err != nil {
 		return false

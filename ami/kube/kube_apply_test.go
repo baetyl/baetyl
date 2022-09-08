@@ -146,9 +146,6 @@ func TestDeleteApplication(t *testing.T) {
 	s, err := ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.NotNil(t, s)
 	assert.NoError(t, err)
-	h, err := ami.cli.autoscale.HorizontalPodAutoscalers(ns).Get(context.TODO(), name, metav1.GetOptions{})
-	assert.NotNil(t, h)
-	assert.NoError(t, err)
 
 	err = ami.deleteApplication(ns, app.Name)
 	assert.NoError(t, err)
@@ -156,8 +153,6 @@ func TestDeleteApplication(t *testing.T) {
 	assert.Nil(t, d)
 	s, _ = ami.cli.core.Services(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	assert.Nil(t, s)
-	h, _ = ami.cli.autoscale.HorizontalPodAutoscalers(ns).Get(context.TODO(), name, metav1.GetOptions{})
-	assert.NotNil(t, h)
 }
 
 func TestApplySecret(t *testing.T) {
@@ -789,7 +784,7 @@ func TestPrepareHPA(t *testing.T) {
 		},
 	}
 	hpa := am.prepareHPA(ns, app)
-	assert.Equal(t, hpa.Name, "svc")
+	assert.Nil(t, hpa)
 }
 
 func Test_compatibleDeprecatedFiled(t *testing.T) {
