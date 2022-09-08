@@ -600,10 +600,19 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 	if err != nil {
 		return errors.Trace(err)
 	}
-	hpas, err := k.cli.autoscale.HorizontalPodAutoscalers(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
-	if err != nil {
-		return errors.Trace(err)
+	if k.hpaAvailable() {
+		hpas, err := k.cli.autoscale.HorizontalPodAutoscalers(ns).List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
+		if err != nil {
+			return errors.Trace(err)
+		}
+		as := k.cli.autoscale.HorizontalPodAutoscalers(ns)
+		for _, hpa := range hpas.Items {
+			if err := as.Delete(context.TODO(), hpa.Name, metav1.DeleteOptions{}); err != nil {
+				return errors.Trace(err)
+			}
+		}
 	}
+
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
 		if err := deployInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
@@ -629,12 +638,7 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 			return errors.Trace(err)
 		}
 	}
-	as := k.cli.autoscale.HorizontalPodAutoscalers(ns)
-	for _, hpa := range hpas.Items {
-		if err := as.Delete(context.TODO(), hpa.Name, metav1.DeleteOptions{}); err != nil {
-			return errors.Trace(err)
-		}
-	}
+
 	k.log.Info("ami delete app", log.Any("name", name))
 	return nil
 }
@@ -727,6 +731,17 @@ func (k *kubeImpl) applyHPA(ns string, hpa *v2.HorizontalPodAutoscaler) error {
 	}
 
 	return nil
+}
+
+func (k *kubeImpl) hpaAvailable() bool {
+	if k.cli.discovery == nil {
+		return false
+	}
+	info, err := k.cli.discovery.ServerVersion()
+	if err != nil {
+		return false
+	}
+	return info.Major == "1" && strings.Compare(info.Minor, "23") >= 0
 }
 
 func SetPodSpec(spec *corev1.PodSpec, _ *specv1.Application) (*corev1.PodSpec, error) {
