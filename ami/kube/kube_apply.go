@@ -158,7 +158,7 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 	app.Labels[AppName] = app.Name
 	app.Labels[AppVersion] = app.Version
 
-	k.compatibleDeprecatedFiled(&app)
+	k.compatibleDeprecatedField(&app)
 
 	switch app.Workload {
 	case specv1.WorkloadDaemonSet:
@@ -772,7 +772,7 @@ func cutSysServiceRandSuffix(s string) string {
 	return s
 }
 
-func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
+func (k *kubeImpl) compatibleDeprecatedField(app *specv1.Application) {
 	// Workload
 	if app.Workload == "" {
 		// compatible with the original one service corresponding to one workload
@@ -796,8 +796,6 @@ func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
 		if len(app.Services) > 0 && app.Services[0].Replica != 0 {
 			k.log.Debug("app.Replica is 0, use the services[0].Replica", log.Any("replica", app.Services[0].Replica))
 			app.Replica = app.Services[0].Replica
-		} else {
-			app.Replica = 1
 		}
 	}
 
@@ -813,10 +811,7 @@ func (k *kubeImpl) compatibleDeprecatedFiled(app *specv1.Application) {
 				RestartPolicy: app.Services[0].JobConfig.RestartPolicy,
 			}
 		} else {
-			app.JobConfig = &specv1.AppJobConfig{RestartPolicy: "Never", Completions: 1}
+			app.JobConfig = &specv1.AppJobConfig{RestartPolicy: "Never"}
 		}
-	}
-	if app.JobConfig.Completions == 0 {
-		app.JobConfig.Completions = 1
 	}
 }

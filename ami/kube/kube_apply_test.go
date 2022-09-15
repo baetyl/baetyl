@@ -10,8 +10,6 @@ import (
 
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	"github.com/baetyl/baetyl/v2/ami"
-	"github.com/baetyl/baetyl/v2/store"
 	"github.com/stretchr/testify/assert"
 	appv1 "k8s.io/api/apps/v1"
 	v2 "k8s.io/api/autoscaling/v2"
@@ -22,6 +20,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
+
+	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/store"
 )
 
 func TestCreateNamespace(t *testing.T) {
@@ -833,7 +834,7 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 		}},
 	}
 
-	k.compatibleDeprecatedFiled(app0)
+	k.compatibleDeprecatedField(app0)
 	assert.EqualValues(t, expectApp0, app0)
 
 	// case 1
@@ -845,9 +846,9 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 	expectApp1 := &specv1.Application{
 		Name:        "a1",
 		HostNetwork: false,
-		Replica:     1,
+		Replica:     0,
 		JobConfig: &specv1.AppJobConfig{
-			Completions:   1,
+			Completions:   0,
 			Parallelism:   0,
 			BackoffLimit:  0,
 			RestartPolicy: "Never",
@@ -856,7 +857,7 @@ func Test_compatibleDeprecatedFiled(t *testing.T) {
 		Services: []specv1.Service{},
 	}
 
-	k.compatibleDeprecatedFiled(app1)
+	k.compatibleDeprecatedField(app1)
 	assert.EqualValues(t, expectApp1, app1)
 }
 
