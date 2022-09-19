@@ -13,6 +13,7 @@ import (
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/chain"
+	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/sync"
 )
 
@@ -82,6 +83,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			}
 		case v1.MessageAgent:
 			err := h.agentControl(key, m)
+			if err != nil {
+				return errors.Trace(err)
+			}
+		case v1.MessageRPCMqtt:
+			err := h.rpcMqtt(key, m)
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -285,6 +291,7 @@ func (h *handlerDownside) rpc(key string, m *v1.Message) error {
 		h.publishFailedMsg(key, err.Error(), m)
 		return errors.Trace(err)
 	}
+	token := m.Metadata["token"]
 	res, err := h.ami.RPCApp(assembleUrl(request), request)
 	if err != nil {
 		h.publishFailedMsg(key, err.Error(), m)
@@ -295,11 +302,34 @@ func (h *handlerDownside) rpc(key string, m *v1.Message) error {
 		Kind: v1.MessageCMD,
 		Metadata: map[string]string{
 			"success": "true",
-			"token":   m.Metadata["token"],
+			"token":   token,
 		},
 		Content: v1.LazyValue{
 			Value: res,
 		},
+	}
+	err = h.pb.Publish(sync.TopicUpside, response)
+	if err != nil {
+		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(err))
+	}
+	return nil
+}
+
+func (h *handlerDownside) rpcMqtt(key string, m *v1.Message) error {
+	token := m.Metadata["token"]
+	err := h.pb.Publish(eventx.TopicEvent, m)
+	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
+		return errors.Trace(err)
+	}
+	h.log.Debug("rpc success", log.Any("key", key))
+	response := &v1.Message{
+		Kind: v1.MessageCMD,
+		Metadata: map[string]string{
+			"success": "true",
+			"token":   token,
+		},
+		Content: v1.LazyValue{},
 	}
 	err = h.pb.Publish(sync.TopicUpside, response)
 	if err != nil {

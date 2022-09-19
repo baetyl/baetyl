@@ -1,6 +1,9 @@
 package native
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -115,4 +118,43 @@ func TestNativeRemoteCommand(t *testing.T) {
 	option.NativeDebugOptions.Password = "root"
 	err = impl.RemoteCommand(option, ami.Pipe{})
 	assert.NotEqual(t, err, nil)
+}
+
+func TestRPCApp(t *testing.T) {
+	cfg := config.AmiConfig{}
+	cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End = 8000, 9000
+	impl, err := newNativeImpl(cfg)
+	assert.NoError(t, err)
+
+	// req rpc fail
+	req := &v1.RPCRequest{
+		App:    "app",
+		Method: "unknown",
+		System: true,
+		Params: "",
+		Header: map[string]string{},
+		Body:   "",
+	}
+	_, err = impl.RPCApp("", req)
+	assert.NotNil(t, err)
+
+	// req2 rpc get success
+	req2 := &v1.RPCRequest{
+		App:    "app",
+		Method: "get",
+		System: false,
+		Params: "",
+		Header: map[string]string{},
+		Body:   "",
+	}
+
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "GET", r.Method)
+		w.WriteHeader(http.StatusOK)
+	}))
+	port := strings.Split(s.URL, ":")
+	req2.Params = ":" + port[2]
+	_, err = impl.RPCApp(s.URL, req2)
+	assert.NoError(t, err)
+	s.Close()
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/eventx"
 	"github.com/baetyl/baetyl/v2/mock"
 	"github.com/baetyl/baetyl/v2/sync"
 )
@@ -531,5 +532,82 @@ func (h *msgRPCUpside) OnMessage(msg interface{}) error {
 }
 
 func (h *msgRPCUpside) OnTimeout() error {
+	return nil
+}
+
+func TestHandlerDownsideMqtt(t *testing.T) {
+	e, _, _ := genHandlerDownsideEngine(t)
+	h := &handlerDownside{engineImpl: e}
+
+	// upside msg
+	ch, err := e.pb.Subscribe(sync.TopicUpside)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	handler := &msgRPCUpside{t: t}
+	pro := pubsub.NewProcessor(ch, 0, handler)
+	pro.Start()
+	defer pro.Close()
+
+	// event msg
+	ch0, err := e.pb.Subscribe(eventx.TopicEvent)
+	assert.NoError(t, err)
+	assert.NotNil(t, ch)
+
+	handler0 := &msgRPCMqtt{t: t}
+	pro0 := pubsub.NewProcessor(ch0, 0, handler0)
+	pro0.Start()
+	defer pro0.Close()
+
+	// req0 rpc success
+	engMsgWG.Add(2)
+	req0 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd": specV1.MessageRPCMqtt,
+		},
+		Content: specV1.LazyValue{
+			Value: &specV1.RPCMqttMessage{
+				Topic:   "test/node",
+				QoS:     0,
+				Content: "result",
+			},
+		},
+	}
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	handler0.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		request := &specV1.RPCMqttMessage{}
+		handlerErr := m.Content.Unmarshal(request)
+		assert.NoError(t, handlerErr)
+		var buf []byte
+		if request.Content != nil {
+			buf = []byte(fmt.Sprintf("%v", request.Content))
+		}
+		assert.Equal(t, string(buf), "result")
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(req0)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
+}
+
+type msgRPCMqtt struct {
+	t     *testing.T
+	check func(msg interface{})
+}
+
+func (h *msgRPCMqtt) OnMessage(msg interface{}) error {
+	h.check(msg)
+	return nil
+}
+
+func (h *msgRPCMqtt) OnTimeout() error {
 	return nil
 }
