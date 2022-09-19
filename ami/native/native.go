@@ -1,6 +1,8 @@
 package native
 
 import (
+	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,6 +16,7 @@ import (
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
+	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/native"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -38,11 +41,14 @@ var (
 )
 
 const (
-	Rows     = 80
-	Cols     = 160
-	TtySpeed = 14400
-	Term     = "xterm"
-	Network  = "tcp"
+	Rows         = 80
+	Cols         = 160
+	TtySpeed     = 14400
+	Term         = "xterm"
+	Network      = "tcp"
+	LocalAddress = "0.0.0.0"
+	PrefixHTTP   = "http://"
+	PrefixHTTPS  = "https://"
 )
 
 func init() {
@@ -684,7 +690,34 @@ func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeco
 }
 
 func (impl *nativeImpl) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse, error) {
-	panic("implement me")
+	if strings.HasPrefix(url, PrefixHTTPS) {
+		url = PrefixHTTPS + LocalAddress + req.Params
+	} else {
+		url = PrefixHTTP + LocalAddress + req.Params
+	}
+	ops := http.NewClientOptions()
+	ops.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	cli := http.NewClient(ops)
+	impl.log.Debug("rpc http start", log.Any("url", url), log.Any("method", req.Method))
+
+	var buf []byte
+	if req.Body != nil {
+		buf = []byte(fmt.Sprintf("%v", req.Body))
+	}
+	res, err := cli.SendUrl(strings.ToUpper(req.Method), url, bytes.NewReader(buf), req.Header)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+
+	response := &v1.RPCResponse{
+		StatusCode: res.StatusCode,
+		Header:     res.Header,
+	}
+	response.Body, err = http.HandleResponse(res)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	return response, nil
 }
 
 func genServiceInstanceName(ns, appName, appVersion, svcName, instanceID string) string {
