@@ -39,20 +39,25 @@ func (h *handler) OnMessage(msg interface{}) error {
 		}
 		h.log.Debug("send node props to mqtt broker successfully", log.Any("props", propsDelta))
 	case v1.MessageCMD:
-		request := v1.RPCMqttMessage{}
-		err := message.Content.Unmarshal(request)
-		if err != nil {
-			return errors.Trace(err)
+		switch message.Metadata["cmd"] {
+		case v1.MessageRPCMqtt:
+			request := &v1.RPCMqttMessage{}
+			err := message.Content.Unmarshal(request)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			var buf []byte
+			if request.Content != nil {
+				buf = []byte(fmt.Sprintf("%v", request.Content))
+			}
+			if err = h.mqtt.Publish(mqtt.QOS(request.QoS),
+				request.Topic, buf, 0, false, false); err != nil {
+				return errors.Trace(err)
+			}
+			h.log.Debug("send rpc to mqtt broker successfully", log.Any("props", request))
+		default:
+			h.log.Debug("unknown command", log.Any("cmd", message.Metadata["cmd"]))
 		}
-		var buf []byte
-		if request.Content != nil {
-			buf = []byte(fmt.Sprintf("%v", request.Content))
-		}
-		if err = h.mqtt.Publish(mqtt.QOS(request.QoS),
-			request.Topic, buf, 0, false, false); err != nil {
-			return errors.Trace(err)
-		}
-		h.log.Debug("send rpc to mqtt broker successfully", log.Any("props", request))
 	default:
 		h.log.Debug("message kind not support yet", log.Any("type", message.Kind))
 	}
