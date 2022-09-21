@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	gutils "github.com/baetyl/baetyl/v2/utils"
+
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
@@ -61,12 +63,12 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 			return errors.Trace(err)
 		}
 		if hook, ok := Hooks[BaetylHookUploadObject]; ok {
-			if roam, ok := hook.(UploadObjectFunc); ok {
+			if roam, okk := hook.(UploadObjectFunc); okk {
 				log.L().Info("upload file to worker node", log.Any("file", filename))
-				err := roam(dir, filename, obj.MD5, obj.Unpack)
-				if err != nil {
+				er := roam(dir, filename, obj.MD5, obj.Unpack)
+				if er != nil {
 					log.L().Warn("failed to upload file to node", log.Any("file", filename))
-					return errors.Trace(err)
+					return errors.Trace(er)
 				}
 			}
 		}
@@ -88,7 +90,8 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	}
 	defer clean()
 	if obj.MD5 != "" {
-		md5, err := utils.CalculateFileMD5(name)
+		md5 := ""
+		md5, err = utils.CalculateFileMD5(name)
 		if err == nil && md5 == obj.MD5 {
 			log.L().Debug("config object file exists", log.Any("name", name))
 			return nil
@@ -104,11 +107,13 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
 	}
+
+	log.L().Debug("start get file", log.Any("name", name))
 	resp, err := cli.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
 		// retry
 		time.Sleep(time.Second)
-		resp, err := cli.GetURL(obj.URL, headers)
+		resp, err = cli.GetURL(obj.URL, headers)
 		if err != nil || resp == nil {
 			return errors.Errorf("failed to download config object (%s): %v", name, err)
 		}
@@ -118,27 +123,39 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	}
 	defer resp.Body.Close()
 	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0755)
-	if err := file.Truncate(0); err != nil {
+	if err = file.Truncate(0); err != nil {
 		return errors.Trace(err)
 	}
-	if _, err = io.Copy(file, resp.Body); err != nil {
+
+	counter := &WriteCounter{
+		Interval: 20 * time.Second,
+		Printer: func(size uint64) {
+			log.L().Info("downloading...", log.Any("name", name), log.Any("size", gutils.IBytes(size)))
+		},
+	}
+
+	log.L().Debug("begin to download file ", log.Any("name", name))
+	if _, err = io.Copy(file, io.TeeReader(resp.Body, counter)); err != nil {
 		log.L().Error("failed to download config object file", log.Error(err))
 		return errors.Errorf("failed to download config object file (%s): %v", name, err)
 	}
 
 	if obj.MD5 != "" {
-		md5, err := utils.CalculateFileMD5(name)
-		if err != nil {
+		md5, er := utils.CalculateFileMD5(name)
+		if er != nil {
 			return errors.Errorf("failed to calculate MD5 of config object (%s): %s", name, err.Error())
 		}
 		if md5 != obj.MD5 {
 			return errors.Errorf("MD5 of config object (%s) invalid", name)
 		}
+		log.L().Debug("calculate file MD5 ", log.Any("name", name),
+			log.Any("local-md5", md5), log.Any("remote-object-md5", md5))
 	}
 
 	switch unpack {
 	case "":
 	case "zip":
+		log.L().Debug("unzip", log.Any("name", name))
 		err = utils.Unzip(name, dir)
 		if err != nil {
 			return errors.Errorf("failed to unzip file (%s): %s", name, err.Error())
@@ -147,4 +164,28 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		return errors.Errorf("failed to unpack file (%s): '%s' not supported", name, unpack)
 	}
 	return nil
+}
+
+type WriteCounter struct {
+	Interval time.Duration
+	Printer  func(uint64)
+
+	flag    bool
+	current uint64
+	timer   *time.Ticker
+}
+
+func (wc *WriteCounter) Write(p []byte) (int, error) {
+	if !wc.flag {
+		wc.timer = time.NewTicker(wc.Interval)
+		wc.flag = true
+	}
+	n := len(p)
+	wc.current += uint64(n)
+	select {
+	case <-wc.timer.C:
+		wc.Printer(wc.current)
+	default:
+	}
+	return n, nil
 }
