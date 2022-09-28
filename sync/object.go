@@ -160,6 +160,18 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		if err != nil {
 			return errors.Errorf("failed to unzip file (%s): %s", name, err.Error())
 		}
+	case "tar":
+		log.L().Debug("untar", log.Any("name",name))
+		err = utils.Untar(name, dir)
+		if err != nil {
+			return errors.Errorf("failed to untar file (%s): %s", name, err.Error())
+		}
+	case "tgz":
+		log.L().Debug("untgz", log.Any("name",name))
+		err = utils.Untgz(name, dir)
+		if err != nil {
+			return errors.Errorf("failed to untgz file (%s): %s", name, err.Error())
+		}
 	default:
 		return errors.Errorf("failed to unpack file (%s): '%s' not supported", name, unpack)
 	}
