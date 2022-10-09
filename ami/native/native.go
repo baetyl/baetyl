@@ -228,6 +228,18 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 						if err != nil {
 							return errors.Trace(err)
 						}
+						if name == program.ProgramEntryYaml && prgExec == "" {
+							var entry program.Entry
+							err = utils.LoadYAML(filepath.Join(dir, name), &entry)
+							if err != nil {
+								return errors.Trace(err)
+							}
+							if filepath.IsAbs(entry.Entry) {
+								prgExec = filepath.Clean(entry.Entry)
+							} else {
+								prgExec = filepath.Join(dir, filepath.Join("/", entry.Entry))
+							}
+						}
 					}
 				} else if av.Secret != nil {
 					vs := secrets[av.Secret.Name]
