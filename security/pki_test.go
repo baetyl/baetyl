@@ -2,7 +2,6 @@ package security
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -45,7 +44,7 @@ MAoGCCqGSM49BAMCA0kAMEYCIQDaTuoQ9CMNNRFKT5vFI8cvz1oZ4xQtkqtvk/p3
 )
 
 func genBolthold(t *testing.T) *bh.Store {
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp("", "")
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 

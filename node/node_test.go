@@ -3,7 +3,6 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"reflect"
@@ -21,7 +20,7 @@ import (
 )
 
 func TestNodeShadow(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -128,7 +127,7 @@ func TestNodeShadow(t *testing.T) {
 }
 
 func TestShadowRenew(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -180,7 +179,7 @@ func TestShadowRenew(t *testing.T) {
 }
 
 func TestGetStats(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -290,7 +289,7 @@ func TestGetStats(t *testing.T) {
 }
 
 func TestGetNodeProperties(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -356,7 +355,7 @@ func TestGetNodeProperties(t *testing.T) {
 }
 
 func TestUpdateNodeProperties(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())

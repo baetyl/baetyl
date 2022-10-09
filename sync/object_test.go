@@ -2,8 +2,8 @@ package sync
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	gosync "sync"
 	"testing"
@@ -47,7 +47,7 @@ func TestObject_FilteringConfig(t *testing.T) {
 }
 
 func TestObject_DownloadObject(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -61,12 +61,12 @@ func TestObject_DownloadObject(t *testing.T) {
 	assert.NotNil(t, nod)
 
 	content := []byte("test")
-	dir, err := ioutil.TempDir("", t.Name())
+	dir, err := os.MkdirTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, dir)
 	fmt.Println("-->tempdir", dir)
 	file1 := filepath.Join(dir, "file1")
-	ioutil.WriteFile(file1, content, 0644)
+	os.WriteFile(file1, content, 0644)
 
 	var responses []*mock.Response
 	for i := 0; i < 34; i++ {
@@ -131,13 +131,13 @@ func TestObject_DownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
-	res, err := ioutil.ReadFile(file5)
+	res, err := os.ReadFile(file5)
 	assert.NoError(t, err)
 	assert.Equal(t, res, content)
 
 	// download file which already exist (multiple routine)
 	file6 := filepath.Join(dir, "file6")
-	ioutil.WriteFile(file6, content, 0644)
+	os.WriteFile(file6, content, 0644)
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(wg *gosync.WaitGroup) {
@@ -148,13 +148,13 @@ func TestObject_DownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
-	res, err = ioutil.ReadFile(file6)
+	res, err = os.ReadFile(file6)
 	assert.NoError(t, err)
 	assert.Equal(t, res, content)
 
 	// download file with wrong content exist (multiple routine)
 	file7 := filepath.Join(dir, "file7")
-	ioutil.WriteFile(file7, []byte("wrong"), 0644)
+	os.WriteFile(file7, []byte("wrong"), 0644)
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(wg *gosync.WaitGroup) {
@@ -165,7 +165,7 @@ func TestObject_DownloadObject(t *testing.T) {
 		}(&wg)
 	}
 	wg.Wait()
-	res, err = ioutil.ReadFile(file7)
+	res, err = os.ReadFile(file7)
 	assert.NoError(t, err)
 	assert.Equal(t, res, content)
 }

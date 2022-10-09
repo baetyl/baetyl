@@ -3,7 +3,6 @@ package initz
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	gohttp "net/http"
 	"os"
 	"path"
@@ -189,7 +188,7 @@ func TestActivate(t *testing.T) {
 		OSImage:          "Docker Desktop",
 	}
 
-	f, err := ioutil.TempFile(t.TempDir(), t.Name())
+	f, err := os.CreateTemp(t.TempDir(), t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -206,7 +205,7 @@ func TestActivate(t *testing.T) {
 
 	err = os.MkdirAll(defaultSNPath, 0755)
 	assert.Nil(t, err)
-	err = ioutil.WriteFile(path.Join(defaultSNPath, "fv.txt"), []byte("e8fcf2c874ee46b99d2057500f6a6504"), 0755)
+	err = os.WriteFile(path.Join(defaultSNPath, "fv.txt"), []byte("e8fcf2c874ee46b99d2057500f6a6504"), 0755)
 	assert.Nil(t, err)
 	defer os.RemoveAll(path.Dir(defaultSNPath))
 
@@ -286,7 +285,7 @@ func TestActivate_Err_Response(t *testing.T) {
 		Hostname: "docker-desktop",
 	}
 
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -308,13 +307,13 @@ func TestActivate_Err_Response(t *testing.T) {
 }
 
 func responseEqual(t *testing.T, resp v1.ActiveResponse, sc utils.Certificate) {
-	cert, err := ioutil.ReadFile(sc.Cert)
+	cert, err := os.ReadFile(sc.Cert)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Cert, string(cert))
-	ca, err := ioutil.ReadFile(sc.CA)
+	ca, err := os.ReadFile(sc.CA)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.CA, string(ca))
-	key, err := ioutil.ReadFile(sc.Key)
+	key, err := os.ReadFile(sc.Key)
 	assert.Nil(t, err)
 	assert.Equal(t, resp.Certificate.Key, string(key))
 }

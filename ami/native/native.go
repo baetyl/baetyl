@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -224,7 +223,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				if av.Config != nil {
 					vc := configs[av.Config.Name]
 					for name, data := range vc.Data {
-						err = ioutil.WriteFile(filepath.Join(dir, name), []byte(data), 0755)
+						err = os.WriteFile(filepath.Join(dir, name), []byte(data), 0755)
 						if err != nil {
 							return errors.Trace(err)
 						}
@@ -244,7 +243,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				} else if av.Secret != nil {
 					vs := secrets[av.Secret.Name]
 					for name, data := range vs.Data {
-						err = ioutil.WriteFile(filepath.Join(dir, name), data, 0755)
+						err = os.WriteFile(filepath.Join(dir, name), data, 0755)
 						if err != nil {
 							return errors.Trace(err)
 						}
@@ -296,7 +295,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			if err != nil {
 				return errors.Trace(err)
 			}
-			err = ioutil.WriteFile(filepath.Join(insDir, program.ProgramServiceYaml), prgYml, 0755)
+			err = os.WriteFile(filepath.Join(insDir, program.ProgramServiceYaml), prgYml, 0755)
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -352,7 +351,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 	// scan app version
 	curAppDir := filepath.Join(impl.runHostPath, ns, appName)
-	appVerFiles, err := ioutil.ReadDir(curAppDir)
+	appVerFiles, err := os.ReadDir(curAppDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -366,7 +365,7 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 		// scan service
 		curAppVer := appVerFile.Name()
 		curAppVerDir := filepath.Join(curAppDir, curAppVer)
-		svcFiles, err := ioutil.ReadDir(curAppVerDir)
+		svcFiles, err := os.ReadDir(curAppVerDir)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -377,7 +376,7 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 			// scan service instance
 			curSvcName := svcFile.Name()
 			curSvcDir := filepath.Join(curAppVerDir, curSvcName)
-			svcInsFiles, err := ioutil.ReadDir(curSvcDir)
+			svcInsFiles, err := os.ReadDir(curSvcDir)
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -436,7 +435,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	}
 
 	// scan app
-	appFiles, err := ioutil.ReadDir(curNsPath)
+	appFiles, err := os.ReadDir(curNsPath)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -450,7 +449,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 			continue
 		}
 		// scan app version
-		appVerFiles, err := ioutil.ReadDir(curAppPath)
+		appVerFiles, err := os.ReadDir(curAppPath)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
@@ -470,7 +469,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 				continue
 			}
 			// scan service
-			svcFiles, err := ioutil.ReadDir(curAppVerPath)
+			svcFiles, err := os.ReadDir(curAppVerPath)
 			if err != nil {
 				return nil, errors.Trace(err)
 			}
@@ -485,7 +484,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					continue
 				}
 				// scan service instance
-				svcInsFiles, err := ioutil.ReadDir(curSvcPath)
+				svcInsFiles, err := os.ReadDir(curSvcPath)
 				if err != nil {
 					return nil, errors.Trace(err)
 				}

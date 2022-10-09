@@ -2,7 +2,6 @@ package initz
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -64,16 +63,16 @@ auEzbTMl3QfCCeqIcloGgq72YIDedNc1MQ==
 func TestNewInitialize(t *testing.T) {
 	cfg := config.Config{}
 	// with cert
-	tmpDir, err := ioutil.TempDir("", "init")
+	tmpDir, err := os.MkdirTemp("", "init")
 	assert.Nil(t, err)
 	defer os.RemoveAll(tmpDir)
 
 	certPath := path.Join(tmpDir, "cert.pem")
-	err = ioutil.WriteFile(certPath, []byte("cert"), 0755)
+	err = os.WriteFile(certPath, []byte("cert"), 0755)
 	assert.Nil(t, err)
 	cfg.Node.Cert = certPath
 
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -100,15 +99,15 @@ func TestNewInitialize(t *testing.T) {
 
 	// bad case err engine
 	crt := path.Join(tmpDir, "crt.pem")
-	err = ioutil.WriteFile(crt, []byte(certCrt), 0755)
+	err = os.WriteFile(crt, []byte(certCrt), 0755)
 	assert.Nil(t, err)
 	cfg.Node.Cert = crt
 	ca := path.Join(tmpDir, "ca.pem")
-	err = ioutil.WriteFile(ca, []byte(certCa), 0755)
+	err = os.WriteFile(ca, []byte(certCa), 0755)
 	assert.Nil(t, err)
 	cfg.Node.CA = ca
 	key := path.Join(tmpDir, "key.pem")
-	err = ioutil.WriteFile(key, []byte(certKey), 0755)
+	err = os.WriteFile(key, []byte(certKey), 0755)
 	assert.Nil(t, err)
 	cfg.Node.Key = key
 

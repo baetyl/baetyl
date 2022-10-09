@@ -3,7 +3,7 @@ package kube
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -129,7 +129,7 @@ func initCollectKubeAMI(t *testing.T) *kubeImpl {
 	assert.NoError(t, err)
 	assert.NotNil(t, se)
 
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())

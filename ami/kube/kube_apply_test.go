@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -372,7 +372,7 @@ func initApplyKubeAMI(t *testing.T) *kubeImpl {
 		autoscale: fc.AutoscalingV2(),
 		discovery: fc.Discovery(),
 	}
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())

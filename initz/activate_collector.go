@@ -2,7 +2,6 @@ package initz
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -52,7 +51,7 @@ func (active *Activate) collect() (string, error) {
 				return active.attrs[f.Value], nil
 			}
 		case config.ProofSN:
-			snByte, err := ioutil.ReadFile(path.Join(defaultSNPath, f.Value))
+			snByte, err := os.ReadFile(path.Join(defaultSNPath, f.Value))
 			if err != nil {
 				return "", errors.Trace(err)
 			}

@@ -1,7 +1,6 @@
 package initz
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -91,16 +90,16 @@ var (
 )
 
 func initTemplate(t *testing.T) string {
-	tmpDir, err := ioutil.TempDir("", "pages")
+	tmpDir, err := os.MkdirTemp("", "pages")
 	assert.Nil(t, err)
 	activePath := path.Join(tmpDir, "active.html.template")
-	err = ioutil.WriteFile(activePath, []byte(templateActive), 0755)
+	err = os.WriteFile(activePath, []byte(templateActive), 0755)
 	assert.Nil(t, err)
 	failedPath := path.Join(tmpDir, "filed.html.template")
-	err = ioutil.WriteFile(failedPath, []byte(templateFailed), 0755)
+	err = os.WriteFile(failedPath, []byte(templateFailed), 0755)
 	assert.Nil(t, err)
 	successPath := path.Join(tmpDir, "success.html.template")
-	err = ioutil.WriteFile(successPath, []byte(templateSuccess), 0755)
+	err = os.WriteFile(successPath, []byte(templateSuccess), 0755)
 	return tmpDir
 }
 
