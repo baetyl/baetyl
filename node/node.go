@@ -168,30 +168,12 @@ func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 // GetStatus get status
 // TODO: add an error handling middleware like baetyl-cloud @chensheng
 func (n *node) GetStats(ctx *routing.Context) (interface{}, error) {
-	node, err := n.Get()
+	nodeStat, err := n.Get()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	node.Name = os.Getenv(context.KeyNodeName)
-
-	// TODO remove: compatibility code, compatible with information collection under the cluster
-	knn := os.Getenv(KubeNodeName)
-	if node.Report["node"] != nil {
-		infos, ok := node.Report["node"].(map[string]interface{})
-		if !ok {
-			return nil, errors.Trace(ErrParseReport)
-		}
-		node.Report["node"] = infos[knn]
-	}
-	if node.Report["nodestats"] != nil {
-		stats, ok := node.Report["nodestats"].(map[string]interface{})
-		if !ok {
-			return nil, errors.Trace(ErrParseReport)
-		}
-		node.Report["nodestats"] = stats[knn]
-	}
-
-	view, err := node.View(OfflineDuration)
+	nodeStat.Name = os.Getenv(context.KeyNodeName)
+	view, err := nodeStat.View(OfflineDuration)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
