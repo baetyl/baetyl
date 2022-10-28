@@ -704,13 +704,13 @@ func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	}
 	return map[string]interface{}{
 		ho.Hostname: &v1.NodeInfo{
-			Arch:     runtime.GOARCH,
-			OS:       runtime.GOOS,
-			Variant:  plat.Variant,
-			HostID:   ho.HostID,
-			Hostname: ho.Hostname,
-			Role:     "master",
-			Address:  strings.Join(addrs, ","),
+			Arch:       runtime.GOARCH,
+			OS:         runtime.GOOS,
+			Variant:    plat.Variant,
+			SystemUUID: ho.HostID,
+			Hostname:   ho.Hostname,
+			Role:       "master",
+			Address:    strings.Join(addrs, ","),
 		},
 	}, nil
 }
