@@ -602,19 +602,17 @@ func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPr
 }
 
 func getPPID(pid uint32) (int32, error) {
-	var pProc *process.Process
 	processes, err := process.Processes()
 	if err != nil {
 		return 1, err
 	}
 	for _, p := range processes {
 		if p.Pid == int32(pid) {
-			pProc = p
-			break
+			return p.Ppid()
 		}
 	}
 
-	return pProc.Ppid()
+	return 1, nil
 }
 
 func getChild(p *process.Process, childs *[]process.Process) {
