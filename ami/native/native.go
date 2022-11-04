@@ -22,12 +22,12 @@ import (
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
-	"github.com/shirou/gopsutil/cpu"
-	gdisk "github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/host"
-	"github.com/shirou/gopsutil/mem"
-	"github.com/shirou/gopsutil/process"
+	"github.com/shirou/gopsutil/v3/cpu"
+	gdisk "github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/mem"
 	gnet "github.com/shirou/gopsutil/v3/net"
+	"github.com/shirou/gopsutil/v3/process"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
@@ -570,6 +570,14 @@ func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPr
 			break
 		}
 	}
+	if pProc == nil {
+		return
+	}
+	status, _ := pProc.Status()
+	if status[0] != process.Running {
+		return
+	}
+
 	getChild(pProc, &childs)
 
 	mainInsStats, ok := curInsStats[curPrgName]
@@ -607,7 +615,8 @@ func getPPID(pid uint32) (int32, error) {
 		return 1, err
 	}
 	for _, p := range processes {
-		if p.Pid == int32(pid) {
+		status, _ := p.Status()
+		if p.Pid == int32(pid) && status[0] == process.Running {
 			return p.Ppid()
 		}
 	}
