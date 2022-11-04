@@ -139,7 +139,7 @@ func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 			return errors.Trace(bh.ErrNotFound)
 		}
 		m := &v1.Node{}
-		err := json.Unmarshal(prev, m)
+		err = json.Unmarshal(prev, m)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -150,8 +150,16 @@ func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 			if err != nil {
 				return errors.Trace(err)
 			}
+			// since merge won't delete exist key-val, node info and stats should override
+			if nodeInfo, ok := reported["node"]; ok {
+				m.Report["node"] = nodeInfo
+			}
+			if nodeStats, ok := reported["nodestats"]; ok {
+				m.Report["nodestats"] = nodeStats
+			}
 		}
-		curr, err := json.Marshal(m)
+		var curr []byte
+		curr, err = json.Marshal(m)
 		if err != nil {
 			return errors.Trace(err)
 		}
