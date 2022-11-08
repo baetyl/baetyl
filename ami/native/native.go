@@ -573,10 +573,6 @@ func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPr
 	if pProc == nil {
 		return
 	}
-	status, _ := pProc.Status()
-	if status[0] != process.Running {
-		return
-	}
 
 	getChild(pProc, &childs)
 
@@ -615,8 +611,7 @@ func getPPID(pid uint32) (int32, error) {
 		return 1, err
 	}
 	for _, p := range processes {
-		status, _ := p.Status()
-		if p.Pid == int32(pid) && status[0] == process.Running {
+		if p.Pid == int32(pid) {
 			return p.Ppid()
 		}
 	}
