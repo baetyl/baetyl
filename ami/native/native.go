@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
+	gctx "github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -779,6 +780,26 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats.NetIO["netPacketsSent"] = strconv.FormatUint(OutPackets, 10)
 	stats.NetIO["netPacketsRecv"] = strconv.FormatUint(InPackets, 10)
 
+	var gpuExts map[string]interface{}
+	if extension, ok := ami.Hooks[ami.BaetylGPUStatsExtension]; ok {
+		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
+		if ok {
+			gpuExts, err = collectStatsExt(gctx.RunModeNative)
+			if err != nil {
+				impl.log.Warn("failed to collect gpu stats", log.Error(errors.Trace(err)))
+			}
+			impl.log.Debug("collect gpu stats successfully", log.Any("gpuStats", gpuExts))
+		} else {
+			impl.log.Warn("invalid collecting gpu stats function")
+		}
+	}
+	var nodeStatsMerge map[string]interface{}
+	if len(gpuExts) > 0 {
+		if ext, ok := gpuExts[ho.Hostname]; ok {
+			nodeStatsMerge = ext.(map[string]interface{})
+		}
+	}
+	stats.Extension = nodeStatsMerge
 	// TODO add pressure flags
 	return map[string]interface{}{ho.Hostname: stats}, nil
 }
