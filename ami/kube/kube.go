@@ -3,6 +3,7 @@ package kube
 import (
 	"os"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -78,7 +79,7 @@ func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 	if extension, ok := ami.Hooks[ami.BaetylQPSStatsExtension]; ok {
 		qpsStatsExt, ok := extension.(ami.CollectStatsExtFunc)
 		if ok {
-			qpsExts, err = qpsStatsExt()
+			qpsExts, err = qpsStatsExt(context.RunModeKube)
 			if err != nil {
 				k.log.Warn("failed to collect qps stats", log.Error(errors.Trace(err)))
 			}
