@@ -4,12 +4,17 @@ import (
 	"context"
 	"html/template"
 	"net/http"
+	"os"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/utils"
 
 	"github.com/baetyl/baetyl/v2/config"
+)
+
+const (
+	KeyBaetylSyncAddr = "BAETYL_SYNC_ADDR"
 )
 
 func (active *Activate) startServer() error {
@@ -65,6 +70,20 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	}
 	active.log.Info("active", log.Any("server attrs", attributes))
 	active.attrs = attributes
+
+	if batchName, ok := attributes["batch"]; ok {
+		active.batch.name = batchName
+	}
+	if ns, ok := attributes["namespace"]; ok {
+		active.batch.namespace = ns
+	}
+	if initAddr, ok := attributes["initAddr"]; ok {
+		active.cfg.Init.Active.Address = initAddr
+
+	}
+	if syncAddr, ok := attributes["syncAddr"]; ok {
+		os.Setenv(KeyBaetylSyncAddr, syncAddr)
+	}
 
 	var tpl *template.Template
 	page := "/success.html.template"
