@@ -5,11 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baetyl/baetyl/v2/ami/kube"
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/baetyl/baetyl/v2/config"
 	mc "github.com/baetyl/baetyl/v2/mock"
 )
@@ -89,6 +90,7 @@ func TestActivate_Err_Collector(t *testing.T) {
 
 	ami := mc.NewMockAMI(mockCtl)
 	t.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(context.KeyRunMode, context.RunModeKube)
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nil}, nil).AnyTimes()
 	active = genActivate(t, c, ami)
 

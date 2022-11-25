@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/mock"
@@ -202,6 +203,7 @@ func TestActivate(t *testing.T) {
 	defer mockCtl.Finish()
 	ami := mc.NewMockAMI(mockCtl)
 	t.Setenv(kube.KubeNodeName, "knn")
+	t.Setenv(context.KeyRunMode, context.RunModeKube)
 	ami.EXPECT().CollectNodeInfo().Return(map[string]interface{}{"knn": nodeInfo}, nil).Times(len(goodCases) + 1)
 
 	err = os.MkdirAll(defaultSNPath, 0755)
