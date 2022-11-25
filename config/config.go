@@ -95,6 +95,7 @@ type InitConfig struct {
 		Namespace    string `yaml:"namespace" json:"namespace"`
 		SecurityType string `yaml:"securityType" json:"securityType"`
 		SecurityKey  string `yaml:"securityKey" json:"securityKey"`
+		Mode         string `yaml:"mode" json:"mode" default:"kube"`
 	} `yaml:"batch" json:"batch"`
 	Active struct {
 		http.ClientConfig `yaml:",inline" json:",inline"`

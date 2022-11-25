@@ -3,6 +3,8 @@ package cmd
 import (
 	"crypto/tls"
 	"encoding/json"
+	"io/ioutil"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -76,18 +78,25 @@ func apply() {
 	if err != nil {
 		return
 	}
-
+	var data []byte
 	// download data
 	ops := http.NewClientOptions()
 	ops.Timeout = 10 * time.Minute
 	if skipVerify {
 		ops.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
-	var data []byte
 	cli := http.NewClient(ops)
-	data, err = cli.GetJSON(file)
-	if err != nil {
-		return
+
+	if isValidUrl(file) {
+		data, err = cli.GetJSON(file)
+		if err != nil {
+			return
+		}
+	} else {
+		data, err = ioutil.ReadFile(file)
+		if err != nil {
+			return
+		}
 	}
 	data, err = utils.ParseEnv(data)
 	if err != nil {
@@ -194,4 +203,18 @@ func apply() {
 			return
 		}
 	}
+}
+
+func isValidUrl(urls string) bool {
+	_, err := url.ParseRequestURI(urls)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(urls)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
 }

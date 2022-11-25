@@ -7,8 +7,11 @@ import (
 	"path"
 	"strings"
 
+	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	specV1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	"github.com/shirou/gopsutil/v3/host"
+
 	"github.com/baetyl/baetyl/v2/ami/kube"
 
 	"github.com/baetyl/baetyl/v2/config"
@@ -29,6 +32,8 @@ var (
 )
 
 func (active *Activate) collect() (string, error) {
+	var info interface{}
+	var ok bool
 	fs := active.cfg.Init.Active.Collector.Fingerprints
 	if len(fs) == 0 {
 		return "", nil
@@ -37,10 +42,23 @@ func (active *Activate) collect() (string, error) {
 	if err != nil {
 		return "", errors.Trace(err)
 	}
-	info, ok := infos[os.Getenv(kube.KubeNodeName)]
-	if !ok {
-		return "", errors.Trace(ErrGetMasterNodeInfo)
+	mode := os.Getenv(context.KeyRunMode)
+	if mode == context.RunModeKube {
+		info, ok = infos[os.Getenv(kube.KubeNodeName)]
+		if !ok {
+			return "", errors.Trace(ErrGetMasterNodeInfo)
+		}
+	} else if mode == context.RunModeNative {
+		ho, herr := host.Info()
+		if herr != nil {
+			return "", errors.Trace(err)
+		}
+		info, ok = infos[ho.Hostname]
+		if !ok {
+			return "", errors.Trace(ErrGetMasterNodeInfo)
+		}
 	}
+
 	nodeInfo, ok := info.(*specV1.NodeInfo)
 	if !ok {
 		return "", errors.Trace(ErrGetMasterNodeInfo)
