@@ -44,7 +44,7 @@ type EventConfig struct {
 }
 
 type Publish struct {
-	QOS   byte   `yaml:"qos" json:"qos" validate:"min=0, max=1"`
+	QOS   byte   `yaml:"qos" json:"qos" validate:"min=0,max=1"`
 	Topic string `yaml:"topic" json:"topic" default:"$baetyl/node/props" validate:"nonzero"`
 }
 
@@ -95,6 +95,7 @@ type InitConfig struct {
 		Namespace    string `yaml:"namespace" json:"namespace"`
 		SecurityType string `yaml:"securityType" json:"securityType"`
 		SecurityKey  string `yaml:"securityKey" json:"securityKey"`
+		Mode         string `yaml:"mode" json:"mode" default:"kube"`
 	} `yaml:"batch" json:"batch"`
 	Active struct {
 		http.ClientConfig `yaml:",inline" json:",inline"`

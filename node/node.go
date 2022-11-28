@@ -139,7 +139,7 @@ func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 			return errors.Trace(bh.ErrNotFound)
 		}
 		m := &v1.Node{}
-		err := json.Unmarshal(prev, m)
+		err = json.Unmarshal(prev, m)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -150,8 +150,16 @@ func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 			if err != nil {
 				return errors.Trace(err)
 			}
+			// since merge won't delete exist key-val, node info and stats should override
+			if nodeInfo, ok := reported["node"]; ok {
+				m.Report["node"] = nodeInfo
+			}
+			if nodeStats, ok := reported["nodestats"]; ok {
+				m.Report["nodestats"] = nodeStats
+			}
 		}
-		curr, err := json.Marshal(m)
+		var curr []byte
+		curr, err = json.Marshal(m)
 		if err != nil {
 			return errors.Trace(err)
 		}
@@ -168,30 +176,12 @@ func (n *node) Report(reported v1.Report, override bool) (delta v1.Delta, err er
 // GetStatus get status
 // TODO: add an error handling middleware like baetyl-cloud @chensheng
 func (n *node) GetStats(ctx *routing.Context) (interface{}, error) {
-	node, err := n.Get()
+	nodeStat, err := n.Get()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	node.Name = os.Getenv(context.KeyNodeName)
-
-	// TODO remove: compatibility code, compatible with information collection under the cluster
-	knn := os.Getenv(KubeNodeName)
-	if node.Report["node"] != nil {
-		infos, ok := node.Report["node"].(map[string]interface{})
-		if !ok {
-			return nil, errors.Trace(ErrParseReport)
-		}
-		node.Report["node"] = infos[knn]
-	}
-	if node.Report["nodestats"] != nil {
-		stats, ok := node.Report["nodestats"].(map[string]interface{})
-		if !ok {
-			return nil, errors.Trace(ErrParseReport)
-		}
-		node.Report["nodestats"] = stats[knn]
-	}
-
-	view, err := node.View(OfflineDuration)
+	nodeStat.Name = os.Getenv(context.KeyNodeName)
+	view, err := nodeStat.View(OfflineDuration)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

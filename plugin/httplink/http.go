@@ -2,6 +2,7 @@ package httplink
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
@@ -11,6 +12,7 @@ import (
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 
+	"github.com/baetyl/baetyl/v2/initz"
 	"github.com/baetyl/baetyl/v2/plugin"
 )
 
@@ -52,6 +54,9 @@ func New() (goplugin.Plugin, error) {
 		addrs: strings.Split(cfg.HTTPLink.HTTP.Address, ","),
 		http:  http.NewClient(ops),
 		log:   log.With(log.Any("plugin", "httplink")),
+	}
+	if addrEnv := os.Getenv(initz.KeyBaetylSyncAddr); addrEnv != "" {
+		link.addrs = strings.Split(addrEnv, ",")
 	}
 	return link, nil
 }

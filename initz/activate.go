@@ -32,6 +32,7 @@ type batch struct {
 	namespace    string
 	securityType string
 	securityKey  string
+	mode         string
 }
 
 type Activate struct {
@@ -75,6 +76,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 		namespace:    cfg.Init.Batch.Namespace,
 		securityType: cfg.Init.Batch.SecurityType,
 		securityKey:  cfg.Init.Batch.SecurityKey,
+		mode:         cfg.Init.Batch.Mode,
 	}
 	for _, a := range cfg.Init.Active.Collector.Attributes {
 		active.attrs[a.Name] = a.Value
@@ -139,6 +141,7 @@ func (active *Activate) activate() {
 		Namespace:     active.batch.namespace,
 		SecurityType:  active.batch.securityType,
 		SecurityValue: active.batch.securityKey,
+		Mode:          active.batch.mode,
 		PenetrateData: active.attrs,
 	}
 	fv, err := active.collect()

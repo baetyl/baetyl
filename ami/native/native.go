@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
+	gctx "github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -21,12 +22,12 @@ import (
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 	"github.com/kardianos/service"
-	"github.com/shirou/gopsutil/cpu"
-	gdisk "github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/host"
-	"github.com/shirou/gopsutil/mem"
-	"github.com/shirou/gopsutil/process"
+	"github.com/shirou/gopsutil/v3/cpu"
+	gdisk "github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/mem"
 	gnet "github.com/shirou/gopsutil/v3/net"
+	"github.com/shirou/gopsutil/v3/process"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
@@ -492,10 +493,11 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 					if !svcInsFile.IsDir() {
 						continue
 					}
-
+					var pid uint32
 					curSvcIns := svcInsFile.Name()
 					curPrgName := genServiceInstanceName(ns, curAppName, curAppVer, curSvcName, curSvcIns)
-					curInsStats := v1.InstanceStats{
+					curInsStats := map[string]v1.InstanceStats{}
+					mainInsStats := v1.InstanceStats{
 						ServiceName: curSvcName,
 						Name:        curPrgName,
 					}
@@ -504,29 +506,45 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 						WorkingDirectory: svcInsFile.Name(),
 					})
 					if err != nil {
-						curInsStats.Status = v1.Unknown
-						curInsStats.Cause = err.Error()
+						mainInsStats.Status = v1.Unknown
+						mainInsStats.Cause = err.Error()
 					}
 					if svc != nil {
 						status, err := svc.Status()
 						if err != nil {
-							curInsStats.Status = v1.Unknown
-							curInsStats.Cause += err.Error()
+							mainInsStats.Status = v1.Unknown
+							mainInsStats.Cause += err.Error()
 						} else {
-							curInsStats.Status = prgStatusToSpecStatus(status)
+							mainInsStats.Status = prgStatusToSpecStatus(status)
 						}
-						usage, err := getServiceInsStats(svc)
+						pid, err = svc.GetPid()
 						if err != nil {
-							curInsStats.Status = v1.Unknown
-							curInsStats.Cause += err.Error()
+							mainInsStats.Status = v1.Unknown
+							mainInsStats.Cause += err.Error()
+						}
+						mainInsStats.Pid = int32(pid)
+						ppid, err := getPPID(pid)
+						if err != nil {
+							mainInsStats.Status = v1.Unknown
+							mainInsStats.Cause += err.Error()
+						}
+						mainInsStats.PPid = ppid
+						usage, err := getServiceInsStats(pid)
+						if err != nil {
+							mainInsStats.Status = v1.Unknown
+							mainInsStats.Cause += err.Error()
 						} else {
-							curInsStats.Usage = usage
+							mainInsStats.Usage = usage
 						}
 					} else {
-						curInsStats.Status = v1.Unknown
-						curInsStats.Cause += ErrCreateService.Error()
+						mainInsStats.Status = v1.Unknown
+						mainInsStats.Cause += ErrCreateService.Error()
 					}
-					curAppStats.InstanceStats[curPrgName] = curInsStats
+					curInsStats[curPrgName] = mainInsStats
+
+					getChildInsStats(curInsStats, pid, curPrgName)
+
+					curAppStats.InstanceStats = curInsStats
 				}
 			}
 			curAppStats.Status = getAppStatus(curAppStats.InstanceStats)
@@ -539,12 +557,81 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	return stats, nil
 }
 
-func getServiceInsStats(svc service.Service) (map[string]string, error) {
-	usage := map[string]string{}
-	pid, err := svc.GetPid()
+func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPrgName string) {
+	var pProc *process.Process
+	var childs []process.Process
+	processes, err := process.Processes()
 	if err != nil {
-		return nil, errors.Trace(err)
+		return
 	}
+	for _, p := range processes {
+		if p.Pid == int32(pid) {
+			pProc = p
+			break
+		}
+	}
+	if pProc == nil {
+		return
+	}
+
+	getChild(pProc, &childs)
+
+	mainInsStats, ok := curInsStats[curPrgName]
+	if !ok {
+		return
+	}
+
+	for _, cc := range childs {
+		usage, err := getServiceInsStats(uint32(cc.Pid))
+		if err != nil {
+			return
+		}
+		name, err := cc.Name()
+		if err != nil {
+			return
+		}
+		cPPid, err := cc.Ppid()
+		if err != nil {
+
+		}
+		curInsStats[name] = v1.InstanceStats{
+			Name:        name,
+			ServiceName: mainInsStats.ServiceName,
+			Usage:       usage,
+			Status:      mainInsStats.Status,
+			Pid:         cc.Pid,
+			PPid:        cPPid,
+		}
+	}
+}
+
+func getPPID(pid uint32) (int32, error) {
+	processes, err := process.Processes()
+	if err != nil {
+		return 1, err
+	}
+	for _, p := range processes {
+		if p.Pid == int32(pid) {
+			return p.Ppid()
+		}
+	}
+
+	return 1, nil
+}
+
+func getChild(p *process.Process, childs *[]process.Process) {
+	c, _ := p.Children()
+	if len(c) == 0 {
+		return
+	}
+	for _, cc := range c {
+		*childs = append(*childs, *cc)
+		getChild(cc, childs)
+	}
+}
+
+func getServiceInsStats(pid uint32) (map[string]string, error) {
+	usage := map[string]string{}
 	proc, err := process.NewProcess(int32(pid))
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -619,13 +706,13 @@ func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	}
 	return map[string]interface{}{
 		ho.Hostname: &v1.NodeInfo{
-			Arch:     runtime.GOARCH,
-			OS:       runtime.GOOS,
-			Variant:  plat.Variant,
-			HostID:   ho.HostID,
-			Hostname: ho.Hostname,
-			Role:     "master",
-			Address:  strings.Join(addrs, ","),
+			Arch:       runtime.GOARCH,
+			OS:         runtime.GOOS,
+			Variant:    plat.Variant,
+			SystemUUID: ho.HostID,
+			Hostname:   ho.Hostname,
+			Role:       "master",
+			Address:    strings.Join(addrs, ","),
 		},
 	}, nil
 }
@@ -692,6 +779,26 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats.NetIO["netPacketsSent"] = strconv.FormatUint(OutPackets, 10)
 	stats.NetIO["netPacketsRecv"] = strconv.FormatUint(InPackets, 10)
 
+	var gpuExts map[string]interface{}
+	if extension, ok := ami.Hooks[ami.BaetylGPUStatsExtension]; ok {
+		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
+		if ok {
+			gpuExts, err = collectStatsExt(gctx.RunModeNative)
+			if err != nil {
+				impl.log.Warn("failed to collect gpu stats", log.Error(errors.Trace(err)))
+			}
+			impl.log.Debug("collect gpu stats successfully", log.Any("gpuStats", gpuExts))
+		} else {
+			impl.log.Warn("invalid collecting gpu stats function")
+		}
+	}
+	var nodeStatsMerge map[string]interface{}
+	if len(gpuExts) > 0 {
+		if ext, ok := gpuExts[ho.Hostname]; ok {
+			nodeStatsMerge = ext.(map[string]interface{})
+		}
+	}
+	stats.Extension = nodeStatsMerge
 	// TODO add pressure flags
 	return map[string]interface{}{ho.Hostname: stats}, nil
 }

@@ -3,6 +3,7 @@ package kube
 import (
 	"context"
 
+	gctx "github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -91,7 +92,7 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	if extension, ok := ami.Hooks[ami.BaetylGPUStatsExtension]; ok {
 		collectStatsExt, ok := extension.(ami.CollectStatsExtFunc)
 		if ok {
-			gpuExts, err = collectStatsExt()
+			gpuExts, err = collectStatsExt(gctx.RunModeKube)
 			if err != nil {
 				k.log.Warn("failed to collect gpu stats", log.Error(errors.Trace(err)))
 			}
@@ -104,7 +105,7 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	if nodeExtHook, ok := ami.Hooks[ami.BaetylNodeStatsExtension]; ok {
 		nodeStatsExt, ok := nodeExtHook.(ami.CollectStatsExtFunc)
 		if ok {
-			nodeExts, err = nodeStatsExt()
+			nodeExts, err = nodeStatsExt(gctx.RunModeKube)
 			if err != nil {
 				k.log.Warn("failed to collect node stats", log.Error(errors.Trace(err)))
 			}
