@@ -2,7 +2,7 @@ package store
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -11,7 +11,7 @@ import (
 )
 
 func TestNewBoltHold(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())

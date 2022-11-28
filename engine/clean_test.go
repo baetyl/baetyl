@@ -2,7 +2,6 @@ package engine
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,12 +18,12 @@ import (
 )
 
 func TestRecycle(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
 
-	dir, err := ioutil.TempDir("", t.Name())
+	dir, err := os.MkdirTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, dir)
 	fmt.Println("-->tempdir", dir)
@@ -379,7 +378,7 @@ func TestGetDelObjectCfgs(t *testing.T) {
 }
 
 func TestCleanObjectStorage(t *testing.T) {
-	objDir, err := ioutil.TempDir("", t.Name())
+	objDir, err := os.MkdirTemp("", t.Name())
 	assert.NoError(t, err)
 	nod, engCfg, sto := prepare(t)
 	node1 := &specv1.Node{

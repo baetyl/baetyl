@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -33,7 +33,7 @@ func TestSyncMakeKey(t *testing.T) {
 }
 
 func TestSyncStore(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -71,7 +71,7 @@ func TestSyncStore(t *testing.T) {
 }
 
 func TestSyncProcessConfiguration(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -111,12 +111,12 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	cfg.Name = "cfg"
 
 	// object process
-	dir, err := ioutil.TempDir("", t.Name())
+	dir, err := os.MkdirTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, dir)
 	syn.cfg.Sync.Download.Path = dir
 	file1 := filepath.Join(dir, "file1")
-	ioutil.WriteFile(file1, content, 0644)
+	os.WriteFile(file1, content, 0644)
 	md5, err := utils.CalculateFileMD5(file1)
 	obj := specv1.ConfigurationObject{
 		URL: objMs.URL,
@@ -129,7 +129,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	err = syn.processConfiguration(cfg)
 	assert.NoError(t, err)
 	hostPath := filepath.Join(dir, "cfg", "c1")
-	data, err := ioutil.ReadFile(filepath.Join(hostPath, "file2"))
+	data, err := os.ReadFile(filepath.Join(hostPath, "file2"))
 	assert.NoError(t, err)
 	assert.Equal(t, data, content)
 
@@ -141,7 +141,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 }
 
 func TestSyncResources(t *testing.T) {
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())

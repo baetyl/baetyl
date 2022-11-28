@@ -6,9 +6,9 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	gohttp "net/http"
+	"os"
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
@@ -55,7 +55,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 		return nil, errors.Trace(err)
 	}
 
-	ca, err := ioutil.ReadFile(cfg.Init.Active.CA)
+	ca, err := os.ReadFile(cfg.Init.Active.CA)
 	if err != nil {
 		return nil, err
 	}

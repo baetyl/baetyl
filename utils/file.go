@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -16,7 +15,7 @@ func CreateWriteFile(filePath string, data []byte) error {
 			return errors.Trace(err)
 		}
 	}
-	if err := ioutil.WriteFile(filePath, data, 0755); err != nil {
+	if err := os.WriteFile(filePath, data, 0755); err != nil {
 		return errors.Trace(err)
 	}
 	return nil

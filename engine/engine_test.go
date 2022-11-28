@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -77,7 +77,7 @@ uTyXHsnBXFPPo6m/tcqHvIOSek9JIurtAg==
 func prepare(t *testing.T) (node.Node, config.EngineConfig, *bh.Store) {
 	log.Init(log.Config{Level: "debug"})
 
-	f, err := ioutil.TempFile("", t.Name())
+	f, err := os.CreateTemp("", t.Name())
 	assert.NoError(t, err)
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
@@ -383,7 +383,7 @@ func TestGetServiceLog(t *testing.T) {
 
 	client := &fasthttp.Client{}
 
-	mockAmi.EXPECT().FetchLog("baetyl-edge", "service1", int64(10), int64(60)).Return(ioutil.NopCloser(strings.NewReader("hello world")), nil).Times(1)
+	mockAmi.EXPECT().FetchLog("baetyl-edge", "service1", int64(10), int64(60)).Return(io.NopCloser(strings.NewReader("hello world")), nil).Times(1)
 	req := fasthttp.AcquireRequest()
 	resp := fasthttp.AcquireResponse()
 	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50030", "/services/service1/log?tailLines=10&sinceSeconds=60")
