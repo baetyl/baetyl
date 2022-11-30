@@ -279,6 +279,20 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
 			}
 
+			sysCfg := context.SystemConfig{}
+			confFilePath := filepath.Join(insDir, program.ProgramConfYaml)
+			if utils.FileExists(confFilePath) {
+				err = utils.LoadYAML(confFilePath, &sysCfg)
+				if err != nil {
+					return errors.Trace(err)
+				}
+			} else {
+				err = utils.UnmarshalYAML(nil, &sysCfg)
+				if err != nil {
+					return errors.Trace(err)
+				}
+			}
+
 			prgCfg := program.Config{
 				Name:        genServiceInstanceName(ns, app.Name, app.Version, s.Name, strconv.Itoa(i)),
 				DisplayName: fmt.Sprintf("%s %s", app.Name, s.Name),
@@ -287,11 +301,10 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				Exec:        prgExec,
 				Args:        s.Args,
 				Env:         env,
-				Logger: log.Config{
-					Level:    "debug",
-					Filename: filepath.Join(impl.logHostPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i)),
-				},
 			}
+			prgCfg.Logger = sysCfg.Logger
+			prgCfg.Logger.Filename = filepath.Join(impl.logHostPath, ns, app.Name, app.Version, fmt.Sprintf("%s-%d.log", s.Name, i))
+
 			prgYml, err := yaml.Marshal(prgCfg)
 			if err != nil {
 				return errors.Trace(err)

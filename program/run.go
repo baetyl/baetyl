@@ -14,6 +14,7 @@ const (
 	ProgramBinPath     = "/var/lib/baetyl/bin"
 	ProgramEntryYaml   = "program.yml" // in program package to specify entry
 	ProgramServiceYaml = "service.yml"
+	ProgramConfYaml    = "/etc/baetyl/conf.yml"
 )
 
 func Run(wd string) error {
