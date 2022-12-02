@@ -227,7 +227,7 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 				p.Protocol = string(corev1.ProtocolTCP)
 			}
 			port := corev1.ServicePort{
-				Name:       fmt.Sprintf("%s-%d-%s", svc.Name, p.ContainerPort, p.Protocol),
+				Name:       fmt.Sprintf("%s-%d-%s", svc.Name, p.ContainerPort, strings.ToLower(p.Protocol)),
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 				Protocol:   corev1.Protocol(p.Protocol),
@@ -267,7 +267,7 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 				p.Protocol = string(corev1.ProtocolTCP)
 			}
 			port := corev1.ServicePort{
-				Name:       fmt.Sprintf("%s-%d-%s", svc.Name, p.ContainerPort, p.Protocol),
+				Name:       fmt.Sprintf("%s-%d-%s", svc.Name, p.ContainerPort, strings.ToLower(p.Protocol)),
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 				NodePort:   p.NodePort,
