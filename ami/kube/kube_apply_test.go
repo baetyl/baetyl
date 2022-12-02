@@ -513,13 +513,15 @@ func TestPrepareService(t *testing.T) {
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
 				{
-					Name:       "s1-80",
+					Name:       "s1-80-tcp",
 					Port:       80,
+					Protocol:   v1.ProtocolTCP,
 					TargetPort: intstr.IntOrString{IntVal: 80},
 				},
 				{
-					Name:       "s2-8080",
+					Name:       "s2-8080-tcp",
 					Port:       8080,
+					Protocol:   v1.ProtocolTCP,
 					TargetPort: intstr.IntOrString{IntVal: 8080},
 				},
 			},
@@ -576,8 +578,9 @@ func TestPrepareNodePortService(t *testing.T) {
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
 				{
-					Name:       "s3-8088",
+					Name:       "s3-8088-tcp",
 					Port:       8088,
+					Protocol:   v1.ProtocolTCP,
 					TargetPort: intstr.IntOrString{IntVal: 8088},
 					NodePort:   31080,
 				},
