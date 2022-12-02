@@ -227,6 +227,7 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 				Name:       fmt.Sprintf("%s-%d", svc.Name, p.ContainerPort),
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
+				Protocol:   corev1.Protocol(p.Protocol),
 			}
 			ports = append(ports, port)
 		}
@@ -264,6 +265,7 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 				NodePort:   p.NodePort,
+				Protocol:   corev1.Protocol(p.Protocol),
 			}
 			ports = append(ports, port)
 		}
