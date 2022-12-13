@@ -36,6 +36,8 @@ const (
 	ServiceAccountName = "baetyl-edge-system-service-account"
 	MasterRole         = "node-role.kubernetes.io/master"
 	BaetylSetPodSpec   = "baetyl_set_pod_spec"
+
+	newBackendContainerPort = 54000
 )
 
 type SetPodSpecFunc func(*corev1.PodSpec, *specv1.Application) (*corev1.PodSpec, error)
@@ -219,7 +221,7 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 		if len(svc.Ports) == 0 {
 			continue
 		}
-		for _, p := range svc.Ports {
+		for i, p := range svc.Ports {
 			if p.ServiceType == string(corev1.ServiceTypeNodePort) {
 				continue
 			}
@@ -231,6 +233,10 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 				Port:       p.ContainerPort,
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 				Protocol:   corev1.Protocol(p.Protocol),
+			}
+			if v, ok := app.Labels["baetyl-webhook"]; ok && v == "true" {
+				port.Port = int32(newBackendContainerPort + i)
+				port.TargetPort = intstr.IntOrString{IntVal: int32(newBackendContainerPort + i)}
 			}
 			ports = append(ports, port)
 		}
@@ -259,7 +265,7 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 		if len(svc.Ports) == 0 {
 			continue
 		}
-		for _, p := range svc.Ports {
+		for i, p := range svc.Ports {
 			if p.ServiceType != string(corev1.ServiceTypeNodePort) {
 				continue
 			}
@@ -272,6 +278,10 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 				TargetPort: intstr.IntOrString{IntVal: p.ContainerPort},
 				NodePort:   p.NodePort,
 				Protocol:   corev1.Protocol(p.Protocol),
+			}
+			if v, ok := app.Labels["baetyl-webhook"]; ok && v == "true" {
+				port.Port = int32(newBackendContainerPort + i)
+				port.TargetPort = intstr.IntOrString{IntVal: int32(newBackendContainerPort + i)}
 			}
 			ports = append(ports, port)
 		}
