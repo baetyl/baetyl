@@ -65,8 +65,12 @@ func (active *Activate) collect() (string, error) {
 	for _, f := range fs {
 		switch f.Proof {
 		case config.ProofInput:
-			if active.attrs != nil {
+			if active.attrs != nil && active.attrs[f.Value] != "" {
+				// input get fv, sn is not empty
 				return active.attrs[f.Value], nil
+			} else {
+				// auto get fv, sn is empty
+				return nodeInfo.SystemUUID, nil
 			}
 		case config.ProofSN:
 			snByte, err := os.ReadFile(path.Join(defaultSNPath, f.Value))

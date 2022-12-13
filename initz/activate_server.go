@@ -9,8 +9,6 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/utils"
-
-	"github.com/baetyl/baetyl/v2/config"
 )
 
 const (
@@ -36,7 +34,10 @@ func (active *Activate) closeServer() {
 }
 
 func (active *Activate) handleView(w http.ResponseWriter, req *http.Request) {
-	attrs := map[string][]config.Attribute{"Attributes": active.cfg.Init.Active.Collector.Attributes}
+	attrs := map[string]interface{}{
+		"Attributes": active.cfg.Init.Active.Collector.Attributes,
+		"Nodeinfo":   active.cfg.Init.Active.Collector.NodeInfo,
+	}
 	tpl, err := template.ParseFiles(active.cfg.Init.Active.Collector.Server.Pages + "/active.html.template")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -67,6 +68,10 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 		} else {
 			attributes[attr.Name] = val
 		}
+	}
+	for _, ni := range active.cfg.Init.Active.Collector.NodeInfo {
+		val := req.Form.Get(ni.Name)
+		attributes[ni.Name] = val
 	}
 	active.log.Info("active", log.Any("server attrs", attributes))
 	active.attrs = attributes
