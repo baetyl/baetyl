@@ -235,7 +235,6 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 				Protocol:   corev1.Protocol(p.Protocol),
 			}
 			if v, ok := app.Labels["baetyl-webhook"]; ok && v == "true" {
-				port.Port = int32(newBackendContainerPort + i)
 				port.TargetPort = intstr.IntOrString{IntVal: int32(newBackendContainerPort + i)}
 			}
 			ports = append(ports, port)
@@ -280,7 +279,6 @@ func (k *kubeImpl) prepareNodePortService(ns string, app specv1.Application) *co
 				Protocol:   corev1.Protocol(p.Protocol),
 			}
 			if v, ok := app.Labels["baetyl-webhook"]; ok && v == "true" {
-				port.Port = int32(newBackendContainerPort + i)
 				port.TargetPort = intstr.IntOrString{IntVal: int32(newBackendContainerPort + i)}
 			}
 			ports = append(ports, port)
