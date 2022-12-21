@@ -118,7 +118,7 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
 	}
-	log.L().Debug("start get file", log.Any("name", name), log.Any("url", obj.URL))
+	log.L().Debug("start get file", log.Any("name", name))
 	resp, err := cli.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
 		// retry
