@@ -119,7 +119,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	os.WriteFile(file1, content, 0644)
 	md5, err := utils.CalculateFileMD5(file1)
 	obj := specv1.ConfigurationObject{
-		URL: objMs.URL + "/file2",
+		URL: objMs.URL,
 		MD5: md5,
 	}
 	objData, _ := json.Marshal(obj)

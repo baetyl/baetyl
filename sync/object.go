@@ -21,9 +21,7 @@ import (
 )
 
 func FilterConfig(cfg *specv1.Configuration) {
-	proLabel, ok := cfg.Labels["baetyl-config-type"]
-	isProgram := ok && proLabel == "baetyl-program"
-	if !isProgram {
+	if proLabel, ok := cfg.Labels["baetyl-config-type"]; !ok || proLabel != "baetyl-program" {
 		return
 	}
 	mode := context.RunMode()
@@ -58,7 +56,13 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 			return errors.Errorf("failed to unmarshal config object (%s): %s", cfg.Name, err)
 		}
 
-		filename := filepath.Join(dir, path.Base(obj.URL))
+		var filename string
+		if proLabel, ok := cfg.Labels["baetyl-config-type"]; ok && proLabel == "baetyl-program" {
+			filename = filepath.Join(dir, path.Base(obj.URL))
+		} else {
+			filename = filepath.Join(dir, strings.TrimPrefix(k, specv1.PrefixConfigObject))
+		}
+
 		err = downloadObject(cli, obj, dir, filename, obj.Unpack)
 		if err != nil {
 			os.RemoveAll(dir)
