@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	gohttp "net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -58,7 +59,11 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 
 		var filename string
 		if proLabel, ok := cfg.Labels["baetyl-config-type"]; ok && proLabel == "baetyl-program" {
-			filename = filepath.Join(dir, path.Base(obj.URL))
+			urls, err := url.Parse(obj.URL)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			filename = filepath.Join(dir, path.Base(urls.Path))
 		} else {
 			filename = filepath.Join(dir, strings.TrimPrefix(k, specv1.PrefixConfigObject))
 		}
@@ -113,8 +118,7 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
 	}
-
-	log.L().Debug("start get file", log.Any("name", name))
+	log.L().Debug("start get file", log.Any("name", name), log.Any("url", obj.URL))
 	resp, err := cli.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
 		// retry
