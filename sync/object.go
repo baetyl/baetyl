@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"io"
 	gohttp "net/http"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -20,9 +22,7 @@ import (
 )
 
 func FilterConfig(cfg *specv1.Configuration) {
-	proLabel, ok := cfg.Labels["baetyl-config-type"]
-	isProgram := ok && proLabel == "baetyl-program"
-	if !isProgram {
+	if proLabel, ok := cfg.Labels["baetyl-config-type"]; !ok || proLabel != "baetyl-program" {
 		return
 	}
 	mode := context.RunMode()
@@ -56,7 +56,18 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 			log.L().Warn("failed to unmarshal config object", log.Any("name", cfg.Name), log.Any("key", k), log.Error(err))
 			return errors.Errorf("failed to unmarshal config object (%s): %s", cfg.Name, err)
 		}
-		filename := filepath.Join(dir, strings.TrimPrefix(k, specv1.PrefixConfigObject))
+
+		var filename string
+		if proLabel, ok := cfg.Labels["baetyl-config-type"]; ok && proLabel == "baetyl-program" {
+			urls, err := url.Parse(obj.URL)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			filename = filepath.Join(dir, path.Base(urls.Path))
+		} else {
+			filename = filepath.Join(dir, strings.TrimPrefix(k, specv1.PrefixConfigObject))
+		}
+
 		err = downloadObject(cli, obj, dir, filename, obj.Unpack)
 		if err != nil {
 			os.RemoveAll(dir)
@@ -107,7 +118,6 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	if obj.Token != "" {
 		headers["x-bce-security-token"] = obj.Token
 	}
-
 	log.L().Debug("start get file", log.Any("name", name))
 	resp, err := cli.GetURL(obj.URL, headers)
 	if err != nil || resp == nil {
@@ -115,7 +125,7 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		time.Sleep(time.Second)
 		resp, err = cli.GetURL(obj.URL, headers)
 		if err != nil || resp == nil {
-			return errors.Errorf("failed to download config object (%s): %v", name, err)
+			return errors.Errorf("failed to download config object (%s) url (%s): %v", name, obj.URL, err)
 		}
 	}
 	if resp.StatusCode != gohttp.StatusOK {
@@ -161,13 +171,13 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 			return errors.Errorf("failed to unzip file (%s): %s", name, err.Error())
 		}
 	case "tar":
-		log.L().Debug("untar", log.Any("name",name))
+		log.L().Debug("untar", log.Any("name", name))
 		err = utils.Untar(name, dir)
 		if err != nil {
 			return errors.Errorf("failed to untar file (%s): %s", name, err.Error())
 		}
 	case "tgz":
-		log.L().Debug("untgz", log.Any("name",name))
+		log.L().Debug("untgz", log.Any("name", name))
 		err = utils.Untgz(name, dir)
 		if err != nil {
 			return errors.Errorf("failed to untgz file (%s): %s", name, err.Error())
