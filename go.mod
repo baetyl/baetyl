@@ -6,11 +6,11 @@ replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221
 
 require (
 	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20221125025423-0daa4f3a52d9
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.6.0
 	github.com/imdario/mergo v0.3.6
 	github.com/jinzhu/copier v0.1.0
 	github.com/kardianos/service v1.2.1
-	github.com/mitchellh/mapstructure v1.1.2
+	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pkg/errors v0.9.1
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
 	github.com/shirou/gopsutil/v3 v3.22.9

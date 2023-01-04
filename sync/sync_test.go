@@ -44,7 +44,6 @@ func TestReportSync(t *testing.T) {
 	link := plugin.NewMockLink(mockCtl)
 	assert.NoError(t, err)
 	pb := plugin.NewMockPubsub(mockCtl)
-	pb.EXPECT().Publish(gomock.Any(), gomock.Any()).Return(nil)
 	syn := &sync{
 		link:  link,
 		cfg:   sc,
@@ -53,7 +52,7 @@ func TestReportSync(t *testing.T) {
 		pb:    pb,
 		log:   log.With(log.Any("test", "sync")),
 	}
-	link.EXPECT().IsAsyncSupported().Return(false)
+	link.EXPECT().IsAsyncSupported().Return(false).Times(1)
 	delta := specv1.Delta{"apps": map[string]interface{}{"app1": "123"}}
 
 	msg := &specv1.Message{Content: specv1.LazyValue{Value: delta}, Kind: specv1.MessageReport}
@@ -63,7 +62,7 @@ func TestReportSync(t *testing.T) {
 	err = json.Unmarshal(dt, m)
 	assert.NoError(t, err)
 
-	link.EXPECT().Request(gomock.Any()).Return(m, nil)
+	link.EXPECT().Request(gomock.Any()).Return(m, nil).Times(1)
 	err = syn.reportAndDesire()
 	assert.NoError(t, err)
 	no, _ := syn.nod.Get()
@@ -72,18 +71,19 @@ func TestReportSync(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, desire, no.Desire)
 
-	link.EXPECT().IsAsyncSupported().Return(true)
-	link.EXPECT().Send(gomock.Any()).Return(nil)
+	link.EXPECT().IsAsyncSupported().Return(true).Times(1)
+	link.EXPECT().Send(gomock.Any()).Return(nil).Times(1)
 	err = syn.reportAndDesire()
 	assert.NoError(t, err)
 
-	link.EXPECT().IsAsyncSupported().Return(false)
+	link.EXPECT().IsAsyncSupported().Return(false).Times(1)
 	link.EXPECT().Request(gomock.Any()).Return(nil, errors.New("failed to report"))
 	err = syn.reportAndDesire()
 	assert.Error(t, err)
 
-	link.EXPECT().IsAsyncSupported().Return(true)
+	link.EXPECT().IsAsyncSupported().Return(true).Times(1)
 	link.EXPECT().Send(gomock.Any()).Return(errors.New("failed to report"))
+	err = syn.reportAndDesire()
 	assert.Error(t, err)
 }
 
@@ -112,7 +112,6 @@ func TestReportAsync(t *testing.T) {
 	ch := make(<-chan interface{})
 	pb.EXPECT().Subscribe("upside").Return(ch, nil).Times(1)
 	pb.EXPECT().Unsubscribe("upside", ch).Return(nil).Times(1)
-	pb.EXPECT().Publish(gomock.Any(), gomock.Any()).Return(nil)
 
 	syn := &sync{
 		link:  link,
@@ -222,4 +221,8 @@ func (lk *mockLink) Send(msg *specv1.Message) error {
 
 func (lk *mockLink) IsAsyncSupported() bool {
 	return false
+}
+
+func (lk *mockLink) State() *specv1.Message {
+	return nil
 }

@@ -96,6 +96,10 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	return res, nil
 }
 
+func (l *httpLink) State() *specv1.Message {
+	return nil
+}
+
 func (l *httpLink) Send(msg *specv1.Message) error {
 	return nil
 }

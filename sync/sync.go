@@ -272,22 +272,22 @@ func (s *sync) reportAndDesire() error {
 		return errors.Trace(err)
 	}
 	if s.link.IsAsyncSupported() {
-		err := s.reportAsync(shadow.Report)
-		if err != nil {
-			return errors.Trace(err)
+		reportErr := s.reportAsync(shadow.Report)
+		if reportErr != nil {
+			return errors.Trace(reportErr)
 		}
 	} else {
-		desire, err := s.Report(shadow.Report)
-		if err != nil {
-			return errors.Trace(err)
+		desire, reportErr := s.Report(shadow.Report)
+		if reportErr != nil {
+			return errors.Trace(reportErr)
 		}
 		if len(desire) == 0 {
 			return nil
 		}
-		delta, err := s.nod.Desire(desire, true)
-		if err != nil {
-			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(err))
-			return errors.Trace(err)
+		delta, desErr := s.nod.Desire(desire, true)
+		if desErr != nil {
+			s.log.Error("failed to persist shadow desire", log.Any("desire", desire), log.Error(desErr))
+			return errors.Trace(desErr)
 		}
 		if v1.BaetylCore != os.Getenv(context.KeySvcName) {
 			return nil
