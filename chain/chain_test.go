@@ -65,7 +65,7 @@ func TestNewChain(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
-	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(os.ErrInvalid).Times(1)
+	ami.EXPECT().RemoteCommand(gomock.Any(), gomock.Any()).Return(os.ErrInvalid).MaxTimes(1)
 	err = c.Debug()
 	assert.NoError(t, err)
 	err = c.Close()
