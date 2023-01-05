@@ -141,6 +141,10 @@ func (lk *mockLink) Send(msg *specv1.Message) error {
 	return nil
 }
 
+func (lk *mockLink) State() *specv1.Message {
+	return nil
+}
+
 func (lk *mockLink) IsAsyncSupported() bool {
 	return false
 }

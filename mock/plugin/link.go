@@ -33,6 +33,20 @@ func (m *MockLink) EXPECT() *MockLinkMockRecorder {
 	return m.recorder
 }
 
+// State mocks base method
+func (m *MockLink) State() *v1.Message {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "State")
+	ret0, _ := ret[0].(*v1.Message)
+	return ret0
+}
+
+// State indicates an expected call of State
+func (mr *MockLinkMockRecorder) State() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "State", reflect.TypeOf((*MockLink)(nil).State))
+}
+
 // Receive mocks base method
 func (m *MockLink) Receive() (<-chan *v1.Message, <-chan error) {
 	m.ctrl.T.Helper()
