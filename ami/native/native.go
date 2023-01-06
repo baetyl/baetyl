@@ -772,6 +772,21 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	diskPercent := float64(disk.Used) / float64(disk.Total)
 	stats.Percent["disk"] = strconv.FormatFloat(diskPercent, 'f', -1, 64)
 
+	diskPartitions, err := gdisk.Partitions(false)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	for _, p := range diskPartitions {
+		pUsage, pErr := gdisk.Usage(p.Mountpoint)
+		if pErr != nil {
+			return nil, errors.Trace(pErr)
+		}
+		stats.Capacity["disk_"+p.Mountpoint] = strconv.FormatUint(pUsage.Total, 10)
+		stats.Usage["disk_"+p.Mountpoint] = strconv.FormatUint(pUsage.Used, 10)
+		pDiskPercent := float64(pUsage.Used) / float64(pUsage.Total)
+		stats.Percent["disk_"+p.Mountpoint] = strconv.FormatFloat(pDiskPercent, 'f', -1, 64)
+	}
+
 	netIO, err := gnet.IOCounters(false)
 	if err != nil {
 		return nil, errors.Trace(err)
