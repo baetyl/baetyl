@@ -90,10 +90,9 @@ var (
 )
 
 func initTemplate(t *testing.T) string {
-	tmpDir, err := os.MkdirTemp("", "pages")
-	assert.Nil(t, err)
+	tmpDir := t.TempDir()
 	activePath := path.Join(tmpDir, "active.html.template")
-	err = os.WriteFile(activePath, []byte(templateActive), 0755)
+	err := os.WriteFile(activePath, []byte(templateActive), 0755)
 	assert.Nil(t, err)
 	failedPath := path.Join(tmpDir, "filed.html.template")
 	err = os.WriteFile(failedPath, []byte(templateFailed), 0755)
@@ -104,8 +103,7 @@ func initTemplate(t *testing.T) string {
 }
 
 func TestActivate_Server(t *testing.T) {
-	tmpDir := initTemplate(t)
-	defer os.RemoveAll(tmpDir)
+	initTemplate(t)
 	c := &config.Config{}
 	c.Init.Active.Collector.Server.Listen = "www.baidu.com"
 	c.Init.Active.Collector.Attributes = []config.Attribute{

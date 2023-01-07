@@ -63,12 +63,10 @@ auEzbTMl3QfCCeqIcloGgq72YIDedNc1MQ==
 func TestNewInitialize(t *testing.T) {
 	cfg := config.Config{}
 	// with cert
-	tmpDir, err := os.MkdirTemp("", "init")
-	assert.Nil(t, err)
-	defer os.RemoveAll(tmpDir)
+	tmpDir := t.TempDir()
 
 	certPath := path.Join(tmpDir, "cert.pem")
-	err = os.WriteFile(certPath, []byte("cert"), 0755)
+	err := os.WriteFile(certPath, []byte("cert"), 0755)
 	assert.Nil(t, err)
 	cfg.Node.Cert = certPath
 
