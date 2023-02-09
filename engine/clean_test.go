@@ -23,9 +23,7 @@ func TestRecycle(t *testing.T) {
 	assert.NotNil(t, f)
 	fmt.Println("-->tempfile", f.Name())
 
-	dir, err := os.MkdirTemp("", t.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, dir)
+	dir := t.TempDir()
 	fmt.Println("-->tempdir", dir)
 
 	sto, err := store.NewBoltHold(f.Name())
@@ -378,8 +376,7 @@ func TestGetDelObjectCfgs(t *testing.T) {
 }
 
 func TestCleanObjectStorage(t *testing.T) {
-	objDir, err := os.MkdirTemp("", t.Name())
-	assert.NoError(t, err)
+	objDir := t.TempDir()
 	nod, engCfg, sto := prepare(t)
 	node1 := &specv1.Node{
 		Name:    "node1",
@@ -409,7 +406,7 @@ func TestCleanObjectStorage(t *testing.T) {
 		Version: "v2",
 	}}
 	node1.Report.SetAppInfos(false, appinfo)
-	_, err = nod.Report(node1.Report, false)
+	_, err := nod.Report(node1.Report, false)
 	assert.NoError(t, err)
 	objCfg1 := specv1.Configuration{
 		Name:    "cfg1",

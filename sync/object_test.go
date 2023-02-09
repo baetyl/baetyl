@@ -61,9 +61,7 @@ func TestObject_DownloadObject(t *testing.T) {
 	assert.NotNil(t, nod)
 
 	content := []byte("test")
-	dir, err := os.MkdirTemp("", t.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, dir)
+	dir := t.TempDir()
 	fmt.Println("-->tempdir", dir)
 	file1 := filepath.Join(dir, "file1")
 	os.WriteFile(file1, content, 0644)

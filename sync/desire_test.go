@@ -111,9 +111,7 @@ func TestSyncProcessConfiguration(t *testing.T) {
 	cfg.Name = "cfg"
 
 	// object process
-	dir, err := os.MkdirTemp("", t.Name())
-	assert.NoError(t, err)
-	assert.NotNil(t, dir)
+	dir := t.TempDir()
 	syn.cfg.Sync.Download.Path = dir
 	file1 := filepath.Join(dir, "file1")
 	os.WriteFile(file1, content, 0644)
