@@ -28,7 +28,13 @@ func (c *chain) connecting() error {
 		c.pb.Publish(c.upside, msg)
 	}()
 
-	err := c.ami.RemoteCommand(c.debugOptions, c.pipe)
+	var err error
+	// if host is specified, this is a websocket cmd, else ssh
+	if c.debugOptions.WebsocketOptions.Host != "" {
+		err = c.ami.RemoteWebsocket(c.ctx, c.debugOptions, c.pipe)
+	} else {
+		err = c.ami.RemoteCommand(c.debugOptions, c.pipe)
+	}
 	if err != nil {
 		c.log.Error("failed to start remote debug", log.Error(err))
 		c.Close()

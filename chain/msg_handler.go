@@ -2,7 +2,6 @@ package chain
 
 import (
 	"bytes"
-	"time"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -38,7 +37,7 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 			return errors.Trace(err)
 		}
 		if bytes.Equal([]byte(ExitCmd), cmd) {
-			return h.onExitMessage(cmd)
+			return h.onExitMessage()
 		}
 		_, err = h.pipe.InWriter.Write(cmd)
 		if err != nil {
@@ -62,18 +61,9 @@ func (h *chainHandler) OnMessage(msg interface{}) error {
 	return nil
 }
 
-func (h *chainHandler) onExitMessage(cmd []byte) error {
-	closeTimer := time.NewTimer(time.Second * 2)
-	defer closeTimer.Stop()
-	go func() {
-		_, err := h.pipe.InWriter.Write(cmd)
-		if err != nil {
-			h.log.Error("failed to write debug command", log.Error(err))
-		}
-		closeTimer.Reset(0)
-	}()
-	<-closeTimer.C
-	return h.pipe.InWriter.Close()
+// onExitMessage call cancel function before close
+func (h *chainHandler) onExitMessage() error {
+	return h.Cancel()
 }
 
 func (h *chainHandler) OnTimeout() error {

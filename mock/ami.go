@@ -5,6 +5,7 @@
 package mock
 
 import (
+	context "context"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	ami "github.com/baetyl/baetyl/v2/ami"
 	gomock "github.com/golang/mock/gomock"
@@ -150,6 +151,20 @@ func (m *MockAMI) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error {
 func (mr *MockAMIMockRecorder) RemoteCommand(option, pipe interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteCommand", reflect.TypeOf((*MockAMI)(nil).RemoteCommand), option, pipe)
+}
+
+// RemoteWebsocket mocks base method
+func (m *MockAMI) RemoteWebsocket(ctx context.Context, option *ami.DebugOptions, pipe ami.Pipe) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoteWebsocket", ctx, option, pipe)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoteWebsocket indicates an expected call of RemoteWebsocket
+func (mr *MockAMIMockRecorder) RemoteWebsocket(ctx, option, pipe interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteWebsocket", reflect.TypeOf((*MockAMI)(nil).RemoteWebsocket), ctx, option, pipe)
 }
 
 // RemoteLogs mocks base method

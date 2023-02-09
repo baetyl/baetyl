@@ -2,6 +2,7 @@ package native
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -13,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/baetyl/baetyl-go/v2/context"
 	gctx "github.com/baetyl/baetyl-go/v2/context"
+	v2context "github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl-go/v2/http"
+	gHTTP "github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/native"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -65,7 +66,7 @@ type nativeImpl struct {
 }
 
 func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
-	hostPathLib, err := context.HostPathLib()
+	hostPathLib, err := v2context.HostPathLib()
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -90,6 +91,10 @@ func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 // TODO: impl native UpdateNodeLabels
 func (impl *nativeImpl) UpdateNodeLabels(string, map[string]string) error {
 	return errors.New("failed to update node label, function has not been implemented")
+}
+
+func (impl *nativeImpl) RemoteWebsocket(ctx context.Context, option *ami.DebugOptions, pipe ami.Pipe) error {
+	return ami.RemoteWebsocket(ctx, option, pipe)
 }
 
 // RemoteCommand Implement of native
@@ -265,7 +270,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 				return errors.Trace(err)
 			}
 
-			s.Env = setEnv(s.Env, context.KeyServiceDynamicPort, strconv.Itoa(port))
+			s.Env = setEnv(s.Env, v2context.KeyServiceDynamicPort, strconv.Itoa(port))
 
 			ports = append(ports, port)
 
@@ -273,13 +278,13 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			env := []string{
 				// MacOS won't set PATH, but function runtimes need it
 				fmt.Sprintf("%s=%s", "PATH", os.Getenv("PATH")),
-				fmt.Sprintf("%s=%s", context.KeyBaetylHostPathLib, impl.hostPathLib),
+				fmt.Sprintf("%s=%s", v2context.KeyBaetylHostPathLib, impl.hostPathLib),
 			}
 			for _, item := range s.Env {
 				env = append(env, fmt.Sprintf("%s=%s", item.Name, item.Value))
 			}
 
-			sysCfg := context.SystemConfig{}
+			sysCfg := v2context.SystemConfig{}
 			confFilePath := filepath.Join(insDir, program.ProgramConfYaml)
 			if utils.FileExists(confFilePath) {
 				err = utils.LoadYAML(confFilePath, &sysCfg)
@@ -704,7 +709,7 @@ func (impl *nativeImpl) CollectNodeInfo() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	plat := context.Platform()
+	plat := v2context.Platform()
 	ias, err := net.InterfaceAddrs()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -841,9 +846,9 @@ func (impl *nativeImpl) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse,
 	} else {
 		url = PrefixHTTP + LocalAddress + req.Params
 	}
-	ops := http.NewClientOptions()
+	ops := gHTTP.NewClientOptions()
 	ops.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-	cli := http.NewClient(ops)
+	cli := gHTTP.NewClient(ops)
 	impl.log.Debug("rpc http start", log.Any("url", url), log.Any("method", req.Method))
 
 	var buf []byte
@@ -859,7 +864,7 @@ func (impl *nativeImpl) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse,
 		StatusCode: res.StatusCode,
 		Header:     res.Header,
 	}
-	response.Body, err = http.HandleResponse(res)
+	response.Body, err = gHTTP.HandleResponse(res)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

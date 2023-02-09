@@ -3,10 +3,16 @@ package kube
 import (
 	"context"
 	"fmt"
+	"io"
+	"net"
+	"net/http"
 	"os"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/baetyl/baetyl-go/v2/log"
+	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -100,4 +106,92 @@ func TestUpdateNodeLabels(t *testing.T) {
 	no, err = am.cli.core.Nodes().Get(context.TODO(), "node1", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.EqualValues(t, newLabels, no.Labels)
+}
+
+func TestWebsocket(t *testing.T) {
+	impl := initExecKubeAMI(t)
+	str := "testEOF"
+	port, err := GetFreePort()
+	assert.NoError(t, err)
+	option := &ami.DebugOptions{
+		WebsocketOptions: ami.WebsocketOptions{
+			Host: "127.0.0.1:" + strconv.Itoa(port),
+			Path: "",
+		},
+	}
+	pipe := ami.Pipe{}
+	pipe.InReader, pipe.InWriter = io.Pipe()
+	pipe.OutReader, pipe.OutWriter = io.Pipe()
+	svc := newWsServer(port)
+
+	go func() {
+		dt := make([]byte, 10240)
+		n, readErr := pipe.OutReader.Read(dt)
+		assert.NoError(t, readErr)
+		assert.Equal(t, string(dt[0:n]), str)
+	}()
+	go func() {
+		time.Sleep(time.Millisecond)
+		_, err = pipe.InWriter.Write([]byte(str))
+		assert.NoError(t, err)
+	}()
+	time.Sleep(time.Millisecond)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(time.Second * 1)
+		cancel()
+		svc.Shutdown(ctx)
+	}()
+	impl.RemoteWebsocket(ctx, option, pipe)
+}
+
+func GetFreePort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port, nil
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func handleConnections(w http.ResponseWriter, r *http.Request) {
+	// 升级为 WebSocket 连接
+	conn, connErr := upgrader.Upgrade(w, r, nil)
+	if connErr != nil {
+		fmt.Println(connErr)
+		return
+	}
+	defer conn.Close()
+	for {
+		// 读取消息
+		msgType, msg, err := conn.ReadMessage()
+		if err != nil {
+			break
+		}
+
+		// 发送消息
+		err = conn.WriteMessage(msgType, msg)
+		if err != nil {
+			break
+		}
+	}
+}
+
+func newWsServer(port int) *http.Server {
+	http.HandleFunc("/", handleConnections)
+	server := &http.Server{Addr: ":" + strconv.Itoa(port), Handler: nil}
+	go func() {
+		server.ListenAndServe()
+	}()
+	return server
 }
