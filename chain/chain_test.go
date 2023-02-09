@@ -71,6 +71,12 @@ func TestNewChain(t *testing.T) {
 	err = c.Close()
 	assert.NoError(t, err)
 
+	// websocket case
+	data["host"] = "127.0.0.1"
+	data["path"] = ""
+	c, err = NewChain(cfg, ami, data)
+	assert.NoError(t, err)
+
 	// bad case
 	cfg.Plugin.Pubsub = "not exist"
 	_, err = NewChain(cfg, ami, data)
