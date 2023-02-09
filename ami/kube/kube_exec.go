@@ -52,6 +52,10 @@ func (k *kubeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) error 
 	return nil
 }
 
+func (k *kubeImpl) RemoteWebsocket(ctx context.Context, option *ami.DebugOptions, pipe ami.Pipe) error {
+	return ami.RemoteWebsocket(ctx, option, pipe)
+}
+
 func (k *kubeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
 	req := k.cli.core.RESTClient().Get().Resource("pods").
 		Name(option.Name).Namespace(option.Namespace).SubResource("log")

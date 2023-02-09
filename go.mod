@@ -7,6 +7,7 @@ replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221
 require (
 	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20221125025423-0daa4f3a52d9
 	github.com/golang/mock v1.6.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.12
 	github.com/jinzhu/copier v0.1.0
 	github.com/kardianos/service v1.2.1
@@ -58,7 +59,6 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
