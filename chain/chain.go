@@ -18,6 +18,7 @@ import (
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/plugin"
 	"github.com/baetyl/baetyl/v2/sync"
+	utils2 "github.com/baetyl/baetyl/v2/utils"
 )
 
 const (
@@ -198,7 +199,7 @@ func (c *chain) Close() error {
 
 func (c *chain) chainReading() error {
 	for {
-		dt := make([]byte, 10240)
+		dt := make([]byte, utils2.ReadBuff)
 		n, err := c.pipe.OutReader.Read(dt)
 		if err != nil {
 			c.log.Error("read remote message close", log.Error(err))
