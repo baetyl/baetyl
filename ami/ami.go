@@ -15,6 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/baetyl/baetyl/v2/config"
+	utils2 "github.com/baetyl/baetyl/v2/utils"
 )
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock -source=ami.go AMI
@@ -185,7 +186,7 @@ func RemoteWebsocket(ctx context.Context, option *DebugOptions, pipe Pipe) error
 	}()
 	// Read from pipe util this reader is closed
 	for {
-		dt := make([]byte, 10240)
+		dt := make([]byte, utils2.ReadBuff)
 		n, writeErr := pipe.InReader.Read(dt)
 		if writeErr != nil {
 			log.L().Warn("InReader close", log.Error(writeErr))

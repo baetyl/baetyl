@@ -32,6 +32,10 @@ const (
 )
 
 const (
+	ReadBuff = 100 * KiByte
+)
+
+const (
 	EnvKeyNodeNamespace = "BAETYL_NODE_NAMESPACE"
 )
 
