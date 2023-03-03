@@ -37,6 +37,7 @@ func (active *Activate) handleView(w http.ResponseWriter, req *http.Request) {
 	attrs := map[string]interface{}{
 		"Attributes": active.cfg.Init.Active.Collector.Attributes,
 		"Nodeinfo":   active.cfg.Init.Active.Collector.NodeInfo,
+		"Serial":     active.cfg.Init.Active.Collector.Serial,
 	}
 	tpl, err := template.ParseFiles(active.cfg.Init.Active.Collector.Server.Pages + "/active.html.template")
 	if err != nil {
@@ -72,6 +73,10 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 	for _, ni := range active.cfg.Init.Active.Collector.NodeInfo {
 		val := req.Form.Get(ni.Name)
 		attributes[ni.Name] = val
+	}
+	for _, si := range active.cfg.Init.Active.Collector.Serial {
+		val := req.Form.Get(si.Name)
+		attributes[si.Name] = val
 	}
 	active.log.Info("active", log.Any("server attrs", attributes))
 	active.attrs = attributes
