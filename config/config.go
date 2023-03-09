@@ -105,6 +105,7 @@ type InitConfig struct {
 			Fingerprints []Fingerprint `yaml:"fingerprints" json:"fingerprints"`
 			Attributes   []Attribute   `yaml:"attributes" json:"attributes"`
 			NodeInfo     []Attribute   `yaml:"nodeinfo" json:"nodeinfo"`
+			Serial       []Attribute   `yaml:"serial" json:"serial"`
 			Server       Server        `yaml:"server" json:"server"`
 		} `yaml:"collector" json:"collector"`
 	} `yaml:"active" json:"active"`
