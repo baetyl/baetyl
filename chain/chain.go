@@ -214,6 +214,9 @@ func (c *chain) chainReading() error {
 			},
 			Content: v1.LazyValue{Value: dt[0:n]},
 		}
+		if n >= utils2.KiByte {
+			c.log.Debug("ws pipe large data read", log.Any("n", n))
+		}
 		err = c.pb.Publish(c.upside, msg)
 		if err != nil {
 			c.log.Error("failed to publish message", log.Any("topic", c.upside), log.Error(err))
