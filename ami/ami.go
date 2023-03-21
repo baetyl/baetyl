@@ -66,6 +66,9 @@ type AMI interface {
 	// RemoteLogs remote logs
 	RemoteLogs(option *LogsOptions, pipe Pipe) error
 
+	// RemoteDescribePod remote describe pod
+	RemoteDescribe(tp, ns, n string) (string, error)
+
 	UpdateNodeLabels(string, map[string]string) error
 
 	// RPCApp call baetyl app from baetyl-core
