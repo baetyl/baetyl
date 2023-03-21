@@ -314,6 +314,29 @@ func TestHandlerDownsideLabels(t *testing.T) {
 	err = h.OnMessage(msg11)
 	assert.Error(t, err)
 	engMsgWG.Wait()
+
+	// msg12 describe
+	engMsgWG.Add(1)
+	msg12 := &specV1.Message{
+		Kind: specV1.MessageCMD,
+		Metadata: map[string]string{
+			"cmd":          specV1.MessageCommandDescribe,
+			"resourceType": "po",
+			"namespace":    "baetyl-edge",
+			"name":         "feitian-lili-945",
+		},
+	}
+	ami.EXPECT().RemoteDescribe(msg12.Metadata["resourceType"],
+		msg12.Metadata["namespace"], msg12.Metadata["name"]).Return("desc", nil).Times(1)
+	handler.check = func(msg interface{}) {
+		m, ok := msg.(*specV1.Message)
+		assert.True(t, ok)
+		assert.Equal(t, "true", m.Metadata["success"])
+		engMsgWG.Done()
+	}
+	err = h.OnMessage(msg12)
+	assert.NoError(t, err)
+	engMsgWG.Wait()
 }
 
 type msgLabelUpside struct {

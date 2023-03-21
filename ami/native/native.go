@@ -149,6 +149,11 @@ func (impl *nativeImpl) RemoteLogs(*ami.LogsOptions, ami.Pipe) error {
 	return errors.New("failed to start remote debugging, function has not been implemented")
 }
 
+// TODO: impl native RemoteDescribePod
+func (impl *nativeImpl) RemoteDescribe(_, _, _ string) (string, error) {
+	return "", errors.New("failed to start remote describe pod, function has not been implemented")
+}
+
 func (impl *nativeImpl) GetModeInfo() (interface{}, error) {
 	return "", nil
 }

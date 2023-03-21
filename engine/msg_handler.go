@@ -91,6 +91,11 @@ func (h *handlerDownside) OnMessage(msg interface{}) error {
 			if err != nil {
 				return errors.Trace(err)
 			}
+		case v1.MessageCommandDescribe:
+			err := h.describe(key, m)
+			if err != nil {
+				return errors.Trace(err)
+			}
 		default:
 			h.log.Debug("unknown command", log.Any("cmd", m.Metadata["cmd"]))
 		}
@@ -357,6 +362,30 @@ func (h *handlerDownside) agentControl(key string, m *v1.Message) error {
 			"stat":    strconv.FormatBool(res),
 		},
 		Content: v1.LazyValue{},
+	}
+	err = h.pb.Publish(sync.TopicUpside, response)
+	if err != nil {
+		h.log.Error("failed to publish message", log.Any("topic", sync.TopicUpside), log.Any("chain name", key), log.Error(err))
+	}
+	return nil
+}
+
+func (h *handlerDownside) describe(key string, m *v1.Message) error {
+	ns, n := m.Metadata["namespace"], m.Metadata["name"]
+	resourceType := m.Metadata["resourceType"]
+	res, err := h.ami.RemoteDescribe(resourceType, ns, n)
+	if err != nil {
+		h.publishFailedMsg(key, err.Error(), m)
+		return errors.Trace(err)
+	}
+	h.log.Debug("describe pod success", log.Any("key", key))
+	response := &v1.Message{
+		Kind: v1.MessageData,
+		Metadata: map[string]string{
+			"success": "true",
+			"token":   m.Metadata["token"],
+		},
+		Content: v1.LazyValue{Value: []byte(res)},
 	}
 	err = h.pb.Publish(sync.TopicUpside, response)
 	if err != nil {
