@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/baetyl/baetyl/v2/config"
-	utils2 "github.com/baetyl/baetyl/v2/utils"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 //go:generate mockgen -destination=../mock/ami.go -package=mock -source=ami.go AMI
@@ -169,7 +169,7 @@ func RemoteWebsocket(ctx context.Context, option *DebugOptions, pipe Pipe) error
 	// Read from websocket and send to pipe
 	go func() {
 		for {
-			msg, r, readErr := c.NextReader()
+			msg, r, readErr := c.ReadMessage()
 			if readErr != nil {
 				log.L().Warn("failed to read remote message", log.Error(readErr))
 				return
@@ -177,7 +177,7 @@ func RemoteWebsocket(ctx context.Context, option *DebugOptions, pipe Pipe) error
 			if msg == websocket.CloseMessage {
 				return
 			}
-			_, readErr = io.Copy(pipe.OutWriter, r)
+			_, readErr = pipe.OutWriter.Write(r)
 			if readErr != nil {
 				log.L().Error("failed to write up message", log.Error(readErr))
 				return
@@ -186,7 +186,7 @@ func RemoteWebsocket(ctx context.Context, option *DebugOptions, pipe Pipe) error
 	}()
 	// Read from pipe util this reader is closed
 	for {
-		dt := make([]byte, utils2.ReadBuff)
+		dt := make([]byte, utils.ReadBuff)
 		n, writeErr := pipe.InReader.Read(dt)
 		if writeErr != nil {
 			log.L().Warn("InReader close", log.Error(writeErr))
