@@ -398,7 +398,7 @@ func assembleUrl(req *v1.RPCRequest) string {
 	url := req.App
 	if !strings.Contains(url, PrefixHTTP) && !strings.Contains(url, PrefixHTTPS) {
 		if req.System {
-			url = PrefixHTTPS + url + ".baetyl-edge-system"
+			url = PrefixHTTP + url + ".baetyl-edge-system"
 		} else {
 			url = PrefixHTTP + url + ".baetyl-edge"
 		}

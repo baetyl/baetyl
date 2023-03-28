@@ -389,7 +389,7 @@ func TestHandlerDownsideRPC(t *testing.T) {
 		Header:     map[string][]string{},
 		Body:       []byte{},
 	}
-	ami.EXPECT().RPCApp("https://app.baetyl-edge-system", gomock.Any()).Return(res0, nil).Times(1)
+	ami.EXPECT().RPCApp("http://app.baetyl-edge-system", gomock.Any()).Return(res0, nil).Times(1)
 	handler.check = func(msg interface{}) {
 		m, ok := msg.(*specV1.Message)
 		assert.True(t, ok)
