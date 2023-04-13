@@ -337,7 +337,10 @@ func (e *engineImpl) reportAppStatsIfNeed(isSys bool, r specv1.Report, stats map
 		return nil
 	}
 	appStats := make([]specv1.AppStats, 0)
-	for _, s := range stats {
+	for k, s := range stats {
+		if s.Cause != "" && s.Name == "" {
+			s.Name = k
+		}
 		appStats = append(appStats, s)
 	}
 	r.SetAppStats(isSys, appStats)
