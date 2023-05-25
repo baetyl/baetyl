@@ -5,7 +5,7 @@ go 1.18
 replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3
 
 require (
-	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20230321074828-070b729fab13
+	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20230525072844-458605586fd7
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.12
@@ -16,11 +16,11 @@ require (
 	github.com/qiangxue/fasthttp-routing v0.0.0-20160225050629-6ccdc2a18d87
 	github.com/shirou/gopsutil/v3 v3.22.9
 	github.com/spf13/cobra v1.6.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d
 	github.com/valyala/fasthttp v1.34.0
 	go.etcd.io/bbolt v1.3.6
-	golang.org/x/crypto v0.1.0
+	golang.org/x/crypto v0.5.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.26.3
@@ -54,9 +54,9 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/swag v0.19.14 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
-	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-playground/validator/v10 v10.11.1 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
