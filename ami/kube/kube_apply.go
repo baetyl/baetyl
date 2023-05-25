@@ -83,11 +83,11 @@ func (k *kubeImpl) applyConfigurations(ns string, cfgs map[string]specv1.Configu
 		ocm, err := cmInterface.Get(context.TODO(), cfg.Name, metav1.GetOptions{})
 		if ocm != nil && err == nil {
 			cm.ResourceVersion = ocm.ResourceVersion
-			if _, err := cmInterface.Update(context.TODO(), cm, metav1.UpdateOptions{}); err != nil {
+			if _, err = cmInterface.Update(context.TODO(), cm, metav1.UpdateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			if _, err := cmInterface.Create(context.TODO(), cm, metav1.CreateOptions{}); err != nil {
+			if _, err = cmInterface.Create(context.TODO(), cm, metav1.CreateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
@@ -116,12 +116,12 @@ func (k *kubeImpl) applySecrets(ns string, secs map[string]specv1.Secret) error 
 		osec, err := secretInterface.Get(context.TODO(), sec.Name, metav1.GetOptions{})
 		if osec != nil && err == nil {
 			secret.ResourceVersion = osec.ResourceVersion
-			_, err := secretInterface.Update(context.TODO(), secret, metav1.UpdateOptions{})
+			_, err = secretInterface.Update(context.TODO(), secret, metav1.UpdateOptions{})
 			if err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			_, err := secretInterface.Create(context.TODO(), secret, metav1.CreateOptions{})
+			_, err = secretInterface.Create(context.TODO(), secret, metav1.CreateOptions{})
 			if err != nil {
 				return errors.Trace(err)
 			}
@@ -568,6 +568,7 @@ func prepareInfo(app *specv1.Application, imagePullSecrets []corev1.LocalObjectR
 		Containers:       containers,
 		ImagePullSecrets: imagePullSecrets,
 		HostNetwork:      app.HostNetwork,
+		DNSPolicy:        app.DNSPolicy,
 	}, nil
 }
 
@@ -623,7 +624,7 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 		}
 		as := k.cli.autoscale.HorizontalPodAutoscalers(ns)
 		for _, hpa := range hpas.Items {
-			if err := as.Delete(context.TODO(), hpa.Name, metav1.DeleteOptions{}); err != nil {
+			if err = as.Delete(context.TODO(), hpa.Name, metav1.DeleteOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
@@ -631,19 +632,19 @@ func (k *kubeImpl) deleteApplication(ns, name string) error {
 
 	deployInterface := k.cli.app.Deployments(ns)
 	for _, d := range deploys.Items {
-		if err := deployInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
+		if err = deployInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
 	daemonInterface := k.cli.app.DaemonSets(ns)
 	for _, d := range daemons.Items {
-		if err := daemonInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
+		if err = daemonInterface.Delete(context.TODO(), d.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
 	svcInterface := k.cli.core.Services(ns)
 	for _, s := range services.Items {
-		if err := svcInterface.Delete(context.TODO(), s.Name, metav1.DeleteOptions{}); err != nil {
+		if err = svcInterface.Delete(context.TODO(), s.Name, metav1.DeleteOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
@@ -720,11 +721,11 @@ func (k *kubeImpl) applyServices(ns string, svcs map[string]*corev1.Service) err
 		if osvc != nil && err == nil {
 			svc.ResourceVersion = osvc.ResourceVersion
 			svc.Spec.ClusterIP = osvc.Spec.ClusterIP
-			if _, err := svcInterface.Update(context.TODO(), svc, metav1.UpdateOptions{}); err != nil {
+			if _, err = svcInterface.Update(context.TODO(), svc, metav1.UpdateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		} else {
-			if _, err := svcInterface.Create(context.TODO(), svc, metav1.CreateOptions{}); err != nil {
+			if _, err = svcInterface.Create(context.TODO(), svc, metav1.CreateOptions{}); err != nil {
 				return errors.Trace(err)
 			}
 		}
@@ -737,11 +738,11 @@ func (k *kubeImpl) applyHPA(ns string, hpa *v2.HorizontalPodAutoscaler) error {
 
 	h, err := as.Get(context.TODO(), hpa.Name, metav1.GetOptions{})
 	if h != nil && err == nil {
-		if _, err := as.Update(context.TODO(), hpa, metav1.UpdateOptions{}); err != nil {
+		if _, err = as.Update(context.TODO(), hpa, metav1.UpdateOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	} else {
-		if _, err := as.Create(context.TODO(), hpa, metav1.CreateOptions{}); err != nil {
+		if _, err = as.Create(context.TODO(), hpa, metav1.CreateOptions{}); err != nil {
 			return errors.Trace(err)
 		}
 	}
