@@ -832,7 +832,7 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	}
 	var nodeStatsMerge map[string]interface{}
 	if len(gpuExts) > 0 {
-		if ext, ok := gpuExts[ho.Hostname]; ok {
+		if ext, ok := gpuExts[ho.Hostname]; ok && ext != nil {
 			nodeStatsMerge = ext.(map[string]interface{})
 		}
 	}
