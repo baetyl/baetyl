@@ -153,12 +153,12 @@ func (k *kubeImpl) CollectNodeStats() (map[string]interface{}, error) {
 
 		var nodeStatsMerge map[string]interface{}
 		if len(gpuExts) > 0 {
-			if ext, ok := gpuExts[node.Name]; ok {
+			if ext, ok := gpuExts[node.Name]; ok && ext != nil {
 				nodeStatsMerge = ext.(map[string]interface{})
 			}
 		}
 		if len(nodeExts) > 0 {
-			if ext, ok := nodeExts[node.Name]; ok {
+			if ext, ok := nodeExts[node.Name]; ok && ext != nil {
 				if nodeStatsMerge == nil {
 					nodeStatsMerge = make(map[string]interface{}, 0)
 				}
