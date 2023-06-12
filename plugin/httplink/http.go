@@ -65,6 +65,9 @@ func (l *httpLink) Receive() (<-chan *specv1.Message, <-chan error) {
 	return nil, nil
 }
 
+// Request 现在 http link 支持以下类型消息的处理
+// 上报类：上报 report(默认)、设备消息上报 deviceReport、设备生命周期上报 thing.lifecycle.post
+// 同步类：期望 desire(默认)、设备消息同步 deviceDesire
 func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	l.log.Debug("http link send request", log.Any("message", msg))
 	pld, err := json.Marshal(msg.Content)
@@ -73,13 +76,17 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 	}
 	var data []byte
 	res := &specv1.Message{Kind: msg.Kind}
+	if msg.Metadata == nil {
+		msg.Metadata = map[string]string{}
+	}
+	msg.Metadata["kind"] = string(msg.Kind)
 	switch msg.Kind {
-	case specv1.MessageReport:
+	case specv1.MessageReport, specv1.MessageDeviceReport, specv1.MessageDeviceLifecycleReport:
 		data, err = l.post(l.cfg.HTTPLink.ReportURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-	case specv1.MessageDesire:
+	case specv1.MessageDesire, specv1.MessageDeviceDesire:
 		data, err = l.post(l.cfg.HTTPLink.DesireURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)
