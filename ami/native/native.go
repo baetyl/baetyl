@@ -158,7 +158,9 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 	if option.TailLines != nil {
 		tailLines = *option.TailLines
 	}
-	cmd := exec.Command("tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
 		return errors.Trace(err)
