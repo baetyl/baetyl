@@ -40,6 +40,8 @@ type Pipe struct {
 	InWriter  *io.PipeWriter
 	OutReader *io.PipeReader
 	OutWriter *io.PipeWriter
+	Ctx       context.Context
+	Cancel    context.CancelFunc
 }
 
 // AMI app model interfaces

@@ -71,6 +71,8 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string, needNativeOp
 	pipe.OutReader, pipe.OutWriter = io.Pipe()
 
 	ctx, cancel := context.WithCancel(context.Background())
+	pipe.Ctx = ctx
+	pipe.Cancel = cancel
 	c := &chain{
 		ami:    a,
 		data:   data,
@@ -180,7 +182,7 @@ func (c *chain) Cancel() error {
 
 func (c *chain) Close() error {
 	c.processor.Close()
-
+	c.cancel()
 	err := c.pipe.InWriter.Close()
 	if err != nil {
 		c.log.Warn("failed to close chain in writer", log.Error(err))
