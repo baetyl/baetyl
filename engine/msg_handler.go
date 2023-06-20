@@ -147,7 +147,7 @@ func (h *handlerDownside) viewLogs(key string, m *v1.Message) error {
 	}
 
 	// create new chain
-	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
+	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata, false)
 	if err != nil {
 		h.publishFailedMsg(key, ErrCreateChain, m)
 		return errors.Trace(err)
@@ -175,7 +175,7 @@ func (h *handlerDownside) connect(key string, m *v1.Message) error {
 	h.log.Debug("new chain", log.Any("chain name", key))
 
 	// create new chain
-	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata)
+	c, err := chain.NewChain(h.cfg, h.ami, m.Metadata, true)
 	if err != nil {
 		h.publishFailedMsg(key, ErrCreateChain, m)
 		return errors.Trace(err)

@@ -60,7 +60,7 @@ type chain struct {
 	cancel       context.CancelFunc
 }
 
-func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, error) {
+func NewChain(cfg config.Config, a ami.AMI, data map[string]string, needNativeOptions bool) (Chain, error) {
 	pl, err := v2plugin.GetPlugin(cfg.Plugin.Pubsub)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -126,7 +126,7 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 			Host: address,
 			Path: path,
 		}
-	} else if c.mode == v2context.RunModeNative {
+	} else if c.mode == v2context.RunModeNative && true == needNativeOptions {
 		port, ok := data["port"]
 		if !ok {
 			return nil, ErrParseData
@@ -145,6 +145,7 @@ func NewChain(cfg config.Config, a ami.AMI, data map[string]string) (Chain, erro
 			Username: userName,
 			Password: password,
 		}
+
 	}
 	c.debugOptions = &opt
 	c.downside = fmt.Sprintf("%s_%s_%s_%s_%s", namespace, name, container, token, "down")
