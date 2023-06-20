@@ -53,6 +53,8 @@ const (
 	PrefixHTTPS  = "https://"
 )
 
+const CmdKillErr = "signal: killed"
+
 func init() {
 	ami.Register("native", newNativeImpl)
 }
@@ -158,9 +160,7 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 	if option.TailLines != nil {
 		tailLines = *option.TailLines
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	cmd := exec.CommandContext(ctx, "tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
+	cmd := exec.CommandContext(pipe.Ctx, "tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
 		return errors.Trace(err)
@@ -176,6 +176,9 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 	}
 	err = cmd.Wait()
 	if err != nil {
+		if err.Error() == CmdKillErr {
+			return nil
+		}
 		return errors.Trace(err)
 	}
 	return nil
