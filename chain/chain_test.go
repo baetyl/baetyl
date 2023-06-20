@@ -52,16 +52,16 @@ func TestNewChain(t *testing.T) {
 	ami := mock.NewMockAMI(ctl)
 
 	t.Setenv(context.KeyRunMode, context.RunModeNative)
-	c, err := NewChain(cfg, ami, data)
+	c, err := NewChain(cfg, ami, data, true)
 	assert.Error(t, err, ErrParseData)
 	data["port"] = "22"
-	c, err = NewChain(cfg, ami, data)
+	c, err = NewChain(cfg, ami, data, true)
 	assert.Error(t, err, ErrParseData)
 	data["userName"] = "root"
-	c, err = NewChain(cfg, ami, data)
+	c, err = NewChain(cfg, ami, data, true)
 	assert.Error(t, err, ErrParseData)
 	data["password"] = "1234"
-	c, err = NewChain(cfg, ami, data)
+	c, err = NewChain(cfg, ami, data, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 
@@ -74,12 +74,12 @@ func TestNewChain(t *testing.T) {
 	// websocket case
 	data["host"] = "127.0.0.1"
 	data["path"] = ""
-	c, err = NewChain(cfg, ami, data)
+	c, err = NewChain(cfg, ami, data, true)
 	assert.NoError(t, err)
 
 	// bad case
 	cfg.Plugin.Pubsub = "not exist"
-	_, err = NewChain(cfg, ami, data)
+	_, err = NewChain(cfg, ami, data, true)
 	assert.Error(t, err)
 }
 
@@ -87,7 +87,7 @@ func TestChainMsg(t *testing.T) {
 	cfg, ctl, data := initChainEnv(t)
 	a := mock.NewMockAMI(ctl)
 
-	c, err := NewChain(cfg, a, data)
+	c, err := NewChain(cfg, a, data, false)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 

@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -144,9 +145,38 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) e
 	return nil
 }
 
-// TODO: impl native RemoteLogs
-func (impl *nativeImpl) RemoteLogs(*ami.LogsOptions, ami.Pipe) error {
-	return errors.New("failed to start remote debugging, function has not been implemented")
+// RemoteLogs use command tail -f
+func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
+	logPath := impl.logHostPath
+	pathArr := strings.Split(option.Name, ".")
+	if len(pathArr) != 5 {
+		return errors.Trace(errors.New("log path error"))
+	}
+	logPath = logPath + "/" + pathArr[0] + "/" + pathArr[1] + "/" + pathArr[2] + "/" + pathArr[3] + "-" + pathArr[4] + ".log"
+
+	tailLines := int64(200)
+	if option.TailLines != nil {
+		tailLines = *option.TailLines
+	}
+	cmd := exec.Command("tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	defer stdoutPipe.Close()
+	err = cmd.Start()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	_, err = io.Copy(pipe.OutWriter, stdoutPipe)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	err = cmd.Wait()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 // TODO: impl native RemoteDescribePod
