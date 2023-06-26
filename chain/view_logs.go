@@ -4,7 +4,6 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	"github.com/baetyl/baetyl-go/v2/pubsub"
-	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 
 	"github.com/baetyl/baetyl/v2/ami"
 )
@@ -22,19 +21,6 @@ func (c *chain) logging() error {
 	c.logOpt.Name = c.debugOptions.Name
 	c.logOpt.Namespace = c.debugOptions.Namespace
 	c.logOpt.Container = c.debugOptions.Container
-
-	defer func() {
-		c.log.Debug("connecting close")
-		msg := &v1.Message{
-			Kind: v1.MessageCMD,
-			Metadata: map[string]string{
-				"success": "false",
-				"msg":     "disconnect",
-				"token":   c.token,
-			},
-		}
-		c.pb.Publish(c.upside, msg)
-	}()
 
 	err := c.ami.RemoteLogs(c.logOpt, c.pipe)
 	if err != nil {
