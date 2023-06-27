@@ -135,7 +135,7 @@ func (active *Activate) activating() error {
 }
 
 // Report reports info
-func (active *Activate) activate() {
+func (active *Activate) activate() error {
 	info := v1.ActiveRequest{
 		BatchName:     active.batch.name,
 		Namespace:     active.batch.namespace,
@@ -147,17 +147,17 @@ func (active *Activate) activate() {
 	fv, err := active.collect()
 	if err != nil {
 		active.log.Error("failed to get fingerprint value", log.Error(err))
-		return
+		return err
 	}
 	if fv == "" {
 		active.log.Error("fingerprint value is null", log.Error(err))
-		return
+		return errors.New("fingerprint value is null")
 	}
 	info.FingerprintValue = fv
 	data, err := json.Marshal(info)
 	if err != nil {
 		active.log.Error("failed to marshal activate info", log.Error(err))
-		return
+		return err
 	}
 	active.log.Debug("active", log.Any("info data", string(data)))
 
@@ -168,33 +168,34 @@ func (active *Activate) activate() {
 	resp, err := active.http.PostURL(url, bytes.NewReader(data), headers)
 	if err != nil {
 		active.log.Error("failed to send activate data", log.Error(err))
-		return
+		return err
 	}
 	data, err = http.HandleResponse(resp)
 	if err != nil {
 		active.log.Error("failed to send activate data", log.Error(err))
-		return
+		return err
 	}
 	var res v1.ActiveResponse
 	err = json.Unmarshal(data, &res)
 	if err != nil {
 		active.log.Error("failed to unmarshal activate response data returned", log.Error(err))
-		return
+		return err
 	}
 
 	if err = genCert(&active.cfg.Node, res.Certificate); err != nil {
 		active.log.Error("failed to create cert file", log.Error(err))
-		return
+		return err
 	}
 
 	if active.cfg.Plugin.Link == LinkMqtt {
 		if err = genCert(&active.cfg.MqttLink.Cert, res.MqttCert); err != nil {
 			active.log.Error("failed to create mqtt cert file", log.Error(err))
-			return
+			return err
 		}
 	}
 
 	active.sig <- true
+	return nil
 }
 
 func genCert(path *v2utils.Certificate, c v2utils.Certificate) error {

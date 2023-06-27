@@ -19,6 +19,7 @@ func (active *Activate) startServer() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", active.handleView)
 	mux.HandleFunc("/update", active.handleUpdate)
+	mux.HandleFunc("/active", active.handleActive)
 	srv := &http.Server{}
 	srv.Handler = mux
 	srv.Addr = active.cfg.Init.Active.Collector.Server.Listen
@@ -111,4 +112,56 @@ func (active *Activate) handleUpdate(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (active *Activate) handleActive(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "post only", http.StatusMethodNotAllowed)
+		return
+	}
+	err := req.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	attributes := make(map[string]string)
+	for _, attr := range active.cfg.Init.Active.Collector.Attributes {
+		val := req.Form.Get(attr.Name)
+		if val == "" {
+			attributes[attr.Name] = attr.Value
+		} else {
+			attributes[attr.Name] = val
+		}
+	}
+	for _, ni := range active.cfg.Init.Active.Collector.NodeInfo {
+		val := req.Form.Get(ni.Name)
+		attributes[ni.Name] = val
+	}
+	for _, si := range active.cfg.Init.Active.Collector.Serial {
+		val := req.Form.Get(si.Name)
+		attributes[si.Name] = val
+	}
+	active.log.Info("active", log.Any("server attrs", attributes))
+	active.attrs = attributes
+
+	if batchName, ok := attributes["batch"]; ok {
+		active.batch.name = batchName
+	}
+	if ns, ok := attributes["namespace"]; ok {
+		active.batch.namespace = ns
+	}
+	if initAddr, ok := attributes["initAddr"]; ok {
+		active.cfg.Init.Active.Address = initAddr
+
+	}
+	if syncAddr, ok := attributes["syncAddr"]; ok {
+		os.Setenv(KeyBaetylSyncAddr, syncAddr)
+	}
+
+	err = active.activate()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte("active success"))
 }
