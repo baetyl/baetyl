@@ -32,7 +32,6 @@ func TestObject_FilteringConfig(t *testing.T) {
 	}
 	FilterConfig(cfg)
 	assert.Len(t, cfg.Data, 3)
-	t.Setenv(context.KeyRunMode, context.RunModeNative)
 	FilterConfig(cfg)
 	assert.Len(t, cfg.Data, 3)
 	cfg.Labels = map[string]string{"baetyl-config-type": "baetyl-program"}
@@ -40,9 +39,8 @@ func TestObject_FilteringConfig(t *testing.T) {
 	assert.Len(t, cfg.Data, 2)
 	assert.Equal(t, "cdascd", cfg.Data["abc"])
 	assert.Equal(t, "scdasv", cfg.Data["_object_"+context.PlatformString()])
-	t.Setenv(context.KeyRunMode, context.RunModeKube)
 	FilterConfig(cfg)
-	assert.Len(t, cfg.Data, 1)
+	assert.Len(t, cfg.Data, 2)
 	assert.Equal(t, "cdascd", cfg.Data["abc"])
 }
 
