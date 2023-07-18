@@ -25,13 +25,12 @@ func FilterConfig(cfg *specv1.Configuration) {
 	if proLabel, ok := cfg.Labels["baetyl-config-type"]; !ok || proLabel != "baetyl-program" {
 		return
 	}
-	mode := context.RunMode()
 	platform := context.PlatformString()
 	for k, _ := range cfg.Data {
 		if !specv1.IsConfigObject(k) {
 			continue
 		}
-		if mode == context.RunModeNative && strings.Contains(k, platform) {
+		if strings.Contains(k, platform) {
 			continue
 		}
 		delete(cfg.Data, k)
