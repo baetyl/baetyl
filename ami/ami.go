@@ -114,6 +114,12 @@ type LogsOptions struct {
 	Timestamps   bool
 }
 
+type ProcessInfo struct {
+	Pid  int32
+	Name string
+	Ppid int32
+}
+
 func NewAMI(mode string, cfg config.AmiConfig) (AMI, error) {
 	mu.Lock()
 	defer mu.Unlock()
