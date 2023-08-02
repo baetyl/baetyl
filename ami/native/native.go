@@ -452,12 +452,35 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 				if err != nil {
 					return errors.Trace(err)
 				}
+				var childs *[]ami.ProcessInfo
+				if runtime.GOOS == "windows" {
+					pid, perr := svc.GetPid()
+					if perr != nil {
+						impl.log.Warn("failed to get svc pid", log.Error(err))
+					}
+					childs, perr = getChildProcessInfo(pid)
+					if perr != nil {
+						impl.log.Warn("failed to get child pid", log.Error(err))
+					}
+				}
 				if err = svc.Stop(); err != nil {
 					impl.log.Warn("failed to stop old app", log.Error(err))
 				}
 				if err = svc.Uninstall(); err != nil {
 					impl.log.Warn("failed to uninstall old app", log.Error(err))
 				}
+
+				if runtime.GOOS == "windows" {
+					for _, p := range *childs {
+						proc, err := process.NewProcess(p.Pid)
+						if err == nil {
+							proc.Kill()
+							impl.log.Warn("svc child process killed", log.Any("name", p.Name), log.Any("pid", p.Pid))
+							time.Sleep(100 * time.Millisecond)
+						}
+					}
+				}
+
 				err = os.RemoveAll(curSvcInsDir)
 				if err != nil {
 					return errors.Trace(err)
@@ -616,11 +639,39 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 }
 
 func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPrgName string) {
-	var pProc *process.Process
-	var childs []process.Process
-	processes, err := process.Processes()
+	childs, err := getChildProcessInfo(pid)
 	if err != nil {
 		return
+	}
+
+	mainInsStats, ok := curInsStats[curPrgName]
+	if !ok {
+		return
+	}
+
+	for _, cc := range *childs {
+		usage, err := getServiceInsStats(uint32(cc.Pid))
+		if err != nil {
+			return
+		}
+
+		curInsStats[cc.Name] = v1.InstanceStats{
+			Name:        cc.Name,
+			ServiceName: mainInsStats.ServiceName,
+			Usage:       usage,
+			Status:      mainInsStats.Status,
+			Pid:         cc.Pid,
+			PPid:        cc.Ppid,
+		}
+	}
+}
+
+func getChildProcessInfo(pid uint32) (*[]ami.ProcessInfo, error) {
+	var pProc *process.Process
+	var childs []ami.ProcessInfo
+	processes, err := process.Processes()
+	if err != nil {
+		return nil, err
 	}
 	for _, p := range processes {
 		if p.Pid == int32(pid) {
@@ -629,38 +680,12 @@ func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPr
 		}
 	}
 	if pProc == nil {
-		return
+		return nil, errors.Errorf("failed to get process of pid %d", pid)
 	}
 
 	getChild(pProc, &childs)
 
-	mainInsStats, ok := curInsStats[curPrgName]
-	if !ok {
-		return
-	}
-
-	for _, cc := range childs {
-		usage, err := getServiceInsStats(uint32(cc.Pid))
-		if err != nil {
-			return
-		}
-		name, err := cc.Name()
-		if err != nil {
-			return
-		}
-		cPPid, err := cc.Ppid()
-		if err != nil {
-
-		}
-		curInsStats[name] = v1.InstanceStats{
-			Name:        name,
-			ServiceName: mainInsStats.ServiceName,
-			Usage:       usage,
-			Status:      mainInsStats.Status,
-			Pid:         cc.Pid,
-			PPid:        cPPid,
-		}
-	}
+	return &childs, nil
 }
 
 func getPPID(pid uint32) (int32, error) {
@@ -677,13 +702,26 @@ func getPPID(pid uint32) (int32, error) {
 	return 1, nil
 }
 
-func getChild(p *process.Process, childs *[]process.Process) {
+func getChild(p *process.Process, childs *[]ami.ProcessInfo) {
 	c, _ := p.Children()
 	if len(c) == 0 {
 		return
 	}
 	for _, cc := range c {
-		*childs = append(*childs, *cc)
+		var procInfo ami.ProcessInfo
+		procInfo.Pid = cc.Pid
+		name, err := cc.Name()
+		if err != nil {
+			return
+		}
+		cPPid, err := cc.Ppid()
+		if err != nil {
+			return
+		}
+		procInfo.Name = name
+		procInfo.Ppid = cPPid
+
+		*childs = append(*childs, procInfo)
 		getChild(cc, childs)
 	}
 }
