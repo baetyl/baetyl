@@ -39,7 +39,10 @@ import (
 )
 
 var (
-	ErrCreateService = errors.New("failed to create service")
+	ErrCreateService     = errors.New("failed to create service")
+	ErrServiceNotRunning = errors.New("error : service is not running")
+	ErrServicePIDGet     = errors.New("failed to get svc pid")
+	ErrServicePPIDGet    = errors.New("failed to get svc ppid")
 )
 
 const (
@@ -454,13 +457,19 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 				}
 				var childs *[]ami.ProcessInfo
 				if runtime.GOOS == "windows" {
-					pid, perr := svc.GetPid()
-					if perr != nil {
-						impl.log.Warn("failed to get svc pid", log.Error(err))
+					status, err := svc.Status()
+					if err != nil {
+						return errors.Trace(err)
 					}
-					childs, perr = getChildProcessInfo(pid)
-					if perr != nil {
-						impl.log.Warn("failed to get child pid", log.Error(err))
+					if status == service.StatusRunning {
+						pid, err := svc.GetPid()
+						if err != nil {
+							impl.log.Warn("failed to get svc pid", log.Error(err))
+						}
+						childs, err = getChildProcessInfo(pid)
+						if err != nil {
+							impl.log.Warn("failed to get child pid", log.Error(err))
+						}
 					}
 				}
 				if err = svc.Stop(); err != nil {
@@ -474,7 +483,7 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 					for _, p := range *childs {
 						proc, err := process.NewProcess(p.Pid)
 						if err == nil {
-							proc.Kill()
+							proc.Terminate()
 							impl.log.Warn("svc child process killed", log.Any("name", p.Name), log.Any("pid", p.Pid))
 							time.Sleep(100 * time.Millisecond)
 						}
@@ -586,45 +595,57 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 						Name:             curPrgName,
 						WorkingDirectory: svcInsFile.Name(),
 					})
+					if err != nil || svc == nil {
+						mainInsStats.Status = v1.Unknown
+						mainInsStats.Cause = ErrCreateService.Error()
+						curInsStats[curPrgName] = mainInsStats
+						curAppStats.InstanceStats = curInsStats
+						continue
+					}
+
+					status, err := svc.Status()
+					if err != nil || status != service.StatusRunning {
+						mainInsStats.Status = prgStatusToSpecStatus(status)
+						mainInsStats.Cause = ErrServiceNotRunning.Error()
+						curInsStats[curPrgName] = mainInsStats
+						curAppStats.InstanceStats = curInsStats
+						continue
+					}
+					mainInsStats.Status = prgStatusToSpecStatus(status)
+
+					pid, err = svc.GetPid()
+					if err != nil || pid == 0 || pid == 1 {
+						mainInsStats.Status = v1.Unknown
+						mainInsStats.Cause = ErrServicePIDGet.Error()
+						curInsStats[curPrgName] = mainInsStats
+						curAppStats.InstanceStats = curInsStats
+						continue
+					}
+					mainInsStats.Pid = int32(pid)
+
+					ppid, err := getPPID(pid)
+					if err != nil || ppid == 0 {
+						mainInsStats.Status = v1.Unknown
+						mainInsStats.Cause = ErrServicePPIDGet.Error()
+						curInsStats[curPrgName] = mainInsStats
+						curAppStats.InstanceStats = curInsStats
+						continue
+					}
+					mainInsStats.PPid = ppid
+
+					usage, err := getServiceInsStats(pid)
 					if err != nil {
 						mainInsStats.Status = v1.Unknown
 						mainInsStats.Cause = err.Error()
+						curInsStats[curPrgName] = mainInsStats
+						curAppStats.InstanceStats = curInsStats
+						continue
 					}
-					if svc != nil {
-						status, err := svc.Status()
-						if err != nil {
-							mainInsStats.Status = v1.Unknown
-							mainInsStats.Cause += err.Error()
-						} else {
-							mainInsStats.Status = prgStatusToSpecStatus(status)
-						}
-						pid, err = svc.GetPid()
-						if err != nil {
-							mainInsStats.Status = v1.Unknown
-							mainInsStats.Cause += err.Error()
-						}
-						mainInsStats.Pid = int32(pid)
-						ppid, err := getPPID(pid)
-						if err != nil {
-							mainInsStats.Status = v1.Unknown
-							mainInsStats.Cause += err.Error()
-						}
-						mainInsStats.PPid = ppid
-						usage, err := getServiceInsStats(pid)
-						if err != nil {
-							mainInsStats.Status = v1.Unknown
-							mainInsStats.Cause += err.Error()
-						} else {
-							mainInsStats.Usage = usage
-						}
-					} else {
-						mainInsStats.Status = v1.Unknown
-						mainInsStats.Cause += ErrCreateService.Error()
-					}
+					mainInsStats.Usage = usage
+
 					curInsStats[curPrgName] = mainInsStats
 
 					getChildInsStats(curInsStats, pid, curPrgName)
-
 					curAppStats.InstanceStats = curInsStats
 				}
 			}
@@ -691,7 +712,7 @@ func getChildProcessInfo(pid uint32) (*[]ami.ProcessInfo, error) {
 func getPPID(pid uint32) (int32, error) {
 	processes, err := process.Processes()
 	if err != nil {
-		return 1, err
+		return 0, err
 	}
 	for _, p := range processes {
 		if p.Pid == int32(pid) {
@@ -699,7 +720,7 @@ func getPPID(pid uint32) (int32, error) {
 		}
 	}
 
-	return 1, nil
+	return 0, nil
 }
 
 func getChild(p *process.Process, childs *[]ami.ProcessInfo) {
