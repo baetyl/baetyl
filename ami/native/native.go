@@ -675,9 +675,9 @@ func getChildInsStats(curInsStats map[string]v1.InstanceStats, pid uint32, curPr
 		if err != nil {
 			return
 		}
-
-		curInsStats[cc.Name] = v1.InstanceStats{
-			Name:        fmt.Sprintf("%s-%d", cc.Name, cc.Pid),
+		instName := fmt.Sprintf("%s-%d", cc.Name, cc.Pid)
+		curInsStats[instName] = v1.InstanceStats{
+			Name:        instName,
 			ServiceName: mainInsStats.ServiceName,
 			Usage:       usage,
 			Status:      mainInsStats.Status,
