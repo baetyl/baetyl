@@ -479,10 +479,10 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 					impl.log.Warn("failed to uninstall old app", log.Error(err))
 				}
 
-				if runtime.GOOS == "windows" {
+				if runtime.GOOS == "windows" && childs != nil {
 					for _, p := range *childs {
 						proc, err := process.NewProcess(p.Pid)
-						if err == nil {
+						if err == nil && proc != nil {
 							proc.Terminate()
 							impl.log.Warn("svc child process killed", log.Any("name", p.Name), log.Any("pid", p.Pid))
 							time.Sleep(100 * time.Millisecond)
