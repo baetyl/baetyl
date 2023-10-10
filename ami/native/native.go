@@ -1,6 +1,7 @@
 package native
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -8,7 +9,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -150,41 +150,71 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) e
 	return nil
 }
 
-// RemoteLogs use command tail -f
+// RemoteLogs use open file
 func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
 	logPath := impl.logHostPath
 	pathArr := strings.Split(option.Name, ".")
 	if len(pathArr) != 5 {
 		return errors.Trace(errors.New("log path error"))
 	}
-	logPath = logPath + "/" + pathArr[0] + "/" + pathArr[1] + "/" + pathArr[2] + "/" + pathArr[3] + "-" + pathArr[4] + ".log"
-
+	logPath = logPath + "/" + pathArr[0] + "/" + pathArr[1] + "/" + pathArr[2] + "/a.log"
 	tailLines := int64(200)
 	if option.TailLines != nil {
 		tailLines = *option.TailLines
 	}
-	cmd := exec.CommandContext(pipe.Ctx, "tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
-	stdoutPipe, err := cmd.StdoutPipe()
+	fmt.Println(tailLines)
+	file, err := os.Open(logPath)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	defer stdoutPipe.Close()
-	err = cmd.Start()
-	if err != nil {
-		return errors.Trace(err)
-	}
-	_, err = io.Copy(pipe.OutWriter, stdoutPipe)
-	if err != nil {
-		return errors.Trace(err)
-	}
-	err = cmd.Wait()
-	if err != nil {
-		if err.Error() == CmdKillErr {
-			return nil
+	defer file.Close()
+
+	charBuff := make([]byte, 1)
+	cursor := int64(0)
+	cnt := int64(0)
+	// 逆向遍历字节,寻找倒数第n行数据
+	for {
+		cursor -= 1
+		_, err = file.Seek(cursor, io.SeekEnd)
+		if err != nil {
+			_, err = file.Seek(0, 0)
+			if err != nil {
+				return errors.Trace(err)
+			}
+			break
 		}
-		return errors.Trace(err)
+		_, err = file.Read(charBuff)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		if charBuff[0] == '\n' {
+			cnt++
+		}
+		if cnt >= tailLines+1 {
+			break
+		}
 	}
-	return nil
+	reader := bufio.NewReader(file)
+	for {
+		select {
+		case <-pipe.Ctx.Done():
+			return nil
+		default:
+			data, _, err := reader.ReadLine()
+			if err != nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			if "windows" == runtime.GOOS {
+				data = append(data, '\r')
+			}
+			data = append(data, '\n')
+			_, err = pipe.OutWriter.Write(data)
+			if err != nil {
+				return errors.Trace(err)
+			}
+		}
+	}
 }
 
 // TODO: impl native RemoteDescribePod
