@@ -204,9 +204,6 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 				time.Sleep(time.Second)
 				continue
 			}
-			if "windows" == runtime.GOOS {
-				data = append(data, '\r')
-			}
 			data = append(data, '\n')
 			_, err = pipe.OutWriter.Write(data)
 			if err != nil {
