@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -150,7 +151,7 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) e
 	return nil
 }
 
-// RemoteLogs use open file
+// RemoteLogs use command tail -f
 func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
 	logPath := impl.logHostPath
 	pathArr := strings.Split(option.Name, ".")
@@ -162,6 +163,35 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 	if option.TailLines != nil {
 		tailLines = *option.TailLines
 	}
+	// windows系统获取log 通过读取文件
+	if runtime.GOOS == "windows" {
+		return getLogForWindows(logPath, tailLines, pipe)
+	}
+	cmd := exec.CommandContext(pipe.Ctx, "tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	defer stdoutPipe.Close()
+	err = cmd.Start()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	_, err = io.Copy(pipe.OutWriter, stdoutPipe)
+	if err != nil {
+		return errors.Trace(err)
+	}
+	err = cmd.Wait()
+	if err != nil {
+		if err.Error() == CmdKillErr {
+			return nil
+		}
+		return errors.Trace(err)
+	}
+	return nil
+}
+
+func getLogForWindows(logPath string, tailLines int64, pipe ami.Pipe) error {
 	file, err := os.Open(logPath)
 	if err != nil {
 		return errors.Trace(err)
