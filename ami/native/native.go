@@ -157,7 +157,7 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 	if len(pathArr) != 5 {
 		return errors.Trace(errors.New("log path error"))
 	}
-	logPath = logPath + "/" + pathArr[0] + "/" + pathArr[1] + "/" + pathArr[2] + "/a.log"
+	logPath = logPath + "/" + pathArr[0] + "/" + pathArr[1] + "/" + pathArr[2] + "/" + pathArr[3] + "-" + pathArr[4] + ".log"
 	tailLines := int64(200)
 	if option.TailLines != nil {
 		tailLines = *option.TailLines
