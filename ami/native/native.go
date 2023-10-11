@@ -162,7 +162,6 @@ func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error
 	if option.TailLines != nil {
 		tailLines = *option.TailLines
 	}
-	fmt.Println(tailLines)
 	file, err := os.Open(logPath)
 	if err != nil {
 		return errors.Trace(err)
