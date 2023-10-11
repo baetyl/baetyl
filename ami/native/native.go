@@ -202,9 +202,14 @@ func getLogForWindows(logPath string, tailLines int64, pipe ami.Pipe) error {
 	cursor := int64(0)
 	cnt := int64(0)
 	// 逆向遍历字节,寻找倒数第n行数据
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	size := fileInfo.Size()
 	for {
-		cursor -= 1
-		_, err = file.Seek(cursor, io.SeekEnd)
+		cursor += 1
+		_, err = file.Seek(size-cursor, io.SeekStart)
 		if err != nil {
 			_, err = file.Seek(0, 0)
 			if err != nil {
