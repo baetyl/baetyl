@@ -5,7 +5,7 @@ go 1.18
 replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3
 
 require (
-	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20230626031834-a39dbb3259dd
+	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231012104825-fbd4335c0411
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.12
@@ -88,6 +88,7 @@ require (
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
+	github.com/panjf2000/ants/v2 v2.8.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
