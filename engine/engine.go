@@ -130,7 +130,15 @@ func (e *engineImpl) ReportAndDesire() error {
 
 func (e *engineImpl) GetServiceLog(ctx *routing.Context) error {
 	service := ctx.Param("service")
-	isSys := string(ctx.QueryArgs().Peek("system"))
+	containerBytes := ctx.QueryArgs().Peek("container")
+	container := ""
+	ns := context.EdgeNamespace()
+	if containerBytes != nil && len(containerBytes) > 0 {
+		container = string(containerBytes)
+	}
+	if strings.HasPrefix(service, "baetyl-") {
+		ns = context.EdgeSystemNamespace()
+	}
 	tailLines := string(ctx.QueryArgs().Peek("tailLines"))
 	sinceSeconds := string(ctx.QueryArgs().Peek("sinceSeconds"))
 
@@ -139,16 +147,12 @@ func (e *engineImpl) GetServiceLog(ctx *routing.Context) error {
 		http.RespondMsg(ctx, 400, "RequestParamInvalid", err.Error())
 		return nil
 	}
-	ns := context.EdgeNamespace()
-	if isSys == "true" {
-		ns = context.EdgeSystemNamespace()
-	}
-	reader, err := e.ami.FetchLog(ns, service, tail, since)
+	bytes, err := e.ami.FetchLog(ns, service, container, tail, since)
 	if err != nil {
 		http.RespondMsg(ctx, 500, "UnknownError", err.Error())
 		return nil
 	}
-	http.RespondStream(ctx, 200, reader, -1)
+	http.Respond(ctx, 200, bytes)
 	return nil
 }
 

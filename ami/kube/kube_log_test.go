@@ -14,7 +14,7 @@ import (
 
 func TestToLogOptions(t *testing.T) {
 	ami := initLogKubeAMI(t)
-	opts := ami.toLogOptions(0, 0)
+	opts := ami.toLogOptions("", 0, 0)
 	fmt.Println(opts.TailLines)
 	assert.Nil(t, opts.TailLines)
 	assert.Nil(t, opts.SinceSeconds)
@@ -22,7 +22,7 @@ func TestToLogOptions(t *testing.T) {
 	assert.Equal(t, opts.Follow, ami.conf.LogConfig.Follow)
 	assert.Equal(t, opts.Timestamps, ami.conf.LogConfig.TimeStamps)
 
-	opts = ami.toLogOptions(int64(10), int64(60))
+	opts = ami.toLogOptions("", int64(10), int64(60))
 	fmt.Println(opts.TailLines)
 	assert.Equal(t, *opts.TailLines, int64(10))
 	assert.Equal(t, *opts.SinceSeconds, int64(60))

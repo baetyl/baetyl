@@ -1,15 +1,12 @@
 package native
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -149,103 +146,6 @@ func (impl *nativeImpl) RemoteCommand(option *ami.DebugOptions, pipe ami.Pipe) e
 		impl.log.Warn("ssh session log out with exception")
 	}
 	return nil
-}
-
-// RemoteLogs use command tail -f
-func (impl *nativeImpl) RemoteLogs(option *ami.LogsOptions, pipe ami.Pipe) error {
-	logPath := impl.logHostPath
-	pathArr := strings.Split(option.Name, ".")
-	if len(pathArr) != 5 {
-		return errors.Trace(errors.New("log path error"))
-	}
-	logPath = logPath + "/" + pathArr[0] + "/" + pathArr[1] + "/" + pathArr[2] + "/" + pathArr[3] + "-" + pathArr[4] + ".log"
-	tailLines := int64(200)
-	if option.TailLines != nil {
-		tailLines = *option.TailLines
-	}
-	// windows系统获取log 通过读取文件
-	if runtime.GOOS == "windows" {
-		return getLogForWindows(logPath, tailLines, pipe)
-	}
-	cmd := exec.CommandContext(pipe.Ctx, "tail", "-n", strconv.FormatInt(tailLines, 10), "-f", logPath)
-	stdoutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return errors.Trace(err)
-	}
-	defer stdoutPipe.Close()
-	err = cmd.Start()
-	if err != nil {
-		return errors.Trace(err)
-	}
-	_, err = io.Copy(pipe.OutWriter, stdoutPipe)
-	if err != nil {
-		return errors.Trace(err)
-	}
-	err = cmd.Wait()
-	if err != nil {
-		if err.Error() == CmdKillErr {
-			return nil
-		}
-		return errors.Trace(err)
-	}
-	return nil
-}
-
-func getLogForWindows(logPath string, tailLines int64, pipe ami.Pipe) error {
-	file, err := os.Open(logPath)
-	if err != nil {
-		return errors.Trace(err)
-	}
-	defer file.Close()
-
-	charBuff := make([]byte, 1)
-	cursor := int64(0)
-	cnt := int64(0)
-	// 逆向遍历字节,寻找倒数第n行数据
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return errors.Trace(err)
-	}
-	size := fileInfo.Size()
-	for {
-		cursor += 1
-		_, err = file.Seek(size-cursor, io.SeekStart)
-		if err != nil {
-			_, err = file.Seek(0, 0)
-			if err != nil {
-				return errors.Trace(err)
-			}
-			break
-		}
-		_, err = file.Read(charBuff)
-		if err != nil {
-			return errors.Trace(err)
-		}
-		if charBuff[0] == '\n' {
-			cnt++
-		}
-		if cnt >= tailLines+1 {
-			break
-		}
-	}
-	reader := bufio.NewReader(file)
-	for {
-		select {
-		case <-pipe.Ctx.Done():
-			return nil
-		default:
-			data, _, err := reader.ReadLine()
-			if err != nil {
-				time.Sleep(time.Second)
-				continue
-			}
-			data = append(data, '\n')
-			_, err = pipe.OutWriter.Write(data)
-			if err != nil {
-				return errors.Trace(err)
-			}
-		}
-	}
 }
 
 // TODO: impl native RemoteDescribePod
@@ -994,10 +894,6 @@ func (impl *nativeImpl) CollectNodeStats() (map[string]interface{}, error) {
 	stats.Extension = nodeStatsMerge
 	// TODO add pressure flags
 	return map[string]interface{}{ho.Hostname: stats}, nil
-}
-
-func (impl *nativeImpl) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
-	panic("implement me")
 }
 
 func (impl *nativeImpl) RPCApp(url string, req *v1.RPCRequest) (*v1.RPCResponse, error) {

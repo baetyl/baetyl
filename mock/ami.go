@@ -6,7 +6,6 @@ package mock
 
 import (
 	context "context"
-	io "io"
 	reflect "reflect"
 
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
@@ -96,18 +95,18 @@ func (mr *MockAMIMockRecorder) DeleteApp(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // FetchLog mocks base method.
-func (m *MockAMI) FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error) {
+func (m *MockAMI) FetchLog(namespace, pod, container string, tailLines, sinceSeconds int64) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FetchLog", namespace, service, tailLines, sinceSeconds)
-	ret0, _ := ret[0].(io.ReadCloser)
+	ret := m.ctrl.Call(m, "FetchLog", namespace, pod, container, tailLines, sinceSeconds)
+	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FetchLog indicates an expected call of FetchLog.
-func (mr *MockAMIMockRecorder) FetchLog(namespace, service, tailLines, sinceSeconds interface{}) *gomock.Call {
+func (mr *MockAMIMockRecorder) FetchLog(namespace, pod, container, tailLines, sinceSeconds interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchLog", reflect.TypeOf((*MockAMI)(nil).FetchLog), namespace, service, tailLines, sinceSeconds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FetchLog", reflect.TypeOf((*MockAMI)(nil).FetchLog), namespace, pod, container, tailLines, sinceSeconds)
 }
 
 // GetModeInfo mocks base method.

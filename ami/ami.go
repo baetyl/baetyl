@@ -56,8 +56,7 @@ type AMI interface {
 	DeleteApp(string, string) error
 	StatsApps(string) ([]specv1.AppStats, error)
 
-	// TODO: update
-	FetchLog(namespace, service string, tailLines, sinceSeconds int64) (io.ReadCloser, error)
+	FetchLog(namespace, pod, container string, tailLines, sinceSeconds int64) ([]byte, error)
 
 	// RemoteCommand remote debug
 	RemoteCommand(option *DebugOptions, pipe Pipe) error

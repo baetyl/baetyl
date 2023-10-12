@@ -4,9 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -383,7 +381,7 @@ func TestGetServiceLog(t *testing.T) {
 
 	client := &fasthttp.Client{}
 
-	mockAmi.EXPECT().FetchLog("baetyl-edge", "service1", int64(10), int64(60)).Return(io.NopCloser(strings.NewReader("hello world")), nil).Times(1)
+	mockAmi.EXPECT().FetchLog("baetyl-edge", "service1", "", int64(10), int64(60)).Return([]byte("hello world"), nil).Times(1)
 	req := fasthttp.AcquireRequest()
 	resp := fasthttp.AcquireResponse()
 	url := fmt.Sprintf("%s%s", "http://127.0.0.1:50030", "/services/service1/log?tailLines=10&sinceSeconds=60")
@@ -394,7 +392,7 @@ func TestGetServiceLog(t *testing.T) {
 	assert.Equal(t, resp.StatusCode(), 200)
 	assert.Equal(t, "hello world", string(resp.Body()))
 
-	mockAmi.EXPECT().FetchLog("baetyl-edge", "unknown", int64(10), int64(60)).Return(nil, errors.New("error")).Times(1)
+	mockAmi.EXPECT().FetchLog("baetyl-edge", "unknown", "", int64(10), int64(60)).Return(nil, errors.New("error")).Times(1)
 	req2 := fasthttp.AcquireRequest()
 	resp2 := fasthttp.AcquireResponse()
 	url2 := fmt.Sprintf("%s%s", "http://127.0.0.1:50030", "/services/unknown/log?tailLines=10&sinceSeconds=60")
