@@ -86,7 +86,7 @@ func (l *httpLink) Request(msg *specv1.Message) (*specv1.Message, error) {
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-	case specv1.MessageDesire, specv1.MessageDeviceDesire, specv1.NewMessageDeviceDesire:
+	case specv1.MessageDesire, specv1.MessageDeviceDesire, specv1.MessageMultipleDeviceDesire:
 		data, err = l.post(l.cfg.HTTPLink.DesireURL, pld, msg.Metadata)
 		if err != nil {
 			return nil, errors.Trace(err)

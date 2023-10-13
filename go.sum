@@ -48,8 +48,8 @@ github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231012104825-fbd4335c0411 h1:4ZeQLcy93TwxB/fSDQXwzW7ERMO34iVrYzc0xMIOM+k=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231012104825-fbd4335c0411/go.mod h1:p1V1EpzbtPV4pAQirG+XvpXOGmEU7wOuZ+G5onHzRpk=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231013063901-f360227f765f h1:ae+9i8rbSbttjbwMACxs9BaPeWjR24TjU69K4j33o9g=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231013063901-f360227f765f/go.mod h1:p1V1EpzbtPV4pAQirG+XvpXOGmEU7wOuZ+G5onHzRpk=
 github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3 h1:vVNBMGCt01dwNwF2wtctC4uUbfgW6eXUG9ZicajIfAs=
 github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3/go.mod h1:CIMRFEJVL+0DS1a3Nx06NaMn4Dz63Ng6O7dl0qH0zVM=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
