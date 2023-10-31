@@ -2,6 +2,7 @@ package node
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"runtime"
 	"time"
@@ -16,6 +17,8 @@ import (
 	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	bolt "go.etcd.io/bbolt"
+
+	innerutils "github.com/baetyl/baetyl/v2/utils"
 )
 
 const (
@@ -63,7 +66,7 @@ func NewNode(store *bh.Store) (Node, error) {
 		},
 	}
 	n := &node{
-		id:    []byte("baetyl-edge-node"),
+		id:    []byte(fmt.Sprintf("%s.%s.baetyl-edge-node", os.Getenv(innerutils.EnvKeyNodeNamespace), os.Getenv(context.KeyNodeName))),
 		store: store,
 		log:   log.With(log.Any("core", "node")),
 	}
