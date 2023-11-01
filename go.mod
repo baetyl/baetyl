@@ -5,7 +5,7 @@ go 1.18
 replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3
 
 require (
-	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231013083918-f1eadd462ead
+	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231101031952-339029b804ca
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.12
@@ -41,6 +41,7 @@ require (
 	github.com/containerd/containerd v1.5.18 // indirect
 	github.com/creasty/defaults v1.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/denisbrodbeck/machineid v1.0.1 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect

@@ -13,6 +13,7 @@ import (
 func init() {
 	cmd.Hooks[cmd.HookNameStartCoreService] = core.StartCoreServiceFunc(core.StartCoreService)
 	cmd.Hooks[cmd.HookNameStartInitService] = initz.StartInitServiceFunc(initz.StartInitService)
+	cmd.Hooks[cmd.HookGetFingerprint] = cmd.GetFingerprintFunc(cmd.GetFingerprint)
 }
 
 func main() {
