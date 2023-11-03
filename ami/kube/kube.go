@@ -1,6 +1,7 @@
 package kube
 
 import (
+	log2 "log"
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/context"
@@ -8,6 +9,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	bh "github.com/timshannon/bolthold"
+	"helm.sh/helm/v3/pkg/action"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
@@ -16,6 +19,7 @@ import (
 type kubeImpl struct {
 	knn   string // kube node name
 	cli   *client
+	helm  *action.Configuration
 	store *bh.Store
 	conf  *config.KubeConfig
 	log   *log.Logger
@@ -27,14 +31,22 @@ func init() {
 }
 
 func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
-	cli, err := newClient(cfg.Kube)
+	kubeCli, err := newClient(cfg.Kube)
 	if err != nil {
 		return nil, err
 	}
 	knn := os.Getenv(KubeNodeName)
+
+	// init helm for just list
+	actionConfig := new(action.Configuration)
+	if err = actionConfig.Init(&genericclioptions.ConfigFlags{}, "", os.Getenv(HelmDriver), log2.Printf); err != nil {
+		return nil, err
+	}
+
 	model := &kubeImpl{
 		knn:  knn,
-		cli:  cli,
+		cli:  kubeCli,
+		helm: actionConfig,
 		conf: &cfg.Kube,
 		log:  log.With(log.Any("ami", "kube")),
 	}
@@ -42,14 +54,17 @@ func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 }
 
 func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]specv1.Configuration, secs map[string]specv1.Secret) error {
+	if app.Type == specv1.AppTypeHelm {
+		return k.ApplyHelm(ns, app, cfgs)
+	}
 	err := k.checkAndCreateNamespace(ns)
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if err := k.applyConfigurations(ns, cfgs); err != nil {
+	if err = k.applyConfigurations(ns, cfgs); err != nil {
 		return errors.Trace(err)
 	}
-	if err := k.applySecrets(ns, secs); err != nil {
+	if err = k.applySecrets(ns, secs); err != nil {
 		return errors.Trace(err)
 	}
 	var imagePullSecs []string
@@ -62,13 +77,20 @@ func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]s
 	if err != nil {
 		return errors.Trace(err)
 	}
-	if err := k.applyApplication(ns, app, imagePullSecs); err != nil {
+	if err = k.applyApplication(ns, app, imagePullSecs); err != nil {
 		return errors.Trace(err)
 	}
 	return nil
 }
 
 func (k *kubeImpl) DeleteApp(ns string, app string) error {
+	if ns == context.EdgeNamespace() {
+		err := k.DeleteHelm(ns, app)
+		// If delete helm success or err is not ErrNotHelmApp, return directly
+		if err == nil || err.Error() != ErrNotHelmApp {
+			return err
+		}
+	}
 	return k.deleteApplication(ns, app)
 }
 
@@ -103,5 +125,13 @@ func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 		return nil, errors.Trace(err)
 	}
 	res = append(res, js...)
+	// Collect only in baetyl-edge namespace
+	if ns == context.EdgeNamespace() {
+		helmStats, err := k.StatsHelm(ns)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		res = append(res, helmStats...)
+	}
 	return res, nil
 }
