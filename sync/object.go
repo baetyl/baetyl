@@ -11,13 +11,15 @@ import (
 	"strings"
 	"time"
 
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+
 	gutils "github.com/baetyl/baetyl/v2/utils"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
-	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+
 	"github.com/baetyl/baetyl-go/v2/utils"
 )
 
@@ -71,6 +73,9 @@ func DownloadConfig(cli *http.Client, objectPath string, cfg *specv1.Configurati
 		if err != nil {
 			os.RemoveAll(dir)
 			return errors.Trace(err)
+		}
+		if val, ok := cfg.Labels[specv1.ConfigType]; ok && val == specv1.ConfigHelmTar {
+			continue
 		}
 		if hook, ok := Hooks[BaetylHookUploadObject]; ok {
 			if roam, okk := hook.(UploadObjectFunc); okk {
