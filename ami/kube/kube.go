@@ -1,12 +1,12 @@
 package kube
 
 import (
-	log2 "log"
+	"log"
 	"os"
 
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl-go/v2/log"
+	logv2 "github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	bh "github.com/timshannon/bolthold"
 	"helm.sh/helm/v3/pkg/action"
@@ -22,7 +22,7 @@ type kubeImpl struct {
 	helm  *action.Configuration
 	store *bh.Store
 	conf  *config.KubeConfig
-	log   *log.Logger
+	log   *logv2.Logger
 }
 
 func init() {
@@ -39,7 +39,7 @@ func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 
 	// init helm for just list
 	actionConfig := new(action.Configuration)
-	if err = actionConfig.Init(&genericclioptions.ConfigFlags{}, "", os.Getenv(HelmDriver), log2.Printf); err != nil {
+	if err = actionConfig.Init(&genericclioptions.ConfigFlags{}, "", os.Getenv(HelmDriver), log.Printf); err != nil {
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func newKubeImpl(cfg config.AmiConfig) (ami.AMI, error) {
 		cli:  kubeCli,
 		helm: actionConfig,
 		conf: &cfg.Kube,
-		log:  log.With(log.Any("ami", "kube")),
+		log:  logv2.With(logv2.Any("ami", "kube")),
 	}
 	return model, nil
 }
@@ -103,9 +103,9 @@ func (k *kubeImpl) StatsApps(ns string) ([]specv1.AppStats, error) {
 		if ok {
 			qpsExts, err = qpsStatsExt(context.RunModeKube)
 			if err != nil {
-				k.log.Warn("failed to collect qps stats", log.Error(errors.Trace(err)))
+				k.log.Warn("failed to collect qps stats", logv2.Error(errors.Trace(err)))
 			}
-			k.log.Debug("collect qps stats successfully", log.Any("qpsStats", qpsExts))
+			k.log.Debug("collect qps stats successfully", logv2.Any("qpsStats", qpsExts))
 		} else {
 			k.log.Warn("invalid collecting qps stats function")
 		}
