@@ -4,12 +4,12 @@ package kube
 
 import (
 	"context"
-	log2 "log"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/errors"
-	"github.com/baetyl/baetyl-go/v2/log"
+	logv2 "github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/action"
@@ -71,8 +71,8 @@ func (k *kubeImpl) StatsHelm(_ string) ([]specv1.AppStats, error) {
 		}
 		appStats[h.Name] = specv1.AppStats{
 			AppInfo: specv1.AppInfo{
-				h.Name,
-				h.Labels[BaetylHelmVersion],
+				Name:    h.Name,
+				Version: h.Labels[BaetylHelmVersion],
 			},
 			Status:     transStatus(h.Info.Status),
 			DeployType: specv1.WorkloadCustom,
@@ -115,14 +115,14 @@ func (k *kubeImpl) ApplyHelm(ns string, app specv1.Application, cfgs map[string]
 		ns = DefaultHelmNamespace
 	}
 	helmCfg := new(action.Configuration)
-	if err := helmCfg.Init(&genericclioptions.ConfigFlags{Namespace: &ns}, ns, os.Getenv(HelmDriver), log2.Printf); err != nil {
+	if err := helmCfg.Init(&genericclioptions.ConfigFlags{Namespace: &ns}, ns, os.Getenv(HelmDriver), log.Printf); err != nil {
 		return errors.Trace(err)
 	}
 	old, err := k.GetHelm(helmCfg, app.Name)
 	// already exists, check version
 	if err == nil {
 		if version, ok := old.Labels[BaetylHelmVersion]; !ok || version == app.Version {
-			k.log.Warn("helm release already exists", log.Any("release", app.Name))
+			k.log.Warn("helm release already exists", logv2.Any("release", app.Name))
 			return nil
 		} else {
 			return k.UpdateHelm(helmCfg, app, cfgs, old)
@@ -151,7 +151,7 @@ func (k *kubeImpl) ApplyHelm(ns string, app specv1.Application, cfgs map[string]
 	}
 	rel, err := cli.Run(chart, vals)
 	if rel != nil {
-		k.log.Debug("helm install", log.Any("release", rel.Name))
+		k.log.Debug("helm install", logv2.Any("release", rel.Name))
 	}
 	return err
 }
@@ -179,7 +179,7 @@ func (k *kubeImpl) UpdateHelm(cfg *action.Configuration, app specv1.Application,
 	}
 	rel, err := cli.Run(app.Name, chart, vals)
 	if rel != nil {
-		k.log.Debug("helm upgrade", log.Any("release", rel.Name))
+		k.log.Debug("helm upgrade", logv2.Any("release", rel.Name))
 	}
 	return err
 }
@@ -200,13 +200,13 @@ func (k *kubeImpl) DeleteHelm(_ string, app string) error {
 		return errors.New(ErrNotHelmApp)
 	}
 	helmCfg := new(action.Configuration)
-	if err = helmCfg.Init(&genericclioptions.ConfigFlags{Namespace: &ns}, ns, os.Getenv(HelmDriver), log2.Printf); err != nil {
+	if err = helmCfg.Init(&genericclioptions.ConfigFlags{Namespace: &ns}, ns, os.Getenv(HelmDriver), log.Printf); err != nil {
 		return errors.Trace(err)
 	}
 	cli := action.NewUninstall(helmCfg)
 	result, err := cli.Run(app)
 	if result != nil && result.Release != nil {
-		k.log.Debug("helm uninstall", log.Any("release", result.Release.Name))
+		k.log.Debug("helm uninstall", logv2.Any("release", result.Release.Name))
 	}
 	return err
 }
