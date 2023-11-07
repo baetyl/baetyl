@@ -12,6 +12,6 @@ func Test_newKubeImpl(t *testing.T) {
 	c := config.AmiConfig{}
 	c.Kube.OutCluster = false
 
-	_, err := newKubeImpl(c)
+	_, err := newKubeImpl(c, nil)
 	assert.Error(t, err)
 }
