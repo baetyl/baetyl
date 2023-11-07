@@ -76,7 +76,7 @@ func NewEngine(cfg config.Config, sto *bh.Store, nod node.Node, syn sync.Sync, a
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
-	am, err := ami.NewAMI(mode, cfg.AMI)
+	am, err := ami.NewAMI(mode, cfg.AMI, sto)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -321,7 +321,7 @@ func (e *engineImpl) reportAndApply(isSys, delete bool, desire specv1.Desire) er
 		return errors.Trace(err)
 	}
 	if delete {
-		for n := range del {
+		for _, n := range del {
 			if err := e.ami.DeleteApp(ns, n); err != nil {
 				e.log.Error("failed to delete applications", log.Any("system", isSys), log.Error(err))
 				return errors.Trace(err)
@@ -402,6 +402,24 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 	err := e.sto.Get(key, app)
 	if err != nil {
 		return errors.Errorf("failed to get app name: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
+	}
+
+	if customNs, ok := app.Labels[specv1.CustomAppNsLabel]; ok && customNs != "" {
+		appInfo, err := e.getCustomAppInfo()
+		if err != nil {
+			appInfo = &config.YamlAppInfo{
+				AppInfo: map[string]config.CustomInfo{},
+			}
+			err = e.storeCustomAppInfo(appInfo)
+			if err != nil {
+				return errors.Errorf("failed to init custom app info: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
+			}
+		}
+		appInfo.AppInfo[info.Name] = config.CustomInfo{AppInfo: info, Namespace: customNs}
+		err = e.storeCustomAppInfo(appInfo)
+		if err != nil {
+			return errors.Errorf("failed to store custom app info: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
+		}
 	}
 	cfgs := make(map[string]specv1.Configuration)
 	secs := make(map[string]specv1.Secret)
@@ -647,4 +665,17 @@ func filterAppNotLike(apps []specv1.AppInfo, notLike []string) []specv1.AppInfo 
 		}
 	}
 	return res
+}
+
+func (e *engineImpl) storeCustomAppInfo(appInfo *config.YamlAppInfo) error {
+	return errors.Trace(e.sto.Upsert(config.CustomYamlAppInfo, appInfo))
+}
+
+func (e *engineImpl) getCustomAppInfo() (*config.YamlAppInfo, error) {
+	appInfo := &config.YamlAppInfo{}
+	err := e.sto.Get(config.CustomYamlAppInfo, appInfo)
+	if err != nil {
+		return nil, err
+	}
+	return appInfo, err
 }

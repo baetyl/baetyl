@@ -15,6 +15,7 @@ import (
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 
 	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/config"
 )
 
 type appInfo struct {
@@ -334,6 +335,34 @@ func (k *kubeImpl) collectInstanceStats(ns, appName string, qps map[string]inter
 	stats.IP = pod.Status.PodIP
 	stats.NodeName = pod.Spec.NodeName
 	return stats
+}
+
+func (k *kubeImpl) collectCustomStats(name string, info config.CustomInfo) (specv1.AppStats, error) {
+	stats := specv1.AppStats{
+		AppInfo:    info.AppInfo,
+		DeployType: specv1.WorkloadCustom,
+	}
+
+	pods, err := k.cli.core.Pods(info.Namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return stats, err
+	}
+	if pods == nil || len(pods.Items) == 0 {
+		stats.Status = specv1.Running
+		return stats, nil
+	}
+	if stats.InstanceStats == nil {
+		stats.InstanceStats = map[string]specv1.InstanceStats{}
+	}
+	insStats := map[string]specv1.InstanceStats{}
+	for _, pod := range pods.Items {
+		stats.InstanceStats[pod.Name] = k.collectInstanceStats(info.Namespace, name, map[string]interface{}{}, &pod)
+		insStats[pod.Name] = stats.InstanceStats[pod.Name]
+
+	}
+	stats.Status = getAppStatus(stats.Status, int32(len(pods.Items)), insStats)
+
+	return stats, nil
 }
 
 func getContainerStatus(info *corev1.ContainerStatus) (specv1.ContainerState, string) {

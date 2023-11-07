@@ -35,7 +35,6 @@ func NewPKI(cfg config.SecurityConfig, sto *bh.Store) (Security, error) {
 		sto: sto,
 		log: log.With(log.Any("security", cfg.Kind)),
 	}
-
 	err = defaultCli.genSelfSignedCACertificate()
 	if err != nil {
 		return nil, errors.Trace(err)

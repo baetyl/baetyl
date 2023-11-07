@@ -28,6 +28,7 @@ import (
 	"github.com/shirou/gopsutil/v3/mem"
 	gnet "github.com/shirou/gopsutil/v3/net"
 	"github.com/shirou/gopsutil/v3/process"
+	bh "github.com/timshannon/bolthold"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
@@ -69,7 +70,7 @@ type nativeImpl struct {
 	log           *log.Logger
 }
 
-func newNativeImpl(cfg config.AmiConfig) (ami.AMI, error) {
+func newNativeImpl(cfg config.AmiConfig, _ *bh.Store) (ami.AMI, error) {
 	hostPathLib, err := v2context.HostPathLib()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -166,7 +167,10 @@ func (impl *nativeImpl) GetMasterNodeName() string {
 }
 
 func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[string]v1.Configuration, secrets map[string]v1.Secret) error {
-	err := impl.DeleteApp(ns, app.Name)
+	var appInfo v1.AppInfo
+	appInfo.Name = app.Name
+	appInfo.Version = app.Version
+	err := impl.DeleteApp(ns, appInfo)
 	if err != nil {
 		impl.log.Warn("failed to delete old app", log.Error(err))
 	}
@@ -262,7 +266,7 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 			}
 
 			if prgExec == "" {
-				err = impl.DeleteApp(ns, app.Name)
+				err = impl.DeleteApp(ns, appInfo)
 				if err != nil {
 					impl.log.Warn("failed to delete new app", log.Error(err))
 				}
@@ -371,9 +375,9 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 	return nil
 }
 
-func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
+func (impl *nativeImpl) DeleteApp(ns string, app v1.AppInfo) error {
 	// scan app version
-	curAppDir := filepath.Join(impl.runHostPath, ns, appName)
+	curAppDir := filepath.Join(impl.runHostPath, ns, app.Name)
 	appVerFiles, err := os.ReadDir(curAppDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -410,7 +414,7 @@ func (impl *nativeImpl) DeleteApp(ns string, appName string) error {
 				curSvcIns := svcInsFile.Name()
 				curSvcInsDir := filepath.Join(curSvcDir, curSvcIns)
 				svc, err := service.New(nil, &service.Config{
-					Name:             genServiceInstanceName(ns, appName, curAppVer, curSvcName, curSvcIns),
+					Name:             genServiceInstanceName(ns, app.Name, curAppVer, curSvcName, curSvcIns),
 					WorkingDirectory: svcInsFile.Name(),
 				})
 				if err != nil {
