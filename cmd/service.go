@@ -142,7 +142,7 @@ func restartAll() {
 	if err != nil {
 		return
 	}
-	am, err := ami.NewAMI(mode, amiConfig)
+	am, err := ami.NewAMI(mode, amiConfig, nil)
 	if err != nil {
 		return
 	}
@@ -196,7 +196,7 @@ func listAll() {
 	if err != nil {
 		return
 	}
-	am, err := ami.NewAMI(mode, amiConfig)
+	am, err := ami.NewAMI(mode, amiConfig, nil)
 	if err != nil {
 		return
 	}

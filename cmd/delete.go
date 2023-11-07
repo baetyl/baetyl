@@ -68,7 +68,7 @@ func delete() {
 	amiConfig.Kube.OutCluster = true
 	amiConfig.Kube.ConfPath = ".kube/config"
 
-	am, err := ami.NewAMI(mode, amiConfig)
+	am, err := ami.NewAMI(mode, amiConfig, nil)
 	if err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func delete() {
 	allstats, err = am.StatsApps(ns)
 	log.L().Info("stats apps", log.Any("all", allstats), log.Error(err))
 	for _, appstats := range allstats {
-		err = am.DeleteApp(ns, appstats.Name)
+		err = am.DeleteApp(ns, appstats.AppInfo)
 		if err != nil {
 			log.L().Error("failed to delete app", log.Any("name", appstats.Name), log.Any("namespace", ns), log.Error(err))
 		} else {

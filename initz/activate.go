@@ -82,7 +82,7 @@ func NewActivate(cfg *config.Config) (*Activate, error) {
 		active.attrs[a.Name] = a.Value
 	}
 
-	active.ami, err = ami.NewAMI(context.RunMode(), cfg.AMI)
+	active.ami, err = ami.NewAMI(context.RunMode(), cfg.AMI, nil)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

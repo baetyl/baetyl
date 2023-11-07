@@ -13,6 +13,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/gorilla/websocket"
+	bh "github.com/timshannon/bolthold"
 
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/utils"
@@ -33,7 +34,7 @@ var Hooks = map[string]interface{}{}
 
 type CollectStatsExtFunc func(mode string) (map[string]interface{}, error)
 
-type New func(cfg config.AmiConfig) (AMI, error)
+type New func(cfg config.AmiConfig, sto *bh.Store) (AMI, error)
 
 type Pipe struct {
 	InReader  *io.PipeReader
@@ -53,7 +54,7 @@ type AMI interface {
 
 	// app
 	ApplyApp(string, specv1.Application, map[string]specv1.Configuration, map[string]specv1.Secret) error
-	DeleteApp(string, string) error
+	DeleteApp(string, specv1.AppInfo) error
 	StatsApps(string) ([]specv1.AppStats, error)
 
 	FetchLog(namespace, pod, container string, tailLines, sinceSeconds int64) ([]byte, error)
@@ -119,7 +120,7 @@ type ProcessInfo struct {
 	Ppid int32
 }
 
-func NewAMI(mode string, cfg config.AmiConfig) (AMI, error) {
+func NewAMI(mode string, cfg config.AmiConfig, sto *bh.Store) (AMI, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	if ami, ok := amiImpls[mode]; ok {
@@ -129,7 +130,7 @@ func NewAMI(mode string, cfg config.AmiConfig) (AMI, error) {
 	if !ok {
 		return nil, errors.Trace(os.ErrInvalid)
 	}
-	ami, err := amiNew(cfg)
+	ami, err := amiNew(cfg, sto)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

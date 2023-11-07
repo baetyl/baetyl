@@ -143,7 +143,7 @@ func apply() {
 	amiConfig.Kube.OutCluster = true
 	amiConfig.Kube.ConfPath = ".kube/config"
 
-	am, err := ami.NewAMI(mode, amiConfig)
+	am, err := ami.NewAMI(mode, amiConfig, nil)
 	if err != nil {
 		return
 	}

@@ -3,6 +3,7 @@ package kube
 import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	appv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	v2 "k8s.io/client-go/kubernetes/typed/autoscaling/v2"
@@ -24,6 +25,7 @@ type client struct {
 	metrics    metricsv1beta1.MetricsV1beta1Interface
 	discovery  discovery.DiscoveryInterface
 	autoscale  v2.AutoscalingV2Interface
+	dynamic    *dynamic.DynamicClient
 }
 
 func newClient(cfg config.KubeConfig) (*client, error) {
@@ -45,6 +47,11 @@ func newClient(cfg config.KubeConfig) (*client, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+
+	dynamicClient, err := dynamic.NewForConfig(kubeConfig)
+	if err != nil {
+		panic(err.Error())
+	}
 	return &client{
 		kubeConfig: kubeConfig,
 		core:       kubeClient.CoreV1(),
@@ -53,5 +60,6 @@ func newClient(cfg config.KubeConfig) (*client, error) {
 		metrics:    metricsCli.MetricsV1beta1(),
 		discovery:  kubeClient.Discovery(),
 		autoscale:  kubeClient.AutoscalingV2(),
+		dynamic:    dynamicClient,
 	}, nil
 }

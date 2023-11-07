@@ -19,6 +19,7 @@ func TestAmiNativeImpl(t *testing.T) {
 	type args struct {
 		ns      string
 		app     v1.Application
+		appInfo v1.AppInfo
 		configs map[string]v1.Configuration
 		secrets map[string]v1.Secret
 	}
@@ -43,6 +44,10 @@ func TestAmiNativeImpl(t *testing.T) {
 						},
 					},
 				},
+				appInfo: v1.AppInfo{
+					Name:    "app1",
+					Version: "1111",
+				},
 			},
 			expectedStats: []v1.AppStats{{
 				AppInfo: v1.AppInfo{Name: "app1", Version: "1111"},
@@ -61,7 +66,7 @@ func TestAmiNativeImpl(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			impl, err := newNativeImpl(config.AmiConfig{})
+			impl, err := newNativeImpl(config.AmiConfig{}, nil)
 			assert.NoError(t, err)
 			err = impl.ApplyApp(tt.args.ns, tt.args.app, tt.args.configs, tt.args.secrets)
 			assert.NoError(t, err)
@@ -70,7 +75,7 @@ func TestAmiNativeImpl(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedStats, stats)
 
-			err = impl.DeleteApp(tt.args.ns, tt.args.app.Name)
+			err = impl.DeleteApp(tt.args.ns, tt.args.appInfo)
 			assert.NoError(t, err)
 		})
 	}
@@ -108,7 +113,7 @@ func TestUpdateEnv(t *testing.T) {
 func TestNativeRemoteCommand(t *testing.T) {
 	cfg := config.AmiConfig{}
 	cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End = 8000, 9000
-	impl, err := newNativeImpl(cfg)
+	impl, err := newNativeImpl(cfg, nil)
 	assert.NoError(t, err)
 
 	option := &ami.DebugOptions{}
@@ -123,7 +128,7 @@ func TestNativeRemoteCommand(t *testing.T) {
 func TestRPCApp(t *testing.T) {
 	cfg := config.AmiConfig{}
 	cfg.Native.PortsRange.Start, cfg.Native.PortsRange.End = 8000, 9000
-	impl, err := newNativeImpl(cfg)
+	impl, err := newNativeImpl(cfg, nil)
 	assert.NoError(t, err)
 
 	// req rpc fail
