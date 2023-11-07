@@ -14,16 +14,10 @@ import (
 	v2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	lb "k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/baetyl/baetyl/v2/ami"
 )
@@ -837,119 +831,4 @@ func (k *kubeImpl) compatibleDeprecatedField(app *specv1.Application) {
 			app.JobConfig = &specv1.AppJobConfig{RestartPolicy: "Never"}
 		}
 	}
-}
-
-func (k *kubeImpl) deleteYamlApp(ns string, appName string, cfgs map[string]specv1.Configuration) error {
-	for _, cfg := range cfgs {
-		for name, data := range cfg.Data {
-			if !strings.Contains(name, "yaml") && !strings.Contains(name, "yml") {
-				continue
-			}
-			objs := parseK8SYaml(data)
-			if len(objs) == 0 {
-				continue
-			}
-			for _, obj := range objs {
-				meta, err := meta.Accessor(obj)
-				if err != nil {
-					k.log.Error("failed to transfer k8s obj to metav1 obj", log.Any("error", err))
-					continue
-				}
-				rsc := k.getResourceMapping(obj, k.cli.discovery)
-				if rsc == nil {
-					k.log.Info("failed to get k8s server resource for obj")
-					continue
-				}
-				err = k.cli.dynamic.Resource(*rsc).Namespace(ns).Delete(context.Background(), meta.GetName(), metav1.DeleteOptions{})
-				if err != nil {
-					k.log.Info("no k8s resource found to delete", log.Any("name", meta.GetName()))
-					continue
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func (k *kubeImpl) applyYamlApp(ns string, cfgs map[string]specv1.Configuration) error {
-	for _, cfg := range cfgs {
-		for name, data := range cfg.Data {
-			if !strings.Contains(name, "yaml") && !strings.Contains(name, "yml") {
-				continue
-			}
-			objs := parseK8SYaml(data)
-			if len(objs) == 0 {
-				continue
-			}
-			for _, obj := range objs {
-				metaAccessor, err := meta.Accessor(obj)
-				if err != nil {
-					k.log.Error("failed to transfer k8s obj to metav1 obj", log.Any("error", err))
-					continue
-				}
-				metaAccessor.SetNamespace(ns)
-				u, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-				if err != nil {
-					k.log.Error("failed to transfer k8s obj to unstructured obj", log.Any("error", err))
-					continue
-				}
-				us := &unstructured.Unstructured{
-					Object: u,
-				}
-				rsc := k.getResourceMapping(obj, k.cli.discovery)
-				if rsc == nil {
-					k.log.Info("failed to get k8s server resource for obj")
-					continue
-				}
-				applyOptions := metav1.ApplyOptions{
-					FieldManager: "my-controller-name",
-				}
-				_, err = k.cli.dynamic.Resource(*rsc).Namespace(ns).Apply(context.Background(), metaAccessor.GetName(), us, applyOptions)
-				if err != nil {
-					k.log.Error("failed to apply k8s resource with dynamic client", log.Any("error", err))
-					continue
-				}
-			}
-		}
-	}
-	k.log.Info("Apply yaml app success")
-	return nil
-}
-
-func parseK8SYaml(fileR string) []runtime.Object {
-	sepYamlfiles := strings.Split(fileR, "---")
-	res := make([]runtime.Object, 0, len(sepYamlfiles))
-	for _, f := range sepYamlfiles {
-		if f == "\n" || f == "" {
-			// ignore empty cases
-			continue
-		}
-		decode := scheme.Codecs.UniversalDeserializer().Decode
-		obj, _, err := decode([]byte(f), nil, nil)
-		if err != nil {
-			continue
-		}
-		res = append(res, obj)
-	}
-	return res
-}
-
-func (k *kubeImpl) getResourceMapping(obj runtime.Object, discovery discovery.DiscoveryInterface) *schema.GroupVersionResource {
-	gvk := obj.GetObjectKind().GroupVersionKind()
-	apiResources, err := discovery.ServerResourcesForGroupVersion(gvk.GroupVersion().String())
-	if err != nil {
-		k.log.Error("failed to get server api resources", log.Any("error", err))
-		return nil
-	}
-	for _, apiResource := range apiResources.APIResources {
-		if apiResource.Kind == gvk.Kind {
-			return &schema.GroupVersionResource{
-				Group:    gvk.Group,
-				Version:  gvk.Version,
-				Resource: apiResource.Name,
-			}
-		}
-	}
-	return nil
 }

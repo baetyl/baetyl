@@ -5,7 +5,6 @@ import (
 
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
-	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 )
 
@@ -154,16 +153,3 @@ const (
 	ProofMachineID  Proof = "machineID"
 	ProofSystemUUID Proof = "systemUUID"
 )
-
-const (
-	CustomYamlAppInfo = "baetyl-yaml-app-info"
-)
-
-type CustomInfo struct {
-	v1.AppInfo `yaml:",inline" json:",inline" mapstructure:",squash"`
-	Namespace  string `yaml:"namespace,omitempty" json:"namespace,omitempty"`
-}
-
-type YamlAppInfo struct {
-	AppInfo map[string]CustomInfo
-}

@@ -25,6 +25,7 @@ import (
 
 	"github.com/baetyl/baetyl/v2/agent"
 	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/ami/kube"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/plugin"
@@ -407,15 +408,15 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 	if customNs, ok := app.Labels[specv1.CustomAppNsLabel]; ok && customNs != "" {
 		appInfo, err := e.getCustomAppInfo()
 		if err != nil {
-			appInfo = &config.YamlAppInfo{
-				AppInfo: map[string]config.CustomInfo{},
+			appInfo = &kube.YamlAppInfo{
+				AppInfo: map[string]kube.CustomInfo{},
 			}
 			err = e.storeCustomAppInfo(appInfo)
 			if err != nil {
 				return errors.Errorf("failed to init custom app info: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
 			}
 		}
-		appInfo.AppInfo[info.Name] = config.CustomInfo{AppInfo: info, Namespace: customNs}
+		appInfo.AppInfo[info.Name] = kube.CustomInfo{AppInfo: info, Namespace: customNs}
 		err = e.storeCustomAppInfo(appInfo)
 		if err != nil {
 			return errors.Errorf("failed to store custom app info: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
@@ -667,13 +668,13 @@ func filterAppNotLike(apps []specv1.AppInfo, notLike []string) []specv1.AppInfo 
 	return res
 }
 
-func (e *engineImpl) storeCustomAppInfo(appInfo *config.YamlAppInfo) error {
-	return errors.Trace(e.sto.Upsert(config.CustomYamlAppInfo, appInfo))
+func (e *engineImpl) storeCustomAppInfo(appInfo *kube.YamlAppInfo) error {
+	return errors.Trace(e.sto.Upsert(kube.CustomYamlAppInfo, appInfo))
 }
 
-func (e *engineImpl) getCustomAppInfo() (*config.YamlAppInfo, error) {
-	appInfo := &config.YamlAppInfo{}
-	err := e.sto.Get(config.CustomYamlAppInfo, appInfo)
+func (e *engineImpl) getCustomAppInfo() (*kube.YamlAppInfo, error) {
+	appInfo := &kube.YamlAppInfo{}
+	err := e.sto.Get(kube.CustomYamlAppInfo, appInfo)
 	if err != nil {
 		return nil, err
 	}
