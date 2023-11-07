@@ -133,7 +133,7 @@ func (k *kubeImpl) ApplyHelm(ns string, app specv1.Application, cfgs map[string]
 	cli.ReleaseName = app.Name
 	cli.CreateNamespace = true
 	cli.Labels = map[string]string{BaetylHelmVersion: app.Version}
-	if len(app.Services) != 1 || len(app.Volumes) < 1 || len(app.Services[0].VolumeMounts) < 1 {
+	if len(app.Services) != 1 || len(app.Volumes) < 1 {
 		return errors.Trace(errors.New("helm chart only support one service"))
 	}
 	if app.Services[0].Runtime != "" {
@@ -161,7 +161,7 @@ func (k *kubeImpl) UpdateHelm(cfg *action.Configuration, app specv1.Application,
 	cli := action.NewUpgrade(cfg)
 	old.Labels[BaetylHelmVersion] = app.Version
 	cli.Labels = old.Labels
-	if len(app.Services) != 1 || len(app.Volumes) < 1 || len(app.Services[0].VolumeMounts) < 1 {
+	if len(app.Services) != 1 || len(app.Volumes) < 1 {
 		return errors.Trace(errors.New("helm chart only support one service"))
 	}
 	if app.Services[0].Runtime != "" {
