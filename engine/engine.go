@@ -405,7 +405,7 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 		return errors.Errorf("failed to get app name: (%s) version: (%s) with error: %s", app.Name, app.Version, err.Error())
 	}
 
-	if customNs, ok := app.Labels[specv1.CustomAppNsLabel]; ok && customNs != "" {
+	if customNs, ok := app.Labels[specv1.CustomAppNsLabel]; ok && customNs != "" && app.Type == specv1.AppTypeYaml {
 		appInfo, err := e.getCustomAppInfo()
 		if err != nil {
 			appInfo = &kube.YamlAppInfo{

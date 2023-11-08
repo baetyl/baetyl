@@ -31,7 +31,7 @@ type YamlAppInfo struct {
 
 func (k *kubeImpl) ApplyYaml(app specv1.Application, cfgs map[string]specv1.Configuration) error {
 	if customNs, ok := app.Labels[specv1.CustomAppNsLabel]; customNs != "" && ok {
-		k.log.Info("user custom ns", log.Any("ns", customNs))
+		k.log.Info("user yaml app custom ns", log.Any("ns", customNs))
 		err := k.deleteYamlApp(customNs, app.Name, cfgs)
 		if err != nil {
 			return errors.Trace(err)
@@ -46,8 +46,8 @@ func (k *kubeImpl) StatsYaml() ([]specv1.AppStats, error) {
 	customInfo := &YamlAppInfo{}
 	err := k.store.Get(CustomYamlAppInfo, customInfo)
 	if err != nil {
-		k.log.Debug("no custom app info found", log.Any("err", err))
-		return nil, err
+		k.log.Debug("no yaml app info found", log.Any("err", err))
+		return nil, nil
 	}
 	for name, info := range customInfo.AppInfo {
 		custom, err := k.collectCustomStats(name, info)
