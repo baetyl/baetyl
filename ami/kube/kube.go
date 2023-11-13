@@ -102,7 +102,7 @@ func makeKey(kind specv1.Kind, name, ver string) string {
 
 func (k *kubeImpl) DeleteApp(ns string, app specv1.AppInfo) error {
 	if ns == context.EdgeNamespace() {
-		err := k.DeleteHelm(ns, app.Name)
+		err := k.DeleteHelm(app.Name)
 		// If delete helm success or err is not ErrNotHelmApp, return directly
 		if err == nil || err.Error() != ErrNotHelmApp {
 			return err
