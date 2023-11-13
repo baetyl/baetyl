@@ -35,8 +35,8 @@ github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHG
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
 github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 h1:4daAzAu0S6Vi7/lbWECcX0j45yZReDZ56BQsrVBOEEY=
 github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535/go.mod h1:oGkLhpf+kjZl6xBf758TQhh5XrAeiJv/7FRz/2spLIg=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231101031952-339029b804ca h1:fteulNfMZJIG6ummZ7ChNxYN7THGX5LiNbi3L4IbZNE=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231101031952-339029b804ca/go.mod h1:tZo5qNUjoPcTBDBF61Ubdg92SAzFAHhtguYi6iRlblY=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231113023730-8772c16fd02d h1:5Z0zo7Eb2wNISBbceS2a3D7lhLoM+kzF9Lluv0DIFKE=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231113023730-8772c16fd02d/go.mod h1:tZo5qNUjoPcTBDBF61Ubdg92SAzFAHhtguYi6iRlblY=
 github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3 h1:vVNBMGCt01dwNwF2wtctC4uUbfgW6eXUG9ZicajIfAs=
 github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3/go.mod h1:CIMRFEJVL+0DS1a3Nx06NaMn4Dz63Ng6O7dl0qH0zVM=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
