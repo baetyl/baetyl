@@ -81,9 +81,11 @@ func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]s
 			imagePullSecs = append(imagePullSecs, n)
 		}
 	}
-	err = k.deleteApplication(ns, app.Name)
-	if err != nil {
-		return errors.Trace(err)
+	if !app.PreserveUpdates {
+		err = k.deleteApplication(ns, app.Name)
+		if err != nil {
+			return errors.Trace(err)
+		}
 	}
 	if err = k.applyApplication(ns, app, imagePullSecs); err != nil {
 		return errors.Trace(err)

@@ -32,9 +32,11 @@ type YamlAppInfo struct {
 func (k *kubeImpl) ApplyYaml(app specv1.Application, cfgs map[string]specv1.Configuration) error {
 	if customNs, ok := app.Labels[specv1.CustomAppNsLabel]; customNs != "" && ok {
 		k.log.Info("user yaml app custom ns", log.Any("ns", customNs))
-		err := k.deleteYamlApp(customNs, app.Name, cfgs)
-		if err != nil {
-			return errors.Trace(err)
+		if !app.PreserveUpdates {
+			err := k.deleteYamlApp(customNs, app.Name, cfgs)
+			if err != nil {
+				return errors.Trace(err)
+			}
 		}
 		return k.applyYamlApp(customNs, cfgs)
 	}
