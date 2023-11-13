@@ -108,6 +108,16 @@ func (k *kubeImpl) GetHelm(cfg *action.Configuration, app string) (*release.Rele
 	return cli.Run(app)
 }
 
+// DeleteHelmByCfg delete helm by helm configuration
+func (k *kubeImpl) DeleteHelmByCfg(cfg *action.Configuration, app string) error {
+	cli := action.NewUninstall(cfg)
+	result, err := cli.Run(app)
+	if result != nil && result.Release != nil {
+		k.log.Debug("helm uninstall", logv2.Any("release", result.Release.Name))
+	}
+	return err
+}
+
 // ApplyHelm apply the helm release
 func (k *kubeImpl) ApplyHelm(ns string, app specv1.Application, cfgs map[string]specv1.Configuration) error {
 	ns, ok := app.Labels[specv1.CustomAppNsLabel]
@@ -124,6 +134,11 @@ func (k *kubeImpl) ApplyHelm(ns string, app specv1.Application, cfgs map[string]
 		if version, ok := old.Labels[BaetylHelmVersion]; !ok || version == app.Version {
 			k.log.Warn("helm release already exists", logv2.Any("release", app.Name))
 			return nil
+		} else if !app.PreserveUpdates {
+			err = k.DeleteHelmByCfg(helmCfg, app.Name)
+			if err != nil {
+				return errors.Trace(err)
+			}
 		} else {
 			return k.UpdateHelm(helmCfg, app, cfgs, old)
 		}
@@ -185,7 +200,7 @@ func (k *kubeImpl) UpdateHelm(cfg *action.Configuration, app specv1.Application,
 }
 
 // DeleteHelm check if the helm release exists, if not delete it
-func (k *kubeImpl) DeleteHelm(_ string, app string) error {
+func (k *kubeImpl) DeleteHelm(app string) error {
 	helms, err := k.ListHelm()
 	if err != nil || len(helms) == 0 {
 		return errors.New(ErrNotHelmApp)
@@ -203,12 +218,7 @@ func (k *kubeImpl) DeleteHelm(_ string, app string) error {
 	if err = helmCfg.Init(&genericclioptions.ConfigFlags{Namespace: &ns}, ns, os.Getenv(HelmDriver), log.Printf); err != nil {
 		return errors.Trace(err)
 	}
-	cli := action.NewUninstall(helmCfg)
-	result, err := cli.Run(app)
-	if result != nil && result.Release != nil {
-		k.log.Debug("helm uninstall", logv2.Any("release", result.Release.Name))
-	}
-	return err
+	return k.DeleteHelmByCfg(helmCfg, app)
 }
 
 // setChartValues get helm chart path and values from app service
