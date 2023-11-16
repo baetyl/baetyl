@@ -15,6 +15,7 @@ import (
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/node"
 	"github.com/baetyl/baetyl/v2/store"
+	utilsV2 "github.com/baetyl/baetyl/v2/utils"
 )
 
 func TestRecycle(t *testing.T) {
@@ -45,9 +46,9 @@ func TestRecycle(t *testing.T) {
 	assert.True(t, utils.DirExists(path1))
 	assert.True(t, utils.DirExists(path2))
 
-	key1 := makeKey(specv1.KindConfiguration, cfg1.Name, cfg1.Version)
-	key2 := makeKey(specv1.KindConfiguration, cfg2.Name, cfg2.Version)
-	key3 := makeKey(specv1.KindConfiguration, cfg3.Name, cfg3.Version)
+	key1 := utilsV2.MakeKey(specv1.KindConfiguration, cfg1.Name, cfg1.Version)
+	key2 := utilsV2.MakeKey(specv1.KindConfiguration, cfg2.Name, cfg2.Version)
+	key3 := utilsV2.MakeKey(specv1.KindConfiguration, cfg3.Name, cfg3.Version)
 	sto.Upsert(key1, cfg1)
 	sto.Upsert(key2, cfg2)
 	sto.Upsert(key3, cfg3)
@@ -60,7 +61,7 @@ func TestRecycle(t *testing.T) {
 		},
 	}
 	app.Volumes = append(app.Volumes, vol)
-	appKey := makeKey(specv1.KindApplication, app.Name, app.Version)
+	appKey := utilsV2.MakeKey(specv1.KindApplication, app.Name, app.Version)
 	sto.Upsert(appKey, app)
 
 	r := specv1.Report{}
@@ -245,9 +246,9 @@ func TestGetDelObjectCfgs(t *testing.T) {
 	cfg2 := specv1.Configuration{Name: "cfg2", Version: "v2"}
 	cfg3 := specv1.Configuration{Name: "cfg3", Version: "v3"}
 	objectCfgs := map[string]*specv1.Configuration{
-		makeKey(specv1.KindConfiguration, "cfg1", "v1"): &cfg1,
-		makeKey(specv1.KindConfiguration, "cfg2", "v2"): &cfg2,
-		makeKey(specv1.KindConfiguration, "cfg3", "v3"): &cfg3,
+		utilsV2.MakeKey(specv1.KindConfiguration, "cfg1", "v1"): &cfg1,
+		utilsV2.MakeKey(specv1.KindConfiguration, "cfg2", "v2"): &cfg2,
+		utilsV2.MakeKey(specv1.KindConfiguration, "cfg3", "v3"): &cfg3,
 	}
 	occupiedApps := map[string]*specv1.Application{
 		"app1": {
@@ -369,8 +370,8 @@ func TestGetDelObjectCfgs(t *testing.T) {
 	}
 	del := getDelObjectCfgs(occupiedApps, obsoleteApps, objectCfgs, finishedJobs)
 	expected := map[string]*specv1.Configuration{
-		makeKey(specv1.KindConfiguration, cfg2.Name, cfg2.Version): &cfg2,
-		makeKey(specv1.KindConfiguration, cfg3.Name, cfg3.Version): &cfg3,
+		utilsV2.MakeKey(specv1.KindConfiguration, cfg2.Name, cfg2.Version): &cfg2,
+		utilsV2.MakeKey(specv1.KindConfiguration, cfg3.Name, cfg3.Version): &cfg3,
 	}
 	assert.Equal(t, expected, del)
 }
@@ -429,11 +430,11 @@ func TestCleanObjectStorage(t *testing.T) {
 			specv1.PrefixConfigObject: "c.zip",
 		},
 	}
-	err = sto.Upsert(makeKey(specv1.KindConfiguration, objCfg1.Name, objCfg1.Version), objCfg1)
+	err = sto.Upsert(utilsV2.MakeKey(specv1.KindConfiguration, objCfg1.Name, objCfg1.Version), objCfg1)
 	assert.NoError(t, err)
-	err = sto.Upsert(makeKey(specv1.KindConfiguration, objCfg2.Name, objCfg2.Version), objCfg2)
+	err = sto.Upsert(utilsV2.MakeKey(specv1.KindConfiguration, objCfg2.Name, objCfg2.Version), objCfg2)
 	assert.NoError(t, err)
-	err = sto.Upsert(makeKey(specv1.KindConfiguration, objCfg3.Name, objCfg3.Version), objCfg3)
+	err = sto.Upsert(utilsV2.MakeKey(specv1.KindConfiguration, objCfg3.Name, objCfg3.Version), objCfg3)
 	assert.NoError(t, err)
 	app1 := specv1.Application{
 		Name:    "app1",
@@ -496,9 +497,9 @@ func TestCleanObjectStorage(t *testing.T) {
 			}},
 		}},
 	}
-	err = sto.Upsert(makeKey(specv1.KindApplication, app1.Name, app1.Version), app1)
+	err = sto.Upsert(utilsV2.MakeKey(specv1.KindApplication, app1.Name, app1.Version), app1)
 	assert.NoError(t, err)
-	err = sto.Upsert(makeKey(specv1.KindApplication, app2.Name, app2.Version), app2)
+	err = sto.Upsert(utilsV2.MakeKey(specv1.KindApplication, app2.Name, app2.Version), app2)
 	assert.NoError(t, err)
 
 	cfgDir1 := path.Join(objDir, objCfg1.Name, objCfg1.Version)

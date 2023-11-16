@@ -33,8 +33,10 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/baetyl/baetyl/v2/ami"
+	"github.com/baetyl/baetyl/v2/ami/native/prober"
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/program"
+	utilsV2 "github.com/baetyl/baetyl/v2/utils"
 )
 
 var (
@@ -67,10 +69,12 @@ type nativeImpl struct {
 	hostPathLib   string
 	mapping       *native.ServiceMapping
 	portAllocator *native.PortAllocator
+	probeManager  prober.Manager
+	store         *bh.Store
 	log           *log.Logger
 }
 
-func newNativeImpl(cfg config.AmiConfig, _ *bh.Store) (ami.AMI, error) {
+func newNativeImpl(cfg config.AmiConfig, store *bh.Store) (ami.AMI, error) {
 	hostPathLib, err := v2context.HostPathLib()
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -89,6 +93,8 @@ func newNativeImpl(cfg config.AmiConfig, _ *bh.Store) (ami.AMI, error) {
 		hostPathLib:   hostPathLib,
 		mapping:       mapping,
 		portAllocator: portAllocator,
+		probeManager:  prober.NewManager(store),
+		store:         store,
 		log:           log.With(log.Any("ami", "native")),
 	}, nil
 }
@@ -352,18 +358,19 @@ func (impl *nativeImpl) ApplyApp(ns string, app v1.Application, configs map[stri
 					return errors.Trace(err)
 				}
 			}
+			impl.probeManager.AddApp(svc, &app)
 		}
 
 		if len(ports) > 0 {
 			if app.Type == v1.AppTypeContainer {
-				err := impl.mapping.SetServicePorts(s.Name, ports)
+				err = impl.mapping.SetServicePorts(s.Name, ports)
 				if err != nil {
 					return errors.Trace(err)
 				}
 				impl.log.Debug("set applied service ports in mapping files", log.Any("applied service", s.Name), log.Any("ports", ports))
 			} else {
 				// native function use app name
-				err := impl.mapping.SetServicePorts(app.Name, ports)
+				err = impl.mapping.SetServicePorts(app.Name, ports)
 				if err != nil {
 					return errors.Trace(err)
 				}
@@ -437,6 +444,7 @@ func (impl *nativeImpl) DeleteApp(ns string, app v1.AppInfo) error {
 						}
 					}
 				}
+				impl.probeManager.RemoveApp(&app)
 				if err = svc.Stop(); err != nil {
 					impl.log.Warn("failed to stop old app", log.Error(err))
 				}
@@ -495,6 +503,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+	apps := make(map[string]bool)
 	for _, appFile := range appFiles {
 		if !appFile.IsDir() {
 			continue
@@ -567,6 +576,8 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 						curAppStats.InstanceStats = curInsStats
 						continue
 					}
+					apps[utilsV2.MakeKey(v1.KindApplication, curAppName, curAppVer)] = true
+					impl.probeManager.CheckAndStart(svc, &v1.AppInfo{Name: curAppName, Version: curAppVer})
 
 					status, err := svc.Status()
 					if err != nil || status != service.StatusRunning {
@@ -621,6 +632,7 @@ func (impl *nativeImpl) StatsApps(ns string) ([]v1.AppStats, error) {
 			}
 		}
 	}
+	impl.probeManager.CleanupApps(apps)
 	return stats, nil
 }
 

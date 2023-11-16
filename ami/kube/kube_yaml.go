@@ -14,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 const (
@@ -66,7 +68,7 @@ func (k *kubeImpl) DeleteYaml(app *specv1.Application) error {
 	cfgs := make(map[string]specv1.Configuration)
 	for _, v := range app.Volumes {
 		if cfg := v.VolumeSource.Config; cfg != nil {
-			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			key := utils.MakeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if key == "" {
 				return errors.Errorf("failed to get config name: (%s) version: (%s)", cfg.Name, cfg.Version)
 			}

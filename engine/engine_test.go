@@ -19,6 +19,7 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/baetyl/baetyl/v2/ami/kube"
+	"github.com/baetyl/baetyl/v2/utils"
 
 	"github.com/baetyl/baetyl/v2/config"
 	"github.com/baetyl/baetyl/v2/mock"
@@ -209,14 +210,14 @@ func TestApplyApp(t *testing.T) {
 		Name:    "sec1",
 		Version: "s1",
 	}
-	key := makeKey(specv1.KindApplication, "app1", "v1")
-	err := sto.Upsert(key, app)
+	k := utils.MakeKey(specv1.KindApplication, "app1", "v1")
+	err := sto.Upsert(k, app)
 	assert.NoError(t, err)
-	key = makeKey(specv1.KindConfiguration, "cfg1", "c1")
-	err = sto.Upsert(key, cfg)
+	k = utils.MakeKey(specv1.KindConfiguration, "cfg1", "c1")
+	err = sto.Upsert(k, cfg)
 	assert.NoError(t, err)
-	key = makeKey(specv1.KindSecret, "sec1", "s1")
-	err = sto.Upsert(key, sec)
+	k = utils.MakeKey(specv1.KindSecret, "sec1", "s1")
+	err = sto.Upsert(k, sec)
 	assert.NoError(t, err)
 	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 	info := specv1.AppInfo{Name: "app1", Version: "v1"}
@@ -281,10 +282,10 @@ func TestReportAndApply(t *testing.T) {
 	assert.NoError(t, err)
 
 	app1 := specv1.Application{Name: "app1", Version: "v1"}
-	err = sto.Upsert(makeKey(specv1.KindApplication, "app1", "v1"), app1)
+	err = sto.Upsert(utils.MakeKey(specv1.KindApplication, "app1", "v1"), app1)
 	assert.NoError(t, err)
 	app3 := specv1.Application{Name: "app3", Version: "v3"}
-	err = sto.Upsert(makeKey(specv1.KindApplication, "app3", "v3"), app3)
+	err = sto.Upsert(utils.MakeKey(specv1.KindApplication, "app3", "v3"), app3)
 	mockSync.EXPECT().SyncResource(gomock.Any()).Return(nil)
 	mockSync.EXPECT().SyncApps(gomock.Any()).Return(nil, nil)
 	mockAmi.EXPECT().ApplyApp(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)

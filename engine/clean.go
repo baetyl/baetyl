@@ -8,6 +8,8 @@ import (
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
 	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 func (e *engineImpl) recycle() error {
@@ -27,20 +29,20 @@ func (e *engineImpl) recycle() error {
 	usedCfg := map[string]struct{}{}
 	for _, info := range rApps {
 		app := new(specv1.Application)
-		err := e.sto.Get(makeKey(specv1.KindApplication, info.Name, info.Version), app)
+		err := e.sto.Get(utils.MakeKey(specv1.KindApplication, info.Name, info.Version), app)
 		if err != nil {
 			return errors.Trace(err)
 		}
 		for _, v := range app.Volumes {
 			if cfg := v.Config; cfg != nil {
-				usedCfg[makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)] = struct{}{}
+				usedCfg[utils.MakeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)] = struct{}{}
 			}
 		}
 	}
 	del := make(map[string]specv1.Configuration)
 	if err := e.sto.ForEach(nil, func(cfg *specv1.Configuration) error {
 		if isObjectConfig(cfg) {
-			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			key := utils.MakeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if _, ok := usedCfg[key]; !ok {
 				del[key] = *cfg
 			}
@@ -70,7 +72,7 @@ func (e *engineImpl) cleanObjectStorage() (int, error) {
 	objectCfgs := map[string]*specv1.Configuration{}
 	err = e.sto.ForEach(nil, func(cfg *specv1.Configuration) error {
 		if isObjectConfig(cfg) {
-			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			key := utils.MakeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if key != "" {
 				objectCfgs[key] = cfg
 			}
@@ -105,7 +107,7 @@ func (e *engineImpl) cleanObjectStorage() (int, error) {
 	finishedJobs := getFinishedJobs(occupiedApps, node)
 	usedObjectCfgs := getUsedObjectCfgs(occupiedApps, finishedJobs)
 	for name, ver := range usedObjectCfgs {
-		key := makeKey(specv1.KindConfiguration, name, ver)
+		key := utils.MakeKey(specv1.KindConfiguration, name, ver)
 		if _, ok := objectCfgs[key]; ok && key != "" {
 			delete(objectCfgs, key)
 		}
@@ -154,7 +156,7 @@ func getDelObjectCfgs(occupied, obsolete map[string]*specv1.Application, objectC
 				if !ok || !vm.AutoClean {
 					continue
 				}
-				key := makeKey(specv1.KindConfiguration, refer.Name, refer.Version)
+				key := utils.MakeKey(specv1.KindConfiguration, refer.Name, refer.Version)
 				if cfg, ok := objectCfgs[key]; ok && key != "" {
 					dels[key] = cfg
 				}
@@ -178,7 +180,7 @@ func getDelObjectCfgs(occupied, obsolete map[string]*specv1.Application, objectC
 				if !ok || !vm.AutoClean {
 					continue
 				}
-				key := makeKey(specv1.KindConfiguration, refer.Name, refer.Version)
+				key := utils.MakeKey(specv1.KindConfiguration, refer.Name, refer.Version)
 				if cfg, ok := objectCfgs[key]; ok && key != "" {
 					dels[key] = cfg
 				}
