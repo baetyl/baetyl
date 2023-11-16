@@ -14,6 +14,7 @@ import (
 
 	"github.com/baetyl/baetyl/v2/ami"
 	"github.com/baetyl/baetyl/v2/config"
+	"github.com/baetyl/baetyl/v2/utils"
 )
 
 type kubeImpl struct {
@@ -93,13 +94,6 @@ func (k *kubeImpl) ApplyApp(ns string, app specv1.Application, cfgs map[string]s
 	return nil
 }
 
-func makeKey(kind specv1.Kind, name, ver string) string {
-	if name == "" || ver == "" {
-		return ""
-	}
-	return string(kind) + "-" + name + "-" + ver
-}
-
 func (k *kubeImpl) DeleteApp(ns string, app specv1.AppInfo) error {
 	if ns == context.EdgeNamespace() {
 		err := k.DeleteHelm(app.Name)
@@ -109,7 +103,7 @@ func (k *kubeImpl) DeleteApp(ns string, app specv1.AppInfo) error {
 		}
 	}
 	delApp := new(specv1.Application)
-	key := makeKey(specv1.KindApplication, app.Name, app.Version)
+	key := utils.MakeKey(specv1.KindApplication, app.Name, app.Version)
 	err := k.store.Get(key, delApp)
 	if err != nil {
 		return err

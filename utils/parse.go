@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/baetyl/baetyl-go/v2/context"
+	specv1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
 )
 
@@ -69,6 +70,13 @@ func Bytes(s uint64) string {
 func IBytes(s uint64) string {
 	sizes := []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
 	return humanateBytes(s, 1024, sizes)
+}
+
+func MakeKey(kind specv1.Kind, name, ver string) string {
+	if name == "" || ver == "" {
+		return ""
+	}
+	return string(kind) + "-" + name + "-" + ver
 }
 
 func humanateBytes(s uint64, base float64, sizes []string) string {

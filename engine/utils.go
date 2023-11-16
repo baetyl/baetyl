@@ -254,13 +254,6 @@ func checkMultiAppPort(infos []specv1.AppInfo, apps map[string]specv1.Applicatio
 	}
 }
 
-func makeKey(kind specv1.Kind, name, ver string) string {
-	if name == "" || ver == "" {
-		return ""
-	}
-	return string(kind) + "-" + name + "-" + ver
-}
-
 // ensuring apps have same order in report and desire list
 func alignApps(reApps, deApps []specv1.AppInfo) []specv1.AppInfo {
 	if len(reApps) == 0 || len(deApps) == 0 {

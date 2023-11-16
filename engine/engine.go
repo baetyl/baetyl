@@ -398,7 +398,7 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 		e.log.Error("failed to sync resource", log.Any("info", info), log.Error(err))
 		return errors.Trace(err)
 	}
-	key := makeKey(specv1.KindApplication, info.Name, info.Version)
+	key := utils.MakeKey(specv1.KindApplication, info.Name, info.Version)
 	app := new(specv1.Application)
 	err := e.sto.Get(key, app)
 	if err != nil {
@@ -426,34 +426,34 @@ func (e *engineImpl) applyApp(ns string, info specv1.AppInfo) error {
 	secs := make(map[string]specv1.Secret)
 	for _, v := range app.Volumes {
 		if cfg := v.VolumeSource.Config; cfg != nil {
-			key := makeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
+			key = utils.MakeKey(specv1.KindConfiguration, cfg.Name, cfg.Version)
 			if key == "" {
 				return errors.Errorf("failed to get config name: (%s) version: (%s)", cfg.Name, cfg.Version)
 			}
 			var config specv1.Configuration
-			if err := e.sto.Get(key, &config); err != nil {
+			if err = e.sto.Get(key, &config); err != nil {
 				return errors.Errorf("failed to get config name: (%s) version: (%s) with error: %s", cfg.Name, cfg.Version, err.Error())
 			}
 			cfgs[config.Name] = config
 		} else if sec := v.VolumeSource.Secret; sec != nil {
-			key := makeKey(specv1.KindSecret, sec.Name, sec.Version)
+			key = utils.MakeKey(specv1.KindSecret, sec.Name, sec.Version)
 			if key == "" {
 				return errors.Errorf("failed to get secret name: (%s) version: (%s)", sec.Name, sec.Version)
 			}
 			var secret specv1.Secret
-			if err := e.sto.Get(key, &secret); err != nil {
+			if err = e.sto.Get(key, &secret); err != nil {
 				return errors.Errorf("failed to get secret name: (%s) version: (%s) with error: %s", sec.Name, sec.Version, err.Error())
 			}
 			secs[secret.Name] = secret
 		}
 	}
-	if err := sync.PrepareApp(e.hostHostPath, e.objectHostPath, app, cfgs); err != nil {
+	if err = sync.PrepareApp(e.hostHostPath, e.objectHostPath, app, cfgs); err != nil {
 		e.log.Error("failed to revise applications", log.Any("app", app), log.Error(err))
 		return errors.Trace(err)
 	}
 	// inject system cert
 	if e.sec != nil && !strings.Contains(app.Name, specv1.BaetylCore) && !strings.Contains(app.Name, specv1.BaetylInit) {
-		if err := e.injectCert(app, secs); err != nil {
+		if err = e.injectCert(app, secs); err != nil {
 			return errors.Trace(err)
 		}
 	}
