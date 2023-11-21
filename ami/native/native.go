@@ -430,17 +430,16 @@ func (impl *nativeImpl) DeleteApp(ns string, app v1.AppInfo) error {
 				var childs *[]ami.ProcessInfo
 				if runtime.GOOS == "windows" {
 					status, err := svc.Status()
-					if err != nil {
-						return errors.Trace(err)
-					}
-					if status == service.StatusRunning {
-						pid, err := svc.GetPid()
-						if err != nil {
-							impl.log.Warn("failed to get svc pid", log.Error(err))
-						}
-						childs, err = getChildProcessInfo(pid)
-						if err != nil {
-							impl.log.Warn("failed to get child pid", log.Error(err))
+					if err == nil {
+						if status == service.StatusRunning {
+							pid, err := svc.GetPid()
+							if err != nil {
+								impl.log.Warn("failed to get svc pid", log.Error(err))
+							}
+							childs, err = getChildProcessInfo(pid)
+							if err != nil {
+								impl.log.Warn("failed to get child pid", log.Error(err))
+							}
 						}
 					}
 				}
