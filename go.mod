@@ -5,7 +5,7 @@ go 1.18
 replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3
 
 require (
-	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231114062225-6e5e78d5f19a
+	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231121032505-22cbbc571abd
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.13
