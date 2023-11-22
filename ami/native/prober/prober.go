@@ -33,22 +33,22 @@ const (
 
 // Prober helps to check the liveness/readiness/startup of a container.
 type prober struct {
-	// probe types needs different httpprobe instances so they don't
+	// probe types needs different httpProbe instances, so they don't
 	// share a connection pool which can cause collisions to the
 	// same host:port and transient failures. See #49740.
-	livenessHTTP HTTPProber
-	tcp          TCPProber
+	http HTTPProber
+	tcp  TCPProber
 }
 
 func newProber() *prober {
 	const followNonLocalRedirects = false
 	return &prober{
-		livenessHTTP: NewHTTPProber(followNonLocalRedirects),
-		tcp:          NewTCPProber(),
+		http: NewHTTPProber(followNonLocalRedirects),
+		tcp:  NewTCPProber(),
 	}
 }
 
-func (pb *prober) probe(appName string, p *v1.Probe) (ProbeResult, error) {
+func (pb *prober) probe(appName *probeKey, p *v1.Probe) (ProbeResult, error) {
 	var err error
 	var output string
 	result := Unknown
@@ -73,7 +73,7 @@ func (pb *prober) probe(appName string, p *v1.Probe) (ProbeResult, error) {
 	return Success, nil
 }
 
-func (pb *prober) runProbe(appName string, p *v1.Probe) (ProbeResult, string, error) {
+func (pb *prober) runProbe(key *probeKey, p *v1.Probe) (ProbeResult, string, error) {
 	timeout := time.Duration(p.TimeoutSeconds) * time.Second
 	if p.HTTPGet != nil {
 		scheme := strings.ToLower(string(p.HTTPGet.Scheme))
@@ -87,9 +87,9 @@ func (pb *prober) runProbe(appName string, p *v1.Probe) (ProbeResult, string, er
 		}
 		path := p.HTTPGet.Path
 		log.L().Debug("HTTP-Probe Host", log.Any("host", host), log.Any("port", port), log.Any("path", path))
-		url := formatURL(scheme, host, port.IntValue(), path)
+		u := formatURL(scheme, host, port.IntValue(), path)
 		headers := buildHeader(p.HTTPGet.HTTPHeaders)
-		return pb.livenessHTTP.Probe(url, headers, timeout)
+		return pb.http.Probe(u, headers, timeout)
 	}
 	if p.TCPSocket != nil {
 		port := p.HTTPGet.Port
@@ -103,7 +103,7 @@ func (pb *prober) runProbe(appName string, p *v1.Probe) (ProbeResult, string, er
 		log.L().Debug("TCP-Probe Host", log.Any("host", host), log.Any("port", port))
 		return pb.tcp.Probe(host, port.IntValue(), timeout)
 	}
-	return Unknown, "", fmt.Errorf("missing probe handler for %s", appName)
+	return Unknown, "", fmt.Errorf("missing probe handler for %v", key)
 }
 
 // formatURL formats a URL from args.  For testability.

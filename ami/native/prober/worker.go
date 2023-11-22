@@ -10,15 +10,28 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/utils/clock"
-
-	"github.com/baetyl/baetyl/v2/utils"
 )
+
+// Type of probe (liveness, readiness or startup)
+type probeType int
+
+const (
+	liveness probeType = iota
+	startup
+)
+
+type probeKey struct {
+	Name      string
+	Version   string
+	ProbeType probeType
+}
 
 type worker struct {
 	// Channel for stopping the probe.
 	stopCh chan struct{}
 	// Describes the probe configuration (read-only)
-	spec *v1.Probe
+	spec      *v1.Probe
+	probeType probeType
 	// The process to probe
 	svc          service.Service
 	app          *specV1.Application
@@ -31,13 +44,14 @@ type worker struct {
 	resultRun int
 }
 
-func newWorker(m *manager, svc service.Service, app *specV1.Application) *worker {
+func newWorker(m *manager, svc service.Service, probeType probeType, app *specV1.Application) *worker {
 	return &worker{
 		stopCh:       make(chan struct{}, 1),        // Buffer so stop() can be non-blocking.
 		spec:         app.Services[0].LivenessProbe, // native only support one service
 		app:          app,
 		svc:          svc,
 		probeManager: m,
+		probeType:    probeType,
 		log:          m.log,
 		startedAt:    clock.RealClock{}.Now(),
 	}
@@ -56,7 +70,7 @@ func (w *worker) run() {
 	defer func() {
 		// Clean up.
 		probeTicker.Stop()
-		key := utils.MakeKey(specV1.KindApplication, w.app.Name, w.app.Version)
+		key := probeKey{Name: w.app.Name, Version: w.app.Version, ProbeType: w.probeType}
 		w.probeManager.removeWorker(key)
 	}()
 probeLoop:
@@ -84,15 +98,25 @@ func (w *worker) doProbe() (keepGoing bool) {
 	defer func() { recover() }() // Actually eat panics (HandleCrash takes care of logging)
 	defer runtime.HandleCrash(func(_ interface{}) { keepGoing = true })
 
-	key := utils.MakeKey(specV1.KindApplication, w.app.Name, w.app.Version)
+	key := &probeKey{Name: w.app.Name, Version: w.app.Version, ProbeType: w.probeType}
 	status, ok := w.svc.Status()
-	if ok != nil || status == service.StatusUnknown {
-		w.log.Debug("No status for process", log.Any("app", key))
+	if ok != nil {
+		w.log.Debug("No status for process", log.Any("key", key))
 		return true
 	}
 	if status == service.StatusStopped {
-		w.log.Debug("Process is terminated, exiting probe worker", log.Any("app", key))
+		w.log.Debug("Process is terminated, exiting probe worker", log.Any("key", key))
 		return false
+	}
+	// Stop probing for liveness until process has started.
+	if w.probeType == liveness && status == service.StatusUnknown {
+		w.log.Debug("No status for process", log.Any("key", key))
+		return true
+	}
+	// Stop probing for startup once process has started.
+	// we keep it running to make sure it will work for restarted process.
+	if w.probeType == startup && status == service.StatusRunning {
+		return true
 	}
 	// Probe disabled for InitialDelaySeconds.
 	if int32(time.Since(w.startedAt).Seconds()) < w.spec.InitialDelaySeconds {
@@ -116,12 +140,12 @@ func (w *worker) doProbe() (keepGoing bool) {
 		return true
 	}
 	if result == Failure {
-		// The process fails a liveness check, it will need to be restarted.
+		// The process fails a check, it will need to be restarted.
 		// Stop probing and restart the process.
-		w.log.Warn("Process failed liveness probe, restarting", log.Any("app", key))
+		w.log.Warn("Process failed probe, restarting", log.Any("key", key))
 		err = w.svc.Restart()
 		if err != nil {
-			w.log.Error("Failed to restart process", log.Any("app", key), log.Error(err))
+			w.log.Error("Failed to restart process", log.Any("key", key), log.Error(err))
 		}
 		w.resultRun = 0
 	}

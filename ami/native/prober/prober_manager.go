@@ -22,7 +22,7 @@ type Manager interface {
 }
 
 type manager struct {
-	workers    map[string]*worker
+	workers    map[probeKey]*worker
 	workerLock sync.RWMutex
 	start      time.Time
 	log        *log.Logger
@@ -30,31 +30,39 @@ type manager struct {
 	prober *prober
 	store  *bolthold.Store
 	// count when collecting process status, if count >=maxProbeRetries, stop worker
-	status map[string]int
+	status map[probeKey]int
 }
 
 func NewManager(store *bolthold.Store) Manager {
 	return &manager{
-		workers: make(map[string]*worker),
+		workers: make(map[probeKey]*worker),
 		start:   clock.RealClock{}.Now(),
 		prober:  newProber(),
 		store:   store,
-		status:  make(map[string]int),
+		status:  make(map[probeKey]int),
 		log:     log.With(log.Any("native", "probe")),
 	}
 }
 
 func (m *manager) AddApp(svc service.Service, app *v1.Application) {
-	if app == nil || len(app.Services) == 0 || app.Services[0].LivenessProbe == nil {
+	if app == nil || len(app.Services) == 0 {
+		return
+	}
+	var p probeType
+	if app.Services[0].LivenessProbe != nil {
+		p = liveness
+	} else if app.Services[0].StartupProbe != nil {
+		p = startup
+	} else {
 		return
 	}
 	m.workerLock.Lock()
 	defer m.workerLock.Unlock()
-	key := utils.MakeKey(v1.KindApplication, app.Name, app.Version)
+	key := probeKey{Name: app.Name, Version: app.Version, ProbeType: p}
 	if _, ok := m.workers[key]; ok {
 		return
 	}
-	w := newWorker(m, svc, app)
+	w := newWorker(m, svc, p, app)
 	m.workers[key] = w
 	m.status[key] = 0
 	m.log.Debug("add app", log.Any("app", key))
@@ -67,12 +75,17 @@ func (m *manager) RemoveApp(app *v1.AppInfo) {
 	}
 	m.workerLock.Lock()
 	defer m.workerLock.Unlock()
-	key := utils.MakeKey(v1.KindApplication, app.Name, app.Version)
-	if w, ok := m.workers[key]; ok {
+	livenessKey := probeKey{Name: app.Name, Version: app.Version, ProbeType: liveness}
+	if w, ok := m.workers[livenessKey]; ok {
+		w.stop()
+	}
+	startupKey := probeKey{Name: app.Name, Version: app.Version, ProbeType: startup}
+	if w, ok := m.workers[startupKey]; ok {
 		w.stop()
 	}
 }
 
+// CheckAndStart This is used for restarting baetyl-core, due to applying apps will not be called.
 func (m *manager) CheckAndStart(svc service.Service, info *v1.AppInfo) {
 	if strings.HasPrefix(info.Name, v1.BaetylCore) || strings.HasPrefix(info.Name, v1.BaetylInit) {
 		return
@@ -87,11 +100,14 @@ func (m *manager) CheckAndStart(svc service.Service, info *v1.AppInfo) {
 	m.AddApp(svc, app)
 }
 
+// CleanupApps removes the workers when collecting the process status.
+// Only if count >=maxProbeRetries, stop worker
 func (m *manager) CleanupApps(apps map[string]bool) {
 	m.workerLock.Lock()
 	defer m.workerLock.Unlock()
 	for key, w := range m.workers {
-		if _, ok := apps[key]; !ok {
+		k := utils.MakeKey(v1.KindApplication, key.Name, key.Version)
+		if _, ok := apps[k]; !ok {
 			m.status[key]++
 			if m.status[key] >= maxProbeRetries {
 				m.log.Debug("remove app", log.Any("key", key), log.Any("apps", apps))
@@ -105,7 +121,7 @@ func (m *manager) CleanupApps(apps map[string]bool) {
 }
 
 // Called by the worker after exiting.
-func (m *manager) removeWorker(name string) {
+func (m *manager) removeWorker(name probeKey) {
 	m.workerLock.Lock()
 	defer m.workerLock.Unlock()
 	delete(m.workers, name)
