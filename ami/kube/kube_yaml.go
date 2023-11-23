@@ -133,12 +133,13 @@ func (k *kubeImpl) deleteYamlApp(ns string, appName string, cfgs map[string]spec
 			}
 			objs := parseK8SYaml(data)
 			if len(objs) == 0 {
+				k.log.Info("no k8s object found in cfg data")
 				continue
 			}
 			for _, obj := range objs {
 				meta, err := meta.Accessor(obj)
 				if err != nil {
-					k.log.Error("failed to transfer k8s obj to metav1 obj", log.Any("error", err))
+					k.log.Info("failed to transfer k8s obj to metav1 obj", log.Any("error", err))
 					continue
 				}
 				rsc := k.getResourceMapping(obj, k.cli.discovery)
@@ -146,9 +147,10 @@ func (k *kubeImpl) deleteYamlApp(ns string, appName string, cfgs map[string]spec
 					k.log.Info("failed to get k8s server resource for obj")
 					continue
 				}
-				err = k.cli.dynamic.Resource(*rsc).Namespace(ns).Delete(context.Background(), meta.GetName(), metav1.DeleteOptions{})
+				deletePolicy := metav1.DeletePropagationForeground
+				err = k.cli.dynamic.Resource(*rsc).Namespace(ns).Delete(context.Background(), meta.GetName(), metav1.DeleteOptions{PropagationPolicy: &deletePolicy})
 				if err != nil {
-					k.log.Info("no k8s resource found to delete", log.Any("name", meta.GetName()))
+					k.log.Info("no k8s resource found to delete", log.Any("name", meta.GetName()), log.Any("error", err))
 					continue
 				}
 			}
