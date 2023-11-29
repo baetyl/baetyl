@@ -240,9 +240,15 @@ func setChartValues(app specv1.Application, cfgs map[string]specv1.Configuration
 	source2 := app.Volumes[1].VolumeSource
 	if source1.HostPath != nil {
 		dir = source1.HostPath.Path + "/" + svc.Image
+		if source2.Config == nil {
+			return "", nil, errors.Trace(errors.New("no value has been selected"))
+		}
 		valueConfig = source2.Config.Name
 	} else if source2.HostPath != nil {
 		dir = source2.HostPath.Path + "/" + svc.Image
+		if source1.Config == nil {
+			return "", nil, errors.Trace(errors.New("no value has been selected"))
+		}
 		valueConfig = source1.Config.Name
 	} else {
 		return "", nil, errors.Trace(errors.New("no value has been selected"))
