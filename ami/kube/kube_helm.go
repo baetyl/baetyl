@@ -23,6 +23,8 @@ const (
 	BaetylHelmVersion    = "baetyl-version"
 	DefaultHelmNamespace = "default"
 	HelmDriver           = "HELM_DRIVER"
+	LabelReleaseKey      = "app.kubernetes.io/instance"
+	AnnotationReleaseKey = "meta.helm.sh/release-name"
 
 	ErrNotHelmApp = "not a helm app"
 )
@@ -36,6 +38,10 @@ func (k *kubeImpl) collectHelmStats(appStats map[string]specv1.AppStats, ns stri
 	if pods == nil || len(pods.Items) == 0 {
 		return nil
 	}
+	podNames, err := k.collectPodNames(ns, apps)
+	if err != nil {
+		return errors.Trace(err)
+	}
 	for _, app := range apps {
 		stats := appStats[app]
 		if stats.InstanceStats == nil {
@@ -44,14 +50,85 @@ func (k *kubeImpl) collectHelmStats(appStats map[string]specv1.AppStats, ns stri
 		insStats := map[string]specv1.InstanceStats{}
 		for _, pod := range pods.Items {
 			// check if the pod is a helm app by pod name
-			if strings.HasPrefix(pod.Name, app) {
-				stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, app, map[string]interface{}{}, &pod)
-				insStats[pod.Name] = stats.InstanceStats[pod.Name]
+			for podName := range podNames[app] {
+				if strings.Contains(pod.Name, podName) {
+					stats.InstanceStats[pod.Name] = k.collectInstanceStats(ns, app, map[string]interface{}{}, &pod)
+					insStats[pod.Name] = stats.InstanceStats[pod.Name]
+					//stats.DeployType = deployType
+					break
+				}
 			}
 		}
 		appStats[app] = stats
 	}
 	return nil
+}
+
+// return {app: {podName: type}}
+func (k *kubeImpl) collectPodNames(ns string, apps []string) (map[string]map[string]string, error) {
+	result := make(map[string]map[string]string)
+	for _, app := range apps {
+		result[app] = make(map[string]string)
+	}
+	deploys, err := k.cli.app.Deployments(ns).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	for _, d := range deploys.Items {
+		app := checkHelm(d.Labels, d.Annotations, apps)
+		if app != "" {
+			result[app][d.Name] = specv1.WorkloadDeployment
+		}
+	}
+	daemonSets, err := k.cli.app.DaemonSets(ns).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	for _, d := range daemonSets.Items {
+		app := checkHelm(d.Labels, d.Annotations, apps)
+		if app != "" {
+			result[app][d.Name] = specv1.WorkloadDaemonSet
+		}
+	}
+	statefulSets, err := k.cli.app.StatefulSets(ns).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	for _, s := range statefulSets.Items {
+		app := checkHelm(s.Labels, s.Annotations, apps)
+		if app != "" {
+			result[app][s.Name] = specv1.WorkloadStatefulSet
+		}
+	}
+	jobs, err := k.cli.batch.Jobs(ns).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	for _, j := range jobs.Items {
+		app := checkHelm(j.Labels, j.Annotations, apps)
+		if app != "" {
+			result[app][j.Name] = specv1.WorkloadJob
+		}
+	}
+	return result, nil
+}
+
+func checkHelm(labels, annotations map[string]string, apps []string) string {
+	if v, ok := labels[LabelReleaseKey]; ok {
+		for _, app := range apps {
+			if v == app {
+				return app
+			}
+		}
+	}
+	if v, ok := annotations[AnnotationReleaseKey]; ok {
+		for _, app := range apps {
+			if v == app {
+				return app
+			}
+		}
+	}
+	return ""
 }
 
 // StatsHelm collects the stats of helm pods
