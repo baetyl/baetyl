@@ -35,8 +35,8 @@ github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHG
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPdPJAN/hZIm0C4OItdklCFmMRWYpio=
 github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 h1:4daAzAu0S6Vi7/lbWECcX0j45yZReDZ56BQsrVBOEEY=
 github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535/go.mod h1:oGkLhpf+kjZl6xBf758TQhh5XrAeiJv/7FRz/2spLIg=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231121032505-22cbbc571abd h1:gMcbRlLHqWRhq3TvneZrwnwngkbscf0LOCeL1J2G074=
-github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231121032505-22cbbc571abd/go.mod h1:tZo5qNUjoPcTBDBF61Ubdg92SAzFAHhtguYi6iRlblY=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231207063452-0ca215be0695 h1:qNgORHF6ThJJu1W1oae5BjR6Z6i5aLIvubS/UwgU2VM=
+github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231207063452-0ca215be0695/go.mod h1:ayKt7FJYQMXY1g/2i0+eLFJqXIhtty8S6wNOrH/SDV0=
 github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3 h1:vVNBMGCt01dwNwF2wtctC4uUbfgW6eXUG9ZicajIfAs=
 github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3/go.mod h1:CIMRFEJVL+0DS1a3Nx06NaMn4Dz63Ng6O7dl0qH0zVM=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
@@ -406,6 +406,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/super-l/machine-code v0.0.0-20210720085303-62525d58dab0 h1:86uXHkVAPTSw+Sevxpnm9SyhuclFO/X9QdfPDyUgOi8=
+github.com/super-l/machine-code v0.0.0-20210720085303-62525d58dab0/go.mod h1:mWw3/mSonDcy9YnrMDrMpOmwSpsSeEqI5Qq6ZwOdAo0=
 github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d h1:YA00IWIVr2XGe8zv2DkgccGFCpHOCP5hxzoD+aFJDrU=
 github.com/timshannon/bolthold v0.0.0-20200310154430-7be3f3bd401d/go.mod h1:jUigdmrbdCxcIDEFrq82t4X9805XZfwFZoYUap0ET/U=
 github.com/tklauser/go-sysconf v0.3.10 h1:IJ1AZGZRWbY8T5Vfk04D9WOA5WSejdflXxP03OUqALw=
