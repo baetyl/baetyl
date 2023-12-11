@@ -87,6 +87,9 @@ func (m *manager) RemoveApp(app *v1.AppInfo) {
 
 // CheckAndStart This is used for restarting baetyl-core, due to applying apps will not be called.
 func (m *manager) CheckAndStart(svc service.Service, info *v1.AppInfo) {
+	if m.store == nil {
+		return
+	}
 	if strings.HasPrefix(info.Name, v1.BaetylCore) || strings.HasPrefix(info.Name, v1.BaetylInit) {
 		return
 	}
