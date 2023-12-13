@@ -5,11 +5,14 @@ go 1.18
 replace github.com/kardianos/service => github.com/baetyl/service v1.2.3-0.20221205070704-85cb455aa3a3
 
 require (
+	github.com/256dpi/gomqtt v0.14.3
 	github.com/baetyl/baetyl-go/v2 v2.2.4-0.20231207063452-0ca215be0695
 	github.com/golang/mock v1.6.0
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.13
 	github.com/jinzhu/copier v0.1.0
+	github.com/jpillora/backoff v1.0.0
 	github.com/kardianos/service v1.2.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/pkg/errors v0.9.1
@@ -36,7 +39,6 @@ require (
 )
 
 require (
-	github.com/256dpi/gomqtt v0.14.3 // indirect
 	github.com/256dpi/mercury v0.2.0 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
@@ -55,6 +57,7 @@ require (
 	github.com/conduitio/bwlimit v0.1.0 // indirect
 	github.com/containerd/containerd v1.7.6 // indirect
 	github.com/creasty/defaults v1.4.0 // indirect
+	github.com/crsmithdev/goexpr v0.0.0-20150309021426-69a8c42346f1 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denisbrodbeck/machineid v1.0.1 // indirect
@@ -92,7 +95,6 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/gosuri/uitable v0.0.4 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
@@ -102,7 +104,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
@@ -129,6 +130,7 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nwaples/rardecode v1.1.0 // indirect
+	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/panjf2000/ants/v2 v2.8.1 // indirect
