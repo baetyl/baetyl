@@ -8,6 +8,12 @@ import (
 	"github.com/baetyl/baetyl/v2/initz"
 	_ "github.com/baetyl/baetyl/v2/plugin/httplink"
 	_ "github.com/baetyl/baetyl/v2/plugin/pubsub"
+
+	_ "github.com/baetyl/baetyl/v2/plugin/mqttlink"
+	_ "github.com/baetyl/baetyl/v2/plugin/nodestats"
+	_ "github.com/baetyl/baetyl/v2/plugin/nvstats"
+	_ "github.com/baetyl/baetyl/v2/plugin/qpsstats"
+	_ "github.com/baetyl/baetyl/v2/plugin/wslink"
 )
 
 func init() {
