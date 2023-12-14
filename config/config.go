@@ -27,6 +27,21 @@ type Config struct {
 	MqttLink struct {
 		Cert utils.Certificate `yaml:",inline" json:",inline"`
 	} `yaml:"mqttlink,omitempty" json:"mqttlink,omitempty"`
+	StatsExt struct {
+		GPU       bool `yaml:"gpu" json:"gpu"`
+		NodeStats bool `yaml:"nodeStats" json:"nodeStats"`
+		QPSStats  bool `yaml:"qpsStats" json:"qpsStats"`
+	} `yaml:"statsext" json:"statsext"`
+	ExtPlugin struct {
+		GpuStats  string `yaml:"gpustats" json:"gpustats" default:"nvstats"`
+		NodeStats string `yaml:"nodestats" json:"nodestats" default:"nodestats"`
+		QPSStats  string `yaml:"qpsstats" json:"qpsstats" default:"qpsstats"`
+	} `yaml:"extPlugin" json:"extPlugin"`
+	Roam struct {
+		Path              string `yaml:"path" json:"path" default:"/v1/object"`
+		Port              string `yaml:"port" json:"port" default:"30080"`
+		http.ClientConfig `yaml:",inline" json:",inline"`
+	} `yaml:"roam" json:"roam"`
 }
 
 type EngineConfig struct {

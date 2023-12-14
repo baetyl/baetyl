@@ -105,7 +105,7 @@ func initTemplate(t *testing.T) string {
 func TestActivate_Server(t *testing.T) {
 	initTemplate(t)
 	c := &config.Config{}
-	c.Init.Active.Collector.Server.Listen = "www.baidu.com"
+	c.Init.Active.Collector.Server.Listen = "www.abc.com"
 	c.Init.Active.Collector.Attributes = []config.Attribute{
 		{Name: "batch"},
 		{Name: "namespace"},

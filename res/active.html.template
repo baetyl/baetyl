@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style type="text/css">
+    div.active-title {font-family:Menlo; height: 50px; margin-top:12%; vertical-align: middle; text-align:center}
+    div.active-input {font-family:SimHei; margin:0 auto; width: 30%; height: 150px; margin-top:40px}
+    label.active-label {float: left; font-size: 17px; margin-top: 5px}
+    .active-box{float:right; width: 200px; height: 18px; margin-top: 4px}
+    input.active-submit{margin-top:25px; float:right; width: 100px; height: 30px; font-size: 15px}
+</style>
+<title>激活界面</title>
+</head>
+<body bgcolor="#f6f7fb">
+<form method="post" action="update">
+    <div class="active-title">
+        <h1>设备激活</h1>
+    </div>
+    <div class="active-input">
+        <h3>激活信息</h3>
+
+        <label class="active-lable">导入激活信息：</label>
+        <input
+          type="file"
+          name="upload"
+          id="upload"
+          onchange="uploadFile(this)"
+        />
+        <br /><br />
+
+        {{range $value := .Attributes }}
+        {{ if not $value.Value }}
+            <label class="active-label">{{$value.Label}}：</label>
+            <input
+                class="active-box"
+                name="{{$value.Name}}"
+                id="{{$value.Name}}"
+                placeholder="{{$value.Desc}}"
+                value=""
+            />
+            <br/><br/>
+        {{ end }}
+        {{ end }}
+
+        <h3>节点信息</h3>
+        <label class="active-lable">类型：</label>
+        <div class="active-box">
+            <input
+            type="radio"
+            name="type"
+            id="input"
+            value="input"
+            onclick="radioChange(this)"
+            checked
+            />
+            <label for="input">手动输入</label>
+            <input
+            type="radio"
+            name="type"
+            id="auto"
+            value="auto"
+            onclick="radioChange(this)"
+            />
+            <label for="auto">自动获取</label>
+        </div>
+        <br /><br />
+
+        <div id="serial">
+            {{range $value := .Serial }}
+            {{ if not $value.Value }}
+                <label class="active-label">{{$value.Label}}：</label>
+                <input
+                    class="active-box"
+                    name="{{$value.Name}}"
+                    id="{{$value.Name}}"
+                    placeholder="{{$value.Desc}}"
+                    value=""
+                />
+                <br/><br/>
+            {{ end }}
+            {{ end }}
+        </div>
+
+        {{range $value := .Nodeinfo }}
+        {{ if not $value.Value }}
+            <label class="active-label">{{$value.Label}}：</label>
+            <input
+                class="active-box"
+                name="{{$value.Name}}"
+                id="{{$value.Name}}"
+                placeholder="{{$value.Desc}}"
+                value=""
+            />
+            <br/><br/>
+        {{ end }}
+        {{ end }}
+
+        <input class="active-submit" type="submit" value="激活"/>
+    </div>
+    <script>
+        function setInputValue(id, value) {
+            var input = document.getElementById(id);
+            if (input) {
+                input.value = value;
+            }
+        }
+
+        function uploadFile(input) {
+            var file = input.files[0];
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = function () {
+                var res = reader.result;
+                var list = res.split("\n");
+                setInputValue("batch", list[0]);
+                setInputValue("syncAddr", list[1]);
+                setInputValue("initAddr", list[2]);
+                setInputValue("namespace", list[3]);
+            };
+            reader.onerror = function () {
+                console.log(reader.error);
+            };
+        }
+
+        function radioChange(input) {
+            var block = document.getElementById("serial");
+            block.style.display = input.value === "auto" ? "none" : "block";
+        }
+    </script>
+</form>
+</body>

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/baetyl/baetyl-go/v2/context"
+	dm "github.com/baetyl/baetyl-go/v2/dmcontext"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/http"
 	"github.com/baetyl/baetyl-go/v2/log"
@@ -12,6 +13,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/pubsub"
 	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
 	"github.com/baetyl/baetyl-go/v2/utils"
+	routing "github.com/qiangxue/fasthttp-routing"
 	bh "github.com/timshannon/bolthold"
 	"k8s.io/apimachinery/pkg/util/rand"
 
@@ -31,7 +33,18 @@ const (
 	TopicDM = "dm"
 
 	BaetylHookUploadObject = "baetyl_upload_object"
+
+	MessageMultipleDeviceDesire = "multipleDeviceDesire"
+	KindDeviceModel             = "deviceModel"
 )
+
+type DeviceModel struct {
+	Name       string              `json:"name,omitempty"`
+	Version    string              `json:"version,omitempty"`
+	Protocol   string              `json:"protocol,omitempty"`
+	Labels     map[string]string   `json:"labels,omitempty"`
+	Properties []dm.DeviceProperty `json:"properties,omitempty"`
+}
 
 var Hooks = map[string]interface{}{}
 
@@ -44,6 +57,9 @@ type Sync interface {
 	Report(r v1.Report) (v1.Desire, error)
 	SyncResource(v1.AppInfo) error
 	SyncApps(infos []v1.AppInfo) (map[string]v1.Application, error)
+	LinkState(ctx *routing.Context) (interface{}, error)
+	SyncDeviceModels(device ...string) (map[string]DeviceModel, error)
+	Request(msg *v1.Message) (*v1.Message, error)
 }
 
 // Sync sync shadow and resources with cloud
@@ -306,4 +322,50 @@ func (s *sync) reportAndDesire() error {
 		}
 	}
 	return nil
+}
+
+func (s *sync) LinkState(_ *routing.Context) (interface{}, error) {
+	state := s.link.State()
+	return map[string]interface{}{
+		"state":   state.Kind,
+		"message": state.Content.Value,
+	}, nil
+}
+
+func (s *sync) SyncDeviceModels(names ...string) (map[string]DeviceModel, error) {
+	var infos []v1.ResourceInfo
+	for _, name := range names {
+		info := v1.ResourceInfo{Kind: KindDeviceModel, Name: name}
+		infos = append(infos, info)
+	}
+	msg := &v1.Message{
+		Kind:     MessageMultipleDeviceDesire,
+		Metadata: map[string]string{},
+		Content:  v1.LazyValue{Value: v1.DesireRequest{Infos: infos}},
+	}
+	res, err := s.link.Request(msg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
+	desire := v1.DesireResponse{}
+	err = res.Content.Unmarshal(&desire)
+	return parseDeviceModels(desire.Values)
+}
+
+func (s *sync) Request(msg *v1.Message) (*v1.Message, error) {
+	return s.link.Request(msg)
+}
+
+func parseDeviceModels(rv []v1.ResourceValue) (map[string]DeviceModel, error) {
+	dms := map[string]DeviceModel{}
+	for _, v := range rv {
+		if v.Kind == KindDeviceModel {
+			var dm DeviceModel
+			if err := v.Value.Unmarshal(&dm); err != nil {
+				return nil, err
+			}
+			dms[v.Name] = dm
+		}
+	}
+	return dms, nil
 }

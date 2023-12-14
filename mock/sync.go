@@ -5,9 +5,12 @@
 package mock
 
 import (
-	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	v1 "github.com/baetyl/baetyl-go/v2/spec/v1"
+	sync "github.com/baetyl/baetyl/v2/sync"
+	gomock "github.com/golang/mock/gomock"
+	routing "github.com/qiangxue/fasthttp-routing"
 )
 
 // MockSync is a mock of Sync interface.
@@ -33,18 +36,6 @@ func (m *MockSync) EXPECT() *MockSyncMockRecorder {
 	return m.recorder
 }
 
-// Start mocks base method.
-func (m *MockSync) Start() {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Start")
-}
-
-// Start indicates an expected call of Start.
-func (mr *MockSyncMockRecorder) Start() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSync)(nil).Start))
-}
-
 // Close mocks base method.
 func (m *MockSync) Close() {
 	m.ctrl.T.Helper()
@@ -55,6 +46,21 @@ func (m *MockSync) Close() {
 func (mr *MockSyncMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockSync)(nil).Close))
+}
+
+// LinkState mocks base method.
+func (m *MockSync) LinkState(ctx *routing.Context) (interface{}, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LinkState", ctx)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LinkState indicates an expected call of LinkState.
+func (mr *MockSyncMockRecorder) LinkState(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkState", reflect.TypeOf((*MockSync)(nil).LinkState), ctx)
 }
 
 // Report mocks base method.
@@ -72,18 +78,31 @@ func (mr *MockSyncMockRecorder) Report(r interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Report", reflect.TypeOf((*MockSync)(nil).Report), r)
 }
 
-// SyncResource mocks base method.
-func (m *MockSync) SyncResource(arg0 v1.AppInfo) error {
+// Request mocks base method.
+func (m *MockSync) Request(msg *v1.Message) (*v1.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SyncResource", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "Request", msg)
+	ret0, _ := ret[0].(*v1.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// SyncResource indicates an expected call of SyncResource.
-func (mr *MockSyncMockRecorder) SyncResource(arg0 interface{}) *gomock.Call {
+// Request indicates an expected call of Request.
+func (mr *MockSyncMockRecorder) Request(msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncResource", reflect.TypeOf((*MockSync)(nil).SyncResource), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockSync)(nil).Request), msg)
+}
+
+// Start mocks base method.
+func (m *MockSync) Start() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Start")
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockSyncMockRecorder) Start() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSync)(nil).Start))
 }
 
 // SyncApps mocks base method.
@@ -99,4 +118,37 @@ func (m *MockSync) SyncApps(infos []v1.AppInfo) (map[string]v1.Application, erro
 func (mr *MockSyncMockRecorder) SyncApps(infos interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncApps", reflect.TypeOf((*MockSync)(nil).SyncApps), infos)
+}
+
+// SyncDeviceModels mocks base method.
+func (m *MockSync) SyncDeviceModels(device ...string) (map[string]sync.DeviceModel, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range device {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "SyncDeviceModels", varargs...)
+	ret0, _ := ret[0].(map[string]sync.DeviceModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SyncDeviceModels indicates an expected call of SyncDeviceModels.
+func (mr *MockSyncMockRecorder) SyncDeviceModels(device ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncDeviceModels", reflect.TypeOf((*MockSync)(nil).SyncDeviceModels), device...)
+}
+
+// SyncResource mocks base method.
+func (m *MockSync) SyncResource(arg0 v1.AppInfo) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncResource", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SyncResource indicates an expected call of SyncResource.
+func (mr *MockSyncMockRecorder) SyncResource(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncResource", reflect.TypeOf((*MockSync)(nil).SyncResource), arg0)
 }

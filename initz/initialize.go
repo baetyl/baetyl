@@ -4,6 +4,7 @@ import (
 	"github.com/baetyl/baetyl-go/v2/context"
 	"github.com/baetyl/baetyl-go/v2/errors"
 	"github.com/baetyl/baetyl-go/v2/log"
+	v2plugin "github.com/baetyl/baetyl-go/v2/plugin"
 	v2utils "github.com/baetyl/baetyl-go/v2/utils"
 	bh "github.com/timshannon/bolthold"
 
@@ -32,7 +33,9 @@ type Initialize struct {
 
 // NewInitialize creates a new core
 func NewInitialize(cfg config.Config) (*Initialize, error) {
-	initHooks()
+	if err := initHooks(cfg); err != nil {
+		return nil, errors.Trace(err)
+	}
 	// to activate if no node cert
 	if !v2utils.FileExists(cfg.Node.Cert) {
 		active, err := NewActivate(&cfg)
@@ -78,8 +81,38 @@ func NewInitialize(cfg config.Config) (*Initialize, error) {
 	return init, nil
 }
 
-func initHooks() {
+func initHooks(cfg config.Config) error {
 	ami.Hooks[kube.BaetylSetPodSpec] = kube.SetPodSpecFunc(kube.SetPodSpec)
+	// set GPU hook function
+	if cfg.StatsExt.GPU {
+		pl, err := v2plugin.GetPlugin(cfg.ExtPlugin.GpuStats)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		stats := pl.(plugin.Collect)
+		ami.Hooks[ami.BaetylGPUStatsExtension] = ami.CollectStatsExtFunc(stats.CollectStats)
+		log.L().Info("registered gpu stats collector")
+	}
+	// set Node Disk&Net Stats hook function
+	if cfg.StatsExt.NodeStats {
+		nodePlugin, err := v2plugin.GetPlugin(cfg.ExtPlugin.NodeStats)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		nodeStats := nodePlugin.(plugin.Collect)
+		ami.Hooks[ami.BaetylNodeStatsExtension] = ami.CollectStatsExtFunc(nodeStats.CollectStats)
+		log.L().Info("registered node stats collector")
+	}
+	if cfg.StatsExt.QPSStats {
+		qpsPlugin, err := v2plugin.GetPlugin(cfg.ExtPlugin.QPSStats)
+		if err != nil {
+			return errors.Trace(err)
+		}
+		qpsStats := qpsPlugin.(plugin.Collect)
+		ami.Hooks[ami.BaetylQPSStatsExtension] = ami.CollectStatsExtFunc(qpsStats.CollectStats)
+		log.L().Info("registered qps stats collector")
+	}
+	return nil
 }
 
 func (init *Initialize) Close() {
