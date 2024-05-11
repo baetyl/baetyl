@@ -100,6 +100,7 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 		return err
 	}
 	clean := func() {
+		lockfile.Close()
 		utils.Funlock(lockfile)
 		os.Remove(lockfile.Name())
 	}
@@ -137,6 +138,10 @@ func downloadObject(cli *http.Client, obj *specv1.ConfigurationObject, dir, name
 	}
 	defer resp.Body.Close()
 	file, err := os.OpenFile(name, os.O_CREATE|os.O_RDWR, 0755)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 	if err = file.Truncate(0); err != nil {
 		return errors.Trace(err)
 	}
