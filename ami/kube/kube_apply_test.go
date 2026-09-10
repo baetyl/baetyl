@@ -545,6 +545,45 @@ func TestPrepareService(t *testing.T) {
 	assert.Nil(t, service)
 }
 
+func TestPrepareServiceRepeatedContainerPort(t *testing.T) {
+	ami := initApplyKubeAMI(t)
+	app := specv1.Application{
+		Name: "app",
+		Services: []specv1.Service{{
+			Name: "nginx",
+			Ports: []specv1.ContainerPort{
+				{HostPort: 8446, ContainerPort: 80},
+				{HostPort: 8447, ContainerPort: 80, Protocol: "TCP"},
+				{HostPort: 8448, ContainerPort: 80, Protocol: "UDP"},
+				{HostPort: 8449, ContainerPort: 81, Protocol: "TCP"},
+			},
+		}},
+	}
+	for _, webhook := range []bool{false, true} {
+		app.Labels = map[string]string{}
+		if webhook {
+			app.Labels["baetyl-webhook"] = "true"
+		}
+		service := ami.prepareService("test", app)
+		if !assert.Len(t, service.Spec.Ports, 3) {
+			continue
+		}
+		assert.Equal(t, "nginx-80-tcp", service.Spec.Ports[0].Name)
+		assert.Equal(t, "nginx-80-udp", service.Spec.Ports[1].Name)
+		assert.Equal(t, "nginx-81-tcp", service.Spec.Ports[2].Name)
+		if webhook {
+			// Backend ports use the original mapping index, even after a duplicate.
+			assert.EqualValues(t, 54000, service.Spec.Ports[0].TargetPort.IntVal)
+			assert.EqualValues(t, 54002, service.Spec.Ports[1].TargetPort.IntVal)
+			assert.EqualValues(t, 54003, service.Spec.Ports[2].TargetPort.IntVal)
+		} else {
+			assert.EqualValues(t, 80, service.Spec.Ports[0].TargetPort.IntVal)
+			assert.EqualValues(t, 80, service.Spec.Ports[1].TargetPort.IntVal)
+			assert.EqualValues(t, 81, service.Spec.Ports[2].TargetPort.IntVal)
+		}
+	}
+}
+
 func TestPrepareNodePortService(t *testing.T) {
 	ami := initApplyKubeAMI(t)
 	ns := "baetyl-edge"

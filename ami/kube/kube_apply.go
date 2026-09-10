@@ -217,6 +217,7 @@ func (k *kubeImpl) applyApplication(ns string, app specv1.Application, imagePull
 
 func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Service {
 	var ports []corev1.ServicePort
+	seen := make(map[string]bool)
 	for _, svc := range app.Services {
 		if len(svc.Ports) == 0 {
 			continue
@@ -237,6 +238,10 @@ func (k *kubeImpl) prepareService(ns string, app specv1.Application) *corev1.Ser
 			if v, ok := app.Labels["baetyl-webhook"]; ok && v == "true" {
 				port.TargetPort = intstr.IntOrString{IntVal: int32(newBackendContainerPort + i)}
 			}
+			if seen[port.Name] {
+				continue
+			}
+			seen[port.Name] = true
 			ports = append(ports, port)
 		}
 	}
