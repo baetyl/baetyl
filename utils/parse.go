@@ -93,3 +93,29 @@ func humanateBytes(s uint64, base float64, sizes []string) string {
 
 	return fmt.Sprintf(f, val, suffix)
 }
+
+// CalculateModelTransferSize calculates estimated payload size in bytes for model parameters or gradients.
+// Supports FP32 (32-bit), FP16 (16-bit), INT8 (8-bit), and block-scaled INT4 (4-bit with 32-bit scale per block).
+func CalculateModelTransferSize(numParameters int64, nbits int, blockSize int) (int64, error) {
+	if numParameters < 0 {
+		return 0, fmt.Errorf("numParameters must be non-negative")
+	}
+	if blockSize <= 0 {
+		blockSize = 64
+	}
+	switch nbits {
+	case 32:
+		return numParameters * 4, nil
+	case 16:
+		return numParameters * 2, nil
+	case 8:
+		numBlocks := (numParameters + int64(blockSize) - 1) / int64(blockSize)
+		return numParameters + (numBlocks * 4), nil
+	case 4:
+		numBlocks := (numParameters + int64(blockSize) - 1) / int64(blockSize)
+		packedBytes := (numParameters + 1) / 2
+		return packedBytes + (numBlocks * 4), nil
+	default:
+		return 0, fmt.Errorf("unsupported bit precision: %d (choose 4, 8, 16, or 32)", nbits)
+	}
+}

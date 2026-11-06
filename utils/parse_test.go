@@ -69,3 +69,41 @@ func TestBytes(t *testing.T) {
 		}
 	}
 }
+
+func TestCalculateModelTransferSize(t *testing.T) {
+	// FP32: 1000 params * 4 bytes = 4000
+	fp32Size, err := CalculateModelTransferSize(1000, 32, 64)
+	if err != nil || fp32Size != 4000 {
+		t.Errorf("Expected 4000 for FP32, got %d, err: %v", fp32Size, err)
+	}
+
+	// FP16: 1000 params * 2 bytes = 2000
+	fp16Size, err := CalculateModelTransferSize(1000, 16, 64)
+	if err != nil || fp16Size != 2000 {
+		t.Errorf("Expected 2000 for FP16, got %d, err: %v", fp16Size, err)
+	}
+
+	// INT8: 1000 params: 1000 bytes + 16 blocks * 4 bytes = 1064
+	int8Size, err := CalculateModelTransferSize(1000, 8, 64)
+	if err != nil || int8Size != 1064 {
+		t.Errorf("Expected 1064 for INT8, got %d, err: %v", int8Size, err)
+	}
+
+	// INT4: 1000 params: 500 bytes + 16 blocks * 4 bytes = 564
+	int4Size, err := CalculateModelTransferSize(1000, 4, 64)
+	if err != nil || int4Size != 564 {
+		t.Errorf("Expected 564 for INT4, got %d, err: %v", int4Size, err)
+	}
+
+	// Invalid precision
+	_, err = CalculateModelTransferSize(1000, 3, 64)
+	if err == nil {
+		t.Errorf("Expected error for unsupported bit precision")
+	}
+
+	// Negative parameters
+	_, err = CalculateModelTransferSize(-1, 32, 64)
+	if err == nil {
+		t.Errorf("Expected error for negative parameter count")
+	}
+}
